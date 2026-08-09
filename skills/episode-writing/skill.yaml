@@ -1,0 +1,14 @@
+code: episode-writing
+name: Episode Writing
+description: Produce a coherent, evidence-aware short-drama episode.
+context:
+  required: [project, story, episode, entities]
+  optional: [historicalEvidence, constraints, generation]
+  refresh_after: [history.verify_claim]
+tools:
+  preferred: [context.build_context, project.get_episode, project.list_scenes]
+  allowed: [project.get_story, history.verify_claim, context.refresh_context]
+completion:
+  conditions:
+    - The episode has a clear state change and exit hook.
+    - Scene intents, character motivations, and factual status are coherent.

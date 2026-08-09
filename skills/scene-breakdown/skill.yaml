@@ -1,0 +1,14 @@
+code: scene-breakdown
+name: Scene Breakdown
+description: Convert episode intent into producible, state-changing scenes.
+context:
+  required: [episode, scene, entities]
+  optional: [assets, historicalEvidence, constraints]
+  refresh_after: [asset.resolve_asset_hierarchy]
+tools:
+  preferred: [context.build_context, project.list_scenes, project.get_scene]
+  allowed: [asset.search_assets, asset.resolve_asset_hierarchy, history.search_historical_location, context.refresh_context]
+completion:
+  conditions:
+    - Every scene has purpose, conflict, turn, and exit state.
+    - Required characters, location, props, and constraints are identified.

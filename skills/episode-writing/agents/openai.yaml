@@ -1,0 +1,4 @@
+interface:
+  display_name: "episode-writing"
+  short_description: "Drama domain SOP for episode-writing"
+  default_prompt: "Use episode-writing for the current drama task."

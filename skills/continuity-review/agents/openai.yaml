@@ -1,0 +1,4 @@
+interface:
+  display_name: "continuity-review"
+  short_description: "Drama domain SOP for continuity-review"
+  default_prompt: "Use continuity-review for the current drama task."

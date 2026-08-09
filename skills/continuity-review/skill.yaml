@@ -1,0 +1,14 @@
+code: continuity-review
+name: Continuity Review
+description: Detect and explain narrative, visual, temporal, and historical contradictions.
+context:
+  required: [story, episode, scene, entities, assets]
+  optional: [shot, historicalEvidence, generation.outputs, constraints]
+  refresh_after: [generation.get_generation_result, asset.resolve_asset_hierarchy]
+tools:
+  preferred: [context.build_context, project.list_scenes, project.list_shots, asset.resolve_asset_hierarchy]
+  allowed: [media.get_media, history.verify_claim, context.refresh_context]
+completion:
+  conditions:
+    - Material continuity issues identify affected resources, evidence, impact, and correction.
+    - Intentional changes and unresolved historical uncertainty are not mislabeled as errors.

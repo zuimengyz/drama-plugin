@@ -1,0 +1,4 @@
+interface:
+  display_name: "story-skeleton"
+  short_description: "Drama domain SOP for story-skeleton"
+  default_prompt: "Use story-skeleton for the current drama task."

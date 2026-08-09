@@ -1,0 +1,4 @@
+interface:
+  display_name: "scene-breakdown"
+  short_description: "Drama domain SOP for scene-breakdown"
+  default_prompt: "Use scene-breakdown for the current drama task."

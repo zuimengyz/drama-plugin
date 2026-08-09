@@ -1,0 +1,14 @@
+code: historical-research
+name: Historical Research
+description: Ground drama decisions in traceable historical evidence.
+context:
+  required: [scope, historicalEvidence]
+  optional: [project, story, entities]
+  refresh_after: [history.verify_claim]
+tools:
+  preferred: [context.build_context, history.search_sources, history.verify_claim]
+  allowed: [history.search_historical_event, history.search_historical_person, history.search_historical_location, history.get_evidence]
+completion:
+  conditions:
+    - Material claims have cited evidence or an explicit uncertainty label.
+    - Dramatic inventions are distinguishable from historical claims.

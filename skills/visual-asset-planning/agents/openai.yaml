@@ -1,0 +1,4 @@
+interface:
+  display_name: "visual-asset-planning"
+  short_description: "Drama domain SOP for visual-asset-planning"
+  default_prompt: "Use visual-asset-planning for the current drama task."

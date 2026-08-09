@@ -1,0 +1,14 @@
+code: shot-generation
+name: Shot Generation
+description: Coordinate a shot generation request through stable domain tools.
+context:
+  required: [shot, entities, assets.effective, generation.state]
+  optional: [historicalEvidence, constraints, generation.outputs]
+  refresh_after: [generation.submit_generation, generation.get_generation_result]
+tools:
+  preferred: [context.build_context, asset.resolve_asset_hierarchy, generation.create_generation_plan, generation.compile_generation_plan, generation.submit_generation]
+  allowed: [generation.get_generation_status, generation.get_generation_result, media.get_media, media.get_image_metadata, media.get_video_metadata, context.refresh_context]
+completion:
+  conditions:
+    - The requested generation target has a terminal result or an explicitly reported pending state.
+    - Output media retains entity, asset, target, and semantic identity.

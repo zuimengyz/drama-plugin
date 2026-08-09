@@ -1,0 +1,4 @@
+interface:
+  display_name: "historical-research"
+  short_description: "Drama domain SOP for historical-research"
+  default_prompt: "Use historical-research for the current drama task."

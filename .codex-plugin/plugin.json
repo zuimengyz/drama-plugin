@@ -1,0 +1,18 @@
+{
+  "name": "drama-plugin",
+  "version": "0.1.0",
+  "description": "Historical drama domain skills and host-agnostic tool contracts.",
+  "author": {
+    "name": "Drama Platform Team"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Drama Plugin",
+    "shortDescription": "Historical drama agent domain capabilities",
+    "longDescription": "Skills, context projections, and stable tool contracts for historical drama agents.",
+    "developerName": "Drama Platform Team",
+    "category": "Productivity",
+    "capabilities": ["Read"],
+    "defaultPrompt": ["Build context for a historical drama shot."]
+  }
+}

@@ -24,7 +24,7 @@ class Script(ContractModel):
 class Episode(ContractModel):
     id: str
     script_id: str
-    number: int
+    episode_no: int
     title: str
     content: dict[str, Any] = Field(default_factory=dict)
 
@@ -32,15 +32,16 @@ class Episode(ContractModel):
 class Scene(ContractModel):
     id: str
     episode_id: str
-    number: int
-    heading: str
+    order: int
+    title: str
+    location: str | None = None
     content: dict[str, Any] = Field(default_factory=dict)
 
 
 class Shot(ContractModel):
     id: str
     scene_id: str
-    number: int
-    description: str
-    duration_seconds: float | None = None
+    shot_no: str
+    title: str | None = None
+    shot_type: str | None = None
     content: dict[str, Any] = Field(default_factory=dict)

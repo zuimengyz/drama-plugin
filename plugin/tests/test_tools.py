@@ -108,9 +108,9 @@ def test_persistent_memory_and_production_contracts_are_minimal() -> None:
     assert {"script.search_scripts", "episode.search_episodes", "media.search_media"}.isdisjoint(codes)
 
     asset_schema = plugin.tools.get("asset.get_asset").output_schema
-    assert set(asset_schema["properties"]) == {"id", "assetType", "name", "description", "referenceMediaIds"}
+    assert set(asset_schema["properties"]) == {"id", "workId", "episodeId", "sceneId", "shotId", "assetType", "name", "description", "referenceMediaIds", "content"}
     media_schema = plugin.tools.get("media.get_media").output_schema
-    assert set(media_schema["properties"]) == {"id", "mediaType", "mimeType", "storageKey", "metadata"}
+    assert set(media_schema["properties"]) == {"id", "workId", "assetId", "shotId", "mediaType", "purpose", "sourceRef", "content"}
 
 
 def test_get_list_and_search_contracts_have_distinct_minimal_semantics() -> None:
@@ -168,3 +168,46 @@ async def test_tool_contracts_do_not_change_with_http_provider_bindings() -> Non
     assert mock_plugin.tools.describe() == http_registry.describe()
     for client in clients:
         await client.aclose()
+
+
+def test_long_term_memory_create_and_save_envelopes_are_frozen() -> None:
+    plugin = DramaPlugin.load(ROOT)
+    expected: dict[str, tuple[set[str], set[str]]] = {
+        "work.create_work": ({"title", "content"}, {"title", "description", "content"}),
+        "work.save_work": ({"work_id", "title", "content"}, {"work_id", "title", "description", "content"}),
+        "script.create_script": ({"work_id", "title", "content"}, {"work_id", "title", "content"}),
+        "script.save_script": ({"script_id", "title", "content"}, {"script_id", "title", "content"}),
+        "episode.create_episode": ({"script_id", "episode_no", "title", "content"}, {"script_id", "episode_no", "title", "content"}),
+        "episode.save_episode": ({"episode_id", "episode_no", "title", "content"}, {"episode_id", "episode_no", "title", "content"}),
+        "scene.create_scene": ({"episode_id", "order", "title", "content"}, {"episode_id", "order", "title", "location", "content"}),
+        "scene.save_scene": ({"scene_id", "order", "title", "content"}, {"scene_id", "order", "title", "location", "content"}),
+        "shot.create_shot": ({"scene_id", "shot_no", "content"}, {"scene_id", "shot_no", "title", "shot_type", "content"}),
+        "shot.save_shot": ({"shot_id", "shot_no", "content"}, {"shot_id", "shot_no", "title", "shot_type", "content"}),
+        "asset.create_asset": ({"work_id", "asset_type", "name", "content"}, {"work_id", "episode_id", "scene_id", "shot_id", "asset_type", "name", "description", "reference_media_ids", "content"}),
+        "asset.save_asset": ({"asset_id", "name", "content"}, {"asset_id", "name", "description", "reference_media_ids", "content"}),
+        "media.create_media": ({"work_id", "media_type", "source_ref", "content"}, {"work_id", "asset_id", "shot_id", "media_type", "purpose", "source_ref", "content"}),
+        "media.save_media": ({"media_id", "content"}, {"media_id", "purpose", "content"}),
+    }
+    for code, (required, properties) in expected.items():
+        schema = plugin.tools.get(code).input_schema
+        assert set(schema["required"]) == required
+        assert set(schema["properties"]) == properties
+        assert schema["properties"]["content"]["type"] == "object"
+        assert schema["additionalProperties"] is False
+
+    assert plugin.tools.get("asset.create_asset").input_schema["properties"]["reference_media_ids"]["default"] == []
+    assert plugin.tools.get("asset.save_asset").input_schema["properties"]["reference_media_ids"]["default"] == []
+
+
+def test_save_contracts_cannot_move_stable_parent_or_identity_fields() -> None:
+    plugin = DramaPlugin.load(ROOT)
+    forbidden = {
+        "script.save_script": {"work_id"},
+        "episode.save_episode": {"script_id"},
+        "scene.save_scene": {"episode_id"},
+        "shot.save_shot": {"scene_id"},
+        "asset.save_asset": {"work_id", "episode_id", "scene_id", "shot_id", "asset_type"},
+        "media.save_media": {"work_id", "asset_id", "shot_id", "media_type", "source_ref"},
+    }
+    for code, fields in forbidden.items():
+        assert fields.isdisjoint(plugin.tools.get(code).input_schema["properties"])

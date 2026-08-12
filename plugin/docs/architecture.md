@@ -20,6 +20,15 @@ The System of Record owns only `Work`, `Script`, `Episode`, `Scene`, `Shot`, `As
 
 Asset is stable reusable visual memory. Media is a stable handle to a physical image, video, or audio object. Asset selection is Agent reasoning. Media storage and Provider details stay behind adapters.
 
+Long-term memory uses **Stable Envelope + Domain Content** without an extra wrapper layer. The Tool catalog owns the exact snake_case request schema. Skills own the meaning and internal organization of the `content` JSON object. Java owns persistence behavior; Repository code maps stable fields to ordinary columns and `content` to JSON. MySQL Entity shape must never determine Skill output. Media bytes belong to object storage, while MySQL retains only stable references and metadata.
+
+```text
+Skill -> Tool Contract -> Java ToolApi -> Repository -> MySQL
+                                             \-> Object Storage (media bytes)
+```
+
+Create is the one normal first write after a complete initial formal state exists. Save is a full-state revision of an existing stable ID, not a patch and not a routine post-create step. Stable parent relationships cannot be moved through ordinary save operations.
+
 ## Modules
 
 - `contracts`: minimal Pydantic models with transport-neutral camelCase wire aliases.

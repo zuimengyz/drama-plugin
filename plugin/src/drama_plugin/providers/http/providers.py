@@ -29,37 +29,36 @@ def _many(model: type[T], payload: Any) -> list[T]:
 class HttpMemoryProvider:
     def __init__(self, http: HttpProviderClient) -> None: self.http = http
     async def _create(self, operation: str, model: type[T], body: dict[str, Any]) -> T: return _one(model, await self.http.request(operation, method="POST", json=body))
-    async def _save(self, operation: str, value: T) -> T: return _one(type(value), await self.http.request(operation, method="POST", json=dump_contract(value)))
-    async def create_work(self, title: str, description: str | None = None, content: dict[str, Any] | None = None) -> Work: return await self._create("create_work", Work, {"title": title, "description": description, "content": content or {}})
+    async def create_work(self, title: str, content: dict[str, Any], description: str | None = None) -> Work: return await self._create("create_work", Work, {"title": title, "description": description, "content": content})
     async def get_work(self, work_id: str) -> Work: return _one(Work, await self.http.request("get_work", params={"work_id": work_id}))
-    async def save_work(self, work: Work) -> Work: return await self._save("save_work", work)
+    async def save_work(self, work_id: str, title: str, content: dict[str, Any], description: str | None = None) -> Work: return await self._create("save_work", Work, {"work_id": work_id, "title": title, "description": description, "content": content})
     async def list_works(self) -> list[Work]: return _many(Work, await self.http.request("list_works"))
     async def search_works(self, query: str) -> list[Work]: return _many(Work, await self.http.request("search_works", params={"query": query}))
-    async def create_script(self, work_id: str, title: str, content: dict[str, Any] | None = None) -> Script: return await self._create("create_script", Script, {"workId": work_id, "title": title, "content": content or {}})
+    async def create_script(self, work_id: str, title: str, content: dict[str, Any]) -> Script: return await self._create("create_script", Script, {"work_id": work_id, "title": title, "content": content})
     async def get_script(self, script_id: str) -> Script: return _one(Script, await self.http.request("get_script", params={"script_id": script_id}))
-    async def save_script(self, script: Script) -> Script: return await self._save("save_script", script)
+    async def save_script(self, script_id: str, title: str, content: dict[str, Any]) -> Script: return await self._create("save_script", Script, {"script_id": script_id, "title": title, "content": content})
     async def list_scripts(self, work_id: str) -> list[Script]: return _many(Script, await self.http.request("list_scripts", params={"work_id": work_id}))
-    async def create_episode(self, script_id: str, number: int, title: str, content: dict[str, Any] | None = None) -> Episode: return await self._create("create_episode", Episode, {"scriptId": script_id, "number": number, "title": title, "content": content or {}})
+    async def create_episode(self, script_id: str, episode_no: int, title: str, content: dict[str, Any]) -> Episode: return await self._create("create_episode", Episode, {"script_id": script_id, "episode_no": episode_no, "title": title, "content": content})
     async def get_episode(self, episode_id: str) -> Episode: return _one(Episode, await self.http.request("get_episode", params={"episode_id": episode_id}))
-    async def save_episode(self, episode: Episode) -> Episode: return await self._save("save_episode", episode)
+    async def save_episode(self, episode_id: str, episode_no: int, title: str, content: dict[str, Any]) -> Episode: return await self._create("save_episode", Episode, {"episode_id": episode_id, "episode_no": episode_no, "title": title, "content": content})
     async def list_episodes(self, script_id: str, episode_no: int | None = None, title: str | None = None) -> list[Episode]: return _many(Episode, await self.http.request("list_episodes", params={"script_id": script_id, "episode_no": episode_no, "title": title}))
-    async def create_scene(self, episode_id: str, number: int, heading: str, content: dict[str, Any] | None = None) -> Scene: return await self._create("create_scene", Scene, {"episodeId": episode_id, "number": number, "heading": heading, "content": content or {}})
+    async def create_scene(self, episode_id: str, order: int, title: str, content: dict[str, Any], location: str | None = None) -> Scene: return await self._create("create_scene", Scene, {"episode_id": episode_id, "order": order, "title": title, "location": location, "content": content})
     async def get_scene(self, scene_id: str) -> Scene: return _one(Scene, await self.http.request("get_scene", params={"scene_id": scene_id}))
-    async def save_scene(self, scene: Scene) -> Scene: return await self._save("save_scene", scene)
+    async def save_scene(self, scene_id: str, order: int, title: str, content: dict[str, Any], location: str | None = None) -> Scene: return await self._create("save_scene", Scene, {"scene_id": scene_id, "order": order, "title": title, "location": location, "content": content})
     async def list_scenes(self, episode_id: str, order: int | None = None, location: str | None = None, character: str | None = None) -> list[Scene]: return _many(Scene, await self.http.request("list_scenes", params={"episode_id": episode_id, "order": order, "location": location, "character": character}))
     async def search_scenes(self, query: str, episode_id: str | None = None) -> list[Scene]: return _many(Scene, await self.http.request("search_scenes", params={"query": query, "episode_id": episode_id}))
-    async def create_shot(self, scene_id: str, number: int, description: str, duration_seconds: float | None = None, content: dict[str, Any] | None = None) -> Shot: return await self._create("create_shot", Shot, {"sceneId": scene_id, "number": number, "description": description, "durationSeconds": duration_seconds, "content": content or {}})
+    async def create_shot(self, scene_id: str, shot_no: str, content: dict[str, Any], title: str | None = None, shot_type: str | None = None) -> Shot: return await self._create("create_shot", Shot, {"scene_id": scene_id, "shot_no": shot_no, "title": title, "shot_type": shot_type, "content": content})
     async def get_shot(self, shot_id: str) -> Shot: return _one(Shot, await self.http.request("get_shot", params={"shot_id": shot_id}))
-    async def save_shot(self, shot: Shot) -> Shot: return await self._save("save_shot", shot)
-    async def list_shots(self, scene_id: str, shot_no: int | None = None, shot_type: str | None = None, character: str | None = None) -> list[Shot]: return _many(Shot, await self.http.request("list_shots", params={"scene_id": scene_id, "shot_no": shot_no, "shot_type": shot_type, "character": character}))
+    async def save_shot(self, shot_id: str, shot_no: str, content: dict[str, Any], title: str | None = None, shot_type: str | None = None) -> Shot: return await self._create("save_shot", Shot, {"shot_id": shot_id, "shot_no": shot_no, "title": title, "shot_type": shot_type, "content": content})
+    async def list_shots(self, scene_id: str, shot_no: str | None = None, shot_type: str | None = None, character: str | None = None) -> list[Shot]: return _many(Shot, await self.http.request("list_shots", params={"scene_id": scene_id, "shot_no": shot_no, "shot_type": shot_type, "character": character}))
     async def search_shots(self, query: str, scene_id: str | None = None) -> list[Shot]: return _many(Shot, await self.http.request("search_shots", params={"query": query, "scene_id": scene_id}))
 
 
 class HttpAssetProvider:
     def __init__(self, http: HttpProviderClient) -> None: self.http = http
-    async def create_asset(self, asset_type: AssetType, name: str, description: str | None = None, reference_media_ids: list[str] | None = None) -> Asset: return _one(Asset, await self.http.request("create_asset", method="POST", json={"assetType": asset_type, "name": name, "description": description, "referenceMediaIds": reference_media_ids or []}))
+    async def create_asset(self, work_id: str, asset_type: AssetType, name: str, content: dict[str, Any], episode_id: str | None = None, scene_id: str | None = None, shot_id: str | None = None, description: str | None = None, reference_media_ids: list[str] | None = None) -> Asset: return _one(Asset, await self.http.request("create_asset", method="POST", json={"work_id": work_id, "episode_id": episode_id, "scene_id": scene_id, "shot_id": shot_id, "asset_type": asset_type, "name": name, "description": description, "reference_media_ids": reference_media_ids or [], "content": content}))
     async def get_asset(self, asset_id: str) -> Asset: return _one(Asset, await self.http.request("get_asset", params={"asset_id": asset_id}))
-    async def save_asset(self, asset: Asset) -> Asset: return _one(Asset, await self.http.request("save_asset", method="POST", json=dump_contract(asset)))
+    async def save_asset(self, asset_id: str, name: str, content: dict[str, Any], description: str | None = None, reference_media_ids: list[str] | None = None) -> Asset: return _one(Asset, await self.http.request("save_asset", method="POST", json={"asset_id": asset_id, "name": name, "description": description, "reference_media_ids": reference_media_ids or [], "content": content}))
     async def list_assets(self, asset_type: AssetType | None = None) -> list[Asset]: return _many(Asset, await self.http.request("list_assets", params={"asset_type": asset_type}))
     async def search_assets(self, query: str, asset_type: AssetType | None = None) -> list[Asset]: return _many(Asset, await self.http.request("search_assets", params={"query": query, "asset_type": asset_type}))
 
@@ -82,9 +81,9 @@ class HttpProductionProvider:
 
 class HttpMediaProvider:
     def __init__(self, http: HttpProviderClient) -> None: self.http = http
-    async def create_media(self, media_type: MediaType, mime_type: str, storage_key: str, metadata: dict[str, Any] | None = None) -> Media: return _one(Media, await self.http.request("create_media", method="POST", json={"mediaType": media_type, "mimeType": mime_type, "storageKey": storage_key, "metadata": metadata or {}}))
+    async def create_media(self, work_id: str, media_type: MediaType, source_ref: str, content: dict[str, Any], asset_id: str | None = None, shot_id: str | None = None, purpose: str | None = None) -> Media: return _one(Media, await self.http.request("create_media", method="POST", json={"work_id": work_id, "asset_id": asset_id, "shot_id": shot_id, "media_type": media_type, "purpose": purpose, "source_ref": source_ref, "content": content}))
     async def get_media(self, media_id: str) -> Media: return _one(Media, await self.http.request("get_media", params={"media_id": media_id}))
-    async def save_media(self, media: Media) -> Media: return _one(Media, await self.http.request("save_media", method="POST", json=dump_contract(media)))
+    async def save_media(self, media_id: str, content: dict[str, Any], purpose: str | None = None) -> Media: return _one(Media, await self.http.request("save_media", method="POST", json={"media_id": media_id, "purpose": purpose, "content": content}))
     async def list_media(self, media_type: MediaType | None = None) -> list[Media]: return _many(Media, await self.http.request("list_media", params={"media_type": media_type}))
 
 

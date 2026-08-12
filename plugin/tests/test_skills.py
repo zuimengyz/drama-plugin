@@ -31,7 +31,7 @@ def test_skill_core_is_platform_neutral_and_has_no_skill_chaining() -> None:
     )
     for directory in (ROOT / "skills").iterdir():
         if directory.name not in EXPECTED: continue
-        core = ((directory / "SKILL.md").read_text() + (directory / "skill.yaml").read_text()).lower()
+        core = ((directory / "SKILL.md").read_text(encoding="utf-8") + (directory / "skill.yaml").read_text(encoding="utf-8")).lower()
         assert not any(term in core for term in forbidden)
         assert not any(f"${name}" in core for name in EXPECTED)
 
@@ -65,6 +65,10 @@ def test_create_is_first_write_and_save_is_revision_only() -> None:
         assert f"do not call `{save_tool}` immediately afterward" in instructions.lower()
         assert "unless a concrete revision has actually occurred" in instructions.lower()
         assert "only to revise an already persisted" in instructions
+        assert "Stable Envelope" in instructions
+        assert "Domain Content" in instructions
+        assert "Tool catalog" in instructions
+        assert "full replacement" in instructions
 
 
 def test_media_registration_is_not_duplicated_after_generation() -> None:
@@ -78,17 +82,17 @@ def test_media_registration_is_not_duplicated_after_generation() -> None:
 def test_openai_adapters_are_optional_interface_metadata_only() -> None:
     for directory in (ROOT / "skills").iterdir():
         if directory.name not in EXPECTED: continue
-        adapter = yaml.safe_load((directory / "agents" / "openai.yaml").read_text())
+        adapter = yaml.safe_load((directory / "agents" / "openai.yaml").read_text(encoding="utf-8"))
         assert set(adapter) == {"interface"}
         assert set(adapter["interface"]) == {"display_name", "short_description", "default_prompt"}
 
 
 def test_skill_and_readme_memory_tool_references_are_registered() -> None:
     registered = {tool.code for tool in DramaPlugin.load(ROOT).tools.list()}
-    documented = (ROOT / "README.md").read_text()
+    documented = (ROOT / "README.md").read_text(encoding="utf-8")
     for directory in (ROOT / "skills").iterdir():
         if directory.name in EXPECTED:
-            documented += (directory / "SKILL.md").read_text() + (directory / "skill.yaml").read_text()
+            documented += (directory / "SKILL.md").read_text(encoding="utf-8") + (directory / "skill.yaml").read_text(encoding="utf-8")
     for code in ("work.search_works", "scene.search_scenes", "shot.search_shots", "asset.search_assets"):
         assert code in registered
         assert code in documented

@@ -14,7 +14,10 @@ class MediaType(StrEnum):
 
 class Media(ContractModel):
     id: str
+    work_id: str
+    asset_id: str | None = None
+    shot_id: str | None = None
     media_type: MediaType
-    mime_type: str
-    storage_key: str
-    metadata: dict[str, Any] = Field(default_factory=dict)
+    purpose: str | None = None
+    source_ref: str
+    content: dict[str, Any] = Field(default_factory=dict)

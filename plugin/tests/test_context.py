@@ -25,25 +25,25 @@ async def test_build_shot_context_contains_minimal_persistent_chain() -> None:
 
 
 @pytest.mark.asyncio
-async def test_refresh_patch_uses_canonical_aliases() -> None:
+async def test_refresh_patch_updates_domain_content() -> None:
     plugin = DramaPlugin.load(ROOT)
     request = ContextBuildRequest(scope=ContextScope.SHOT, resource_id="shot-1", purpose=ContextPurpose.SHOT_DESIGN)
     context = await plugin.context.build(request)
     memory = plugin.providers.memory
     assert isinstance(memory, MockMemoryProvider)
-    memory.data.shot = memory.data.shot.model_copy(update={"duration_seconds": 5.0})
+    revised_content = {**memory.data.shot.content, "duration_seconds": 5.0}
+    memory.data.shot = memory.data.shot.model_copy(update={"content": revised_content})
     patch = await plugin.context.refresh(request, context)
     wire = patch.model_dump(mode="json", by_alias=True)
     assert wire["changes"][0]["path"] == "/shot"
-    assert "durationSeconds" in str(wire)
-    assert "duration_seconds" not in str(wire)
+    assert "duration_seconds" in str(wire)
 
 
 @pytest.mark.asyncio
 async def test_build_scene_context_does_not_load_assets_or_media() -> None:
     plugin = DramaPlugin.load(ROOT)
     context = await plugin.context.build(ContextBuildRequest(scope=ContextScope.SCENE, resource_id="scene-1", purpose=ContextPurpose.SCENE_DEVELOPMENT))
-    assert context.scene and context.scene.heading.startswith("内景")
+    assert context.scene and context.scene.title == "狄府书房雨夜密谈"
     assert context.shot is None
     assert context.asset is None
     assert context.media is None

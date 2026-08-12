@@ -37,7 +37,7 @@ Historical Research Context
 - `Asset`：跨 Scene、Shot 或 Agent Run 值得复用的稳定视觉记忆；
 - `Media`：真实图片、视频、音频文件的稳定长期引用句柄。
 
-父关系直接由 `Script.workId`、`Episode.scriptId`、`Scene.episodeId`、`Shot.sceneId` 表达，不存在 relation 或 binding domain。
+父关系直接由 `Script.work_id`、`Episode.script_id`、`Scene.episode_id`、`Shot.scene_id` 表达，不存在 relation 或 binding domain。Tool 输入统一使用 `snake_case`。
 
 ## Skill Core
 
@@ -65,6 +65,8 @@ skills/
 - `create_xxx`：在当前 Skill 已形成足够完整的初始正式状态后，一次性创建新的长期事实并获得稳定 ID；
 - `save_xxx`：基于稳定 ID 明确修订已有长期事实。它不是首次持久化，也不是 create 后的默认步骤；没有具体修订时不调用。
 
+七类长期记忆的 create/save 输入统一采用 **Stable Envelope + Domain Content**：父级、身份、排序和高频检索字段保留在 Tool 顶层，Skill 确认的完整正式领域事实放入 `content` JSON Object。`content` 不是字符串化 JSON、推理草稿或 Provider 原始响应。`save_xxx` 提交修订后的完整正式状态，不支持 Patch、field mask 或 operation list；普通 save 不改变稳定父级、Asset scope/type 或 Media 物理引用。
+
 实际长期记忆 Tool 为：
 
 ```text
@@ -77,11 +79,11 @@ asset.create_asset / get_asset / save_asset / list_assets / search_assets
 media.create_media / get_media / save_media / list_media
 ```
 
-`list_episodes` 可按 `episodeNo`、`title` 过滤；`list_scenes` 可按 `order`、`location`、`character` 过滤；`list_shots` 可按 `shotNo`、`shotType`、`character` 过滤。Search 只声明自然语言发现语义，不绑定 SQL、全文索引、向量库或 RAG 技术。
+`list_episodes` 可按 `episode_no`、`title` 过滤；`list_scenes` 可按 `order`、`location`、`character` 过滤；`list_shots` 可按字符串 `shot_no`、`shot_type`、`character` 过滤。Search 只声明自然语言发现语义，不绑定 SQL、全文索引、向量库或 RAG 技术。
 
-恢复长期创作记忆时，Agent 可按已掌握的信息组合 Tool，例如：`work.search_works("神龙")` → `script.list_scripts(workId)` → `episode.list_episodes(scriptId, episodeNo=3)` → `scene.search_scenes(query, episodeId)` → `shot.list_shots(sceneId)` 或 `shot.search_shots(query, sceneId)`。这是一种可选恢复策略，不是硬编码 Workflow。
+恢复长期创作记忆时，Agent 可按已掌握的信息组合 Tool，例如：`work.search_works("神龙")` → `script.list_scripts(work_id)` → `episode.list_episodes(script_id, episode_no=3)` → `scene.search_scenes(query, episode_id)` → `shot.list_shots(scene_id)` 或 `shot.search_shots(query, scene_id)`。这是一种可选恢复策略，不是硬编码 Workflow。
 
-Script、Episode 通常通过父级 ID 与 list 发现，因此第一版不提供 `search_scripts`、`search_episodes`。Media 优先通过 `mediaId`、Asset 的 `referenceMediaIds`、Shot/Agent Context 获取，因此不提供 `search_media`。
+Script、Episode 通常通过父级 ID 与 list 发现，因此第一版不提供 `search_scripts`、`search_episodes`。Media 优先通过 `media_id`、Asset 的 `reference_media_ids`、Shot/Agent Context 获取，因此不提供 `search_media`。
 
 历史研究是当前 Run 的外部能力，不是 Java CRUD Domain：
 
@@ -97,13 +99,32 @@ production.generate_video
 production.generate_audio
 ```
 
-Agent 只传 prompt、`assetId`、`mediaId` 和必要参数。Adapter 内部解析存储引用、处理上传、Provider 调用并登记 Media；workflow JSON、node id、filename、bucket、URL 和 Provider response 不得进入 Skill Core。
+Agent 只传 prompt、`asset_id`、`media_id` 和必要参数。Adapter 内部解析存储引用、处理上传、Provider 调用并登记 Media；workflow JSON、node id、filename、bucket、URL 和 Provider response 不得进入 Skill Core。
 
 ## Asset 与 Media
 
-Asset 是 `assetId + type + name + description + referenceMediaIds`。已知 `assetId` 时使用 `get_asset`；未知 ID 时使用 `search_assets`，候选已包含名称、类型、说明与媒体引用等轻量判断信息。是否值得登记、是否复用以及 `FOUND/NOT_FOUND` 都由 Agent 按 `asset-resolution` 推理，服务只存最终事实。
+Asset 的 Stable Envelope 包含 `asset_id`、所属 Work/可选细粒度 scope、`asset_type`、名称、说明与 `reference_media_ids`，不同 Asset 类型的正式事实保存在 `content`。已知 `asset_id` 时使用 `get_asset`；未知 ID 时使用 `search_assets`。是否值得登记、是否复用以及 `FOUND/NOT_FOUND` 都由 Agent 按 `asset-resolution` 推理，服务只存最终事实。
 
-Media 是 `mediaId + type + mimeType + storageKey + metadata`。`storageKey` 是 Adapter/服务使用的非公开稳定引用；Agent 原则上只携带 `mediaId` 及其当前语义，不依赖物理文件位置。
+Media 的 Tool 可见 Stable Envelope 包含 `media_id`、scope、`media_type`、purpose 与不透明 `source_ref`，正式语义保存在 `content`。Skill 不解释 `source_ref` 的格式，也看不到 bucket、object key、路径等存储内部字段。真实媒体字节由 Local/MinIO/S3-compatible Object Storage 保存，不进入 MySQL。
+
+## 长期记忆实现边界
+
+```text
+Skill
+  -> 决定何时调用 Tool，并定义 Domain Content
+Tool Contract
+  -> 定义 Stable Envelope + content 的稳定提交结构
+Java Tool Interface
+  -> 一个 Tool 对应一个接口方法，按 Domain 聚合
+Repository
+  -> 保存普通结构字段 + JSON content
+MySQL
+  -> 保存七类长期记忆
+Object Storage
+  -> 保存媒体字节
+```
+
+Tool catalog 是精确机器 Schema 的唯一真源。未来 Java DTO 映射见 [`docs/java-tool-api-mapping.md`](docs/java-tool-api-mapping.md)，MySQL 8.0+ 冻结 DDL 见 [`docs/schema/drama-memory-mysql.sql`](docs/schema/drama-memory-mysql.sql)。数据库 Entity、Repository Model 或物理列名不得反向决定 Skill Schema。
 
 ## Context
 

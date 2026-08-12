@@ -24,8 +24,8 @@ async def main() -> None:
     print("Loaded Skill:", skill.code)
     print()
     print("Context Scope:", context.scope.value)
-    print("Shot:", context.shot.description if context.shot else "-")
-    print("Scene:", context.scene.heading if context.scene else "-")
+    print("Shot:", context.shot.title if context.shot else "-")
+    print("Scene:", context.scene.title if context.scene else "-")
     print("Work:", context.work.title if context.work else "-")
     print("Selected Assets:", ", ".join(context.selected_asset_ids) or "- none")
 

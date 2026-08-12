@@ -21,6 +21,7 @@ def object_schema(
     *,
     required: Mapping[str, Any] | None = None,
     optional: Mapping[str, Any] | None = None,
+    defaults: Mapping[str, Any] | None = None,
 ) -> JsonSchema:
     """Build a callable-compatible object schema and hoist nested Pydantic definitions."""
 
@@ -40,6 +41,13 @@ def object_schema(
                 )
             definitions[definition_name] = definition
         properties[name] = field_schema
+
+    for name, value in (defaults or {}).items():
+        if name not in optional_fields:
+            raise ContractValidationError(
+                f"Default value requires an optional field: {name}"
+            )
+        properties[name]["default"] = deepcopy(value)
 
     result: JsonSchema = {
         "type": "object",

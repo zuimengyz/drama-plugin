@@ -1,0 +1,14 @@
+code: asset-resolution
+name: Asset Resolution
+description: Let the Agent discover, judge, reuse, or register stable visual memory.
+context:
+  required: [currentCreativeObject]
+  optional: [work, script, episode, scene, shot, selectedAssetIds, generatedMediaIds, researchContext]
+  refresh_after: [asset.create_asset, asset.save_asset, production.generate_image]
+tools:
+  preferred: [asset.search_assets, asset.get_asset, asset.create_asset]
+  allowed: [asset.list_assets, asset.save_asset, production.generate_image, media.create_media, media.get_media, context.build_context, context.refresh_context]
+completion:
+  conditions:
+    - Each relevant visual object has an Agent-judged reuse decision or a documented reason not to become an Asset.
+    - Selected assetIds reference suitable stable Assets; newly registered Assets have approved referenceMediaIds when needed.

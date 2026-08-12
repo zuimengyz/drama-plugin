@@ -1,0 +1,24 @@
+{
+  "name": "drama-plugin",
+  "version": "0.1.0+codex.20260812052808",
+  "description": "Agent-driven historical drama skills and host-agnostic tool contracts.",
+  "author": {
+    "name": "Drama Platform Team"
+  },
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Drama Plugin",
+    "shortDescription": "Historical drama agent domain capabilities",
+    "longDescription": "Agent-driven creative methods, minimal run context, and stable memory and production tool contracts for historical drama.",
+    "developerName": "Drama Platform Team",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Use the appropriate Drama Skill for the current creative decision."
+    ]
+  }
+}

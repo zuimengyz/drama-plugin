@@ -1,0 +1,14 @@
+code: shot-production
+name: Shot Production
+description: Produce physical Media for a Shot through provider-neutral generation tools.
+context:
+  required: [shot, scene]
+  optional: [selectedAssetIds, generatedMediaIds, previousMediaIds, temporaryState]
+  refresh_after: [production.generate_image, production.generate_video, production.generate_audio]
+tools:
+  preferred: [shot.get_shot, scene.get_scene, production.generate_image, production.generate_video]
+  allowed: [asset.get_asset, media.get_media, media.list_media, production.generate_audio, context.build_context, context.refresh_context]
+completion:
+  conditions:
+    - Requested image, video, or audio outputs are returned as stable mediaIds with clear Shot semantics.
+    - No provider, storage, workflow, filename, or node implementation detail leaks into Skill output.

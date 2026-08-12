@@ -1,6 +1,0 @@
-providers:
-  project:
-    mode: mock
-services:
-  project:
-    base_url: https://yaml.invalid

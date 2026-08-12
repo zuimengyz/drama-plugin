@@ -1,0 +1,14 @@
+code: historical-research
+name: Historical Research
+description: Build research context without turning evidence into a persistent drama domain.
+context:
+  required: [researchQuestion]
+  optional: [suppliedEvidence, work, script, temporaryState]
+  refresh_after: []
+tools:
+  preferred: [research.search_sources, research.verify_claim]
+  allowed: [research.search_events, research.search_people, research.search_locations]
+completion:
+  conditions:
+    - Material claims have cited evidence or an explicit uncertainty label.
+    - Facts, inferences, disputes, and dramatic inventions are distinguishable.

@@ -1,0 +1,14 @@
+code: shot-design
+name: Shot Design
+description: Express Scene intent as concise, continuity-aware Shot design.
+context:
+  required: [scene]
+  optional: [shotId, neighboringShots, selectedAssetIds, researchContext, temporaryState]
+  refresh_after: [shot.create_shot, shot.save_shot]
+tools:
+  preferred: [scene.get_scene, shot.get_shot, shot.create_shot, shot.save_shot]
+  allowed: [shot.list_shots, shot.search_shots, asset.get_asset, media.get_media, context.build_context, context.refresh_context]
+completion:
+  conditions:
+    - Every retained Shot has a dramatic function, framing, composition, action, camera behavior, duration, and entry/exit state.
+    - Coverage is sufficient without redundant Shots or unresolved continuity contradictions.

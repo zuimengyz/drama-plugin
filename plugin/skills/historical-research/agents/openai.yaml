@@ -1,0 +1,4 @@
+interface:
+  display_name: "Historical Research"
+  short_description: "Ground drama choices in traceable historical evidence"
+  default_prompt: "Use $historical-research to investigate the historical constraints for this drama decision."

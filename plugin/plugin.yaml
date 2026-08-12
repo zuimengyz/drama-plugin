@@ -1,0 +1,19 @@
+name: drama-plugin
+version: 0.1.0
+description: Host-agnostic historical drama domain plugin
+skills_directory: skills
+supported_tool_domains:
+  - work
+  - script
+  - episode
+  - scene
+  - shot
+  - asset
+  - media
+  - production
+  - research
+  - context
+context_capabilities:
+  scopes: [WORK, SCRIPT, EPISODE, SCENE, SHOT, ASSET, MEDIA]
+  supports_full_context: true
+  supports_patch: true

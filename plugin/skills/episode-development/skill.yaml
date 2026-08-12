@@ -1,0 +1,14 @@
+code: episode-development
+name: Episode Development
+description: Develop one persistent Episode from the current Script.
+context:
+  required: [script]
+  optional: [episodeId, neighboringEpisodes, researchContext, temporaryState]
+  refresh_after: [episode.create_episode, episode.save_episode]
+tools:
+  preferred: [script.get_script, episode.get_episode, episode.create_episode, episode.save_episode]
+  allowed: [episode.list_episodes, research.verify_claim, context.build_context, context.refresh_context]
+completion:
+  conditions:
+    - The Episode has a goal, opening hook, escalating conflict, information gain, character change, and ending hook.
+    - Its entry and exit states remain continuous with relevant neighboring Episodes.

@@ -1,0 +1,6 @@
+providers:
+  memory:
+    mode: mock
+services:
+  memory:
+    base_url: https://yaml.invalid

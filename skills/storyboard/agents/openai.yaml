@@ -1,4 +1,0 @@
-interface:
-  display_name: "storyboard"
-  short_description: "Drama domain SOP for storyboard"
-  default_prompt: "Use storyboard for the current drama task."

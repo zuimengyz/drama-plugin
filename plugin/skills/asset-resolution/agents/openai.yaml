@@ -1,0 +1,4 @@
+interface:
+  display_name: "Asset Resolution"
+  short_description: "Discover and register stable reusable visual assets"
+  default_prompt: "Use $asset-resolution to find reusable visual assets and register only genuinely stable missing references."

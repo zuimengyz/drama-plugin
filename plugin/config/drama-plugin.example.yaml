@@ -1,0 +1,43 @@
+plugin:
+  name: drama-plugin
+  version: 0.1.0
+
+providers:
+  memory:
+    mode: mock
+  asset:
+    mode: mock
+  research:
+    mode: mock
+  production:
+    mode: mock
+  media:
+    mode: mock
+  context:
+    mode: local
+
+services:
+  memory:
+    base_url: ""
+    timeout_seconds: 10
+    operations: {}
+  asset:
+    base_url: ""
+    timeout_seconds: 10
+    operations: {}
+  research:
+    base_url: ""
+    timeout_seconds: 10
+    operations: {}
+  production:
+    base_url: ""
+    timeout_seconds: 30
+    operations: {}
+  media:
+    base_url: ""
+    timeout_seconds: 10
+    operations: {}
+  context:
+    base_url: ""
+    timeout_seconds: 30
+    operations: {}

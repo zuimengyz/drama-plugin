@@ -1,0 +1,14 @@
+code: work-creation
+name: Work Creation
+description: Shape research context into a persistent literary Work.
+context:
+  required: [researchContext, creativeIntent]
+  optional: [workId, temporaryState]
+  refresh_after: [work.create_work, work.save_work]
+tools:
+  preferred: [work.get_work, work.create_work, work.save_work]
+  allowed: [work.list_works, work.search_works, research.verify_claim, context.build_context, context.refresh_context]
+completion:
+  conditions:
+    - Theme, viewpoint, relationships, conflict, timeline, and overall structure form a coherent literary work.
+    - Historical constraints, uncertainty, and dramatic invention remain explicit.

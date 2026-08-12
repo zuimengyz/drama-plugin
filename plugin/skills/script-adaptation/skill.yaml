@@ -6,8 +6,8 @@ context:
   optional: [scriptId, researchContext, temporaryState]
   refresh_after: [script.create_script, script.save_script]
 tools:
-  preferred: [work.get_work, script.get_script, script.create_script, script.save_script]
-  allowed: [script.list_scripts, research.verify_claim, context.build_context, context.refresh_context]
+  preferred: [work.get_work, script.get_script, script.list_scripts, script.create_script, script.save_script]
+  allowed: [research.verify_claim, context.build_context, context.refresh_context]
 completion:
   conditions:
     - Main line, secondary lines, arcs, pacing, climax, and short-form structure support the Work.

@@ -5,6 +5,6 @@ description: Develop or revise a historical-drama Scene from an Episode. Use whe
 
 # Scene Development
 
-Give each Scene a concrete dramatic purpose. Use a stable `sceneId` for exact reads. With a known `episodeId`, list Scenes and apply structural filters; when only a natural-language scene description is known, search Scenes and scope the search to the Episode when possible. Judge search candidates before editing. Define location and time, participating characters, entry state, objective, conflict, dialogue, action, turn, and exit state. Consolidate material that does not change story state and preserve relevant historical and neighboring-scene continuity.
+Give each Scene a concrete dramatic purpose. Use `episode.get_episode` when the stable parent ID is known. Use `scene.get_scene` for a known `sceneId`. With a known `episodeId`, use `scene.list_scenes` for structural enumeration; when only a natural-language description is known, use `scene.search_scenes` and scope it to the Episode when possible. Judge candidates before editing. Use `scene.create_scene` only for a genuinely new Scene, and use `scene.save_scene` to persist a revised existing Scene.
 
-Create or save only the Scene being developed. Do not generate Shots or resolve assets automatically; expose visual objects and continuity needs so the Agent can choose the next Skill.
+Use `research.search_locations` or `research.verify_claim` only when location or historical uncertainty affects the Scene. Use `context.build_context` only when required context was not supplied, and use `context.refresh_context` only after a relevant state change. Define entry state, objective, conflict, action, turn, and exit state. Do not generate Shots or resolve assets automatically.

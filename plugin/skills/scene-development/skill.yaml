@@ -6,8 +6,8 @@ context:
   optional: [sceneId, neighboringScenes, researchContext, temporaryState]
   refresh_after: [scene.create_scene, scene.save_scene]
 tools:
-  preferred: [episode.get_episode, scene.get_scene, scene.create_scene, scene.save_scene]
-  allowed: [scene.list_scenes, scene.search_scenes, research.search_locations, research.verify_claim, context.build_context, context.refresh_context]
+  preferred: [episode.get_episode, scene.get_scene, scene.list_scenes, scene.search_scenes, scene.create_scene, scene.save_scene]
+  allowed: [research.search_locations, research.verify_claim, context.build_context, context.refresh_context]
 completion:
   conditions:
     - Place, time, participants, entry state, objective, conflict, turn, and exit state are explicit.

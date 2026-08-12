@@ -2,11 +2,3 @@ interface:
   display_name: "Shot Production"
   short_description: "Produce Shot media through provider-neutral tools"
   default_prompt: "Use $shot-production to produce only the requested media for this approved Shot."
-
-dependencies:
-  tools:
-    - type: "mcp"
-      value: "drama-context"
-      description: "External Drama context and capability server"
-      transport: "streamable_http"
-      url: "http://127.0.0.1:8765/mcp"

@@ -4,10 +4,10 @@ description: Let the Agent discover, judge, reuse, or register stable visual mem
 context:
   required: [currentCreativeObject]
   optional: [work, script, episode, scene, shot, selectedAssetIds, generatedMediaIds, researchContext]
-  refresh_after: [asset.create_asset, asset.save_asset, production.generate_image]
+  refresh_after: [asset.create_asset, asset.save_asset, media.create_media, production.generate_image]
 tools:
-  preferred: [asset.search_assets, asset.get_asset, asset.create_asset]
-  allowed: [asset.list_assets, asset.save_asset, production.generate_image, media.create_media, media.get_media, context.build_context, context.refresh_context]
+  preferred: [asset.get_asset, asset.list_assets, asset.search_assets, asset.create_asset, asset.save_asset]
+  allowed: [production.generate_image, media.create_media, media.get_media, context.build_context, context.refresh_context]
 completion:
   conditions:
     - Each relevant visual object has an Agent-judged reuse decision or a documented reason not to become an Asset.

@@ -45,6 +45,36 @@ def test_every_declared_logical_tool_is_explicit_in_skill_instructions() -> None
         assert set(skill.tools.preferred).isdisjoint(skill.tools.allowed)
 
 
+def test_create_is_first_write_and_save_is_revision_only() -> None:
+    persistent_tools = {
+        "work-creation": ("work.create_work", "work.save_work"),
+        "script-adaptation": ("script.create_script", "script.save_script"),
+        "episode-development": ("episode.create_episode", "episode.save_episode"),
+        "scene-development": ("scene.create_scene", "scene.save_scene"),
+        "shot-design": ("shot.create_shot", "shot.save_shot"),
+        "asset-resolution": ("asset.create_asset", "asset.save_asset"),
+    }
+    registry = SkillRegistry(); registry.load_directory(ROOT / "skills")
+    for skill_code, (create_tool, save_tool) in persistent_tools.items():
+        skill = registry.get(skill_code)
+        instructions = skill.instructions
+        assert create_tool in skill.tools.preferred
+        assert save_tool in skill.tools.preferred
+        assert "complete initial formal state" in instructions
+        assert "successful create is the normal first write" in instructions.lower()
+        assert f"do not call `{save_tool}` immediately afterward" in instructions.lower()
+        assert "unless a concrete revision has actually occurred" in instructions.lower()
+        assert "only to revise an already persisted" in instructions
+
+
+def test_media_registration_is_not_duplicated_after_generation() -> None:
+    registry = SkillRegistry(); registry.load_directory(ROOT / "skills")
+    asset_resolution = registry.get("asset-resolution")
+    assert "media.create_media" in asset_resolution.tools.allowed
+    assert "never register an already stable `mediaId` again" in asset_resolution.instructions
+    assert "media.save_media" not in asset_resolution.instructions
+
+
 def test_openai_adapters_are_optional_interface_metadata_only() -> None:
     for directory in (ROOT / "skills").iterdir():
         if directory.name not in EXPECTED: continue

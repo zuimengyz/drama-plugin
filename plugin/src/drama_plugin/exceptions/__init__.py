@@ -25,6 +25,11 @@ class ProviderError(DramaPluginError):
 class RemoteServiceError(ProviderError):
     """A remote service returned an error or invalid payload."""
 
+    def __init__(self, message: str, *, status_code: int | None = None, error_code: str | None = None) -> None:
+        super().__init__(message)
+        self.status_code = status_code
+        self.error_code = error_code
+
 
 class ContextBuildError(DramaPluginError):
     """A domain context projection failed."""

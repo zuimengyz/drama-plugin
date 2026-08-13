@@ -1,0 +1,63 @@
+plugin:
+  name: drama-plugin
+  version: 0.1.0
+
+providers:
+  memory:
+    mode: http
+  asset:
+    mode: http
+  research:
+    mode: mock
+  production:
+    mode: mock
+  media:
+    mode: http
+  context:
+    mode: local
+
+# Tokens are intentionally omitted. Supply them through the three
+# DRAMA_PLUGIN_SERVICE_*_API_TOKEN environment variables. Each must equal the
+# Drama Service DRAMA_TOOL_SECRET.
+services:
+  memory:
+    base_url: http://127.0.0.1:8080
+    operations:
+      create_work: /api/tool/work/create
+      get_work: /api/tool/work/get
+      save_work: /api/tool/work/save
+      list_works: /api/tool/work/list
+      search_works: /api/tool/work/search
+      create_script: /api/tool/script/create
+      get_script: /api/tool/script/get
+      save_script: /api/tool/script/save
+      list_scripts: /api/tool/script/list
+      create_episode: /api/tool/episode/create
+      get_episode: /api/tool/episode/get
+      save_episode: /api/tool/episode/save
+      list_episodes: /api/tool/episode/list
+      create_scene: /api/tool/scene/create
+      get_scene: /api/tool/scene/get
+      save_scene: /api/tool/scene/save
+      list_scenes: /api/tool/scene/list
+      search_scenes: /api/tool/scene/search
+      create_shot: /api/tool/shot/create
+      get_shot: /api/tool/shot/get
+      save_shot: /api/tool/shot/save
+      list_shots: /api/tool/shot/list
+      search_shots: /api/tool/shot/search
+  asset:
+    base_url: http://127.0.0.1:8080
+    operations:
+      create_asset: /api/tool/asset/create
+      get_asset: /api/tool/asset/get
+      save_asset: /api/tool/asset/save
+      list_assets: /api/tool/asset/list
+      search_assets: /api/tool/asset/search
+  media:
+    base_url: http://127.0.0.1:8080
+    operations:
+      create_media: /api/tool/media/create
+      get_media: /api/tool/media/get
+      save_media: /api/tool/media/save
+      list_media: /api/tool/media/list

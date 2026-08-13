@@ -63,7 +63,11 @@ class DramaPlugin:
         data = MockDramaData(); services = config.services; selections = config.providers
         modes = {"memory": selections.memory.mode, "asset": selections.asset.mode, "research": selections.research.mode, "production": selections.production.mode, "media": selections.media.mode, "context": selections.context.mode}
         for name, mode in modes.items():
-            if mode == "http" and not getattr(services, name).base_url: raise ConfigurationError(f"HTTP provider requires services.{name}.base_url")
+            service = getattr(services, name)
+            if mode == "http" and not service.base_url.strip():
+                raise ConfigurationError(f"HTTP provider requires services.{name}.base_url")
+            if mode == "http" and not (service.api_token and service.api_token.strip()):
+                raise ConfigurationError(f"HTTP provider requires services.{name}.api_token")
         clients: list[HttpProviderClient] = []
         def client(service: ServiceConfig) -> HttpProviderClient:
             value = HttpProviderClient(service); clients.append(value); return value

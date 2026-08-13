@@ -10,7 +10,7 @@ class ServiceConfig(BaseModel):
 
     base_url: str = ""
     timeout_seconds: float = Field(default=10.0, gt=0)
-    api_token: str | None = None
+    api_token: str | None = Field(default=None, repr=False)
     operations: dict[str, str] = {}
 
 

@@ -157,6 +157,18 @@ DRAMA_PLUGIN_SERVICE_MEMORY_API_TOKEN
 
 环境值覆盖 YAML。不要提交 token。
 
+### 连接 Drama Service
+
+`memory`（Work/Script/Episode/Scene/Shot）、`asset` 和 `media` 是三个独立 Provider。真实 Java 联调时三者均切换为 `http`，使用同一个服务地址和同一个服务端 Secret；Research/Production 保持 `mock`，Context 保持 `local`。32 项相对 URL 由 Host 配置提供，示例见 [`config/drama-service-http.example.yaml`](config/drama-service-http.example.yaml)。
+
+```bash
+export DRAMA_PLUGIN_SERVICE_MEMORY_API_TOKEN='<same-as-DRAMA_TOOL_SECRET>'
+export DRAMA_PLUGIN_SERVICE_ASSET_API_TOKEN="$DRAMA_PLUGIN_SERVICE_MEMORY_API_TOKEN"
+export DRAMA_PLUGIN_SERVICE_MEDIA_API_TOKEN="$DRAMA_PLUGIN_SERVICE_MEMORY_API_TOKEN"
+```
+
+HTTP Provider 发送且只发送 `Authorization: Bearer <API_TOKEN>`。HTTP mode 缺少 base URL 或 token 会直接产生配置错误，不会回退到 Mock。真实跨进程 E2E 的启动步骤和显式运行命令见 Drama Service 的 Batch 02 报告与本仓库 `integration/run_drama_service_e2e.py`。
+
 ## 边界
 
 - Java Drama Service 是长期创作事实库，不是 Workflow Engine、Generation Engine 或任务调度器。

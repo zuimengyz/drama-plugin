@@ -37,5 +37,50 @@ async def test_http_non_2xx_becomes_domain_error() -> None:
     transport = httpx.MockTransport(lambda request: httpx.Response(503, json={"error": "offline"}))
     async with httpx.AsyncClient(base_url="https://service.invalid", transport=transport) as client:
         provider = HttpProviderClient(ServiceConfig(base_url="https://service.invalid", operations={"get_work": "/work"}), client)
-        with pytest.raises(RemoteServiceError, match="503"):
+        with pytest.raises(RemoteServiceError, match="503") as captured:
             await provider.request("get_work")
+        assert captured.value.status_code == 503
+
+
+@pytest.mark.asyncio
+async def test_http_preserves_remote_status_and_safe_error_code() -> None:
+    transport = httpx.MockTransport(lambda request: httpx.Response(409, json={"code": "CONFLICT", "message": "safe"}))
+    async with httpx.AsyncClient(base_url="https://service.invalid", transport=transport) as client:
+        provider = HttpProviderClient(ServiceConfig(base_url="https://service.invalid", operations={"create_media": "/media"}), client)
+        with pytest.raises(RemoteServiceError) as captured:
+            await provider.request("create_media", method="POST", json={})
+    assert captured.value.status_code == 409
+    assert captured.value.error_code == "CONFLICT"
+    assert "safe" not in str(captured.value)
+
+
+@pytest.mark.asyncio
+async def test_http_maps_java_numeric_error_code() -> None:
+    transport = httpx.MockTransport(lambda request: httpx.Response(404, json={"code": 40400, "message": "not exposed"}))
+    async with httpx.AsyncClient(base_url="https://service.invalid", transport=transport) as client:
+        provider = HttpProviderClient(ServiceConfig(base_url="https://service.invalid", operations={"get_scene": "/scene"}), client)
+        with pytest.raises(RemoteServiceError) as captured:
+            await provider.request("get_scene")
+    assert captured.value.status_code == 404
+    assert captured.value.error_code == "NOT_FOUND"
+    assert "not exposed" not in str(captured.value)
+
+
+@pytest.mark.asyncio
+async def test_http_uses_bearer_token_and_joins_relative_path_without_leaking_secret() -> None:
+    seen: list[httpx.Request] = []
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(200, json={"ok": True})
+    config = ServiceConfig(
+        base_url="http://127.0.0.1:8080",
+        api_token="test-secret-must-not-leak",
+        operations={"probe": "/api/tool/probe"},
+    )
+    transport = httpx.MockTransport(handler)
+    async with httpx.AsyncClient(base_url=config.base_url, headers={"Authorization": f"Bearer {config.api_token}"}, transport=transport) as client:
+        provider = HttpProviderClient(config, client)
+        assert await provider.request("probe") == {"ok": True}
+    assert str(seen[0].url) == "http://127.0.0.1:8080/api/tool/probe"
+    assert seen[0].headers["Authorization"] == "Bearer test-secret-must-not-leak"
+    assert "test-secret-must-not-leak" not in repr(config)

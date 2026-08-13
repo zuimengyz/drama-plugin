@@ -139,7 +139,7 @@ def test_no_duplicate_legacy_memory_tool_synonyms() -> None:
 @pytest.mark.asyncio
 async def test_tool_contracts_do_not_change_with_http_provider_bindings() -> None:
     mock_plugin = DramaPlugin.load(ROOT)
-    service = {"base_url": "https://unit.invalid", "operations": {}}
+    service = {"base_url": "https://unit.invalid", "api_token": "test-only", "operations": {}}
     config = DramaPluginConfig.model_validate(
         {
             "providers": {

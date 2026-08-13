@@ -8,6 +8,15 @@ from drama_plugin.config import ServiceConfig
 from drama_plugin.exceptions import ConfigurationError, RemoteServiceError
 
 
+_JAVA_ERROR_CODES = {
+    40001: "INVALID_ARGUMENT",
+    40100: "UNAUTHORIZED",
+    40400: "NOT_FOUND",
+    40900: "CONFLICT",
+    50000: "INTERNAL_ERROR",
+}
+
+
 class HttpProviderClient:
     """Shared HTTP transport. Operation paths are supplied entirely by configuration."""
 
@@ -26,7 +35,22 @@ class HttpProviderClient:
             response.raise_for_status()
             return response.json()
         except httpx.HTTPStatusError as exc:
-            raise RemoteServiceError(f"Remote operation {operation} returned HTTP {exc.response.status_code}") from exc
+            error_code: str | None = None
+            try:
+                payload = exc.response.json()
+                if isinstance(payload, dict):
+                    raw_code = payload.get("code")
+                    if isinstance(raw_code, str):
+                        error_code = raw_code
+                    elif isinstance(raw_code, int):
+                        error_code = _JAVA_ERROR_CODES.get(raw_code)
+            except ValueError:
+                pass
+            raise RemoteServiceError(
+                f"Remote operation {operation} returned HTTP {exc.response.status_code}",
+                status_code=exc.response.status_code,
+                error_code=error_code,
+            ) from exc
         except (httpx.HTTPError, ValueError) as exc:
             raise RemoteServiceError(f"Remote operation {operation} failed") from exc
 

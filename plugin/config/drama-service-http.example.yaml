@@ -61,3 +61,5 @@ services:
       get_media: /api/tool/media/get
       save_media: /api/tool/media/save
       list_media: /api/tool/media/list
+      import_media: /api/tool/media/import
+      resolve_media: /api/tool/media/resolve

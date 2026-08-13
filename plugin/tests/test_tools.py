@@ -50,7 +50,7 @@ def test_missing_tool_fails() -> None:
 
 def test_every_registered_tool_has_stable_input_and_output_schema() -> None:
     plugin = DramaPlugin.load(ROOT)
-    assert len(plugin.tools.list()) == 42
+    assert len(plugin.tools.list()) == 44
     for tool in plugin.tools.list():
         assert tool.input_schema["type"] == "object"
         assert isinstance(tool.input_schema["required"], list)
@@ -97,7 +97,7 @@ def test_persistent_memory_and_production_contracts_are_minimal() -> None:
         | {
         "work.search_works", "scene.search_scenes", "shot.search_shots",
         "asset.create_asset", "asset.get_asset", "asset.save_asset", "asset.list_assets", "asset.search_assets",
-        "media.create_media", "media.get_media", "media.save_media", "media.list_media",
+        "media.create_media", "media.get_media", "media.save_media", "media.list_media", "media.import_media", "media.resolve_media",
         "production.generate_image", "production.generate_video", "production.generate_audio",
         }
     )
@@ -186,6 +186,7 @@ def test_long_term_memory_create_and_save_envelopes_are_frozen() -> None:
         "asset.create_asset": ({"work_id", "asset_type", "name", "content"}, {"work_id", "episode_id", "scene_id", "shot_id", "asset_type", "name", "description", "reference_media_ids", "content"}),
         "asset.save_asset": ({"asset_id", "name", "content"}, {"asset_id", "name", "description", "reference_media_ids", "content"}),
         "media.create_media": ({"work_id", "media_type", "source_ref", "content"}, {"work_id", "asset_id", "shot_id", "media_type", "purpose", "source_ref", "content"}),
+        "media.import_media": ({"work_id", "media_type", "source_uri", "content"}, {"work_id", "asset_id", "shot_id", "media_type", "purpose", "source_uri", "content"}),
         "media.save_media": ({"media_id", "content"}, {"media_id", "purpose", "content"}),
     }
     for code, (required, properties) in expected.items():

@@ -22,6 +22,14 @@ class ProviderError(DramaPluginError):
     """A provider could not satisfy a domain operation."""
 
 
+class MediaImportSourceError(ProviderError):
+    """An external media source is unsafe or cannot be streamed."""
+
+    def __init__(self, message: str, *, error_code: str) -> None:
+        super().__init__(message)
+        self.error_code = error_code
+
+
 class RemoteServiceError(ProviderError):
     """A remote service returned an error or invalid payload."""
 

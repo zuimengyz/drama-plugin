@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
 from typing import Any, TypeVar
 
 from drama_plugin.contracts.asset import Asset, AssetType
 from drama_plugin.contracts.creation import Episode, Scene, Script, Shot, Work
-from drama_plugin.contracts.media import Media, MediaType
+from drama_plugin.contracts.media import Media, MediaResolveResult, MediaType
 from drama_plugin.contracts.research import ClaimAssessment, ResearchEvidence, ResearchSource
 from drama_plugin.exceptions import ProviderError
 from drama_plugin.providers.mock.data import MockDramaData
@@ -125,6 +126,13 @@ class MockMediaProvider:
         self.data.media = [media if item.id == media_id else item for item in self.data.media]
         return media
     async def list_media(self, media_type: MediaType | None = None) -> list[Media]: return [item for item in self.data.media if media_type is None or item.media_type is media_type]
+    async def import_media(self, work_id: str, media_type: MediaType, source_uri: str, content: dict[str, Any], asset_id: str | None = None, shot_id: str | None = None, purpose: str | None = None) -> Media:
+        media = Media(id="media-imported", work_id=work_id, asset_id=asset_id, shot_id=shot_id, media_type=media_type, purpose=purpose, source_ref="mock:storage:imported", content=content)
+        self.data.media.append(media)
+        return media
+    async def resolve_media(self, media_id: str) -> MediaResolveResult:
+        await self.get_media(media_id)
+        return MediaResolveResult(media_id=media_id, url=f"https://mock.invalid/media/{media_id}", expires_at=datetime.now(UTC) + timedelta(minutes=15), mime_type="application/octet-stream", size_bytes=0)
 
 
 class MockProductionProvider:

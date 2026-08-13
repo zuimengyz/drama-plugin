@@ -103,6 +103,12 @@ Agent 只传 prompt、`asset_id`、`media_id` 和必要参数。Adapter 内部�
 
 ## Asset 与 Media
 
+`media.import_media` 将 `file://` 或受控 `https://` 来源经 Plugin 流式上传到
+Java 管理的对象存储；`media.resolve_media` 将长期 `mediaId` 解析为临时可消费
+URL。使用本地文件前必须配置 `DRAMA_PLUGIN_MEDIA_IMPORT_ALLOWED_ROOTS`（多个根按
+操作系统 path separator 分隔）；real path 或 symlink 最终落在根目录外会被拒绝。
+媒体 binary 不进入 MCP JSON，Plugin 也不直接访问 Object Storage。
+
 Asset 的 Stable Envelope 包含 `asset_id`、所属 Work/可选细粒度 scope、`asset_type`、名称、说明与 `reference_media_ids`，不同 Asset 类型的正式事实保存在 `content`。已知 `asset_id` 时使用 `get_asset`；未知 ID 时使用 `search_assets`。是否值得登记、是否复用以及 `FOUND/NOT_FOUND` 都由 Agent 按 `asset-resolution` 推理，服务只存最终事实。
 
 Media 的 Tool 可见 Stable Envelope 包含 `media_id`、scope、`media_type`、purpose 与不透明 `source_ref`，正式语义保存在 `content`。Skill 不解释 `source_ref` 的格式，也看不到 bucket、object key、路径等存储内部字段。真实媒体字节由 Local/MinIO/S3-compatible Object Storage 保存，不进入 MySQL。
@@ -159,7 +165,7 @@ DRAMA_PLUGIN_SERVICE_MEMORY_API_TOKEN
 
 ### 连接 Drama Service
 
-`memory`（Work/Script/Episode/Scene/Shot）、`asset` 和 `media` 是三个独立 Provider。真实 Java 联调时三者均切换为 `http`，使用同一个服务地址和同一个服务端 Secret；Research/Production 保持 `mock`，Context 保持 `local`。32 项相对 URL 由 Host 配置提供，示例见 [`config/drama-service-http.example.yaml`](config/drama-service-http.example.yaml)。
+`memory`（Work/Script/Episode/Scene/Shot）、`asset` 和 `media` 是三个独立 Provider。真实 Java 联调时三者均切换为 `http`，使用同一个服务地址和同一个服务端 Secret；Research/Production 保持 `mock`，Context 保持 `local`。34 项相对 URL 由 Host 配置提供，示例见 [`config/drama-service-http.example.yaml`](config/drama-service-http.example.yaml)。
 
 ```bash
 export DRAMA_PLUGIN_SERVICE_MEMORY_API_TOKEN='<same-as-DRAMA_TOOL_SECRET>'

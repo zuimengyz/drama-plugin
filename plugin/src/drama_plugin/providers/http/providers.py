@@ -8,10 +8,11 @@ from drama_plugin.contracts.asset import Asset, AssetType
 from drama_plugin.contracts.base import dump_contract
 from drama_plugin.contracts.context import ContextBuildRequest, DramaContextPatch, DramaRunContext
 from drama_plugin.contracts.creation import Episode, Scene, Script, Shot, Work
-from drama_plugin.contracts.media import Media, MediaType
+from drama_plugin.contracts.media import Media, MediaResolveResult, MediaType
 from drama_plugin.contracts.research import ClaimAssessment, ResearchEvidence, ResearchSource
 from drama_plugin.exceptions import ContractValidationError
 from drama_plugin.providers.http.client import HttpProviderClient
+from drama_plugin.providers.http.media_source import open_media_source
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -85,6 +86,12 @@ class HttpMediaProvider:
     async def get_media(self, media_id: str) -> Media: return _one(Media, await self.http.request("get_media", params={"media_id": media_id}))
     async def save_media(self, media_id: str, content: dict[str, Any], purpose: str | None = None) -> Media: return _one(Media, await self.http.request("save_media", method="POST", json={"media_id": media_id, "purpose": purpose, "content": content}))
     async def list_media(self, media_type: MediaType | None = None) -> list[Media]: return _many(Media, await self.http.request("list_media", params={"media_type": media_type}))
+    async def import_media(self, work_id: str, media_type: MediaType, source_uri: str, content: dict[str, Any], asset_id: str | None = None, shot_id: str | None = None, purpose: str | None = None) -> Media:
+        metadata = {"work_id": work_id, "asset_id": asset_id, "shot_id": shot_id, "media_type": media_type, "purpose": purpose, "content": content}
+        async with open_media_source(source_uri) as source:
+            return _one(Media, await self.http.multipart_request("import_media", metadata=metadata, stream=source.stream, filename=source.filename, content_type=source.content_type))
+    async def resolve_media(self, media_id: str) -> MediaResolveResult:
+        return _one(MediaResolveResult, await self.http.request("resolve_media", params={"media_id": media_id}))
 
 
 class RemoteContextProvider:

@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import StrEnum
 from typing import Any
 
@@ -21,3 +22,11 @@ class Media(ContractModel):
     purpose: str | None = None
     source_ref: str
     content: dict[str, Any] = Field(default_factory=dict)
+
+
+class MediaResolveResult(ContractModel):
+    media_id: str
+    url: str
+    expires_at: datetime
+    mime_type: str | None = None
+    size_bytes: int | None = None

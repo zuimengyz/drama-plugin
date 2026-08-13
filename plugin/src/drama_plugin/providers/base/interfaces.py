@@ -5,7 +5,7 @@ from typing import Any, Protocol
 from drama_plugin.contracts.asset import Asset, AssetType
 from drama_plugin.contracts.context import ContextBuildRequest, DramaContextPatch, DramaRunContext
 from drama_plugin.contracts.creation import Episode, Scene, Script, Shot, Work
-from drama_plugin.contracts.media import Media, MediaType
+from drama_plugin.contracts.media import Media, MediaResolveResult, MediaType
 from drama_plugin.contracts.research import ClaimAssessment, ResearchEvidence, ResearchSource
 
 
@@ -62,6 +62,8 @@ class MediaProvider(Protocol):
     async def get_media(self, media_id: str) -> Media: ...
     async def save_media(self, media_id: str, content: dict[str, Any], purpose: str | None = None) -> Media: ...
     async def list_media(self, media_type: MediaType | None = None) -> list[Media]: ...
+    async def import_media(self, work_id: str, media_type: MediaType, source_uri: str, content: dict[str, Any], asset_id: str | None = None, shot_id: str | None = None, purpose: str | None = None) -> Media: ...
+    async def resolve_media(self, media_id: str) -> MediaResolveResult: ...
 
 
 class ContextProvider(Protocol):

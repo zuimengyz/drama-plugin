@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 import pytest
 import yaml
@@ -9,6 +10,30 @@ from drama_plugin.skills import SkillRegistry
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED = {"historical-research", "work-creation", "script-adaptation", "episode-development", "scene-development", "shot-design", "asset-resolution", "shot-production"}
+CREATIVE = {
+    "work-creation": ("work.create_work", "work.save_work", ("theme", "viewpoint", "central conflict", "timeline")),
+    "script-adaptation": ("script.create_script", "script.save_script", ("main", "character arcs", "pacing", "climax")),
+    "episode-development": ("episode.create_episode", "episode.save_episode", ("dramatic job", "opening hook", "information gain", "ending hook")),
+    "scene-development": ("scene.create_scene", "scene.save_scene", ("dramatic purpose", "objective", "conflict", "entry/exit")),
+    "shot-design": ("shot.create_shot", "shot.save_shot", ("dramatic function", "framing", "camera behavior", "continuity")),
+}
+LIFECYCLE = (
+    "Understand Goal",
+    "Gather Context",
+    "Plan",
+    "Execute Draft",
+    "Review",
+    "Revise or Re-plan",
+    "Persist",
+)
+
+
+def lifecycle_sections(instructions: str) -> dict[str, str]:
+    matches = list(re.finditer(r"^### \d+\. (.+)$", instructions, flags=re.MULTILINE))
+    return {
+        match.group(1): instructions[match.end() : matches[index + 1].start() if index + 1 < len(matches) else len(instructions)]
+        for index, match in enumerate(matches)
+    }
 
 
 def test_loads_exactly_agent_driven_skills() -> None:
@@ -69,6 +94,73 @@ def test_create_is_first_write_and_save_is_revision_only() -> None:
         assert "Domain Content" in instructions
         assert "Tool catalog" in instructions
         assert "full replacement" in instructions
+
+
+def test_core_creative_skills_have_ordered_lifecycle_and_domain_review() -> None:
+    registry = SkillRegistry(); registry.load_directory(ROOT / "skills")
+    review_bodies: set[str] = set()
+    for skill_code, (_, _, review_terms) in CREATIVE.items():
+        instructions = registry.get(skill_code).instructions
+        sections = lifecycle_sections(instructions)
+        assert tuple(sections) == LIFECYCLE
+        gather = sections["Gather Context"]
+        assert "context sufficiency" in gather.lower()
+        assert "state the blocker" in gather
+        assert "do not draft or persist" in gather.lower()
+        review = sections["Review"]
+        assert "Critical checks" in review
+        assert "Review PASS" in review and "Review FAIL" in review
+        assert all(term in review.lower() for term in review_terms)
+        review_bodies.add(review)
+    assert len(review_bodies) == len(CREATIVE)
+
+
+def test_creative_lifecycle_blocks_writes_until_review_pass() -> None:
+    registry = SkillRegistry(); registry.load_directory(ROOT / "skills")
+    for skill_code, (create_tool, save_tool, _) in CREATIVE.items():
+        sections = lifecycle_sections(registry.get(skill_code).instructions)
+        plan = sections["Plan"]
+        assert "internal" in plan.lower() and "Agent Run Context" in plan
+        assert create_tool in plan and save_tool in plan and "Do not call" in plan
+        draft = sections["Execute Draft"]
+        assert "complete candidate formal" in draft
+        assert "Do not persist" in draft
+        revise = sections["Revise or Re-plan"]
+        assert "On Review FAIL, do not persist" in revise
+        assert "Locally revise" in revise and "Re-plan" in revise
+        assert "Review Again and PASS" in revise
+        persist = sections["Persist"]
+        assert "No Review PASS means no create or save" in persist
+        assert create_tool in persist and save_tool in persist
+        assert all(term in persist for term in ("required context", "plan", "complete draft", "critical checks"))
+
+
+def test_creative_working_state_is_not_persisted_as_domain_content() -> None:
+    registry = SkillRegistry(); registry.load_directory(ROOT / "skills")
+    for skill_code in CREATIVE:
+        persist = lifecycle_sections(registry.get(skill_code).instructions)["Persist"]
+        assert all(term in persist for term in ("draft reasoning", "review notes", "revision notes"))
+        assert "Agent Run Context or temporary working state" in persist
+        assert "do not put them in" in persist
+        assert "Persist only" in persist and "reviewed formal" in persist
+
+
+def test_creative_research_decision_blocks_unresolved_evidence() -> None:
+    registry = SkillRegistry(); registry.load_directory(ROOT / "skills")
+    for skill_code in CREATIVE:
+        gather = lifecycle_sections(registry.get(skill_code).instructions)["Gather Context"]
+        assert "consequential" in gather
+        assert "focused research question" in gather or "focused question" in gather
+        assert "stop before planning or persistence" in gather
+
+
+def test_creative_completion_conditions_include_lifecycle_gate() -> None:
+    registry = SkillRegistry(); registry.load_directory(ROOT / "skills")
+    for skill_code in CREATIVE:
+        conditions = registry.get(skill_code).completion.conditions
+        assert len(conditions) == 3
+        gate = conditions[-1].lower()
+        assert all(term in gate for term in ("persistence", "sufficient context", "plan", "draft", "passing", "review"))
 
 
 def test_media_registration_is_not_duplicated_after_generation() -> None:

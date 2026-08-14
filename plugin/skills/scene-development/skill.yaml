@@ -12,3 +12,4 @@ completion:
   conditions:
     - Place, time, participants, entry state, objective, conflict, turn, and exit state are explicit.
     - Dialogue and action advance the Episode without silently creating downstream Shots.
+    - Persistence follows sufficient context, an internal plan, a complete draft, and a passing Scene review with no unresolved historical or continuity conflict.

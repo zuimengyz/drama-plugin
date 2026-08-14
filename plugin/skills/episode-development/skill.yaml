@@ -12,3 +12,4 @@ completion:
   conditions:
     - The Episode has a goal, opening hook, escalating conflict, information gain, character change, and ending hook.
     - Its entry and exit states remain continuous with relevant neighboring Episodes.
+    - Persistence follows sufficient context, an internal plan, a complete draft, and a passing Episode review with no unresolved historical or continuity conflict.

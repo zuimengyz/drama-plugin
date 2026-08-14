@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
+from urllib.parse import urlsplit
 
 import httpx
 import pytest
@@ -11,6 +12,8 @@ from drama_plugin.contracts import MediaType
 from drama_plugin.exceptions import MediaImportSourceError
 from drama_plugin.providers.http import HttpMediaProvider, HttpProviderClient
 from drama_plugin.providers.http.media_source import (
+    _file_uri_path,
+    _is_path_allowed,
     local_media_path,
     open_media_source,
     reject_unsafe_remote,
@@ -38,6 +41,35 @@ def test_local_file_security(tmp_path: Path) -> None:
     with pytest.raises(MediaImportSourceError) as missing:
         local_media_path((allowed / "missing.png").as_uri(), (allowed.resolve(),))
     assert missing.value.error_code == "IMPORT_SOURCE_UNREADABLE"
+
+
+def test_windows_file_uri_preserves_drive_absolute_path() -> None:
+    path = _file_uri_path(urlsplit("file:///D:/home/AI/test.png").path, windows=True)
+    assert path == PureWindowsPath(r"D:\home\AI\test.png")
+    assert path.is_absolute()
+
+
+def test_windows_allowed_root_security() -> None:
+    root = PureWindowsPath(r"D:\home\AI")
+    assert _is_path_allowed(PureWindowsPath(r"D:\home\AI\test.png"), (root,))
+    assert not _is_path_allowed(PureWindowsPath(r"D:\other\test.png"), (root,))
+    assert not _is_path_allowed(PureWindowsPath(r"D:\home\AI-evil\test.png"), (root,))
+
+
+@pytest.mark.parametrize(
+    ("uri_path", "expected"),
+    [
+        ("/Users/test/AI/test.png", PurePosixPath("/Users/test/AI/test.png")),
+        ("/home/test/AI/test.png", PurePosixPath("/home/test/AI/test.png")),
+    ],
+)
+def test_posix_file_uri_path_regression(uri_path: str, expected: PurePosixPath) -> None:
+    assert _file_uri_path(uri_path, windows=False) == expected
+
+
+def test_windows_file_uri_decodes_encoded_path() -> None:
+    uri_path = urlsplit("file:///D:/home/My%20Files/test.png").path
+    assert _file_uri_path(uri_path, windows=True) == PureWindowsPath(r"D:\home\My Files\test.png")
 
 
 def test_remote_rejects_credentials_and_local_network(monkeypatch: pytest.MonkeyPatch) -> None:

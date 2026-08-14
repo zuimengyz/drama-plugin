@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import ipaddress
 import mimetypes
+import nturl2path
 import os
 import socket
 import tempfile
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePath, PurePosixPath, PureWindowsPath
 from typing import BinaryIO, Callable
 from urllib.parse import unquote, urlsplit
 
@@ -30,6 +31,17 @@ def allowed_media_roots(environment: dict[str, str] | None = None) -> tuple[Path
     return tuple(Path(item).expanduser().resolve() for item in raw.split(os.pathsep) if item.strip())
 
 
+def _file_uri_path(uri_path: str, *, windows: bool | None = None) -> PurePath:
+    use_windows = os.name == "nt" if windows is None else windows
+    if use_windows:
+        return PureWindowsPath(nturl2path.url2pathname(uri_path))
+    return PurePosixPath(unquote(uri_path))
+
+
+def _is_path_allowed(path: PurePath, roots: tuple[PurePath, ...]) -> bool:
+    return any(path.is_relative_to(root) for root in roots)
+
+
 def local_media_path(source_uri: str, roots: tuple[Path, ...] | None = None) -> Path:
     parsed = urlsplit(source_uri)
     if parsed.scheme != "file" or parsed.netloc not in {"", "localhost"} or parsed.query or parsed.fragment:
@@ -37,8 +49,8 @@ def local_media_path(source_uri: str, roots: tuple[Path, ...] | None = None) -> 
     allowed = roots if roots is not None else allowed_media_roots()
     if not allowed:
         raise MediaImportSourceError("Local media import has no configured allowed roots", error_code="INVALID_ARGUMENT")
-    path = Path(unquote(parsed.path)).resolve(strict=False)
-    if not any(path.is_relative_to(root) for root in allowed):
+    path = Path(_file_uri_path(parsed.path)).resolve(strict=False)
+    if not _is_path_allowed(path, allowed):
         raise MediaImportSourceError("Local media source is outside allowed roots", error_code="INVALID_ARGUMENT")
     if not path.exists():
         raise MediaImportSourceError("Local media source does not exist", error_code="IMPORT_SOURCE_UNREADABLE")

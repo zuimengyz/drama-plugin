@@ -29,6 +29,9 @@ LIFECYCLE = (
 PROFESSIONAL_REFERENCES = {
     "work-creation": ("planning.md", "review.md"),
     "script-adaptation": ("planning.md", "review.md"),
+    "episode-development": ("planning.md", "review.md"),
+    "scene-development": ("planning.md", "review.md"),
+    "shot-design": ("planning.md", "review.md"),
 }
 
 
@@ -179,7 +182,7 @@ def test_creative_completion_conditions_include_lifecycle_gate() -> None:
         assert all(term in gate for term in ("persistence", "sufficient context", "plan", "draft", "passing", "review"))
 
 
-def test_work_and_script_references_are_minimal_discoverable_and_stage_routed() -> None:
+def test_professional_references_are_minimal_discoverable_and_stage_routed() -> None:
     registry = SkillRegistry(); registry.load_directory(ROOT / "skills")
     for skill_code, expected_files in PROFESSIONAL_REFERENCES.items():
         directory = ROOT / "skills" / skill_code / "references"
@@ -271,6 +274,130 @@ def test_script_professional_method_covers_adaptation_and_screenability_gate() -
     assert_concept_groups(persist, (("plot summary", "event list"), ("episode architecture",), ("unfilmable prose",), ("Work drift",)))
 
 
+def test_episode_professional_method_covers_job_state_turn_and_necessity() -> None:
+    planning = reference_text("episode-development", "planning.md")
+    review = reference_text("episode-development", "review.md")
+    assert_concept_groups(
+        planning,
+        (
+            ("Inherit the series contract", "Script main line"),
+            ("one dramatic job", "pressure forces"),
+            ("entry and exit state", "material change"),
+            ("objective", "obstacle"),
+            ("tactic", "counteraction"),
+            ("meaningful turn", "changes what characters can do"),
+            ("Earn the ending", "produced by the Episode"),
+            ("Delete Episode Test", "series would lose"),
+            ("short-form", "early pressure"),
+            ("Scene development", "without detailed Scene"),
+        ),
+    )
+    assert planning.count("→") >= 6
+    rubric_rows = [line for line in review.splitlines() if line.startswith("| ") and "---" not in line]
+    assert len(rubric_rows) >= 15
+    assert_concept_groups(
+        review,
+        (
+            ("Dramatic job", "Mechanical Split"),
+            ("Script fidelity", "upstream Script issue"),
+            ("Entry state", "Exit state"),
+            ("Progression and escalation", "Repeated Conflict"),
+            ("Turn", "Ending logic"),
+            ("Episode necessity", "Delete"),
+            ("Downstream readiness", "detailed Scenes"),
+            ("Re-plan", "full rubric again"),
+        ),
+    )
+    instructions = (ROOT / "skills/episode-development/SKILL.md").read_text(encoding="utf-8")
+    persist = lifecycle_sections(instructions)["Persist"]
+    assert_concept_groups(persist, (("mechanical split", "plot summary"), ("dramatic job", "central conflict"), ("turn", "exit-state change"), ("necessity",)))
+    assert "upstream Script issue" in instructions and "Do not write detailed Scenes" in instructions
+
+
+def test_scene_professional_method_covers_conflict_in_action_and_state_change() -> None:
+    planning = reference_text("scene-development", "planning.md")
+    review = reference_text("scene-development", "review.md")
+    assert_concept_groups(
+        planning,
+        (
+            ("Inherit the Episode contract", "Episode dramatic job"),
+            ("change-based purpose", "must exist"),
+            ("playable objective", "immediate, specific result"),
+            ("active opposition", "materially blocks"),
+            ("immediate stakes", "failure must matter"),
+            ("tactics and beats", "behavior changes"),
+            ("conflict-in-action", "action, resistance, and consequence"),
+            ("subtext", "spoken meaning"),
+            ("playable", "Externalize"),
+            ("turn", "cannot simply return"),
+            ("Delete Scene Test", "Episode would lose"),
+        ),
+    )
+    assert planning.count("→") >= 3
+    rubric_rows = [line for line in review.splitlines() if line.startswith("| ") and "---" not in line]
+    assert len(rubric_rows) >= 17
+    assert_concept_groups(
+        review,
+        (
+            ("Episode fidelity", "upstream Episode issue"),
+            ("Character objective", "Opposing force"),
+            ("Tactics and beats", "Conflict-in-action"),
+            ("Dialogue/subtext", "Playable action"),
+            ("Before/After Gate", "Meaningful state change"),
+            ("Delete Scene Test", "Scene necessity"),
+            ("Talking Heads", "Interior Summary"),
+            ("Re-plan", "both gates again"),
+        ),
+    )
+    instructions = (ROOT / "skills/scene-development/SKILL.md").read_text(encoding="utf-8")
+    persist = lifecycle_sections(instructions)["Persist"]
+    assert_concept_groups(persist, (("pure exposition", "Characters-plus-location"), ("objective/opposition/turn/state change",), ("removable Scene",)))
+    assert "upstream Episode issue" in instructions and "Do not specify framing" in instructions
+
+
+def test_shot_professional_method_covers_strategy_continuity_feasibility_and_economy() -> None:
+    planning = reference_text("shot-design", "planning.md")
+    review = reference_text("shot-design", "review.md")
+    assert_concept_groups(
+        planning,
+        (
+            ("Inherit the Scene contract", "approved Scene"),
+            ("coverage strategy", "camera must primarily express"),
+            ("narrative purpose", "Delete or merge"),
+            ("subject, action, and blocking", "spatial behavior"),
+            ("framing and camera", "information, performance"),
+            ("dialogue coverage and rhythm", "listener"),
+            ("180-degree axis", "screen direction", "eyeline"),
+            ("action and performance continuity", "entry action"),
+            ("visual and temporal references", "costume", "time of day"),
+            ("generation feasibility", "split, simplified"),
+            ("provider-agnostic", "downstream production"),
+            ("smallest coherent set", "minimal complete coverage"),
+        ),
+    )
+    rubric_rows = [line for line in review.splitlines() if line.startswith("| ") and "---" not in line]
+    assert len(rubric_rows) >= 16
+    assert_concept_groups(
+        review,
+        (
+            ("Scene fidelity", "upstream Scene issue"),
+            ("Coverage strategy", "One-Line-One-Shot"),
+            ("Narrative purpose", "Coverage Explosion"),
+            ("Spatial continuity", "axis", "eyeline"),
+            ("Action continuity", "Performance continuity"),
+            ("Asset/costume/prop continuity", "Temporal continuity"),
+            ("Generation feasibility", "Unproducible Shot"),
+            ("Coverage economy", "minimal yet sufficient"),
+            ("Downstream production readiness", "provider-agnostic"),
+            ("Re-plan the Shot group", "full group rubric again"),
+        ),
+    )
+    instructions = (ROOT / "skills/shot-design/SKILL.md").read_text(encoding="utf-8")
+    persist = lifecycle_sections(instructions)["Persist"]
+    assert_concept_groups(persist, (("minimal necessary", "narratively motivated"), ("continuous", "production-ready"), ("One-line-one-shot", "repeated coverage"), ("unproducible complexity",)))
+    assert "upstream Scene issue" in instructions and "do not create or resolve assets" in instructions
+
+
 def test_creative_quality_fixtures_cover_distinct_topics_without_claiming_llm_pass() -> None:
     fixture = yaml.safe_load((ROOT / "tests/fixtures/creative-quality/work-script-evaluations.yaml").read_text(encoding="utf-8"))
     cases = fixture["cases"]
@@ -283,9 +410,29 @@ def test_creative_quality_fixtures_cover_distinct_topics_without_claiming_llm_pa
         assert len(case["work_failure_examples"]) >= 2
         assert len(case["script_failure_examples"]) >= 2
         assert "Review-PASS Work artifact" in case["script_prerequisite"]
-    assert len(fixture["manual_run_checklist"]) >= 6
+        assert len(case["episode_expected_dimensions"]) >= 6
+        assert len(case["scene_expected_dimensions"]) >= 7
+        assert len(case["shot_expected_dimensions"]) >= 7
+        assert len(case["episode_failure_examples"]) >= 2
+        assert len(case["scene_failure_examples"]) >= 2
+        assert len(case["shot_failure_examples"]) >= 2
+        assert "Review-PASS Script artifact" in case["episode_prerequisite"]
+        assert "Review-PASS Episode artifact" in case["scene_prerequisite"]
+        assert "Review-PASS Scene artifact" in case["shot_prerequisite"]
+    assert len(fixture["manual_run_checklist"]) >= 8
+    purpose = fixture["purpose"].lower()
+    assert "real llm result" in purpose and "does not claim" in purpose
     serialized = yaml.safe_dump(fixture, allow_unicode=True).lower()
-    assert "real llm result" in serialized and "does not claim" in serialized
+    assert_concept_groups(
+        serialized,
+        (
+            ("one_dramatic_job", "material_entry_exit_change"),
+            ("playable_objective_and_opposition", "tactic_and_beat_progression"),
+            ("conflict_in_action", "delete_scene_necessity"),
+            ("coherent_coverage_strategy", "narrative_purpose_per_shot"),
+            ("reaction_coverage", "generation_feasibility", "coverage_economy"),
+        ),
+    )
     production_text = "".join(
         (ROOT / "skills" / skill / relative).read_text(encoding="utf-8")
         for skill in PROFESSIONAL_REFERENCES

@@ -10,6 +10,6 @@ tools:
   allowed: [research.search_locations, research.verify_claim, context.build_context, context.refresh_context]
 completion:
   conditions:
-    - Place, time, participants, entry state, objective, conflict, turn, and exit state are explicit.
-    - Dialogue and action advance the Episode without silently creating downstream Shots.
+    - The Scene inherits the Episode and uses a concrete purpose, immediate objective, active opposition, stakes, tactic/beat progression, playable conflict, and a meaningful turn to change its entry state.
+    - It passes the necessity and Before/After tests and is ready for Shot design without silently creating downstream Shots.
     - Persistence follows sufficient context, an internal plan, a complete draft, and a passing Scene review with no unresolved historical or continuity conflict.

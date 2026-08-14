@@ -10,6 +10,6 @@ tools:
   allowed: [asset.get_asset, media.get_media, context.build_context, context.refresh_context]
 completion:
   conditions:
-    - Every retained Shot has a dramatic function, framing, composition, action, camera behavior, duration, and entry/exit state.
-    - Coverage is sufficient without redundant Shots or unresolved continuity contradictions.
+    - A Scene-faithful coverage strategy gives every retained Shot a narrative purpose, executable subject/action/blocking, motivated camera language, rhythm, and entry/exit visual state.
+    - Coverage is minimal yet sufficient, spatially and performatively continuous, reference-stable, generation-feasible, and ready for downstream production.
     - Persistence follows sufficient context, an internal plan, complete draft coverage, and a passing Shot review with no unresolved historical or continuity conflict.

@@ -1,5 +1,5 @@
 version: 1
-purpose: Static and manual forward-evaluation material for Work and Script professional-method regression; this file does not claim a real LLM result.
+purpose: Static and manual forward-evaluation material for Work, Script, Episode, Scene, and Shot professional-method regression; this file does not claim a real LLM result.
 
 cases:
   - id: political-event-shenlong-coup
@@ -31,6 +31,44 @@ cases:
     script_failure_examples:
       - 把历史资料平均切成若干集，每集只有几行事件说明。
       - 主要人物不断互相解释政变背景，行动和决定没有改变剧情状态。
+    episode_prompt: 基于本题材已经通过 Script Review 的正式 Script 与其中一个已规划单集，开发该 Episode。
+    episode_prerequisite: Run only with the actual Review-PASS Script artifact and its approved Episode Architecture.
+    episode_expected_dimensions:
+      - one_dramatic_job
+      - script_inheritance
+      - material_entry_exit_change
+      - active_conflict_progression
+      - meaningful_turn_and_earned_ending
+      - delete_episode_necessity
+    episode_failure_examples:
+      - 按历史事件长度切出一集，只复述政变准备，没有本集目标、Turn 或 Exit State Change。
+      - 本集重复上一集的朝堂争论，结尾突然插入无关悬念，删除后全剧几乎不受影响。
+    scene_prompt: 基于本题材已经通过 Episode Review 的正式 Episode，开发其中一场关键 Scene。
+    scene_prerequisite: Run only with the actual Review-PASS Episode artifact and its approved dramatic job/state destination.
+    scene_expected_dimensions:
+      - episode_inheritance
+      - playable_objective_and_opposition
+      - immediate_stakes
+      - tactic_and_beat_progression
+      - conflict_in_action
+      - meaningful_turn_and_state_change
+      - delete_scene_necessity
+    scene_failure_examples:
+      - 人物坐在房间中讨论已经发生的历史事件，没有决定、行动、策略变化或关系变化。
+      - 双方反复表达同一政治立场，没有真实阻碍、Turn，删除后 Episode 基本不受影响。
+    shot_prompt: 基于本题材已经通过 Scene Review 的正式 Scene，设计最少必要的 Shot coverage。
+    shot_prerequisite: Run only with the actual Review-PASS Scene artifact and approved spatial/performance continuity context.
+    shot_expected_dimensions:
+      - scene_inheritance
+      - coherent_coverage_strategy
+      - narrative_purpose_per_shot
+      - spatial_action_performance_continuity
+      - reaction_coverage
+      - generation_feasibility
+      - coverage_economy
+    shot_failure_examples:
+      - 每一句对白拆一个 close-up，没有 spatial continuity，也没有整体 coverage strategy。
+      - 镜头数量很多但功能重复，轴线、人物位置和道具状态混乱，单镜头动作无法稳定生产。
 
   - id: relationship-driven-taizong-weizheng
     mode: relationship_driven
@@ -61,6 +99,44 @@ cases:
     script_failure_examples:
       - 每集重复一次进谏与争论，关系、风险和选择没有升级。
       - 用旁白或内心总结君臣关系变化，却没有可观察的行动、决定与后果。
+    episode_prompt: 基于本题材已经通过 Script Review 的正式 Script 与其中一个已规划单集，开发该 Episode。
+    episode_prerequisite: Run only with the actual Review-PASS Script artifact and its approved Episode Architecture.
+    episode_expected_dimensions:
+      - one_dramatic_job
+      - relationship_state_entry_exit
+      - distinct_character_objective
+      - escalating_conflict_progression
+      - relationship_turn_and_earned_ending
+      - delete_episode_necessity
+    episode_failure_examples:
+      - 本集只是又一次进谏，没有新的风险、选择、关系变化或下一集因果。
+      - 一集塞入多个互不相关的君臣事件，没有单一 Dramatic Job，删除后人物弧仍然成立。
+    scene_prompt: 基于本题材已经通过 Episode Review 的正式 Episode，开发其中一场关键 Scene。
+    scene_prerequisite: Run only with the actual Review-PASS Episode artifact and its approved dramatic job/state destination.
+    scene_expected_dimensions:
+      - episode_inheritance
+      - competing_immediate_objectives
+      - relationship_stakes
+      - tactic_changes_under_resistance
+      - subtext_and_playable_action
+      - relationship_turn_and_state_change
+      - delete_scene_necessity
+    scene_failure_examples:
+      - 唐太宗与魏征轮流说明纳谏的重要性，双方目标一致，没有 opposition、策略或 Turn。
+      - 旁白说明君臣关系发生变化，但人物当场没有可演的选择、行动和后果。
+    shot_prompt: 基于本题材已经通过 Scene Review 的正式 Scene，设计最少必要的 Shot coverage。
+    shot_prerequisite: Run only with the actual Review-PASS Scene artifact and approved spatial/performance continuity context.
+    shot_expected_dimensions:
+      - scene_inheritance
+      - relationship_driven_coverage_strategy
+      - narrative_purpose_per_shot
+      - reaction_and_two_shot_choices
+      - axis_eyeline_performance_continuity
+      - generation_feasibility
+      - coverage_economy
+    shot_failure_examples:
+      - A说一句拍A近景、B说一句拍B近景，忽略权力关系、反应和双人空间。
+      - 为追求变化机械使用全景、中景、近景和运镜，没有叙事理由且视觉连续性漂移。
 
 manual_run_checklist:
   - Use the natural prompt without supplying the rubric dimensions as hidden creative answers.
@@ -68,5 +144,7 @@ manual_run_checklist:
   - Evaluate every expected dimension and every applicable domain-rubric row as PASS or FAIL with artifact evidence.
   - Treat any critical failure as overall FAIL; do not average it away with a score.
   - For Script, verify that the supplied Work had already passed Work Review and was actually inherited.
+  - For Episode, Scene, and Shot, verify each supplied parent artifact had passed its domain Review and was actually inherited.
+  - Apply Delete Episode and Delete Scene tests and review the entire Shot coverage group rather than isolated objects.
   - Keep static contract results separate from real LLM forward-evaluation results.
   - Never persist an evaluation draft unless the relevant Skill Review and Persist Gate pass.

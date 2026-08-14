@@ -10,6 +10,6 @@ tools:
   allowed: [research.verify_claim, context.build_context, context.refresh_context]
 completion:
   conditions:
-    - The Episode has a goal, opening hook, escalating conflict, information gain, character change, and ending hook.
-    - Its entry and exit states remain continuous with relevant neighboring Episodes.
+    - The Episode has one necessary dramatic job, a character objective, opening hook, progressing conflict, meaningful turn, earned ending, and a material entry-to-exit state change rather than a mechanical Script slice.
+    - It remains faithful to the Script, continuous with neighboring Episodes, and ready for downstream Scene development.
     - Persistence follows sufficient context, an internal plan, a complete draft, and a passing Episode review with no unresolved historical or continuity conflict.

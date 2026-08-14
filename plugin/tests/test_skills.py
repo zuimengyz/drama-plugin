@@ -26,6 +26,10 @@ LIFECYCLE = (
     "Revise or Re-plan",
     "Persist",
 )
+PROFESSIONAL_REFERENCES = {
+    "work-creation": ("planning.md", "review.md"),
+    "script-adaptation": ("planning.md", "review.md"),
+}
 
 
 def lifecycle_sections(instructions: str) -> dict[str, str]:
@@ -34,6 +38,15 @@ def lifecycle_sections(instructions: str) -> dict[str, str]:
         match.group(1): instructions[match.end() : matches[index + 1].start() if index + 1 < len(matches) else len(instructions)]
         for index, match in enumerate(matches)
     }
+
+
+def reference_text(skill_code: str, filename: str) -> str:
+    return (ROOT / "skills" / skill_code / "references" / filename).read_text(encoding="utf-8")
+
+
+def assert_concept_groups(text: str, groups: tuple[tuple[str, ...], ...]) -> None:
+    lowered = text.lower()
+    assert all(any(term.lower() in lowered for term in alternatives) for alternatives in groups)
 
 
 def test_loads_exactly_agent_driven_skills() -> None:
@@ -57,6 +70,9 @@ def test_skill_core_is_platform_neutral_and_has_no_skill_chaining() -> None:
     for directory in (ROOT / "skills").iterdir():
         if directory.name not in EXPECTED: continue
         core = ((directory / "SKILL.md").read_text(encoding="utf-8") + (directory / "skill.yaml").read_text(encoding="utf-8")).lower()
+        references = directory / "references"
+        if references.exists():
+            core += "".join(path.read_text(encoding="utf-8").lower() for path in references.glob("*.md"))
         assert not any(term in core for term in forbidden)
         assert not any(f"${name}" in core for name in EXPECTED)
 
@@ -161,6 +177,121 @@ def test_creative_completion_conditions_include_lifecycle_gate() -> None:
         assert len(conditions) == 3
         gate = conditions[-1].lower()
         assert all(term in gate for term in ("persistence", "sufficient context", "plan", "draft", "passing", "review"))
+
+
+def test_work_and_script_references_are_minimal_discoverable_and_stage_routed() -> None:
+    registry = SkillRegistry(); registry.load_directory(ROOT / "skills")
+    for skill_code, expected_files in PROFESSIONAL_REFERENCES.items():
+        directory = ROOT / "skills" / skill_code / "references"
+        assert tuple(sorted(path.name for path in directory.glob("*.md"))) == expected_files
+        sections = lifecycle_sections(registry.get(skill_code).instructions)
+        planning_link = "references/planning.md"
+        review_link = "references/review.md"
+        assert planning_link in sections["Plan"] and review_link not in sections["Plan"]
+        assert review_link in sections["Review"] and planning_link not in sections["Review"]
+        assert len(reference_text(skill_code, "planning.md").splitlines()) < 120
+        assert len(reference_text(skill_code, "review.md").splitlines()) < 100
+
+
+def test_work_professional_method_covers_story_design_and_quality_gate() -> None:
+    planning = reference_text("work-creation", "planning.md")
+    review = reference_text("work-creation", "review.md")
+    assert_concept_groups(
+        planning,
+        (
+            ("Convert event into story", "story engine"),
+            ("external goal", "active goal"),
+            ("internal need", "blind spot"),
+            ("opposition", "capacity to act"),
+            ("escalating stakes", "higher cost"),
+            ("premise", "logline"),
+            ("dramatic question", "theme"),
+            ("relationship", "final state"),
+            ("irreversible choice", "irreversible decision"),
+            ("documented", "dramatic invention space"),
+            ("short-drama scale", "short-form suitability"),
+        ),
+    )
+    assert planning.count("→") >= 5
+    assert "briefly compare more than one viable option" in planning
+    assert review.count("| PASS evidence | FAIL signal |") == 1
+    rubric_rows = [line for line in review.splitlines() if line.startswith("| ") and "---" not in line]
+    assert len(rubric_rows) >= 14
+    assert_concept_groups(
+        review,
+        (
+            ("Story identity", "Historical Summary"),
+            ("Protagonist", "Passive Protagonist"),
+            ("Opposition", "Villain Flattening"),
+            ("Dramatic causality", "Chronology Dump"),
+            ("Character arc", "Relationship arc"),
+            ("Historical integrity", "Historical Drift"),
+            ("Downstream readiness", "formal story foundation"),
+            ("Re-plan the Work", "Rewrite the full draft"),
+        ),
+    )
+    persist = lifecycle_sections((ROOT / "skills/work-creation/SKILL.md").read_text(encoding="utf-8"))["Persist"]
+    assert_concept_groups(persist, (("event summary", "character list"), ("passive protagonist",), ("climax and ending",)))
+
+
+def test_script_professional_method_covers_adaptation_and_screenability_gate() -> None:
+    planning = reference_text("script-adaptation", "planning.md")
+    review = reference_text("script-adaptation", "review.md")
+    assert_concept_groups(
+        planning,
+        (
+            ("adaptation contract", "must inherit"),
+            ("main dramatic line", "causal progression"),
+            ("secondary lines", "serve"),
+            ("observable progression", "visible evidence"),
+            ("information reveal", "what the audience"),
+            ("higher cost", "narrowing options"),
+            ("episode architecture", "dramatic job"),
+            ("short-form pacing", "Enter pressure early"),
+            ("screenable", "observable or audible"),
+            ("dialogue", "subtext"),
+        ),
+    )
+    assert planning.count("→") >= 4
+    assert "without creating Episode entities" in planning
+    assert_concept_groups(
+        review,
+        (
+            ("Work fidelity", "upstream Work issue"),
+            ("Main line", "Event List"),
+            ("Conflict escalation", "Flat Escalation"),
+            ("Information reveal", "Exposition Dialogue"),
+            ("Episode architecture", "Mechanical Episode Split"),
+            ("Screenability", "Unfilmable Interior Prose"),
+            ("Climax and payoff", "Ending fidelity"),
+            ("Re-plan the Script", "Rewrite the full draft"),
+        ),
+    )
+    persist = lifecycle_sections((ROOT / "skills/script-adaptation/SKILL.md").read_text(encoding="utf-8"))["Persist"]
+    assert_concept_groups(persist, (("plot summary", "event list"), ("episode architecture",), ("unfilmable prose",), ("Work drift",)))
+
+
+def test_creative_quality_fixtures_cover_distinct_topics_without_claiming_llm_pass() -> None:
+    fixture = yaml.safe_load((ROOT / "tests/fixtures/creative-quality/work-script-evaluations.yaml").read_text(encoding="utf-8"))
+    cases = fixture["cases"]
+    assert fixture["version"] == 1
+    assert {case["mode"] for case in cases} == {"political_event", "relationship_driven"}
+    assert len(cases) == 2
+    for case in cases:
+        assert len(case["work_expected_dimensions"]) >= 6
+        assert len(case["script_expected_dimensions"]) >= 6
+        assert len(case["work_failure_examples"]) >= 2
+        assert len(case["script_failure_examples"]) >= 2
+        assert "Review-PASS Work artifact" in case["script_prerequisite"]
+    assert len(fixture["manual_run_checklist"]) >= 6
+    serialized = yaml.safe_dump(fixture, allow_unicode=True).lower()
+    assert "real llm result" in serialized and "does not claim" in serialized
+    production_text = "".join(
+        (ROOT / "skills" / skill / relative).read_text(encoding="utf-8")
+        for skill in PROFESSIONAL_REFERENCES
+        for relative in ("SKILL.md", "references/planning.md", "references/review.md")
+    )
+    assert all(topic not in production_text for topic in ("神龙政变", "唐太宗", "魏征"))
 
 
 def test_media_registration_is_not_duplicated_after_generation() -> None:

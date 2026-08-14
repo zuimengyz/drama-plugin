@@ -10,6 +10,6 @@ tools:
   allowed: [work.list_works, research.verify_claim, context.build_context, context.refresh_context]
 completion:
   conditions:
-    - Theme, viewpoint, relationships, conflict, timeline, and overall structure form a coherent literary work.
+    - A character-driven formal story foundation establishes premise, protagonist goal and need, capable opposition, stakes, theme, arcs, causal architecture, climax, and ending rather than an event summary.
     - Historical constraints, uncertainty, and dramatic invention remain explicit.
     - Persistence follows sufficient context, an internal plan, a complete draft, and a passing Work review with no unresolved historical or continuity conflict.

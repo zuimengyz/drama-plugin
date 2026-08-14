@@ -1,0 +1,72 @@
+version: 1
+purpose: Static and manual forward-evaluation material for Work and Script professional-method regression; this file does not claim a real LLM result.
+
+cases:
+  - id: political-event-shenlong-coup
+    mode: political_event
+    work_prompt: 请以神龙政变为历史背景，设计一部适合短剧形式的历史作品。
+    work_prerequisites:
+      - Supply or obtain adequate historical evidence before consequential planning.
+    work_expected_dimensions:
+      - event_to_story
+      - protagonist_agency
+      - capable_political_opposition
+      - escalating_stakes
+      - causal_climax_and_ending
+      - explicit_historical_boundary
+      - downstream_script_readiness
+    work_failure_examples:
+      - 只复述张柬之等人发动政变、武则天退位、李显复位，没有主人公目标、选择、代价与人物变化。
+      - 按历史顺序列出人物和事件，却没有能持续推动作品的核心冲突与高潮。
+    script_prompt: 基于本题材已经通过 Work Review 的正式 Work，把它改编成适合短剧形式的 Script。
+    script_prerequisite: Run only with the actual Review-PASS Work artifact; do not reconstruct it from this fixture.
+    script_expected_dimensions:
+      - approved_work_inheritance
+      - causal_main_line
+      - conflict_escalation
+      - information_reveal
+      - dramatic_episode_architecture
+      - screenability
+      - climax_and_ending_payoff
+    script_failure_examples:
+      - 把历史资料平均切成若干集，每集只有几行事件说明。
+      - 主要人物不断互相解释政变背景，行动和决定没有改变剧情状态。
+
+  - id: relationship-driven-taizong-weizheng
+    mode: relationship_driven
+    work_prompt: 请以唐太宗与魏征的君臣关系为核心，设计一部适合短剧形式的历史作品。
+    work_prerequisites:
+      - Supply or obtain adequate evidence for identities, chronology, recorded disputes, and uncertainty.
+    work_expected_dimensions:
+      - relationship_as_story_engine
+      - distinct_character_goals
+      - protagonist_agency
+      - relationship_arc
+      - thematic_question_through_choice
+      - defensible_invention_boundary
+      - downstream_script_readiness
+    work_failure_examples:
+      - 分别介绍唐太宗和魏征的生平与性格，却没有让君臣目标、压力和选择推动关系变化。
+      - 只贴上“纳谏、忠诚、权力”的主题标签，没有通过冲突、代价和结局检验主题。
+    script_prompt: 基于本题材已经通过 Work Review 的正式 Work，把它改编成适合短剧形式的 Script。
+    script_prerequisite: Run only with the actual Review-PASS Work artifact; do not reconstruct it from this fixture.
+    script_expected_dimensions:
+      - approved_work_inheritance
+      - relationship_progression_on_screen
+      - differentiated_intent_and_voice
+      - causal_main_line
+      - non_repetitive_escalation
+      - dramatic_episode_architecture
+      - screenability
+    script_failure_examples:
+      - 每集重复一次进谏与争论，关系、风险和选择没有升级。
+      - 用旁白或内心总结君臣关系变化，却没有可观察的行动、决定与后果。
+
+manual_run_checklist:
+  - Use the natural prompt without supplying the rubric dimensions as hidden creative answers.
+  - Record the exact Skill version, evidence context, prompt, generated artifact, and tool trace.
+  - Evaluate every expected dimension and every applicable domain-rubric row as PASS or FAIL with artifact evidence.
+  - Treat any critical failure as overall FAIL; do not average it away with a score.
+  - For Script, verify that the supplied Work had already passed Work Review and was actually inherited.
+  - Keep static contract results separate from real LLM forward-evaluation results.
+  - Never persist an evaluation draft unless the relevant Skill Review and Persist Gate pass.

@@ -10,6 +10,6 @@ tools:
   allowed: [research.verify_claim, context.build_context, context.refresh_context]
 completion:
   conditions:
-    - Main line, secondary lines, arcs, pacing, climax, and short-form structure support the Work.
-    - The Script remains screenable and continuity-aware without creating downstream Episodes.
+    - The Script inherits the approved Work and establishes a causal main line, necessary secondary lines, visible arcs, escalation, information reveal, episode architecture, climax, ending, and short-form pacing.
+    - The Script is screenable rather than a plot summary and remains continuity-aware without creating downstream Episodes.
     - Persistence follows sufficient context, an internal plan, a complete draft, and a passing Script review with no unresolved historical or continuity conflict.

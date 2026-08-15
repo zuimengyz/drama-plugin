@@ -4,7 +4,7 @@ import pytest
 from drama_plugin.config import ServiceConfig
 from drama_plugin.contracts import AssetType, MediaType
 from drama_plugin.exceptions import RemoteServiceError
-from drama_plugin.providers.http import HttpProviderClient
+from drama_plugin.providers.http import HttpMemoryProvider, HttpProviderClient
 from drama_plugin.providers.mock import MockAssetProvider, MockDramaData, MockMemoryProvider, MockProductionProvider
 
 
@@ -84,3 +84,27 @@ async def test_http_uses_bearer_token_and_joins_relative_path_without_leaking_se
     assert str(seen[0].url) == "http://127.0.0.1:8080/api/tool/probe"
     assert seen[0].headers["Authorization"] == "Bearer test-secret-must-not-leak"
     assert "test-secret-must-not-leak" not in repr(config)
+
+
+@pytest.mark.asyncio
+async def test_http_list_shots_omits_absent_filters_and_returns_all_scene_shots() -> None:
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(200, json=[
+            {"id": "shot-1", "sceneId": "scene-1", "shotNo": "1", "content": {}},
+            {"id": "shot-2", "sceneId": "scene-1", "shotNo": "2", "content": {}},
+        ])
+
+    config = ServiceConfig(
+        base_url="http://127.0.0.1:8080",
+        operations={"list_shots": "/api/tool/shot/list"},
+    )
+    transport = httpx.MockTransport(handler)
+    async with httpx.AsyncClient(base_url=config.base_url, transport=transport) as client:
+        provider = HttpMemoryProvider(HttpProviderClient(config, client))
+        shots = await provider.list_shots("scene-1")
+
+    assert [shot.id for shot in shots] == ["shot-1", "shot-2"]
+    assert dict(seen[0].url.params) == {"scene_id": "scene-1"}

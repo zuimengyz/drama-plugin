@@ -51,7 +51,10 @@ class HttpMemoryProvider:
     async def create_shot(self, scene_id: str, shot_no: str, content: dict[str, Any], title: str | None = None, shot_type: str | None = None) -> Shot: return await self._create("create_shot", Shot, {"scene_id": scene_id, "shot_no": shot_no, "title": title, "shot_type": shot_type, "content": content})
     async def get_shot(self, shot_id: str) -> Shot: return _one(Shot, await self.http.request("get_shot", params={"shot_id": shot_id}))
     async def save_shot(self, shot_id: str, shot_no: str, content: dict[str, Any], title: str | None = None, shot_type: str | None = None) -> Shot: return await self._create("save_shot", Shot, {"shot_id": shot_id, "shot_no": shot_no, "title": title, "shot_type": shot_type, "content": content})
-    async def list_shots(self, scene_id: str, shot_no: str | None = None, shot_type: str | None = None, character: str | None = None) -> list[Shot]: return _many(Shot, await self.http.request("list_shots", params={"scene_id": scene_id, "shot_no": shot_no, "shot_type": shot_type, "character": character}))
+    async def list_shots(self, scene_id: str, shot_no: str | None = None, shot_type: str | None = None, character: str | None = None) -> list[Shot]:
+        optional = {"shot_no": shot_no, "shot_type": shot_type, "character": character}
+        params = {"scene_id": scene_id, **{key: value for key, value in optional.items() if value is not None}}
+        return _many(Shot, await self.http.request("list_shots", params=params))
     async def search_shots(self, query: str, scene_id: str | None = None) -> list[Shot]: return _many(Shot, await self.http.request("search_shots", params={"query": query, "scene_id": scene_id}))
 
 

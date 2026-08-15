@@ -101,6 +101,8 @@ production.generate_audio
 
 Agent 只传 prompt、`asset_id`、`media_id` 和必要参数。Adapter 内部解析存储引用、处理上传、Provider 调用并登记 Media；workflow JSON、node id、filename、bucket、URL 和 Provider response 不得进入 Skill Core。
 
+图片/视频生产所需的外部 Visual Provider 由 Host 条件式提供；当前 Comfy Cloud 能力映射、认证与边界见 [`docs/visual-provider-host-integration.md`](docs/visual-provider-host-integration.md)。它不是 Drama bundled MCP，也不影响非视觉 Skill。
+
 ## Asset 与 Media
 
 `media.import_media` 将 `file://` 或受控 `https://` 来源经 Plugin 流式上传到

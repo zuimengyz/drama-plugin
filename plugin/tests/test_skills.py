@@ -453,8 +453,65 @@ def test_openai_adapters_are_optional_interface_metadata_only() -> None:
     for directory in (ROOT / "skills").iterdir():
         if directory.name not in EXPECTED: continue
         adapter = yaml.safe_load((directory / "agents" / "openai.yaml").read_text(encoding="utf-8"))
-        assert set(adapter) == {"interface"}
+        assert set(adapter) == ({"interface", "dependencies"} if directory.name == "shot-production" else {"interface"})
         assert set(adapter["interface"]) == {"display_name", "short_description", "default_prompt"}
+        if directory.name == "shot-production":
+            assert adapter["dependencies"] == {
+                "tools": [
+                    {
+                        "type": "mcp",
+                        "value": "comfy-cloud",
+                        "description": "Optional Host-provided visual production capability used only for image or video execution",
+                        "transport": "streamable_http",
+                        "url": "https://cloud.comfy.org/mcp",
+                    }
+                ]
+            }
+
+
+def test_shot_production_has_minimal_conditional_visual_provider_contract() -> None:
+    instructions = (ROOT / "skills/shot-production/SKILL.md").read_text(encoding="utf-8")
+    capability = reference_text("shot-production", "visual-provider.md")
+    host_mapping = (ROOT / "docs/visual-provider-host-integration.md").read_text(encoding="utf-8")
+
+    assert "references/visual-provider.md" in instructions
+    assert all(
+        code in instructions
+        for code in (
+            "DRAMA_PROVIDER_UNAVAILABLE",
+            "VISUAL_PROVIDER_UNAVAILABLE",
+            "VISUAL_PROVIDER_CAPABILITY_MISSING",
+            "media.resolve_media",
+            "media.import_media",
+        )
+    )
+    assert all(
+        name in capability
+        for name in (
+            "visual.template.discover",
+            "visual.input.upload",
+            "visual.image.generate",
+            "visual.job.wait",
+            "visual.output.fetch",
+            "referenceCount ∈ {0, 1, 2, 3}",
+            "at most one minimal revision",
+        )
+    )
+    assert "runtime provider owns the executable tool schemas" in capability
+    assert "Context reads, non-visual planning, research, and creative development remain independent" in capability
+    assert all(
+        name in host_mapping
+        for name in (
+            "search_templates",
+            "upload_file",
+            "run_template",
+            "wait_for_job",
+            "get_output",
+            "image_qwen_image_edit_2511",
+            "api_bfl_flux2_max_sofa_swap",
+        )
+    )
+    assert not any(path.name in {"comfy-tools.yaml", "comfy-tool-contract.json", "comfy-mcp-schema.json"} for path in ROOT.rglob("*"))
 
 
 def test_skill_and_readme_memory_tool_references_are_registered() -> None:

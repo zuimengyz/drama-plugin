@@ -75,12 +75,12 @@ def test_http_mode_without_token_fails_without_mock_fallback(monkeypatch: pytest
 
 
 def test_plugin_fails_when_skill_references_missing_tool(monkeypatch: pytest.MonkeyPatch) -> None:
-    def registry_without_generate_video(*providers: object) -> ToolRegistry:
+    def registry_without_media_resolve(*providers: object) -> ToolRegistry:
         complete = build_tool_registry(*providers)
         incomplete = ToolRegistry()
         for definition in complete.list():
-            if definition.code != "production.generate_video": incomplete.register(definition)
+            if definition.code != "media.resolve_media": incomplete.register(definition)
         return incomplete
-    monkeypatch.setattr("drama_plugin.plugin.build_tool_registry", registry_without_generate_video)
-    with pytest.raises(SkillLoadError, match=r"shot-production.*production\.generate_video"):
+    monkeypatch.setattr("drama_plugin.plugin.build_tool_registry", registry_without_media_resolve)
+    with pytest.raises(SkillLoadError, match=r"shot-production.*media\.resolve_media"):
         DramaPlugin.load(ROOT)

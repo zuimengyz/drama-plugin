@@ -4,11 +4,12 @@ description: Produce physical Media for a Shot through implementation-neutral ge
 context:
   required: [shot, scene]
   optional: [selectedAssetIds, generatedMediaIds, previousMediaIds, temporaryState]
-  refresh_after: [production.generate_image, production.generate_video, production.generate_audio]
+  refresh_after: [media.import_media, production.generate_audio]
 tools:
-  preferred: [shot.get_shot, scene.get_scene, asset.get_asset, media.get_media, production.generate_image, production.generate_video, production.generate_audio]
-  allowed: [media.list_media, context.build_context, context.refresh_context]
+  preferred: [shot.get_shot, scene.get_scene, asset.get_asset, asset.search_assets, media.get_media, media.resolve_media, media.import_media, production.generate_audio]
+  allowed: [asset.list_assets, media.list_media, context.build_context, context.refresh_context]
 completion:
   conditions:
-    - Requested image, video, or audio outputs are returned as stable mediaIds with clear Shot semantics.
-    - No storage, workflow, filename, node, or other implementation detail leaks into Skill output.
+    - Requested image, video, or audio outputs pass the applicable review and exist as stable mediaIds with clear Shot semantics.
+    - Visual requests use no more than three selected stable reference Media and stop on missing required runtime capability.
+    - No storage, provider, workflow, filename, node, or other implementation detail leaks into Drama domain facts.

@@ -1,0 +1,74 @@
+max_reference_count: 3
+
+shot_a:
+  shot_no: 5-2-04
+  visible_entities: [李陵, 苏武, 苏武穹庐]
+  all_stable_plan:
+    selected: [李陵 Character Master, 苏武 Character Master, 苏武穹庐 Scene Master]
+    count: 3
+    omitted: []
+    status: COMPLETE
+  current_plan:
+    selected: [李陵 Character Master, 苏武穹庐 Scene Master]
+    missing_stable_reference: [苏武]
+    status: MISSING_STABLE_REFERENCE
+  delta:
+    action_state: 双手包住碗壁借热度暖手，不饮用
+    required_visual_evidence:
+      - 双手包住碗壁
+      - 碗口明显低于下唇
+      - 碗与嘴之间有清晰可见距离
+      - 姿态表现取暖而非饮用
+    forbidden_visual_outcome:
+      - 嘴唇接触碗沿
+      - 碗口遮住嘴
+      - 头部向碗做饮用动作
+      - 吞咽或喝水姿态
+    composition_constraint:
+      required: 前景出现李陵肩部或局部背影，苏武为主要清晰主体
+      forbidden: 完全正面并排双人构图
+
+shot_b:
+  shot_no: 5-2-05
+  candidates: [李陵 Character Master, 苏武 Character Master, 汉节 Prop Reference, 苏武穹庐 Scene Master]
+  all_stable_overflow_plan:
+    selected: [李陵 Character Master, 苏武 Character Master, 汉节 Prop Reference]
+    omitted: [苏武穹庐 Scene Master]
+    rationale: 两名清晰可见主要人物优先；汉节是本 Shot 叙事焦点；Scene 因固定上限被省略
+    count: 3
+  current_legal_plan:
+    selected: [李陵 Character Master, 苏武穹庐 Scene Master]
+    missing_stable_reference: [苏武]
+    unavailable_optional_candidate: [汉节]
+    status: MISSING_STABLE_REFERENCE
+  prop_transition:
+    previous: 苏武手持碗
+    current: 碗已放在桌上，苏武双手空出
+    result: ALLOWED_SHOT_DELTA
+
+shot_c:
+  shot_no: 5-2-06
+  candidates: [李陵 Character Master, 苏武穹庐 Scene Master]
+  selected: [李陵 Character Master, 苏武穹庐 Scene Master]
+  count: 2
+  omitted: []
+  padding_reference: null
+
+static_camera_intent:
+  push_in: 更紧的代表性终点构图与更强主体压迫感
+  tilt_up: 单张图保留焦点物件与人物关系，或选择运动终点
+  rack_focus: 明确前后景关系与注意中心
+  temporal_motion_required: false
+
+cross_shot_review:
+  locked: [人物身份, 年龄, 发型与胡须, 基础胡服, 穹庐身份, 入夜弱火]
+  allowed_delta: [姿态, 视线, 表情, 身体方向, 自然衣褶, 景别与机位导致的背景变化]
+  shot_specific_delta: [暖手不饮, 放碗扶节, 手停节上反问]
+  allowed_delta_is_drift: false
+  compare_only_per_shot_pass: true
+
+identity_annotation_order:
+  - Provider Output
+  - Visual Content Review PASS
+  - Identity Annotation
+  - Media Import

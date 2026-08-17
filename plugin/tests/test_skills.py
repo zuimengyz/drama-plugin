@@ -472,9 +472,11 @@ def test_openai_adapters_are_optional_interface_metadata_only() -> None:
 def test_shot_production_has_minimal_conditional_visual_provider_contract() -> None:
     instructions = (ROOT / "skills/shot-production/SKILL.md").read_text(encoding="utf-8")
     capability = reference_text("shot-production", "visual-provider.md")
+    production_rules = reference_text("shot-production", "production-rules.md")
     host_mapping = (ROOT / "docs/visual-provider-host-integration.md").read_text(encoding="utf-8")
 
     assert "references/visual-provider.md" in instructions
+    assert "references/production-rules.md" in instructions
     assert all(
         code in instructions
         for code in (
@@ -500,6 +502,18 @@ def test_shot_production_has_minimal_conditional_visual_provider_contract() -> N
     assert "runtime provider owns the executable tool schemas" in capability
     assert "Context reads, non-visual planning, research, and creative development remain independent" in capability
     assert all(
+        rule in production_rules
+        for rule in (
+            "MAX_REFERENCE_COUNT = 3",
+            "MISSING_STABLE_REFERENCE",
+            "Required Visual Evidence",
+            "Forbidden Visual Outcome",
+            "SEQUENCE_CONTINUITY_REQUIRES_REPLAN",
+            "Visual Content Review PASS",
+            "Identity Annotation",
+        )
+    )
+    assert all(
         name in host_mapping
         for name in (
             "search_templates",
@@ -512,6 +526,76 @@ def test_shot_production_has_minimal_conditional_visual_provider_contract() -> N
         )
     )
     assert not any(path.name in {"comfy-tools.yaml", "comfy-tool-contract.json", "comfy-mcp-schema.json"} for path in ROOT.rglob("*"))
+
+
+def batch53_fixture() -> dict:
+    return yaml.safe_load((ROOT / "tests/fixtures/shot-production-batch5-3.yaml").read_text(encoding="utf-8"))
+
+
+def test_shot_production_plans_two_visible_characters_and_scene_with_fixed_maximum() -> None:
+    case = batch53_fixture()["shot_a"]
+    assert case["visible_entities"] == ["李陵", "苏武", "苏武穹庐"]
+    assert case["all_stable_plan"]["count"] == batch53_fixture()["max_reference_count"] == 3
+    assert len(case["all_stable_plan"]["selected"]) == 3
+
+
+def test_shot_production_reports_missing_key_visible_character_reference() -> None:
+    plan = batch53_fixture()["shot_a"]["current_plan"]
+    assert plan["status"] == "MISSING_STABLE_REFERENCE"
+    assert plan["missing_stable_reference"] == ["苏武"]
+
+
+def test_shot_production_selects_and_explains_three_when_candidates_overflow() -> None:
+    fixture = batch53_fixture()
+    case = fixture["shot_b"]
+    plan = case["all_stable_overflow_plan"]
+    assert len(case["candidates"]) == 4
+    assert plan["count"] == len(plan["selected"]) == fixture["max_reference_count"]
+    assert plan["omitted"] and plan["rationale"]
+
+
+def test_shot_production_compiles_negative_semantics_to_visible_evidence_and_forbidden_outcomes() -> None:
+    delta = batch53_fixture()["shot_a"]["delta"]
+    assert len(delta["required_visual_evidence"]) >= 4
+    assert len(delta["forbidden_visual_outcome"]) >= 4
+    assert any("距离" in item for item in delta["required_visual_evidence"])
+    assert any("接触" in item for item in delta["forbidden_visual_outcome"])
+
+
+def test_shot_production_compiles_over_shoulder_composition_constraint() -> None:
+    composition = batch53_fixture()["shot_a"]["delta"]["composition_constraint"]
+    assert "肩部" in composition["required"] or "背影" in composition["required"]
+    assert "正面并排" in composition["forbidden"]
+
+
+def test_shot_production_accepts_explicit_prop_state_transition() -> None:
+    transition = batch53_fixture()["shot_b"]["prop_transition"]
+    assert transition["previous"] != transition["current"]
+    assert transition["result"] == "ALLOWED_SHOT_DELTA"
+
+
+def test_shot_production_compiles_camera_motion_as_static_key_image_intent() -> None:
+    intent = batch53_fixture()["static_camera_intent"]
+    assert all(intent[name] for name in ("push_in", "tilt_up", "rack_focus"))
+    assert intent["temporal_motion_required"] is False
+
+
+def test_shot_production_cross_shot_review_distinguishes_locked_and_allowed_delta() -> None:
+    review = batch53_fixture()["cross_shot_review"]
+    assert review["locked"] and review["allowed_delta"] and review["shot_specific_delta"]
+    assert review["allowed_delta_is_drift"] is False
+    assert review["compare_only_per_shot_pass"] is True
+
+
+def test_shot_production_keeps_identity_annotation_after_visual_review() -> None:
+    order = batch53_fixture()["identity_annotation_order"]
+    assert order == ["Provider Output", "Visual Content Review PASS", "Identity Annotation", "Media Import"]
+
+
+def test_shot_production_does_not_pad_simple_shot_reference_plan() -> None:
+    case = batch53_fixture()["shot_c"]
+    assert case["count"] == len(case["selected"]) == 2
+    assert case["padding_reference"] is None
 
 
 def test_skill_and_readme_memory_tool_references_are_registered() -> None:

@@ -10,6 +10,7 @@ tools:
   allowed: [asset.list_assets, media.list_media, context.build_context, context.refresh_context]
 completion:
   conditions:
-    - Requested image, video, or audio outputs pass the applicable review and exist as stable mediaIds with clear Shot semantics.
-    - Visual requests use no more than three selected stable reference Media and stop on missing required runtime capability.
+    - Requested image, video, or audio outputs pass the applicable per-Shot review and exist as stable mediaIds with clear Shot semantics.
+    - Visual requests use a recorded plan of no more than three stable Asset-plus-Media references and stop on a missing key visible character reference or required runtime capability.
+    - Continuous Review-PASS Shots preserve Locked Facts, allow justified deltas, and pass the applicable cross-Shot continuity review.
     - No storage, provider, workflow, filename, node, or other implementation detail leaks into Drama domain facts.

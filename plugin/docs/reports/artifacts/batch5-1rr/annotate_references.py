@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 from pathlib import Path
@@ -116,10 +117,29 @@ def annotate(item: dict[str, str], font: ImageFont.FreeTypeFont) -> dict[str, ob
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input")
+    parser.add_argument("--output")
+    parser.add_argument("--label")
+    args = parser.parse_args()
+
     if not FONT_PATH.is_file():
         raise RuntimeError(f"Required system font is missing: {FONT_PATH}")
     font = ImageFont.truetype(str(FONT_PATH), FONT_SIZE)
-    results = [annotate(item, font) for item in ITEMS]
+    supplied = (args.input, args.output, args.label)
+    if any(supplied) and not all(supplied):
+        parser.error("--input, --output, and --label must be supplied together")
+    if all(supplied):
+        input_path = Path(args.input).resolve()
+        items = ({
+            "source": str(input_path),
+            "output": str(Path(args.output).resolve()),
+            "expected_sha256": sha256(input_path),
+            "label": args.label,
+        },)
+    else:
+        items = ITEMS
+    results = [annotate(item, font) for item in items]
     print(json.dumps(results, ensure_ascii=False, indent=2))
 
 

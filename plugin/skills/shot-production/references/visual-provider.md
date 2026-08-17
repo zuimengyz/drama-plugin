@@ -45,4 +45,4 @@ After generation, require:
 wait -> fetch local output -> Visual Review PASS -> Drama Media import -> stable mediaId
 ```
 
-Visual Review checks that the file is valid, the intended subject is present, selected references have a reasonable effect, the Shot or Asset goal is met, and no obvious prohibited content appears. On Review FAIL, allow at most one minimal revision by adjusting the prompt or reference selection. If it fails again, return the production or review failure; do not benchmark models or repair workflows automatically.
+Visual Review checks that the file is valid, the intended subject is present, selected references have a reasonable effect, the Shot or Asset goal is met, and no obvious prohibited content appears. Apply the detailed semantic and continuity gates in [production-rules.md](production-rules.md). On Review FAIL, allow at most one minimal revision, targeted only at confirmed errors, while preserving Stable Facts and the Reference Plan; change that plan only when review proves it incorrect. If the revision fails, return the production or review failure; do not benchmark models or repair workflows automatically.

@@ -8,6 +8,7 @@ from drama_plugin.contracts.context import ContextBuildRequest, DramaContextPatc
 from drama_plugin.contracts.creation import Episode, Scene, Script, Shot, Work
 from drama_plugin.contracts.media import Media, MediaResolveResult, MediaType
 from drama_plugin.contracts.research import ClaimAssessment, ResearchEvidence, ResearchSource
+from drama_plugin.exceptions import ContractValidationError
 from drama_plugin.providers.base import AssetProvider, ContextProvider, MediaProvider, MemoryProvider, ProductionProvider, ResearchProvider
 from drama_plugin.tools.registry import ToolDefinition, ToolHandler, ToolRegistry, tool
 from drama_plugin.tools.schemas import object_schema, schema_for
@@ -19,6 +20,38 @@ def _domain_tool(code: str, description: str, handler: ToolHandler, output: Any,
 
 def build_tool_registry(memory: MemoryProvider, asset: AssetProvider, research: ResearchProvider, production: ProductionProvider, media: MediaProvider, context: ContextProvider) -> ToolRegistry:
     registry = ToolRegistry()
+
+    async def generate_video(
+        prompt: str,
+        start_frame_media_id: str | None = None,
+        end_frame_media_id: str | None = None,
+        reference_media_ids: list[str] | None = None,
+        parameters: dict[str, Any] | None = None,
+    ) -> Media:
+        references = reference_media_ids or []
+        has_start = start_frame_media_id is not None
+        has_end = end_frame_media_id is not None
+        if has_start or has_end:
+            if not (has_start and has_end) or references:
+                raise ContractValidationError(
+                    "Start-end video requires exactly one start frame and one end frame, without arbitrary references"
+                )
+        elif len(references) != 1:
+            raise ContractValidationError(
+                "Single-image video requires exactly one reference media input"
+            )
+        if len(prompt) > 2000:
+            raise ContractValidationError(
+                "Video motion prompt exceeds the 2000-character contract limit"
+            )
+        return await production.generate_video(
+            prompt,
+            start_frame_media_id,
+            end_frame_media_id,
+            references,
+            parameters,
+        )
+
     specs = [
         _domain_tool("work.create_work", "Create a complete initial work as persistent memory.", memory.create_work, Work, required={"title": str, "content": dict[str, Any]}, optional={"description": str | None}),
         _domain_tool("work.get_work", "Read a work by stable ID.", memory.get_work, Work, required={"work_id": str}),
@@ -55,7 +88,7 @@ def build_tool_registry(memory: MemoryProvider, asset: AssetProvider, research: 
         _domain_tool("media.import_media", "Import an external media source into durable Drama-managed storage.", media.import_media, Media, required={"work_id": str, "media_type": MediaType, "source_uri": str, "content": dict[str, Any]}, optional={"asset_id": str | None, "shot_id": str | None, "purpose": str | None}),
         _domain_tool("media.resolve_media", "Resolve durable Drama-managed media to a temporary consumable URL.", media.resolve_media, MediaResolveResult, required={"media_id": str}),
         _domain_tool("production.generate_image", "Generate an image from business-level prompt and stable references.", production.generate_image, Media, required={"prompt": str}, optional={"reference_asset_ids": list[str] | None, "reference_media_ids": list[str] | None, "parameters": dict[str, Any] | None}),
-        _domain_tool("production.generate_video", "Generate a video from business-level prompt and stable media references.", production.generate_video, Media, required={"prompt": str}, optional={"start_frame_media_id": str | None, "end_frame_media_id": str | None, "reference_media_ids": list[str] | None, "parameters": dict[str, Any] | None}),
+        _domain_tool("production.generate_video", "Generate a video from exactly one source image or one same-target start/end frame pair.", generate_video, Media, required={"prompt": str}, optional={"start_frame_media_id": str | None, "end_frame_media_id": str | None, "reference_media_ids": list[str] | None, "parameters": dict[str, Any] | None}),
         _domain_tool("production.generate_audio", "Generate audio from a business-level prompt and stable references.", production.generate_audio, Media, required={"prompt": str}, optional={"reference_media_ids": list[str] | None, "parameters": dict[str, Any] | None}),
         _domain_tool("research.search_sources", "Search external historical sources for the current run.", research.search_sources, list[ResearchSource], required={"query": str}),
         _domain_tool("research.search_events", "Search historical event evidence for the current run.", research.search_events, list[ResearchEvidence], required={"query": str}),

@@ -546,6 +546,19 @@ def test_visual_provider_retry_policy_is_single_source_and_shared_by_consumers()
     assert "MAX_TECHNICAL_RETRIES" not in asset
 
 
+def test_shot_production_video_contract_covers_motion_review_and_idempotency() -> None:
+    capability = (ROOT / "skills/shot-production/references/visual-provider.md").read_text(encoding="utf-8")
+    for phrase in (
+        "exactly one stable source Media",
+        "exactly one `start_frame_media_id` and one `end_frame_media_id`",
+        "same Shot/video target",
+        "2,000 characters",
+        "representative frames across the clip",
+        "technical retry never does",
+    ):
+        assert phrase in capability
+
+
 def test_visual_provider_retry_policy_fixture_covers_nine_required_decisions() -> None:
     fixture = yaml.safe_load((ROOT / "tests/fixtures/visual-provider-retry-policy.yaml").read_text(encoding="utf-8"))
     cases = {case["id"]: case for case in fixture["cases"]}

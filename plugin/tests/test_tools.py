@@ -5,7 +5,7 @@ import pytest
 
 from drama_plugin import DramaPlugin
 from drama_plugin.config import DramaPluginConfig
-from drama_plugin.exceptions import DuplicateToolError, ToolNotFoundError
+from drama_plugin.exceptions import ContractValidationError, DuplicateToolError, ToolNotFoundError
 from drama_plugin.plugin import DramaPlugin as PluginRuntime
 from drama_plugin.tools import build_tool_registry
 from drama_plugin.tools.registry import ToolDefinition, ToolRegistry
@@ -84,6 +84,40 @@ def test_representative_output_contracts() -> None:
     assert plugin.tools.get("work.create_work").output_schema["title"] == "Work"
     assert plugin.tools.get("production.generate_image").output_schema["title"] == "Media"
     assert plugin.tools.describe("context.build_context")["code"] == "context.build_context"
+
+
+@pytest.mark.asyncio
+async def test_video_generation_accepts_only_fixed_input_modes_and_bounded_prompt() -> None:
+    plugin = DramaPlugin.load(ROOT)
+    tool = plugin.tools.get("production.generate_video")
+
+    single = await tool.handler(prompt="subtle motion", reference_media_ids=["media-start"])
+    assert single.media_type.value == "VIDEO"
+    assert single.content["reference_media_ids"] == ["media-start"]
+
+    pair = await tool.handler(
+        prompt="subtle transition",
+        start_frame_media_id="media-start",
+        end_frame_media_id="media-end",
+    )
+    assert pair.content["reference_media_ids"] == ["media-start", "media-end"]
+
+    invalid_inputs = (
+        {},
+        {"reference_media_ids": ["media-a", "media-b"]},
+        {"start_frame_media_id": "media-start"},
+        {
+            "start_frame_media_id": "media-start",
+            "end_frame_media_id": "media-end",
+            "reference_media_ids": ["media-extra"],
+        },
+    )
+    for arguments in invalid_inputs:
+        with pytest.raises(ContractValidationError):
+            await tool.handler(prompt="subtle motion", **arguments)
+
+    with pytest.raises(ContractValidationError):
+        await tool.handler(prompt="x" * 2001, reference_media_ids=["media-start"])
 
 
 def test_persistent_memory_and_production_contracts_are_minimal() -> None:

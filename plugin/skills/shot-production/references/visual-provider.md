@@ -52,6 +52,19 @@ Route by both generation intent and reference count:
 
 Use the Host adapter's current verified preference when it remains available and matches the intent. Discover a replacement official template only when that preference is missing or cannot perform the required intent. Do not create a saved, custom, or dynamic workflow.
 
+## Video input and motion contract
+
+Use one fixed input mode per video target:
+
+- **Single image**: exactly one stable source Media in `reference_media_ids`; no start or end frame fields.
+- **Start-end**: exactly one `start_frame_media_id` and one `end_frame_media_id` belonging to the same Shot/video target; no arbitrary reference list.
+
+Reject zero or multiple single-image inputs, partial start-end pairs, mixed modes, and cross-Shot images presented as one frame pair. Do not create new frame assets only to satisfy a test surface.
+
+Compile a compact motion prompt from Shot semantics. Retain only subject/body motion, facial micro-expression, camera motion, environment motion, speed/intensity, critical continuity, and forbidden semantic changes. Keep it at or below 2,000 characters and compact by meaning rather than truncating blindly.
+
+For video review, inspect the dynamic process using playback or representative frames across the clip. Check identity, age/hair/costume, motion and anatomy, Shot semantic preservation, camera compliance, Scene stability, lighting, and prop state. A completed job or readable file is not content PASS. Allow at most one targeted motion-prompt revision after a concrete content failure; a revision increments `generationCount`, while technical retry never does.
+
 ## Input and output handoff
 
 Prepare each formal reference through this semantic path:

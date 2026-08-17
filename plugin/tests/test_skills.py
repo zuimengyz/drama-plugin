@@ -641,6 +641,23 @@ def test_shot_production_does_not_pad_simple_shot_reference_plan() -> None:
     assert case["padding_reference"] is None
 
 
+def test_scene_level_production_combines_one_shared_context_with_named_per_shot_references() -> None:
+    fixture = yaml.safe_load((ROOT / "tests/fixtures/scene-level-batch5-5.yaml").read_text(encoding="utf-8"))
+    scene = fixture["scene"]
+    references = fixture["references"]
+
+    assert scene["id"] and scene["shared_context"]["locked_facts"]
+    assert 3 <= len(scene["shots"]) <= 5
+    assert len({shot["id"] for shot in scene["shots"]}) == len(scene["shots"])
+    assert all(shot["delta"] for shot in scene["shots"])
+    assert all(len(shot["reference_ids"]) <= fixture["max_reference_count"] for shot in scene["shots"])
+    assert all(reference_id in references for shot in scene["shots"] for reference_id in shot["reference_ids"])
+    assert all(
+        reference["identity"] and reference["asset_id"] and reference["media_id"] and reference["purpose"]
+        for reference in references.values()
+    )
+
+
 def test_skill_and_readme_memory_tool_references_are_registered() -> None:
     registered = {tool.code for tool in DramaPlugin.load(ROOT).tools.list()}
     documented = (ROOT / "README.md").read_text(encoding="utf-8")

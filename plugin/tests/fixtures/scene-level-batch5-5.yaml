@@ -1,0 +1,45 @@
+scene:
+  id: scene_399ace55923e47be8092eb808d7d284c
+  title: 5-2 一桌家书
+  shared_context:
+    location: 苏武穹庐内
+    time_lighting: 入夜；冷暗环境；弱火暖光逐步衰减
+    historical_period: 西汉；北海拘留时期
+    visual_tone: 克制、寒冷、近距离
+    locked_facts:
+      - 李陵保持中年、长发短须、深色胡服与皮毛
+      - 苏武保持成熟至年长、灰黑发须、残旧汉服与粗皮毛
+      - 同一圆形毡帐、低矮木具与历史材质
+      - 汉节磨损且仍有少量旄毛
+  shots:
+    - id: shot_a9dc0ba7dfdc4e7ea2d1d479403c6274
+      shot_no: 5-2-04
+      delta: 双人过肩；苏武只暖手不饮
+      reference_ids: [liling, suwu, qionglu]
+    - id: shot_5559407312e04d9988591a11d3bcbf7f
+      shot_no: 5-2-05
+      delta: 李陵扶节；碗由苏武手中转移至矮桌
+      reference_ids: [liling, suwu, qionglu]
+    - id: shot_11b46c83ee77483fb01c6903cfa198c3
+      shot_no: 5-2-06
+      delta: 李陵正面近景；手停在汉节；苏武画外反问
+      reference_ids: [liling, qionglu]
+
+references:
+  liling:
+    identity: 人物：李陵
+    asset_id: asset_df44cfb7db1646f2a7b7eae2463a032e
+    media_id: media_fe9dae51b9a74c8ea4819784eca27154
+    purpose: MASTER_CHARACTER_CARD
+  suwu:
+    identity: 人物：苏武
+    asset_id: asset_0e367cfbb4594d3cbf34f1b88c5cfc7f
+    media_id: media_945361aca6954fe6bfe7b5cea94a9ced
+    purpose: MASTER_CHARACTER_CARD
+  qionglu:
+    identity: 场景：苏武穹庐
+    asset_id: asset_c13dbef904f04c63bc48de0a8505be66
+    media_id: media_ec444a5cf36040bcb96b2b12b8a6ea6e
+    purpose: MASTER_SCENE_CARD
+
+max_reference_count: 3

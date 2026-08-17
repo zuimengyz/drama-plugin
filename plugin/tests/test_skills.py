@@ -528,6 +528,49 @@ def test_shot_production_has_minimal_conditional_visual_provider_contract() -> N
     assert not any(path.name in {"comfy-tools.yaml", "comfy-tool-contract.json", "comfy-mcp-schema.json"} for path in ROOT.rglob("*"))
 
 
+def test_visual_provider_retry_policy_is_single_source_and_shared_by_consumers() -> None:
+    capability = reference_text("shot-production", "visual-provider.md")
+    shot = (ROOT / "skills/shot-production/SKILL.md").read_text(encoding="utf-8")
+    asset = (ROOT / "skills/asset-resolution/SKILL.md").read_text(encoding="utf-8")
+
+    assert "MAX_TECHNICAL_RETRIES = 2" in capability
+    assert "MAX_TOTAL_ATTEMPTS = 3" in capability
+    assert "technicalRetryCount" in capability and "generationCount" in capability
+    assert "PROVIDER_SUBMISSION_OUTCOME_UNKNOWN" in capability
+    assert "VISUAL_PROVIDER_TEMPORARILY_UNAVAILABLE" in capability
+    assert "same `jobId`" in capability
+    assert "PROVIDER_AUTH_REQUIRED" in capability
+    assert "references/visual-provider.md" in shot
+    assert "../shot-production/references/visual-provider.md" in asset
+    assert "Do not duplicate or weaken that policy here" in asset
+    assert "MAX_TECHNICAL_RETRIES" not in asset
+
+
+def test_visual_provider_retry_policy_fixture_covers_nine_required_decisions() -> None:
+    fixture = yaml.safe_load((ROOT / "tests/fixtures/visual-provider-retry-policy.yaml").read_text(encoding="utf-8"))
+    cases = {case["id"]: case for case in fixture["cases"]}
+
+    assert fixture["max_technical_retries"] == 2
+    assert fixture["max_total_attempts"] == 3
+    assert len(cases) == 9
+    assert cases["initialize_transient_then_pass"]["expected"] == {
+        "result": "CONTINUE", "technical_retry_count": 1, "generation_count": 0,
+    }
+    assert cases["initialize_retry_exhausted"]["expected"]["result"] == "VISUAL_PROVIDER_TEMPORARILY_UNAVAILABLE"
+    assert cases["initialize_retry_exhausted"]["expected"]["total_attempts"] == 3
+    assert cases["status_same_job"]["expected"]["reused_job_id"] == cases["status_same_job"]["job_id"]
+    assert cases["status_same_job"]["expected"]["new_generation_submit"] is False
+    assert cases["output_same_job"]["expected"]["reused_job_id"] == cases["output_same_job"]["job_id"]
+    assert cases["output_same_job"]["expected"]["generation_count_delta"] == 0
+    assert cases["signed_url_expired"]["expected"]["new_generation_submit"] is False
+    assert cases["submit_outcome_unknown"]["expected"]["blind_resubmit"] is False
+    assert cases["visual_review_fail"]["expected"]["technical_retry_count"] == 0
+    assert cases["visual_review_fail"]["expected"]["targeted_revise"] is True
+    assert cases["missing_stable_reference"]["expected"]["result"] == "ASSET_RESOLUTION"
+    assert cases["oauth_required"]["expected"]["technical_retry_count"] == 0
+    assert cases["oauth_required"]["expected"]["oauth_recovery_max"] == 1
+
+
 def batch53_fixture() -> dict:
     return yaml.safe_load((ROOT / "tests/fixtures/shot-production-batch5-3.yaml").read_text(encoding="utf-8"))
 

@@ -1,0 +1,69 @@
+version: 1
+max_technical_retries: 2
+max_total_attempts: 3
+cases:
+  - id: initialize_transient_then_pass
+    stage: initialize
+    events: [HTTP_502, PASS]
+    expected:
+      result: CONTINUE
+      technical_retry_count: 1
+      generation_count: 0
+  - id: initialize_retry_exhausted
+    stage: initialize
+    events: [HTTP_502, HTTP_502, HTTP_502]
+    expected:
+      result: VISUAL_PROVIDER_TEMPORARILY_UNAVAILABLE
+      technical_retry_count: 2
+      total_attempts: 3
+  - id: status_same_job
+    stage: job_status
+    job_id: job-abc
+    events: [HTTP_502, PASS]
+    expected:
+      result: CONTINUE
+      technical_retry_count: 1
+      reused_job_id: job-abc
+      new_generation_submit: false
+  - id: output_same_job
+    stage: get_output
+    job_id: job-complete
+    events: [HTTP_503, PASS]
+    expected:
+      result: CONTINUE
+      technical_retry_count: 1
+      reused_job_id: job-complete
+      generation_count_delta: 0
+  - id: signed_url_expired
+    stage: output_download
+    job_id: job-complete
+    events: [SIGNED_URL_EXPIRED, FRESH_GET_OUTPUT, PASS]
+    expected:
+      result: CONTINUE
+      reused_job_id: job-complete
+      new_generation_submit: false
+  - id: submit_outcome_unknown
+    stage: generation_submit
+    events: [REQUEST_SENT_RESPONSE_LOST]
+    expected:
+      result: PROVIDER_SUBMISSION_OUTCOME_UNKNOWN
+      blind_resubmit: false
+  - id: visual_review_fail
+    stage: visual_review
+    events: [VISUAL_REVIEW_FAIL]
+    expected:
+      technical_retry_count: 0
+      targeted_revise: true
+      generation_count_delta: 1
+  - id: missing_stable_reference
+    stage: reference_planning
+    events: [MISSING_STABLE_REFERENCE]
+    expected:
+      technical_retry_count: 0
+      result: ASSET_RESOLUTION
+  - id: oauth_required
+    stage: authentication
+    events: [PROVIDER_AUTH_REQUIRED]
+    expected:
+      technical_retry_count: 0
+      oauth_recovery_max: 1

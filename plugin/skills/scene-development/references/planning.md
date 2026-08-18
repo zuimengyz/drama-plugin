@@ -4,15 +4,15 @@ Use this method during the Scene `Plan` stage. Plan a necessary, playable dramat
 
 ## 1. Inherit the Episode contract
 
-Record the Episode dramatic job and current objective, character/relationship state, known information, historical boundary, previous Scene exit state, and next intended direction. Identify exactly what this Scene must contribute.
+Record the Episode dramatic job, assigned `requiredSpineBeatIds`, actor attribution, historical boundary, previous Scene Narrative Output State, next intended Narrative Input State, and the transition this Scene must represent.
 
 If the Episode offers no coherent job or state destination, label an upstream Episode issue instead of inventing a different Episode inside the Scene.
 
-## 2. Define a change-based purpose
+## 2. Define Narrative Input State, Required Transition, and Narrative Output State
 
-State why the Scene must exist using an action and result: rupture an alliance, force a political cost, expose a secret, remove an option, or obtain/refuse a commitment. “Show the relationship” or “discuss the danger” is not a sufficient purpose.
+State why the Scene must exist using a supported action and result. Name its input, required transition, and intended output across historical/story state, knowledge, relationship, decision, danger, goal, power, commitment, location, or available choice. “Show the relationship” or “discuss the danger” is not a sufficient purpose.
 
-Map the entry and intended exit states. Require a causal change in knowledge, relationship, decision, danger, goal, power, commitment, or available choice.
+Require the input to follow the previous output. If an indispensable mobilization, travel, arrival, confrontation, decision, or consequence lies between them, represent it in this or another Scene; do not hide it in an unexplained jump.
 
 ## 3. Give a character a playable objective
 

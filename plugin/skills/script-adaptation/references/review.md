@@ -6,15 +6,18 @@ Apply this rubric to the complete Script draft before persistence. Treat every r
 
 | Check | PASS evidence | FAIL signal |
 |---|---|---|
-| Work fidelity | Premise, protagonist, arcs, theme, boundary, major turns, and ending inherit the approved Work. | Script silently redesigns the Work or masks an upstream defect. |
+| Work fidelity | Scope, spine, authority, protagonist alignment, theme, boundary, major turns, and ending inherit the approved Work. | Script silently redesigns the Work or masks an upstream defect. |
+| Historical beat coverage | Every indispensable spine beat maps to a Script segment and proposed Episode unit. | A required beat disappears during adaptation. |
+| Fact attribution | Actor granularity and primary causal roles remain unchanged. | A collective or higher-authority act is reassigned to a named protagonist. |
+| Dramatization non-causality | Compatible invention can be deleted without breaking the historical chain. | Fiction explains an actual historical result. |
 | Main line | A clear whole-series pursuit and dramatic question govern all major segments. | The Script is an event list or unrelated collection of episodes. |
-| Character motivation | Major actions follow continuous goals, pressure, and choices. | Characters act only because history or the outline requires it. |
-| Character arc | Abstract Work arcs become visible actions, failures, decisions, and changed behavior. | Growth is asserted in prose but not dramatized. |
+| Character motivation | Invented actions have bounded motivation and supported historical actions retain their actual cause. | Motivation fabricates or replaces historical causality. |
+| Interpretive progression | Optional Work interpretation becomes observable without carrying historical causality. | Invented growth or relationship change explains an outcome. |
 | Secondary lines | Each secondary line serves the main line, arc, theme, or climax. | A subplot is detached, repetitive, or oversized for short form. |
 | Conflict escalation | Costs, constraints, and irreversibility increase toward crisis and climax. | Later units repeat the same conflict at the same intensity. |
 | Causality | Decisions produce consequences and changed story states. | Chronology rather than choice connects the dramatic units. |
 | Information reveal | Discoveries change decisions, danger, or relationships. | Characters lecture each other or explain facts both already know. |
-| Episode architecture | Every proposed unit has a distinct job, entry/exit state, turn, and causal hook. | Plot is mechanically split by length or date. |
+| Episode architecture | Every proposed unit has required spine beats, a distinct job, entry/exit state, turn, and causal transition. | Plot is mechanically split by quota, length, or date, or omits required coverage. |
 | Pacing | Conflict begins early and each unit materially advances the series. | Repeated exposition, static discussion, or redundant beats stall progress. |
 | Screenability | Essential meaning is observable or audible through performance and environment. | Interior prose or abstract explanation cannot be played or filmed. |
 | Dialogue | Dialogue has intent, interaction, differentiated pressure, and room for subtext. | History-textbook exposition dominates or voices are interchangeable. |

@@ -1,4 +1,4 @@
 interface:
   display_name: "Work Creation"
-  short_description: "Create the literary work behind a historical drama"
-  default_prompt: "Use $work-creation to shape this research context into a coherent historical-drama Work."
+  short_description: "Build a scope- and evidence-governed historical Work"
+  default_prompt: "Use $work-creation to derive scope, spine, actor authority, protagonist, architecture, and coverage-based structure from this research context."

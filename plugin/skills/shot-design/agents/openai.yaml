@@ -1,4 +1,4 @@
 interface:
   display_name: "Shot Design"
   short_description: "Design concise and continuity-aware dramatic Shots"
-  default_prompt: "Use $shot-design to turn this Scene into the fewest necessary, production-ready Shots."
+  default_prompt: "Use $shot-design to cover this Scene with the fewest Shots that preserve both visual and causal narrative state continuity."

@@ -6,8 +6,9 @@ Use this method during the Script `Plan` stage. Plan screen adaptation and whole
 
 Record the approved Work foundation that the Script must inherit:
 
-- premise, protagonist, central conflict, stakes, thematic question, and ending;
-- major character and relationship arcs;
+- Historical Scope, ordered Historical Spine, actor hierarchy, Narrative Authority, protagonist alignment, and architecture mappings;
+- premise, supported conflict/stakes, thematic question, and ending;
+- any optional non-causal character or relationship interpretation;
 - supported facts, disputed areas, invention boundary, and forbidden historical changes;
 - major story turns, format, audience, tone, scale, and short-form intent.
 
@@ -15,25 +16,25 @@ The Script may redesign screen structure, episode allocation, information reveal
 
 ## 2. Build the main dramatic line
 
-Express the whole-series drive as a causal progression. For each major structural segment, specify:
+Express the whole-series drive as a causal progression. For each major structural segment, specify its required `spineBeatIds` and:
 
 ```text
-current pursuit
-→ stronger obstacle
-→ protagonist decision
-→ new consequence
+current historical/story state
+→ supported actor action or pressure
+→ consequence
 → changed story state
+→ next required spine beat
 ```
 
-Ensure the main line enters conflict early, narrows options, increases costs, forces an irreversible decision, and culminates in a payoff earned by earlier choices. Reject a line that is only a sequence of known historical events.
+Ensure the line is playable without reassigning causal acts. A supported chronology may supply the causal backbone; adaptation adds presentation, pressure, and state change without inventing why the historical outcome occurred.
 
 ## 3. Control secondary lines
 
 Use only secondary lines that advance the main line, character arc, theme, climax, or an essential relationship. Define where each line intersects and changes the main progression. Delete, merge, or reduce a line that remains detached. Keep the number appropriate for short-form drama.
 
-## 4. Translate character arcs to the screen
+## 4. Translate optional interpretation to the screen
 
-Map each approved Work arc to observable progression:
+Map each approved non-causal Work interpretation, when present, to observable progression:
 
 - action taken under pressure;
 - decision and sacrifice;
@@ -55,7 +56,7 @@ Progress from an initial problem through complication, higher cost, narrowing op
 
 Check that every escalation changes at least one of goal, danger, knowledge, loyalty, relationship, or available choice.
 
-## 7. Plan episode architecture
+## 7. Plan episode architecture from required coverage
 
 Script may plan the series architecture without creating Episode entities. For each proposed unit define:
 
@@ -65,7 +66,7 @@ Script may plan the series architecture without creating Episode entities. For e
 - exit state and its causal link to the next unit;
 - hook, reversal, decision, crisis, or earned partial resolution.
 
-Allocate by dramatic task and state change, not by equal page count or chronological slices. Ensure the series-level main line, arcs, escalation, climax, and ending remain visible across the allocation. Detailed single-episode design belongs downstream.
+Allocate by required beat coverage, transition, dramatic task, and state change, not by equal page count, a preset quota, or arbitrary chronology slices. Record `requiredSpineBeatIds` for each proposed unit. Split, merge, or adjust the estimate when a unit is overloaded or a required transition is missing. Detailed single-episode design belongs downstream.
 
 ## 8. Shape short-form pacing
 

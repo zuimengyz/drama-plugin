@@ -12,3 +12,4 @@ completion:
   conditions:
     - Material claims have cited evidence or an explicit uncertainty label.
     - Facts, inferences, disputes, and dramatic inventions are distinguishable.
+    - Consequential claims preserve source-supported actor granularity, causal role, sequence, and scope.

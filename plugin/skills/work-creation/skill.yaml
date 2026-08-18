@@ -10,6 +10,6 @@ tools:
   allowed: [work.list_works, research.verify_claim, context.build_context, context.refresh_context]
 completion:
   conditions:
-    - A character-driven formal story foundation establishes premise, protagonist goal and need, capable opposition, stakes, theme, arcs, causal architecture, climax, and ending rather than an event summary.
-    - Historical constraints, uncertainty, and dramatic invention remain explicit.
-    - Persistence follows sufficient context, an internal plan, a complete draft, and a passing Work review with no unresolved historical or continuity conflict.
+    - Historical scope, an ordered causal spine, actor hierarchy, and scope-relative Narrative Authority govern protagonist selection; fact attribution stays at evidence-supported actor granularity and causality is not reassigned downward.
+    - Story architecture maps to the historical spine, compatible dramatization remains deletable from historical causality, and structure estimates derive from coverage rather than quotas.
+    - Persistence follows sufficient context, an internal plan, a complete draft, and a passing binary Work review with every historical hard gate satisfied.

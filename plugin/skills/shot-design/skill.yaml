@@ -10,6 +10,6 @@ tools:
   allowed: [asset.get_asset, media.get_media, context.build_context, context.refresh_context]
 completion:
   conditions:
-    - A Scene-faithful coverage strategy gives every retained Shot a narrative purpose, executable subject/action/blocking, motivated camera language, rhythm, and entry/exit visual state.
-    - Coverage is minimal yet sufficient, spatially and performatively continuous, reference-stable, generation-feasible, and ready for downstream production.
+    - A Scene-faithful coverage strategy gives every Shot a Narrative Input State, Required Transition, Narrative Output State, purpose, executable action, and visual entry/exit state.
+    - Visual, action, Scene-state, causal-narrative, historical-beat, and full-story continuity are reviewed separately; visual PASS cannot hide narrative FAIL.
     - Persistence follows sufficient context, an internal plan, complete draft coverage, and a passing Shot review with no unresolved historical or continuity conflict.

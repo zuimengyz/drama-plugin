@@ -7,8 +7,11 @@ Apply this rubric to the complete Scene draft before persistence. Keep evaluatio
 | Check | PASS evidence | FAIL signal |
 |---|---|---|
 | Episode fidelity | Purpose and exit state serve the approved Episode job/direction. | Scene silently redesigns or detours from the Episode. |
+| Historical beat coverage | Assigned spine beats are represented in action, consequence, or an explicit compatible compression. | A required historical beat disappears. |
+| Fact attribution | Historical actions retain evidence-supported actors and granularity. | A collective or higher-authority act is reassigned. |
 | Scene purpose | A specific action/result explains why this Scene exists. | Purpose only displays character, setting, theme, or background. |
-| Entry state | Relevant knowledge, relationship, goal, danger, and power are usable. | The starting dramatic conditions are ambiguous. |
+| Narrative input state | Relevant story, historical, spatial, knowledge, danger, and power conditions follow the previous output. | Starting conditions are ambiguous or appear without cause. |
+| Required transition | Necessary decision, movement, confrontation, or consequence is represented. | A major state change is skipped between Scenes. |
 | Character objective | A center character pursues an immediate playable result. | Nobody wants anything specific now. |
 | Opposing force | Present resistance can materially block the objective. | No obstacle acts, or “history” is only discussed. |
 | Stakes | Failure has a concrete immediate consequence. | Success and failure are dramatically equivalent. |
@@ -17,10 +20,11 @@ Apply this rubric to the complete Scene draft before persistence. Keep evaluatio
 | Dialogue/subtext | Speech serves objectives/tactics, interacts with action, and avoids shared-fact exposition. | Dialogue teaches history or directly states every intention. |
 | Playable action | Interior meaning is externalized through performable behavior. | Abstract psychology or narration carries the Scene. |
 | Turn | A consequential event changes what characters can do next. | No reversal, discovery, decision, or lost option occurs. |
-| Meaningful state change | Knowledge, relationship, decision, danger, goal, power, commitment, or choice changes. | Before equals after in every material dimension. |
+| Narrative output state | Material state changes causally and is sufficient for the next Scene input. | Before equals after or the next input cannot follow. |
 | Historical integrity | Action respects approved fact, uncertainty, and invention boundaries. | Convenience creates unsupported historical drift. |
 | Scene necessity | Deletion materially damages Episode job, state, information, decision, or danger. | The Episode works almost unchanged without the Scene. |
-| Continuity | Entry follows prior state and exit supports the next direction. | Character, knowledge, object, time, or motivation jumps without cause. |
+| Scene state continuity | Previous output matches current input across relevant story and spatial dimensions. | State, location, force disposition, knowledge, or motivation jumps without cause. |
+| Causal narrative continuity | Required transitions explain how the story advances between Scenes. | An indispensable intermediate state is omitted. |
 | Downstream readiness | Shot design can cover approved action without inventing conflict or camera instructions already embedded. | Scene is unplayable, incomplete, or prematurely dictates Shots. |
 
 ## Apply the hard gates
@@ -28,6 +32,8 @@ Apply this rubric to the complete Scene draft before persistence. Keep evaluatio
 **Before/After Gate:** if entry and exit are materially the same and no information, relationship, decision, danger, goal, power, commitment, or choice changes, Review FAIL.
 
 **Delete Scene Test:** if removal causes negligible loss to the Episode job or state progression, delete, merge, or re-plan; Review FAIL.
+
+**Narrative Transition Gate:** if `Previous Narrative Output State → Current Narrative Input State` is not causally supported, or a required transition is absent, return `FAIL_NARRATIVE_TRANSITION`; Review FAIL. Visual identity continuity cannot override this failure.
 
 ## Reject common anti-patterns
 

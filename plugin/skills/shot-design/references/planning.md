@@ -4,7 +4,7 @@ Use this method during the Shot `Plan` stage. Plan the complete coverage group b
 
 ## 1. Inherit the Scene contract
 
-Record the Scene purpose, objective/opposition, conflict-in-action, key beats, turn, entry/exit state, place/time, spatial layout, blocking, performance state, dialogue, historical boundary, stable visual references, and production constraints.
+Record the Scene's required historical beats, Narrative Input State, Required Transition, Narrative Output State, purpose/action/turn, place/time, spatial layout, blocking, historical boundary, references, and constraints.
 
 If the Scene lacks playable conflict, action, or state change, label an upstream Scene issue. Camera technique cannot create missing drama.
 
@@ -60,9 +60,9 @@ When stable references exist and matter, verify character identity, costume, pro
 
 Track time of day, lighting direction, weather, elapsed time, and ongoing action. Do not introduce an unexplained temporal or lighting jump inside a continuous Scene.
 
-## 10. Define entry and exit visual states
+## 10. Define narrative and visual states
 
-Keep each Shot's entry/exit state concise but sufficient for continuity and downstream generation: visible subjects, positions, action phase, relevant prop state, performance state, camera relation, and intended transition. Not every Shot needs a major story change.
+For every Shot, state `Narrative Input State`, `Required Transition`, and `Narrative Output State`, plus concise visual entry/exit state. Not every Shot needs a major story change, but adjacent output/input states must match and the group must represent every indispensable Scene transition. Do not jump from order to distant consequence when mobilization, travel, arrival, or confrontation is narratively required.
 
 ## 11. Apply generation feasibility and complexity gates
 

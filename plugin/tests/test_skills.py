@@ -11,11 +11,11 @@ from drama_plugin.skills import SkillRegistry
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED = {"historical-research", "work-creation", "script-adaptation", "episode-development", "scene-development", "shot-design", "asset-resolution", "shot-production"}
 CREATIVE = {
-    "work-creation": ("work.create_work", "work.save_work", ("theme", "viewpoint", "central conflict", "timeline")),
-    "script-adaptation": ("script.create_script", "script.save_script", ("main", "character arcs", "pacing", "climax")),
-    "episode-development": ("episode.create_episode", "episode.save_episode", ("dramatic job", "opening hook", "information gain", "ending hook")),
-    "scene-development": ("scene.create_scene", "scene.save_scene", ("dramatic purpose", "objective", "conflict", "entry/exit")),
-    "shot-design": ("shot.create_shot", "shot.save_shot", ("dramatic function", "framing", "camera behavior", "continuity")),
+    "work-creation": ("work.create_work", "work.save_work", ("historical_spine_complete", "fact_attribution_valid", "protagonist_scope_alignment", "structure_covers_spine")),
+    "script-adaptation": ("script.create_script", "script.save_script", ("historical spine", "fact attribution", "episode architecture", "climax")),
+    "episode-development": ("episode.create_episode", "episode.save_episode", ("historical beat coverage", "narrative input", "required transition", "neighbor continuity")),
+    "scene-development": ("scene.create_scene", "scene.save_scene", ("historical beat coverage", "narrative input", "scene_state_continuity", "causal_narrative_continuity")),
+    "shot-design": ("shot.create_shot", "shot.save_shot", ("character_visual_continuity", "shot_action_continuity", "causal_narrative_continuity", "historical_beat_coverage")),
 }
 LIFECYCLE = (
     "Understand Goal",
@@ -196,45 +196,110 @@ def test_professional_references_are_minimal_discoverable_and_stage_routed() -> 
         assert len(reference_text(skill_code, "review.md").splitlines()) < 100
 
 
-def test_work_professional_method_covers_story_design_and_quality_gate() -> None:
+def test_work_professional_method_covers_historical_story_design_and_quality_gate() -> None:
     planning = reference_text("work-creation", "planning.md")
     review = reference_text("work-creation", "review.md")
     assert_concept_groups(
         planning,
         (
-            ("Convert event into story", "story engine"),
-            ("external goal", "active goal"),
-            ("internal need", "blind spot"),
-            ("opposition", "capacity to act"),
-            ("escalating stakes", "higher cost"),
+            ("Historical Scope", "historicalScope"),
+            ("Historical Spine", "historicalSpine"),
+            ("actor hierarchy", "Narrative Authority"),
+            ("Viewpoint can move downward",),
+            ("actor granularity",),
             ("premise", "logline"),
             ("dramatic question", "theme"),
-            ("relationship", "final state"),
-            ("irreversible choice", "irreversible decision"),
+            ("internalNeed", "interpretive"),
+            ("Dramatization Deletion Test",),
             ("documented", "dramatic invention space"),
-            ("short-drama scale", "short-form suitability"),
+            ("Coverage First", "structureEstimate"),
         ),
     )
     assert planning.count("→") >= 5
-    assert "briefly compare more than one viable option" in planning
+    assert "Compare viable protagonist/viewpoint options only within these constraints" in planning
     assert review.count("| PASS evidence | FAIL signal |") == 1
     rubric_rows = [line for line in review.splitlines() if line.startswith("| ") and "---" not in line]
     assert len(rubric_rows) >= 14
     assert_concept_groups(
         review,
         (
-            ("Story identity", "Historical Summary"),
-            ("Protagonist", "Passive Protagonist"),
-            ("Opposition", "Villain Flattening"),
-            ("Dramatic causality", "Chronology Dump"),
-            ("Character arc", "Relationship arc"),
+            ("Historical Scope", "Historical Spine"),
+            ("Fact attribution", "actor granularity"),
+            ("Protagonist/scope alignment", "Interesting Supporting Hero"),
+            ("Causal promotion", "UNSUPPORTED_CAUSAL_PROMOTION"),
+            ("Dramatization deletion", "FAIL_UNSUPPORTED_CAUSAL_EVENT"),
             ("Historical integrity", "Historical Drift"),
-            ("Downstream readiness", "formal story foundation"),
+            ("Downstream readiness", "formal historical story foundation"),
             ("Re-plan the Work", "Rewrite the full draft"),
         ),
     )
     persist = lifecycle_sections((ROOT / "skills/work-creation/SKILL.md").read_text(encoding="utf-8"))["Persist"]
-    assert_concept_groups(persist, (("event summary", "character list"), ("passive protagonist",), ("climax and ending",)))
+    assert_concept_groups(persist, (("event summary", "character list"), ("unsupported actor attribution",), ("protagonist/scope mismatch",), ("climax and ending",)))
+
+
+def test_historical_narrative_hardening_generic_cases_and_gates() -> None:
+    fixture = yaml.safe_load(
+        (ROOT / "tests/fixtures/creative-quality/historical-narrative-hardening.yaml").read_text(encoding="utf-8")
+    )
+    assert fixture["version"] == 1
+    by_id = {case["id"]: case for case in fixture["cases"]}
+    assert set(by_id) == {
+        "actor_attribution",
+        "protagonist_scope_alignment",
+        "scope_narrowing",
+        "dramatization_deletion",
+        "structure_coverage",
+    }
+    assert by_id["actor_attribution"]["expected"] == "FAIL"
+    assert by_id["protagonist_scope_alignment"]["expected"] == "FAIL"
+    assert by_id["scope_narrowing"]["expected"] == "PASS"
+    assert by_id["scope_narrowing"]["primaryCausalityReassigned"] is False
+    assert by_id["dramatization_deletion"]["spineAfterDeletionIntact"] is True
+    assert by_id["structure_coverage"]["expected"] == "FAIL"
+
+    work = (ROOT / "skills/work-creation/SKILL.md").read_text(encoding="utf-8")
+    work_review = reference_text("work-creation", "review.md")
+    for gate in (
+        "HISTORICAL_SPINE_COMPLETE",
+        "FACT_ATTRIBUTION_VALID",
+        "PROTAGONIST_SCOPE_ALIGNMENT",
+        "UNSUPPORTED_CAUSAL_PROMOTION_ABSENT",
+        "DRAMATIZATION_NON_CAUSAL",
+        "STORY_ARCHITECTURE_SPINE_ALIGNED",
+        "STRUCTURE_COVERS_SPINE",
+    ):
+        assert gate in work and gate in work_review
+    assert "FAIL_UNSUPPORTED_CAUSAL_EVENT" in work_review
+    assert "Historical Spine → Required Story Beats" in work
+
+
+def test_scene_and_shot_reviews_separate_narrative_from_visual_continuity() -> None:
+    scene = reference_text("scene-development", "review.md")
+    shot = reference_text("shot-design", "review.md")
+    assert "FAIL_NARRATIVE_TRANSITION" in scene and "FAIL_NARRATIVE_TRANSITION" in shot
+    assert "Previous Narrative Output State → Current Narrative Input State" in scene
+    for gate in (
+        "CHARACTER_VISUAL_CONTINUITY",
+        "COSTUME_PERIOD_CONTINUITY",
+        "PROP_STATE_CONTINUITY",
+        "SHOT_ACTION_CONTINUITY",
+        "SCENE_STATE_CONTINUITY",
+        "CAUSAL_NARRATIVE_CONTINUITY",
+        "HISTORICAL_BEAT_COVERAGE",
+        "FULL_STORY_ARC",
+    ):
+        assert gate in shot
+
+
+def test_historical_skill_core_has_no_event_specific_business_rules() -> None:
+    core = "".join(
+        path.read_text(encoding="utf-8")
+        for code in ("historical-research", "work-creation", "script-adaptation", "episode-development", "scene-development", "shot-design")
+        for path in (ROOT / "skills" / code).rglob("*")
+        if path.is_file() and path.suffix in {".md", ".yaml"}
+    )
+    forbidden = ("潼关", "安史之乱", "哥舒翰", "王思礼", "崔乾祐", "安禄山")
+    assert not any(name in core for name in forbidden)
 
 
 def test_script_professional_method_covers_adaptation_and_screenability_gate() -> None:
@@ -300,7 +365,7 @@ def test_episode_professional_method_covers_job_state_turn_and_necessity() -> No
         (
             ("Dramatic job", "Mechanical Split"),
             ("Script fidelity", "upstream Script issue"),
-            ("Entry state", "Exit state"),
+            ("Narrative input state", "Narrative output state"),
             ("Progression and escalation", "Repeated Conflict"),
             ("Turn", "Ending logic"),
             ("Episode necessity", "Delete"),

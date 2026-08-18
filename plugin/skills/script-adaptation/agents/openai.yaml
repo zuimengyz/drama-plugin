@@ -1,4 +1,4 @@
 interface:
   display_name: "Script Adaptation"
   short_description: "Adapt a literary Work into a screen-ready Script"
-  default_prompt: "Use $script-adaptation to adapt this Work into a concise historical short-drama Script."
+  default_prompt: "Use $script-adaptation to adapt this Work without changing its historical spine, actor causality, or coverage requirements."

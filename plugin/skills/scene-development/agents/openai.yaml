@@ -1,4 +1,4 @@
 interface:
   display_name: "Scene Development"
   short_description: "Turn Episode intent into a playable dramatic Scene"
-  default_prompt: "Use $scene-development to develop this Episode moment into a playable historical-drama Scene."
+  default_prompt: "Use $scene-development to realize the assigned historical beats as a playable, causally continuous Scene state transition."

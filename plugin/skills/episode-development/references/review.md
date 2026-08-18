@@ -8,13 +8,16 @@ Apply this rubric to the complete Episode draft before persistence. Keep evaluat
 |---|---|---|
 | Dramatic job | One pressure-driven objective and change explain why the Episode exists. | The job is a topic, recap, or several unrelated tasks. |
 | Script fidelity | Main line, arcs, historical boundary, and structural destination are inherited. | The Episode redesigns the series or drifts from Script. |
-| Entry state | Relevant goal, knowledge, relationship, danger, power, and choices are explicit. | The unit starts without a usable dramatic state. |
+| Historical beat coverage | All assigned spine beats are represented and none are displaced by a size preference. | An assigned beat vanishes or is reduced to an unexplained result. |
+| Fact attribution | Supported actor granularity and causal roles remain intact. | A historical act is narrowed or transferred without evidence. |
+| Narrative input state | Relevant story, historical, spatial, knowledge, danger, power, and choice conditions are explicit. | The unit starts without a usable or continuous state. |
+| Required transition | The necessary change between input and output is represented. | A major decision, movement, confrontation, or consequence is skipped. |
 | Character objective | A central character actively pursues a concrete Episode result. | Characters only observe, explain, or wait. |
 | Central conflict | A capable obstacle acts against the objective with real stakes. | Conflict is only discussed or labeled. |
 | Progression and escalation | Tactic/counteraction raises cost or narrows options. | The same disagreement repeats without change. |
 | Turn | A meaningful event redefines available action. | Nothing changes direction or possibility. |
 | Information/character/relationship change | Relevant changes result from action and consequence. | Claimed change is absent or purely descriptive. |
-| Exit state | At least one material state differs causally and continuously. | Entry and exit are effectively the same. |
+| Narrative output state | At least one material state differs causally and continuously and supports the next input. | Output is unchanged or cannot lead to the next unit. |
 | Ending logic | Hook/resolution is earned by the Episode progression. | A fake cliffhanger is appended to static material. |
 | Neighbor continuity | Entry follows prior state and exit supports the next destination. | State, knowledge, motivation, or history jumps without cause. |
 | Episode necessity | Deletion would materially damage line, arc, causality, information, or escalation. | The whole series works almost unchanged without it. |

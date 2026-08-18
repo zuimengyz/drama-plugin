@@ -4,7 +4,7 @@ Use this method during the Episode `Plan` stage. Plan one necessary dramatic uni
 
 ## 1. Inherit the series contract
 
-Record the Script main line, relevant secondary line, current character and relationship states, historical boundary, approved Episode Architecture, previous Episode exit state, and next structural destination. Preserve the series protagonist, premise, arcs, and ending.
+Record the Script main line, assigned `requiredSpineBeatIds`, actor attribution, historical boundary, approved but adjustable Episode Architecture, previous Narrative Output State, and next structural destination. Preserve the series scope, protagonist alignment, historical causality, and ending.
 
 If the Script cannot support a coherent unit, label an upstream Script issue. Do not silently repair the whole-series design inside the Episode.
 
@@ -14,7 +14,7 @@ State in one sentence what pressure forces which character to pursue or choose w
 
 If several unrelated major jobs compete, split or re-plan. Every secondary beat must serve the selected job or necessary continuity.
 
-## 3. Map entry and exit state
+## 3. Map Narrative Input State, Required Transition, and Narrative Output State
 
 Describe the entry and intended exit across only the dimensions that matter:
 
@@ -23,7 +23,7 @@ goal · knowledge · relationship · loyalty · danger · power
 available choice · commitment · public position · resource · status
 ```
 
-Require at least one material change caused by this Episode. A changed mood alone is insufficient unless it changes action, choice, or relationship.
+Require at least one material change caused by this Episode. Name the transition that must be represented between input and output; a changed mood alone is insufficient. If assigned historical beats or indispensable travel, mobilization, decision, confrontation, or consequence states do not fit, adjust the Episode allocation instead of deleting them.
 
 ## 4. Build the conflict progression
 

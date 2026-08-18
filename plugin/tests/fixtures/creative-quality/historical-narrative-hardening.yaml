@@ -1,0 +1,35 @@
+version: 1
+purpose: Generic contract cases for historical actor attribution, scope alignment, non-causal dramatization, and coverage-first structure.
+cases:
+  - id: actor_attribution
+    evidence: {actor: "the army's commanders", event: "recommend holding the position", evidenceClass: DOCUMENTED}
+    candidate: {actor: "a named junior officer", event: "personally originates the recommendation"}
+    expected: FAIL
+    code: UNSUPPORTED_CAUSAL_PROMOTION
+  - id: protagonist_scope_alignment
+    historicalScope: "the complete main decision and battle process"
+    actorAuthority: {primary_actor: PRIMARY, supporting_actor: SECONDARY}
+    protagonist: supporting_actor
+    scopeNarrowed: false
+    expected: FAIL
+    code: PROTAGONIST_SCOPE_ALIGNMENT
+  - id: scope_narrowing
+    historicalScope: "the supporting actor's bounded experience during the event"
+    actorAuthority: {primary_actor: PRIMARY, supporting_actor: SECONDARY}
+    protagonist: supporting_actor
+    scopeNarrowed: true
+    primaryCausalityReassigned: false
+    expected: PASS
+    code: PROTAGONIST_SCOPE_ALIGNMENT
+  - id: dramatization_deletion
+    historicalSpine: ["an institution issues an order", "the responsible commander executes it", "execution changes the operational state"]
+    dramatizedButCompatible: "a messenger places the sealed order on a map"
+    spineAfterDeletionIntact: true
+    expected: PASS
+    code: DRAMATIZATION_NON_CAUSAL
+  - id: structure_coverage
+    requiredSpineBeatIds: [H1, H2, H3, H4, H5]
+    smallScalePreference: true
+    coveredSpineBeatIds: [H1, H2, H4, H5]
+    expected: FAIL
+    code: STRUCTURE_COVERS_SPINE

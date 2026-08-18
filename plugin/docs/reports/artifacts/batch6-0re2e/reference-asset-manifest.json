@@ -1,0 +1,66 @@
+{
+  "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+  "referenceReview": {
+    "status": "PASS",
+    "initialGenerations": 8,
+    "targetedRevisions": 1,
+    "targetedRevisionSubject": "杨国忠",
+    "acceptedStableReferences": 8
+  },
+  "storageRoundTrip": {
+    "status": "PASS",
+    "resolvedMediaCount": 8,
+    "sha256Matches": 8
+  },
+  "references": [
+    {
+      "referenceCode": "REF_GESHUIHAN",
+      "assetId": "asset_807f5ae3694746ccab81c828ab57e990",
+      "mediaId": "media_2a0e7a10b8fc4dc5863731c02e5392ef",
+      "sha256": "e006d8318dd0ae69379e223b3e91b1566c4c6386cf0b33b3a7e470626a447e22"
+    },
+    {
+      "referenceCode": "REF_YANGGUOZHONG",
+      "assetId": "asset_f8758f34a2dd4143add8cc05310c14b0",
+      "mediaId": "media_9acf2344f16d4314861cc86b669507bb",
+      "sha256": "51bd342bbbe988be3bdf3bb44a23dd338e1715418344aa650c06941ffdee6d06",
+      "revisionCount": 1
+    },
+    {
+      "referenceCode": "REF_XUANZONG",
+      "assetId": "asset_48da4dbe8ce543959e42e4bf32d20279",
+      "mediaId": "media_29d74ccf25a14b6eaaca7c279cf3973b",
+      "sha256": "8054eaa5d9905a5fb97b06aab08bd3efae36a5f3b446ea45ab4ed825ac2d3a89"
+    },
+    {
+      "referenceCode": "REF_CUIQIANYOU",
+      "assetId": "asset_5d8ecf9686e24cf0abbc20aa0c574506",
+      "mediaId": "media_75a43189c6e04bb68eae14af9b5d2c44",
+      "sha256": "b010107ce99cc3a2f570704d87795f3f042978831da18b4f791bb71a641f5664"
+    },
+    {
+      "referenceCode": "REF_HUOBAGUIREN",
+      "assetId": "asset_0c2a314098c34978b5fe53d1430fab85",
+      "mediaId": "media_09d311a310d947e0b3bcc13a3ed5ad77",
+      "sha256": "27584f59da938f948b46af7008be967fd4107ff0523dcf7b1f1577f274608d48"
+    },
+    {
+      "referenceCode": "REF_TONGPASS",
+      "assetId": "asset_085e19d0344849088d91e2e5507eded6",
+      "mediaId": "media_0bbcae64f15e4d82b1e8f34512ea5f9f",
+      "sha256": "465b7af1d5f08d7dffc6ba06bfd5970028a3558705c1b334a18a1d12a9a9a629"
+    },
+    {
+      "referenceCode": "REF_LINGBAO",
+      "assetId": "asset_02cdcd70e5c3493190f7ab238838ef72",
+      "mediaId": "media_d5550347e77145e1a2064b4d55ed72ae",
+      "sha256": "fd96732a6f470e751b8b903367132e1159c5ed9daa8d2895c55525785c2faba3"
+    },
+    {
+      "referenceCode": "REF_CHANGAN",
+      "assetId": "asset_fad338fbf7c44da6a2e1f2b934264fa9",
+      "mediaId": "media_837edf2e0766462888b427aa0c98192d",
+      "sha256": "486eefe3a8a6d7469be2e590953670fdb435b70aeb18ada06a89df016c1c7264"
+    }
+  ]
+}

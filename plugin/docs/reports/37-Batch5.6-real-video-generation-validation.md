@@ -2,7 +2,7 @@
 
 执行日期：2026-08-17  
 执行范围：Scene `5-2 一桌家书`；Shot `5-2-04`、`5-2-05`  
-最终结论：`BATCH_5_6 = FAIL`
+最终结论：`BATCH_5_6 = FAIL_CONTENT_REVIEW`（当前权威依据见第 18 节；历史执行结论继续保留）
 
 ## 1. Executive Summary
 
@@ -506,3 +506,180 @@ NEXT_BATCH_READY = NO
 本次已证明断点恢复与幂等边界有效：Shot `5-2-04` 始终复用原 completed job，`get_output` 可刷新 Signed URL，且没有重复收费生成。但用户调整后的当前 Windows 网络仍无法建立到实际 Output Host 的可用 TCP/TLS/HTTP 下载路径，故 MP4、Dynamic Review 和 Media Persistence 仍无法完成。
 
 根据明确停止边界，Batch 5.6 继续保持 `FAIL`；Shot `5-2-05` 未提交，`NEXT_BATCH_READY = NO`。
+
+## 18. Final Acceptance — macOS Local Provider Output Recovery
+
+最终验收日期：2026-08-18
+
+当前 Host：macOS
+
+恢复性质：同一 Batch 5.6 的最终断点恢复；不是重新执行，也不是新的 Provider Generation。
+
+### 18.1 Inherited Provider Generation
+
+本次继续复用既有真实 completed Provider Job：
+
+- Shot：`5-2-04`
+- Shot ID：`shot_a9dc0ba7dfdc4e7ea2d1d479403c6274`
+- Source Image Media ID：`media_bd382552bfc94719b6e2b2dffa00583c`
+- Provider Job ID：`fb42f0e2-7b38-4adb-a474-86315efb68e8`
+- Provider Job Status：`completed`
+- Shot 5-2-04 generation count：1
+- Existing job reused：YES
+- Duplicate submit：NO
+
+没有再次提交 Provider Generation，没有重新生成 Shot `5-2-04`，没有重新生成 Batch 5.5 图片，也没有为恢复输出再次消费 credits。
+
+### 18.2 Local Provider Output Recovery
+
+仅在当前项目目录内检索 MP4，得到唯一候选：
+
+```text
+LOCAL_VIDEO_PATH=drama-plugin/plugin/docs/reports/artifacts/batch5-6/video_Seedance2.0_r2v_00001_.mp4
+FILE_NAME=video_Seedance2.0_r2v_00001_.mp4
+FILE_SIZE=6239891
+SHA256=5b4c641a250d04bb252de62b891e3e3b00d033367b6a4296c65a3c0f462efb7b
+MODIFIED_AT=2026-08-18 14:06:12 +0800
+```
+
+该文件位于 Batch 5.6 报告 artifacts 目录，且是项目目录内唯一 MP4。结合文件位置、修改时间和当前 Batch 上下文，确认它为本次 `LOCAL_PROVIDER_OUTPUT_RECOVERY`。用户原始 MP4 未被移动、修改或删除。
+
+该 MP4 是 Provider Job `fb42f0e2-7b38-4adb-a474-86315efb68e8` 的人工下载真实输出，不是 Mock、Fixture、替代视频或新 Generation。
+
+### 18.3 Media Validation
+
+使用当前 macOS Host 的 `ffprobe` 对原始文件执行最小媒体检查：
+
+```text
+container=mov,mp4,m4a,3gp,3g2,mj2
+codec=h264
+video_stream_exists=YES
+duration=4.041667
+width=960
+height=960
+fps=24/1
+fileSize=6239891
+SHA256=5b4c641a250d04bb252de62b891e3e3b00d033367b6a4296c65a3c0f462efb7b
+```
+
+容器可解析、视频流存在，且 duration、width、height、fps、fileSize 均大于 0。因此：
+
+```text
+REAL_MP4_OUTPUT_CONFIRMED = PASS
+LOCAL_PROVIDER_OUTPUT_RECOVERY = PASS
+```
+
+### 18.4 Dynamic Video Review
+
+Review 实际覆盖完整 4.041667 秒动态过程。除首帧、25%、50%、75% 和末帧外，另以 6 fps 抽取 24 个等间隔代表帧检查连续动作，并以 4 fps 的 16 张全分辨率帧复核后半段关键语义；不是仅凭 MP4 valid 或首尾帧判定。
+
+Review 结果：
+
+1. Character Identity Stability：PASS。苏武在完整过程中脸型、年龄、发型与胡须没有明显身份漂移；前景李陵的可见范围有限，但未出现明显身份跳变或人物瞬移。
+2. Costume Stability：PASS。两人服装颜色、材质与轮廓稳定，没有明显换装或服饰 morph。
+3. Motion Quality：PASS。苏武双手与上肢运动连续，未见严重手部、面部或人体形变；动作速度总体克制。
+4. Semantic Preservation：FAIL。苏武从双手持碗逐步抬高，在后段将碗沿送至嘴唇并维持明确饮用姿态。该动态过程直接违反“苏武双手持碗取暖”及硬性 Forbidden Semantic“不得抬碗饮用；不得让碗接触嘴唇”。
+5. Camera Compliance：PASS。构图基本保持 STATIC，仅有极弱漂移，未出现无要求的大幅运镜。
+6. Scene Stability：PASS。穹庐、桌案、器皿与主要背景结构稳定，未见明显 disappear、瞬移或大范围场景 morph。
+7. Structural Quality：PASS。人物、手部、面部、碗及主要道具未见足以构成硬失败的严重结构破坏。
+
+Shot-specific semantic correctness 是硬门禁，其他维度 PASS 不能补偿 Forbidden Semantic FAIL。因此权威结论为：
+
+```text
+SHOT_01_VIDEO_CONTENT_REVIEW = FAIL_FORBIDDEN_DRINKING_SEMANTIC
+VIDEO_DYNAMIC_REVIEW_CAPABILITY = PASS
+```
+
+### 18.5 Persistence Gate
+
+按照正式顺序：
+
+```text
+Provider Output
+-> Visual Content Review PASS
+-> Identity Annotation when required
+-> Media Import
+```
+
+本次 Content Review 未 PASS，因此没有调用 `media.import_media`、`media.get_media` 或 `media.resolve_media`，也没有创建未经审查的正式 Video Media。不存在可比较的 imported contentHash 或 resolved-media SHA-256。
+
+```text
+SHOT_01_VIDEO_MEDIA_IMPORT = NOT_RUN_CONTENT_REVIEW_FAIL
+SHOT_01_VIDEO_MEDIA_RESOLVE = NOT_RUN_NO_IMPORTED_MEDIA
+SHOT_01_VIDEO_MEDIA_INTEGRITY = NOT_RUN_NO_IMPORTED_MEDIA
+VIDEO_MEDIA_PERSISTENCE = NOT_RUN_CONTENT_REVIEW_FAIL
+```
+
+### 18.6 Scope Reduction and Historical Technical Debt
+
+Shot `5-2-05` 不再执行第二次付费视频 Generation：
+
+```text
+SHOT_02_VIDEO_GENERATION = NOT_RUN_SCOPE_REDUCED
+CROSS_SHOT_DYNAMIC_REVIEW = DEFERRED_TO_BATCH_6
+```
+
+此前 Windows Host 到 `storage.googleapis.com` Signed URL 的失败继续保留为历史事实，但不再是当前 macOS Host 的执行阻断。本次不继续调查 GCS 网络，也没有修改 Skill Core、Drama MCP、Java、数据库或下载框架。
+
+```text
+WINDOWS_GCS_DOWNLOAD_ISSUE = DEFERRED_TECHNICAL_DEBT
+CURRENT_HOST = MACOS
+AUTOMATED_PROVIDER_OUTPUT_DOWNLOAD = NOT_REQUIRED_FOR_LOCAL_CONTENT_REVIEW
+```
+
+### 18.7 Final Acceptance Fields
+
+以下字段是 Final Acceptance 后的最新权威状态；第 15 节和第 17.8 节继续作为历史执行快照保留。
+
+```text
+REAL_VIDEO_PROVIDER_GENERATION = PASS
+REAL_MP4_OUTPUT_CONFIRMED = PASS
+
+CURRENT_HOST = MACOS
+LOCAL_PROVIDER_OUTPUT_RECOVERY = PASS
+
+SHOT_01_VIDEO_GENERATION = PASS
+SHOT_01_VIDEO_GENERATION_COUNT = 1
+SHOT_01_EXISTING_JOB_REUSED = YES
+SHOT_01_DUPLICATE_SUBMIT = NO
+
+SHOT_01_VIDEO_CONTENT_REVIEW = FAIL_FORBIDDEN_DRINKING_SEMANTIC
+
+SHOT_01_VIDEO_MEDIA_IMPORT = NOT_RUN_CONTENT_REVIEW_FAIL
+SHOT_01_VIDEO_MEDIA_RESOLVE = NOT_RUN_NO_IMPORTED_MEDIA
+SHOT_01_VIDEO_MEDIA_INTEGRITY = NOT_RUN_NO_IMPORTED_MEDIA
+
+SINGLE_IMAGE_VIDEO_CONTRACT = PASS
+SINGLE_IMAGE_VIDEO_REAL_E2E = FAIL_CONTENT_REVIEW
+
+START_END_VIDEO_CONTRACT = PASS
+START_END_VIDEO_REAL_E2E = NOT_RUN_NO_EXISTING_FRAME_PAIR
+
+SHOT_02_VIDEO_GENERATION = NOT_RUN_SCOPE_REDUCED
+CROSS_SHOT_DYNAMIC_REVIEW = DEFERRED_TO_BATCH_6
+
+WINDOWS_GCS_DOWNLOAD_ISSUE = DEFERRED_TECHNICAL_DEBT
+AUTOMATED_PROVIDER_OUTPUT_DOWNLOAD = NOT_REQUIRED_FOR_LOCAL_CONTENT_REVIEW
+
+VIDEO_GENERATION_CAPABILITY = PASS
+VIDEO_DYNAMIC_REVIEW_CAPABILITY = PASS
+VIDEO_MEDIA_PERSISTENCE = NOT_RUN_CONTENT_REVIEW_FAIL
+
+IMAGE_GENERATION = NOT_RUN
+AUDIO_GENERATION = NOT_RUN
+VIDEO_EDITING = NOT_RUN
+
+JAVA_CHANGED = NO
+DRAMA_MCP_CHANGED = NO
+DATABASE_CHANGED = NO
+NEW_DOWNLOAD_FRAMEWORK = NO
+
+BATCH_5_6 = FAIL_CONTENT_REVIEW
+NEXT_BATCH_READY = NO
+```
+
+### 18.8 Final Acceptance Conclusion
+
+macOS 本地恢复已经证明既有真实 Provider Job 产出了可解析的真实 MP4，也使完整动态 Review 得以实际执行；Windows GCS 下载问题因此转为独立历史 Technical Debt。
+
+但是视频在动态过程中明确执行了被禁止的“抬碗至唇边饮用”动作。依据既有 Review Contract，该语义失败阻止 Media Persistence，并且本次明确禁止重新 Generation。因此 Batch 5.6 不能诚实标记为 PASS，最终收口为 `BATCH_5_6 = FAIL_CONTENT_REVIEW`。未提交 Shot `5-2-05`，未消费额外 credits，未进入 Batch 6。

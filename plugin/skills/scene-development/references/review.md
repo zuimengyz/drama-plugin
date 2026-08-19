@@ -18,6 +18,12 @@ Apply this rubric to the complete Scene draft before persistence. Keep evaluatio
 | Tactics and beats | Resistance causes strategy, information, or power to change. | Positions repeat and tactics never adapt. |
 | Conflict-in-action | Decision, action, resistance, and consequence happen now. | Talking heads discuss conflict happening elsewhere. |
 | Dialogue/subtext | Speech serves objectives/tactics, interacts with action, and avoids shared-fact exposition. | Dialogue teaches history or directly states every intention. |
+| Spoken-content need | Canonical `spokenContent` is empty when visuals/action/silence suffice and complete when meaning depends on speech or narration. | Dialogue is forced into a silent Scene, or a speech-dependent Scene stores only a summary. |
+| Exact text and speaker | Every spoken item has complete exact text and resolves a stable Work-scoped speaker or `narrator:` identity without requiring a visual Asset. | Text is missing, identity is a drifting name/Scene-local duplicate, or a missing Asset blocks dialogue. |
+| Spoken dramatic function | Every item has a concrete intent, justified `mustKeep` value, and concise playable performance intent. | Speech has no dramatic action, preservation rule, or usable delivery direction. |
+| Spoken provenance | Relation is `DIRECT_QUOTE`, `ADAPTED`, `DRAMATIZED`, or `FUNCTIONAL`; direct quotations have source, exact locator, matching excerpt, and matching text. | Generated wording is presented as a quote from a general citation, or source boundaries are copied/blurred. |
+| Spoken duration | Every estimate is a positive integer millisecond value adjusted for intelligibility and performance. | Duration is missing, free-form prose, non-positive, or presented as actual audio duration. |
+| Spoken style and economy | Language fits period, character, relationship, action, subtext, and information need without redundancy. | Modern contamination, interchangeable voice, unnatural speech, exposition overload, or action-repeating dialogue remains. |
 | Playable action | Interior meaning is externalized through performable behavior. | Abstract psychology or narration carries the Scene. |
 | Turn | A consequential event changes what characters can do next. | No reversal, discovery, decision, or lost option occurs. |
 | Narrative output state | Material state changes causally and is sufficient for the next Scene input. | Before equals after or the next input cannot follow. |
@@ -34,6 +40,10 @@ Apply this rubric to the complete Scene draft before persistence. Keep evaluatio
 **Delete Scene Test:** if removal causes negligible loss to the Episode job or state progression, delete, merge, or re-plan; Review FAIL.
 
 **Narrative Transition Gate:** if `Previous Narrative Output State → Current Narrative Input State` is not causally supported, or a required transition is absent, return `FAIL_NARRATIVE_TRANSITION`; Review FAIL. Visual identity continuity cannot override this failure.
+
+**Direct Quote Evidence Gate:** `DIRECT_QUOTE` without a nonblank source reference, exact locator, matching excerpt, and matching spoken text is Review FAIL unless explicitly downgraded. Never infer verbatim status from a beat ID or general citation.
+
+**Spoken Identity Gate:** wording, performance, estimate, or provenance-detail revision of the same logical item preserves its `id`. Addition, deletion, split, or merge changes only affected identities; unrelated IDs remain stable.
 
 ## Reject common anti-patterns
 

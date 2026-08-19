@@ -44,7 +44,9 @@ Compose for subject priority, screen space, depth, relationship, negative space,
 
 Do not alternate speaker close-ups automatically. Decide whose power, reaction, concealment, or relationship is most important; sometimes observe the listener while another speaks, preserve a two-shot, or withhold a reaction.
 
-Let Shot duration and cutting serve Scene, performance, information, and action rhythm. Short form does not require every Shot to be short; hold on performance, reaction, silence, or tension only when narratively useful.
+Read exact text only from the parent Scene's canonical `spokenContent`. Bind a retained Shot through canonical `spokenContentBindings` with `spokenContentId` plus `ON_SCREEN_SPEAKER`, `REACTION`, `OFF_SCREEN`, or `VOICE_OVER`; never copy the body or add audio timing. The same item may span speaker and reaction coverage while remaining one source item.
+
+Let Shot duration and cutting serve Scene, performance, information, and action rhythm. Persist positive integer `plannedDurationMs`; prose rhythm may supplement but cannot replace it. For a standalone Shot, distinct bound item estimates must fit its planned duration. For continuous multi-Shot coverage, deduplicate shared item IDs and compare their estimates with the total group duration, then reserve playable room for action, reaction, and silence. Short form does not require every Shot to be short; hold on performance, reaction, silence, or tension only when narratively useful. Apply the [Dialogue Layer content convention](../../../docs/dialogue-layer-content-convention.md).
 
 ## 7. Preserve spatial continuity
 

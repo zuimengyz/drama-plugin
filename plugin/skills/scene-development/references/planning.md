@@ -45,6 +45,10 @@ Make decision, action, resistance, and consequence occur now. Talking about a wa
 
 Give each major speaker a current objective. Let dialogue perform a tactic and interact with action; avoid background both speakers know. Use refusal, interruption, evasion, silence, and differentiated voice when appropriate. Allow spoken meaning to differ from dramatic intention, especially under ritual, status, and political risk, without making dialogue obscure.
 
+First decide whether the Scene needs spoken content at all. Pure environment, action, silence, reaction, battle, transition, or visually sufficient information may keep canonical `spokenContent` empty. If the Scene depends on a proposal, refusal, order, promise, revelation, or narration, a functional summary is insufficient: write reviewed exact text using the [Dialogue Layer content convention](../../../docs/dialogue-layer-content-convention.md). Resolve character `speakerKey` from the Work's existing actor/character structure; use a stable `narrator:` key for narration without creating a visual identity. Estimate every item as positive integer milliseconds before Shot planning.
+
+Plan provenance as `DIRECT_QUOTE`, `ADAPTED`, `DRAMATIZED`, or `FUNCTIONAL`. A direct quote requires source reference, exact locator, matching excerpt, and matching spoken text. Preserve existing item IDs through wording or detail revision; only real addition, deletion, split, or merge changes affected identity.
+
 ## 7. Make action playable
 
 Externalize important interior states through behavior, movement, interaction, object use, physical reaction, choice, silence, distance, and position. Avoid relying on “realizes,” “feels,” or abstract descriptions of the situation.

@@ -44,6 +44,17 @@ When candidate count is three or fewer, select every suitable candidate. When it
 
 Do not pad a plan to three. A single-character Shot whose identity and environment require two references must remain at two.
 
+## Spoken source integrity
+
+Before producing any physical media for a Shot with `spokenContentBindings`:
+
+1. resolve every `spokenContentId` against the owning Scene's canonical `spokenContent`;
+2. reject missing IDs, copied Shot-local dialogue bodies, unrecognized coverage intents, or non-numeric `plannedDurationMs`;
+3. require the Shot or contiguous coverage group to pass `DURATION_FEASIBILITY`, deduplicating a spoken item covered by multiple Shots in the same group;
+4. pass only the resolved fields needed by the provider, including visible performance intent for `ON_SCREEN_SPEAKER`, reaction intent for `REACTION`, and delivery context for `OFF_SCREEN` or `VOICE_OVER`.
+
+Providers consume the reviewed Scene source. They never edit its text, identity, provenance, duration estimate, or stable ID. A visual Asset is required only when visible identity continuity requires it; absence of one does not invalidate dialogue or narrator identity.
+
 ## Shot delta compilation
 
 Translate Shot semantics into visual constraints instead of forwarding literary text unchanged. Produce this compact structure:

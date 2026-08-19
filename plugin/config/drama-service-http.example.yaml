@@ -63,3 +63,4 @@ services:
       list_media: /api/tool/media/list
       import_media: /api/tool/media/import
       resolve_media: /api/tool/media/resolve
+      restore_media_object: /api/tool/media/restore

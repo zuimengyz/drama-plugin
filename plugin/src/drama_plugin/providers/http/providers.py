@@ -8,7 +8,7 @@ from drama_plugin.contracts.asset import Asset, AssetType
 from drama_plugin.contracts.base import dump_contract
 from drama_plugin.contracts.context import ContextBuildRequest, DramaContextPatch, DramaRunContext
 from drama_plugin.contracts.creation import Episode, Scene, Script, Shot, Work
-from drama_plugin.contracts.media import Media, MediaResolveResult, MediaType
+from drama_plugin.contracts.media import Media, MediaResolveResult, MediaRestoreResult, MediaType
 from drama_plugin.contracts.research import ClaimAssessment, ResearchEvidence, ResearchSource
 from drama_plugin.exceptions import ContractValidationError
 from drama_plugin.providers.http.client import HttpProviderClient
@@ -95,6 +95,15 @@ class HttpMediaProvider:
             return _one(Media, await self.http.multipart_request("import_media", metadata=metadata, stream=source.stream, filename=source.filename, content_type=source.content_type))
     async def resolve_media(self, media_id: str) -> MediaResolveResult:
         return _one(MediaResolveResult, await self.http.request("resolve_media", params={"media_id": media_id}))
+    async def restore_media_object(self, media_id: str, source_uri: str) -> MediaRestoreResult:
+        async with open_media_source(source_uri) as source:
+            return _one(MediaRestoreResult, await self.http.multipart_request(
+                "restore_media_object",
+                metadata={"media_id": media_id},
+                stream=source.stream,
+                filename=source.filename,
+                content_type=source.content_type,
+            ))
 
 
 class RemoteContextProvider:

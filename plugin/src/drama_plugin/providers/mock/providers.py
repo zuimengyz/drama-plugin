@@ -5,7 +5,7 @@ from typing import Any, TypeVar
 
 from drama_plugin.contracts.asset import Asset, AssetType
 from drama_plugin.contracts.creation import Episode, Scene, Script, Shot, Work
-from drama_plugin.contracts.media import Media, MediaResolveResult, MediaType
+from drama_plugin.contracts.media import Media, MediaResolveResult, MediaRestoreResult, MediaRestoreStatus, MediaType
 from drama_plugin.contracts.research import ClaimAssessment, ResearchEvidence, ResearchSource
 from drama_plugin.exceptions import ProviderError
 from drama_plugin.providers.mock.data import MockDramaData
@@ -133,6 +133,9 @@ class MockMediaProvider:
     async def resolve_media(self, media_id: str) -> MediaResolveResult:
         await self.get_media(media_id)
         return MediaResolveResult(media_id=media_id, url=f"https://mock.invalid/media/{media_id}", expires_at=datetime.now(UTC) + timedelta(minutes=15), mime_type="application/octet-stream", size_bytes=0)
+    async def restore_media_object(self, media_id: str, source_uri: str) -> MediaRestoreResult:
+        await self.get_media(media_id)
+        return MediaRestoreResult(media_id=media_id, status=MediaRestoreStatus.ALREADY_PRESENT, content_hash="mock", mime_type="application/octet-stream", size_bytes=0)
 
 
 class MockProductionProvider:

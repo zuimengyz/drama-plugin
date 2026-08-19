@@ -11,6 +11,7 @@ Apply this rubric to the complete Work draft before persistence. Evaluation is b
 | Historical Spine | Ordered indispensable beats preserve the scope's main sequence and causality. | A required beat is absent or only photogenic fragments remain. |
 | Fact attribution | Every consequential act remains at evidence-supported actor granularity. | A collective or institutional claim is narrowed to an unsupported named actor. |
 | Actor hierarchy | Material actors have simple, scope-relative authority justified by spine participation. | Authority follows fame, rank, or dramatic convenience rather than causality. |
+| Speaker identity | Every speaking individual has one unique stable Work-scoped `speakerKey`; narration remains separate and visual Asset identity is optional. | Keys collide or change across Scenes, a Scene-local registry duplicates actors, or dialogue is blocked by a missing visual Asset. |
 | Protagonist/scope alignment | The protagonist has PRIMARY authority for broad event scope, or scope is narrowed for a secondary actor. | A supporting actor is promoted while broad scope and historical causality remain claimed. |
 | Causal promotion | No actor receives unsupported judgment, decision, persuasion, or decisive action. | Protagonist agency depends on reassigned causality. |
 | Opposition and stakes | Opposition is intelligible; stakes are historical/political/military/social or evidence-supported personal stakes. | Unsupported personal stakes or a flat villain are invented to force drama. |

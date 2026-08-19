@@ -16,6 +16,9 @@ Apply this rubric to the complete coverage group before persisting any Shot. Kee
 | Framing/angle/movement/composition | Camera language serves information, performance, space, emotion, or action. | Size changes and movement are ornamental or formulaic. |
 | Dialogue/reaction coverage | Coverage follows power, reaction, concealment, and relationship rather than speakers mechanically. | Every line receives its speaker's close-up; reactions are neglected. |
 | Rhythm | Duration/cutting serves Scene, performance, information, and action. | All Shots are arbitrarily short or held without purpose. |
+| Spoken binding | Every binding resolves one parent-Scene item and states `ON_SCREEN_SPEAKER`, `REACTION`, `OFF_SCREEN`, or `VOICE_OVER`; shared coverage keeps one source item. | A binding is dangling/ambiguous, duplicates an item as new dialogue, or confuses reaction coverage with a second audio item. |
+| Spoken source integrity | Shot content contains binding identity only and preserves the reviewed Scene text, provenance, performance intent, and `mustKeep` decision. | Shot copies, rewrites, deletes, or adds spoken text, or stores audio/subtitle timing. |
+| Numeric duration feasibility | Every Shot has positive integer `plannedDurationMs`; distinct spoken estimates fit the Shot or deduplicated contiguous coverage group with playable room. | Duration is prose/non-positive, spoken load exceeds coverage, or production must solve the conflict later. |
 | Scene state continuity | Narrative, spatial, temporal, force, knowledge, and danger state remains legible across the group. | The Scene arrives at an unexplained state. |
 | Spatial continuity | Axis, screen direction, eyeline, relative positions, movement, and geography remain legible. | Unintended crossings or jumps confuse space. |
 | Shot action continuity | Entry/exit action, direction, phase, hands, objects, and positions match. | Props disappear or action jumps without cause. |
@@ -41,7 +44,9 @@ Apply this rubric to the complete coverage group before persisting any Shot. Kee
 
 ## Revision and persist gate
 
-Report these gates separately: `CHARACTER_VISUAL_CONTINUITY`, `COSTUME_PERIOD_CONTINUITY`, `PROP_STATE_CONTINUITY`, `SHOT_ACTION_CONTINUITY`, `SCENE_STATE_CONTINUITY`, `CAUSAL_NARRATIVE_CONTINUITY`, `HISTORICAL_BEAT_COVERAGE`, and `FULL_STORY_ARC`. Any failed gate means group Review FAIL. If an adjacent narrative state or required transition fails, return `FAIL_NARRATIVE_TRANSITION`; visual consistency does not override it.
+Report these gates separately: `CHARACTER_VISUAL_CONTINUITY`, `COSTUME_PERIOD_CONTINUITY`, `PROP_STATE_CONTINUITY`, `SHOT_ACTION_CONTINUITY`, `SCENE_STATE_CONTINUITY`, `CAUSAL_NARRATIVE_CONTINUITY`, `HISTORICAL_BEAT_COVERAGE`, `FULL_STORY_ARC`, and `DURATION_FEASIBILITY`. Any failed gate means group Review FAIL. If an adjacent narrative state or required transition fails, return `FAIL_NARRATIVE_TRANSITION`; visual consistency does not override it.
+
+For `DURATION_FEASIBILITY`, deduplicate one item shared across a contiguous coverage group. Fail when distinct bound spoken estimates do not fit the Shot/group or when arithmetic fit leaves no playable action, reaction, or silence. Resolve this before physical production; no Provider may rewrite the Scene source.
 
 Use local revision for one framing, angle, movement, duration, composition, wording, or minor continuity defect. Re-plan the Shot group when strategy, economy, axis/spatial logic, Scene-turn coverage, feasibility, or production readiness fails. Label missing Scene action/conflict/state change as an upstream Scene issue.
 

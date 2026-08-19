@@ -161,12 +161,45 @@ async def test_resolve_parses_camel_case_result() -> None:
 
 
 @pytest.mark.asyncio
+async def test_restore_uses_allowed_local_file_and_parses_result(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    source = tmp_path / "fixture.png"
+    source.write_bytes(b"stable-png")
+    monkeypatch.setenv("DRAMA_PLUGIN_MEDIA_IMPORT_ALLOWED_ROOTS", str(tmp_path))
+
+    def respond(request: httpx.Request) -> httpx.Response:
+        assert b'"media_id":"media-1"' in request.content
+        assert b"stable-png" in request.content
+        return httpx.Response(200, json={"mediaId":"media-1","status":"RESTORED","contentHash":"abc","mimeType":"image/png","sizeBytes":10})
+
+    config = ServiceConfig(base_url="https://service.invalid", operations={"restore_media_object": "/restore"})
+    async with httpx.AsyncClient(base_url=config.base_url, transport=httpx.MockTransport(respond)) as client:
+        result = await HttpMediaProvider(HttpProviderClient(config, client)).restore_media_object("media-1", source.as_uri())
+    assert result.media_id == "media-1" and result.status.value == "RESTORED"
+
+
+@pytest.mark.asyncio
+async def test_restore_rejects_source_outside_allowed_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    allowed = tmp_path / "allowed"
+    allowed.mkdir()
+    outside = tmp_path / "outside.png"
+    outside.write_bytes(b"outside")
+    monkeypatch.setenv("DRAMA_PLUGIN_MEDIA_IMPORT_ALLOWED_ROOTS", str(allowed))
+    provider = HttpMediaProvider(HttpProviderClient(ServiceConfig(base_url="https://service.invalid", operations={"restore_media_object":"/restore"})))
+    with pytest.raises(MediaImportSourceError) as captured:
+        await provider.restore_media_object("media-1", outside.as_uri())
+    assert captured.value.error_code == "INVALID_ARGUMENT"
+    await provider.http.aclose()
+
+
+@pytest.mark.asyncio
 async def test_mock_import_and_resolve_are_offline() -> None:
     provider = MockMediaProvider(MockDramaData())
     imported = await provider.import_media("work-1", MediaType.IMAGE, "file:///not/read/by/mock.png", {"fixture": True})
     resolved = await provider.resolve_media(imported.id)
     assert imported.source_ref != "file:///not/read/by/mock.png"
     assert resolved.media_id == imported.id
+    restored = await provider.restore_media_object(imported.id, "file:///not/read/by/mock.png")
+    assert restored.media_id == imported.id and restored.status.value == "ALREADY_PRESENT"
 
 
 @pytest.mark.asyncio

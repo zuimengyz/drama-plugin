@@ -16,6 +16,7 @@ POST_OPERATIONS = {
     "create_shot", "save_shot", "create_asset", "save_asset",
     "create_media", "save_media",
     "import_media",
+    "restore_media_object",
 }
 
 
@@ -27,9 +28,9 @@ def _configured_operations() -> dict[str, str]:
     return result
 
 
-def test_34_memory_operations_match_service_mapping_when_sibling_is_available() -> None:
+def test_35_memory_operations_match_service_mapping_when_sibling_is_available() -> None:
     configured = _configured_operations()
-    assert len(configured) == 34
+    assert len(configured) == 35
     plugin = DramaPlugin.load(ROOT)
     expected_codes = {
         tool.code for tool in plugin.tools.list()
@@ -37,7 +38,7 @@ def test_34_memory_operations_match_service_mapping_when_sibling_is_available() 
     }
     assert {code.split(".", 1)[1] for code in expected_codes} == set(configured)
     assert all(path.startswith("/api/tool/") and not path.startswith("http") for path in configured.values())
-    assert len(POST_OPERATIONS) == 15
+    assert len(POST_OPERATIONS) == 16
     if SERVICE_MAPPING.exists():
         service_operations = yaml.safe_load(SERVICE_MAPPING.read_text(encoding="utf-8"))["operations"]
         assert configured == service_operations

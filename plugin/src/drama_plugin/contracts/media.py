@@ -13,6 +13,11 @@ class MediaType(StrEnum):
     AUDIO = "AUDIO"
 
 
+class MediaRestoreStatus(StrEnum):
+    RESTORED = "RESTORED"
+    ALREADY_PRESENT = "ALREADY_PRESENT"
+
+
 class Media(ContractModel):
     id: str
     work_id: str
@@ -30,3 +35,11 @@ class MediaResolveResult(ContractModel):
     expires_at: datetime
     mime_type: str | None = None
     size_bytes: int | None = None
+
+
+class MediaRestoreResult(ContractModel):
+    media_id: str
+    status: MediaRestoreStatus
+    content_hash: str
+    mime_type: str
+    size_bytes: int

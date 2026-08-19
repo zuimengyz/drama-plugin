@@ -1,0 +1,184 @@
+version: 1
+work:
+  historicalActorHierarchy:
+    - {actor: Adviser, speakerKey: "speaker:adviser"}
+    - {actor: Commander, speakerKey: "speaker:commander", assetId: "asset:commander"}
+items:
+  functional: &functional
+    id: spoken-01
+    kind: DIALOGUE
+    speakerKey: "speaker:adviser"
+    text: "The gate is open."
+    intent: "Warn the commander."
+    mustKeep: false
+    performanceIntent: "Low and urgent."
+    provenance: {relation: FUNCTIONAL}
+    estimatedDurationMs: 1400
+  direct: &direct
+    id: spoken-quote
+    kind: DIALOGUE
+    speakerKey: "speaker:commander"
+    text: "Hold the eastern gate."
+    intent: "Issue a documented order."
+    mustKeep: true
+    performanceIntent: "Controlled command."
+    provenance:
+      relation: DIRECT_QUOTE
+      sourceRef: source-letter-7
+      locator: "folio 3r, lines 8-9"
+      excerpt: "Hold the eastern gate."
+    estimatedDurationMs: 1600
+  adapted: &adapted
+    id: spoken-adapted
+    kind: DIALOGUE
+    speakerKey: "speaker:adviser"
+    text: "Their supply road will fail by winter."
+    intent: "Compress the strategic warning."
+    mustKeep: true
+    performanceIntent: "Measured, without triumph."
+    provenance:
+      relation: ADAPTED
+      sourceRefs: [chronicle-2]
+      adaptationNote: "Compresses a three-paragraph assessment."
+    estimatedDurationMs: 2400
+  dramatized: &dramatized
+    id: spoken-dramatized
+    kind: DIALOGUE
+    speakerKey: "speaker:commander"
+    text: "Then we wait for the river to choose."
+    intent: "Turn uncertainty into resolve."
+    mustKeep: false
+    performanceIntent: "Quietly decisive."
+    provenance:
+      relation: DRAMATIZED
+      sourceRefs: [campaign-boundary-1]
+      note: "Invented wording within the documented strategic choice."
+    estimatedDurationMs: 2200
+  narration: &narration
+    id: spoken-narration
+    kind: NARRATION
+    speakerKey: "narrator:default"
+    text: "By dawn, the road was empty."
+    intent: "Bridge the overnight change."
+    mustKeep: true
+    performanceIntent: "Restrained and observational."
+    provenance: {relation: FUNCTIONAL}
+    estimatedDurationMs: 1900
+
+cases:
+  - {id: silent_scene, rule: scene, spokenContent: [], expected: PASS}
+  - {id: character_dialogue, rule: scene, spokenContent: [*functional], expected: PASS}
+  - {id: narration_without_character_asset, rule: scene, spokenContent: [*narration], expected: PASS}
+  - {id: direct_quote_with_exact_evidence, rule: scene, spokenContent: [*direct], expected: PASS}
+  - id: direct_quote_without_exact_evidence
+    rule: direct-quote
+    item:
+      <<: *direct
+      provenance: {relation: DIRECT_QUOTE, sourceRef: source-letter-7}
+    expected: FAIL
+    code: DIRECT_QUOTE_EVIDENCE
+  - {id: adapted_dialogue, rule: scene, spokenContent: [*adapted], expected: PASS}
+  - {id: dramatized_dialogue, rule: scene, spokenContent: [*dramatized], expected: PASS}
+  - {id: functional_dialogue, rule: scene, spokenContent: [*functional], expected: PASS}
+  - id: wording_revision_preserves_id
+    rule: revision
+    before: [*functional]
+    after:
+      - <<: *functional
+        text: "The eastern gate is open."
+        performanceIntent: "Barely above a whisper."
+        estimatedDurationMs: 1700
+    structuralChange: false
+    expected: PASS
+  - id: structural_split_changes_only_affected_ids
+    rule: split
+    before: [*functional, *narration]
+    after:
+      - <<: *functional
+        id: spoken-01a
+        text: "The gate is open."
+      - <<: *functional
+        id: spoken-01b
+        text: "They are already inside."
+      - *narration
+    retiredIds: [spoken-01]
+    unaffectedIds: [spoken-narration]
+    expected: PASS
+  - id: speaker_key_stable_across_scenes
+    rule: speaker-stability
+    scenes:
+      - [{speakerName: Adviser, speakerKey: "speaker:adviser"}]
+      - [{speakerName: Adviser, speakerKey: "speaker:adviser"}]
+    expected: PASS
+  - id: speaker_without_visual_asset
+    rule: scene
+    spokenContent: [*functional]
+    expected: PASS
+  - id: on_screen_binding
+    rule: binding
+    sceneItems: [*functional]
+    shot: {plannedDurationMs: 2000, spokenContentBindings: [{spokenContentId: spoken-01, coverageIntent: ON_SCREEN_SPEAKER}]}
+    expected: PASS
+  - id: reaction_binding
+    rule: binding
+    sceneItems: [*functional]
+    shot: {plannedDurationMs: 2000, spokenContentBindings: [{spokenContentId: spoken-01, coverageIntent: REACTION}]}
+    expected: PASS
+  - id: offscreen_and_voiceover_bindings
+    rule: binding
+    sceneItems: [*functional, *narration]
+    shot:
+      plannedDurationMs: 4000
+      spokenContentBindings:
+        - {spokenContentId: spoken-01, coverageIntent: OFF_SCREEN}
+        - {spokenContentId: spoken-narration, coverageIntent: VOICE_OVER}
+    expected: PASS
+  - id: standalone_duration_fits
+    rule: duration
+    sceneItems: [*functional]
+    shots:
+      - {plannedDurationMs: 2000, spokenContentBindings: [{spokenContentId: spoken-01, coverageIntent: ON_SCREEN_SPEAKER}]}
+    groups: [[0]]
+    expected: PASS
+  - id: contiguous_coverage_deduplicates_item
+    rule: duration
+    sceneItems: [*adapted]
+    shots:
+      - {plannedDurationMs: 1400, spokenContentBindings: [{spokenContentId: spoken-adapted, coverageIntent: ON_SCREEN_SPEAKER}]}
+      - {plannedDurationMs: 1400, spokenContentBindings: [{spokenContentId: spoken-adapted, coverageIntent: REACTION}]}
+    groups: [[0, 1]]
+    expected: PASS
+  - id: duration_conflict_blocks_production
+    rule: duration
+    sceneItems: [*adapted]
+    shots:
+      - {plannedDurationMs: 1200, spokenContentBindings: [{spokenContentId: spoken-adapted, coverageIntent: ON_SCREEN_SPEAKER}]}
+    groups: [[0]]
+    expected: FAIL
+    code: DURATION_FEASIBILITY
+  - id: provider_cannot_rewrite_scene_source
+    rule: provider-mutation
+    before: [*functional]
+    after:
+      - <<: *functional
+        text: "A provider's shorter substitute."
+    expected: FAIL
+    code: SPOKEN_SOURCE_MUTATION
+  - id: wrong_scene_field_alias
+    rule: alias
+    scene: {dialogueLines: [*functional]}
+    expected: FAIL
+    code: NON_CANONICAL_DIALOGUE_FIELD
+  - id: duplicate_scene_source_fields
+    rule: alias
+    scene: {spokenContent: [*functional], dialogues: [*functional]}
+    expected: FAIL
+    code: NON_CANONICAL_DIALOGUE_FIELD
+  - id: shot_cannot_copy_spoken_body
+    rule: binding
+    sceneItems: [*functional]
+    shot:
+      plannedDurationMs: 2000
+      spokenContentBindings: [{spokenContentId: spoken-01, coverageIntent: ON_SCREEN_SPEAKER, text: "The gate is open."}]
+    expected: FAIL
+    code: SHOT_DIALOGUE_COPY

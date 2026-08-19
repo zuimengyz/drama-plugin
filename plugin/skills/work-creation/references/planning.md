@@ -28,7 +28,7 @@ The spine is neither a complete chronology nor a list of photogenic moments. It 
 
 ## 4. Derive Historical Actor Hierarchy and Narrative Authority
 
-For each material actor, record lightweight scope-relative authority such as `PRIMARY`, `SECONDARY`, or `BACKGROUND`, plus a short justification tied to spine beats. Narrative Authority means how much of the selected event's core causality the actor actually initiates, controls, executes, or bears; it is not rank alone.
+For each material actor, record lightweight scope-relative authority such as `PRIMARY`, `SECONDARY`, or `BACKGROUND`, plus a short justification tied to spine beats. Narrative Authority means how much of the selected event's core causality the actor actually initiates, controls, executes, or bears; it is not rank alone. Give each individual who may speak one unique, stable, Work-scoped `speakerKey` on this existing actor entry. Reuse it across Scenes; do not create Scene-local identity or make it depend on a visual Asset. Narration uses the reserved Work-scoped `narrator:` convention and is not a historical actor.
 
 The same person may have different authority under a different scope. Never upgrade authority merely because an actor is younger, more visual, easier to identify with, or easier to give action.
 

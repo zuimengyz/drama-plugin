@@ -6,7 +6,7 @@ from typing import Any
 from drama_plugin.contracts.asset import Asset, AssetType
 from drama_plugin.contracts.context import ContextBuildRequest, DramaContextPatch, DramaRunContext
 from drama_plugin.contracts.creation import Episode, Scene, Script, Shot, Work
-from drama_plugin.contracts.media import Media, MediaResolveResult, MediaType
+from drama_plugin.contracts.media import Media, MediaResolveResult, MediaRestoreResult, MediaType
 from drama_plugin.contracts.research import ClaimAssessment, ResearchEvidence, ResearchSource
 from drama_plugin.exceptions import ContractValidationError
 from drama_plugin.providers.base import AssetProvider, ContextProvider, MediaProvider, MemoryProvider, ProductionProvider, ResearchProvider
@@ -87,6 +87,7 @@ def build_tool_registry(memory: MemoryProvider, asset: AssetProvider, research: 
         _domain_tool("media.list_media", "List media with an optional type filter.", media.list_media, list[Media], optional={"media_type": MediaType | None}),
         _domain_tool("media.import_media", "Import an external media source into durable Drama-managed storage.", media.import_media, Media, required={"work_id": str, "media_type": MediaType, "source_uri": str, "content": dict[str, Any]}, optional={"asset_id": str | None, "shot_id": str | None, "purpose": str | None}),
         _domain_tool("media.resolve_media", "Resolve durable Drama-managed media to a temporary consumable URL.", media.resolve_media, MediaResolveResult, required={"media_id": str}),
+        _domain_tool("media.restore_media_object", "Restore a missing physical object for an existing stable Media without changing its identity.", media.restore_media_object, MediaRestoreResult, required={"media_id": str, "source_uri": str}),
         _domain_tool("production.generate_image", "Generate an image from business-level prompt and stable references.", production.generate_image, Media, required={"prompt": str}, optional={"reference_asset_ids": list[str] | None, "reference_media_ids": list[str] | None, "parameters": dict[str, Any] | None}),
         _domain_tool("production.generate_video", "Generate a video from exactly one source image or one same-target start/end frame pair.", generate_video, Media, required={"prompt": str}, optional={"start_frame_media_id": str | None, "end_frame_media_id": str | None, "reference_media_ids": list[str] | None, "parameters": dict[str, Any] | None}),
         _domain_tool("production.generate_audio", "Generate audio from a business-level prompt and stable references.", production.generate_audio, Media, required={"prompt": str}, optional={"reference_media_ids": list[str] | None, "parameters": dict[str, Any] | None}),

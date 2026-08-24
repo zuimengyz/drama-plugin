@@ -11,6 +11,7 @@ from drama_plugin.contracts.creation import Episode, Scene, Script, Shot, Work
 from drama_plugin.contracts.media import Media, MediaResolveResult, MediaRestoreResult, MediaType
 from drama_plugin.contracts.research import ClaimAssessment, ResearchEvidence, ResearchSource
 from drama_plugin.exceptions import ContractValidationError
+from drama_plugin.audio.host_media import validate_media_mime
 from drama_plugin.providers.http.client import HttpProviderClient
 from drama_plugin.providers.http.media_source import open_media_source
 
@@ -88,10 +89,13 @@ class HttpMediaProvider:
     async def create_media(self, work_id: str, media_type: MediaType, source_ref: str, content: dict[str, Any], asset_id: str | None = None, shot_id: str | None = None, purpose: str | None = None) -> Media: return _one(Media, await self.http.request("create_media", method="POST", json={"work_id": work_id, "asset_id": asset_id, "shot_id": shot_id, "media_type": media_type, "purpose": purpose, "source_ref": source_ref, "content": content}))
     async def get_media(self, media_id: str) -> Media: return _one(Media, await self.http.request("get_media", params={"media_id": media_id}))
     async def save_media(self, media_id: str, content: dict[str, Any], purpose: str | None = None) -> Media: return _one(Media, await self.http.request("save_media", method="POST", json={"media_id": media_id, "purpose": purpose, "content": content}))
-    async def list_media(self, media_type: MediaType | None = None) -> list[Media]: return _many(Media, await self.http.request("list_media", params={"media_type": media_type}))
-    async def import_media(self, work_id: str, media_type: MediaType, source_uri: str, content: dict[str, Any], asset_id: str | None = None, shot_id: str | None = None, purpose: str | None = None) -> Media:
-        metadata = {"work_id": work_id, "asset_id": asset_id, "shot_id": shot_id, "media_type": media_type, "purpose": purpose, "content": content}
+    async def list_media(self, media_type: MediaType | None = None, work_id: str | None = None, purpose: str | None = None, source_ref: str | None = None) -> list[Media]:
+        optional = {"media_type": media_type, "work_id": work_id, "purpose": purpose, "source_ref": source_ref}
+        return _many(Media, await self.http.request("list_media", params={key: value for key, value in optional.items() if value is not None}))
+    async def import_media(self, work_id: str, media_type: MediaType, source_uri: str, content: dict[str, Any], asset_id: str | None = None, shot_id: str | None = None, purpose: str | None = None, source_ref: str | None = None, duration_ms: int | None = None) -> Media:
+        metadata = {"work_id": work_id, "asset_id": asset_id, "shot_id": shot_id, "media_type": media_type, "purpose": purpose, "source_ref": source_ref, "duration_ms": duration_ms, "content": content}
         async with open_media_source(source_uri) as source:
+            validate_media_mime(media_type, purpose, source.content_type)
             return _one(Media, await self.http.multipart_request("import_media", metadata=metadata, stream=source.stream, filename=source.filename, content_type=source.content_type))
     async def resolve_media(self, media_id: str) -> MediaResolveResult:
         return _one(MediaResolveResult, await self.http.request("resolve_media", params={"media_id": media_id}))

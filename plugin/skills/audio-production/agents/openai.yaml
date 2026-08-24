@@ -1,0 +1,4 @@
+interface:
+  display_name: "Audio Production"
+  short_description: "Produce exact-text speech and immutable-source final AV"
+  default_prompt: "Use $audio-production to produce only the requested reviewed speech or final AV from canonical Dialogue."

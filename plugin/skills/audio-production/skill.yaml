@@ -1,0 +1,16 @@
+code: audio-production
+name: Audio Production
+description: Produce exact-text speech and deterministic final AV through a replaceable Audio capability.
+context:
+  required: [work, scene]
+  optional: [shot, sourceVideoMediaId, audioMediaIds, temporaryState]
+  refresh_after: [media.import_media]
+tools:
+  preferred: [work.get_work, scene.get_scene, media.list_media, production.generate_audio, media.import_media, media.resolve_media]
+  allowed: [shot.get_shot, media.get_media]
+completion:
+  conditions:
+    - Exact Dialogue, voice identity, pronunciation, performance, and timing remain traceable through a structured speech request and deterministic fingerprint.
+    - Only Review-PASS reusable clips own canonical Audio source references and all persisted physical duration values come from a Host probe.
+    - Any FINAL_AV is a new reviewed Media identity with a committed assembly manifest and unchanged source Video hash.
+    - Missing generation, probe, or mux capability is reported explicitly without simulating production or mutating Dialogue.

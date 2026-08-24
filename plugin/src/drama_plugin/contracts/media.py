@@ -26,6 +26,10 @@ class Media(ContractModel):
     media_type: MediaType
     purpose: str | None = None
     source_ref: str
+    duration_ms: int | None = Field(default=None, gt=0)
+    mime_type: str | None = None
+    file_size: int | None = Field(default=None, ge=0)
+    content_hash: str | None = None
     content: dict[str, Any] = Field(default_factory=dict)
 
 

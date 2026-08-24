@@ -5,6 +5,7 @@ from drama_plugin.providers.mock.providers import (
     MockMediaProvider,
     MockProductionProvider,
     MockResearchProvider,
+    MockSpeechProvider,
 )
 
 __all__ = [
@@ -14,4 +15,5 @@ __all__ = [
     "MockMediaProvider",
     "MockProductionProvider",
     "MockResearchProvider",
+    "MockSpeechProvider",
 ]

@@ -143,11 +143,36 @@ async def test_http_media_import_uses_multipart_file_stream(tmp_path: Path, monk
     config = ServiceConfig(base_url="https://service.invalid", operations={"import_media": "/import"})
     async with httpx.AsyncClient(base_url=config.base_url, transport=httpx.MockTransport(respond)) as client:
         media = HttpMediaProvider(HttpProviderClient(config, client))
-        result = await media.import_media("work-1", MediaType.IMAGE, source.as_uri(), {})
+        result = await media.import_media(
+            "work-1", MediaType.IMAGE, source.as_uri(), {},
+            source_ref="fixture:deterministic", duration_ms=1000,
+        )
     assert result.id == "media-imported"
     assert str(seen["content_type"]).startswith("multipart/form-data; boundary=")
     assert b"streamed-png" in seen["body"]
     assert b'filename="fixture.png"' in seen["body"]
+    assert b'"source_ref":"fixture:deterministic"' in seen["body"]
+    assert b'"duration_ms":1000' in seen["body"]
+
+
+@pytest.mark.asyncio
+async def test_http_media_list_passes_audio_foundation_filters() -> None:
+    seen: list[httpx.Request] = []
+
+    def respond(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(200, json=[])
+
+    config = ServiceConfig(base_url="https://service.invalid", operations={"list_media": "/list"})
+    async with httpx.AsyncClient(base_url=config.base_url, transport=httpx.MockTransport(respond)) as client:
+        provider = HttpMediaProvider(HttpProviderClient(config, client))
+        assert await provider.list_media(MediaType.AUDIO, "work-1", "SPEECH_CLIP", "audio-input:fingerprint") == []
+    assert dict(seen[0].url.params) == {
+        "media_type": "AUDIO",
+        "work_id": "work-1",
+        "purpose": "SPEECH_CLIP",
+        "source_ref": "audio-input:fingerprint",
+    }
 
 
 @pytest.mark.asyncio

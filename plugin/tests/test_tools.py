@@ -144,7 +144,7 @@ def test_persistent_memory_and_production_contracts_are_minimal() -> None:
     asset_schema = plugin.tools.get("asset.get_asset").output_schema
     assert set(asset_schema["properties"]) == {"id", "workId", "episodeId", "sceneId", "shotId", "assetType", "name", "description", "referenceMediaIds", "content"}
     media_schema = plugin.tools.get("media.get_media").output_schema
-    assert set(media_schema["properties"]) == {"id", "workId", "assetId", "shotId", "mediaType", "purpose", "sourceRef", "content"}
+    assert set(media_schema["properties"]) == {"id", "workId", "assetId", "shotId", "mediaType", "purpose", "sourceRef", "durationMs", "mimeType", "fileSize", "contentHash", "content"}
 
 
 def test_get_list_and_search_contracts_have_distinct_minimal_semantics() -> None:
@@ -156,6 +156,7 @@ def test_get_list_and_search_contracts_have_distinct_minimal_semantics() -> None
     assert set(plugin.tools.get("episode.list_episodes").input_schema["properties"]) == {"script_id", "episode_no", "title"}
     assert set(plugin.tools.get("scene.list_scenes").input_schema["properties"]) == {"episode_id", "order", "location", "character"}
     assert set(plugin.tools.get("shot.list_shots").input_schema["properties"]) == {"scene_id", "shot_no", "shot_type", "character"}
+    assert set(plugin.tools.get("media.list_media").input_schema["properties"]) == {"media_type", "work_id", "purpose", "source_ref"}
 
     memory_domains = {"work", "script", "episode", "scene", "shot", "asset", "media"}
     memory_tools = [tool for tool in plugin.tools.list() if tool.domain in memory_domains]
@@ -220,7 +221,7 @@ def test_long_term_memory_create_and_save_envelopes_are_frozen() -> None:
         "asset.create_asset": ({"work_id", "asset_type", "name", "content"}, {"work_id", "episode_id", "scene_id", "shot_id", "asset_type", "name", "description", "reference_media_ids", "content"}),
         "asset.save_asset": ({"asset_id", "name", "content"}, {"asset_id", "name", "description", "reference_media_ids", "content"}),
         "media.create_media": ({"work_id", "media_type", "source_ref", "content"}, {"work_id", "asset_id", "shot_id", "media_type", "purpose", "source_ref", "content"}),
-        "media.import_media": ({"work_id", "media_type", "source_uri", "content"}, {"work_id", "asset_id", "shot_id", "media_type", "purpose", "source_uri", "content"}),
+        "media.import_media": ({"work_id", "media_type", "source_uri", "content"}, {"work_id", "asset_id", "shot_id", "media_type", "purpose", "source_ref", "duration_ms", "source_uri", "content"}),
         "media.restore_media_object": ({"media_id", "source_uri"}, {"media_id", "source_uri"}),
         "media.save_media": ({"media_id", "content"}, {"media_id", "purpose", "content"}),
     }

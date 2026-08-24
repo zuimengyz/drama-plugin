@@ -4,6 +4,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any, TypeVar
 
 from drama_plugin.contracts.asset import Asset, AssetType
+from drama_plugin.contracts.audio import SpeechGenerationRequest, SpeechGenerationResult
 from drama_plugin.contracts.creation import Episode, Scene, Script, Shot, Work
 from drama_plugin.contracts.media import Media, MediaResolveResult, MediaRestoreResult, MediaRestoreStatus, MediaType
 from drama_plugin.contracts.research import ClaimAssessment, ResearchEvidence, ResearchSource
@@ -125,9 +126,10 @@ class MockMediaProvider:
         media = existing.model_copy(update={"purpose": purpose, "content": content})
         self.data.media = [media if item.id == media_id else item for item in self.data.media]
         return media
-    async def list_media(self, media_type: MediaType | None = None) -> list[Media]: return [item for item in self.data.media if media_type is None or item.media_type is media_type]
-    async def import_media(self, work_id: str, media_type: MediaType, source_uri: str, content: dict[str, Any], asset_id: str | None = None, shot_id: str | None = None, purpose: str | None = None) -> Media:
-        media = Media(id="media-imported", work_id=work_id, asset_id=asset_id, shot_id=shot_id, media_type=media_type, purpose=purpose, source_ref="mock:storage:imported", content=content)
+    async def list_media(self, media_type: MediaType | None = None, work_id: str | None = None, purpose: str | None = None, source_ref: str | None = None) -> list[Media]:
+        return [item for item in self.data.media if (media_type is None or item.media_type is media_type) and (work_id is None or item.work_id == work_id) and (purpose is None or item.purpose == purpose) and (source_ref is None or item.source_ref == source_ref)]
+    async def import_media(self, work_id: str, media_type: MediaType, source_uri: str, content: dict[str, Any], asset_id: str | None = None, shot_id: str | None = None, purpose: str | None = None, source_ref: str | None = None, duration_ms: int | None = None) -> Media:
+        media = Media(id="media-imported", work_id=work_id, asset_id=asset_id, shot_id=shot_id, media_type=media_type, purpose=purpose, source_ref=source_ref or "mock:storage:imported", duration_ms=duration_ms, content=content)
         self.data.media.append(media)
         return media
     async def resolve_media(self, media_id: str) -> MediaResolveResult:
@@ -145,6 +147,22 @@ class MockProductionProvider:
     async def generate_video(self, prompt: str, start_frame_media_id: str | None = None, end_frame_media_id: str | None = None, reference_media_ids: list[str] | None = None, parameters: dict[str, Any] | None = None) -> Media:
         refs = [item for item in [start_frame_media_id, end_frame_media_id, *(reference_media_ids or [])] if item]; return await self._result(MediaType.VIDEO, "video/mp4", prompt, refs)
     async def generate_audio(self, prompt: str, reference_media_ids: list[str] | None = None, parameters: dict[str, Any] | None = None) -> Media:
-        return await self._result(MediaType.AUDIO, "audio/mpeg", prompt, reference_media_ids)
-    async def _result(self, media_type: MediaType, mime_type: str, prompt: str, refs: list[str] | None) -> Media:
-        media = Media(id=f"media-generated-{media_type.value.lower()}", work_id=self.data.work.id, media_type=media_type, purpose="GENERATED_OUTPUT", source_ref=f"mock:generated:{media_type.value.lower()}", content={"mime_type": mime_type, "prompt": prompt, "reference_media_ids": refs or []}); self.data.media.append(media); return media
+        return await self._result(MediaType.AUDIO, "audio/mpeg", prompt, reference_media_ids, parameters)
+    async def _result(self, media_type: MediaType, mime_type: str, prompt: str, refs: list[str] | None, parameters: dict[str, Any] | None = None) -> Media:
+        media = Media(id=f"media-generated-{media_type.value.lower()}", work_id=self.data.work.id, media_type=media_type, purpose="GENERATED_OUTPUT", source_ref=f"mock:generated:{media_type.value.lower()}", content={"mime_type": mime_type, "prompt": prompt, "reference_media_ids": refs or [], "parameters": parameters or {}}); self.data.media.append(media); return media
+
+
+class MockSpeechProvider:
+    """Offline fake used only to validate the structured provider request/response seam."""
+
+    def __init__(self) -> None:
+        self.requests: list[SpeechGenerationRequest] = []
+
+    async def generate_speech(self, request: SpeechGenerationRequest) -> SpeechGenerationResult:
+        self.requests.append(request.model_copy(deep=True))
+        return SpeechGenerationResult(
+            source_uri=f"memory://synthetic/{request.spoken_content_id}.wav",
+            mime_type="audio/wav",
+            provider_duration_ms=1000,
+            provider_metadata={"classification": "FAKE_PROVIDER"},
+        )

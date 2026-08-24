@@ -1,4 +1,18 @@
 from drama_plugin.contracts.asset import Asset, AssetType
+from drama_plugin.contracts.audio import (
+    AudioReviewStatus,
+    AvAssemblyManifest,
+    AvTimelineItem,
+    CreativeVoiceProfile,
+    FinalAvFingerprintInput,
+    PronunciationGuidance,
+    ProviderMappingStatus,
+    ProviderVoiceMapping,
+    SpeechGenerationRequest,
+    SpeechGenerationResult,
+    TargetTimingPolicy,
+    VoiceProfile,
+)
 from drama_plugin.contracts.context import (
     ContextBuildRequest,
     ContextChange,

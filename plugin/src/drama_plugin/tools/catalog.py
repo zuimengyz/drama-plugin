@@ -3,12 +3,16 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
+from pydantic import PositiveInt
+
 from drama_plugin.contracts.asset import Asset, AssetType
+from drama_plugin.contracts.audio import SpeechGenerationRequest
 from drama_plugin.contracts.context import ContextBuildRequest, DramaContextPatch, DramaRunContext
 from drama_plugin.contracts.creation import Episode, Scene, Script, Shot, Work
 from drama_plugin.contracts.media import Media, MediaResolveResult, MediaRestoreResult, MediaType
 from drama_plugin.contracts.research import ClaimAssessment, ResearchEvidence, ResearchSource
 from drama_plugin.exceptions import ContractValidationError
+from drama_plugin.audio.foundation import StructuredSpeechProductionAdapter
 from drama_plugin.providers.base import AssetProvider, ContextProvider, MediaProvider, MemoryProvider, ProductionProvider, ResearchProvider
 from drama_plugin.tools.registry import ToolDefinition, ToolHandler, ToolRegistry, tool
 from drama_plugin.tools.schemas import object_schema, schema_for
@@ -20,6 +24,7 @@ def _domain_tool(code: str, description: str, handler: ToolHandler, output: Any,
 
 def build_tool_registry(memory: MemoryProvider, asset: AssetProvider, research: ResearchProvider, production: ProductionProvider, media: MediaProvider, context: ContextProvider) -> ToolRegistry:
     registry = ToolRegistry()
+    speech = StructuredSpeechProductionAdapter(production)
 
     async def generate_video(
         prompt: str,
@@ -51,6 +56,13 @@ def build_tool_registry(memory: MemoryProvider, asset: AssetProvider, research: 
             references,
             parameters,
         )
+
+    async def generate_audio(
+        request: SpeechGenerationRequest,
+        reference_media_ids: list[str] | None = None,
+    ) -> Media:
+        structured = request if isinstance(request, SpeechGenerationRequest) else SpeechGenerationRequest.model_validate(request)
+        return await speech.generate_speech(structured, reference_media_ids)
 
     specs = [
         _domain_tool("work.create_work", "Create a complete initial work as persistent memory.", memory.create_work, Work, required={"title": str, "content": dict[str, Any]}, optional={"description": str | None}),
@@ -84,13 +96,13 @@ def build_tool_registry(memory: MemoryProvider, asset: AssetProvider, research: 
         _domain_tool("media.create_media", "Register a complete stable opaque physical media reference.", media.create_media, Media, required={"work_id": str, "media_type": MediaType, "source_ref": str, "content": dict[str, Any]}, optional={"asset_id": str | None, "shot_id": str | None, "purpose": str | None}),
         _domain_tool("media.get_media", "Read media metadata by stable ID.", media.get_media, Media, required={"media_id": str}),
         _domain_tool("media.save_media", "Replace the mutable formal state of an existing media revision.", media.save_media, Media, required={"media_id": str, "content": dict[str, Any]}, optional={"purpose": str | None}),
-        _domain_tool("media.list_media", "List media with an optional type filter.", media.list_media, list[Media], optional={"media_type": MediaType | None}),
-        _domain_tool("media.import_media", "Import an external media source into durable Drama-managed storage.", media.import_media, Media, required={"work_id": str, "media_type": MediaType, "source_uri": str, "content": dict[str, Any]}, optional={"asset_id": str | None, "shot_id": str | None, "purpose": str | None}),
+        _domain_tool("media.list_media", "List media with optional type, work, purpose, and source-reference filters.", media.list_media, list[Media], optional={"media_type": MediaType | None, "work_id": str | None, "purpose": str | None, "source_ref": str | None}),
+        _domain_tool("media.import_media", "Import an external media source and host-probed physical metadata into durable Drama-managed storage.", media.import_media, Media, required={"work_id": str, "media_type": MediaType, "source_uri": str, "content": dict[str, Any]}, optional={"asset_id": str | None, "shot_id": str | None, "purpose": str | None, "source_ref": str | None, "duration_ms": PositiveInt | None}),
         _domain_tool("media.resolve_media", "Resolve durable Drama-managed media to a temporary consumable URL.", media.resolve_media, MediaResolveResult, required={"media_id": str}),
         _domain_tool("media.restore_media_object", "Restore a missing physical object for an existing stable Media without changing its identity.", media.restore_media_object, MediaRestoreResult, required={"media_id": str, "source_uri": str}),
         _domain_tool("production.generate_image", "Generate an image from business-level prompt and stable references.", production.generate_image, Media, required={"prompt": str}, optional={"reference_asset_ids": list[str] | None, "reference_media_ids": list[str] | None, "parameters": dict[str, Any] | None}),
         _domain_tool("production.generate_video", "Generate a video from exactly one source image or one same-target start/end frame pair.", generate_video, Media, required={"prompt": str}, optional={"start_frame_media_id": str | None, "end_frame_media_id": str | None, "reference_media_ids": list[str] | None, "parameters": dict[str, Any] | None}),
-        _domain_tool("production.generate_audio", "Generate audio from a business-level prompt and stable references.", production.generate_audio, Media, required={"prompt": str}, optional={"reference_media_ids": list[str] | None, "parameters": dict[str, Any] | None}),
+        _domain_tool("production.generate_audio", "Generate speech from exact dialogue, resolved voice identity, pronunciation, performance, and timing inputs.", generate_audio, Media, required={"request": SpeechGenerationRequest}, optional={"reference_media_ids": list[str] | None}),
         _domain_tool("research.search_sources", "Search external historical sources for the current run.", research.search_sources, list[ResearchSource], required={"query": str}),
         _domain_tool("research.search_events", "Search historical event evidence for the current run.", research.search_events, list[ResearchEvidence], required={"query": str}),
         _domain_tool("research.search_people", "Search historical person evidence for the current run.", research.search_people, list[ResearchEvidence], required={"query": str}),

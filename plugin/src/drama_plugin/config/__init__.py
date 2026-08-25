@@ -6,6 +6,8 @@ from drama_plugin.config.models import (
     ProvidersConfig,
     ServiceConfig,
     ServicesConfig,
+    SpeechProviderConfig,
+    SpeechServiceConfig,
 )
 
 __all__ = [
@@ -15,5 +17,7 @@ __all__ = [
     "ProvidersConfig",
     "ServiceConfig",
     "ServicesConfig",
+    "SpeechProviderConfig",
+    "SpeechServiceConfig",
     "load_config",
 ]

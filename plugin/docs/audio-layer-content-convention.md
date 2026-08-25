@@ -108,6 +108,8 @@ The minimal committed manifest is:
 
 Multiple timeline slices may reference the same speech clip. A Host mux must write a new output path, capture implementation/version/settings, probe video and audio streams, hash inputs/output, and confirm that the source Video hash is unchanged. `FINAL_AV` is imported as a new Media object and identity; the silent source Video is never overwritten.
 
+The canonical source reference for a fully reviewed result is `final-av:<finalAvFingerprint>`. A pending, failed, or debug preview uses `final-av-attempt:<finalAvFingerprint>:<attempt-id>` and must not occupy the canonical key. In particular, a mux awaiting human Audio review remains an attempt preview even when every physical and hash check passes.
+
 ## 10. Audio v1 boundary
 
 Voice cloning, BGM, SFX, Foley, ambience, spatial audio, ducking, forced alignment, precise lip-sync, subtitles, mastering, and multi-Scene Audio E2E are deferred. Real speech generation requires a separately authorized Provider run and budget; contract/foundation validation never implies permission to invoke one.

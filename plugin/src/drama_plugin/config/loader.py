@@ -39,6 +39,37 @@ def _environment_overrides(environment: Mapping[str, str]) -> dict[str, Any]:
         overrides["providers"] = providers
     if services:
         overrides["services"] = services
+    speech_mode = environment.get("DRAMA_PLUGIN_PROVIDER_SPEECH_MODE")
+    if speech_mode:
+        overrides.setdefault("providers", {})["speech"] = {
+            "mode": speech_mode.lower()
+        }
+    speech_values: dict[str, Any] = {}
+    speech_prefix = "DRAMA_PLUGIN_SERVICE_SPEECH_"
+    if value := environment.get(speech_prefix + "BASE_URL"):
+        speech_values["base_url"] = value
+    if value := environment.get(speech_prefix + "OPENAI_BASE_URL"):
+        speech_values["base_url"] = value
+    if value := environment.get(speech_prefix + "BAILIAN_BASE_URL"):
+        speech_values["bailian_base_url"] = value
+    if value := environment.get("OPENAI_API_KEY"):
+        speech_values["api_key"] = value
+    if value := environment.get("DASHSCOPE_API_KEY"):
+        speech_values["dashscope_api_key"] = value
+    if value := environment.get(speech_prefix + "OUTPUT_DIRECTORY"):
+        speech_values["output_directory"] = value
+    if value := environment.get(speech_prefix + "TIMEOUT_SECONDS"):
+        try:
+            speech_values["timeout_seconds"] = float(value)
+        except ValueError as exc:
+            raise ConfigurationError("Invalid timeout for service speech") from exc
+    if value := environment.get(speech_prefix + "MAX_TRANSIENT_RETRIES"):
+        try:
+            speech_values["max_transient_retries"] = int(value)
+        except ValueError as exc:
+            raise ConfigurationError("Invalid retry count for service speech") from exc
+    if speech_values:
+        overrides.setdefault("services", {})["speech"] = speech_values
     return overrides
 
 

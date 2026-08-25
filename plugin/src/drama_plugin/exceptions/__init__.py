@@ -22,6 +22,25 @@ class ProviderError(DramaPluginError):
     """A provider could not satisfy a domain operation."""
 
 
+class SpeechProviderError(ProviderError):
+    """A speech provider rejected or could not complete a request safely."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        status_code: int | None = None,
+        retryable: bool = False,
+    ) -> None:
+        super().__init__(message)
+        self.status_code = status_code
+        self.retryable = retryable
+
+
+class ProviderResultUnknown(SpeechProviderError):
+    """Submission may have succeeded, so an automatic paid retry is unsafe."""
+
+
 class MediaImportSourceError(ProviderError):
     """An external media source is unsafe or cannot be streamed."""
 

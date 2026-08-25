@@ -114,6 +114,16 @@ def final_av_fingerprint(value: FinalAvFingerprintInput) -> str:
     return sha256_canonical(value)
 
 
+def canonical_final_av_source_ref(fingerprint: str) -> str:
+    return f"final-av:{fingerprint}"
+
+
+def final_av_attempt_source_ref(fingerprint: str, attempt_id: str) -> str:
+    if not attempt_id or ":" in attempt_id:
+        raise ValueError("attemptId must be non-empty and must not contain ':'")
+    return f"final-av-attempt:{fingerprint}:{attempt_id}"
+
+
 def canonical_audio_source_ref(fingerprint: str) -> str:
     return f"audio-input:{fingerprint}"
 

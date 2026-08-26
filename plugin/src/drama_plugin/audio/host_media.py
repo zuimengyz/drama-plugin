@@ -72,7 +72,7 @@ def probe_media(path: Path | str) -> MediaProbe:
             "-v",
             "error",
             "-show_entries",
-            "format=duration:stream=index,codec_type,codec_name,duration",
+            "format=duration:stream=index,codec_type,codec_name,duration,channels,sample_rate",
             "-of",
             "json",
             str(Path(path)),

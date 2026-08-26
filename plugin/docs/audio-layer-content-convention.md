@@ -10,12 +10,14 @@ This convention defines provider-neutral speech, Media, freshness, and AV assemb
 
 ## 2. Work-owned voice identity
 
-`Work.content.voiceProfiles[]` is keyed by Work-scoped `speakerKey` and supports actors and narrators equally. Every profile logically separates:
+`Work.content.voiceProfiles[]`, when persisted, is keyed by Work-scoped `speakerKey` and supports actors and narrators equally. A production run may instead carry a transient Character Voice Profile derived from persisted Work/Scene/Character context when no reviewed Work-level profile exists; this does not require a new database entity. The derivation begins with a transient, evidence-scoped `CharacterUnderstanding` containing neutral identity/life-stage, experience, decision, emotional-regulation, interaction, responsibility, communication, physical-baseline, presentation-mode, and alignment/constraint dimensions with confidence and explicit unknowns. It is not a personality ontology or a historical-value judgment. Every profile logically separates:
 
-- `creativeProfile`: durable voice identity such as age presentation, timbre, temperament, baseline pace, power, restraint, language/register, and consistency notes.
-- `providerMappings[]`: replaceable implementations containing provider, model, voice ID, approved/retired status, and material controls.
+- `creativeProfile`: durable voice identity such as vocal age/weight, resonance depth, timbre brightness, articulation firmness, phrase attack, baseline pace/energy, breath support, command presence, gravitas, controlled power, sentence finality, emotional containment, language/register, and consistency notes.
+- `providerMappings[]`: replaceable implementations containing provider, model, voice ID, candidate/approved/retired status, and material controls.
 
-Changing Provider MUST NOT mutate `creativeProfile`. Display names, operational notes, timestamps, and other non-material metadata do not change the creative or mapping fingerprint. A material creative attribute or approved mapping input does.
+Temporary `SceneState` is separate from Character Understanding and the durable creative profile. `performanceIntent` expresses a baseline plus line-specific delta. Fatigue does not imply low authority, restraint does not imply low energy, age does not imply slow pace, authority does not imply loudness, and anger does not imply shouting.
+
+Changing Provider MUST NOT mutate `creativeProfile`. The Skill never chooses a concrete mapping. A Provider adapter ranks no more than three compatible candidates from the profile at its boundary; a generated candidate has `voiceBindingStatus=PENDING` and is not an approved reusable character binding. An already approved explicit mapping remains supported for backward compatibility. Display names, operational notes, timestamps, and other non-material metadata do not change the creative or mapping fingerprint. A material creative attribute or resolved mapping input does.
 
 ## 3. Pronunciation
 
@@ -23,7 +25,7 @@ Changing Provider MUST NOT mutate `creativeProfile`. Display names, operational 
 
 ## 4. Structured speech request and Provider seam
 
-`SpeechGenerationRequest` (`schemaVersion=speech-generation-v1`) contains the exact text as a typed field, plus `workId`, `sceneId`, `spokenContentId`, `speakerKey`, resolved `voiceProfile`, selected approved `providerMapping`, applicable `pronunciationGuidance`, `performanceIntent`, material render parameters, and target timing policy. Exact Dialogue text MUST NOT exist only inside a natural-language prompt.
+`SpeechGenerationRequest` (`schemaVersion=speech-generation-v1`) contains the exact text as a typed field, plus `workId`, `sceneId`, `spokenContentId`, `speakerKey`, provider-neutral `voiceProfile` with its Character Understanding, separate `sceneState`, applicable `pronunciationGuidance`, baseline-plus-delta `performanceIntent`, material render parameters, target timing policy, and optional non-material context references. `providerMapping` may be absent at the Tool boundary; the active Provider adapter must resolve a candidate before fingerprinting or generation. An explicit approved mapping remains valid for backward compatibility. Exact Dialogue text MUST NOT exist only inside a natural-language prompt.
 
 The existing `production.generate_audio` capability accepts this structured request. A Plugin adapter compiles it to the generic `ProductionProvider.generate_audio` seam while preserving the complete request in structured parameters. The Audio Skill treats the Audio Provider as a replaceable capability; HTTP-backed or MCP-backed implementations may be added behind the adapter without changing the Skill.
 
@@ -49,6 +51,7 @@ spokenContentId
 textHash
 speakerKey
 performanceIntentHash
+sceneStateHash
 voiceProfileFingerprint
 providerMappingFingerprint
 pronunciationFingerprint
@@ -60,7 +63,7 @@ targetTimingPolicy
 
 `textHash` is SHA-256 of the exact UTF-8 Dialogue text. Creative voice, Provider mapping, and pronunciation are separately canonicalized. List ordering is ignored only for pronunciation entries; Dialogue and timeline ordering retain meaning. Non-material profile/mapping/guidance/request metadata is excluded.
 
-A change to exact text, speaker, performance intent, creative voice, approved Provider mapping, applicable pronunciation, material render parameters, or target timing policy makes the prior clip stale. An unchanged fingerprint plus `reviewStatus=PASS` is fresh.
+A change to exact text, speaker, Scene State, performance intent, creative voice, resolved Provider mapping, applicable pronunciation, material render parameters, or target timing policy makes the prior clip stale. An unchanged fingerprint plus `reviewStatus=PASS` is fresh.
 
 ## 7. Source reference and retry semantics
 

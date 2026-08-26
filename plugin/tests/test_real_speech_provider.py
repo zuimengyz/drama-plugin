@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 from typing import Any
 
@@ -17,9 +18,13 @@ from drama_plugin.audio.host_media import MediaProbe
 from drama_plugin.config import SpeechServiceConfig, load_config
 from drama_plugin.contracts import (
     CreativeVoiceProfile,
+    CharacterDimension,
+    CharacterUnderstanding,
+    EvidenceConfidence,
     Media,
     MediaType,
     ProviderVoiceMapping,
+    SceneState,
     SpeechGenerationRequest,
     SpeechGenerationResult,
     TargetTimingPolicy,
@@ -37,6 +42,7 @@ from drama_plugin.providers.speech import (
     SpeechBackedProductionProvider,
     compile_bailian_qwen_speech_payload,
     compile_openai_speech_payload,
+    rank_bailian_qwen_voice_candidates,
     resolve_speech_provider,
 )
 
@@ -140,6 +146,133 @@ def qwen_config(**updates: Any) -> SpeechServiceConfig:
     return SpeechServiceConfig.model_validate(values)
 
 
+def provider_neutral_scene_request() -> SpeechGenerationRequest:
+    understanding = CharacterUnderstanding(
+        understanding_id="understanding:scene-aware-speaker",
+        speaker_key="speaker:scene-aware-commander",
+        identity_and_life_stage={
+            "lifeStage": CharacterDimension(
+                value="OLDER_ADULT",
+                confidence=EvidenceConfidence.MEDIUM,
+                evidence_refs=["work:actor-hierarchy"],
+            ),
+            "displayName": CharacterDimension(
+                value="Synthetic A",
+                confidence=EvidenceConfidence.HIGH,
+                evidence_refs=["work:actor-hierarchy"],
+            ),
+        },
+        emotional_regulation={
+            "emotionalContainment": CharacterDimension(
+                value="HIGH",
+                confidence=EvidenceConfidence.MEDIUM,
+                evidence_refs=["scene:repeated-behavior"],
+            )
+        },
+        authority_and_responsibility={
+            "commandResponsibility": CharacterDimension(
+                value="HIGH",
+                confidence=EvidenceConfidence.HIGH,
+                evidence_refs=["work:actor-hierarchy"],
+            )
+        },
+        unknown_fields=["fearExpression"],
+        source_refs=["work:actor-hierarchy", "scene:council"],
+    )
+    profile = VoiceProfile(
+        profile_id="profile:scene-aware-commander",
+        speaker_key="speaker:scene-aware-commander",
+        creative_profile=CreativeVoiceProfile(
+            age_presentation="late middle-aged",
+            gender_presentation="masculine",
+            timbre="dark and weighty",
+            resonance="chest-led",
+            texture="weathered",
+            temperament="controlled",
+            authority="senior military command",
+            baseline_pace="MEDIUM",
+            articulation="precise",
+            energy="contained",
+            power="authoritative",
+            restraint="high",
+            language="zh-CN",
+            register="formal military",
+            vocal_age="OLDER_ADULT",
+            vocal_weight="HIGH",
+            resonance_depth="DEEP",
+            timbre_brightness="DARK",
+            articulation_firmness="FIRM",
+            phrase_attack="FIRM",
+            baseline_energy="HIGH",
+            breath_support="MEDIUM_HIGH",
+            command_presence="HIGH",
+            gravitas="HIGH",
+            controlled_power="HIGH",
+            sentence_finality="HIGH",
+            emotional_containment="HIGH",
+            consistency_notes=["retain age and command weight across scenes"],
+        ),
+        character_understanding=understanding,
+    )
+    return SpeechGenerationRequest(
+        work_id="work-scene-aware",
+        scene_id="scene-council",
+        spoken_content_id="spoken-refusal",
+        exact_text="此事不可再言。",
+        speaker_key=profile.speaker_key,
+        voice_profile=profile,
+        scene_state=SceneState(
+            current_emotion=CharacterDimension(
+                value="ANGER_UNDER_CONTROL",
+                confidence=EvidenceConfidence.MEDIUM,
+                evidence_refs=["scene:dialogue-intent"],
+            ),
+            internal_activation=CharacterDimension(
+                value="HIGH",
+                confidence=EvidenceConfidence.MEDIUM,
+                evidence_refs=["scene:pressure"],
+            ),
+            external_expressiveness=CharacterDimension(
+                value="LOW",
+                confidence=EvidenceConfidence.MEDIUM,
+                evidence_refs=["scene:dialogue-intent"],
+            ),
+            physical_condition=CharacterDimension(
+                value="FATIGUED",
+                confidence=EvidenceConfidence.LOW,
+                evidence_refs=["scene:context"],
+            ),
+            evidence_refs=["scene:council"],
+        ),
+        performance_intent={
+            "baseline": {
+                "pace": "MEDIUM",
+                "energy": "HIGH",
+                "emotionalContainment": "HIGH",
+                "sentenceFinality": "HIGH",
+            },
+            "sceneDelta": {
+                "currentEmotion": "ANGER_UNDER_CONTROL",
+                "paceAdjustment": "NO_CHANGE",
+                "volumeAdjustment": "LOWER",
+                "internalActivation": "HIGH",
+                "externalExpressiveness": "LOW",
+            },
+            "subtext": "reject the proposal without humiliating a trusted subordinate",
+            "speakerObjective": "end the proposal decisively",
+            "listenerRelationship": "command relationship with a trusted subordinate",
+        },
+        target_timing_policy=TargetTimingPolicy(policy="NATURAL"),
+        non_material_metadata={
+            "contextRefs": {
+                "scriptId": "script-scene-aware",
+                "episodeId": "episode-scene-aware",
+                "shotId": "shot-council",
+            }
+        },
+    )
+
+
 def test_real_provider_config_parsing_and_secret_redaction() -> None:
     config = load_config(
         environment={
@@ -224,10 +357,182 @@ def test_qwen_payload_keeps_dialogue_exact_and_controls_separate() -> None:
     assert first_payload["input"]["language_type"] == "Chinese"
     assert first_payload["input"]["voice"] == "Cherry"
     assert second_payload["input"]["voice"] == "Ethan"
-    assert "表演意图" in first_payload["input"]["instructions"]
-    assert "创作声音画像" in first_payload["input"]["instructions"]
+    assert "本句表演变化" in first_payload["input"]["instructions"]
+    assert "长期基础声音" in first_payload["input"]["instructions"]
     assert "材质控制" in first_payload["input"]["instructions"]
     assert audio_input_fingerprint(first) != audio_input_fingerprint(second)
+
+
+@pytest.mark.asyncio
+async def test_provider_neutral_scene_spec_is_cast_only_at_provider_boundary() -> None:
+    request = provider_neutral_scene_request()
+    qwen_client = httpx.AsyncClient(transport=httpx.MockTransport(lambda _: httpx.Response(500)))
+    openai_client = httpx.AsyncClient(transport=httpx.MockTransport(lambda _: httpx.Response(500)))
+    qwen = BailianQwenSpeechProvider(qwen_config(), Path("/tmp/unused-qwen"), qwen_client)
+    openai = OpenAiSpeechProvider(speech_config(), Path("/tmp/unused-openai"), openai_client)
+    try:
+        assert request.provider_mapping is None
+        assert request.voice_profile.provider_mappings == []
+
+        qwen_resolved = qwen.resolve_request(request)
+        qwen_payload = compile_bailian_qwen_speech_payload(qwen_resolved)
+        assert qwen_resolved.provider_mapping is not None
+        assert qwen_resolved.provider_mapping.provider == "bailian_qwen"
+        assert qwen_resolved.provider_mapping.voice_id == "Eldric Sage"
+        assert qwen_resolved.provider_mapping.status.value == "CANDIDATE"
+        assert (
+            qwen_resolved.provider_mapping.non_material_metadata["selectionStrategy"]
+            == "provider-profile-vector-v1"
+        )
+        ranking = qwen_resolved.provider_mapping.non_material_metadata[
+            "candidateRanking"
+        ]
+        assert len(ranking) == 3
+        assert ranking[0]["voiceId"] == "Eldric Sage"
+        assert ranking[0]["score"] >= ranking[1]["score"]
+        assert qwen_payload["input"]["text"] == request.exact_text
+        assert request.exact_text not in qwen_payload["input"]["instructions"]
+        assert "OLDER_ADULT" in qwen_payload["input"]["instructions"]
+        assert "ANGER_UNDER_CONTROL" in qwen_payload["input"]["instructions"]
+        assert "trusted subordinate" in qwen_payload["input"]["instructions"]
+        assert "当前场景状态" in qwen_payload["input"]["instructions"]
+
+        openai_resolved = openai.resolve_request(request)
+        openai_payload = compile_openai_speech_payload(openai_resolved)
+        assert openai_resolved.provider_mapping is not None
+        assert openai_resolved.provider_mapping.provider == "openai"
+        assert openai_payload["input"] == request.exact_text
+        assert "ANGER_UNDER_CONTROL" in openai_payload["instructions"]
+    finally:
+        await qwen_client.aclose()
+        await openai_client.aclose()
+
+
+def test_qwen_casting_uses_multiple_profile_dimensions_not_gender_alone() -> None:
+    commander = provider_neutral_scene_request()
+    officer_creative = commander.voice_profile.creative_profile.model_copy(
+        update={
+            "age_presentation": "mature adult officer",
+            "timbre": "solid and sharp",
+            "resonance": "contained",
+            "texture": "controlled tension",
+            "temperament": "decisive and willing to take risks",
+            "authority": "senior subordinate officer",
+            "energy": "controlled high energy",
+            "power": "subordinate to the commander",
+            "restraint": "high",
+            "vocal_age": "MATURE_ADULT",
+            "vocal_weight": "MEDIUM_HIGH",
+            "resonance_depth": "MEDIUM",
+            "timbre_brightness": "NEUTRAL",
+            "articulation_firmness": "FIRM",
+            "phrase_attack": "FIRM",
+            "baseline_pace": "MEDIUM",
+            "baseline_energy": "HIGH",
+            "breath_support": "HIGH",
+            "command_presence": "MEDIUM_HIGH",
+            "gravitas": "MEDIUM",
+            "controlled_power": "HIGH",
+            "sentence_finality": "HIGH",
+            "emotional_containment": "HIGH",
+        }
+    )
+    officer_profile = commander.voice_profile.model_copy(
+        update={"creative_profile": officer_creative}
+    )
+    officer = commander.model_copy(update={"voice_profile": officer_profile})
+    client = httpx.AsyncClient(
+        transport=httpx.MockTransport(lambda _: httpx.Response(500))
+    )
+    provider = BailianQwenSpeechProvider(
+        qwen_config(), Path("/tmp/unused-qwen"), client
+    )
+    try:
+        commander_mapping = provider.resolve_request(commander).provider_mapping
+        officer_mapping = provider.resolve_request(officer).provider_mapping
+        assert commander_mapping is not None
+        assert officer_mapping is not None
+        assert commander_mapping.voice_id == "Eldric Sage"
+        assert officer_mapping.voice_id == "Moon"
+        assert commander_mapping.voice_id != officer_mapping.voice_id
+        assert officer_mapping.non_material_metadata["candidateRanking"][0][
+            "voiceId"
+        ] == "Moon"
+    finally:
+        asyncio.run(client.aclose())
+
+
+def test_unknown_character_dimension_requires_low_confidence() -> None:
+    assert CharacterDimension().value == "UNKNOWN"
+    with pytest.raises(ValueError, match="UNKNOWN character dimensions"):
+        CharacterDimension(value="UNKNOWN", confidence=EvidenceConfidence.HIGH)
+
+
+def test_candidate_ranking_depends_on_profile_not_character_name() -> None:
+    first = provider_neutral_scene_request()
+    understanding = first.voice_profile.character_understanding
+    assert understanding is not None
+    renamed_identity = dict(understanding.identity_and_life_stage)
+    renamed_identity["displayName"] = CharacterDimension(
+        value="Synthetic B",
+        confidence=EvidenceConfidence.HIGH,
+        evidence_refs=["work:actor-hierarchy"],
+    )
+    renamed_understanding = understanding.model_copy(
+        update={"identity_and_life_stage": renamed_identity}
+    )
+    renamed_profile = first.voice_profile.model_copy(
+        update={"character_understanding": renamed_understanding}
+    )
+    renamed = first.model_copy(update={"voice_profile": renamed_profile})
+    first_ranking = rank_bailian_qwen_voice_candidates(first)
+    renamed_ranking = rank_bailian_qwen_voice_candidates(renamed)
+    assert [item.voice_id for item in first_ranking] == [
+        item.voice_id for item in renamed_ranking
+    ]
+    assert [
+        item.non_material_metadata["candidateRanking"] for item in first_ranking
+    ] == [
+        item.non_material_metadata["candidateRanking"] for item in renamed_ranking
+    ]
+
+
+def test_semantic_invariants_remain_independent_in_request_and_instruction() -> None:
+    request = provider_neutral_scene_request()
+    creative = request.voice_profile.creative_profile
+    understanding = request.voice_profile.character_understanding
+    state = request.scene_state
+    assert understanding is not None
+    assert state is not None
+    assert creative.emotional_containment == "HIGH"
+    assert creative.baseline_energy == "HIGH"
+    assert creative.vocal_age == "OLDER_ADULT"
+    assert creative.baseline_pace == "MEDIUM"
+    assert creative.command_presence == "HIGH"
+    assert state.physical_condition is not None
+    assert state.physical_condition.value == "FATIGUED"
+    assert request.performance_intent["sceneDelta"]["volumeAdjustment"] == "LOWER"
+    assert (
+        understanding.authority_and_responsibility["commandResponsibility"].value
+        == "HIGH"
+    )
+
+    provider = BailianQwenSpeechProvider(
+        qwen_config(),
+        Path("/tmp/unused-qwen"),
+        httpx.AsyncClient(
+            transport=httpx.MockTransport(lambda _: httpx.Response(500))
+        ),
+    )
+    resolved = provider.resolve_request(request)
+    instructions = compile_bailian_qwen_speech_payload(resolved)["input"][
+        "instructions"
+    ]
+    assert "不得把高克制解释为低能量" in instructions
+    assert "不得把身体负担解释为低控制力" in instructions
+    assert "不得把年龄解释为必然拖慢语速" in instructions
+    assert "不得把责任或权力解释为提高音量" in instructions
+    asyncio.run(provider.aclose())
 
 
 def test_qwen_flash_fallback_is_only_an_explicit_mapping_choice() -> None:
@@ -560,7 +865,15 @@ class CountingSpeechProvider:
         return SpeechGenerationResult(
             source_uri=self.source.as_uri(),
             mime_type="audio/wav",
-            provider_metadata={"attemptId": "attempt-unit"},
+            provider_metadata={
+                "attemptId": "attempt-unit",
+                "providerRequestId": "request-unit",
+                "providerAudioId": "audio-unit",
+                "voiceId": "voice-unit",
+                "callCount": 1,
+                "retryCount": 0,
+                "downloadCallCount": 1,
+            },
         )
 
 
@@ -627,6 +940,12 @@ async def test_generated_physical_audio_is_imported_only_as_pending_attempt(
     )
     assert result.content["reviewStatus"] == "PENDING"
     assert result.content["textHash"]
+    assert result.content["providerJobId"] == "request-unit"
+    assert result.content["providerAudioId"] == "audio-unit"
+    assert result.content["providerVoiceId"] == "voice-unit"
+    assert result.content["providerCallCount"] == 1
+    assert result.content["providerRetryCount"] == 0
+    assert result.content["providerDownloadCallCount"] == 1
     assert "exactText" not in result.content
 
 
@@ -641,11 +960,65 @@ def test_final_av_canonical_and_attempt_source_refs_are_distinct() -> None:
 
 
 def test_audio_skill_remains_vendor_neutral() -> None:
-    skill = (
-        Path(__file__).resolve().parents[1] / "skills" / "audio-production" / "SKILL.md"
-    ).read_text(encoding="utf-8").lower()
-    assert "openai" not in skill
-    assert "elevenlabs" not in skill
-    assert "qwen" not in skill
-    assert "dashscope" not in skill
-    assert "bailian" not in skill
+    root = Path(__file__).resolve().parents[1] / "skills" / "audio-production"
+    skill = "\n".join(
+        path.read_text(encoding="utf-8").lower()
+        for path in (
+            root / "SKILL.md",
+            root / "skill.yaml",
+            root / "references" / "scene-aware-audio.md",
+        )
+    )
+    for forbidden in (
+        "openai",
+        "elevenlabs",
+        "qwen",
+        "dashscope",
+        "bailian",
+        "cherry",
+        "ethan",
+        "moon",
+        "eldric sage",
+        "哥舒翰",
+        "王思礼",
+    ):
+        assert forbidden not in skill
+    for value_laden_shortcut in (
+        "英雄",
+        "反派",
+        "贤明",
+        "昏庸",
+        "勇敢",
+        "懦弱",
+        "高尚",
+        "卑劣",
+    ):
+        assert value_laden_shortcut not in skill
+
+
+def test_audio_skill_requires_real_context_and_forbids_fixture_bypass() -> None:
+    root = Path(__file__).resolve().parents[1] / "skills" / "audio-production"
+    skill = (root / "SKILL.md").read_text(encoding="utf-8")
+    rules = (root / "references" / "scene-aware-audio.md").read_text(
+        encoding="utf-8"
+    )
+    for tool_code in (
+        "work.get_work",
+        "script.get_script",
+        "episode.get_episode",
+        "scene.get_scene",
+        "shot.get_shot",
+        "asset.search_assets",
+        "asset.get_asset",
+        "production.generate_audio",
+    ):
+        assert tool_code in skill
+    assert "speaker:validation-*" in rules
+    assert "Character Voice Profile" in rules
+    assert "Character Understanding" in rules
+    assert "UNKNOWN" in rules
+    assert "baseline plus delta" in rules
+    assert "voiceBindingStatus=PENDING" in rules
+    assert "Performance Intent" in rules
+    assert "speaker/listener relationship" in rules
+    assert "exact speech input must equal" in rules

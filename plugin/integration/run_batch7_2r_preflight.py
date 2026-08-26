@@ -10,6 +10,7 @@ from drama_plugin.audio import audio_input_fingerprint, compile_speech_request, 
 from drama_plugin.contracts import (
     CreativeVoiceProfile,
     ProviderVoiceMapping,
+    SpeechGenerationRequest,
     TargetTimingPolicy,
     VoiceProfile,
 )
@@ -33,7 +34,7 @@ def write_json(path: Path, value: Any) -> None:
     )
 
 
-def request_metadata(
+def build_request(
     *,
     model: str,
     spoken_content_id: str,
@@ -41,7 +42,9 @@ def request_metadata(
     text: str,
     voice_id: str,
     timbre: str,
-) -> dict[str, Any]:
+    work_id: str = "BATCH_7_2_VALIDATION_PENDING_CREDENTIAL_GATE",
+    scene_id: str = "BATCH_7_2_VALIDATION_SCENE_PENDING_CREDENTIAL_GATE",
+) -> SpeechGenerationRequest:
     mapping = ProviderVoiceMapping(
         provider="bailian_qwen",
         model=model,
@@ -64,9 +67,9 @@ def request_metadata(
         provider_mappings=[mapping],
         display_name=f"Batch 7.2R validation {speaker_key}",
     )
-    request = compile_speech_request(
-        work_id="BATCH_7_2_VALIDATION_PENDING_CREDENTIAL_GATE",
-        scene_id="BATCH_7_2_VALIDATION_SCENE_PENDING_CREDENTIAL_GATE",
+    return compile_speech_request(
+        work_id=work_id,
+        scene_id=scene_id,
         spoken_content={
             "spokenContentId": spoken_content_id,
             "speakerKey": speaker_key,
@@ -84,6 +87,25 @@ def request_metadata(
             "notHistoricalProvenance": True,
         },
     )
+
+
+def request_metadata(
+    *,
+    model: str,
+    spoken_content_id: str,
+    speaker_key: str,
+    text: str,
+    voice_id: str,
+    timbre: str,
+) -> dict[str, Any]:
+    request = build_request(
+        model=model,
+        spoken_content_id=spoken_content_id,
+        speaker_key=speaker_key,
+        text=text,
+        voice_id=voice_id,
+        timbre=timbre,
+    )
     payload = compile_bailian_qwen_speech_payload(request)
     provider_input = payload["input"]
     instructions = provider_input.get("instructions")
@@ -98,9 +120,9 @@ def request_metadata(
         "exactText": request.exact_text,
         "textHash": text_hash(request.exact_text),
         "audioInputFingerprint": audio_input_fingerprint(request),
-        "provider": mapping.provider,
-        "model": mapping.model,
-        "voiceId": mapping.voice_id,
+        "provider": request.provider_mapping.provider,
+        "model": request.provider_mapping.model,
+        "voiceId": request.provider_mapping.voice_id,
         "languageType": provider_input["language_type"],
         "officialVoiceSource": _OFFICIAL_VOICE_SOURCE,
         "exactTextEqualsProviderInput": provider_input["text"] == request.exact_text,

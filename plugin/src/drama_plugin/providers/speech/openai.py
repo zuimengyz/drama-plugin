@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import hashlib
+import json
+import json
 import uuid
 from pathlib import Path
 from typing import Any
@@ -9,8 +11,14 @@ import httpx
 
 from drama_plugin.audio.foundation import audio_input_fingerprint
 from drama_plugin.config.models import SpeechServiceConfig
-from drama_plugin.contracts.audio import SpeechGenerationRequest, SpeechGenerationResult
+from drama_plugin.contracts.audio import (
+    ProviderMappingStatus,
+    ProviderVoiceMapping,
+    SpeechGenerationRequest,
+    SpeechGenerationResult,
+)
 from drama_plugin.exceptions import ProviderResultUnknown, SpeechProviderError
+from drama_plugin.providers.speech.casting import VoiceCandidate, rank_voice_candidates
 
 
 _MIME_BY_FORMAT = {
@@ -29,18 +37,123 @@ _EXTENSION_BY_FORMAT = {
     "pcm": ".pcm",
     "wav": ".wav",
 }
+_OPENAI_VOICE_CANDIDATES = (
+    VoiceCandidate(
+        "cedar",
+        frozenset({"masculine", "feminine"}),
+        {
+            "vocal_age": 0.6,
+            "vocal_weight": 0.7,
+            "resonance_depth": 0.7,
+            "timbre_brightness": 0.35,
+            "articulation_firmness": 0.7,
+            "phrase_attack": 0.65,
+            "baseline_pace": 0.5,
+            "baseline_energy": 0.6,
+            "breath_support": 0.7,
+            "command_presence": 0.75,
+            "gravitas": 0.75,
+            "controlled_power": 0.75,
+            "sentence_finality": 0.75,
+            "emotional_containment": 0.7,
+        },
+    ),
+    VoiceCandidate(
+        "marin",
+        frozenset({"masculine", "feminine"}),
+        {
+            "vocal_age": 0.45,
+            "vocal_weight": 0.45,
+            "resonance_depth": 0.45,
+            "timbre_brightness": 0.65,
+            "articulation_firmness": 0.65,
+            "phrase_attack": 0.55,
+            "baseline_pace": 0.55,
+            "baseline_energy": 0.6,
+            "breath_support": 0.65,
+            "command_presence": 0.5,
+            "gravitas": 0.5,
+            "controlled_power": 0.6,
+            "sentence_finality": 0.6,
+            "emotional_containment": 0.6,
+        },
+    ),
+)
+
+
+def _resolve_openai_mapping(request: SpeechGenerationRequest) -> ProviderVoiceMapping:
+    ranked = rank_voice_candidates(
+        request.voice_profile.creative_profile,
+        _OPENAI_VOICE_CANDIDATES,
+        limit=2,
+    )
+    ranking = [
+        {
+            "rank": index,
+            "voiceId": item.voice_id,
+            "score": item.score,
+            "comparedDimensions": list(item.compared_dimensions),
+        }
+        for index, item in enumerate(ranked, start=1)
+    ]
+    selected = ranked[0]
+    return ProviderVoiceMapping(
+        provider="openai",
+        model="gpt-4o-mini-tts",
+        voice_id=selected.voice_id,
+        status=ProviderMappingStatus.CANDIDATE,
+        material_parameters={"response_format": "wav"},
+        non_material_metadata={
+            "selectionStrategy": "provider-profile-vector-v1",
+            "candidateRanking": ranking,
+            "selectedRank": 1,
+            "voiceBindingStatus": "PENDING",
+        },
+    )
+
+
+def _bind_mapping(
+    request: SpeechGenerationRequest, mapping: ProviderVoiceMapping
+) -> SpeechGenerationRequest:
+    existing = [
+        item
+        for item in request.voice_profile.provider_mappings
+        if (item.provider, item.model, item.voice_id)
+        != (mapping.provider, mapping.model, mapping.voice_id)
+    ]
+    profile = request.voice_profile.model_copy(
+        update={"provider_mappings": [*existing, mapping]}
+    )
+    payload = request.model_dump(mode="python")
+    payload.update({"voice_profile": profile, "provider_mapping": mapping})
+    return SpeechGenerationRequest.model_validate(payload)
 
 
 def _style_instructions(request: SpeechGenerationRequest) -> str:
     parts = [
         "Speak exactly the supplied input text without adding, removing, or rewriting words."
     ]
-    if request.performance_intent:
-        material = ", ".join(
-            f"{key}={request.performance_intent[key]}"
-            for key in sorted(request.performance_intent)
+    creative = request.voice_profile.creative_profile.model_dump(
+        mode="json", by_alias=True, exclude_none=True
+    )
+    parts.append(
+        "Maintain these stable base-voice characteristics across scenes: "
+        f"{json.dumps(creative, ensure_ascii=False, sort_keys=True)}."
+    )
+    if request.scene_state:
+        scene_state = request.scene_state.model_dump(
+            mode="json", by_alias=True, exclude_none=True
         )
-        parts.append(f"Performance intent: {material}.")
+        parts.append(
+            "Treat this scene state as temporary and do not turn it into a permanent "
+            f"voice trait: {json.dumps(scene_state, ensure_ascii=False, sort_keys=True)}."
+        )
+    if request.performance_intent:
+        parts.append(
+            "For this line only, apply these performance changes relative to the base "
+            "voice without changing identity: "
+            f"{json.dumps(request.performance_intent, ensure_ascii=False, sort_keys=True)}."
+        )
     for guidance in request.pronunciation_guidance:
         parts.append(
             f"Reviewed pronunciation: {guidance.term} should be read as "
@@ -51,6 +164,8 @@ def _style_instructions(request: SpeechGenerationRequest) -> str:
 
 def compile_openai_speech_payload(request: SpeechGenerationRequest) -> dict[str, Any]:
     mapping = request.provider_mapping
+    if mapping is None:
+        raise SpeechProviderError("OpenAI adapter requires a resolved provider mapping")
     if mapping.provider.lower() != "openai":
         raise SpeechProviderError("OpenAI adapter requires provider mapping 'openai'")
     parameters = {**mapping.material_parameters, **request.material_render_parameters}
@@ -92,10 +207,24 @@ class OpenAiSpeechProvider:
             timeout=config.timeout_seconds,
         )
 
+    def resolve_request(
+        self, request: SpeechGenerationRequest
+    ) -> SpeechGenerationRequest:
+        mapping = request.provider_mapping
+        if mapping is None:
+            mapping = _resolve_openai_mapping(request)
+        if mapping.provider.lower() != "openai":
+            raise SpeechProviderError("OpenAI adapter requires provider mapping 'openai'")
+        return _bind_mapping(request, mapping)
+
     async def generate_speech(
         self, request: SpeechGenerationRequest
     ) -> SpeechGenerationResult:
+        request = self.resolve_request(request)
         payload = compile_openai_speech_payload(request)
+        mapping = request.provider_mapping
+        if mapping is None:  # pragma: no cover - guaranteed by resolve_request
+            raise SpeechProviderError("OpenAI adapter requires a resolved provider mapping")
         response_format = str(payload["response_format"])
         calls = 0
         retries = 0
@@ -159,14 +288,22 @@ class OpenAiSpeechProvider:
         request_id = response.headers.get("x-request-id")
         metadata: dict[str, Any] = {
             "provider": "openai",
-            "model": request.provider_mapping.model,
-            "voiceId": request.provider_mapping.voice_id,
+            "model": mapping.model,
+            "voiceId": mapping.voice_id,
             "attemptId": attempt_id,
             "callCount": calls,
             "retryCount": retries,
             "responseFormat": response_format,
             "responseBytes": len(response.content),
             "responseSha256": hashlib.sha256(response.content).hexdigest(),
+            "providerRequestFingerprint": hashlib.sha256(
+                json.dumps(
+                    payload,
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ).encode("utf-8")
+            ).hexdigest(),
         }
         if request_id:
             metadata["providerRequestId"] = request_id

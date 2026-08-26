@@ -72,6 +72,13 @@ class SpeechBackedProductionProvider:
         if raw is None:
             raise ContractValidationError("Real speech requires speechRequest")
         request = SpeechGenerationRequest.model_validate(raw)
+        resolver = getattr(self.speech, "resolve_request", None)
+        if resolver is not None:
+            request = resolver(request)
+        elif request.provider_mapping is None:
+            raise ContractValidationError(
+                "Speech provider cannot resolve a provider-neutral voice profile"
+            )
         if prompt != request.exact_text:
             raise ContractValidationError("Speech prompt must equal exactText")
         fingerprint = audio_input_fingerprint(request)
@@ -99,7 +106,20 @@ class SpeechBackedProductionProvider:
             fingerprint, AudioReviewStatus.PENDING, attempt_id=attempt_id
         )
         provider_request_id = generated.provider_metadata.get("providerRequestId")
+        provider_audio_id = generated.provider_metadata.get("providerAudioId")
+        provider_voice_id = generated.provider_metadata.get("voiceId")
+        provider_call_count = generated.provider_metadata.get("callCount")
+        provider_retry_count = generated.provider_metadata.get("retryCount")
+        provider_download_call_count = generated.provider_metadata.get(
+            "downloadCallCount"
+        )
         response_sha256 = generated.provider_metadata.get("responseSha256")
+        provider_request_fingerprint = generated.provider_metadata.get(
+            "providerRequestFingerprint"
+        )
+        mapping = request.provider_mapping
+        if mapping is None:  # pragma: no cover - guarded by provider resolution above
+            raise ContractValidationError("Speech request has no resolved provider mapping")
         content: dict[str, Any] = {
             "schemaVersion": "speech-clip-v1",
             "sceneId": request.scene_id,
@@ -108,22 +128,40 @@ class SpeechBackedProductionProvider:
             "textHash": text_hash(request.exact_text),
             "voiceProfileFingerprint": voice_profile_fingerprint(request.voice_profile),
             "providerMappingFingerprint": provider_mapping_fingerprint(
-                request.provider_mapping
+                mapping
             ),
             "pronunciationFingerprint": pronunciation_fingerprint(
                 request.pronunciation_guidance
             ),
             "audioInputFingerprint": fingerprint,
-            "provider": request.provider_mapping.provider,
-            "model": request.provider_mapping.model,
+            "provider": mapping.provider,
+            "model": mapping.model,
             "actualDurationMs": physical.duration_ms,
             "reviewStatus": AudioReviewStatus.PENDING.value,
+            "voiceBindingStatus": mapping.non_material_metadata.get(
+                "voiceBindingStatus", "APPROVED"
+            ),
             "exactTextInputVerified": True,
         }
+        candidate_ranking = mapping.non_material_metadata.get("candidateRanking")
+        if isinstance(candidate_ranking, list):
+            content["voiceCandidateRanking"] = candidate_ranking
         if provider_request_id:
             content["providerJobId"] = provider_request_id
+        if provider_audio_id:
+            content["providerAudioId"] = provider_audio_id
+        if provider_voice_id:
+            content["providerVoiceId"] = provider_voice_id
+        if isinstance(provider_call_count, int):
+            content["providerCallCount"] = provider_call_count
+        if isinstance(provider_retry_count, int):
+            content["providerRetryCount"] = provider_retry_count
+        if isinstance(provider_download_call_count, int):
+            content["providerDownloadCallCount"] = provider_download_call_count
         if response_sha256:
             content["audioSha256"] = response_sha256
+        if provider_request_fingerprint:
+            content["providerRequestFingerprint"] = provider_request_fingerprint
         return await self.media.import_media(
             work_id=request.work_id,
             media_type=MediaType.AUDIO,

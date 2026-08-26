@@ -13,6 +13,7 @@ from drama_plugin.contracts.audio import (
     FinalAvFingerprintInput,
     PronunciationGuidance,
     ProviderVoiceMapping,
+    SceneState,
     SpeechGenerationRequest,
     TargetTimingPolicy,
     VoiceProfile,
@@ -86,6 +87,8 @@ def pronunciation_fingerprint(guidance: list[PronunciationGuidance]) -> str:
 
 def audio_input_material(request: SpeechGenerationRequest) -> dict[str, Any]:
     mapping = request.provider_mapping
+    if mapping is None:
+        raise ValueError("Audio fingerprint requires a provider-resolved request")
     return {
         "schemaVersion": "audio-input-v1",
         "workId": request.work_id,
@@ -94,6 +97,7 @@ def audio_input_material(request: SpeechGenerationRequest) -> dict[str, Any]:
         "textHash": text_hash(request.exact_text),
         "speakerKey": request.speaker_key,
         "performanceIntentHash": sha256_canonical(request.performance_intent),
+        "sceneStateHash": sha256_canonical(request.scene_state),
         "voiceProfileFingerprint": voice_profile_fingerprint(request.voice_profile),
         "providerMappingFingerprint": provider_mapping_fingerprint(mapping),
         "pronunciationFingerprint": pronunciation_fingerprint(
@@ -165,6 +169,7 @@ def compile_speech_request(
     pronunciation_guidance: list[PronunciationGuidance],
     material_render_parameters: Mapping[str, Any],
     target_timing_policy: TargetTimingPolicy,
+    scene_state: SceneState | None = None,
     non_material_metadata: Mapping[str, Any] | None = None,
 ) -> SpeechGenerationRequest:
     return SpeechGenerationRequest(
@@ -176,6 +181,7 @@ def compile_speech_request(
         voice_profile=voice_profile.model_copy(deep=True),
         provider_mapping=provider_mapping.model_copy(deep=True),
         pronunciation_guidance=deepcopy(pronunciation_guidance),
+        scene_state=scene_state.model_copy(deep=True) if scene_state else None,
         performance_intent=deepcopy(spoken_content.get("performanceIntent", {})),
         material_render_parameters=deepcopy(dict(material_render_parameters)),
         target_timing_policy=target_timing_policy.model_copy(deep=True),
@@ -194,10 +200,9 @@ class StructuredSpeechProductionAdapter:
         request: SpeechGenerationRequest,
         reference_media_ids: list[str] | None = None,
     ) -> Media:
-        parameters = {
-            "speechRequest": dump_contract(request),
-            "audioInputFingerprint": audio_input_fingerprint(request),
-        }
+        parameters: dict[str, Any] = {"speechRequest": dump_contract(request)}
+        if request.provider_mapping is not None:
+            parameters["audioInputFingerprint"] = audio_input_fingerprint(request)
         return await self.production.generate_audio(
             request.exact_text,
             reference_media_ids,

@@ -1,6 +1,7 @@
 from drama_plugin.providers.speech.bailian_qwen import (
     BailianQwenSpeechProvider,
     compile_bailian_qwen_speech_payload,
+    rank_bailian_qwen_voice_candidates,
 )
 from drama_plugin.providers.speech.openai import (
     OpenAiSpeechProvider,
@@ -19,5 +20,6 @@ __all__ = [
     "SpeechBackedProductionProvider",
     "compile_bailian_qwen_speech_payload",
     "compile_openai_speech_payload",
+    "rank_bailian_qwen_voice_candidates",
     "resolve_speech_provider",
 ]

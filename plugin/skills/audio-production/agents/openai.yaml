@@ -1,4 +1,4 @@
 interface:
   display_name: "Audio Production"
   short_description: "Produce exact-text speech and immutable-source final AV"
-  default_prompt: "Use $audio-production to produce only the requested reviewed speech or final AV from canonical Dialogue."
+  default_prompt: "Use $audio-production to derive evidence-scoped neutral Character Understanding, stable Voice Profile, separate Scene State, and baseline-plus-delta Performance Intent from canonical Dialogue; leave candidate ranking to the adapter and stop with voice binding pending."

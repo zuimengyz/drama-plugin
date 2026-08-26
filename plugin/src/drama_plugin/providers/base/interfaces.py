@@ -61,6 +61,9 @@ class ProductionProvider(Protocol):
 class SpeechProvider(Protocol):
     """Provider-neutral seam for a future HTTP- or MCP-backed TTS adapter."""
 
+    def resolve_request(
+        self, request: SpeechGenerationRequest
+    ) -> SpeechGenerationRequest: ...
     async def generate_speech(self, request: SpeechGenerationRequest) -> SpeechGenerationResult: ...
 
 

@@ -9,19 +9,114 @@ from drama_plugin.contracts.base import ContractModel
 
 
 class ProviderMappingStatus(StrEnum):
+    CANDIDATE = "CANDIDATE"
     APPROVED = "APPROVED"
     RETIRED = "RETIRED"
 
 
+class EvidenceConfidence(StrEnum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+
+
+class CharacterDimension(ContractModel):
+    value: str = "UNKNOWN"
+    confidence: EvidenceConfidence = EvidenceConfidence.LOW
+    evidence_refs: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def validate_unknown(self) -> "CharacterDimension":
+        if self.value == "UNKNOWN" and self.confidence is not EvidenceConfidence.LOW:
+            raise ValueError("UNKNOWN character dimensions must have LOW confidence")
+        return self
+
+
+class CharacterUnderstanding(ContractModel):
+    schema_version: Literal["character-understanding-v1"] = (
+        "character-understanding-v1"
+    )
+    understanding_id: str
+    speaker_key: str
+    identity_and_life_stage: dict[str, CharacterDimension] = Field(
+        default_factory=dict
+    )
+    experience_structure: dict[str, CharacterDimension] = Field(
+        default_factory=dict
+    )
+    decision_style: dict[str, CharacterDimension] = Field(default_factory=dict)
+    emotional_regulation: dict[str, CharacterDimension] = Field(
+        default_factory=dict
+    )
+    interaction_style: dict[str, CharacterDimension] = Field(
+        default_factory=dict
+    )
+    authority_and_responsibility: dict[str, CharacterDimension] = Field(
+        default_factory=dict
+    )
+    communication_style: dict[str, CharacterDimension] = Field(
+        default_factory=dict
+    )
+    physical_baseline: dict[str, CharacterDimension] = Field(default_factory=dict)
+    presentation_modes: dict[str, CharacterDimension] = Field(default_factory=dict)
+    alignment_and_constraints: dict[str, CharacterDimension] = Field(
+        default_factory=dict
+    )
+    unknown_fields: list[str] = Field(default_factory=list)
+    source_refs: list[str] = Field(default_factory=list)
+
+
+class SceneState(ContractModel):
+    schema_version: Literal["scene-state-v1"] = "scene-state-v1"
+    spoken_content_id: str | None = None
+    speaker_key: str | None = None
+    current_emotion: CharacterDimension | None = None
+    emotion_cause: CharacterDimension | None = None
+    internal_activation: CharacterDimension | None = None
+    external_expressiveness: CharacterDimension | None = None
+    urgency: CharacterDimension | None = None
+    stress_level: CharacterDimension | None = None
+    interaction_target: CharacterDimension | None = None
+    speaker_objective: CharacterDimension | None = None
+    subtext: CharacterDimension | None = None
+    restraint: CharacterDimension | None = None
+    physical_condition: CharacterDimension | None = None
+    presentation_mode: CharacterDimension | None = None
+    unknown_fields: list[str] = Field(default_factory=list)
+    evidence_refs: list[str] = Field(default_factory=list)
+
+
 class CreativeVoiceProfile(ContractModel):
-    age_presentation: str
-    timbre: str
-    temperament: str
-    baseline_pace: str
-    power: str
-    restraint: str
-    language: str
+    # Pre-7.2S callers populate these broad fields.  They remain serialized for
+    # backward compatibility, while new planning can leave them UNKNOWN and use
+    # the more precise provider-neutral dimensions below.
+    age_presentation: str = "UNKNOWN"
+    gender_presentation: str | None = None
+    timbre: str = "UNKNOWN"
+    temperament: str = "UNKNOWN"
+    baseline_pace: str = "UNKNOWN"
+    power: str = "UNKNOWN"
+    restraint: str = "UNKNOWN"
+    language: str = "zh-CN"
     language_register: str | None = Field(default=None, alias="register")
+    resonance: str | None = None
+    texture: str | None = None
+    authority: str | None = None
+    articulation: str | None = None
+    energy: str | None = None
+    vocal_age: str | None = None
+    vocal_weight: str | None = None
+    resonance_depth: str | None = None
+    timbre_brightness: str | None = None
+    articulation_firmness: str | None = None
+    phrase_attack: str | None = None
+    baseline_energy: str | None = None
+    breath_support: str | None = None
+    command_presence: str | None = None
+    gravitas: str | None = None
+    controlled_power: str | None = None
+    sentence_finality: str | None = None
+    emotional_containment: str | None = None
     consistency_notes: list[str] = Field(default_factory=list)
 
 
@@ -38,9 +133,19 @@ class VoiceProfile(ContractModel):
     profile_id: str
     speaker_key: str
     creative_profile: CreativeVoiceProfile
-    provider_mappings: list[ProviderVoiceMapping]
+    character_understanding: CharacterUnderstanding | None = None
+    provider_mappings: list[ProviderVoiceMapping] = Field(default_factory=list)
     display_name: str | None = None
     non_material_metadata: dict[str, Any] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def validate_understanding_scope(self) -> "VoiceProfile":
+        if (
+            self.character_understanding is not None
+            and self.character_understanding.speaker_key != self.speaker_key
+        ):
+            raise ValueError("character understanding speakerKey must match voice profile")
+        return self
 
 
 class PronunciationGuidance(ContractModel):
@@ -66,8 +171,9 @@ class SpeechGenerationRequest(ContractModel):
     exact_text: str = Field(min_length=1)
     speaker_key: str
     voice_profile: VoiceProfile
-    provider_mapping: ProviderVoiceMapping
+    provider_mapping: ProviderVoiceMapping | None = None
     pronunciation_guidance: list[PronunciationGuidance] = Field(default_factory=list)
+    scene_state: SceneState | None = None
     performance_intent: dict[str, Any] = Field(default_factory=dict)
     material_render_parameters: dict[str, Any] = Field(default_factory=dict)
     target_timing_policy: TargetTimingPolicy
@@ -77,8 +183,10 @@ class SpeechGenerationRequest(ContractModel):
     def validate_voice_resolution(self) -> "SpeechGenerationRequest":
         if self.voice_profile.speaker_key != self.speaker_key:
             raise ValueError("voice profile speakerKey must match request speakerKey")
-        if self.provider_mapping.status is not ProviderMappingStatus.APPROVED:
-            raise ValueError("provider mapping must be APPROVED")
+        if self.provider_mapping is None:
+            return self
+        if self.provider_mapping.status is ProviderMappingStatus.RETIRED:
+            raise ValueError("provider mapping must not be RETIRED")
         mapping_identity = (
             self.provider_mapping.provider,
             self.provider_mapping.model,

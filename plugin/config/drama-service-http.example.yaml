@@ -13,6 +13,8 @@ providers:
     mode: mock
   media:
     mode: http
+  voice:
+    mode: http
   context:
     mode: local
 
@@ -28,6 +30,7 @@ services:
       save_work: /api/tool/work/save
       list_works: /api/tool/work/list
       search_works: /api/tool/work/search
+      bind_work_voice: /api/tool/work/bind-voice
       create_script: /api/tool/script/create
       get_script: /api/tool/script/get
       save_script: /api/tool/script/save
@@ -64,3 +67,15 @@ services:
       import_media: /api/tool/media/import
       resolve_media: /api/tool/media/resolve
       restore_media_object: /api/tool/media/restore
+  voice:
+    base_url: http://127.0.0.1:8080
+    operations:
+      import_voice: /api/tool/voice/import
+      get_voice: /api/tool/voice/get
+      search_voices: /api/tool/voice/search
+      update_voice: /api/tool/voice/update
+      resolve_voice: /api/tool/voice/resolve
+  role_dubbing:
+    base_url: https://api.fish.audio
+    tts_model: s2-pro
+    output_directory: artifacts/role-dubbing-production

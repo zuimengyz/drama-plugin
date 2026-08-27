@@ -96,7 +96,7 @@ research.search_sources / search_events / search_people / search_locations / ver
 ```text
 production.generate_image
 production.generate_video
-production.generate_audio
+production.generate_role_dubbing
 ```
 
 Agent 只传 prompt、`asset_id`、`media_id` 和必要参数。Adapter 内部解析存储引用、处理上传、Provider 调用并登记 Media；workflow JSON、node id、filename、bucket、URL 和 Provider response 不得进入 Skill Core。

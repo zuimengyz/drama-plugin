@@ -14,8 +14,8 @@ POST_OPERATIONS = {
     "create_work", "save_work", "create_script", "save_script",
     "create_episode", "save_episode", "create_scene", "save_scene",
     "create_shot", "save_shot", "create_asset", "save_asset",
-    "create_media", "save_media",
-    "import_media",
+    "create_media", "save_media", "bind_work_voice",
+    "import_media", "import_voice", "update_voice",
     "restore_media_object",
 }
 
@@ -23,22 +23,25 @@ POST_OPERATIONS = {
 def _configured_operations() -> dict[str, str]:
     payload = yaml.safe_load(CONFIG.read_text(encoding="utf-8"))
     result: dict[str, str] = {}
-    for domain in ("memory", "asset", "media"):
+    for domain in ("memory", "asset", "media", "voice"):
         result.update(payload["services"][domain]["operations"])
     return result
 
 
-def test_35_memory_operations_match_service_mapping_when_sibling_is_available() -> None:
+def test_41_long_term_memory_operations_match_service_mapping_when_sibling_is_available() -> None:
     configured = _configured_operations()
-    assert len(configured) == 35
+    assert len(configured) == 41
     plugin = DramaPlugin.load(ROOT)
     expected_codes = {
         tool.code for tool in plugin.tools.list()
-        if tool.domain in {"work", "script", "episode", "scene", "shot", "asset", "media"}
+        if tool.domain in {"work", "script", "episode", "scene", "shot", "asset", "media", "voice"}
     }
-    assert {code.split(".", 1)[1] for code in expected_codes} == set(configured)
+    configured_tools = set(configured) - {"bind_work_voice"}
+    configured_tools.remove("update_voice")
+    configured_tools.add("save_voice")
+    assert {code.split(".", 1)[1] for code in expected_codes} == configured_tools
     assert all(path.startswith("/api/tool/") and not path.startswith("http") for path in configured.values())
-    assert len(POST_OPERATIONS) == 16
+    assert len(POST_OPERATIONS) == 19
     if SERVICE_MAPPING.exists():
         service_operations = yaml.safe_load(SERVICE_MAPPING.read_text(encoding="utf-8"))["operations"]
         assert configured == service_operations
@@ -49,10 +52,12 @@ def test_real_http_example_routes_only_memory_asset_media_to_java() -> None:
         "DRAMA_PLUGIN_SERVICE_MEMORY_API_TOKEN": "test-only",
         "DRAMA_PLUGIN_SERVICE_ASSET_API_TOKEN": "test-only",
         "DRAMA_PLUGIN_SERVICE_MEDIA_API_TOKEN": "test-only",
+        "DRAMA_PLUGIN_SERVICE_VOICE_API_TOKEN": "test-only",
     })
     assert config.providers.memory.mode == "http"
     assert config.providers.asset.mode == "http"
     assert config.providers.media.mode == "http"
+    assert config.providers.voice.mode == "http"
     assert config.providers.research.mode == "mock"
     assert config.providers.production.mode == "mock"
     assert config.providers.context.mode == "local"

@@ -13,16 +13,27 @@ providers:
     mode: mock
   media:
     mode: mock
+  voice:
+    mode: mock
   context:
     mode: local
-  speech:
-    mode: disabled
 
 services:
   memory:
     base_url: ""
     timeout_seconds: 10
     operations: {}
+  voice:
+    base_url: ""
+    timeout_seconds: 10
+    operations: {}
+  role_dubbing:
+    base_url: "https://api.fish.audio"
+    api_key: null
+    tts_model: s2-pro
+    timeout_seconds: 120
+    max_transient_retries: 1
+    output_directory: ""
   asset:
     base_url: ""
     timeout_seconds: 10
@@ -43,11 +54,3 @@ services:
     base_url: ""
     timeout_seconds: 30
     operations: {}
-  speech:
-    base_url: "https://api.openai.com/v1"
-    api_key: null
-    bailian_base_url: "https://dashscope.aliyuncs.com/api/v1"
-    dashscope_api_key: null
-    timeout_seconds: 30
-    max_transient_retries: 2
-    output_directory: ""

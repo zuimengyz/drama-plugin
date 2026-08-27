@@ -1,5 +1,4 @@
 from drama_plugin.audio.foundation import (
-    StructuredSpeechProductionAdapter,
     audio_attempt_source_ref,
     audio_input_fingerprint,
     audio_input_material,
@@ -25,6 +24,10 @@ from drama_plugin.audio.host_media import (
     probe_media,
     probe_wav_duration_ms,
     validate_media_mime,
+)
+from drama_plugin.audio.creative_casting import (
+    compile_fish_creative_casting_brief,
+    project_creative_voice_casting_profile,
 )
 
 __all__ = [name for name in globals() if not name.startswith("_")]

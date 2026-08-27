@@ -5,6 +5,7 @@ from drama_plugin.providers.http.providers import (
     HttpMediaProvider,
     HttpProductionProvider,
     HttpResearchProvider,
+    HttpVoiceProvider,
     RemoteContextProvider,
 )
 
@@ -14,6 +15,7 @@ __all__ = [
     "HttpMediaProvider",
     "HttpProductionProvider",
     "HttpResearchProvider",
+    "HttpVoiceProvider",
     "HttpProviderClient",
     "RemoteContextProvider",
 ]

@@ -10,6 +10,7 @@ from drama_plugin.contracts.context import ContextBuildRequest, DramaContextPatc
 from drama_plugin.contracts.creation import Episode, Scene, Script, Shot, Work
 from drama_plugin.contracts.media import Media, MediaResolveResult, MediaRestoreResult, MediaType
 from drama_plugin.contracts.research import ClaimAssessment, ResearchEvidence, ResearchSource
+from drama_plugin.contracts.voice import Voice, VoiceContent, VoiceResolveResult, VoiceSourceType, VoiceStatus
 from drama_plugin.exceptions import ContractValidationError
 from drama_plugin.audio.host_media import validate_media_mime
 from drama_plugin.providers.http.client import HttpProviderClient
@@ -34,6 +35,7 @@ class HttpMemoryProvider:
     async def create_work(self, title: str, content: dict[str, Any], description: str | None = None) -> Work: return await self._create("create_work", Work, {"title": title, "description": description, "content": content})
     async def get_work(self, work_id: str) -> Work: return _one(Work, await self.http.request("get_work", params={"work_id": work_id}))
     async def save_work(self, work_id: str, title: str, content: dict[str, Any], description: str | None = None) -> Work: return await self._create("save_work", Work, {"work_id": work_id, "title": title, "description": description, "content": content})
+    async def bind_work_voice(self, work_id: str, speaker_key: str, voice_id: str, expected_version: int) -> Work: return await self._create("bind_work_voice", Work, {"work_id": work_id, "speaker_key": speaker_key, "voice_id": voice_id, "expected_version": expected_version})
     async def list_works(self) -> list[Work]: return _many(Work, await self.http.request("list_works"))
     async def search_works(self, query: str) -> list[Work]: return _many(Work, await self.http.request("search_works", params={"query": query}))
     async def create_script(self, work_id: str, title: str, content: dict[str, Any]) -> Script: return await self._create("create_script", Script, {"work_id": work_id, "title": title, "content": content})
@@ -81,7 +83,6 @@ class HttpProductionProvider:
     def __init__(self, http: HttpProviderClient) -> None: self.http = http
     async def generate_image(self, prompt: str, reference_asset_ids: list[str] | None = None, reference_media_ids: list[str] | None = None, parameters: dict[str, Any] | None = None) -> Media: return _one(Media, await self.http.request("generate_image", method="POST", json={"prompt": prompt, "referenceAssetIds": reference_asset_ids or [], "referenceMediaIds": reference_media_ids or [], "parameters": parameters or {}}))
     async def generate_video(self, prompt: str, start_frame_media_id: str | None = None, end_frame_media_id: str | None = None, reference_media_ids: list[str] | None = None, parameters: dict[str, Any] | None = None) -> Media: return _one(Media, await self.http.request("generate_video", method="POST", json={"prompt": prompt, "startFrameMediaId": start_frame_media_id, "endFrameMediaId": end_frame_media_id, "referenceMediaIds": reference_media_ids or [], "parameters": parameters or {}}))
-    async def generate_audio(self, prompt: str, reference_media_ids: list[str] | None = None, parameters: dict[str, Any] | None = None) -> Media: return _one(Media, await self.http.request("generate_audio", method="POST", json={"prompt": prompt, "referenceMediaIds": reference_media_ids or [], "parameters": parameters or {}}))
 
 
 class HttpMediaProvider:
@@ -108,6 +109,31 @@ class HttpMediaProvider:
                 filename=source.filename,
                 content_type=source.content_type,
             ))
+
+
+class HttpVoiceProvider:
+    def __init__(self, http: HttpProviderClient) -> None: self.http = http
+
+    async def import_voice(self, name: str, source_type: VoiceSourceType, source_uri: str, duration_ms: int, content: VoiceContent) -> Voice:
+        metadata = {"name": name, "source_type": source_type, "duration_ms": duration_ms, "content": dump_contract(content)}
+        async with open_media_source(source_uri) as source:
+            if not source.content_type.startswith("audio/"):
+                raise ContractValidationError("Voice master reference requires audio/* MIME type")
+            return _one(Voice, await self.http.multipart_request("import_voice", metadata=metadata, stream=source.stream, filename=source.filename, content_type=source.content_type))
+
+    async def get_voice(self, voice_id: str) -> Voice:
+        return _one(Voice, await self.http.request("get_voice", params={"voice_id": voice_id}))
+
+    async def search_voices(self, query: str | None = None, status: VoiceStatus | None = None) -> list[Voice]:
+        params = {key: value for key, value in {"query": query, "status": status}.items() if value is not None}
+        return _many(Voice, await self.http.request("search_voices", params=params))
+
+    async def update_voice(self, voice_id: str, content: VoiceContent, expected_version: int, name: str | None = None, status: VoiceStatus | None = None) -> Voice:
+        body = {"voice_id": voice_id, "name": name, "status": status, "content": dump_contract(content), "expected_version": expected_version}
+        return _one(Voice, await self.http.request("update_voice", method="POST", json=body))
+
+    async def resolve_voice(self, voice_id: str) -> VoiceResolveResult:
+        return _one(VoiceResolveResult, await self.http.request("resolve_voice", params={"voice_id": voice_id}))
 
 
 class RemoteContextProvider:

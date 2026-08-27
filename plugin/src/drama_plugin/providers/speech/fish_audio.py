@@ -201,6 +201,32 @@ class FishAudioHttpClient:
             return response
         raise AssertionError("unreachable")
 
+    async def _get(self, path: str, **kwargs: Any) -> httpx.Response:
+        headers = dict(kwargs.pop("headers", {}))
+        headers["Authorization"] = self._authorization
+        try:
+            return await self.client.get(path, headers=headers, **kwargs)
+        except httpx.HTTPError as exc:
+            raise SpeechProviderError("Fish Audio query failed", retryable=True) from exc
+
+    async def find_model_by_title(self, title: str) -> FishModelResult | None:
+        response = await self._get("model", params={"title": title})
+        if response.status_code != 200:
+            raise _safe_error(response, (self._authorization, self._authorization[7:]))
+        body = response.json()
+        items = body.get("items", []) if isinstance(body, dict) else []
+        matches = [item for item in items if isinstance(item, dict) and item.get("title") == title]
+        if not matches:
+            return None
+        if len(matches) != 1:
+            raise ProviderResultUnknown("Fish Create Model recovery found multiple matching models")
+        match = matches[0]
+        reference_id = str(match.get("_id", "")).strip()
+        if not reference_id:
+            raise SpeechProviderError("Fish model recovery omitted _id")
+        return FishModelResult(reference_id=reference_id, state=str(match.get("state", "")),
+                               provider_request_id=_request_id(response))
+
     async def create_model(
         self, *, reference_audio: Path, title: str, reference_text: str | None = None
     ) -> FishModelResult:
@@ -215,11 +241,17 @@ class FishAudioHttpClient:
         }
         if reference_text:
             data["texts"] = reference_text
-        response = await self._post(
-            "model",
-            data=data,
-            files={"voices": (reference_audio.name, reference_audio.read_bytes(), mime)},
-        )
+        try:
+            response = await self._post(
+                "model",
+                data=data,
+                files={"voices": (reference_audio.name, reference_audio.read_bytes(), mime)},
+            )
+        except ProviderResultUnknown:
+            recovered = await self.find_model_by_title(title)
+            if recovered is not None:
+                return recovered
+            raise
         if response.status_code != 201:
             raise _safe_error(response, (self._authorization, self._authorization[7:]))
         payload = response.json()

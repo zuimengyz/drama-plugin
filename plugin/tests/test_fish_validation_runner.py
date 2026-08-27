@@ -68,6 +68,10 @@ def test_casting_score_is_identity_invariant_and_excludes_unknown_dimensions() -
         "signalAnalysis": {
             "tailToOverallRmsRatio": 0.5,
             "crestFactorDb": 12.0,
+            "lowPassToSignalRmsRatio": 0.55,
+            "differenceToSignalRmsRatio": 0.65,
+            "envelopeVariation": 0.3,
+            "zeroCrossingRate": 0.08,
             "obviousClipping": False,
         },
     }
@@ -106,6 +110,10 @@ def test_candidate_missing_a_short_final_clause_is_not_casting_eligible() -> Non
         "signalAnalysis": {
             "tailToOverallRmsRatio": 0.5,
             "crestFactorDb": 12.0,
+            "lowPassToSignalRmsRatio": 0.55,
+            "differenceToSignalRmsRatio": 0.65,
+            "envelopeVariation": 0.3,
+            "zeroCrossingRate": 0.08,
             "obviousClipping": False,
         },
     }
@@ -120,3 +128,47 @@ def test_candidate_missing_a_short_final_clause_is_not_casting_eligible() -> Non
     assert score["eligible"] is False
     assert score["candidateQcStatus"] == "FAIL"
     assert score["score"] == 0.0
+
+
+def test_repaired_casting_uses_acoustic_dimensions_after_technical_qc() -> None:
+    candidate = {
+        "durationMs": 3200,
+        "previewText": "此事若行，我便是反臣。不可。",
+        "intelligibilityQc": {
+            "cer": 0.0,
+            "status": "PASS",
+            "missingCharacters": [],
+            "extraCharacters": [],
+            "properNounMismatches": [],
+            "repetitions": [],
+        },
+        "signalAnalysis": {
+            "tailToOverallRmsRatio": 0.5,
+            "crestFactorDb": 12.0,
+            "lowPassToSignalRmsRatio": 0.62,
+            "differenceToSignalRmsRatio": 0.5,
+            "envelopeVariation": 0.35,
+            "zeroCrossingRate": 0.07,
+            "obviousClipping": False,
+        },
+    }
+    score = candidate_casting_score(
+        candidate=candidate,
+        creative_profile={
+            "baselinePace": "MODERATE_DELIBERATE",
+            "sentenceFinality": "HIGH",
+            "vocalAge": "LATE_MIDDLE_ADULT",
+            "vocalWeight": "MEDIUM_HEAVY",
+            "resonance": "DEEP",
+            "brightness": "SLIGHTLY_DARK",
+            "texture": "DRY_AGE_TEXTURED",
+            "roughness": "LOW_MEDIUM",
+            "breathiness": "LOW",
+        },
+    )
+    assert score["technicalQc"]["status"] == "PASS"
+    assert score["voiceFit"]["status"] == "PASS"
+    assert isinstance(score["selectionDimensions"]["vocalAge"], dict)
+    assert score["selectionDimensions"]["vocalAge"]["confidence"] == (
+        "LOW_ACOUSTIC_PROXY"
+    )

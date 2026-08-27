@@ -24,6 +24,16 @@ from mcp.client.session import ClientSession
 from mcp.client.streamable_http import streamable_http_client
 
 from drama_plugin.audio.host_media import probe_media
+from drama_plugin.audio.creative_casting import (
+    compile_fish_creative_casting_brief,
+    project_creative_voice_casting_profile,
+)
+from drama_plugin.contracts import (
+    CreativeCastingDimension,
+    CreativeVoiceCastingProfile,
+    EvidenceConfidence,
+    VoiceProfile,
+)
 from drama_plugin.exceptions import ProviderResultUnknown, SpeechProviderError
 from drama_plugin.providers.speech.fish_audio import (
     FISH_AUDIO_BASE_URL,
@@ -134,6 +144,55 @@ VOICE_VALUE_PHRASES = {
     ("sentenceFinality", "HIGH"): "decisive high-finality sentence endings",
 }
 
+# Integration planning fixture only. Production projection/compilation remains
+# identity-free in drama_plugin.audio.creative_casting.
+CREATIVE_CASTING_FIXTURE: dict[str, dict[str, Any]] = {
+    "speaker:wangsili": {
+        "historicalFactRefs": [
+            "Work.content.historicalActorHierarchy[speakerKey=speaker:wangsili]",
+            "Work.content.historicalSpine[beatId=P2]",
+            "《旧唐书》卷110·王思礼传：少习戎旅、长期军旅经历；生年未载",
+        ],
+        "creativeDecisionBasis": [
+            "Exact age remains UNKNOWN; mature vocal age is an explicit artistic casting decision based on sustained military experience, not a claimed birth year.",
+            "Direct subordinate counsel supports clarity and firmness without assigning final command authority.",
+        ],
+        "dimensions": {
+            "vocalAge": ("MATURE_ADULT", "MEDIUM"),
+            "vocalWeight": ("MEDIUM", "MEDIUM"),
+            "register": ("MID", "MEDIUM"),
+            "resonance": ("BALANCED", "MEDIUM"),
+            "brightness": ("NEUTRAL", "MEDIUM"),
+            "texture": ("CLEAN_SUBTLE_GRAIN", "LOW"),
+            "roughness": ("LOW", "LOW"),
+            "breathiness": ("LOW", "LOW"),
+            "controlledPower": ("MEDIUM_CONTROLLED", "MEDIUM"),
+        },
+    },
+    "speaker:geshuhan": {
+        "historicalFactRefs": [
+            "Work.content.historicalActorHierarchy[speakerKey=speaker:geshuhan]",
+            "Work.content.historicalSpine[beatId=P2]",
+            "《旧唐书》卷104·哥舒翰传：年四十遭父丧、三年后入河西；天宝六载已任要职，天宝十五载守潼关",
+        ],
+        "creativeDecisionBasis": [
+            "Primary chronology supports at least an early-fifties lower bound at the battle; late-middle-adult vocal age is an artistic target, not an asserted exact age.",
+            "Long command responsibility supports weight and resonance; current illness is excluded from the base voice.",
+            "Older life stage is represented by a composite of texture, resonance, breath support, articulation, and phrase shape, never pitch alone.",
+        ],
+        "dimensions": {
+            "vocalAge": ("LATE_MIDDLE_ADULT", "HIGH"),
+            "vocalWeight": ("MEDIUM_HEAVY", "MEDIUM"),
+            "register": ("LOW_MIDDLE", "MEDIUM"),
+            "resonance": ("DEEP", "MEDIUM"),
+            "brightness": ("SLIGHTLY_DARK", "MEDIUM"),
+            "texture": ("DRY_AGE_TEXTURED", "MEDIUM"),
+            "roughness": ("LOW_MEDIUM", "LOW"),
+            "breathiness": ("LOW", "LOW"),
+        },
+    },
+}
+
 
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
@@ -152,7 +211,13 @@ def write_json(path: Path, value: Any) -> None:
 
 
 def load_frozen_voice_profiles(workspace: Path) -> dict[str, dict[str, Any]]:
-    path = workspace / "artifacts/batch7-2/evidence/voice-profile-7.2s-r-e2e.json"
+    candidates = (
+        workspace / "artifacts/batch7-2/evidence/voice-profile-7.2s-r-e2e.json",
+        workspace / "artifacts/batch7-2/evidence/voice-profile-7.2s-r.json",
+    )
+    path = next((item for item in candidates if item.is_file()), None)
+    if path is None:
+        raise ValidationBlocked("FROZEN_VOICE_PROFILE_MISSING")
     payload = json.loads(path.read_text(encoding="utf-8"))
     profiles: dict[str, dict[str, Any]] = {}
     for item in payload.get("items", []):
@@ -166,6 +231,35 @@ def load_frozen_voice_profiles(workspace: Path) -> dict[str, dict[str, Any]]:
     if set(profiles) < required:
         raise ValidationBlocked("FROZEN_VOICE_PROFILE_MISSING")
     return profiles
+
+
+def build_creative_casting_profile(
+    *, speaker_key: str, creative_profile: dict[str, Any]
+) -> CreativeVoiceCastingProfile:
+    fixture = CREATIVE_CASTING_FIXTURE[speaker_key]
+    voice_profile = VoiceProfile.model_validate(
+        {
+            "profileId": f"transient:{speaker_key}:fish-dimension-repair",
+            "speakerKey": speaker_key,
+            "creativeProfile": creative_profile,
+        }
+    )
+    decisions = {
+        name: CreativeCastingDimension(
+            value=value,
+            confidence=EvidenceConfidence(confidence),
+            basis_refs=[f"creativeDecisionBasis[{index}]"],
+        )
+        for index, (name, (value, confidence)) in enumerate(
+            fixture["dimensions"].items()
+        )
+    }
+    return project_creative_voice_casting_profile(
+        voice_profile,
+        artistic_decisions=decisions,
+        historical_fact_refs=list(fixture["historicalFactRefs"]),
+        creative_decision_basis=list(fixture["creativeDecisionBasis"]),
+    )
 
 
 def build_voice_casting_brief(creative_profile: dict[str, Any]) -> dict[str, Any]:
@@ -193,6 +287,12 @@ def build_voice_casting_brief(creative_profile: dict[str, Any]) -> dict[str, Any
         ],
         "instruction": ", ".join(phrases) + ". Keep the base voice clear and controlled.",
     }
+
+
+def build_repaired_voice_casting_brief(
+    profile: CreativeVoiceCastingProfile,
+) -> dict[str, Any]:
+    return dict(compile_fish_creative_casting_brief(profile))
 
 
 def load_runtime_env(path: Path) -> None:
@@ -365,6 +465,38 @@ def analyze_pcm_wav(path: Path) -> dict[str, Any]:
     tail = samples[-tail_size:]
     tail_rms = math.sqrt(sum(item * item for item in tail) / len(tail))
     crest_factor_db = 20 * math.log10(peak / rms) if peak and rms else 0.0
+    zero_crossings = sum(
+        1
+        for left, right in zip(samples, samples[1:])
+        if (left < 0 <= right) or (left >= 0 > right)
+    )
+    difference_rms = math.sqrt(
+        sum((right - left) ** 2 for left, right in zip(samples, samples[1:]))
+        / max(1, len(samples) - 1)
+    )
+    alpha = 1.0 - math.exp(-2.0 * math.pi * 500.0 / sample_rate)
+    low_pass = 0.0
+    low_energy = 0.0
+    for sample in samples:
+        low_pass += alpha * (sample - low_pass)
+        low_energy += low_pass * low_pass
+    low_rms = math.sqrt(low_energy / len(samples))
+    window_size = max(1, round(sample_rate * 0.05))
+    window_rms = [
+        math.sqrt(sum(item * item for item in window) / len(window))
+        for start in range(0, len(samples), window_size)
+        if (window := samples[start : start + window_size])
+    ]
+    envelope_mean = sum(window_rms) / max(1, len(window_rms))
+    envelope_variation = (
+        math.sqrt(
+            sum((item - envelope_mean) ** 2 for item in window_rms)
+            / max(1, len(window_rms))
+        )
+        / envelope_mean
+        if envelope_mean
+        else 0.0
+    )
     return {
         "peakRatio": peak / 32767,
         "rmsRatio": rms / 32767,
@@ -372,6 +504,10 @@ def analyze_pcm_wav(path: Path) -> dict[str, Any]:
         "clippedSampleCount": clipped,
         "clippedSampleRatio": clipped / len(samples),
         "tailToOverallRmsRatio": tail_rms / rms if rms else 0.0,
+        "zeroCrossingRate": zero_crossings / max(1, len(samples) - 1),
+        "differenceToSignalRmsRatio": difference_rms / rms if rms else 0.0,
+        "lowPassToSignalRmsRatio": low_rms / rms if rms else 0.0,
+        "envelopeVariation": envelope_variation,
         "obviousClipping": clipped / len(samples) > 0.001,
     }
 
@@ -379,46 +515,110 @@ def analyze_pcm_wav(path: Path) -> dict[str, Any]:
 def candidate_casting_score(
     *,
     candidate: dict[str, Any],
-    creative_profile: dict[str, Any],
+    creative_profile: CreativeVoiceCastingProfile | dict[str, Any],
 ) -> dict[str, Any]:
     qc = candidate["intelligibilityQc"]
     signal = candidate["signalAnalysis"]
     duration_ms = int(candidate["durationMs"])
     char_count = len(normalize_transcript(str(candidate["previewText"])))
     cps = char_count / max(duration_ms / 1000, 0.001)
-    pace = creative_profile.get("baselinePace")
+    if isinstance(creative_profile, CreativeVoiceCastingProfile):
+        targets = {
+            name: item.value for name, item in creative_profile.dimensions.items()
+        }
+    else:
+        targets = creative_profile
+    pace = targets.get("baselinePace")
     target_midpoint = 5.25 if pace == "MODERATE" else 4.0
     pace_match = max(0.0, 1.0 - abs(cps - target_midpoint) / target_midpoint)
     clarity_match = max(0.0, 1.0 - float(qc["cer"]))
     articulation_match = clarity_match
-    ending_target = creative_profile.get("sentenceFinality")
+    ending_target = targets.get("sentenceFinality")
     tail_ratio = float(signal["tailToOverallRmsRatio"])
     if ending_target == "HIGH":
         ending_match = min(1.0, tail_ratio / 0.45)
     else:
         ending_match = max(0.0, 1.0 - abs(tail_ratio - 0.35) / 0.35)
-    controlled_power_target = creative_profile.get("controlledPower")
+    controlled_power_target = targets.get("controlledPower")
     crest = float(signal["crestFactorDb"])
     controlled_power_match = (
         max(0.0, 1.0 - abs(crest - 12.0) / 12.0)
         if controlled_power_target not in {None, "UNKNOWN"}
         else None
     )
+    def clamp(value: float) -> float:
+        return max(0.0, min(1.0, value))
+
+    def match(observed: float, target: float, confidence: str) -> dict[str, Any]:
+        return {
+            "observed": observed,
+            "target": target,
+            "match": clamp(1.0 - abs(observed - target)),
+            "confidence": confidence,
+        }
+
+    low_frequency = clamp(
+        (float(signal["lowPassToSignalRmsRatio"]) - 0.2) / 0.65
+    )
+    brightness = clamp(float(signal["differenceToSignalRmsRatio"]) / 1.4)
+    texture = clamp(
+        float(signal["envelopeVariation"]) * 0.75
+        + float(signal["zeroCrossingRate"]) * 3.0
+    )
+    breathiness = clamp(
+        brightness * 0.55 + float(signal["zeroCrossingRate"]) * 2.0
+    )
+    age_composite = clamp(
+        (
+            low_frequency
+            + low_frequency
+            + (1.0 - brightness)
+            + texture
+        )
+        / 4.0
+    )
+    target_values = {
+        "vocalAge": {"MATURE_ADULT": 0.55, "LATE_MIDDLE_ADULT": 0.72},
+        "vocalWeight": {"MEDIUM": 0.5, "MEDIUM_HEAVY": 0.7},
+        "resonance": {"BALANCED": 0.5, "DEEP": 0.72},
+        "brightness": {"NEUTRAL": 0.5, "SLIGHTLY_DARK": 0.35},
+        "texture": {"CLEAN_SUBTLE_GRAIN": 0.32, "DRY_AGE_TEXTURED": 0.62},
+        "roughness": {"LOW": 0.25, "LOW_MEDIUM": 0.45},
+        "breathiness": {"LOW": 0.25},
+    }
+    observations = {
+        "vocalAge": age_composite,
+        "vocalWeight": low_frequency,
+        "resonance": low_frequency,
+        "brightness": brightness,
+        "texture": texture,
+        "roughness": texture,
+        "breathiness": breathiness,
+    }
+    voice_fit: dict[str, Any] = {}
+    for name, observed in observations.items():
+        target = target_values[name].get(str(targets.get(name)))
+        voice_fit[name] = (
+            match(observed, target, "LOW_ACOUSTIC_PROXY")
+            if target is not None
+            else "EXCLUDED_UNKNOWN"
+        )
     dimensions: dict[str, Any] = {
         "clarity": clarity_match,
         "articulation": articulation_match,
         "baselinePace": pace_match,
         "sentenceEnding": ending_match,
         "controlledPower": controlled_power_match,
-        "vocalAge": "EXCLUDED_UNKNOWN",
-        "vocalWeight": "EXCLUDED_UNKNOWN",
-        "resonance": "EXCLUDED_UNKNOWN",
-        "timbre": "EXCLUDED_UNKNOWN",
-        "texture": "EXCLUDED_UNKNOWN",
+        **voice_fit,
         "commandPresence": "NOT_RELIABLY_AUTOMATED_FROM_SHORT_PREVIEW",
         "voiceStability": "SHORT_PREVIEW_ONLY",
     }
     numeric = [float(value) for value in dimensions.values() if isinstance(value, float)]
+    numeric.extend(
+        float(value["match"])
+        for value in voice_fit.values()
+        if isinstance(value, dict)
+    )
     eligible = (
         float(qc["cer"]) <= 0.2
         and not qc.get("missingCharacters", [])
@@ -427,12 +627,25 @@ def candidate_casting_score(
         and not qc.get("repetitions", [])
         and not signal["obviousClipping"]
     )
+    if not eligible:
+        for name in voice_fit:
+            dimensions[name] = "NOT_EVALUATED_TECHNICAL_QC_FAIL"
     return {
         "eligible": eligible,
         "candidateQcStatus": "PASS" if eligible else "FAIL",
         "score": sum(numeric) / len(numeric) if numeric and eligible else 0.0,
         "charsPerSecond": cps,
         "selectionDimensions": dimensions,
+        "technicalQc": {
+            "status": "PASS" if eligible else "FAIL",
+            "cer": qc["cer"],
+            "obviousClipping": signal["obviousClipping"],
+        },
+        "voiceFit": {
+            "status": "PASS" if eligible else "NOT_EVALUATED",
+            "dimensions": voice_fit if eligible else {},
+            "shortPreviewConfidence": "LOW",
+        },
         "reasonSummary": (
             "Eligible candidate compared only on measurable, supported stable-profile dimensions."
             if eligible
@@ -563,7 +776,10 @@ async def design_and_cast_master_reference(
     calls: dict[str, int],
 ) -> tuple[Path, dict[str, Any]]:
     slug = spec.speaker_key.split(":")[-1]
-    brief = build_voice_casting_brief(creative_profile)
+    casting_profile = build_creative_casting_profile(
+        speaker_key=spec.speaker_key, creative_profile=creative_profile
+    )
+    brief = build_repaired_voice_casting_brief(casting_profile)
     preview_text = str(canonical["exactText"])
     payload = compile_fish_voice_design_payload(
         instruction=str(brief["instruction"]),
@@ -619,7 +835,7 @@ async def design_and_cast_master_reference(
             "signalAnalysis": signal,
         }
         item["casting"] = candidate_casting_score(
-            candidate=item, creative_profile=creative_profile
+            candidate=item, creative_profile=casting_profile
         )
         candidates.append(item)
     eligible = [item for item in candidates if item["casting"]["eligible"]]
@@ -644,6 +860,9 @@ async def design_and_cast_master_reference(
         "actualCandidateCount": len(candidates),
         "previewText": preview_text,
         "voiceCastingBrief": brief,
+        "creativeVoiceCastingProfile": casting_profile.model_dump(
+            mode="json", by_alias=True
+        ),
         "candidates": candidates,
         "selectedCandidateIndex": selected["candidateIndex"],
         "selectedCandidateFingerprint": selected["sha256"],

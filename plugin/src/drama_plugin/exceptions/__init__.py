@@ -86,3 +86,11 @@ class ContextBuildError(DramaPluginError):
 
 class ContractValidationError(DramaPluginError):
     """A payload does not satisfy a domain contract."""
+
+
+class RoleDubbingError(DramaPluginError):
+    """A high-level role-dubbing lifecycle gate failed safely."""
+
+    def __init__(self, code: str, message: str) -> None:
+        super().__init__(message)
+        self.error_code = code

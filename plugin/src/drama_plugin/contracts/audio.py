@@ -120,6 +120,32 @@ class CreativeVoiceProfile(ContractModel):
     consistency_notes: list[str] = Field(default_factory=list)
 
 
+class CreativeCastingDimension(ContractModel):
+    """One auditable artistic voice decision, explicitly not a historical fact."""
+
+    value: str
+    confidence: EvidenceConfidence = EvidenceConfidence.MEDIUM
+    basis_refs: list[str] = Field(default_factory=list)
+
+
+class CreativeVoiceCastingProfile(ContractModel):
+    """Transient provider-neutral bridge from character evidence to casting."""
+
+    schema_version: Literal["creative-voice-casting-v1"] = (
+        "creative-voice-casting-v1"
+    )
+    source_profile_id: str
+    dimensions: dict[str, CreativeCastingDimension]
+    historical_fact_refs: list[str] = Field(default_factory=list)
+    creative_decision_basis: list[str] = Field(default_factory=list)
+    semantic_invariants: list[str] = Field(
+        default_factory=lambda: [
+            "older life stage != simply lower pitch",
+            "stable character casting != current scene performance",
+        ]
+    )
+
+
 class ProviderVoiceMapping(ContractModel):
     provider: str
     model: str
@@ -171,6 +197,7 @@ class SpeechGenerationRequest(ContractModel):
     exact_text: str = Field(min_length=1)
     speaker_key: str
     voice_profile: VoiceProfile
+    creative_casting_profile: CreativeVoiceCastingProfile | None = None
     provider_mapping: ProviderVoiceMapping | None = None
     pronunciation_guidance: list[PronunciationGuidance] = Field(default_factory=list)
     scene_state: SceneState | None = None
@@ -206,11 +233,44 @@ class SpeechGenerationRequest(ContractModel):
         return self
 
 
-class SpeechGenerationResult(ContractModel):
-    source_uri: str
-    mime_type: str
-    provider_duration_ms: int | None = Field(default=None, gt=0)
-    provider_metadata: dict[str, Any] = Field(default_factory=dict)
+class IntelligibilityQcStatus(StrEnum):
+    PASS = "PASS"
+    FAIL = "FAIL"
+
+
+class IntelligibilityQc(ContractModel):
+    status: IntelligibilityQcStatus
+    cer: float = Field(ge=0)
+    normalized_transcript: str
+    missing: list[str] = Field(default_factory=list)
+    extra: list[str] = Field(default_factory=list)
+    repetition: list[str] = Field(default_factory=list)
+    proper_noun_findings: list[str] = Field(default_factory=list)
+    same_vendor_as_tts: bool = True
+
+
+class RoleDubbingQcPolicy(ContractModel):
+    max_cer: float = Field(default=0.2, ge=0, le=1)
+    require_no_missing: bool = True
+    require_no_extra: bool = True
+    require_no_repetition: bool = True
+    require_proper_nouns: bool = True
+
+
+class RoleDubbingRequest(ContractModel):
+    schema_version: Literal["role-dubbing-v1"] = "role-dubbing-v1"
+    speech_request: SpeechGenerationRequest
+    qc_policy: RoleDubbingQcPolicy = Field(default_factory=RoleDubbingQcPolicy)
+
+
+class RoleDubbingResult(ContractModel):
+    audio_media_id: str
+    voice_id: str
+    duration_ms: int = Field(gt=0)
+    intelligibility_qc: IntelligibilityQc
+    lifecycle_branch: Literal["EXISTING_MAPPING", "MATERIALIZED_MAPPING", "NEW_VOICE"]
+    voice_design_calls: int = Field(ge=0)
+    create_model_calls: int = Field(ge=0)
 
 
 class AudioReviewStatus(StrEnum):

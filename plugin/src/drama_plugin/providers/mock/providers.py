@@ -4,10 +4,10 @@ from datetime import UTC, datetime, timedelta
 from typing import Any, TypeVar
 
 from drama_plugin.contracts.asset import Asset, AssetType
-from drama_plugin.contracts.audio import SpeechGenerationRequest, SpeechGenerationResult
 from drama_plugin.contracts.creation import Episode, Scene, Script, Shot, Work
 from drama_plugin.contracts.media import Media, MediaResolveResult, MediaRestoreResult, MediaRestoreStatus, MediaType
 from drama_plugin.contracts.research import ClaimAssessment, ResearchEvidence, ResearchSource
+from drama_plugin.contracts.voice import Voice, VoiceContent, VoiceResolveResult, VoiceSourceType, VoiceStatus
 from drama_plugin.exceptions import ProviderError
 from drama_plugin.providers.mock.data import MockDramaData
 
@@ -23,7 +23,18 @@ class MockMemoryProvider:
     async def get_work(self, work_id: str) -> Work: return self._get(self.data.work, work_id, "work")
     async def save_work(self, work_id: str, title: str, content: dict[str, Any], description: str | None = None) -> Work:
         self._get(self.data.work, work_id, "work")
-        self.data.work = Work(id=work_id, title=title, description=description, content=content)
+        self.data.work = Work(id=work_id, title=title, description=description, content=content, version=self.data.work.version + 1)
+        return self.data.work
+    async def bind_work_voice(self, work_id: str, speaker_key: str, voice_id: str, expected_version: int) -> Work:
+        work = self._get(self.data.work, work_id, "work")
+        if work.version != expected_version: raise ProviderError("Mock work version changed")
+        content = work.model_copy(deep=True).content
+        profiles = content.setdefault("voiceProfiles", [])
+        binding = next((item for item in profiles if item.get("speakerKey") == speaker_key), None)
+        if binding is None:
+            binding = {"speakerKey": speaker_key}; profiles.append(binding)
+        binding["voiceId"] = voice_id
+        self.data.work = work.model_copy(update={"content": content, "version": work.version + 1})
         return self.data.work
     async def list_works(self) -> list[Work]: return [self.data.work]
     async def search_works(self, query: str) -> list[Work]: return [self.data.work] if self._matches(query, self.data.work.title, self.data.work.description, self.data.work.content) else []
@@ -146,23 +157,41 @@ class MockProductionProvider:
         return await self._result(MediaType.IMAGE, "image/png", prompt, reference_media_ids)
     async def generate_video(self, prompt: str, start_frame_media_id: str | None = None, end_frame_media_id: str | None = None, reference_media_ids: list[str] | None = None, parameters: dict[str, Any] | None = None) -> Media:
         refs = [item for item in [start_frame_media_id, end_frame_media_id, *(reference_media_ids or [])] if item]; return await self._result(MediaType.VIDEO, "video/mp4", prompt, refs)
-    async def generate_audio(self, prompt: str, reference_media_ids: list[str] | None = None, parameters: dict[str, Any] | None = None) -> Media:
-        return await self._result(MediaType.AUDIO, "audio/mpeg", prompt, reference_media_ids, parameters)
     async def _result(self, media_type: MediaType, mime_type: str, prompt: str, refs: list[str] | None, parameters: dict[str, Any] | None = None) -> Media:
         media = Media(id=f"media-generated-{media_type.value.lower()}", work_id=self.data.work.id, media_type=media_type, purpose="GENERATED_OUTPUT", source_ref=f"mock:generated:{media_type.value.lower()}", content={"mime_type": mime_type, "prompt": prompt, "reference_media_ids": refs or [], "parameters": parameters or {}}); self.data.media.append(media); return media
 
 
-class MockSpeechProvider:
-    """Offline fake used only to validate the structured provider request/response seam."""
+class MockVoiceProvider:
+    def __init__(self, data: MockDramaData) -> None: self.data = data
 
-    def __init__(self) -> None:
-        self.requests: list[SpeechGenerationRequest] = []
+    async def import_voice(self, name: str, source_type: VoiceSourceType, source_uri: str, duration_ms: int, content: VoiceContent) -> Voice:
+        voice = Voice(id=f"voice-{len(self.data.voices) + 1}", name=name, source_type=source_type,
+                      status=VoiceStatus.ACTIVE, storage_type="MOCK", bucket_name="mock",
+                      object_key=f"voices/voice-{len(self.data.voices) + 1}/master.wav",
+                      mime_type="audio/wav", file_size=4, duration_ms=duration_ms,
+                      content_hash=f"mock-hash-{len(self.data.voices) + 1}", content=content, version=1)
+        self.data.voices.append(voice); return voice
 
-    async def generate_speech(self, request: SpeechGenerationRequest) -> SpeechGenerationResult:
-        self.requests.append(request.model_copy(deep=True))
-        return SpeechGenerationResult(
-            source_uri=f"memory://synthetic/{request.spoken_content_id}.wav",
-            mime_type="audio/wav",
-            provider_duration_ms=1000,
-            provider_metadata={"classification": "FAKE_PROVIDER"},
-        )
+    async def get_voice(self, voice_id: str) -> Voice:
+        match = next((item for item in self.data.voices if item.id == voice_id), None)
+        if match is None: raise ProviderError(f"Mock voice not found: {voice_id}")
+        return match
+
+    async def search_voices(self, query: str | None = None, status: VoiceStatus | None = None) -> list[Voice]:
+        return [item for item in self.data.voices if (query is None or query.casefold() in item.name.casefold()) and (status is None or item.status is status)]
+
+    async def update_voice(self, voice_id: str, content: VoiceContent, expected_version: int, name: str | None = None, status: VoiceStatus | None = None) -> Voice:
+        current = await self.get_voice(voice_id)
+        if current.version != expected_version: raise ProviderError("Mock voice version changed")
+        changed = current.model_copy(update={"content": content, "name": name or current.name,
+                                             "status": status or current.status, "version": current.version + 1})
+        self.data.voices = [changed if item.id == voice_id else item for item in self.data.voices]
+        return changed
+
+    async def resolve_voice(self, voice_id: str) -> VoiceResolveResult:
+        voice = await self.get_voice(voice_id)
+        return VoiceResolveResult(voice_id=voice.id, url=f"https://mock.invalid/voice/{voice.id}",
+                                  expires_at=datetime.now(UTC) + timedelta(minutes=15),
+                                  mime_type=voice.mime_type, size_bytes=voice.file_size,
+                                  content_hash=voice.content_hash)
+

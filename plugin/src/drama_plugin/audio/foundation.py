@@ -19,8 +19,6 @@ from drama_plugin.contracts.audio import (
     VoiceProfile,
 )
 from drama_plugin.contracts.base import dump_contract
-from drama_plugin.contracts.media import Media
-from drama_plugin.providers.base.interfaces import ProductionProvider
 
 
 def _json_value(value: Any) -> Any:
@@ -188,23 +186,3 @@ def compile_speech_request(
         non_material_metadata=deepcopy(dict(non_material_metadata or {})),
     )
 
-
-class StructuredSpeechProductionAdapter:
-    """Compile the structured speech contract into the existing production seam."""
-
-    def __init__(self, production: ProductionProvider) -> None:
-        self.production = production
-
-    async def generate_speech(
-        self,
-        request: SpeechGenerationRequest,
-        reference_media_ids: list[str] | None = None,
-    ) -> Media:
-        parameters: dict[str, Any] = {"speechRequest": dump_contract(request)}
-        if request.provider_mapping is not None:
-            parameters["audioInputFingerprint"] = audio_input_fingerprint(request)
-        return await self.production.generate_audio(
-            request.exact_text,
-            reference_media_ids,
-            parameters,
-        )

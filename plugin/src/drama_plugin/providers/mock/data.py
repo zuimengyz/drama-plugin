@@ -4,6 +4,7 @@ from drama_plugin.contracts.asset import Asset, AssetType
 from drama_plugin.contracts.creation import Episode, Scene, Script, Shot, Work
 from drama_plugin.contracts.media import Media, MediaType
 from drama_plugin.contracts.research import ResearchEvidence, ResearchSource
+from drama_plugin.contracts.voice import Voice
 
 
 @dataclass
@@ -21,6 +22,7 @@ class MockDramaData:
         Media(id="media-di", work_id="work-1", asset_id="asset-di", media_type=MediaType.IMAGE, purpose="STANDARD_FACE", source_ref="mock:media:di-renjie", content={"width": 1024, "height": 1024}),
         Media(id="media-study", work_id="work-1", asset_id="asset-study", media_type=MediaType.IMAGE, purpose="SCENE_REFERENCE", source_ref="mock:media:study", content={"width": 1024, "height": 1024}),
     ])
+    voices: list[Voice] = field(default_factory=list)
     source: ResearchSource = field(default_factory=lambda: ResearchSource(title="旧唐书·狄仁杰传", citation="《旧唐书》卷八十九", source_type="PRIMARY_TEXT"))
     evidence: ResearchEvidence = field(init=False)
 

@@ -50,7 +50,7 @@ def test_missing_tool_fails() -> None:
 
 def test_every_registered_tool_has_stable_input_and_output_schema() -> None:
     plugin = DramaPlugin.load(ROOT)
-    assert len(plugin.tools.list()) == 45
+    assert len(plugin.tools.list()) == 50
     for tool in plugin.tools.list():
         assert tool.input_schema["type"] == "object"
         assert isinstance(tool.input_schema["required"], list)
@@ -132,7 +132,8 @@ def test_persistent_memory_and_production_contracts_are_minimal() -> None:
         "work.search_works", "scene.search_scenes", "shot.search_shots",
         "asset.create_asset", "asset.get_asset", "asset.save_asset", "asset.list_assets", "asset.search_assets",
         "media.create_media", "media.get_media", "media.save_media", "media.list_media", "media.import_media", "media.resolve_media", "media.restore_media_object",
-        "production.generate_image", "production.generate_video", "production.generate_audio",
+        "voice.import_voice", "voice.get_voice", "voice.search_voices", "voice.save_voice", "voice.resolve_voice",
+        "production.generate_image", "production.generate_video", "production.generate_role_dubbing",
         }
     )
     codes = {tool.code for tool in plugin.tools.list()}
@@ -199,6 +200,8 @@ async def test_tool_contracts_do_not_change_with_http_provider_bindings() -> Non
         providers.production,
         providers.media,
         providers.context,
+        providers.voice,
+        providers.role_dubbing,
     )
     assert mock_plugin.tools.describe() == http_registry.describe()
     for client in clients:

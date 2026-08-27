@@ -4,9 +4,9 @@ description: Produce physical Media for a Shot through implementation-neutral ge
 context:
   required: [shot, scene]
   optional: [selectedAssetIds, generatedMediaIds, previousMediaIds, temporaryState]
-  refresh_after: [media.import_media, production.generate_audio]
+  refresh_after: [media.import_media, production.generate_role_dubbing]
 tools:
-  preferred: [shot.get_shot, scene.get_scene, asset.get_asset, asset.search_assets, media.get_media, media.resolve_media, media.import_media, production.generate_audio]
+  preferred: [shot.get_shot, scene.get_scene, asset.get_asset, asset.search_assets, media.get_media, media.resolve_media, media.import_media, production.generate_role_dubbing]
   allowed: [asset.list_assets, media.list_media, context.build_context, context.refresh_context]
 completion:
   conditions:

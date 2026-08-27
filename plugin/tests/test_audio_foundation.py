@@ -9,7 +9,6 @@ from pydantic import ValidationError
 
 from drama_plugin import DramaPlugin
 from drama_plugin.audio import (
-    StructuredSpeechProductionAdapter,
     audio_input_fingerprint,
     capability_report,
     compile_speech_request,
@@ -20,12 +19,15 @@ from drama_plugin.audio import (
     source_ref_for_review,
     text_hash,
     validate_media_mime,
+    compile_fish_creative_casting_brief,
+    project_creative_voice_casting_profile,
 )
 from drama_plugin.contracts import (
     AudioReviewStatus,
     AvAssemblyManifest,
     AvTimelineItem,
     CreativeVoiceProfile,
+    CreativeCastingDimension,
     FinalAvFingerprintInput,
     Media,
     MediaType,
@@ -36,7 +38,6 @@ from drama_plugin.contracts import (
     TargetTimingPolicy,
     VoiceProfile,
 )
-from drama_plugin.providers.mock import MockDramaData, MockProductionProvider, MockSpeechProvider
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -118,6 +119,50 @@ def test_actor_and_narrator_voice_profiles_keep_creative_identity_separate_from_
     assert actor.provider_mappings[0].voice_id == "voice-actor"
     assert narrator.provider_mappings[0].voice_id == "voice-narrator"
     assert "provider" not in CreativeVoiceProfile.model_fields
+
+
+def test_creative_casting_and_fish_prompt_are_identity_and_scene_invariant() -> None:
+    base = voice()
+    decisions = {
+        "vocalAge": CreativeCastingDimension(
+            value="LATE_MIDDLE_ADULT", basis_refs=["creative:age-composite"]
+        ),
+        "vocalWeight": CreativeCastingDimension(
+            value="MEDIUM_HEAVY", basis_refs=["creative:responsibility"]
+        ),
+        "resonance": CreativeCastingDimension(
+            value="DEEP", basis_refs=["creative:command-load"]
+        ),
+        "brightness": CreativeCastingDimension(
+            value="SLIGHTLY_DARK", basis_refs=["creative:casting"]
+        ),
+        "texture": CreativeCastingDimension(
+            value="DRY_AGE_TEXTURED", basis_refs=["creative:casting"]
+        ),
+    }
+    first = project_creative_voice_casting_profile(
+        base, artistic_decisions=decisions
+    )
+    renamed = base.model_copy(
+        update={
+            "profile_id": "profile:speaker:synthetic-renamed",
+            "speaker_key": "speaker:synthetic-renamed",
+            "display_name": "Different",
+        }
+    )
+    second = project_creative_voice_casting_profile(
+        renamed, artistic_decisions=decisions
+    )
+    assert first.dimensions == second.dimensions
+    assert first.source_profile_id != second.source_profile_id
+    first_prompt = compile_fish_creative_casting_brief(first)
+    second_prompt = compile_fish_creative_casting_brief(second)
+    assert first_prompt == second_prompt
+    serialized = str(first_prompt)
+    assert "synthetic-renamed" not in serialized
+    assert "SceneState" not in serialized
+    assert "PerformanceIntent" not in serialized
+    assert "pitch shortcut" in serialized
 
 
 def test_exact_dialogue_and_pronunciation_compile_without_dialogue_mutation() -> None:
@@ -210,39 +255,6 @@ def test_pass_and_failed_attempt_source_refs_have_distinct_retry_semantics() -> 
     assert retry != failed and retry != canonical
 
 
-@pytest.mark.asyncio
-async def test_structured_adapter_passes_exact_text_and_full_request_to_fake_provider() -> None:
-    production = MockProductionProvider(MockDramaData())
-    current = request()
-    generated = await StructuredSpeechProductionAdapter(production).generate_speech(current)
-    assert generated.media_type is MediaType.AUDIO
-    assert generated.content["prompt"] == current.exact_text
-    assert generated.content["parameters"]["speechRequest"]["spokenContentId"] == "spoken-1"
-    assert generated.content["parameters"]["speechRequest"]["exactText"] == current.exact_text
-
-
-@pytest.mark.asyncio
-async def test_existing_generate_audio_tool_accepts_json_structured_request() -> None:
-    plugin = DramaPlugin.load(ROOT)
-    current = request()
-    generated = await plugin.tools.invoke(
-        "production.generate_audio",
-        request=current.model_dump(mode="json", by_alias=True),
-    )
-    assert generated.content["parameters"]["speechRequest"]["exactText"] == current.exact_text
-
-
-@pytest.mark.asyncio
-async def test_fake_speech_provider_validates_structured_request_and_response_contract() -> None:
-    provider = MockSpeechProvider()
-    current = request()
-    result = await provider.generate_speech(current)
-    assert provider.requests == [current]
-    assert result.mime_type == "audio/wav"
-    assert result.provider_duration_ms == 1000
-    assert result.provider_metadata["classification"] == "FAKE_PROVIDER"
-
-
 def test_audio_media_mime_duration_and_final_av_contracts() -> None:
     validate_media_mime(MediaType.AUDIO, "SPEECH_CLIP", "audio/wav")
     validate_media_mime(MediaType.VIDEO, "FINAL_AV", "video/mp4")
@@ -298,7 +310,8 @@ def test_audio_foundation_does_not_add_audio_crud_tool() -> None:
     codes = {tool.code for tool in DramaPlugin.load(ROOT).tools.list()}
     assert not any(code.startswith("audio.") for code in codes)
     assert "production.generate_speech" not in codes
-    assert "production.generate_audio" in codes
+    assert "production.generate_audio" not in codes
+    assert "production.generate_role_dubbing" in codes
 
 
 def test_host_capability_is_explicit() -> None:

@@ -6,7 +6,7 @@ context:
   optional: [shot, characterUnderstanding, sceneState, characterContext, sourceVideoMediaId, audioMediaIds, temporaryState]
   refresh_after: [media.import_media]
 tools:
-  preferred: [scene.get_scene, episode.get_episode, script.get_script, work.get_work, shot.get_shot, media.list_media, production.generate_audio, media.import_media, media.resolve_media]
+  preferred: [scene.get_scene, episode.get_episode, script.get_script, work.get_work, shot.get_shot, voice.get_voice, production.generate_role_dubbing, media.resolve_media]
   allowed: [asset.search_assets, asset.get_asset, media.get_media]
 completion:
   conditions:

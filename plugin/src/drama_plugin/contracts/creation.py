@@ -12,6 +12,7 @@ class Work(ContractModel):
     title: str
     description: str | None = None
     content: dict[str, Any] = Field(default_factory=dict)
+    version: int = Field(default=1, gt=0)
 
 
 class Script(ContractModel):

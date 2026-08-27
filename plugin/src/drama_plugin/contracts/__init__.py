@@ -5,6 +5,8 @@ from drama_plugin.contracts.audio import (
     AvTimelineItem,
     CharacterDimension,
     CharacterUnderstanding,
+    CreativeCastingDimension,
+    CreativeVoiceCastingProfile,
     CreativeVoiceProfile,
     EvidenceConfidence,
     FinalAvFingerprintInput,
@@ -13,9 +15,22 @@ from drama_plugin.contracts.audio import (
     ProviderVoiceMapping,
     SceneState,
     SpeechGenerationRequest,
-    SpeechGenerationResult,
+    IntelligibilityQc,
+    IntelligibilityQcStatus,
+    RoleDubbingQcPolicy,
+    RoleDubbingRequest,
+    RoleDubbingResult,
     TargetTimingPolicy,
     VoiceProfile,
+)
+from drama_plugin.contracts.voice import (
+    Voice,
+    VoiceContent,
+    VoiceProviderMapping,
+    VoiceProviderMappingStatus,
+    VoiceResolveResult,
+    VoiceSourceType,
+    VoiceStatus,
 )
 from drama_plugin.contracts.context import (
     ContextBuildRequest,

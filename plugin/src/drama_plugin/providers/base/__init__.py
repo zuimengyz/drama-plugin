@@ -5,7 +5,8 @@ from drama_plugin.providers.base.interfaces import (
     MediaProvider,
     ProductionProvider,
     ResearchProvider,
-    SpeechProvider,
+    RoleDubbingProvider,
+    VoiceProvider,
 )
 
 __all__ = [
@@ -15,5 +16,6 @@ __all__ = [
     "MediaProvider",
     "ProductionProvider",
     "ResearchProvider",
-    "SpeechProvider",
+    "RoleDubbingProvider",
+    "VoiceProvider",
 ]

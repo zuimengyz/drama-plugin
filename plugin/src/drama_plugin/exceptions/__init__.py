@@ -1,3 +1,17 @@
+from typing import Literal
+
+
+SpeechRejectionReason = Literal[
+    "VOICE_MODEL_INCOMPATIBLE",
+    "INVALID_REQUEST",
+    "UNSUPPORTED_PARAMETER",
+    "AUTH_OR_PERMISSION",
+    "QUOTA_OR_ACCOUNT",
+    "CONTENT_REJECTED",
+    "UNKNOWN_REJECTION",
+]
+
+
 class DramaPluginError(Exception):
     """Base error for all expected plugin failures."""
 
@@ -31,10 +45,18 @@ class SpeechProviderError(ProviderError):
         *,
         status_code: int | None = None,
         retryable: bool = False,
+        provider_error_code: str | None = None,
+        provider_error_message: str | None = None,
+        provider_request_id: str | None = None,
+        rejection_reason: SpeechRejectionReason | None = None,
     ) -> None:
         super().__init__(message)
         self.status_code = status_code
         self.retryable = retryable
+        self.provider_error_code = provider_error_code
+        self.provider_error_message = provider_error_message
+        self.provider_request_id = provider_request_id
+        self.rejection_reason = rejection_reason
 
 
 class ProviderResultUnknown(SpeechProviderError):

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import base64
+import json
 from pathlib import Path
 from typing import Any
 
@@ -40,10 +42,15 @@ from drama_plugin.providers.speech import (
     BailianQwenSpeechProvider,
     OpenAiSpeechProvider,
     SpeechBackedProductionProvider,
+    bailian_qwen_model_family,
+    bailian_qwen_voice_compatibility,
+    compile_bailian_voice_design_payload,
     compile_bailian_qwen_speech_payload,
+    compile_voice_design_spec,
     compile_openai_speech_payload,
     rank_bailian_qwen_voice_candidates,
     resolve_speech_provider,
+    voice_design_fingerprint,
 )
 
 
@@ -144,6 +151,34 @@ def qwen_config(**updates: Any) -> SpeechServiceConfig:
     }
     values.update(updates)
     return SpeechServiceConfig.model_validate(values)
+
+
+def qwen_audio_request(
+    voice_id: str = "qwen-audio-3.0-tts-plus-vd-test-123",
+) -> SpeechGenerationRequest:
+    source = provider_neutral_scene_request()
+    model = "qwen-audio-3.0-tts-plus"
+    mapping = ProviderVoiceMapping(
+        provider="bailian_qwen",
+        model=model,
+        voice_id=voice_id,
+        material_parameters={
+            "format": "wav",
+            "sample_rate": 24000,
+            "language_hints": ["zh"],
+        },
+        non_material_metadata={
+            "voiceDesignTargetModel": model,
+            "voiceDesignStatus": "OK",
+            "voiceDesignFingerprint": "design-fingerprint-unit",
+            "voicePromptHash": "prompt-hash-unit",
+            "voiceBindingStatus": "PENDING",
+        },
+    )
+    profile = source.voice_profile.model_copy(update={"provider_mappings": [mapping]})
+    return source.model_copy(
+        update={"voice_profile": profile, "provider_mapping": mapping}
+    )
 
 
 def provider_neutral_scene_request() -> SpeechGenerationRequest:
@@ -360,7 +395,254 @@ def test_qwen_payload_keeps_dialogue_exact_and_controls_separate() -> None:
     assert "本句表演变化" in first_payload["input"]["instructions"]
     assert "长期基础声音" in first_payload["input"]["instructions"]
     assert "材质控制" in first_payload["input"]["instructions"]
+    assert len(first_payload["input"]["instructions"]) <= 2048
+    assert "evidenceRefs" not in first_payload["input"]["instructions"]
+    assert "confidence" not in first_payload["input"]["instructions"]
     assert audio_input_fingerprint(first) != audio_input_fingerprint(second)
+
+
+def test_qwen_instruction_length_guard_fails_before_provider_call() -> None:
+    request = qwen_request("Neil").model_copy(
+        update={"performance_intent": {"subtext": "长" * 2200}}
+    )
+    with pytest.raises(SpeechProviderError) as raised:
+        compile_bailian_qwen_speech_payload(request)
+    assert raised.value.provider_error_code == "LOCAL_INSTRUCTION_LENGTH_GUARD"
+    assert raised.value.rejection_reason == "INVALID_REQUEST"
+    assert raised.value.status_code is None
+
+
+def test_bailian_model_family_dispatch_preserves_qwen3_and_adds_qwen_audio() -> None:
+    assert bailian_qwen_model_family("qwen3-tts-instruct-flash") == "QWEN3_TTS"
+    assert (
+        bailian_qwen_model_family("qwen-audio-3.0-tts-plus")
+        == "QWEN_AUDIO_TTS"
+    )
+    with pytest.raises(SpeechProviderError) as raised:
+        bailian_qwen_model_family("unknown-model")
+    assert raised.value.rejection_reason == "UNSUPPORTED_PARAMETER"
+
+
+def test_voice_design_spec_is_stable_profile_only_bounded_and_name_neutral() -> None:
+    request = qwen_audio_request()
+    preview = "请给我三十骑，取杨国忠首级，为大帅除患。"
+    first = compile_voice_design_spec(request, preview_text=preview)
+    understanding = request.voice_profile.character_understanding
+    assert understanding is not None
+    renamed_identity = dict(understanding.identity_and_life_stage)
+    renamed_identity["displayName"] = CharacterDimension(
+        value="Completely Renamed",
+        confidence=EvidenceConfidence.HIGH,
+        evidence_refs=["work:renamed"],
+    )
+    renamed = request.model_copy(
+        update={
+            "voice_profile": request.voice_profile.model_copy(
+                update={
+                    "character_understanding": understanding.model_copy(
+                        update={"identity_and_life_stage": renamed_identity}
+                    )
+                }
+            ),
+            "scene_state": request.scene_state.model_copy(
+                update={
+                    "current_emotion": CharacterDimension(
+                        value="FEAR",
+                        confidence=EvidenceConfidence.HIGH,
+                        evidence_refs=["scene:temporary"],
+                    )
+                }
+            )
+            if request.scene_state
+            else None,
+            "performance_intent": {"delivery": "temporary shout"},
+        }
+    )
+    second = compile_voice_design_spec(renamed, preview_text=preview)
+    assert first == second
+    assert len(first.voice_prompt) <= 500
+    assert 15 <= len(first.preview_text) <= 200
+    assert first.prefix.isalnum() and len(first.prefix) <= 10
+    assert first.target_model == "qwen-audio-3.0-tts-plus"
+    for forbidden in (
+        "Completely Renamed",
+        "ANGER_UNDER_CONTROL",
+        "temporary shout",
+        "evidenceRefs",
+        "confidence",
+        "UNKNOWN",
+    ):
+        assert forbidden not in first.voice_prompt
+
+
+def test_qwen_audio_payload_uses_singular_performance_instruction_only() -> None:
+    request = qwen_audio_request()
+    payload = compile_bailian_qwen_speech_payload(request)
+    provider_input = payload["input"]
+    assert payload["model"] == "qwen-audio-3.0-tts-plus"
+    assert provider_input["text"] == request.exact_text
+    assert provider_input["voice"] == request.provider_mapping.voice_id
+    assert provider_input["format"] == "wav"
+    assert provider_input["sample_rate"] == 24000
+    assert provider_input["language_hints"] == ["zh"]
+    assert "instruction" in provider_input
+    assert "instructions" not in provider_input
+    assert "optimize_instructions" not in provider_input
+    assert "language_type" not in provider_input
+    assert "情绪" in provider_input["instruction"]
+    assert "内在" in provider_input["instruction"]
+    assert len(provider_input["instruction"]) <= 128
+    assert "长期基础声音" not in provider_input["instruction"]
+    assert "vocalAge" not in provider_input["instruction"]
+
+
+@pytest.mark.asyncio
+async def test_voice_design_uses_official_contract_and_queries_ok_status(
+    tmp_path: Path,
+) -> None:
+    seen: list[dict[str, Any]] = []
+    preview_bytes = b"RIFF-voice-design-preview"
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        payload = json.loads(request.read())
+        seen.append({"path": request.url.path, "payload": payload})
+        if payload["input"]["action"] == "create_voice":
+            return httpx.Response(
+                200,
+                json={
+                    "output": {
+                        "preview_audio": {
+                            "data": base64.b64encode(preview_bytes).decode("ascii"),
+                            "sample_rate": 24000,
+                            "response_format": "wav",
+                        },
+                        "voice_id": "qwen-audio-3.0-tts-plus-vd-test-abc",
+                    },
+                    "request_id": "voice-design-request-unit",
+                },
+            )
+        return httpx.Response(
+            200,
+            json={
+                "output": {
+                    "voice_id": "qwen-audio-3.0-tts-plus-vd-test-abc",
+                    "target_model": "qwen-audio-3.0-tts-plus",
+                    "status": "OK",
+                },
+                "request_id": "voice-query-request-unit",
+            },
+        )
+
+    config = qwen_config(
+        bailian_base_url="https://workspace.cn-beijing.maas.aliyuncs.com/api/v1"
+    )
+    async with httpx.AsyncClient(
+        base_url=f"{config.bailian_base_url}/",
+        transport=httpx.MockTransport(handler),
+    ) as client:
+        provider = BailianQwenSpeechProvider(config, tmp_path, client)
+        spec = compile_voice_design_spec(
+            qwen_audio_request(),
+            preview_text="请给我三十骑，取杨国忠首级，为大帅除患。",
+        )
+        result = await provider.design_voice(
+            spec, status_poll_interval_seconds=0
+        )
+
+    assert len(seen) == 2
+    assert all(
+        item["path"].endswith("/services/audio/tts/customization")
+        for item in seen
+    )
+    create = seen[0]["payload"]
+    assert create == compile_bailian_voice_design_payload(spec)
+    assert create["model"] == "voice-enrollment"
+    assert create["input"]["action"] == "create_voice"
+    assert seen[1]["payload"]["input"]["action"] == "query_voice"
+    assert result.status == "OK"
+    assert result.target_model == spec.target_model
+    assert result.provider_metadata["voiceDesignCallCount"] == 1
+    assert result.provider_metadata["voiceStatusQueryCallCount"] == 1
+    assert result.provider_metadata["voiceDesignFingerprint"] == (
+        voice_design_fingerprint(spec)
+    )
+    assert Path(result.preview_source_uri.removeprefix("file://")).read_bytes() == (
+        preview_bytes
+    )
+
+
+@pytest.mark.asyncio
+async def test_voice_design_ambiguous_transport_is_never_retried(tmp_path: Path) -> None:
+    calls = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        raise httpx.ReadTimeout("unknown create result", request=request)
+
+    config = qwen_config(bailian_base_url="https://dashscope.aliyuncs.com/api/v1")
+    async with httpx.AsyncClient(
+        base_url=f"{config.bailian_base_url}/",
+        transport=httpx.MockTransport(handler),
+    ) as client:
+        provider = BailianQwenSpeechProvider(config, tmp_path, client)
+        spec = compile_voice_design_spec(
+            qwen_audio_request(),
+            preview_text="请给我三十骑，取杨国忠首级，为大帅除患。",
+        )
+        with pytest.raises(ProviderResultUnknown):
+            await provider.design_voice(spec, status_poll_interval_seconds=0)
+    assert calls == 1
+
+
+@pytest.mark.asyncio
+async def test_qwen_audio_synthesis_uses_speech_synthesizer_endpoint(
+    tmp_path: Path,
+) -> None:
+    seen: dict[str, Any] = {}
+    signed_url = "https://download.invalid/qwen-audio.wav?Signature=secret"
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.method == "POST":
+            seen["path"] = request.url.path
+            seen["payload"] = json.loads(request.read())
+            return httpx.Response(
+                200,
+                json={
+                    "request_id": "qwen-audio-tts-request-unit",
+                    "output": {
+                        "audio": {"url": signed_url, "id": "audio-qwen-unit"}
+                    },
+                },
+            )
+        return httpx.Response(
+            200,
+            content=b"RIFF-qwen-audio-real",
+            headers={"content-type": "audio/wav"},
+        )
+
+    async with httpx.AsyncClient(
+        base_url="https://workspace.cn-beijing.maas.aliyuncs.com/api/v1/",
+        transport=httpx.MockTransport(handler),
+    ) as client:
+        provider = BailianQwenSpeechProvider(
+            qwen_config(
+                bailian_base_url=(
+                    "https://workspace.cn-beijing.maas.aliyuncs.com/api/v1"
+                )
+            ),
+            tmp_path,
+            client,
+        )
+        result = await provider.generate_speech(qwen_audio_request())
+
+    assert seen["path"].endswith("/services/audio/tts/SpeechSynthesizer")
+    assert seen["payload"] == compile_bailian_qwen_speech_payload(
+        qwen_audio_request()
+    )
+    assert "instructions" not in seen["payload"]["input"]
+    assert result.provider_metadata["model"] == "qwen-audio-3.0-tts-plus"
+    assert signed_url not in repr(result)
 
 
 @pytest.mark.asyncio
@@ -544,6 +826,37 @@ def test_qwen_flash_fallback_is_only_an_explicit_mapping_choice() -> None:
     assert "optimize_instructions" not in payload["input"]
 
 
+def test_qwen_voice_model_compatibility_preflight_uses_provider_capability() -> None:
+    for voice_id in ("Neil", "Maia", "Eldric Sage", "Moon"):
+        assert (
+            bailian_qwen_voice_compatibility(
+                "qwen3-tts-instruct-flash", voice_id
+            )
+            == "COMPATIBLE"
+        )
+    assert (
+        bailian_qwen_voice_compatibility(
+            "qwen3-tts-flash-2025-09-18", "Neil"
+        )
+        == "INCOMPATIBLE"
+    )
+    assert (
+        bailian_qwen_voice_compatibility(
+            "qwen3-tts-instruct-flash", "external-custom-voice"
+        )
+        == "UNKNOWN"
+    )
+
+
+def test_qwen_incompatible_voice_model_is_blocked_before_http() -> None:
+    with pytest.raises(SpeechProviderError) as raised:
+        compile_bailian_qwen_speech_payload(
+            qwen_request("Neil", model="qwen3-tts-flash-2025-09-18")
+        )
+    assert raised.value.rejection_reason == "VOICE_MODEL_INCOMPATIBLE"
+    assert raised.value.status_code is None
+
+
 def test_openai_and_qwen_mappings_change_fingerprint_not_dialogue_or_profile() -> None:
     openai_mapping = ProviderVoiceMapping(
         provider="openai",
@@ -709,6 +1022,100 @@ async def test_qwen_maps_http_error_without_body_url_or_secret(tmp_path: Path) -
     assert "sensitive upstream body" not in rendered
     assert "Signature" not in rendered
     assert "dashscope-unit-secret-must-not-leak" not in rendered
+
+
+@pytest.mark.asyncio
+async def test_qwen_preserves_safe_rejection_diagnostics_and_redacts_secrets(
+    tmp_path: Path,
+) -> None:
+    def handler(_: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            400,
+            json={
+                "code": "InvalidParameter",
+                "message": (
+                    "Range of input length should be [1, 1600]; "
+                    "Authorization: Bearer provider-secret; "
+                    "api_key=sk-provider-secret; "
+                    "details=https://signed.invalid/audio?Signature=secret"
+                ),
+                "request_id": "request-safe-123",
+            },
+        )
+
+    async with httpx.AsyncClient(
+        base_url="https://unit.invalid/api/v1/", transport=httpx.MockTransport(handler)
+    ) as client:
+        provider = BailianQwenSpeechProvider(qwen_config(), tmp_path, client)
+        with pytest.raises(SpeechProviderError) as raised:
+            await provider.generate_speech(qwen_request("Neil"))
+    error = raised.value
+    assert error.status_code == 400
+    assert error.provider_error_code == "InvalidParameter"
+    assert error.provider_request_id == "request-safe-123"
+    assert error.rejection_reason == "INVALID_REQUEST"
+    assert error.provider_error_message is not None
+    assert "Range of input length" in error.provider_error_message
+    assert "provider-secret" not in error.provider_error_message
+    assert "signed.invalid" not in error.provider_error_message
+    assert "[REDACTED" in error.provider_error_message
+
+
+@pytest.mark.asyncio
+async def test_qwen_classifies_voice_model_rejection_only_from_explicit_evidence(
+    tmp_path: Path,
+) -> None:
+    def handler(_: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            400,
+            json={
+                "code": "InvalidParameter",
+                "message": "voice is invalid for model",
+            },
+            headers={"x-request-id": "request-voice-123"},
+        )
+
+    async with httpx.AsyncClient(
+        base_url="https://unit.invalid/api/v1/", transport=httpx.MockTransport(handler)
+    ) as client:
+        provider = BailianQwenSpeechProvider(qwen_config(), tmp_path, client)
+        with pytest.raises(SpeechProviderError) as raised:
+            await provider.generate_speech(qwen_request("Neil"))
+    assert raised.value.rejection_reason == "VOICE_MODEL_INCOMPATIBLE"
+    assert raised.value.provider_request_id == "request-voice-123"
+
+
+@pytest.mark.parametrize(
+    ("status_code", "code", "message", "reason"),
+    [
+        (401, "InvalidApiKey", "Incorrect API key", "AUTH_OR_PERMISSION"),
+        (403, "Arrearage", "Account balance is insufficient", "QUOTA_OR_ACCOUNT"),
+        (400, "InvalidParameter", "parameter x is not supported", "UNSUPPORTED_PARAMETER"),
+        (400, "DataInspection", "content rejected by policy", "CONTENT_REJECTED"),
+        (404, "NotFound", "unknown resource", "UNKNOWN_REJECTION"),
+    ],
+)
+@pytest.mark.asyncio
+async def test_qwen_rejection_reason_categories_require_provider_evidence(
+    tmp_path: Path,
+    status_code: int,
+    code: str,
+    message: str,
+    reason: str,
+) -> None:
+    def handler(_: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            status_code,
+            json={"code": code, "message": message},
+        )
+
+    async with httpx.AsyncClient(
+        base_url="https://unit.invalid/api/v1/", transport=httpx.MockTransport(handler)
+    ) as client:
+        provider = BailianQwenSpeechProvider(qwen_config(), tmp_path, client)
+        with pytest.raises(SpeechProviderError) as raised:
+            await provider.generate_speech(qwen_request("Neil"))
+    assert raised.value.rejection_reason == reason
 
 
 @pytest.mark.asyncio

@@ -16,7 +16,7 @@ Think of it as:
 
 ## What can it do?
 
-Drama Plugin currently provides eight core Skills:
+Drama Plugin currently provides ten core Skills:
 
 | Skill                 | Purpose                                                                  |
 | --------------------- | ------------------------------------------------------------------------ |
@@ -25,9 +25,11 @@ Drama Plugin currently provides eight core Skills:
 | `script-adaptation`   | Adapt a Work into a drama script                                         |
 | `episode-development` | Develop individual episodes                                              |
 | `scene-development`   | Create and refine scenes                                                 |
+| `dramatic-performance-direction` | Build replayable Scene/Beat/Line performance direction without modality controls |
 | `shot-design`         | Break scenes into cinematic shots                                        |
 | `asset-resolution`    | Discover and reuse characters, locations, props, and other visual assets |
 | `shot-production`     | Prepare image, video, and audio production for shots                     |
+| `audio-production`    | Produce exact-text speech and deterministic final AV                     |
 
 A typical production path may look like:
 

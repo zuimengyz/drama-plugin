@@ -37,6 +37,11 @@ Do not create a parallel Scene-local speaker registry. A visual `assetId` is opt
 
 Required fields are `id`, `kind`, `speakerKey`, `text`, `intent`, `mustKeep`, `performanceIntent`, `provenance`, and `estimatedDurationMs`. `kind` is exactly `DIALOGUE` or `NARRATION`. Text, identity, intent, and performance intent are nonblank. `estimatedDurationMs` is a positive integer estimate, never actual media duration.
 
+The concise string `performanceIntent` remains a compatibility field for the
+current Dialogue/Audio contract. It is not the typed DPD authority and must not be
+expanded into Provider controls. A later compatibility migration may deprecate it
+after DPD projection is wired; 7.3A does not remove or reinterpret it.
+
 For `DIALOGUE`, `speakerKey` resolves to the current Work's actor/character structure. For `NARRATION`, it uses the `narrator:` convention. SFX, ambience, foley, music, mixing, voice IDs, audio Media IDs, actual duration, subtitle timing, lip sync, and language variants do not belong here.
 
 ## Historical provenance

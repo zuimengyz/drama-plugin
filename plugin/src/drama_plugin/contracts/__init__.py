@@ -41,6 +41,15 @@ from drama_plugin.contracts.context import (
     DramaRunContext,
 )
 from drama_plugin.contracts.creation import Episode, Scene, Script, Shot, Work
+from drama_plugin.contracts.dpd import (
+    BeatDPD,
+    DPDLayerState,
+    DPDSnapshot,
+    EffectiveDPD,
+    LineDPD,
+    PerformanceLevel,
+    SceneDPD,
+)
 from drama_plugin.contracts.media import Media, MediaResolveResult, MediaRestoreResult, MediaRestoreStatus, MediaType
 from drama_plugin.contracts.research import ClaimAssessment, ResearchEvidence, ResearchSource
 

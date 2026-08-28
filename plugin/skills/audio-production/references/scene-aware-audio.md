@@ -43,6 +43,12 @@ Never persist a temporary condition as a durable voice trait. In particular:
 - authority or responsibility does not imply loud volume;
 - anger does not imply shouting; urgency does not always imply fast speech; low confidence does not always imply quiet speech.
 
+`SceneState` remains an Audio v1 compatibility input. Its activation,
+expressiveness/restraint, target, objective, and subtext fields overlap the newer
+DPD Core and must not be treated as a second cross-modal authority. A later Audio
+Projection migration may derive the Audio brief from an approved `DPDSnapshot`;
+this Skill does not define that projection yet.
+
 ## Character Voice Profile
 
 Derive a stable provider-neutral Voice Profile only after Character Understanding. Keep the understanding attached as auditable source context, but include only supported vocal consequences in the profile. Use canonical neutral values where possible and `UNKNOWN` where unsupported:
@@ -71,6 +77,12 @@ For each Dialogue, derive a separate line-level Performance Intent from the stab
 - `interactionTarget`, speaker objective, subtext, listener relationship, immediate pressure, and performance boundary.
 
 Do not collapse intent to one mood label. Do not overwrite the base voice with the current emotion or physical state. Preserve every compatible canonical Scene intent and do not invent a contradiction.
+
+This open `PerformanceIntent` is retained for Audio v1 compatibility. Cross-modal
+objective, target, activation, control, relationship, subtext, and boundaries now
+belong to DPD Core; pace, volume, breath, articulation, emphasis, sentence closure,
+and precise pause values belong to future Audio Projection. Do not synthesize a
+DPD-to-Audio mapping until that projection contract is introduced.
 
 ## Provider-neutral generation specification
 

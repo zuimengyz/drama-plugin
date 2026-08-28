@@ -17,6 +17,13 @@ This convention defines provider-neutral speech, Media, freshness, and AV assemb
 
 Temporary `SceneState` is separate from Character Understanding and the durable creative profile. `performanceIntent` expresses a baseline plus line-specific delta. Fatigue does not imply low authority, restraint does not imply low energy, age does not imply slow pace, authority does not imply loudness, and anger does not imply shouting.
 
+For 7.3A compatibility, these fields remain accepted by Audio v1 and continue to
+participate in its existing fingerprint. They are not the new cross-modal
+authority: objective/target/activation/control/relationship/subtext/boundary
+semantics belong to DPD Core, while pace/volume/breath/articulation/emphasis,
+sentence closure, and precise pause values belong to future Audio Projection.
+No DPD-to-speech mapping is defined in this version.
+
 Changing Provider MUST NOT mutate `creativeProfile`. The Skill never chooses a concrete mapping. A Provider adapter ranks no more than three compatible candidates from the profile at its boundary; a generated candidate has `voiceBindingStatus=PENDING` and is not an approved reusable character binding. An already approved explicit mapping remains supported for backward compatibility. Display names, operational notes, timestamps, and other non-material metadata do not change the creative or mapping fingerprint. A material creative attribute or resolved mapping input does.
 
 ## 3. Pronunciation

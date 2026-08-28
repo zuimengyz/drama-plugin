@@ -48,9 +48,11 @@ skills/
 ├── script-adaptation
 ├── episode-development
 ├── scene-development
+├── dramatic-performance-direction
 ├── shot-design
 ├── asset-resolution
-└── shot-production
+├── shot-production
+└── audio-production
 ```
 
 `SKILL.md` 与 `skill.yaml` 是平台无关 Core，只依赖稳定 Tool code。`agents/openai.yaml` 是 OpenAI/Codex Host Adapter；业务规则不放在那里。

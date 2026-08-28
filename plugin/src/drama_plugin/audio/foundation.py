@@ -1,12 +1,8 @@
 from __future__ import annotations
 
 import hashlib
-import json
 from copy import deepcopy
-from enum import Enum
 from typing import Any, Mapping
-
-from pydantic import BaseModel
 
 from drama_plugin.contracts.audio import (
     AudioReviewStatus,
@@ -18,29 +14,11 @@ from drama_plugin.contracts.audio import (
     TargetTimingPolicy,
     VoiceProfile,
 )
-from drama_plugin.contracts.base import dump_contract
-
-
-def _json_value(value: Any) -> Any:
-    if isinstance(value, BaseModel):
-        return value.model_dump(mode="json", by_alias=True)
-    if isinstance(value, Enum):
-        return value.value
-    return value
-
-
-def canonical_json(value: Any) -> str:
-    return json.dumps(
-        _json_value(value),
-        ensure_ascii=False,
-        allow_nan=False,
-        separators=(",", ":"),
-        sort_keys=True,
-    )
-
-
-def sha256_canonical(value: Any) -> str:
-    return hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()
+from drama_plugin.contracts.base import (
+    canonical_json as canonical_json,
+    dump_contract,
+    sha256_canonical as sha256_canonical,
+)
 
 
 def text_hash(exact_text: str) -> str:
@@ -185,4 +163,3 @@ def compile_speech_request(
         target_timing_policy=target_timing_policy.model_copy(deep=True),
         non_material_metadata=deepcopy(dict(non_material_metadata or {})),
     )
-

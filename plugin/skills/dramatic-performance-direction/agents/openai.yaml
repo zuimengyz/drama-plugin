@@ -1,0 +1,4 @@
+interface:
+  display_name: "Dramatic Performance Direction"
+  short_description: "Build replayable Scene, Beat, and Line acting direction"
+  default_prompt: "Use $dramatic-performance-direction to compose a provider- and modality-neutral DPD Snapshot from this approved Scene and the minimum necessary context."

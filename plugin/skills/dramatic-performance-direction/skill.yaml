@@ -1,0 +1,15 @@
+code: dramatic-performance-direction
+name: Dramatic Performance Direction
+description: Build a transient Scene/Beat/Line performance direction as a shared upstream creative artifact.
+context:
+  required: [scene]
+  optional: [work, script, episode, characterUnderstanding, relationshipContext, previousBeat, previousLine, temporaryState]
+  refresh_after: []
+tools:
+  preferred: [scene.get_scene]
+  allowed: [episode.get_episode, script.get_script, work.get_work, context.build_context]
+completion:
+  conditions:
+    - Scene, Beat, and Line direction layers compose into one valid replayable DPD Snapshot with a deterministic fingerprint.
+    - The effective direction states playable objective, target, action, tactic, relationship, activation, control, continuity, and observable intent without copying Character identity.
+    - The artifact contains no Provider, Audio-control, Visual-control, transport, storage, or business-entity concern.

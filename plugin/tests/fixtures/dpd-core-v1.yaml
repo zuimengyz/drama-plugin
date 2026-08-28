@@ -1,0 +1,105 @@
+schemaVersion: dpd-fixture-v1
+dialogue:
+  spokenContentId: spoken-consequence
+  speakerKey: speaker:questioner
+  text: 你可知道后果？
+cases:
+  - id: superior-to-subordinate
+    expectedFingerprint: 25a6510f58f378486f4f6e82c7a7dbdf037c5976d00f326599c3776c296c5b4c
+    scene:
+      sceneId: scene-consequence-a
+      sourceFingerprint: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+      dramaticPurpose: force a public commitment under military pressure
+      conflictCondition: a military crisis makes refusal immediately consequential
+      powerStructure: the questioner holds formal command over the listener
+      emotionalClimate: contained alarm
+      urgencyContext: action is required before the next dispatch
+      informationAsymmetry: the listener underestimates the operational loss
+      socialConstraints: [formal command hearing]
+      direction:
+        publicPrivateContext: public formal proceeding
+        performanceBoundaries: [do not collapse authority into shouting]
+    beat:
+      beatId: beat-compliance
+      actor: speaker:questioner
+      obstacle: the listener avoids accepting responsibility
+      transitionTrigger: the listener must answer before the assembly
+      direction:
+        interactionTarget: speaker:listener
+        objective: frighten the listener into obedience
+        tactic: controlled intimidation
+        authorityPosition: dominant formal superior
+        relationshipStance: coercive
+        internalActivation: HIGH
+        externalControl: HIGH
+    line:
+      dramaticAction: warn
+      observableIntent: make the consequence unmistakable without losing composure
+      continuity: tightens the prior demand
+      changeFromPrevious: converts implication into an explicit warning
+  - id: peer-to-peer
+    expectedFingerprint: ffa45d47713a661859d4990780351c777e383d4e7c46f12bb26c2e012a4c3743
+    scene:
+      sceneId: scene-consequence-b
+      sourceFingerprint: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+      dramaticPurpose: determine whether an ally recognizes the danger
+      conflictCondition: neither peer can safely disclose full certainty
+      powerStructure: both speakers hold comparable situational authority
+      emotionalClimate: alert restraint
+      urgencyContext: a decision is near but not yet irreversible
+      informationAsymmetry: each suspects the other knows more
+      socialConstraints: [private strategic consultation]
+      direction:
+        publicPrivateContext: private consultation
+        performanceBoundaries: [do not turn uncertainty into weakness]
+    beat:
+      beatId: beat-probe
+      actor: speaker:questioner
+      obstacle: direct accusation would end cooperation
+      transitionTrigger: the listener reveals recognition or evasion
+      direction:
+        interactionTarget: speaker:listener
+        objective: test whether the listener understands the danger
+        tactic: guarded probe
+        authorityPosition: equal
+        relationshipStance: guarded and distrustful
+        internalActivation: MEDIUM
+        externalControl: HIGH
+    line:
+      dramaticAction: probe
+      observableIntent: invite recognition while concealing how much is already known
+      continuity: preserves reciprocal caution
+      changeFromPrevious: opens a narrow chance to disclose understanding
+  - id: subordinate-to-superior
+    expectedFingerprint: 9b8a17e9efa8c454eeec38f8f61d39816ce36ee70eb50146ae5b75dcf9ae0524
+    scene:
+      sceneId: scene-consequence-c
+      sourceFingerprint: cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      dramaticPurpose: prevent a superior from making an irreversible mistake
+      conflictCondition: a direct contradiction risks punishment
+      powerStructure: the listener controls the questioner's position and safety
+      emotionalClimate: concealed urgency
+      urgencyContext: silence would permit the order to proceed
+      informationAsymmetry: the subordinate sees a consequence the superior discounts
+      socialConstraints: [formal hierarchy, indirect remonstrance]
+      direction:
+        publicPrivateContext: public audience with constrained dissent
+        performanceBoundaries: [do not sound openly insubordinate]
+    beat:
+      beatId: beat-remind
+      actor: speaker:questioner
+      obstacle: rank forbids a direct refusal
+      transitionTrigger: the superior pauses or demands clarification
+      direction:
+        interactionTarget: speaker:listener
+        objective: make the superior reconsider without direct defiance
+        tactic: indirect warning
+        authorityPosition: subordinate at high personal risk
+        relationshipStance: deferential but resistant
+        internalActivation: HIGH
+        externalControl: HIGH
+    line:
+      dramaticAction: caution
+      observableIntent: place the danger before the superior while preserving deference
+      continuity: maintains formal submission
+      changeFromPrevious: introduces resistance through implication

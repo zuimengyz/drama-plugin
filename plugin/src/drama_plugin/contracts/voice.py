@@ -46,9 +46,6 @@ class Voice(ContractModel):
     name: str
     source_type: VoiceSourceType
     status: VoiceStatus
-    storage_type: str
-    bucket_name: str
-    object_key: str
     mime_type: str
     file_size: int = Field(gt=0)
     duration_ms: int = Field(gt=0)

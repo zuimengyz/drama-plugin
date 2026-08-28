@@ -4,7 +4,6 @@ import argparse
 import hashlib
 import json
 import os
-import re
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -100,20 +99,12 @@ def main() -> int:
     parser.add_argument("--base-url", default="http://127.0.0.1:8080")
     parser.add_argument("--wav", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--secret-config", type=Path)
     args = parser.parse_args()
 
-    token = os.environ.get("DRAMA_TOOL_SECRET", "")
-    if not token and args.secret_config:
-        match = re.search(
-            r"^\s*secret:\s*\$\{DRAMA_TOOL_SECRET:([^}]*)\}\s*$",
-            args.secret_config.read_text(encoding="utf-8"),
-            re.MULTILINE,
-        )
-        token = match.group(1) if match else ""
+    token = os.environ.get("DRAMA_PLUGIN_SERVICE_MEDIA_API_TOKEN", "")
     if not token:
         raise RuntimeError(
-            "DRAMA_TOOL_SECRET must be set or available through --secret-config"
+            "DRAMA_PLUGIN_SERVICE_MEDIA_API_TOKEN must be set"
         )
 
     wav = args.wav.resolve()
@@ -200,6 +191,13 @@ def main() -> int:
         query={"media_id": media_id},
     )
 
+    service_origin = urllib.parse.urlsplit(args.base_url)
+    content_origin = urllib.parse.urlsplit(resolved["url"])
+    if (content_origin.scheme, content_origin.hostname, content_origin.port) != (
+        service_origin.scheme, service_origin.hostname, service_origin.port
+    ):
+        raise AssertionError("resolve_media returned content outside Drama Service")
+
     downloaded, _ = request_bytes(resolved["url"])
     downloaded_hash = hashlib.sha256(downloaded).hexdigest()
 
@@ -216,6 +214,7 @@ def main() -> int:
         "resolvedMimeTypeMatches": resolved.get("mimeType") == "audio/wav",
         "resolvedSizeMatches": resolved.get("sizeBytes") == wav.stat().st_size,
         "downloadedHashMatchesLocal": downloaded_hash == local_hash,
+        "urlOwnerIsDramaService": True,
     }
     if not all(checks.values()):
         failed = ", ".join(name for name, passed in checks.items() if not passed)

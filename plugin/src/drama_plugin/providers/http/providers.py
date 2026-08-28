@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from typing import Any, TypeVar
 
 from pydantic import BaseModel, TypeAdapter
@@ -100,6 +102,10 @@ class HttpMediaProvider:
             return _one(Media, await self.http.multipart_request("import_media", metadata=metadata, stream=source.stream, filename=source.filename, content_type=source.content_type))
     async def resolve_media(self, media_id: str) -> MediaResolveResult:
         return _one(MediaResolveResult, await self.http.request("resolve_media", params={"media_id": media_id}))
+    async def download_media(self, media_id: str, destination: Path) -> MediaResolveResult:
+        resolved = await self.resolve_media(media_id)
+        await self.http.download_service_content(resolved.url, destination)
+        return resolved
     async def restore_media_object(self, media_id: str, source_uri: str) -> MediaRestoreResult:
         async with open_media_source(source_uri) as source:
             return _one(MediaRestoreResult, await self.http.multipart_request(
@@ -134,6 +140,10 @@ class HttpVoiceProvider:
 
     async def resolve_voice(self, voice_id: str) -> VoiceResolveResult:
         return _one(VoiceResolveResult, await self.http.request("resolve_voice", params={"voice_id": voice_id}))
+    async def download_voice(self, voice_id: str, destination: Path) -> VoiceResolveResult:
+        resolved = await self.resolve_voice(voice_id)
+        await self.http.download_service_content(resolved.url, destination)
+        return resolved
 
 
 class RemoteContextProvider:

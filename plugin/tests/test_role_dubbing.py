@@ -62,6 +62,7 @@ class FakeVoiceProvider:
     def __init__(self, root: Path) -> None:
         self.root = root
         self.values: dict[str, Voice] = {}
+        self.masters: dict[str, Path] = {}
 
     async def import_voice(self, name: str, source_type: VoiceSourceType, source_uri: str,
                            duration_ms: int, content: VoiceContent) -> Voice:
@@ -71,10 +72,10 @@ class FakeVoiceProvider:
         master.write_bytes(source.read_bytes())
         digest = hashlib.sha256(master.read_bytes()).hexdigest()
         voice = Voice(id=voice_id, name=name, source_type=source_type, status=VoiceStatus.ACTIVE,
-                      storage_type="TEST", bucket_name="test", object_key=str(master),
                       mime_type="audio/wav", file_size=master.stat().st_size,
                       duration_ms=duration_ms, content_hash=digest, content=content, version=1)
         self.values[voice_id] = voice
+        self.masters[voice_id] = master
         return voice
 
     async def get_voice(self, voice_id: str) -> Voice:
@@ -94,10 +95,15 @@ class FakeVoiceProvider:
 
     async def resolve_voice(self, voice_id: str) -> VoiceResolveResult:
         voice = self.values[voice_id]
-        return VoiceResolveResult(voice_id=voice.id, url=Path(voice.object_key).as_uri(),
+        return VoiceResolveResult(voice_id=voice.id, url=f"https://drama-service.invalid/api/content/voice/{voice.id}",
                                   expires_at=datetime.now(UTC) + timedelta(minutes=5),
                                   mime_type=voice.mime_type, size_bytes=voice.file_size,
                                   content_hash=voice.content_hash)
+
+    async def download_voice(self, voice_id: str, destination: Path) -> VoiceResolveResult:
+        resolved = await self.resolve_voice(voice_id)
+        destination.write_bytes(self.masters[voice_id].read_bytes())
+        return resolved
 
 
 class RecoverableVoiceProvider(FakeVoiceProvider):

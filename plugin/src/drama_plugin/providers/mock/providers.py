@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import hashlib
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from typing import Any, TypeVar
 
 from drama_plugin.contracts.asset import Asset, AssetType
@@ -146,6 +148,11 @@ class MockMediaProvider:
     async def resolve_media(self, media_id: str) -> MediaResolveResult:
         await self.get_media(media_id)
         return MediaResolveResult(media_id=media_id, url=f"https://mock.invalid/media/{media_id}", expires_at=datetime.now(UTC) + timedelta(minutes=15), mime_type="application/octet-stream", size_bytes=0)
+    async def download_media(self, media_id: str, destination: Path) -> MediaResolveResult:
+        resolved = await self.resolve_media(media_id)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(b"mock-media")
+        return resolved
     async def restore_media_object(self, media_id: str, source_uri: str) -> MediaRestoreResult:
         await self.get_media(media_id)
         return MediaRestoreResult(media_id=media_id, status=MediaRestoreStatus.ALREADY_PRESENT, content_hash="mock", mime_type="application/octet-stream", size_bytes=0)
@@ -165,11 +172,11 @@ class MockVoiceProvider:
     def __init__(self, data: MockDramaData) -> None: self.data = data
 
     async def import_voice(self, name: str, source_type: VoiceSourceType, source_uri: str, duration_ms: int, content: VoiceContent) -> Voice:
+        payload = b"mock-voice"
         voice = Voice(id=f"voice-{len(self.data.voices) + 1}", name=name, source_type=source_type,
-                      status=VoiceStatus.ACTIVE, storage_type="MOCK", bucket_name="mock",
-                      object_key=f"voices/voice-{len(self.data.voices) + 1}/master.wav",
-                      mime_type="audio/wav", file_size=4, duration_ms=duration_ms,
-                      content_hash=f"mock-hash-{len(self.data.voices) + 1}", content=content, version=1)
+                      status=VoiceStatus.ACTIVE,
+                      mime_type="audio/wav", file_size=len(payload), duration_ms=duration_ms,
+                      content_hash=hashlib.sha256(payload).hexdigest(), content=content, version=1)
         self.data.voices.append(voice); return voice
 
     async def get_voice(self, voice_id: str) -> Voice:
@@ -195,3 +202,8 @@ class MockVoiceProvider:
                                   mime_type=voice.mime_type, size_bytes=voice.file_size,
                                   content_hash=voice.content_hash)
 
+    async def download_voice(self, voice_id: str, destination: Path) -> VoiceResolveResult:
+        resolved = await self.resolve_voice(voice_id)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(b"mock-voice")
+        return resolved

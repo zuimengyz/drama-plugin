@@ -536,6 +536,12 @@ export DRAMA_PLUGIN_SERVICE_MEMORY_API_TOKEN=your-token
 
 Environment variables override YAML values.
 
+Deployment values are stored outside Git in
+`~/.config/historical-plugin/drama-plugin.env`. When embedded in the MCP Host,
+start with `../scripts/start-drama-mcp.sh`; the launcher loads `mcp-host.env`
+and `drama-plugin.env`, but never `drama-service.env`. See
+[`plugin/docs/runtime-ownership.md`](plugin/docs/runtime-ownership.md).
+
 A practical setup is therefore:
 
 ```text

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json as json_module
+from pathlib import Path
 from typing import Any, BinaryIO
+from urllib.parse import urljoin, urlsplit
 
 import httpx
 
@@ -63,6 +65,35 @@ class HttpProviderClient:
     async def aclose(self) -> None:
         if self._owns_client:
             await self.client.aclose()
+
+    async def download_service_content(self, url: str, destination: Path) -> None:
+        target = urljoin(self.config.base_url.rstrip("/") + "/", url)
+        if self._origin(target) != self._origin(self.config.base_url):
+            raise RemoteServiceError("Drama Service returned content outside its own HTTP origin",
+                                     error_code="UNRESOLVABLE_MEDIA")
+        try:
+            async with self.client.stream("GET", target) as response:
+                response.raise_for_status()
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                with destination.open("wb") as output:
+                    async for chunk in response.aiter_bytes():
+                        output.write(chunk)
+        except httpx.HTTPStatusError as exc:
+            raise RemoteServiceError(
+                f"Drama Service content delivery returned HTTP {exc.response.status_code}",
+                status_code=exc.response.status_code,
+                error_code="MEDIA_UNAVAILABLE",
+            ) from exc
+        except httpx.HTTPError as exc:
+            raise RemoteServiceError("Drama Service content delivery failed",
+                                     error_code="MEDIA_UNAVAILABLE") from exc
+
+    @staticmethod
+    def _origin(url: str) -> tuple[str, str, int | None]:
+        parsed = urlsplit(url)
+        scheme = parsed.scheme.lower()
+        port = parsed.port if parsed.port is not None else {"http": 80, "https": 443}.get(scheme)
+        return scheme, (parsed.hostname or "").lower(), port
 
     async def multipart_request(self, operation: str, *, metadata: dict[str, Any], stream: BinaryIO, filename: str, content_type: str) -> Any:
         path = self.config.operations.get(operation)

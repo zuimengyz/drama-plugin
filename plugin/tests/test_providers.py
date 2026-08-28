@@ -67,6 +67,22 @@ async def test_http_maps_java_numeric_error_code() -> None:
 
 
 @pytest.mark.asyncio
+async def test_storage_failure_remains_provider_neutral_at_plugin_boundary() -> None:
+    transport = httpx.MockTransport(
+        lambda request: httpx.Response(422, json={"code": 42202, "message": "vendor detail"})
+    )
+    async with httpx.AsyncClient(base_url="https://service.invalid", transport=transport) as client:
+        provider = HttpProviderClient(
+            ServiceConfig(base_url="https://service.invalid", operations={"resolve_voice": "/voice/resolve"}), client
+        )
+        with pytest.raises(RemoteServiceError) as captured:
+            await provider.request("resolve_voice")
+    assert captured.value.error_code == "STORAGE_ERROR"
+    assert "vendor detail" not in str(captured.value)
+    assert "MINIO" not in str(captured.value).upper() and "S3" not in str(captured.value).upper()
+
+
+@pytest.mark.asyncio
 async def test_http_uses_bearer_token_and_joins_relative_path_without_leaking_secret() -> None:
     seen: list[httpx.Request] = []
     def handler(request: httpx.Request) -> httpx.Response:

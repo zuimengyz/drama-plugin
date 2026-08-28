@@ -1,6 +1,6 @@
 """Run the bounded real Fish Role Dubbing E2E through the dynamic MCP projection.
 
-This runner never prints credentials or signed object-storage URLs.  It records
+This runner never prints credentials or temporary content URLs.  It records
 only durable Drama identifiers, hashes, lifecycle decisions, QC, and local files
 that are ready for the user's artistic review.
 """
@@ -14,6 +14,7 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 import httpx
 from mcp.client.session import ClientSession
@@ -108,8 +109,15 @@ async def download_and_verify(
     durable_id: str,
     expected_hash: str,
     destination: Path,
+    drama_service_base_url: str,
 ) -> dict[str, Any]:
     resolved = await call_tool(session, resolve_tool, {id_argument: durable_id})
+    expected_origin = urlsplit(drama_service_base_url)
+    actual_origin = urlsplit(str(resolved["url"]))
+    if (actual_origin.scheme, actual_origin.hostname, actual_origin.port) != (
+        expected_origin.scheme, expected_origin.hostname, expected_origin.port
+    ):
+        raise RuntimeError(f"{resolve_tool} returned non-Drama-Service content URL")
     async with httpx.AsyncClient(timeout=120.0) as client:
         response = await client.get(str(resolved["url"]))
         response.raise_for_status()
@@ -127,6 +135,7 @@ async def download_and_verify(
         "contentHash": digest,
         "sizeBytes": len(binary),
         "resolvedHashMatches": True,
+        "urlOwner": "DRAMA_SERVICE",
     }
 
 
@@ -148,7 +157,7 @@ def safe_mapping_evidence(voice: dict[str, Any]) -> list[dict[str, Any]]:
     ]
 
 
-async def run(phase: str, mcp_url: str, evidence_path: Path) -> None:
+async def run(phase: str, mcp_url: str, drama_service_base_url: str, evidence_path: Path) -> None:
     workspace = Path(__file__).resolve().parents[3]
     review_root = workspace / "artifacts/role-dubbing-production/review"
     names = {
@@ -256,6 +265,7 @@ async def run(phase: str, mcp_url: str, evidence_path: Path) -> None:
                     durable_id=media["id"],
                     expected_hash=media["contentHash"],
                     destination=review_root / f"{names[speaker_key]}-{slug}.wav",
+                    drama_service_base_url=drama_service_base_url,
                 )
                 master_integrity = await download_and_verify(
                     session,
@@ -264,6 +274,7 @@ async def run(phase: str, mcp_url: str, evidence_path: Path) -> None:
                     durable_id=voice["id"],
                     expected_hash=voice["contentHash"],
                     destination=review_root / "masters" / f"{slug}-master.wav",
+                    drama_service_base_url=drama_service_base_url,
                 )
                 if baseline is not None:
                     prior = next(
@@ -367,6 +378,7 @@ async def run(phase: str, mcp_url: str, evidence_path: Path) -> None:
             "artisticReviewPending": True,
             "lipSyncNotStarted": True,
             "finalAvNotStarted": True,
+            "serviceMediatedContent": True,
         },
     }
     write_json(evidence_path, evidence)
@@ -396,9 +408,10 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--phase", choices=("initial", "reuse"), required=True)
     parser.add_argument("--mcp-url", default="http://127.0.0.1:8765/mcp")
+    parser.add_argument("--drama-service-base-url", default="http://127.0.0.1:8080")
     parser.add_argument("--evidence", type=Path, required=True)
     args = parser.parse_args()
-    asyncio.run(run(args.phase, args.mcp_url, args.evidence.resolve()))
+    asyncio.run(run(args.phase, args.mcp_url, args.drama_service_base_url, args.evidence.resolve()))
 
 
 if __name__ == "__main__":

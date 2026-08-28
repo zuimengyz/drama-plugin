@@ -542,6 +542,11 @@ export DRAMA_PLUGIN_SERVICE_MEMORY_API_TOKEN=your-token
 
 环境变量优先级高于 YAML。
 
+部署值保存在 Git 之外的 `~/.config/historical-plugin/drama-plugin.env`。
+当 Plugin 嵌入 MCP Host 时，使用 `../scripts/start-drama-mcp.sh` 启动；该脚本只加载
+`mcp-host.env` 与 `drama-plugin.env`，绝不加载 `drama-service.env`。完整归属见
+[`plugin/docs/runtime-ownership.md`](plugin/docs/runtime-ownership.md)。
+
 因此推荐：
 
 ```text

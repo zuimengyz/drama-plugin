@@ -14,8 +14,7 @@ from drama_plugin.providers.http import HttpMemoryProvider, HttpProviderClient, 
 def voice_payload(version: int = 1) -> dict[str, object]:
     return {
         "id": "voice-1", "name": "Stable Voice", "sourceType": "DESIGNED",
-        "status": "ACTIVE", "storageType": "S3", "bucketName": "bucket",
-        "objectKey": "voices/voice-1/master.wav", "mimeType": "audio/wav",
+        "status": "ACTIVE", "mimeType": "audio/wav",
         "fileSize": 4, "durationMs": 1000, "contentHash": "hash",
         "content": {"schemaVersion": "voice-v1", "creativeCastingProfile": {},
                     "sourceProvenance": {}, "providerMappings": []},
@@ -46,10 +45,12 @@ async def test_voice_http_import_get_search_update_and_resolve(tmp_path: Path, m
             payload = __import__("json").loads(request.content)
             assert payload["expected_version"] == 1
             return httpx.Response(200, json=voice_payload(version=2))
-        assert request.url.path == "/voice/resolve"
-        return httpx.Response(200, json={"voiceId": "voice-1",
-            "url": "https://signed.invalid/master", "expiresAt": datetime.now(UTC).isoformat(),
-            "mimeType": "audio/wav", "sizeBytes": 4, "contentHash": "hash"})
+        if request.url.path == "/voice/resolve":
+            return httpx.Response(200, json={"voiceId": "voice-1",
+                "url": "https://unit.invalid/api/content/voice/voice-1?token=temporary", "expiresAt": datetime.now(UTC).isoformat(),
+                "mimeType": "audio/wav", "sizeBytes": 4, "contentHash": "hash"})
+        assert request.url.path == "/api/content/voice/voice-1"
+        return httpx.Response(200, content=b"RIFF")
 
     config = ServiceConfig(base_url="https://unit.invalid", api_token="secret", operations={
         "import_voice": "/voice/import", "get_voice": "/voice/get",
@@ -67,7 +68,10 @@ async def test_voice_http_import_get_search_update_and_resolve(tmp_path: Path, m
         assert len(await provider.search_voices(status=VoiceStatus.ACTIVE)) == 1
         assert (await provider.update_voice("voice-1", content, 1)).version == 2
         assert (await provider.resolve_voice("voice-1")).content_hash == "hash"
-    assert calls == ["/voice/import", "/voice/get", "/voice/search", "/voice/update", "/voice/resolve"]
+        downloaded = tmp_path / "downloaded.wav"
+        assert (await provider.download_voice("voice-1", downloaded)).voice_id == "voice-1"
+        assert downloaded.read_bytes() == b"RIFF"
+    assert calls == ["/voice/import", "/voice/get", "/voice/search", "/voice/update", "/voice/resolve", "/voice/resolve", "/api/content/voice/voice-1"]
 
 
 @pytest.mark.asyncio

@@ -177,12 +177,39 @@ async def test_http_media_list_passes_audio_foundation_filters() -> None:
 
 @pytest.mark.asyncio
 async def test_resolve_parses_camel_case_result() -> None:
-    payload = {"mediaId":"media-1","url":"https://storage.invalid/signed","expiresAt":"2026-08-13T10:00:00Z","mimeType":"image/png","sizeBytes":3}
+    payload = {"mediaId":"media-1","url":"https://service.invalid/api/content/media/media-1?token=temporary","expiresAt":"2026-08-13T10:00:00Z","mimeType":"image/png","sizeBytes":3}
     transport = httpx.MockTransport(lambda request: httpx.Response(200, json=payload))
     config = ServiceConfig(base_url="https://service.invalid", operations={"resolve_media": "/resolve"})
     async with httpx.AsyncClient(base_url=config.base_url, transport=transport) as client:
         result = await HttpMediaProvider(HttpProviderClient(config, client)).resolve_media("media-1")
     assert result.media_id == "media-1" and result.size_bytes == 3
+
+
+@pytest.mark.asyncio
+async def test_http_media_download_stays_on_drama_service_origin(tmp_path: Path) -> None:
+    def respond(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/resolve":
+            return httpx.Response(200, json={"mediaId": "media-1",
+                "url": "https://service.invalid/api/content/media/media-1?token=temporary",
+                "expiresAt": "2026-08-13T10:00:00Z", "mimeType": "image/png", "sizeBytes": 3})
+        assert request.url.path == "/api/content/media/media-1"
+        return httpx.Response(200, content=b"png")
+    config = ServiceConfig(base_url="https://service.invalid", operations={"resolve_media": "/resolve"})
+    async with httpx.AsyncClient(base_url=config.base_url, transport=httpx.MockTransport(respond)) as client:
+        destination = tmp_path / "download.png"
+        await HttpMediaProvider(HttpProviderClient(config, client)).download_media("media-1", destination)
+    assert destination.read_bytes() == b"png"
+
+
+@pytest.mark.asyncio
+async def test_http_media_rejects_storage_owned_content_url(tmp_path: Path) -> None:
+    payload = {"mediaId": "media-1", "url": "https://storage.invalid/object",
+               "expiresAt": "2026-08-13T10:00:00Z", "mimeType": "image/png", "sizeBytes": 3}
+    transport = httpx.MockTransport(lambda request: httpx.Response(200, json=payload))
+    config = ServiceConfig(base_url="https://service.invalid", operations={"resolve_media": "/resolve"})
+    async with httpx.AsyncClient(base_url=config.base_url, transport=transport) as client:
+        with pytest.raises(Exception, match="outside its own HTTP origin"):
+            await HttpMediaProvider(HttpProviderClient(config, client)).download_media("media-1", tmp_path / "x")
 
 
 @pytest.mark.asyncio

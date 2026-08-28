@@ -6,10 +6,8 @@ import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Callable, Literal
-from urllib.parse import unquote, urlparse
 from uuid import uuid4
 
-import httpx
 
 from drama_plugin.audio.creative_casting import compile_fish_creative_casting_brief
 from drama_plugin.audio.foundation import (
@@ -42,7 +40,7 @@ from drama_plugin.contracts.voice import (
     VoiceSourceType,
     VoiceStatus,
 )
-from drama_plugin.exceptions import ProviderError, RoleDubbingError
+from drama_plugin.exceptions import ProviderError, RemoteServiceError, RoleDubbingError
 from drama_plugin.providers.base import MediaProvider, MemoryProvider, VoiceProvider
 from drama_plugin.providers.speech.fish_audio import (
     FISH_TTS_MODEL,
@@ -260,17 +258,15 @@ class FishRoleDubbingProvider:
         return voice, mapping, 1
 
     async def _materialize_mapping(self, voice: Voice) -> tuple[Voice, VoiceProviderMapping]:
-        resolved = await self.voices.resolve_voice(voice.id)
         attempt = self._attempt_directory(voice.id)
         master = attempt / "resolved-master.wav"
-        parsed = urlparse(resolved.url)
-        if parsed.scheme == "file":
-            shutil.copyfile(Path(unquote(parsed.path)), master)
-        else:
-            async with httpx.AsyncClient(timeout=120.0) as client:
-                response = await client.get(resolved.url)
-                response.raise_for_status()
-                master.write_bytes(response.content)
+        try:
+            resolved = await self.voices.download_voice(voice.id, master)
+        except RemoteServiceError as exc:
+            raise RoleDubbingError(
+                "VOICE_REFERENCE_UNAVAILABLE",
+                "Drama Service could not deliver the Voice master",
+            ) from exc
         if _sha256(master) != voice.content_hash or _sha256(master) != resolved.content_hash:
             raise RoleDubbingError("VOICE_REFERENCE_UNAVAILABLE", "Resolved Voice master hash mismatch")
         title = f"drama-{voice.id}-{voice.content_hash[:12]}"

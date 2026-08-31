@@ -65,15 +65,13 @@ def audio_input_material(request: SpeechGenerationRequest) -> dict[str, Any]:
     mapping = request.provider_mapping
     if mapping is None:
         raise ValueError("Audio fingerprint requires a provider-resolved request")
-    return {
+    material = {
         "schemaVersion": "audio-input-v1",
         "workId": request.work_id,
         "sceneId": request.scene_id,
         "spokenContentId": request.spoken_content_id,
         "textHash": text_hash(request.exact_text),
         "speakerKey": request.speaker_key,
-        "performanceIntentHash": sha256_canonical(request.performance_intent),
-        "sceneStateHash": sha256_canonical(request.scene_state),
         "voiceProfileFingerprint": voice_profile_fingerprint(request.voice_profile),
         "providerMappingFingerprint": provider_mapping_fingerprint(mapping),
         "pronunciationFingerprint": pronunciation_fingerprint(
@@ -84,6 +82,16 @@ def audio_input_material(request: SpeechGenerationRequest) -> dict[str, Any]:
         "materialRenderParameters": request.material_render_parameters,
         "targetTimingPolicy": dump_contract(request.target_timing_policy),
     }
+    if request.video_conditioned_projection is not None:
+        material["performanceAuthority"] = "VIDEO_CONDITIONED_FINAL_AUDIO"
+        material["finalAudioProjectionFingerprint"] = request.video_conditioned_projection.fingerprint
+    elif request.audio_performance_brief is not None:
+        material["performanceAuthority"] = "DPD_AUDIO_PROJECTION"
+        material["audioProjectionFingerprint"] = request.audio_performance_brief.fingerprint
+    else:
+        material["performanceIntentHash"] = sha256_canonical(request.performance_intent)
+        material["sceneStateHash"] = sha256_canonical(request.scene_state)
+    return material
 
 
 def audio_input_fingerprint(request: SpeechGenerationRequest) -> str:

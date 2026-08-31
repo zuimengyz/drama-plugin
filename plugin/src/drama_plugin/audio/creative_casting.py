@@ -6,6 +6,7 @@ from drama_plugin.contracts.audio import (
     CreativeCastingDimension,
     CreativeVoiceCastingProfile,
     VoiceProfile,
+    VoiceUseCase,
 )
 
 
@@ -16,9 +17,15 @@ STABLE_VOICE_FIELD_MAP = {
     "brightness": "timbre_brightness",
     "texture": "texture",
     "articulation": "articulation_firmness",
+    "phraseAttack": "phrase_attack",
     "baselinePace": "baseline_pace",
+    "baselineEnergy": "baseline_energy",
+    "breathSupport": "breath_support",
+    "commandPresence": "command_presence",
+    "gravitas": "gravitas",
     "controlledPower": "controlled_power",
     "sentenceFinality": "sentence_finality",
+    "emotionalContainment": "emotional_containment",
     "language": "language",
     "register": "language_register",
 }
@@ -43,11 +50,22 @@ FISH_DIMENSION_PHRASES = {
     ("roughness", "LOW_MEDIUM"): "low-to-medium natural roughness",
     ("breathiness", "LOW"): "low breathiness with supported breath",
     ("articulation", "FIRM"): "firm articulation",
+    ("phraseAttack", "DIRECT_REQUEST"): "a direct but human conversational phrase attack",
+    ("phraseAttack", "DELIBERATE_JUDGMENT"): "a deliberate judgment-shaped phrase attack",
     ("baselinePace", "MODERATE"): "moderate baseline pace",
     ("baselinePace", "MODERATE_DELIBERATE"): "moderately deliberate baseline pace",
     ("controlledPower", "MEDIUM_CONTROLLED"): "medium controlled power",
     ("controlledPower", "HIGH_WITHOUT_LOUDNESS_REQUIREMENT"): (
         "strong controlled power without requiring loudness"
+    ),
+    ("commandPresence", "MEDIUM_EXECUTION_CAPABLE"): (
+        "credible operational command presence without announcer projection"
+    ),
+    ("commandPresence", "HIGH_ACTION_CONSEQUENCE"): (
+        "high command presence carried by consequence rather than broadcast projection"
+    ),
+    ("gravitas", "HIGH_RESPONSIBILITY_WEIGHT"): (
+        "gravitas grounded in responsibility rather than ceremonial narration"
     ),
     ("sentenceFinality", "MODERATE_REQUEST_REMAINS_OPEN"): (
         "request endings that leave final authority with the listener"
@@ -107,9 +125,20 @@ def compile_fish_creative_casting_brief(
     ]
     if not phrases:
         raise ValueError("creative casting profile has no Fish-supported dimensions")
+    use_context = {
+        VoiceUseCase.CHARACTER_DIALOGUE: (
+            "an original lived-in character voice for interactive human-to-human dialogue "
+            "in a historical drama, conversational rather than documentary, audiobook, "
+            "broadcast, announcer, or presenter narration"
+        ),
+        VoiceUseCase.NARRATION: "a clear, coherent narration voice",
+    }[profile.voice_use_case]
     return {
         "profileSource": profile.schema_version,
+        "voiceUseCase": profile.voice_use_case.value,
         "sourceValues": source_values,
-        "instruction": ", ".join(dict.fromkeys(phrases))
-        + ". Keep the base voice natural, clear, and controlled.",
+        "instruction": use_context
+        + "; "
+        + ", ".join(dict.fromkeys(phrases))
+        + ". Keep the stable identity natural and restrained; do not add a current-scene emotion.",
     }

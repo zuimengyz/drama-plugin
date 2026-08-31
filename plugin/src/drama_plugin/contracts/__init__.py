@@ -21,7 +21,16 @@ from drama_plugin.contracts.audio import (
     RoleDubbingRequest,
     RoleDubbingResult,
     TargetTimingPolicy,
+    VoiceDesignApproval,
     VoiceProfile,
+    VoiceUseCase,
+)
+from drama_plugin.contracts.audio_projection import (
+    AudioCapabilityDiagnostic,
+    AudioPerformanceBrief,
+    CapabilityStatus,
+    PaceTendency,
+    VolumeTendency,
 )
 from drama_plugin.contracts.voice import (
     Voice,
@@ -52,5 +61,10 @@ from drama_plugin.contracts.dpd import (
 )
 from drama_plugin.contracts.media import Media, MediaResolveResult, MediaRestoreResult, MediaRestoreStatus, MediaType
 from drama_plugin.contracts.research import ClaimAssessment, ResearchEvidence, ResearchSource
+from drama_plugin.contracts.visual_performance import (
+    RealizedPerformanceSnapshot,
+    VisualPerformanceBrief,
+)
+from drama_plugin.contracts.video_conditioned_audio import VideoConditionedAudioProjection
 
 __all__ = [name for name in globals() if not name.startswith("_")]

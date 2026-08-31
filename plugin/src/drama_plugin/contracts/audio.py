@@ -1,17 +1,27 @@
 from __future__ import annotations
 
+import hashlib
 from enum import StrEnum
 from typing import Any, Literal
 
 from pydantic import Field, model_validator
 
-from drama_plugin.contracts.base import ContractModel
+from drama_plugin.contracts.base import ContractModel, dump_contract, sha256_canonical
+from drama_plugin.contracts.audio_projection import AudioPerformanceBrief
+from drama_plugin.contracts.video_conditioned_audio import VideoConditionedAudioProjection
 
 
 class ProviderMappingStatus(StrEnum):
     CANDIDATE = "CANDIDATE"
     APPROVED = "APPROVED"
     RETIRED = "RETIRED"
+
+
+class VoiceUseCase(StrEnum):
+    """Stable casting context; never a Scene or line-performance instruction."""
+
+    CHARACTER_DIALOGUE = "CHARACTER_DIALOGUE"
+    NARRATION = "NARRATION"
 
 
 class EvidenceConfidence(StrEnum):
@@ -135,6 +145,7 @@ class CreativeVoiceCastingProfile(ContractModel):
         "creative-voice-casting-v1"
     )
     source_profile_id: str
+    voice_use_case: VoiceUseCase = VoiceUseCase.CHARACTER_DIALOGUE
     dimensions: dict[str, CreativeCastingDimension]
     historical_fact_refs: list[str] = Field(default_factory=list)
     creative_decision_basis: list[str] = Field(default_factory=list)
@@ -144,6 +155,17 @@ class CreativeVoiceCastingProfile(ContractModel):
             "stable character casting != current scene performance",
         ]
     )
+
+
+class VoiceDesignApproval(ContractModel):
+    """Explicit human approval of one hash-addressed recovered design candidate."""
+
+    schema_version: Literal["voice-design-approval-v1"] = "voice-design-approval-v1"
+    design_request_fingerprint: str = Field(pattern=r"^[0-9a-f]{64}$")
+    candidate_index: int = Field(ge=0)
+    candidate_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
+    review_artifact_id: str = Field(min_length=1)
+    approval_source: Literal["USER"] = "USER"
 
 
 class ProviderVoiceMapping(ContractModel):
@@ -202,14 +224,56 @@ class SpeechGenerationRequest(ContractModel):
     pronunciation_guidance: list[PronunciationGuidance] = Field(default_factory=list)
     scene_state: SceneState | None = None
     performance_intent: dict[str, Any] = Field(default_factory=dict)
+    audio_performance_brief: AudioPerformanceBrief | None = None
+    video_conditioned_projection: VideoConditionedAudioProjection | None = None
     material_render_parameters: dict[str, Any] = Field(default_factory=dict)
     target_timing_policy: TargetTimingPolicy
     non_material_metadata: dict[str, Any] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def validate_voice_resolution(self) -> "SpeechGenerationRequest":
+        if self.video_conditioned_projection is not None:
+            final = self.video_conditioned_projection
+            if self.audio_performance_brief != final.final_audio_performance_brief:
+                raise ValueError("final Audio brief must match video-conditioned projection")
+            timing = self.target_timing_policy
+            if (timing.policy != "NATURAL" or timing.target_duration_ms is not None
+                    or timing.allow_rate_adjustment or timing.constraints):
+                raise ValueError("guessed mouth timing and forced video duration are prohibited")
+            if self.material_render_parameters != {"performanceRendering": "BRIEF_CUES_V1"}:
+                raise ValueError("video conditioning requires Brief-derived execution only")
         if self.voice_profile.speaker_key != self.speaker_key:
             raise ValueError("voice profile speakerKey must match request speakerKey")
+        if self.audio_performance_brief is not None:
+            brief = self.audio_performance_brief
+            if self.performance_intent or self.scene_state is not None:
+                raise ValueError("DPD Audio Projection cannot be combined with legacy performance authority")
+            if {"speed", "volume"} & self.material_render_parameters.keys():
+                raise ValueError("DPD Audio Projection cannot be overridden by manual Fish prosody")
+            if (
+                brief.scene_id != self.scene_id
+                or brief.spoken_content_id != self.spoken_content_id
+                or brief.speaker_key != self.speaker_key
+            ):
+                raise ValueError("Audio Projection identity must match speech request")
+            if brief.voice_profile_id != self.voice_profile.profile_id:
+                raise ValueError("Audio Projection Voice Profile must match speech request")
+            if brief.text_fingerprint != hashlib.sha256(self.exact_text.encode("utf-8")).hexdigest():
+                raise ValueError("Audio Projection text fingerprint must match exact text")
+            expected_voice_fingerprint = sha256_canonical(
+                {
+                    "schemaVersion": "voice-creative-profile-v1",
+                    "speakerKey": self.voice_profile.speaker_key,
+                    "creativeProfile": dump_contract(self.voice_profile.creative_profile),
+                }
+            )
+            if brief.voice_profile_fingerprint != expected_voice_fingerprint:
+                raise ValueError("Audio Projection Voice Profile fingerprint must match speech request")
+            expected_projection_fingerprint = sha256_canonical(
+                dump_contract(brief, exclude={"fingerprint"})
+            )
+            if brief.fingerprint != expected_projection_fingerprint:
+                raise ValueError("Audio Projection fingerprint is invalid")
         if self.provider_mapping is None:
             return self
         if self.provider_mapping.status is ProviderMappingStatus.RETIRED:
@@ -261,6 +325,7 @@ class RoleDubbingRequest(ContractModel):
     schema_version: Literal["role-dubbing-v1"] = "role-dubbing-v1"
     speech_request: SpeechGenerationRequest
     qc_policy: RoleDubbingQcPolicy = Field(default_factory=RoleDubbingQcPolicy)
+    voice_design_approval: VoiceDesignApproval | None = None
 
 
 class RoleDubbingResult(ContractModel):

@@ -176,6 +176,22 @@ async def test_http_media_list_passes_audio_foundation_filters() -> None:
 
 
 @pytest.mark.asyncio
+async def test_production_media_discovery_excludes_debug_unless_explicit() -> None:
+    payload = [
+        {"id":"media-pass","workId":"work-1","mediaType":"AUDIO","sourceRef":"audio-input:pass","content":{"reviewStatus":"PASS"}},
+        {"id":"media-debug","workId":"work-1","mediaType":"AUDIO","sourceRef":"fish-debug:invalid-duration","content":{"reviewStatus":"DEBUG"}},
+    ]
+    transport = httpx.MockTransport(lambda request: httpx.Response(200, json=payload))
+    config = ServiceConfig(base_url="https://service.invalid", operations={"list_media": "/list"})
+    async with httpx.AsyncClient(base_url=config.base_url, transport=transport) as client:
+        provider = HttpMediaProvider(HttpProviderClient(config, client))
+        assert [item.id for item in await provider.list_media(MediaType.AUDIO)] == ["media-pass"]
+        assert [item.id for item in await provider.list_media(MediaType.AUDIO, include_debug=True)] == [
+            "media-pass", "media-debug"
+        ]
+
+
+@pytest.mark.asyncio
 async def test_resolve_parses_camel_case_result() -> None:
     payload = {"mediaId":"media-1","url":"https://service.invalid/api/content/media/media-1?token=temporary","expiresAt":"2026-08-13T10:00:00Z","mimeType":"image/png","sizeBytes":3}
     transport = httpx.MockTransport(lambda request: httpx.Response(200, json=payload))

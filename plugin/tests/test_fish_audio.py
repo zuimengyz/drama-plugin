@@ -11,6 +11,7 @@ from drama_plugin.providers.speech.fish_audio import (
     FISH_TTS_MODEL,
     FISH_VOICE_DESIGN_MODEL,
     FishAudioHttpClient,
+    compile_fish_rendered_text,
     compile_fish_tts_payload,
     compile_fish_voice_design_payload,
 )
@@ -36,6 +37,48 @@ def test_fish_payload_preserves_exact_dialogue_and_separates_modes() -> None:
         "volume": -1.0,
         "normalize_loudness": True,
     }
+
+
+def test_fish_rendered_text_preserves_canonical_words_and_limits_markers() -> None:
+    canonical = "你可知道后果？"
+    punctuation = "你……可知道后果？"
+    expressive = "[curious]你可知道[break][emphasis]后果？"
+    assert compile_fish_rendered_text(
+        canonical_text=canonical, rendered_text=punctuation
+    ) == punctuation
+    assert compile_fish_tts_payload(
+        exact_text=canonical,
+        rendered_text=expressive,
+        reference_id="voice-1",
+        mode="directed",
+        speed=1.0,
+        volume=-2.0,
+    )["text"] == expressive
+    with pytest.raises(ValueError, match="unsupported S2 marker"):
+        compile_fish_rendered_text(
+            canonical_text=canonical,
+            rendered_text="[make this perfect]你可知道后果？",
+        )
+    with pytest.raises(ValueError, match="preserve canonical lexical content"):
+        compile_fish_rendered_text(
+            canonical_text=canonical, rendered_text="你可明白后果？"
+        )
+
+
+def test_dramatic_action_is_not_hardcoded_to_fish_emotion_marker() -> None:
+    source = (
+        Path(__file__).resolve().parents[1]
+        / "src/drama_plugin/providers/speech/fish_audio.py"
+    ).read_text(encoding="utf-8")
+    assert "dramatic_action" not in source
+    assert '"probe"' not in source
+    assert compile_fish_tts_payload(
+        exact_text="你可知道后果？",
+        reference_id="voice-1",
+        mode="directed",
+        speed=1.0,
+        volume=0.0,
+    )["text"] == "你可知道后果？"
 
 
 def test_voice_design_payload_is_small_and_requests_three_candidates() -> None:

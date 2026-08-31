@@ -44,10 +44,10 @@ Never persist a temporary condition as a durable voice trait. In particular:
 - anger does not imply shouting; urgency does not always imply fast speech; low confidence does not always imply quiet speech.
 
 `SceneState` remains an Audio v1 compatibility input. Its activation,
-expressiveness/restraint, target, objective, and subtext fields overlap the newer
-DPD Core and must not be treated as a second cross-modal authority. A later Audio
-Projection migration may derive the Audio brief from an approved `DPDSnapshot`;
-this Skill does not define that projection yet.
+expressiveness/restraint, target, objective, and subtext fields overlap DPD Core
+and must not be treated as a second cross-modal authority. On the DPD Projection
+path, omit SceneState from the speech request; the typed Audio brief is already
+the completed projection. Legacy requests without a brief continue unchanged.
 
 ## Character Voice Profile
 
@@ -66,6 +66,8 @@ Age and gender may filter incompatible Provider candidates but never determine t
 
 Character casting is separate from Dialogue performance. Submit the provider-neutral profile without a concrete mapping. The Provider adapter may rank at most three compatible candidates from the same profile. A generated Top-1 or short candidate remains `voiceBindingStatus=PENDING` until human review. Do not make it a permanent character binding, randomize the character between lines, or automatically generate every ranked candidate.
 
+The stable casting profile distinguishes `CHARACTER_DIALOGUE` from `NARRATION`. Character dialogue means an interactive, lived-in human voice rather than documentary, audiobook, broadcast, announcer, or presenter delivery; it does not prescribe the current Scene's emotion, tactic, pause timing, or dramatic action. AI ranking may order technically valid candidates but cannot approve character plausibility or non-narrator identity. Persist the design fingerprint, candidate index/hash, technical QC, AI rank, and review-artifact identity, then stop. Only explicit user approval freezes a candidate as the Voice master and permits provider materialization, Work binding, and TTS.
+
 If an approved provider binding already exists for the same stable profile, reuse it across Scenes. A Scene changes Performance Intent, not the approved base voice.
 
 ## Performance Intent as baseline plus delta
@@ -79,16 +81,21 @@ For each Dialogue, derive a separate line-level Performance Intent from the stab
 Do not collapse intent to one mood label. Do not overwrite the base voice with the current emotion or physical state. Preserve every compatible canonical Scene intent and do not invent a contradiction.
 
 This open `PerformanceIntent` is retained for Audio v1 compatibility. Cross-modal
-objective, target, activation, control, relationship, subtext, and boundaries now
-belong to DPD Core; pace, volume, breath, articulation, emphasis, sentence closure,
-and precise pause values belong to future Audio Projection. Do not synthesize a
-DPD-to-Audio mapping until that projection contract is introduced.
+objective, target, activation, control, relationship, subtext, and boundaries
+belong to DPD Core. The typed `AudioPerformanceBrief` owns the new path's pace,
+rhythm, intensity, pause strategy, articulation, sentence ending, and control.
+Never merge that brief with legacy PerformanceIntent or manual speed/volume.
 
 ## Provider-neutral generation specification
 
 The `SpeechGenerationRequest` must carry stable speaker identity, Dialogue identity, exact canonical text, Character Understanding, Character Voice Profile, Scene State, Performance Intent, timing policy, and non-material Work/Script/Episode/Scene/Shot/character/listener references. The Skill decides what the person and this moment mean. The active Provider adapter only ranks compatible voices and translates the supplied semantics into provider syntax; it must not reinterpret the character.
 
-The exact speech input must equal `Scene.content.spokenContent[].text`. Pronunciation and delivery guidance stay outside that field. If wording needs revision, stop and use the normal Dialogue revision path.
+`SpeechGenerationRequest.exactText` must equal
+`Scene.content.spokenContent[].text`. Pronunciation and delivery guidance stay
+outside that canonical field. At the Provider boundary only, an officially
+supported rendered-text representation may add allowlisted markers or
+punctuation when it preserves lexical content and records separate lineage. If
+wording needs revision, stop and use the normal Dialogue revision path.
 
 ## Forbidden production shortcuts
 

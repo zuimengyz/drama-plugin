@@ -139,8 +139,8 @@ class MockMediaProvider:
         media = existing.model_copy(update={"purpose": purpose, "content": content})
         self.data.media = [media if item.id == media_id else item for item in self.data.media]
         return media
-    async def list_media(self, media_type: MediaType | None = None, work_id: str | None = None, purpose: str | None = None, source_ref: str | None = None) -> list[Media]:
-        return [item for item in self.data.media if (media_type is None or item.media_type is media_type) and (work_id is None or item.work_id == work_id) and (purpose is None or item.purpose == purpose) and (source_ref is None or item.source_ref == source_ref)]
+    async def list_media(self, media_type: MediaType | None = None, work_id: str | None = None, purpose: str | None = None, source_ref: str | None = None, include_debug: bool = False) -> list[Media]:
+        return [item for item in self.data.media if (include_debug or item.content.get("reviewStatus") != "DEBUG") and (media_type is None or item.media_type is media_type) and (work_id is None or item.work_id == work_id) and (purpose is None or item.purpose == purpose) and (source_ref is None or item.source_ref == source_ref)]
     async def import_media(self, work_id: str, media_type: MediaType, source_uri: str, content: dict[str, Any], asset_id: str | None = None, shot_id: str | None = None, purpose: str | None = None, source_ref: str | None = None, duration_ms: int | None = None) -> Media:
         media = Media(id="media-imported", work_id=work_id, asset_id=asset_id, shot_id=shot_id, media_type=media_type, purpose=purpose, source_ref=source_ref or "mock:storage:imported", duration_ms=duration_ms, content=content)
         self.data.media.append(media)

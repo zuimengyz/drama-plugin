@@ -25,6 +25,12 @@ from drama_plugin.audio.host_media import (
     probe_wav_duration_ms,
     validate_media_mime,
 )
+from drama_plugin.audio.projection import (
+    AudioProjectionError,
+    compile_projected_speech_request,
+    fingerprint_audio_projection,
+    project_audio_performance,
+)
 from drama_plugin.audio.creative_casting import (
     compile_fish_creative_casting_brief,
     project_creative_voice_casting_profile,

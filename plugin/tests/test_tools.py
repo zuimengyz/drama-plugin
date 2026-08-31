@@ -157,7 +157,7 @@ def test_get_list_and_search_contracts_have_distinct_minimal_semantics() -> None
     assert set(plugin.tools.get("episode.list_episodes").input_schema["properties"]) == {"script_id", "episode_no", "title"}
     assert set(plugin.tools.get("scene.list_scenes").input_schema["properties"]) == {"episode_id", "order", "location", "character"}
     assert set(plugin.tools.get("shot.list_shots").input_schema["properties"]) == {"scene_id", "shot_no", "shot_type", "character"}
-    assert set(plugin.tools.get("media.list_media").input_schema["properties"]) == {"media_type", "work_id", "purpose", "source_ref"}
+    assert set(plugin.tools.get("media.list_media").input_schema["properties"]) == {"media_type", "work_id", "purpose", "source_ref", "include_debug"}
 
     memory_domains = {"work", "script", "episode", "scene", "shot", "asset", "media"}
     memory_tools = [tool for tool in plugin.tools.list() if tool.domain in memory_domains]

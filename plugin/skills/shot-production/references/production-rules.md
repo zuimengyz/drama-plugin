@@ -80,6 +80,12 @@ Translate camera motion into representative static key-image intent:
 
 Do not ask one still image to depict elapsed camera movement.
 
+## DPD visual projection boundary
+
+When the run includes an authoritative `DPDSnapshot`, translate it once into a provider-neutral `VisualPerformanceBrief` before compiling the Provider motion prompt. DPD remains intended dramatic authority; the brief only expresses observable performance. Do not copy stable face, age, hair, costume, location appearance, camera scale, lens, angle, composition, or camera movement into the brief. Combine the brief with those independently owned inputs only at materialization.
+
+Map activation and control compositionally. In particular, high internal activation plus high external control normally calls for visible tension, low-amplitude movement, stable posture, restrained head/gesture behavior, and focused gaze rather than a large generic expression. High activation plus low control may permit larger, less stable movement. Never introduce an emotion classifier, facial-expression taxonomy, gesture library, or body-language DSL.
+
 ## Per-Shot review and targeted revision
 
 Review only applicable dimensions, including:
@@ -123,3 +129,14 @@ Provider Output
 ```
 
 Identity annotation is provenance or identity presentation, not Provider visual quality. Never fail visual review merely because an otherwise valid Provider output lacks an annotation.
+
+For a DPD-directed performance video, continue after stable Media import:
+
+```text
+stable Review-PASS Video
+-> controlled playback / representative frame sampling
+-> accepted observable facts
+-> RealizedPerformanceSnapshot
+```
+
+The Snapshot describes the actual video, not the intended DPD. Record visible expression, gaze, head/body motion, gesture, mouth-activity windows, pauses, and pre/post-speech action only when observable. Use `UNKNOWN` instead of guessing. DPD-versus-video deviation is diagnostic only: it never blocks or changes the Snapshot. A later replacement video must produce a new content hash and Realized Performance fingerprint, making any dependent final Audio stale.

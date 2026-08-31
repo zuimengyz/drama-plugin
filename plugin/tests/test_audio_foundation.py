@@ -37,6 +37,7 @@ from drama_plugin.contracts import (
     SpeechGenerationRequest,
     TargetTimingPolicy,
     VoiceProfile,
+    VoiceUseCase,
 )
 
 
@@ -163,6 +164,15 @@ def test_creative_casting_and_fish_prompt_are_identity_and_scene_invariant() -> 
     assert "SceneState" not in serialized
     assert "PerformanceIntent" not in serialized
     assert "pitch shortcut" in serialized
+    assert first_prompt["voiceUseCase"] == "CHARACTER_DIALOGUE"
+    assert "interactive human-to-human dialogue" in str(first_prompt["instruction"])
+    assert "documentary" in str(first_prompt["instruction"])
+    assert "current-scene emotion" in str(first_prompt["instruction"])
+
+    narration = first.model_copy(update={"voice_use_case": VoiceUseCase.NARRATION})
+    narration_prompt = compile_fish_creative_casting_brief(narration)
+    assert narration_prompt["voiceUseCase"] == "NARRATION"
+    assert narration_prompt["instruction"] != first_prompt["instruction"]
 
 
 def test_exact_dialogue_and_pronunciation_compile_without_dialogue_mutation() -> None:
@@ -275,6 +285,22 @@ def test_host_side_wav_probe_is_authoritative_for_fixture(tmp_path: Path) -> Non
         output.setsampwidth(2)
         output.setframerate(16000)
         output.writeframes(b"\x00\x00" * 16000)
+    assert probe_wav_duration_ms(fixture) == 1000
+
+
+def test_wav_duration_uses_actual_pcm_when_streaming_header_is_placeholder(
+    tmp_path: Path,
+) -> None:
+    fixture = tmp_path / "streaming-placeholder.wav"
+    with wave.open(str(fixture), "wb") as output:
+        output.setnchannels(1)
+        output.setsampwidth(2)
+        output.setframerate(16000)
+        output.writeframes(b"\x00\x00" * 16000)
+    payload = bytearray(fixture.read_bytes())
+    data_offset = payload.index(b"data")
+    payload[data_offset + 4 : data_offset + 8] = (0xFFFFFFFF).to_bytes(4, "little")
+    fixture.write_bytes(payload)
     assert probe_wav_duration_ms(fixture) == 1000
 
 

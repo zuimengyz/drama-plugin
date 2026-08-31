@@ -4,18 +4,152 @@ import json
 import mimetypes
 import base64
 import binascii
+import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import httpx
+from pydantic import Field, model_validator
 
+from drama_plugin.contracts.audio_projection import (
+    AudioCapabilityDiagnostic,
+    AudioPerformanceBrief,
+    CapabilityStatus,
+    PaceTendency,
+    VolumeTendency,
+)
+from drama_plugin.contracts.base import ContractModel
 from drama_plugin.exceptions import ProviderResultUnknown, SpeechProviderError
 
 
 FISH_AUDIO_BASE_URL = "https://api.fish.audio"
 FISH_TTS_MODEL = "s2-pro"
 FISH_VOICE_DESIGN_MODEL = "voice-design-1"
+FISH_S2_RENDER_MARKERS = frozenset(
+    {"break", "curious", "emphasis", "long-break"}
+)
+_RENDER_MARKER = re.compile(r"\[([^\[\]]+)\]")
+_RENDER_PUNCTUATION = frozenset(
+    " \t\r\n，、。！？；：…—,.!?;:'\"“”‘’（）()"
+)
+
+
+class FishAudioPerformanceMapping(ContractModel):
+    schema_version: Literal["fish-audio-performance-mapping-v1"] = (
+        "fish-audio-performance-mapping-v1"
+    )
+    audio_projection_fingerprint: str = Field(pattern=r"^[0-9a-f]{64}$")
+    speed: float = Field(ge=0.5, le=2.0)
+    volume: float = Field(ge=-20.0, le=20.0)
+    capabilities: tuple[AudioCapabilityDiagnostic, ...]
+
+    @model_validator(mode="after")
+    def validate_capability_set(self) -> "FishAudioPerformanceMapping":
+        expected = {
+            "pace",
+            "volumeTendency",
+            "rhythm",
+            "intensity",
+            "pauseStrategy",
+            "articulation",
+            "emphasis",
+            "sentenceEnding",
+            "control",
+            "preUtterancePreparation",
+            "postUtteranceHold",
+        }
+        actual = [item.dimension for item in self.capabilities]
+        if len(actual) != len(set(actual)) or set(actual) != expected:
+            raise ValueError("Fish capability diagnostics are incomplete or duplicated")
+        return self
+
+
+def map_audio_performance_to_fish(
+    brief: AudioPerformanceBrief,
+) -> FishAudioPerformanceMapping:
+    speed = {
+        PaceTendency.SLOWER: 0.92,
+        PaceTendency.NEUTRAL: 1.0,
+        PaceTendency.FASTER: 1.08,
+    }[brief.pace_tendency]
+    volume = {
+        VolumeTendency.LOWER: -2.0,
+        VolumeTendency.NEUTRAL: 0.0,
+        VolumeTendency.HIGHER: 2.0,
+    }[brief.volume_tendency]
+    diagnostics = (
+        AudioCapabilityDiagnostic(
+            dimension="pace",
+            status=CapabilityStatus.SUPPORTED,
+            mapped_control="prosody.speed",
+            reason="Fish exposes a bounded speed control.",
+        ),
+        AudioCapabilityDiagnostic(
+            dimension="volumeTendency",
+            status=CapabilityStatus.SUPPORTED,
+            mapped_control="prosody.volume",
+            reason="Fish exposes a bounded volume adjustment.",
+        ),
+        AudioCapabilityDiagnostic(
+            dimension="rhythm",
+            status=CapabilityStatus.TEXT_RENDERABLE,
+            mapped_control="S2 punctuation and [break]/[long-break] markers",
+            reason="S2 can render phrase separation in text, but production promotion awaits listening review.",
+        ),
+        AudioCapabilityDiagnostic(
+            dimension="intensity",
+            status=CapabilityStatus.TEXT_RENDERABLE,
+            mapped_control="S2 expression/tone markers",
+            reason="S2 expression markers can render intensity; automatic use awaits listening review.",
+        ),
+        AudioCapabilityDiagnostic(
+            dimension="pauseStrategy",
+            status=CapabilityStatus.TEXT_RENDERABLE,
+            mapped_control="S2 [break]/[long-break] markers",
+            reason="S2 documents pause markers; automatic use awaits listening review.",
+        ),
+        AudioCapabilityDiagnostic(
+            dimension="articulation",
+            status=CapabilityStatus.UNSUPPORTED,
+            reason="The verified Fish TTS request has no articulation control.",
+        ),
+        AudioCapabilityDiagnostic(
+            dimension="emphasis",
+            status=CapabilityStatus.TEXT_RENDERABLE,
+            mapped_control="S2 [emphasis] marker",
+            reason="S2 documents an emphasis marker; automatic use awaits listening review.",
+        ),
+        AudioCapabilityDiagnostic(
+            dimension="sentenceEnding",
+            status=CapabilityStatus.TEXT_RENDERABLE,
+            mapped_control="canonical punctuation plus S2 expression markers",
+            reason="Punctuation and expression cues can influence endings; automatic use awaits review.",
+        ),
+        AudioCapabilityDiagnostic(
+            dimension="control",
+            status=CapabilityStatus.TEXT_RENDERABLE,
+            mapped_control="S2 natural-language expression marker",
+            reason="S2 accepts concise expression cues; automatic use awaits listening review.",
+        ),
+        AudioCapabilityDiagnostic(
+            dimension="preUtterancePreparation",
+            status=CapabilityStatus.APPROXIMATED,
+            mapped_control="leading S2 expression marker",
+            reason="A leading cue can condition onset style but cannot guarantee an audible preparation.",
+        ),
+        AudioCapabilityDiagnostic(
+            dimension="postUtteranceHold",
+            status=CapabilityStatus.UNSUPPORTED,
+            reason="The verified API has no durable post-utterance hold control.",
+        ),
+    )
+    return FishAudioPerformanceMapping(
+        audio_projection_fingerprint=brief.fingerprint,
+        speed=speed,
+        volume=volume,
+        capabilities=diagnostics,
+    )
 
 
 @dataclass(frozen=True)
@@ -52,6 +186,40 @@ class FishAsrResult:
     provider_request_id: str | None
 
 
+def compile_fish_rendered_text(*, canonical_text: str, rendered_text: str,
+                               performance_brief: AudioPerformanceBrief | None = None) -> str:
+    """Validate a small, official S2 rendering surface without rewriting dialogue."""
+    if not canonical_text or not rendered_text:
+        raise ValueError("Fish canonical and rendered text must not be empty")
+    approved_cue = _brief_expression_cue(performance_brief) if performance_brief is not None else None
+    if len(rendered_text) > len(canonical_text) + (520 if approved_cue else 80):
+        raise ValueError("Fish rendered text adds excessive provider direction")
+    markers = _RENDER_MARKER.findall(rendered_text)
+    if approved_cue is not None and rendered_text != f"[{approved_cue}]{canonical_text}":
+        raise ValueError("production expression rendering must come entirely from the Audio brief")
+    if any(marker not in FISH_S2_RENDER_MARKERS and marker != approved_cue for marker in markers):
+        raise ValueError("Fish rendered text contains an unsupported S2 marker")
+    without_markers = _RENDER_MARKER.sub("", rendered_text)
+    if "[" in without_markers or "]" in without_markers:
+        raise ValueError("Fish rendered text contains malformed S2 markers")
+
+    def lexical(value: str) -> str:
+        return "".join(character for character in value if character not in _RENDER_PUNCTUATION)
+
+    if lexical(without_markers) != lexical(canonical_text):
+        raise ValueError("Fish rendered text must preserve canonical lexical content")
+    return rendered_text
+
+
+def _brief_expression_cue(brief: AudioPerformanceBrief) -> str:
+    """Serialize execution instructions; never inspect DPD, video, or dramatic-action labels."""
+    cue = "; ".join((brief.control, brief.intensity, brief.rhythm,
+                     brief.pause_strategy, brief.sentence_ending))
+    if len(cue) > 500 or any(c in cue for c in "[]\n\r"):
+        raise ValueError("Audio brief expression cue exceeds the safe bounded rendering surface")
+    return cue
+
+
 def compile_fish_tts_payload(
     *,
     exact_text: str,
@@ -59,6 +227,8 @@ def compile_fish_tts_payload(
     mode: str,
     speed: float | None = None,
     volume: float | None = None,
+    rendered_text: str | None = None,
+    performance_brief: AudioPerformanceBrief | None = None,
 ) -> dict[str, Any]:
     if mode not in {"baseline", "directed"}:
         raise ValueError("Fish validation mode must be baseline or directed")
@@ -66,8 +236,19 @@ def compile_fish_tts_payload(
         raise ValueError("Fish TTS exact text must not be empty")
     if not reference_id:
         raise ValueError("Fish TTS reference id must not be empty")
+    if performance_brief is not None:
+        if rendered_text is not None:
+            raise ValueError("manual rendered text conflicts with Brief-derived rendering")
+        rendered_text = f"[{_brief_expression_cue(performance_brief)}]{exact_text}"
     payload: dict[str, Any] = {
-        "text": exact_text,
+        "text": (
+            compile_fish_rendered_text(
+                canonical_text=exact_text, rendered_text=rendered_text,
+                performance_brief=performance_brief,
+            )
+            if rendered_text is not None
+            else exact_text
+        ),
         "reference_id": reference_id,
         "format": "wav",
         "sample_rate": 24000,

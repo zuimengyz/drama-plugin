@@ -3,7 +3,7 @@ name: Audio Production
 description: Produce exact-text speech and deterministic final AV through a replaceable Audio capability.
 context:
   required: [work, script, episode, scene]
-  optional: [shot, characterUnderstanding, sceneState, characterContext, sourceVideoMediaId, audioMediaIds, temporaryState]
+  optional: [shot, dpdSnapshot, audioPerformanceBrief, characterUnderstanding, sceneState, characterContext, sourceVideoMediaId, audioMediaIds, temporaryState]
   refresh_after: [media.import_media]
 tools:
   preferred: [scene.get_scene, episode.get_episode, script.get_script, work.get_work, shot.get_shot, voice.get_voice, production.generate_role_dubbing, media.resolve_media]
@@ -11,7 +11,7 @@ tools:
 completion:
   conditions:
     - Exact Dialogue, voice identity, pronunciation, performance, and timing remain traceable through a structured speech request and deterministic fingerprint.
-    - Character and Scene context produce a stable provider-neutral Voice Profile plus a line-level Performance Intent before any Provider-specific casting occurs.
+    - An approved DPD Snapshot, canonical SpokenContent, stable Voice/Casting identity, Voice baseline, and Timing Context produce one typed provider-neutral Audio Performance Brief without a competing legacy authority.
     - Character Understanding uses evidence-scoped neutral dimensions and explicit unknowns; stable traits, temporary Scene State, candidate binding, and line performance remain separate.
     - A generated voice candidate remains pending until human review and no character identity is used as a casting rule.
     - Only Review-PASS reusable clips own canonical Audio source references and all persisted physical duration values come from a Host probe.

@@ -91,6 +91,9 @@ class ContractValidationError(DramaPluginError):
 class RoleDubbingError(DramaPluginError):
     """A high-level role-dubbing lifecycle gate failed safely."""
 
-    def __init__(self, code: str, message: str) -> None:
+    def __init__(
+        self, code: str, message: str, *, details: dict[str, object] | None = None
+    ) -> None:
         super().__init__(message)
         self.error_code = code
+        self.details = details or {}

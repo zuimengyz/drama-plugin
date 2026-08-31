@@ -55,8 +55,11 @@ def capability_report() -> dict[str, Any]:
 
 def probe_wav_duration_ms(path: Path | str) -> int:
     with wave.open(str(path), "rb") as fixture:
-        frames = fixture.getnframes()
+        declared_frames = fixture.getnframes()
         rate = fixture.getframerate()
+        frame_size = fixture.getnchannels() * fixture.getsampwidth()
+        raw = fixture.readframes(declared_frames)
+    frames = len(raw) // frame_size if frame_size > 0 else 0
     if frames <= 0 or rate <= 0:
         raise ValueError("WAV has no measurable positive duration")
     return round(frames * 1000 / rate)

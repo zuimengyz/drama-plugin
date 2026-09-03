@@ -32,6 +32,13 @@ from drama_plugin.contracts.audio_projection import (
     PaceTendency,
     VolumeTendency,
 )
+from drama_plugin.contracts.av_sync import (
+    AVSyncPlan,
+    AcousticMixPlan,
+    build_acoustic_mix_plan,
+    build_av_sync_plan,
+    final_shot_fingerprint,
+)
 from drama_plugin.contracts.voice import (
     Voice,
     VoiceContent,

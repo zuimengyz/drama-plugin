@@ -1,20 +1,20 @@
 # 70 — Batch 7.3D：基于实际视频表演的最终角色配音报告
 
-日期：2026-08-31。批次：Video-Conditioned Final Dubbing。
+初次报告：2026-08-31；Resume 完成更新：2026-09-01。批次：Video-Conditioned Final Dubbing。
 
 ## 1. 执行摘要
 
-**BATCH_7_3D = PARTIAL。** 最小视频条件投射、fingerprint/失效机制、Fish adapter opt-in 接入与离线回归已完成；未生成真实 B0/D1，不能宣称 Live 或整批 Engineering PASS。
+**BATCH_7_3D_ENGINEERING = PASS；BATCH_7_3D = PASS。** 本次仅 Resume 剩余 Storage Preflight + B0/D1 Live，没有重新实现架构或改动生产代码。B0、D1 各生成一次，均完成 durable Audio Media、Service 下载 hash 和技术 QC。用户艺术听审仍为 PENDING。
 
-具体阻断是 `STORAGE_MIGRATION_RECONCILIATION_REQUIRED`：当前 service-owned env 重复定义 `DRAMA_MEDIA_STORAGE_ENDPOINT`，两项分别为 NON_LOCAL、LOCAL，现有 ownership 校验失败。既有服务仍可返回 Video/Voice 原对象且下载 hash 正确，但不足以证明正在使用迁移后的云存储。不是 Fish outage，也不是“云对象已丢失”的结论。
+初次 PARTIAL 的原因是 service-owned env 重复定义 `DRAMA_MEDIA_STORAGE_ENDPOINT`，并非 Fish outage。Resume 已确认该问题解除：三个 env ownership PASS、唯一 NON_LOCAL endpoint、Service 在配置更新后重启，原 Video/Voice 经 Service resolve/download/hash PASS。
 
-已告知用户保留唯一云端 endpoint、通过现有启动路径重启 Drama Service，再重新预检。本批没有修改 env、重启服务、直接访问 MinIO、重建 Voice 或重新生成 Video。所有真实 TTS 调用为 0。
+本次代理没有修改 env、重启服务、直接访问 MinIO、重建 Voice 或重新生成 Video。真实 TTS 总计 2 次：B0=1、D1=1，重试=0；VoiceDesign/CreateModel/Comfy/其他 TTS/AV mux 均为 0。
 
 ## 2. 本批范围
 
 实现：既有 DPD/Base Audio Projection + canonical SpokenContent + frozen Voice + accepted RealizedPerformanceSnapshot → final AudioPerformanceBrief → 现有 Fish Role Dubbing 编译/持久化路径。
 
-完成的 Review 为结构化准备包；WAV 不存在，不造占位文件。没有 Lip Sync、SFX、ambience、music、reverb、mix、AV mux 或后续 Episode production。
+Review 包现已包含实际 B0/D1 WAV、既有最终 brief、固定视频链接、结构化对照和真实 QC。没有 Lip Sync、SFX、ambience、music、reverb、mix、AV mux 或后续 Episode production。
 
 ## 3. 7.3C Fixture
 
@@ -37,7 +37,7 @@
 
 DPD Core/SceneDPD/BeatDPD/LineDPD/DPDSnapshot、既有 AudioPerformanceBrief/Base Audio Projection、CreativeVoiceProfile、Voice 生命周期与绑定均未因本批修改。7.3C Visual Projection、真实视频和 accepted Snapshot 不变。
 
-新增的是一个组合型 final projection wrapper 和局部 helper。已有 Role Dubbing 仅增加 final request 校验、编译 opt-in 与 lineage；未增加 Voice 设计策略。Java production/数据库/CRUD/MCP 新工具均为 0。工作区原有 7.3B–7.3C 未提交修改保留，没有 reset/checkout/commit。
+初次实施新增的是一个组合型 final projection wrapper 和局部 helper。已有 Role Dubbing 仅增加 final request 校验、编译 opt-in 与 lineage；未增加 Voice 设计策略。Java production/数据库/CRUD/MCP 新工具均为 0。初次工作区变更均保留，没有 reset/checkout/commit。本次 Resume 从源码 revision `24816a9` 执行现有 runner，生产源码/架构实现改动为 0，只更新结果、证据和本报告。
 
 ## 5. 开始前 Audio/Video AS-IS Audit
 
@@ -60,11 +60,11 @@ DPD Core/SceneDPD/BeatDPD/LineDPD/DPDSnapshot、既有 AudioPerformanceBrief/Bas
 
 ## 6. Cloud MinIO Migration Preflight
 
-`mcp-host.env` ownership PASS；`drama-plugin.env` PASS；`drama-service.env` FAIL：duplicate keys: `DRAMA_MEDIA_STORAGE_ENDPOINT`。Endpoint assignment count=2，class=[NON_LOCAL, LOCAL]。
+Resume：`mcp-host.env`、`drama-plugin.env`、`drama-service.env` ownership 均 PASS。Endpoint assignment count=1，class=[NON_LOCAL]；旧重复配置问题已解除。
 
-integration 仅检查 assignment keys 与 endpoint class，不导出或使用 storage credential；不 source service env 到 Host。生产 Plugin 不获得 MinIO endpoint/credential。存储配置应由 Drama Service 启动路径加载。本批没有证明云端实际运行态，故 CLOUD_MINIO_STORAGE_RESOLVE 不能 PASS。
+service env 修改时间为 2026-08-31 23:33:39 +08:00；当前 Drama Service PID 18988，启动时间 23:41:06，在配置修改之后。MCP 健康且可访问重启后的 Service。原 Video/Voice 随后经 Service 下载 hash 均 PASS。CLOUD_MINIO_STORAGE_RESOLVE = PASS。
 
-在 gate 修复前，真实生成保持禁止；“已有对象下载成功”不能覆盖配置错误。没有盲目尝试另一个 storage endpoint。
+integration 仅检查 assignment keys 与 endpoint class，不导出或使用 storage credential；不 source service env 到 Host。生产 Plugin 不获得 MinIO endpoint/credential。只有本次 gate 和固定输入对账通过后才开启 `--live`，未尝试其他 endpoint 或绕过 Service。
 
 ## 7. Video Media Resolve / Hash
 
@@ -135,7 +135,7 @@ Fish speed/volume 来自同一个 Base Voice/Audio 映射，B0/D1 都为 speed 0
 | Base projection | `c422b79dbbbab73d05bac8bb23b33a2fbb4c5b0654d1a16b1951da1b5a8ea4de` |
 | Final projection | `66feac9fe97938c6bd0243e7b10699115759e0c6b025d88ab4bc090b5318310f` |
 
-完整 sourceRefs、text hash、离线编译的 Fish payload fingerprints 在 `artifacts/batch7-3d/evidence/run.json`。这里的 providerRequestFingerprint 是编译证据，不表示已经提交。
+完整 sourceRefs、text hash、Fish payload fingerprints 在 `artifacts/batch7-3d/evidence/run.json`。Resume 前后 B0/D1 request、DPD 和 accepted RP 文件 bytes 均未变化。实际返回 Media 的 providerRequestFingerprint 与准备阶段指纹完全一致，现已有真实提交/持久化证据。
 
 ## 15. Video → Audio Invalidation
 
@@ -153,27 +153,47 @@ canonical text 完全保留，rendered text 独立 fingerprint。cue 上限 500 
 
 Fish 官方 S2 文档支持自然语言执行 cue，并非只能固定 emotion tags；adapter 本批仅有选择地编译声音执行描述，未建立 action→emotion 字典。见 [Fish S2 emotion/expression documentation](https://docs.fish.audio/developer-guide/core-features/emotions) 和 [TTS API reference](https://docs.fish.audio/api-reference/endpoint/openapi-v1/text-to-speech)。
 
-TEXT_RENDERABLE 不等于艺术可控保证。本批没有 live 听审证据，不能宣称新 cue 已产生优于 B0 的表演。
+TEXT_RENDERABLE 不等于艺术可控保证。现已生成可播放的 B0/D1，但没有用户艺术听审结论，不能宣称新 cue 已产生优于 B0 的表演。
 
 ## 17. Baseline Audio
 
 搜索现有 Work 的 AUDIO Media，发现同 exactTextHash 旧记录 `media_080486d8b87b45ef8a103f6f4aaa90d5`，但没有相同 DPD/Base Projection lineage，不能作为严格 B0。7.3B 的“你可知道后果？”更不是本条台词。
 
-严格 B0 要求同 text、Voice/master、model/mapping、base projection、compiler/material request。当前严格 B0 = NONE；未生成 baseline。存储 gate 通过后若仍不存在，允许一次生成，不复用不相干样本冒充。
+严格 B0 要求同 text、Voice/master、model/mapping、base projection、compiler/material request。Resume Preflight 确认没有严格 B0 和未决 submission 后，按预算生成一次，未复用不相干样本冒充。
+
+严格 B0：`media_b281cdef05c14801b8cc582e33dd8f72`；时长 3712ms；178232 bytes；SHA-256 `18a8b17508e59a8a47dd6b252c25be0f9de8d1e261b3a5c81db8d3ebf9934fc1`。
 
 ## 18. Video-conditioned Final Audio
 
-D1 = BLOCKED；stable Final Audio Media = NONE。本批未执行 `--live`。预算证据：B0=0、D1=0、safe retries=0、候选=0、VoiceDesign=0、CreateModel=0、Comfy=0、其他 TTS=0。
+D1 = PASS；stable Final Audio Media = `media_9b8b1bb59996489c89af39f451be698f`。时长 3457ms；165972 bytes；SHA-256 `27bb959353d81ff340db6911fe190097192f647be21fc2da1cddf3f9d65c8793`。
+
+实际预算：B0=1、D1=1、safe retries=0；每组只有一个结果，没有第二艺术候选；VoiceDesign=0、CreateModel=0、Comfy=0、其他 TTS=0。
 
 提供 `integration/run_batch7_3d_fish_live.py`：默认 prepare；live 需要显式 plugin config、唯一云端配置及操作方确认 Service 已重启。沿用 MCP 读取与现有配置的 Plugin RoleDubbing 实现；提交前 journal，先按 sourceRef reconcile，模糊结果不自动重提。自动 transient retries 设为 0。
 
-prepare 路径已对真实既有资产运行成功；真实 B0/D1 synthesis/persistence 分支尚未运行，不能以离线测试替代 Live PASS。
+Resume 使用现有 runner 完整运行真实 B0/D1 synthesis → ASR/QC → Service import → get/resolve/download/hash。两个 submission journal 均为 DURABLE；未发生模糊提交或补交。Live 后重新读取 Voice version=2、Work version=4，原绑定与 master/mapping material 未变化。
 
 ## 19. Technical QC
 
 离线 adapter、ASR intelligibility gate、PCM clipping gate、WAV probe、durable Media lineage、下载 hash 验证测试 PASS。
 
-真实 D1 的播放、duration、active speech duration、leading/trailing silence、RMS/peak、clipping、missing/extra/repetition/CER、proper noun QC = **NOT_RUN**，因为没有 D1。终端模板的 Technical QC 只能写未达标，不能写 PASS；不是已经生成音频质量失败。
+真实 TECHNICAL_QC = **PASS**：
+
+| 实测项目 | B0 | D1 |
+| --- | --- | --- |
+| 格式 | WAV PCM s16le，24kHz，mono | 相同 |
+| duration | 3712ms | 3457ms |
+| speechActiveDuration | 3488ms | 3251ms |
+| leading / trailing silence | 128 / 96ms | 130 / 76ms |
+| RMS / peak | -22.569 / -4.465 dBFS | -22.774 / -5.543 dBFS |
+| decodePlayable | true | true |
+| obviousClipping | false | false |
+| ASR CER | 0 | 0 |
+| missing / extra / repetition | 均无 | 均无 |
+| properNounFindings | 空 | 空 |
+| Service download hash | PASS | PASS |
+
+两条归一化 transcript 均为“此事若行我便是反臣不可”；canonical text 未变。使用同厂商 ASR，不声称独立人工发音/艺术验收。D1 实测比 B0 短 255ms，未拉满 11 秒；单次结果时长差异不等于艺术优劣或 conditioning 效果的统计证明。
 
 live runner 复用已有 probe/QC，记录声学统计与 canonical transcript 检查，只有技术通过才把结果用于 review。自然停顿和嗓音审美仍交给用户。
 
@@ -181,7 +201,9 @@ live runner 复用已有 probe/QC，记录声学统计与 canonical transcript �
 
 final 路径使用现有 `media.import_media`，purpose=`ROLE_DUBBING_AUDIO`，包含 Shot ID、sourceRef、正时长；Service 提供 stable ID、contentHash、mimeType、fileSize。
 
-open content 增加 final/base/RP fingerprints、source Video ID/hash、Voice master/material hash、audioInputFingerprint、providerRequestFingerprint；与 B0 sourceRef 不同。离线持久化测试 PASS；本批实际新的 Audio 持久化与下载验证 BLOCKED。
+open content 增加 final/base/RP fingerprints、source Video ID/hash、Voice master/material hash、audioInputFingerprint、providerRequestFingerprint；与 B0 sourceRef 不同。实际 get/resolve/download 核实上述 lineage 与 local WAV bytes 一致，持久化与下载验证 PASS。
+
+B0 的 Shot ownership 为 null，保留既有通用 base 配音语义；D1 属于固定 Shot `shot_83db7eb53b2f49d3a58428d4659e584e`，authority=`VIDEO_CONDITIONED_FINAL_AUDIO`。两条 MIME 均为 `audio/x-wav`，technicalReviewStatus=PASS、reviewStatus=PENDING；未替换旧 baseline 或修改原视频。
 
 ## 21. Baseline vs Video-conditioned
 
@@ -191,12 +213,14 @@ Review 包位于工作区 `artifacts/batch7-3d/review/`：
 - `video-conditioning-summary.json`：safe evidence、fingerprints、UNKNOWN/NATURAL 及实际调用数。
 - `baseline-vs-video-conditioned.md`：结构化差异、既有 Video/RP/DPD 链接、baseline 排除理由与恢复条件。
 
-`B0-baseline.wav` / `D1-video-conditioned.wav` 均未创建。结构化差异存在，不等于“已经听到差异”。对照应看 D1 是否贴实际画面，不混同稳定 Voice 音色是否喜欢。
+`B0-baseline.wav` / `D1-video-conditioned.wav` 均已保存，comparison 文档提供直接听审入口、固定视频链接和实测 QC。结构化差异和测量差异不替代用户艺术判断。对照应看 D1 是否贴实际画面，不混同稳定 Voice 音色是否喜欢。
 
 ## 22. Cloud Storage Evidence
 
 `evidence/storage-configuration.json`：key ownership 和 endpoint 分类，未保存具体地址/secret。
 `evidence/storage-resolve-hash.json`：Service owner、HTTP 200、稳定 ID、hash/size，实际 restoreSameIdentity=false。
+
+`evidence/resume-live-verification.json`：Service 重启与配置时间顺序、冻结文件 hash、实际 B0/D1 metadata/lineage、Voice/Work 版本与绑定、0 重试和 STOP 边界。`B0-qc.json` / `D1-qc.json` 记录各自实测与下载 hash，`B0-submission.json` / `D1-submission.json` 均为 DURABLE。
 
 缺失对象测试：metadata 存在+下载404 → RECONCILIATION_REQUIRED。受信本地 Video bytes 匹配预期 hash → 仅调用既有 `media.restore_media_object` → 重新下载验证，stable ID 不变；错误 hash/非 Service URL 均拒绝。Voice 无恢复 contract 时必须停止，不能重建。真实环境本次未发生对象404、未执行 restore。
 
@@ -214,11 +238,13 @@ Review 包位于工作区 `artifacts/batch7-3d/review/`：
 | Audio Production skill quick_validate | PASS |
 | git diff --check | PASS |
 | Java | 未修改 production，未运行，不需要 |
-| Real Fish Final Audio | BLOCKED，非 Mock PASS |
+| Real Fish B0 / Final D1 | PASS，各一次，0 重试，非 Mock |
 
 负例包括 missing DPD/RP、Video hash/Shot/Scene/speaker/spoken/Voice mismatch、stale RP、非法版本/未知字段/provider 注入、猜测 timing、legacy authority 冲突。另覆盖字段排序、输入不变、Video/observation 变更失效、陈旧 Video/Voice 在 cache 前拒绝、base/D1 相同 compiler/不同执行 cue。
 
 执行结果见 `artifacts/batch7-3d/evidence/tests.json`。部分初次运行发现测试断言误匹配 hash 子串，以及 integration 的当前 MCP stream tuple/字段名/fixture 文件路径兼容问题；已修正，最终 prepare/full tests 重跑通过，没有付费重试。
+
+本次遵照用户“只跑剩余 Storage Preflight + B0/D1 Live”，复用上述已通过的离线测试记录，没有重复架构实现或重跑全量 pytest/mypy；补充的是实际 Live/QC、文件 hash/lineage 校验及报告一致性检查。生产源码保持不变。
 
 ## 24. Complexity Audit
 
@@ -231,15 +257,15 @@ Review 包位于工作区 `artifacts/batch7-3d/review/`：
 ## 25. Severity
 
 - P0 检查：未发现本批把 DPD 意图伪造成观察、Video 更新仍命中旧 Audio、core 被 provider 信息污染。对应回归通过。
-- P1 未解决：云存储当前运行态未证实，service env 重复 endpoint；阻断付费 TTS 和 Live PASS，不能归为 Fish 故障。
-- P1 边界检查：无可信 mouth timing，因此未猜测；真实 Audio QC/持久化尚无证据，保留 BLOCKED/NOT_RUN。
-- P2：既有 Base 高控制映射的句尾仍较粗（warning/compliance），本批按冻结要求未改 Base；D1 以 DPD reject 与实际表演组织句尾。cue 艺术效果待听审。
+- 原 P1 已解除：service env 现为唯一非本地 endpoint，Service 在更新配置后重启，云存储 preflight 与真实 Audio 持久化、下载 hash 通过。
+- P1 边界检查：无可信 mouth timing，因此仍未猜测；真实 Audio QC/持久化已有证据。没有观察到本次 Live 新增 P1 技术失败。
+- P2：既有 Base 高控制映射的句尾仍较粗（warning/compliance），本批按冻结要求未改 Base；D1 以 DPD reject 与实际表演组织句尾。cue 艺术效果待用户听审。
 
 无未修复的已知本批生产代码 FAIL；这不等于已经通过真实艺术验证。
 
 ## 26. User Review Boundary
 
-USER_AUDIO_VISUAL_PERFORMANCE_REVIEW = NOT_READY。B0/D1 尚不存在，不能要求用户做不存在的 A/B 选择。未来音频技术完成后才为 PENDING；不能自行认定 D1 更好或完成影视艺术验收。
+USER_AUDIO_VISUAL_PERFORMANCE_REVIEW = PENDING。B0/D1 已可播放、下载 hash 与技术 QC PASS；请用户判断 D1 是否更贴实际画面。不能自行认定 D1 更好或完成影视艺术验收。
 
 ### 必答 Q1–Q15
 
@@ -257,15 +283,15 @@ USER_AUDIO_VISUAL_PERFORMANCE_REVIEW = NOT_READY。B0/D1 尚不存在，不能�
 | Q10 Plugin 直接访问云 MinIO？ | NO，只通过 Drama Service。 |
 | Q11 云存储谁负责？ | Drama Service storage layer 与 service-owned 配置。 |
 | Q12 迁移丢对象怎么办？ | 明确 reconciliation；受信同 hash Video 通过现有 Service restore 同 identity；Voice 无对应 API 时停止。 |
-| Q13 Conditioning 有结构化差异吗？ | YES，rhythm/intensity/pause/ending/control 与 final fingerprint 有区别；不声称已听到。 |
-| Q14 真实 Final Audio 成功了吗？ | NO，存储 gate 阻断，TTS=0。 |
-| Q15 用户认为 D1 更贴画面吗？ | PENDING USER REVIEW；当前包 NOT_READY。 |
+| Q13 Conditioning 有结构化差异吗？ | YES，rhythm/intensity/pause/ending/control 与 final fingerprint 有区别；实际音频已可听，不把测量差异当艺术结论。 |
+| Q14 真实 Final Audio 成功了吗？ | YES，D1 已持久化且下载 hash/QC PASS；B0=1、D1=1、0 重试。 |
+| Q15 用户认为 D1 更贴画面吗？ | PENDING USER REVIEW。 |
 
 ## 27. 未解决问题
 
-需要操作方核对 service-owned 配置，保留唯一正确云端 endpoint 并重启 Service；本批不替用户选择/删除外部配置条目。再次验证两个稳定对象的 resolve/download/hash，不依靠旧进程下载成功作为迁云证明。
+原 Storage blocker 已解除，本次没有待重试或状态不明的生成任务。B0/D1 两个 journal 都指向已验证的 durable Media；不得为追求艺术效果自动再生成。
 
-然后在显式 live 授权下运行 bounded B0/D1；当前用户的本批授权仍不得扩展为新 Voice、模型对比、艺术重抽、Video regeneration。任何模糊提交先读 journal 和 sourceRef reconcile。配置修复前不能把当前 PARTIAL 改写成 PASS。
+剩余只有用户艺术听审，以及已知 mouthActivity UNKNOWN 的后续阶段边界。当前授权不扩展为新 Voice、模型对比、艺术重抽、Video regeneration 或 7.3E。
 
 ## 28. 7.3E 前置条件
 
@@ -277,6 +303,6 @@ USER_AUDIO_VISUAL_PERFORMANCE_REVIEW = NOT_READY。B0/D1 尚不存在，不能�
 
 VIDEO_CONDITIONED_AUDIO_PROJECTION、DPD_AUTHORITY、REALIZED_VIDEO_AUTHORITY、VOICE_IDENTITY_SEPARATION、SPOKEN_CONTENT_AUTHORITY、MOUTH_UNKNOWN_SAFETY、NO_FORCED_VIDEO_DURATION、FINAL_AUDIO_FINGERPRINT、VIDEO_AUDIO_INVALIDATION、FISH_ADAPTER_INTEGRATION（离线）、DPD/AUDIO/VOICE/RP REGRESSION、COMPLEXITY_AUDIT = PASS。
 
-Video Resolve/Hash、Voice Resolve/Hash = PASS（当前 Service 路径）。Cloud MinIO Migration = RECONCILIATION_REQUIRED。REAL_VIDEO_CONDITIONED_FISH_AUDIO、FINAL_ROLE_DUBBING_MEDIA、FINAL_AUDIO_DOWNLOAD_HASH = BLOCKED。Live TECHNICAL_QC = NOT_RUN。
+Video Resolve/Hash、Voice Resolve/Hash、Cloud MinIO Migration、REAL_VIDEO_CONDITIONED_FISH_AUDIO、FINAL_ROLE_DUBBING_MEDIA、FINAL_AUDIO_DOWNLOAD_HASH、Live TECHNICAL_QC = PASS。所有状态由 Resume 的实际 Service/Fish/Media/QC 证据支持，不依赖 mock。
 
-**BATCH_7_3D = PARTIAL；STOP BEFORE Batch 7.3E AV Sync & Acoustic Scene。**
+**BATCH_7_3D_ENGINEERING = PASS；BATCH_7_3D = PASS；USER_AUDIO_VISUAL_PERFORMANCE_REVIEW = PENDING。STOP BEFORE Batch 7.3E AV Sync & Acoustic Scene。**

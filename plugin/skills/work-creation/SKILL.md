@@ -14,6 +14,8 @@ Research → Historical Scope → Historical Spine → Historical Actor Hierarch
 
 Later steps may compress and present earlier facts but may not rewrite them. Viewpoint can move downward; historical causality cannot be reassigned downward.
 
+For complete screenplay incubation, this literary foundation is the historical/story stage of [Cinematic Screenplay Incubation](../cinematic-screenplay-incubation/SKILL.md). Reuse its compact Dramatic Bible when supplied; preserve this standalone entrypoint and its formal write gates. A local dialogue problem never requires regenerating the whole Work.
+
 ## Creative Lifecycle
 
 ### 1. Understand Goal

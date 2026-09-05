@@ -7,6 +7,8 @@ description: Develop or revise one historical short-drama Episode from a Script.
 
 Turn one approved part of a Script into a necessary dramatic unit that covers its assigned historical beats, declares Narrative Input State, Narrative Output State, and Required Transition, and remains continuous with the whole-series progression. Do not mechanically slice the Script or write detailed Scenes.
 
+When a [shared Dramatic Bible](../cinematic-screenplay-incubation/references/bible.md) is supplied, inherit character invariants, outstanding promises, knowledge and emotional/tension progression across episodes. Update only the affected episode and causal dependents; retain this standalone lifecycle and its parent Script authority.
+
 ## Creative Lifecycle
 
 ### 1. Understand Goal

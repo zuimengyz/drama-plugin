@@ -1,0 +1,4 @@
+interface:
+  display_name: "影视编剧孵化"
+  short_description: "Incubate historical screenplays with targeted revision"
+  default_prompt: "Use $cinematic-screenplay-incubation to develop this historical material into a readable screenplay, shared Dramatic Bible and evidence-based targeted revision."

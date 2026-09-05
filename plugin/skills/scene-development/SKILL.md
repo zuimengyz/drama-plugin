@@ -7,6 +7,8 @@ description: Develop or revise a historical-drama Scene from an Episode. Use whe
 
 Turn one approved part of an Episode into a necessary, playable, state-changing dramatic event that covers assigned historical beats and realizes an explicit Narrative Input State → Required Transition → Narrative Output State. Do not design Shots.
 
+When a [shared Dramatic Bible](../cinematic-screenplay-incubation/references/bible.md) is supplied, check knowledge at each decision, character invariants, power changes and entry/exit continuity. Review dialogue voice and subtext separately from scene causality; a wording revision preserves unrelated scene bodies and stable spoken-item IDs. Control metadata stays outside the readable script body; canonical SpokenContent ownership below remains unchanged.
+
 ## Creative Lifecycle
 
 ### 1. Understand Goal

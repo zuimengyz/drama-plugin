@@ -41,6 +41,9 @@ Historical Research Context
 
 ## Skill Core
 
+完整剧本创作优先使用 `cinematic-screenplay-incubation`（影视编剧孵化）：一个 Skill 内的六个阶段，共享本地 Dramatic Bible，并最多进行两轮精准修改。`work-creation` / `script-adaptation` 及 Episode / Scene 入口继续承担原有范围与正式写入规则。新的孵化 Skill 不新增 Domain、Tool 或生产链，独立作品无需先创建数据库对象。
+
+
 ```text
 skills/
 ├── historical-research

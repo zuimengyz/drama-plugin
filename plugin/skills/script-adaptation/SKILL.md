@@ -7,6 +7,8 @@ description: Adapt a historical-drama Work into a screen Script. Use when design
 
 Convert an approved Work into a screen-adaptable formal Script state that can govern later Episode development. Inherit its Historical Scope, Spine, actor attribution, Narrative Authority, protagonist alignment, architecture mappings, and evidence boundary while designing playable progression and coverage; do not redesign the Work or prematurely write Scene/Shot detail.
 
+For complete screenplay incubation, this adaptation architecture is a stage of [Cinematic Screenplay Incubation](../cinematic-screenplay-incubation/SKILL.md). Reuse supplied character, information and continuity constraints from its Dramatic Bible. This standalone entrypoint retains its approved-Work boundary and formal write gates.
+
 ## Creative Lifecycle
 
 ### 1. Understand Goal

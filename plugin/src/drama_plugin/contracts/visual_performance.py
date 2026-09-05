@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Any
 
-from pydantic import Field, StringConstraints, model_validator
+from pydantic import Field, StringConstraints, model_validator, model_serializer, SerializerFunctionWrapHandler
 
 from drama_plugin.contracts.base import ContractModel
 
@@ -13,6 +13,26 @@ NonNegativeMs = Annotated[int, Field(ge=0)]
 PositiveMs = Annotated[int, Field(gt=0)]
 TimeWindowMs = tuple[NonNegativeMs, NonNegativeMs]
 ObservedLevel = Literal["LOW", "MEDIUM", "HIGH", "UNKNOWN"]
+
+
+class DialoguePerformancePhase(ContractModel):
+    """Nested visual-brief value, not a timeline or independently stored contract."""
+
+    order: Annotated[int, Field(strict=True, gt=0)]
+    active_speaker: NonBlankText | None
+    listener: NonBlankText
+    dramatic_action: NonBlankText
+    visible_performance_focus: NonBlankText
+    transition_purpose: NonBlankText
+    relative_timing_range: tuple[Annotated[float, Field(ge=0, le=1)], Annotated[float, Field(ge=0, le=1)]]
+
+    @model_validator(mode="after")
+    def validate_phase(self) -> "DialoguePerformancePhase":
+        if self.active_speaker == self.listener:
+            raise ValueError("ACTIVE_SPEAKER_CANNOT_BE_LISTENER")
+        if self.relative_timing_range[0] >= self.relative_timing_range[1]:
+            raise ValueError("INVALID_RELATIVE_PHASE_RANGE")
+        return self
 
 
 class VisualPerformanceBrief(ContractModel):
@@ -37,7 +57,35 @@ class VisualPerformanceBrief(ContractModel):
     pre_speech_behavior: NonBlankText
     visible_control: NonBlankText
     performance_boundaries: tuple[NonBlankText, ...] = ()
+    execution_timing_fingerprint: Fingerprint | None = None
+    dialogue_timing_plan_fingerprint: Fingerprint | None = None
+    dialogue_source_fingerprint: Fingerprint | None = None
+    dialogue_performance_phases: tuple[DialoguePerformancePhase, ...] = ()
     fingerprint: Fingerprint
+
+    @model_serializer(mode="wrap")
+    def serialize_material(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        result: dict[str, Any] = handler(self)
+        if self.execution_timing_fingerprint is None:
+            result.pop("executionTimingFingerprint", None)
+            result.pop("execution_timing_fingerprint", None)
+        return result
+
+    @model_validator(mode="after")
+    def validate_dialogue_phases(self) -> "VisualPerformanceBrief":
+        phases = self.dialogue_performance_phases
+        if bool(phases) != bool(self.dialogue_timing_plan_fingerprint and self.dialogue_source_fingerprint):
+            raise ValueError("DIALOGUE_PHASES_REQUIRE_SOURCE_LINEAGE")
+        if not phases and (self.dialogue_timing_plan_fingerprint or self.dialogue_source_fingerprint):
+            raise ValueError("DIALOGUE_PHASES_REQUIRED")
+        if phases:
+            if [p.order for p in phases] != list(range(1, len(phases) + 1)):
+                raise ValueError("DIALOGUE_PHASE_ORDER_REQUIRED")
+            if phases[0].relative_timing_range[0] != 0 or phases[-1].relative_timing_range[1] != 1:
+                raise ValueError("DIALOGUE_PHASE_COVERAGE_REQUIRED")
+            if any(a.relative_timing_range[1] != b.relative_timing_range[0] for a, b in zip(phases, phases[1:])):
+                raise ValueError("DIALOGUE_PHASE_GAP_OR_OVERLAP")
+        return self
 
 
 class RealizedPerformanceSnapshot(ContractModel):
@@ -46,6 +94,7 @@ class RealizedPerformanceSnapshot(ContractModel):
     schema_version: Literal["realized-performance-snapshot-v1"] = (
         "realized-performance-snapshot-v1"
     )
+    observed_speaker_key: NonBlankText | None = None
     video_media_id: NonBlankText
     video_content_hash: Fingerprint
     shot_id: NonBlankText

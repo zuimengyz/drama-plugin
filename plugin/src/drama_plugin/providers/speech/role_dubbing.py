@@ -453,6 +453,9 @@ class FishRoleDubbingProvider:
         existing = await self.media.list_media(media_type=MediaType.AUDIO, work_id=speech.work_id,
                                                purpose="ROLE_DUBBING_AUDIO", source_ref=source_ref)
         if existing:
+            rejected = speech.non_material_metadata.get("rejectedAudioHashes", [])
+            if any(m.content_hash in rejected or m.content.get("reviewStatus") == "FAIL" for m in existing):
+                raise RoleDubbingError("AUDIO_ARTISTIC_REVIEW_FAILED", "Cached Audio was artistically rejected; change the responsible projection before generation")
             qc = IntelligibilityQc.model_validate(existing[0].content["intelligibilityQc"])
             return RoleDubbingResult(audio_media_id=existing[0].id, voice_id=voice.id,
                                      duration_ms=existing[0].duration_ms or 1,
@@ -469,7 +472,7 @@ class FishRoleDubbingProvider:
                                           mode="directed", speed=speed, volume=volume,
                                           performance_brief=(speech.audio_performance_brief
                                               if speech.material_render_parameters.get("performanceRendering")
-                                              == "BRIEF_CUES_V1" else None))
+                                              in {"BRIEF_CUES_V1", "PHRASE_CUES_V1"} else None))
         audio, _ = await self.fish.synthesize(payload)
         attempt = self._attempt_directory(speech.spoken_content_id)
         output = attempt / "role-dubbing.wav"

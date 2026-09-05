@@ -135,9 +135,11 @@ def source_ref_for_review(
     return audio_attempt_source_ref(fingerprint, attempt_id)
 
 
-def is_audio_fresh(media_content: Mapping[str, Any], request: SpeechGenerationRequest) -> bool:
+def is_audio_fresh(media_content: Mapping[str, Any], request: SpeechGenerationRequest, *,
+                   review_decisions: Mapping[str, str] | None = None, content_hash: str | None = None) -> bool:
     return (
-        media_content.get("reviewStatus") == AudioReviewStatus.PASS.value
+        (not review_decisions or (content_hash is not None and review_decisions.get(content_hash) != "FAIL"))
+        and media_content.get("reviewStatus") == AudioReviewStatus.PASS.value
         and media_content.get("audioInputFingerprint")
         == audio_input_fingerprint(request)
     )

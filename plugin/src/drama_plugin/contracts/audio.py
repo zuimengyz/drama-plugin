@@ -240,7 +240,7 @@ class SpeechGenerationRequest(ContractModel):
             if (timing.policy != "NATURAL" or timing.target_duration_ms is not None
                     or timing.allow_rate_adjustment or timing.constraints):
                 raise ValueError("guessed mouth timing and forced video duration are prohibited")
-            if self.material_render_parameters != {"performanceRendering": "BRIEF_CUES_V1"}:
+            if self.material_render_parameters not in ({"performanceRendering": "BRIEF_CUES_V1"}, {"performanceRendering": "PHRASE_CUES_V1"}):
                 raise ValueError("video conditioning requires Brief-derived execution only")
         if self.voice_profile.speaker_key != self.speaker_key:
             raise ValueError("voice profile speakerKey must match request speakerKey")
@@ -260,6 +260,8 @@ class SpeechGenerationRequest(ContractModel):
                 raise ValueError("Audio Projection Voice Profile must match speech request")
             if brief.text_fingerprint != hashlib.sha256(self.exact_text.encode("utf-8")).hexdigest():
                 raise ValueError("Audio Projection text fingerprint must match exact text")
+            if any(span.end_char > len(self.exact_text) for span in brief.phrase_delivery_spans):
+                raise ValueError("phrase span exceeds canonical text")
             expected_voice_fingerprint = sha256_canonical(
                 {
                     "schemaVersion": "voice-creative-profile-v1",

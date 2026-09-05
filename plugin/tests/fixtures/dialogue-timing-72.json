@@ -1,0 +1,381 @@
+{
+  "provenance": {
+    "domain": "Read-only current Drama Service get_scene/get_shot/get_work on 2026-09-03; matched historical snapshot",
+    "sceneAndShotUnmodified": true,
+    "speakerBindingVerifiedAgainst": "Work.content.historicalActorHierarchy[].speakerKey",
+    "existingDpdB": "artifacts/batch7-3d/evidence/dpd-snapshot.json; fingerprint preserved",
+    "transientDpdA": "New Agent planning direction composed from current canonical proposal, Shot transition, and existing Scene DPD; not an existing persisted snapshot; no domain write",
+    "intentAuthority": "Agent DPD semantic interpretation, pending artistic review; numeric policy is deterministic"
+  },
+  "scene": {
+    "id": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+    "episodeId": "episode_c33021fe53ba4af08cd8b98113184dd2",
+    "order": 1,
+    "title": "关门未开",
+    "location": "潼关关楼与军府",
+    "content": {
+      "turn": "哥舒翰拒绝劫相，却以调取灞上军回应威胁，政治互疑已进入军令。",
+      "review": {
+        "result": "PASS",
+        "EPISODE_FIDELITY": "PASS",
+        "FACT_ATTRIBUTION": "PASS",
+        "BEFORE_AFTER_GATE": "PASS",
+        "DELETE_SCENE_TEST": "PASS",
+        "SCENE_STATE_CONTINUITY": "PASS",
+        "HISTORICAL_BEAT_COVERAGE": "PASS",
+        "CAUSAL_NARRATIVE_CONTINUITY": "PASS"
+      },
+      "stakes": "任何内斗都会使守关军从对敌转为自相猜防。",
+      "purpose": "哥舒翰要在政治威胁中保住据险待变的军事方案。",
+      "necessity": "删除本 Scene 将移除分配的 Historical Beat 或造成相邻状态无法解释。",
+      "objective": "哥舒翰要在政治威胁中保住据险待变的军事方案。",
+      "characters": [
+        "哥舒翰",
+        "王思礼"
+      ],
+      "opposition": "王思礼的激进自保建议与灞上另军所代表的宰相疑惧。",
+      "spokenContent": [
+        {
+          "id": "spoken-s1-wangsili-proposal",
+          "kind": "DIALOGUE",
+          "text": "请给我三十骑，取杨国忠首级，为大帅除患。",
+          "intent": "试探并说服主帅用激进手段消除政治威胁。",
+          "mustKeep": true,
+          "provenance": {
+            "relation": "ADAPTED",
+            "sourceRefs": [
+              "P2",
+              "《资治通鉴》卷218，第122段"
+            ],
+            "adaptationNote": "将史载王思礼三十骑劫取杨国忠的建议压缩为可表演请求。"
+          },
+          "speakerKey": "speaker:wangsili",
+          "performanceIntent": "压低声音，急而不露张扬，试探主帅底线。",
+          "estimatedDurationMs": 5000
+        },
+        {
+          "id": "spoken-s1-geshuhan-refusal",
+          "kind": "DIALOGUE",
+          "text": "此事若行，我便是反臣。不可。",
+          "intent": "拒绝把政治威胁转化为叛逆行动。",
+          "mustKeep": true,
+          "provenance": {
+            "relation": "ADAPTED",
+            "sourceRefs": [
+              "P2",
+              "《资治通鉴》卷218，第122段"
+            ],
+            "adaptationNote": "将史载哥舒翰以自成反者为由拒绝的语义压缩为现代观众可懂对白。"
+          },
+          "speakerKey": "speaker:geshuhan",
+          "performanceIntent": "短暂停顿后低声断然拒绝，不作辩解。",
+          "estimatedDurationMs": 3200
+        }
+      ],
+      "tacticsAndBeats": [
+        "晨雾中潼关据山临河，关外叛军营垒停滞；守军旗列稳定，无交战假高潮。",
+        "哥舒翰在关图前确认关外与河北军报，把代表守关的木签按回原位。",
+        "王思礼压低声音提出以三十骑劫取杨国忠；哥舒翰隔着军案拒绝，指出如此自己便成反者。",
+        "灞上另军名籍送到；哥舒翰停顿后盖印请其隶关，军府众将由对外警戒转为相互观望。"
+      ],
+      "conflictInAction": "哥舒翰拒绝劫相，却以调取灞上军回应威胁，政治互疑已进入军令。",
+      "requiredTransition": "哥舒翰拒绝劫相，却以调取灞上军回应威胁，政治互疑已进入军令。",
+      "narrativeInputState": "叛军数月不能西进，潼关守势与河北牵制正在生效。",
+      "narrativeOutputState": "关门仍闭，但主帅与朝廷互信破裂，下一份敌情将被政治恐惧放大。",
+      "requiredSpineBeatIds": [
+        "P1",
+        "P2"
+      ],
+      "dialogueSubtextIntent": "对话只作为争取、拒绝、催迫或服从的行动；不让人物互相讲授已知历史。"
+    }
+  },
+  "shot": {
+    "id": "shot_83db7eb53b2f49d3a58428d4659e584e",
+    "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+    "shotNo": "1-03",
+    "title": "三十骑之议",
+    "shotType": "TWO_SHOT",
+    "content": {
+      "angle": "由空间与权力关系决定，保持地理可读；不以随机角度制造气势。",
+      "review": "PASS",
+      "framing": "TWO_SHOT",
+      "continuity": {
+        "propState": "TRACKED",
+        "sceneState": "PASS",
+        "shotAction": "PASS",
+        "costumePeriod": "LOCKED",
+        "causalNarrative": "PASS",
+        "characterVisual": "LOCKED",
+        "screenDirection": "eastward advance / westward retreat tracked explicitly"
+      },
+      "composition": "主体、关门／军图／山河／火烟等因果证据同框可读，不以装饰遮蔽动作。",
+      "cameraBehavior": "仅在跟随动作、揭示地理或完成状态转折时移动；其余保持克制。",
+      "firstAppearance": {
+        "reason": "secondary actor; identification is helpful but not necessary to follow later causality",
+        "required": false,
+        "character": "王思礼"
+      },
+      "visualExitState": "激进自保路径被主帅亲手关闭。",
+      "narrativePurpose": "呈现P2但不把守险奏议转授王思礼",
+      "visualEntryState": "主帅明确继续据险待变。",
+      "plannedDurationMs": 10500,
+      "requiredTransition": "王思礼压低声音提出以三十骑劫取杨国忠；哥舒翰隔着军案拒绝，指出如此自己便成反者。",
+      "narrativeInputState": "主帅明确继续据险待变。",
+      "narrativeOutputState": "激进自保路径被主帅亲手关闭。",
+      "requiredSpineBeatIds": [
+        "P1",
+        "P2"
+      ],
+      "generationFeasibility": "PASS_AFTER_COMPLEX_ACTION_SPLIT",
+      "spokenContentBindings": [
+        {
+          "coverageIntent": "ON_SCREEN_SPEAKER",
+          "spokenContentId": "spoken-s1-wangsili-proposal"
+        },
+        {
+          "coverageIntent": "ON_SCREEN_SPEAKER",
+          "spokenContentId": "spoken-s1-geshuhan-refusal"
+        }
+      ],
+      "subjectActionBlocking": "王思礼压低声音提出以三十骑劫取杨国忠；哥舒翰隔着军案拒绝，指出如此自己便成反者。",
+      "rhythmDurationEstimate": "5–9 seconds"
+    }
+  },
+  "dpdBySpokenContent": {
+    "spoken-s1-wangsili-proposal": {
+      "schemaVersion": "dpd-snapshot-v1",
+      "scene": {
+        "schemaVersion": "dpd-v1",
+        "scope": "SCENE",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "sourceFingerprint": "f1a27d9fdf330503ce65ad18639b1438a931c3662b0e755796acd34d961c7e31",
+        "dramaticPurpose": "reject a politically dangerous proposal while preserving command legitimacy",
+        "conflictCondition": "a subordinate proposes eliminating the political threat through an act that would make the commander a rebel",
+        "powerStructure": "the commander holds formal authority while the subordinate tests the boundary of permissible action",
+        "emotionalClimate": "compressed political danger",
+        "urgencyContext": "the proposal demands an immediate refusal before it becomes an actionable conspiracy",
+        "informationAsymmetry": "both recognize the threat, but only the commander bears the legitimacy consequence",
+        "socialConstraints": [
+          "private military hierarchy",
+          "refusal must close the proposal without public panic"
+        ],
+        "direction": {
+          "objective": null,
+          "interactionTarget": null,
+          "tactic": null,
+          "authorityPosition": null,
+          "relationshipStance": null,
+          "internalActivation": null,
+          "externalControl": null,
+          "publicPrivateContext": "private command consultation",
+          "subtext": null,
+          "performanceBoundaries": [
+            "do not collapse authority into shouting",
+            "do not turn refusal into uncontrolled anger"
+          ]
+        }
+      },
+      "beat": {
+        "schemaVersion": "dpd-v1",
+        "scope": "BEAT",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "beatId": "beat-s1-wangsili-proposal",
+        "actor": "speaker:wangsili",
+        "obstacle": "only the commander can authorize action against the political threat",
+        "transitionTrigger": "the prior defensive decision leaves the political threat unresolved",
+        "direction": {
+          "objective": "obtain approval for a direct action against the political threat",
+          "interactionTarget": "speaker:geshuhan",
+          "tactic": "press a concrete proposal while leaving authorization to the commander",
+          "authorityPosition": "subordinate requests authorization",
+          "relationshipStance": "urgent counsel that tests the commanders legitimacy boundary",
+          "internalActivation": "HIGH",
+          "externalControl": "HIGH",
+          "publicPrivateContext": null,
+          "subtext": null,
+          "performanceBoundaries": null
+        }
+      },
+      "line": {
+        "schemaVersion": "dpd-v1",
+        "scope": "LINE",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "beatId": "beat-s1-wangsili-proposal",
+        "spokenContentId": "spoken-s1-wangsili-proposal",
+        "speaker": "speaker:wangsili",
+        "dramaticAction": "propose",
+        "observableIntent": "present the proposal to the commander without taking his decision",
+        "continuity": "follows the defensive decision and opens a private proposal across the table",
+        "changeFromPrevious": "moves from the military defensive position to a proposed political intervention",
+        "direction": null
+      },
+      "effective": {
+        "schemaVersion": "dpd-effective-v1",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "beatId": "beat-s1-wangsili-proposal",
+        "spokenContentId": "spoken-s1-wangsili-proposal",
+        "actor": "speaker:wangsili",
+        "speaker": "speaker:wangsili",
+        "dramaticPurpose": "reject a politically dangerous proposal while preserving command legitimacy",
+        "conflictCondition": "a subordinate proposes eliminating the political threat through an act that would make the commander a rebel",
+        "powerStructure": "the commander holds formal authority while the subordinate tests the boundary of permissible action",
+        "emotionalClimate": "compressed political danger",
+        "urgencyContext": "the proposal demands an immediate refusal before it becomes an actionable conspiracy",
+        "informationAsymmetry": "both recognize the threat, but only the commander bears the legitimacy consequence",
+        "socialConstraints": [
+          "private military hierarchy",
+          "refusal must close the proposal without public panic"
+        ],
+        "objective": "obtain approval for a direct action against the political threat",
+        "interactionTarget": "speaker:geshuhan",
+        "tactic": "press a concrete proposal while leaving authorization to the commander",
+        "authorityPosition": "subordinate requests authorization",
+        "relationshipStance": "urgent counsel that tests the commanders legitimacy boundary",
+        "internalActivation": "HIGH",
+        "externalControl": "HIGH",
+        "publicPrivateContext": "private command consultation",
+        "subtext": null,
+        "performanceBoundaries": [
+          "do not collapse authority into shouting",
+          "do not turn refusal into uncontrolled anger"
+        ],
+        "obstacle": "only the commander can authorize action against the political threat",
+        "transitionTrigger": "the prior defensive decision leaves the political threat unresolved",
+        "dramaticAction": "propose",
+        "observableIntent": "present the proposal to the commander without taking his decision",
+        "continuity": "follows the defensive decision and opens a private proposal across the table",
+        "changeFromPrevious": "moves from the military defensive position to a proposed political intervention"
+      },
+      "fingerprint": "3e3833ec80a1acfc198bbe350c437cc0762f7898a8f3d110185e6bf140bc5fbb"
+    },
+    "spoken-s1-geshuhan-refusal": {
+      "schemaVersion": "dpd-snapshot-v1",
+      "scene": {
+        "schemaVersion": "dpd-v1",
+        "scope": "SCENE",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "sourceFingerprint": "f1a27d9fdf330503ce65ad18639b1438a931c3662b0e755796acd34d961c7e31",
+        "dramaticPurpose": "reject a politically dangerous proposal while preserving command legitimacy",
+        "conflictCondition": "a subordinate proposes eliminating the political threat through an act that would make the commander a rebel",
+        "powerStructure": "the commander holds formal authority while the subordinate tests the boundary of permissible action",
+        "emotionalClimate": "compressed political danger",
+        "urgencyContext": "the proposal demands an immediate refusal before it becomes an actionable conspiracy",
+        "informationAsymmetry": "both recognize the threat, but only the commander bears the legitimacy consequence",
+        "socialConstraints": [
+          "private military hierarchy",
+          "refusal must close the proposal without public panic"
+        ],
+        "direction": {
+          "objective": null,
+          "interactionTarget": null,
+          "tactic": null,
+          "authorityPosition": null,
+          "relationshipStance": null,
+          "internalActivation": null,
+          "externalControl": null,
+          "publicPrivateContext": "private command consultation",
+          "subtext": null,
+          "performanceBoundaries": [
+            "do not collapse authority into shouting",
+            "do not turn refusal into uncontrolled anger"
+          ]
+        }
+      },
+      "beat": {
+        "schemaVersion": "dpd-v1",
+        "scope": "BEAT",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "beatId": "beat-s1-geshuhan-refusal",
+        "actor": "speaker:geshuhan",
+        "obstacle": "speaker:wangsili presses an expedient solution that crosses the boundary into rebellion",
+        "transitionTrigger": "the proposal is fully stated across the campaign table",
+        "direction": {
+          "objective": "stop the proposal and make the legitimacy boundary unmistakable",
+          "interactionTarget": "speaker:wangsili",
+          "tactic": "controlled refusal",
+          "authorityPosition": "dominant formal commander",
+          "relationshipStance": "commanding but personally exposed",
+          "internalActivation": "HIGH",
+          "externalControl": "HIGH",
+          "publicPrivateContext": null,
+          "subtext": null,
+          "performanceBoundaries": null
+        }
+      },
+      "line": {
+        "schemaVersion": "dpd-v1",
+        "scope": "LINE",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "beatId": "beat-s1-geshuhan-refusal",
+        "spokenContentId": "spoken-s1-geshuhan-refusal",
+        "speaker": "speaker:geshuhan",
+        "dramaticAction": "reject",
+        "observableIntent": "hold the subordinate in direct attention, then close the proposal without escalation",
+        "continuity": "follows the subordinate proposal within the same two-shot",
+        "changeFromPrevious": "converts listening pressure into a definitive refusal",
+        "direction": {
+          "objective": null,
+          "interactionTarget": null,
+          "tactic": null,
+          "authorityPosition": null,
+          "relationshipStance": null,
+          "internalActivation": null,
+          "externalControl": null,
+          "publicPrivateContext": null,
+          "subtext": "accepting the plan would destroy the commanders legitimacy",
+          "performanceBoundaries": null
+        }
+      },
+      "effective": {
+        "schemaVersion": "dpd-effective-v1",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "beatId": "beat-s1-geshuhan-refusal",
+        "spokenContentId": "spoken-s1-geshuhan-refusal",
+        "actor": "speaker:geshuhan",
+        "speaker": "speaker:geshuhan",
+        "dramaticPurpose": "reject a politically dangerous proposal while preserving command legitimacy",
+        "conflictCondition": "a subordinate proposes eliminating the political threat through an act that would make the commander a rebel",
+        "powerStructure": "the commander holds formal authority while the subordinate tests the boundary of permissible action",
+        "emotionalClimate": "compressed political danger",
+        "urgencyContext": "the proposal demands an immediate refusal before it becomes an actionable conspiracy",
+        "informationAsymmetry": "both recognize the threat, but only the commander bears the legitimacy consequence",
+        "socialConstraints": [
+          "private military hierarchy",
+          "refusal must close the proposal without public panic"
+        ],
+        "objective": "stop the proposal and make the legitimacy boundary unmistakable",
+        "interactionTarget": "speaker:wangsili",
+        "tactic": "controlled refusal",
+        "authorityPosition": "dominant formal commander",
+        "relationshipStance": "commanding but personally exposed",
+        "internalActivation": "HIGH",
+        "externalControl": "HIGH",
+        "publicPrivateContext": "private command consultation",
+        "subtext": "accepting the plan would destroy the commanders legitimacy",
+        "performanceBoundaries": [
+          "do not collapse authority into shouting",
+          "do not turn refusal into uncontrolled anger"
+        ],
+        "obstacle": "speaker:wangsili presses an expedient solution that crosses the boundary into rebellion",
+        "transitionTrigger": "the proposal is fully stated across the campaign table",
+        "dramaticAction": "reject",
+        "observableIntent": "hold the subordinate in direct attention, then close the proposal without escalation",
+        "continuity": "follows the subordinate proposal within the same two-shot",
+        "changeFromPrevious": "converts listening pressure into a definitive refusal"
+      },
+      "fingerprint": "2d826a70c27da23aded5eda30082931b5c122115dd932ce104b3fb590ec90e1b"
+    }
+  },
+  "intents": {
+    "spoken-s1-wangsili-proposal": {
+      "contextFingerprint": "52d00ccaf6ebfea446bb35ee392c56f0bfee6ad3f10399c5414f1d356bb39056",
+      "transition": "OPENING",
+      "rationale": "先建立提出请求的关系。propose / obtain approval / concrete proposal 对应部将向掌握批准权的主帅进言；HIGH activation 与 HIGH control 共同约束急迫而克制的行动。continuity 承接守势决定，change 转入政治建议，没有即刻开口要求。"
+    },
+    "spoken-s1-geshuhan-refusal": {
+      "contextFingerprint": "52d00ccaf6ebfea446bb35ee392c56f0bfee6ad3f10399c5414f1d356bb39056",
+      "transition": "DELIBERATE_REACTION",
+      "rationale": "上一 turn 请求批准并将决定留给主帅；当前 reject / stop proposal / controlled refusal 要把听取压力转为明确拒绝。dominant commander 与 personally exposed 的关系、HIGH activation + HIGH control、fully stated trigger 和 listening-to-refusal change 共同支持一次有界判断反应。urgency 要及时关闭建议，不支持长时间悬置；这里不等同于持续抢话或重叠。"
+    }
+  }
+}

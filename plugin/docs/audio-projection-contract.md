@@ -1,5 +1,25 @@
 # Audio Projection Contract v1
 
+## Coordinated production extension (7.5R-FIX)
+
+Optional `phraseDeliverySpans` contains ordered, non-overlapping canonical character
+ranges (`startChar`, exclusive `endChar`) and a compact `delivery`. It does not copy
+or revise SpokenContent. At most twelve spans are accepted; their bounds are checked
+again against exact text at request validation. Empty spans serialize away to retain
+historical fingerprints. `PHRASE_CUES_V1` renders authored interaction/relationship
+direction and each phrase cue in the Fish adapter, validates lexical preservation,
+and reports expressive delivery as approximated, never an artistic guarantee.
+Video conditioning retains these authored actions and responsive ending rather than
+replacing them with generic finality.
+
+Production Audio may drive derived visual execution before Video exists. Source
+provenance and target compatibility are independent: an old video-conditioned wrapper
+does not become current for a new Video merely because its source lineage validates.
+A separately evidenced target-fit decision may reuse unchanged bytes for an explicitly
+authorized review attempt. Human artistic FAIL on the current content hash overrides
+cached technical validity. `final-for-target` describes a frozen input to one attempt;
+only human acceptance makes it accepted Final Audio.
+
 ## Ownership
 
 Audio Projection is a deterministic transient layer inside the platform-neutral Audio foundation. It is not a business entity, persistence model, Tool, Runtime service, Provider request, or Voice-casting mechanism.

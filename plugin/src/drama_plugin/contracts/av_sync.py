@@ -22,6 +22,7 @@ TimingAuthority = Literal[
 ]
 LipSyncPolicy = Literal[
     "NOT_REQUIRED",
+    "MOUTH_ONLY_DERIVATIVE",
     "AUDIO_DRIVEN_RETARGET",
     "OBSERVED_ALIGNMENT",
     "NOT_APPLIED_FOR_LOW_VISIBILITY",
@@ -84,6 +85,10 @@ class AVSyncPlan(ContractModel):
             and self.timing_authority != "AUDIO_DRIVEN_ALIGNMENT"
         ):
             raise ValueError("audio-driven retarget requires audio-driven timing authority")
+        if self.lip_sync_policy == "MOUTH_ONLY_DERIVATIVE" and self.timing_authority not in (
+            "USER_REVIEW", "USER_REVIEW_ANCHOR", "EXPLICIT_PRODUCTION_ANCHOR"
+        ):
+            raise ValueError("mouth-only derivative preserves a reviewed or explicit production window")
         expected = sha256_canonical(dump_contract(self, exclude={"fingerprint"}))
         if self.fingerprint != expected:
             raise ValueError("AV Sync fingerprint is invalid")

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from drama_plugin.audio.foundation import voice_profile_fingerprint
-from drama_plugin.audio.projection import project_audio_performance
+from drama_plugin.audio.projection import project_audio_performance, fingerprint_audio_projection
 from drama_plugin.contracts.audio import SpeechGenerationRequest
 from drama_plugin.contracts.audio_projection import AudioPerformanceBrief
 from drama_plugin.contracts.base import dump_contract, sha256_canonical
@@ -36,7 +36,7 @@ def condition_audio_on_video(
     if base_request.video_conditioned_projection is not None:
         raise ValueError("base request is already video-conditioned")
     if base_request.material_render_parameters not in (
-        {}, {"performanceRendering": "BRIEF_CUES_V1"}
+        {}, {"performanceRendering": "BRIEF_CUES_V1"}, {"performanceRendering": "PHRASE_CUES_V1"}
     ):
         raise ValueError("unsupported base rendering parameters; no silent overwrite")
     dpd = compose_dpd(dpd_snapshot.scene, dpd_snapshot.beat, dpd_snapshot.line)
@@ -76,6 +76,15 @@ def condition_audio_on_video(
         voice_profile=base_request.voice_profile, voice_identity_ref=bound_voice_id,
         timing_policy=timing,
     )
+    authored = base_request.audio_performance_brief
+    if authored is not None and authored.phrase_delivery_spans:
+        SpeechGenerationRequest.model_validate(dump_contract(base_request))
+        if (authored.dpd_fingerprint != dpd.fingerprint or authored.voice_identity_ref != bound_voice_id
+                or authored.fingerprint != fingerprint_audio_projection(authored)):
+            raise ValueError("authored base projection binding mismatch")
+        base = authored
+    if realized.observed_speaker_key not in (None, observed_speaker_key):
+        raise ValueError("RP observed speaker mismatch")
     if base != base_request.audio_performance_brief:
         raise ValueError("base projection, SpokenContent or Voice binding mismatch")
     if len(voice_content_hash) != 64 or any(c not in "0123456789abcdef" for c in voice_content_hash):
@@ -107,6 +116,10 @@ def condition_audio_on_video(
         ),
         "sentence_ending": f"recover clear finality while carrying the action: {dpd.effective.dramatic_action}",
     }
+    if base.phrase_delivery_spans:
+        # Preserve approved interpersonal/phrase/ending directions. An observed
+        # motion is evidence for review, never a mandatory vocal reinterpretation.
+        updates = {}
     material = {**base.model_dump(mode="json", exclude={"fingerprint"}), **updates}
     final_brief = AudioPerformanceBrief.model_validate({**material, "fingerprint": "0" * 64})
     final_brief = final_brief.model_copy(update={
@@ -131,5 +144,5 @@ def condition_audio_on_video(
     payload = dump_contract(base_request)
     payload.update({"audioPerformanceBrief": dump_contract(final_brief),
                     "videoConditionedProjection": dump_contract(wrapper),
-                    "materialRenderParameters": {"performanceRendering": "BRIEF_CUES_V1"}})
+                    "materialRenderParameters": {"performanceRendering": "PHRASE_CUES_V1" if base.phrase_delivery_spans else "BRIEF_CUES_V1"}})
     return SpeechGenerationRequest.model_validate(payload)

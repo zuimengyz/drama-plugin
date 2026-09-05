@@ -1,5 +1,26 @@
 # DPD Visual Projection and Realized Performance Contract v1
 
+## Coordinated execution extension (7.5R-FIX)
+
+`derive_visual_execution_timing` consumes the immutable planned holds/reaction,
+complete actual turn durations, and target Video duration. It returns deterministic
+projection material, not a new entity or timing acceptance. `executionTimingFingerprint`
+on VisualPerformanceBrief binds that material; actual relative phase ranges, interaction,
+gaze, gesture, transition purpose and boundaries also reach the motion prompt. Provider
+execution remains approximate. Omitted execution material preserves the legacy path.
+
+`RealizedPerformanceSnapshot.observedSpeakerKey` is optional: null means aggregate
+Shot observation, and a speaker key scopes only that person's observed facts. A fresh
+Video requires fresh observations and fingerprints. `evaluate_target_performance_fit`
+requires all speakers, current Video/Audio hashes, and production-reviewed participation
+evidence before constrained placement. Participation envelopes are interpretations,
+not automatic mouth/head-to-speech anchors; UNKNOWN and CONFLICTING remain explicit.
+
+Lip-sync capability and coordinate selection stay in adapter evidence. A mouth-only
+derivative preserves the reconciled windows and original Audio, receives a distinct
+Video hash and new mouth/identity/non-speaker/continuity observation. Source RP remains
+historical evidence; post-lip RP binds the derivative. No new DPD authority is created.
+
 ## Authority and one-way flow
 
 ```text
@@ -51,3 +72,25 @@ FinalAudioProjectionFingerprint = hash(
 Therefore Video V1 -> Realized A -> Audio A, while changed Video V2 -> Realized B makes Audio A `STALE` and requires regeneration. Audio must follow actual generated video performance. This contract defines lineage only; it does not implement Audio projection, TTS, dubbing, lip sync, mix, or AV mux.
 
 No Java entity, database table, CRUD service, MCP search tool, or Visual service is required. The detailed Snapshot remains an Agent-side deterministic artifact; stable Media and existing open content can carry its reference/fingerprint when a later lifecycle decision needs persistence.
+# Batch 7.5 dialogue-coupled production
+
+`VisualPerformanceBrief` optionally carries `dialogueTimingPlanFingerprint`,
+`dialogueSourceFingerprint` and `dialoguePerformancePhases`. These are a narrow
+extension of the existing brief, with no independent storage or service.
+Legacy briefs retain their original fingerprints by omitting absent dialogue
+extension fields from fingerprint material.
+
+`couple_dialogue_visual_performance` validates the ordered canonical SpokenContent,
+production DPD and existing per-turn visual briefs against the unchanged planned
+timing. Planning DPD and production DPD fingerprints remain distinct in the input
+evidence. The source fingerprint includes both and the stable visual identities.
+Phases contain only order, active speaker, listener, dramatic action, visible
+focus, transition purpose and relative timing range; they never copy dialogue text.
+
+`compile_video_motion_prompt` requires verified distinct visible labels for both
+speakers and projects opening, speaking/listening, handoff/reaction and ending.
+Relative ranges express production intent, not guaranteed provider timestamps.
+`diagnose_dialogue_visual_compatibility` is an observation-scoped report diagnostic:
+SUPPORTED / QUESTIONABLE / CONFLICTING / UNKNOWN. A wrong-speaker observation or
+visible participation conflict cannot pass. Missing or stale observations remain
+UNKNOWN. Lip-sync and user artistic acceptance remain separate gates.

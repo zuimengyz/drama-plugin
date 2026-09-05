@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 from drama_plugin.audio.foundation import text_hash, voice_profile_fingerprint
 from drama_plugin.contracts.audio import (
@@ -12,6 +12,7 @@ from drama_plugin.contracts.audio import (
 )
 from drama_plugin.contracts.audio_projection import (
     AudioPerformanceBrief,
+    PhraseDeliverySpan,
     PaceTendency,
     VolumeTendency,
 )
@@ -38,14 +39,11 @@ def _spoken_identity(spoken_content: Mapping[str, Any]) -> tuple[str, str, str]:
 
 def _authority_band(snapshot: DPDSnapshot) -> str:
     effective = snapshot.effective
-    material = " ".join(
-        (
-            effective.authority_position,
-            effective.relationship_stance,
-            effective.tactic,
-            effective.dramatic_action,
-        )
-    ).casefold()
+    # authorityPosition describes the current speaker's authority. Relationship,
+    # tactic and action may name the interaction target (for example, a
+    # subordinate addressing a commander) and must not be reclassified as the
+    # speaker's own authority.
+    material = effective.authority_position.casefold()
     groups = {
         "DOMINANT": ("dominant", "superior", "coercive", "command"),
         "EQUAL": ("equal", "peer", "probe", "reciprocal"),
@@ -130,6 +128,7 @@ def project_audio_performance(
     voice_profile: VoiceProfile,
     voice_identity_ref: str,
     timing_policy: TargetTimingPolicy,
+    phrase_delivery_spans: Sequence[PhraseDeliverySpan] = (),
 ) -> AudioPerformanceBrief:
     if dpd_snapshot is None:
         raise AudioProjectionError("DPDSnapshot is required")
@@ -146,6 +145,18 @@ def project_audio_performance(
         raise AudioProjectionError("stable Voice or Casting identity reference is required")
 
     direction = _performance_language(dpd_snapshot)
+    if phrase_delivery_spans:
+        effective = dpd_snapshot.effective
+        direction.update({
+            "control": f"Address {effective.interaction_target} in the live scene: {effective.dramatic_action}. No audience address.",
+            "rhythm": "Each clause advances the action toward the listener, with responsive phrasing.",
+            "pause_strategy": "Brief clause turns with continuous supported breath; no broadcast cadence.",
+            "articulation": f"Relationship: {effective.relationship_stance}. Position: {effective.authority_position}.",
+            "sentence_ending": phrase_delivery_spans[-1].delivery,
+            "pace_tendency": PaceTendency.NEUTRAL,
+        })
+        if any(span.end_char > len(exact_text) for span in phrase_delivery_spans):
+            raise AudioProjectionError("phrase span exceeds canonical text")
     pace = f"From the {voice_profile.creative_profile.baseline_pace} voice baseline, {direction['pace']}."
     if timing_policy.policy != "NATURAL":
         pace += " Fit the approved timing window without sacrificing exact text or intelligibility."
@@ -163,6 +174,7 @@ def project_audio_performance(
         **direction,
         "pace": pace,
         "performanceBoundaries": dpd_snapshot.effective.performance_boundaries,
+        "phraseDeliverySpans": [dump_contract(span) for span in phrase_delivery_spans],
     }
     provisional = AudioPerformanceBrief.model_validate(
         {**material, "fingerprint": "0" * 64}
@@ -180,6 +192,7 @@ def compile_projected_speech_request(
     voice_profile: VoiceProfile,
     voice_identity_ref: str,
     timing_policy: TargetTimingPolicy,
+    phrase_delivery_spans: Sequence[PhraseDeliverySpan] = (),
     pronunciation_guidance: list[PronunciationGuidance] | None = None,
     non_material_metadata: Mapping[str, Any] | None = None,
 ) -> SpeechGenerationRequest:
@@ -190,6 +203,7 @@ def compile_projected_speech_request(
         voice_profile=voice_profile,
         voice_identity_ref=voice_identity_ref,
         timing_policy=timing_policy,
+        phrase_delivery_spans=phrase_delivery_spans,
     )
     return SpeechGenerationRequest(
         work_id=work_id,

@@ -78,7 +78,7 @@ def map_audio_performance_to_fish(
         VolumeTendency.NEUTRAL: 0.0,
         VolumeTendency.HIGHER: 2.0,
     }[brief.volume_tendency]
-    diagnostics = (
+    diagnostics: tuple[AudioCapabilityDiagnostic, ...] = (
         AudioCapabilityDiagnostic(
             dimension="pace",
             status=CapabilityStatus.SUPPORTED,
@@ -144,6 +144,13 @@ def map_audio_performance_to_fish(
             reason="The verified API has no durable post-utterance hold control.",
         ),
     )
+    if brief.phrase_delivery_spans:
+        diagnostics = tuple(
+            item.model_copy(update={"status": CapabilityStatus.APPROXIMATED,
+                "mapped_control": "phrase-bound S2 natural-language cue and canonical punctuation",
+                "reason": "Actually rendered in the single request; provider acting/timing realization is not guaranteed."})
+            if item.dimension in {"rhythm", "pauseStrategy", "sentenceEnding", "control", "intensity", "emphasis"}
+            else item for item in diagnostics)
     return FishAudioPerformanceMapping(
         audio_projection_fingerprint=brief.fingerprint,
         speed=speed,
@@ -192,12 +199,27 @@ def compile_fish_rendered_text(*, canonical_text: str, rendered_text: str,
     if not canonical_text or not rendered_text:
         raise ValueError("Fish canonical and rendered text must not be empty")
     approved_cue = _brief_expression_cue(performance_brief) if performance_brief is not None else None
-    if len(rendered_text) > len(canonical_text) + (520 if approved_cue else 80):
+    expected = f"[{approved_cue}]{canonical_text}"
+    allowed = set(FISH_S2_RENDER_MARKERS)
+    if approved_cue is not None:
+        allowed.add(approved_cue)
+    if performance_brief is not None and performance_brief.phrase_delivery_spans:
+        parts: list[str] = [f"[{approved_cue}]"]
+        cursor = 0
+        for span in performance_brief.phrase_delivery_spans:
+            if span.end_char > len(canonical_text) or span.start_char < cursor:
+                raise ValueError("invalid canonical phrase range")
+            parts.extend((canonical_text[cursor:span.start_char], f"[{span.delivery}]", canonical_text[span.start_char:span.end_char]))
+            allowed.add(span.delivery)
+            cursor = span.end_char
+        parts.append(canonical_text[cursor:])
+        expected = "".join(parts)
+    if len(rendered_text) > len(canonical_text) + (4500 if performance_brief and performance_brief.phrase_delivery_spans else 520 if approved_cue else 80):
         raise ValueError("Fish rendered text adds excessive provider direction")
     markers = _RENDER_MARKER.findall(rendered_text)
-    if approved_cue is not None and rendered_text != f"[{approved_cue}]{canonical_text}":
+    if approved_cue is not None and rendered_text != expected:
         raise ValueError("production expression rendering must come entirely from the Audio brief")
-    if any(marker not in FISH_S2_RENDER_MARKERS and marker != approved_cue for marker in markers):
+    if any(marker not in allowed for marker in markers):
         raise ValueError("Fish rendered text contains an unsupported S2 marker")
     without_markers = _RENDER_MARKER.sub("", rendered_text)
     if "[" in without_markers or "]" in without_markers:
@@ -213,6 +235,11 @@ def compile_fish_rendered_text(*, canonical_text: str, rendered_text: str,
 
 def _brief_expression_cue(brief: AudioPerformanceBrief) -> str:
     """Serialize execution instructions; never inspect DPD, video, or dramatic-action labels."""
+    if brief.phrase_delivery_spans:
+        cue = "; ".join((brief.control, brief.articulation, brief.pause_strategy, *brief.performance_boundaries))
+        if len(cue) > 1500 or any(c in cue for c in "[]\n\r"):
+            raise ValueError("Audio brief expression cue exceeds bounded phrase rendering surface")
+        return cue
     cue = "; ".join((brief.control, brief.intensity, brief.rhythm,
                      brief.pause_strategy, brief.sentence_ending))
     if len(cue) > 500 or any(c in cue for c in "[]\n\r"):
@@ -240,6 +267,14 @@ def compile_fish_tts_payload(
         if rendered_text is not None:
             raise ValueError("manual rendered text conflicts with Brief-derived rendering")
         rendered_text = f"[{_brief_expression_cue(performance_brief)}]{exact_text}"
+        if performance_brief.phrase_delivery_spans:
+            parts = [f"[{_brief_expression_cue(performance_brief)}]"]
+            cursor = 0
+            for span in performance_brief.phrase_delivery_spans:
+                parts.extend((exact_text[cursor:span.start_char], f"[{span.delivery}]", exact_text[span.start_char:span.end_char]))
+                cursor = span.end_char
+            parts.append(exact_text[cursor:])
+            rendered_text = "".join(parts)
     payload: dict[str, Any] = {
         "text": (
             compile_fish_rendered_text(

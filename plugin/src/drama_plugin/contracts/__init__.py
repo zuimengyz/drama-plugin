@@ -57,6 +57,8 @@ from drama_plugin.contracts.context import (
     DramaRunContext,
 )
 from drama_plugin.contracts.creation import Episode, Scene, Script, Shot, Work
+from drama_plugin.contracts.dialogue_timing import DialogueTimingPlan, DialogueTurnTiming
+from drama_plugin.contracts.dialogue_reconciliation import DialogueTimingReconciliation
 from drama_plugin.contracts.dpd import (
     BeatDPD,
     DPDLayerState,

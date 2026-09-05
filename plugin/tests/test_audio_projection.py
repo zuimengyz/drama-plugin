@@ -112,6 +112,42 @@ def test_same_text_voice_and_casting_project_to_three_distinct_briefs() -> None:
     assert "superior" in projected[2].sentence_ending
 
 
+@pytest.mark.parametrize(
+    ("authority", "relationship", "tactic", "expected_ending"),
+    [
+        (
+            "subordinate officer without final approval authority",
+            "deferential counsel to a superior commander",
+            "request a command decision",
+            "leave the decision with the superior",
+        ),
+        (
+            "dominant formal commander",
+            "responsible for a subordinate officer",
+            "answer the subordinate without escalation",
+            "expects compliance",
+        ),
+    ],
+)
+def test_speaker_authority_does_not_scan_interaction_target_identity(
+    authority: str, relationship: str, tactic: str, expected_ending: str,
+) -> None:
+    dialogue, cases = inputs()
+    current = snapshot(cases[0])
+    current.beat.direction.authority_position = authority
+    current.beat.direction.relationship_stance = relationship
+    current.beat.direction.tactic = tactic
+    current = compose_dpd(current.scene, current.beat, current.line)
+    result = project_audio_performance(
+        dpd_snapshot=current,
+        spoken_content=dialogue,
+        voice_profile=voice(),
+        voice_identity_ref="voice:shared-questioner",
+        timing_policy=TargetTimingPolicy(policy="NATURAL"),
+    )
+    assert expected_ending in result.sentence_ending
+
+
 def test_projection_and_fingerprint_are_deterministic_and_do_not_mutate_dpd() -> None:
     dialogue, cases = inputs()
     current = snapshot(cases[0])

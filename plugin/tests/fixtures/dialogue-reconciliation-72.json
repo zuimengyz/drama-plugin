@@ -1,0 +1,2920 @@
+{
+  "provenance": {
+    "domain": "Current read-only Service audit 2026-09-03; all 34 Work AUDIO enumerated, current Scene candidates retained",
+    "audioMaterialFreshness": "Current resolved request fingerprint independently recomputed from prior D1 request + current Work Voice ACTIVE mapping",
+    "physicalInputs": [
+      {
+        "mediaId": "media_ac9d14c5cdc74c43ba44562752cf9489",
+        "contentHash": "066b281d01ba8f330c66c463c8c6ff0f238cc2f56af7c0dffbbaf812e62f677f",
+        "durationMs": 11042,
+        "hashMatches": true,
+        "streams": [
+          {
+            "index": 0,
+            "codec_name": "h264",
+            "codec_type": "video",
+            "duration": "11.041667"
+          }
+        ]
+      },
+      {
+        "mediaId": "media_6f4d16d785b84b52b3062e0666a826b5",
+        "contentHash": "4db91e1299cb3083db55290e5e23ef8595e012e5a7b3fe185ba80a44121e7a9c",
+        "durationMs": 4107,
+        "hashMatches": true,
+        "streams": [
+          {
+            "index": 0,
+            "codec_name": "pcm_s16le",
+            "codec_type": "audio",
+            "sample_rate": "24000",
+            "channels": 1,
+            "duration": "4.107000"
+          }
+        ]
+      }
+    ],
+    "reviewBoundary": "PENDING D1 is measured evidence only, not accepted Audio or placement",
+    "mode": "CURRENT_DOMAIN_READ_ONLY_FULL_REALIZED",
+    "turnAFinalAudioMediaId": "media_76a8fb24233246189d030babc7ceffd4",
+    "turnBFinalAudioMediaId": "media_6f4d16d785b84b52b3062e0666a826b5",
+    "finalShotMediaId": "media_a78d6ab7e9e94d06912c76658d28d378",
+    "domainWrites": 0
+  },
+  "planningFixture": "dialogue-timing-72.json",
+  "sourcePlan": {
+    "schemaVersion": "dialogue-timing-plan-v1",
+    "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+    "shotId": "shot_83db7eb53b2f49d3a58428d4659e584e",
+    "shotFingerprint": "7afc1b91fb6b878109f6ac0e443502f8870b9c35636033531bdc467e9cd9a359",
+    "sourceFingerprint": "52d00ccaf6ebfea446bb35ee392c56f0bfee6ad3f10399c5414f1d356bb39056",
+    "policyVersion": "dialogue-timing-policy-v1",
+    "policyFingerprint": "863211171f1e3534efdea1e579886999f78ef071479bd6db542be8057e0fde46",
+    "targetShotDurationMs": 10500,
+    "turns": [
+      {
+        "spokenContentId": "spoken-s1-wangsili-proposal",
+        "speakerKey": "speaker:wangsili",
+        "sequence": 1,
+        "spokenContentFingerprint": "023e9d288705c928fbe1689e4acd0f5480b68cb6dbf7441df68094d4c86ad4ce",
+        "dpdFingerprint": "3e3833ec80a1acfc198bbe350c437cc0762f7898a8f3d110185e6bf140bc5fbb",
+        "intentContextFingerprint": "52d00ccaf6ebfea446bb35ee392c56f0bfee6ad3f10399c5414f1d356bb39056",
+        "durationAuthority": "SCENE_PLANNING_ESTIMATE",
+        "plannedStartMs": 500,
+        "plannedDurationMs": 5000,
+        "plannedEndMs": 5500,
+        "transitionFromPrevious": "OPENING",
+        "transitionHoldMs": 0,
+        "transitionReason": "先建立提出请求的关系。propose / obtain approval / concrete proposal 对应部将向掌握批准权的主帅进言；HIGH activation 与 HIGH control 共同约束急迫而克制的行动。continuity 承接守势决定，change 转入政治建议，没有即刻开口要求。"
+      },
+      {
+        "spokenContentId": "spoken-s1-geshuhan-refusal",
+        "speakerKey": "speaker:geshuhan",
+        "sequence": 2,
+        "spokenContentFingerprint": "b8223d53ec1a2991d893baf240f61f4b7333b8fafb02058427f3ccde9e335b90",
+        "dpdFingerprint": "2d826a70c27da23aded5eda30082931b5c122115dd932ce104b3fb590ec90e1b",
+        "intentContextFingerprint": "52d00ccaf6ebfea446bb35ee392c56f0bfee6ad3f10399c5414f1d356bb39056",
+        "durationAuthority": "SCENE_PLANNING_ESTIMATE",
+        "plannedStartMs": 6300,
+        "plannedDurationMs": 3200,
+        "plannedEndMs": 9500,
+        "transitionFromPrevious": "DELIBERATE_REACTION",
+        "transitionHoldMs": 800,
+        "transitionReason": "上一 turn 请求批准并将决定留给主帅；当前 reject / stop proposal / controlled refusal 要把听取压力转为明确拒绝。dominant commander 与 personally exposed 的关系、HIGH activation + HIGH control、fully stated trigger 和 listening-to-refusal change 共同支持一次有界判断反应。urgency 要及时关闭建议，不支持长时间悬置；这里不等同于持续抢话或重叠。"
+      }
+    ],
+    "preDialogueHoldMs": 500,
+    "minimumPostDialogueHoldMs": 500,
+    "postDialogueHoldMs": 1000,
+    "recommendedMinimumShotDurationMs": 10000,
+    "plannedDurationMs": 10500,
+    "status": "PLANNED",
+    "diagnostic": null,
+    "fingerprint": "dfe0dc594602c215597d462e5e670814e783fddbfc1255e5ee1b2eedb8776083"
+  },
+  "work": {
+    "id": "work_9cc5d11969a64f93bce4a544f349c793",
+    "title": "《关门以东》Batch 6.0R-E2E",
+    "description": "同一短命令的 post-hardening Creative E2E 回归 Work；本阶段仅完成独立研究与文本创作。",
+    "content": {
+      "stakes": {
+        "civilian": "失关后京师秩序与百姓避乱",
+        "military": "潼关守军与关防体系",
+        "personal": "哥舒翰的指挥权、名节与自由",
+        "political": "朝廷命令的判断责任与长安安全"
+      },
+      "logline": "潼关据险令叛军进退失据时，病中的主帅哥舒翰识破羸兵诱饵却被接踵诏使迫令出关；在南山与黄河夹成的七十里隘道里，他必须带着一支被政治疑惧拆散指挥意志的大军迎向崔乾祐的火烟伏击，而败局将一路烧到长安。",
+      "premise": "当一道正在奏效的关防被政治互疑和求速命令强行打开，最先看见陷阱的主帅仍必须领军走入它；他的服从没有终止责任，只把责任从一道诏令扩散到军队、关门与京城。",
+      "opposition": [
+        {
+          "force": "皇权命令与杨国忠的政治疑惧",
+          "capacity": "以连续诏使取消主帅的等待空间",
+          "objective": "迅速收复陕洛并消除对潼关重兵的恐惧"
+        },
+        {
+          "force": "崔乾祐与灵宝西原伏击",
+          "capacity": "控制地形、示弱、火烟与后袭",
+          "objective": "诱唐军离险、在狭道摧毁其队形并夺关"
+        }
+      ],
+      "workReview": {
+        "result": "PASS",
+        "FACT_ATTRIBUTION_VALID": "PASS",
+        "STRUCTURE_COVERS_SPINE": "PASS",
+        "DRAMATIZATION_NON_CAUSAL": "PASS",
+        "HISTORICAL_SPINE_COMPLETE": "PASS",
+        "PROTAGONIST_SCOPE_ALIGNMENT": "PASS",
+        "STORY_ARCHITECTURE_SPINE_ALIGNED": "PASS",
+        "UNSUPPORTED_CAUSAL_PROMOTION_ABSENT": "PASS"
+      },
+      "protagonist": {
+        "name": "哥舒翰",
+        "constraint": "不得把皇命、崔乾祐伏击、郭李奏议、王思礼前军行动或火拔归仁挟持改写成主角自由操纵的事件。",
+        "dramaticNeed": "在忠于皇命与忠于军事判断无法兼得时，为自己的选择承担可见后果。",
+        "externalGoal": "保住潼关防线并避免在不利地形决战。",
+        "historicalAgency": [
+          "拒绝以劫持宰相解决政治威胁",
+          "上奏固守并辨明诱敌风险",
+          "执行不可撤回的出关命令",
+          "败后收合散卒谋求复守"
+        ]
+      },
+      "creativeInput": "创作一部关于安史之乱前期潼关之战的历史短剧。",
+      "voiceProfiles": [
+        {
+          "voiceId": "voice_06ac45335157432e8322a9b32e8d9804",
+          "speakerKey": "speaker:wangsili"
+        },
+        {
+          "voiceId": "voice_c59996a23d9046eb8df51cccfb4a0649",
+          "speakerKey": "speaker:geshuhan"
+        }
+      ],
+      "historicalScope": "至德元年五月潼关固守仍在牵制叛军起，经过朝廷疑惧与强令出关、灵宝西原伏击、潼关失守、哥舒翰被执，至失关消息使长安朝廷转入避乱决策的直接因果链。",
+      "historicalSpine": [
+        {
+          "actor": "安禄山集团、潼关唐军、河北唐军",
+          "event": "叛军数月不能越潼关，河北又遭郭子仪、李光弼进击，安禄山一度议弃洛阳。",
+          "beatId": "P1",
+          "evidenceRef": "《资治通鉴》卷218，第121段",
+          "causalEffect": "据险固守与外围牵制正在奏效，速战压力落在叛军一方。",
+          "evidenceClass": "DOCUMENTED"
+        },
+        {
+          "actor": "王思礼、哥舒翰、杨国忠",
+          "event": "王思礼建议劫取杨国忠，哥舒翰以此将使自己成为反者而拒绝；杨国忠因惧另募灞上军，哥舒翰调来杜干运并将其斩杀。",
+          "beatId": "P2",
+          "evidenceRef": "《资治通鉴》卷218，第122段",
+          "causalEffect": "主帅与宰相互疑加深，军事判断被政治安全焦虑包围。",
+          "evidenceClass": "DOCUMENTED"
+        },
+        {
+          "actor": "唐玄宗、杨国忠、哥舒翰、郭子仪、李光弼",
+          "event": "朝廷收到崔乾祐兵少羸弱的报告后命出关；哥舒翰指出诱敌风险并请固守，郭、李也另奏固守，杨国忠推动速战，中使接踵催促。",
+          "beatId": "P3",
+          "evidenceRef": "《资治通鉴》卷218，第123段；《旧唐书》卷104，第171段",
+          "causalEffect": "政治命令压过有效守势，唐军被迫放弃关险。",
+          "evidenceClass": "DOCUMENTED"
+        },
+        {
+          "actor": "哥舒翰所部、崔乾祐所部",
+          "event": "唐军出关后在灵宝西原相遇；战场南山北河，七十里隘道限制唐军展开。",
+          "beatId": "P4",
+          "evidenceRef": "《资治通鉴》卷218，第124段",
+          "causalEffect": "兵力优势转化为纵列拥塞，唐军进入敌方选择的地形。",
+          "evidenceClass": "DOCUMENTED"
+        },
+        {
+          "actor": "崔乾祐、哥舒翰、王思礼等唐军将领",
+          "event": "崔乾祐把精兵置后，以疏密不整的小队示弱并偃旗佯退；哥舒翰见敌少催军推进，王思礼等率精兵居前。",
+          "beatId": "P5",
+          "evidenceRef": "《资治通鉴》卷218，第124段",
+          "causalEffect": "唐军前锋深入狭道且松弛戒备，伏击条件成熟。",
+          "evidenceClass": "DOCUMENTED"
+        },
+        {
+          "actor": "崔乾祐所部、拥塞的唐军",
+          "event": "伏兵以木石截击，唐军用毡车冲阵；东风起后叛军以草车堵塞纵火，烟焰致唐军误射，随后同罗精骑越南山击后。",
+          "beatId": "P6",
+          "evidenceRef": "《资治通鉴》卷218，第124段",
+          "causalEffect": "视野、队形与首尾联系同时断裂，局部受击升级为全军崩溃。",
+          "evidenceClass": "DOCUMENTED"
+        },
+        {
+          "actor": "唐军残部、哥舒翰、崔乾祐",
+          "event": "前后军与河北军相继溃散，河谷与关外壕沟造成大量伤亡，仅八千余人入关；崔乾祐乘胜攻克潼关。",
+          "beatId": "P7",
+          "evidenceRef": "《资治通鉴》卷218，第124段",
+          "causalEffect": "关防体系被摧毁，长安门户失去。",
+          "evidenceClass": "DOCUMENTED"
+        },
+        {
+          "actor": "哥舒翰、火拔归仁、叛军",
+          "event": "哥舒翰在关西驿揭榜收卒欲复守，被火拔归仁等围驿、缚于马上并送交叛军。",
+          "beatId": "P8",
+          "evidenceRef": "《资治通鉴》卷218，第125段",
+          "causalEffect": "复守企图被切断，唐军同时失去关门与主帅。",
+          "evidenceClass": "DOCUMENTED"
+        },
+        {
+          "actor": "唐玄宗、杨国忠、长安朝廷",
+          "event": "潼关告急而平安火不至，朝廷确认失关后转入避乱决策，长安市面与百官秩序迅速瓦解。",
+          "beatId": "P9",
+          "evidenceRef": "《资治通鉴》卷218，第126至127段",
+          "causalEffect": "战场失败直接转化为京师政治与社会崩塌。",
+          "evidenceClass": "DOCUMENTED"
+        }
+      ],
+      "researchSources": [
+        {
+          "url": "https://zh.wikisource.org/zh-hans/資治通鑑/卷218",
+          "role": "主因果、顺序、人物归属与直接后果",
+          "title": "《资治通鉴》卷218"
+        },
+        {
+          "url": "https://zh.wikisource.org/zh-hans/舊唐書/卷104",
+          "role": "哥舒翰身份、军务状态与会战记载交叉限定",
+          "title": "《旧唐书》卷104"
+        }
+      ],
+      "thematicQuestion": "当服从错误命令与违抗权力都可能被视为不忠，掌兵者还能以什么方式对后果负责？",
+      "storyArchitecture": {
+        "climax": {
+          "summary": "全军溃散、残部争关，崔乾祐夺取潼关。",
+          "spineBeatIds": [
+            "P7"
+          ]
+        },
+        "crisis": {
+          "summary": "木石、狭道、草车火烟与后袭切断全军。",
+          "spineBeatIds": [
+            "P6"
+          ]
+        },
+        "ending": {
+          "summary": "复守失败、主帅被执，平安火断使长安转入逃亡决策。",
+          "spineBeatIds": [
+            "P8",
+            "P9"
+          ]
+        },
+        "reversal": {
+          "summary": "疏弱敌阵与佯退显出伏击本质。",
+          "spineBeatIds": [
+            "P5"
+          ]
+        },
+        "disruption": {
+          "summary": "主帅与宰相互疑，羸兵报告进入皇帝判断。",
+          "spineBeatIds": [
+            "P2",
+            "P3"
+          ]
+        },
+        "escalation": {
+          "summary": "固守意见被连续诏使压倒，大军离开关险。",
+          "spineBeatIds": [
+            "P3",
+            "P4"
+          ]
+        },
+        "finalState": {
+          "summary": "叛军从被关隘牵制转为打开长安门户；哥舒翰失去军队、关门和自由。",
+          "spineBeatIds": [
+            "P7",
+            "P8",
+            "P9"
+          ]
+        },
+        "startingState": {
+          "summary": "守关与河北牵制使叛军承压。",
+          "spineBeatIds": [
+            "P1"
+          ]
+        }
+      },
+      "structureEstimate": {
+        "shots": 27,
+        "scenes": 6,
+        "episodes": 1,
+        "reasoning": "P1—P9 因果覆盖先行；将政治互疑与强令合为连续压力场，把出关—入隘保留为必要空间过渡，把伏击机制分成可读动作，并用复守失败与长安反应收束结果。数量是可调整估算，不是视觉配额。",
+        "narrativeDensity": "TIGHT",
+        "estimatedRuntimeRange": "165–225 seconds"
+      },
+      "validationContext": "Batch 6.0R-E2E post-hardening regression; not part of creative input",
+      "narrativeAuthority": {
+        "authority": "PRIMARY",
+        "reasoning": "他是在政治疑惧、皇命与敌方战术三重压力之间做出可见选择并承受全链后果的人；选择依据是 Scope 内史实作用，不是名气或视觉便利。",
+        "protagonist": "哥舒翰"
+      },
+      "dramatizedButCompatible": [
+        {
+          "event": "用军图上的关门木签、灞上军籍和接连令符外化政治压力。",
+          "result": "PASS",
+          "deletionTest": "删除后，史载互疑、另募灞上军与连续诏使仍完整解释出关。"
+        },
+        {
+          "event": "以长安夜间迟迟不续的平安火作为结尾视觉线索。",
+          "result": "PASS",
+          "deletionTest": "删除视觉构造后，史载平安火不至与朝廷避乱决策仍成立。"
+        }
+      ],
+      "historicalActorHierarchy": [
+        {
+          "actor": "哥舒翰",
+          "authority": "PRIMARY",
+          "speakerKey": "speaker:geshuhan",
+          "spineBeatIds": [
+            "P2",
+            "P3",
+            "P4",
+            "P5",
+            "P7",
+            "P8"
+          ],
+          "justification": "拒绝政变式建议、陈守险利害、执行出关、参与会战、退关复守并被执，贯穿本 Scope 的选择与后果。"
+        },
+        {
+          "actor": "唐玄宗／朝廷命令",
+          "authority": "PRIMARY",
+          "speakerKey": "speaker:tangxuanzong",
+          "spineBeatIds": [
+            "P3",
+            "P9"
+          ],
+          "justification": "最终命令直接终止守势，失关后又把军事后果转成京师决策。"
+        },
+        {
+          "actor": "崔乾祐",
+          "authority": "PRIMARY_OPPOSITION",
+          "spineBeatIds": [
+            "P4",
+            "P5",
+            "P6",
+            "P7"
+          ],
+          "justification": "选择战场、组织诱敌伏击并攻克潼关。"
+        },
+        {
+          "actor": "杨国忠",
+          "authority": "SECONDARY_CAUSAL",
+          "speakerKey": "speaker:yangguozhong",
+          "spineBeatIds": [
+            "P2",
+            "P3",
+            "P9"
+          ],
+          "justification": "以自保疑惧推动速战并参与失关后的避乱决策，但最终军令属于皇帝。"
+        },
+        {
+          "actor": "王思礼",
+          "authority": "SECONDARY",
+          "speakerKey": "speaker:wangsili",
+          "spineBeatIds": [
+            "P2",
+            "P5"
+          ],
+          "justification": "提出劫取杨国忠并率前军参战；不得承接哥舒翰守险奏议或全军败因。"
+        },
+        {
+          "actor": "火拔归仁",
+          "authority": "SECONDARY_DECISIVE_ENDING",
+          "speakerKey": "speaker:huobaguiren",
+          "spineBeatIds": [
+            "P8"
+          ],
+          "justification": "在败后切断主帅复守与行动自由。"
+        }
+      ]
+    },
+    "version": 5
+  },
+  "video": {
+    "id": "media_ac9d14c5cdc74c43ba44562752cf9489",
+    "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+    "assetId": null,
+    "shotId": "shot_83db7eb53b2f49d3a58428d4659e584e",
+    "mediaType": "VIDEO",
+    "purpose": "SHOT_VIDEO",
+    "sourceRef": "batch7-3c-video:74c0b04737b6c3befb86bf69e20c7d11ad70c88e5ef20ee74e12f0e7cb5cdb10",
+    "durationMs": 11042,
+    "mimeType": "video/mp4",
+    "fileSize": 5489983,
+    "contentHash": "066b281d01ba8f330c66c463c8c6ff0f238cc2f56af7c0dffbbaf812e62f677f",
+    "content": {
+      "audioPolicy": "NONE",
+      "schemaVersion": "batch7-3c-video-lineage-v1",
+      "referenceCount": 1,
+      "sourceFrameMediaId": "media_3e48554b57e64b4caabf98e50b4bebab",
+      "visualContentReview": "PASS",
+      "sourceFrameContentHash": "9f110af425cb7fe120d4c9c6b37a93d7363f5b09807667afb8cad85b1346da38",
+      "videoRequestFingerprint": "74c0b04737b6c3befb86bf69e20c7d11ad70c88e5ef20ee74e12f0e7cb5cdb10",
+      "visualProjectionFingerprint": "abea5007577c4b9f4d17f8064b9ff7b03e5f703e3aad11f36ac3b23e87f1ff10"
+    }
+  },
+  "realized": {
+    "schemaVersion": "realized-performance-snapshot-v1",
+    "videoMediaId": "media_ac9d14c5cdc74c43ba44562752cf9489",
+    "videoContentHash": "066b281d01ba8f330c66c463c8c6ff0f238cc2f56af7c0dffbbaf812e62f677f",
+    "shotId": "shot_83db7eb53b2f49d3a58428d4659e584e",
+    "videoDurationMs": 11042,
+    "shotScale": "stable medium two-shot",
+    "speakerScreenPresence": "primary speaker remains continuously visible on screen-right",
+    "speakerOrientation": "seated on screen-right with torso and face predominantly oriented screen-left toward the interaction partner",
+    "gazeDirection": "predominantly toward the screen-left partner; lowers toward the tabletop late, then returns toward the partner near the end",
+    "headMotion": "small restrained adjustments through most of the shot; visible downward head movement late, followed by recovery",
+    "bodyMotion": "seated torso remains stable with low-amplitude motion and no large displacement",
+    "visibleActivation": "MEDIUM",
+    "facialTension": "HIGH",
+    "expressionChange": "PRESENT",
+    "gestureActivity": "no distinct primary-speaker hand gesture is detectable; hands remain near the table and sword area",
+    "interactionDistance": "two seated figures separated by a table at close conversational distance",
+    "preSpeechAction": "UNKNOWN: visible mouth onset cannot be separated reliably from the opening frames",
+    "mouthActivity": "UNKNOWN",
+    "postSpeechAction": "late downward head and gaze movement followed by a partial return toward the partner; relation to speech end is UNKNOWN",
+    "speakerVisibleStartMs": 0,
+    "preSpeechMotionWindowMs": null,
+    "mouthActivityWindowsMs": [],
+    "majorHeadMotionWindowsMs": [
+      [
+        7500,
+        10500
+      ]
+    ],
+    "majorGestureWindowsMs": [],
+    "visiblePauseWindowsMs": [],
+    "postSpeechHoldMs": null,
+    "observationMethod": "CONTROLLED_FRAME_SAMPLING",
+    "fingerprint": "a2d3d311576d75a305e6453089176ac89b0d8cfd9c3acd2a141ee24a13cefd12"
+  },
+  "acceptedRealizedFingerprint": "a2d3d311576d75a305e6453089176ac89b0d8cfd9c3acd2a141ee24a13cefd12",
+  "observedSpeakerKey": "speaker:geshuhan",
+  "voices": {
+    "voice_c59996a23d9046eb8df51cccfb4a0649": {
+      "id": "voice_c59996a23d9046eb8df51cccfb4a0649",
+      "name": "Role Voice speaker:geshuhan",
+      "sourceType": "DESIGNED",
+      "status": "ACTIVE",
+      "mimeType": "audio/x-wav",
+      "fileSize": 1175596,
+      "durationMs": 13328,
+      "contentHash": "59fb527e80eb7a3564caeaed8da68b62226922fd77902967e8e7996842fbd7ad",
+      "content": {
+        "schemaVersion": "voice-v1",
+        "creativeCastingProfile": {
+          "dimensions": {
+            "texture": {
+              "value": "DRY_AGE_TEXTURED",
+              "basisRefs": [
+                "creativeDecisionBasis[5]"
+              ],
+              "confidence": "MEDIUM"
+            },
+            "gravitas": {
+              "value": "HIGH_RESPONSIBILITY_WEIGHT",
+              "basisRefs": [
+                "VoiceProfile.creativeProfile.gravitas"
+              ],
+              "confidence": "MEDIUM"
+            },
+            "language": {
+              "value": "zh-CN",
+              "basisRefs": [
+                "VoiceProfile.creativeProfile.language"
+              ],
+              "confidence": "MEDIUM"
+            },
+            "register": {
+              "value": "LOW_MIDDLE",
+              "basisRefs": [
+                "creativeDecisionBasis[2]"
+              ],
+              "confidence": "MEDIUM"
+            },
+            "vocalAge": {
+              "value": "LATE_MIDDLE_ADULT",
+              "basisRefs": [
+                "creativeDecisionBasis[0]"
+              ],
+              "confidence": "HIGH"
+            },
+            "resonance": {
+              "value": "DEEP",
+              "basisRefs": [
+                "creativeDecisionBasis[3]"
+              ],
+              "confidence": "MEDIUM"
+            },
+            "roughness": {
+              "value": "LOW_MEDIUM",
+              "basisRefs": [
+                "creativeDecisionBasis[6]"
+              ],
+              "confidence": "LOW"
+            },
+            "brightness": {
+              "value": "SLIGHTLY_DARK",
+              "basisRefs": [
+                "creativeDecisionBasis[4]"
+              ],
+              "confidence": "MEDIUM"
+            },
+            "breathiness": {
+              "value": "LOW",
+              "basisRefs": [
+                "creativeDecisionBasis[7]"
+              ],
+              "confidence": "LOW"
+            },
+            "vocalWeight": {
+              "value": "MEDIUM_HEAVY",
+              "basisRefs": [
+                "creativeDecisionBasis[1]"
+              ],
+              "confidence": "MEDIUM"
+            },
+            "articulation": {
+              "value": "FIRM",
+              "basisRefs": [
+                "VoiceProfile.creativeProfile.articulation_firmness"
+              ],
+              "confidence": "MEDIUM"
+            },
+            "baselinePace": {
+              "value": "MODERATE_DELIBERATE",
+              "basisRefs": [
+                "VoiceProfile.creativeProfile.baseline_pace"
+              ],
+              "confidence": "MEDIUM"
+            },
+            "phraseAttack": {
+              "value": "DELIBERATE_JUDGMENT",
+              "basisRefs": [
+                "VoiceProfile.creativeProfile.phrase_attack"
+              ],
+              "confidence": "MEDIUM"
+            },
+            "commandPresence": {
+              "value": "HIGH_ACTION_CONSEQUENCE",
+              "basisRefs": [
+                "VoiceProfile.creativeProfile.command_presence"
+              ],
+              "confidence": "MEDIUM"
+            },
+            "controlledPower": {
+              "value": "HIGH_WITHOUT_LOUDNESS_REQUIREMENT",
+              "basisRefs": [
+                "VoiceProfile.creativeProfile.controlled_power"
+              ],
+              "confidence": "MEDIUM"
+            },
+            "sentenceFinality": {
+              "value": "HIGH",
+              "basisRefs": [
+                "VoiceProfile.creativeProfile.sentence_finality"
+              ],
+              "confidence": "MEDIUM"
+            }
+          },
+          "voiceUseCase": "CHARACTER_DIALOGUE",
+          "schemaVersion": "creative-voice-casting-v1",
+          "sourceProfileId": "transient:speaker:geshuhan:fish-dimension-repair",
+          "historicalFactRefs": [
+            "Work.content.historicalActorHierarchy[speakerKey=speaker:geshuhan]",
+            "Work.content.historicalSpine[beatId=P2]",
+            "《旧唐书》卷104·哥舒翰传：年四十遭父丧、三年后入河西；天宝六载已任要职，天宝十五载守潼关"
+          ],
+          "semanticInvariants": [
+            "older life stage != simply lower pitch",
+            "stable character casting != current scene performance"
+          ],
+          "creativeDecisionBasis": [
+            "Primary chronology supports at least an early-fifties lower bound at the battle; late-middle-adult vocal age is an artistic target, not an asserted exact age.",
+            "Long command responsibility supports weight and resonance; current illness is excluded from the base voice.",
+            "Older life stage is represented by a composite of texture, resonance, breath support, articulation, and phrase shape, never pitch alone."
+          ]
+        },
+        "sourceProvenance": {
+          "voiceUseCase": "CHARACTER_DIALOGUE",
+          "referenceText": "先坐下。方才外面是什么情形，你慢慢说。\n别只说结论，我要听你亲眼看见的。\n若还有什么没讲清楚，现在一并告诉我。",
+          "candidateCount": 3,
+          "masterSelection": {
+            "aiRank": 1,
+            "contentHash": "59fb527e80eb7a3564caeaed8da68b62226922fd77902967e8e7996842fbd7ad",
+            "creativeFit": {
+              "score": 0.6827147689935129,
+              "confidence": "LOW_ACOUSTIC_PROXY",
+              "dimensions": {
+                "texture": {
+                  "match": 0.62,
+                  "target": 0.62,
+                  "observed": 1.0,
+                  "confidence": "LOW_ACOUSTIC_PROXY"
+                },
+                "vocalAge": {
+                  "match": 0.8996270573352882,
+                  "target": 0.72,
+                  "observed": 0.8203729426647117,
+                  "confidence": "LOW_ACOUSTIC_PROXY"
+                },
+                "resonance": {
+                  "match": 0.9817333653507392,
+                  "target": 0.72,
+                  "observed": 0.7382666346492607,
+                  "confidence": "LOW_ACOUSTIC_PROXY"
+                },
+                "roughness": {
+                  "match": 0.45,
+                  "target": 0.45,
+                  "observed": 1.0,
+                  "confidence": "LOW_ACOUSTIC_PROXY"
+                },
+                "brightness": {
+                  "match": 0.8450414986396743,
+                  "target": 0.35,
+                  "observed": 0.1950414986396742,
+                  "confidence": "LOW_ACOUSTIC_PROXY"
+                },
+                "breathiness": {
+                  "match": 0.595014190337095,
+                  "target": 0.25,
+                  "observed": 0.654985809662905,
+                  "confidence": "LOW_ACOUSTIC_PROXY"
+                },
+                "vocalWeight": {
+                  "match": 0.9617333653507392,
+                  "target": 0.7,
+                  "observed": 0.7382666346492607,
+                  "confidence": "LOW_ACOUSTIC_PROXY"
+                },
+                "baselinePace": 0.8628451380552221,
+                "sentenceEnding": 0.3003305319917246,
+                "controlledPower": 0.3108225428746465
+              }
+            },
+            "technicalQc": {
+              "cer": 0.0,
+              "extra": [],
+              "status": "PASS",
+              "missing": [],
+              "repetition": [],
+              "sameVendorAsTts": true,
+              "properNounFindings": [],
+              "normalizedTranscript": "先坐下方才外面是什么情形你慢慢说别只说结论我要听你亲眼看见的若还有什么没讲清楚现在一并告诉我"
+            },
+            "candidateIndex": 0,
+            "artisticApproval": {
+              "source": "USER",
+              "status": "USER_APPROVED",
+              "reviewArtifactId": "voice-design-review:87ad528aef4cc7922f7e7d09346ee6525ef32abe4fab10b3483a90b2b09b9752"
+            }
+          },
+          "sourceProfileId": "transient:speaker:geshuhan:fish-dimension-repair",
+          "reviewArtifactId": "voice-design-review:87ad528aef4cc7922f7e7d09346ee6525ef32abe4fab10b3483a90b2b09b9752",
+          "referenceTextHash": "5bd8ab547fc29904e2c311192d87c535f605fb7f1ac75569b130ff70a574c1c8",
+          "designRequestFingerprint": "87ad528aef4cc7922f7e7d09346ee6525ef32abe4fab10b3483a90b2b09b9752"
+        },
+        "providerMappings": [
+          {
+            "provider": "fish",
+            "model": "s2-pro",
+            "providerVoiceId": "c8baf9ba37274381a1cf363195eae9a7",
+            "materialFingerprint": "58326fc10905772ec7055e66c3e058ce7e32a0407befd976eabf1ecf88543668",
+            "status": "ACTIVE",
+            "createdAt": "2026-09-02T04:46:14.816219Z"
+          }
+        ]
+      },
+      "version": 2,
+      "createdAt": "2026-09-02T12:46:06.309000",
+      "updatedAt": "2026-09-02T12:46:17.273000"
+    },
+    "voice_06ac45335157432e8322a9b32e8d9804": {
+      "id": "voice_06ac45335157432e8322a9b32e8d9804",
+      "name": "Role Voice speaker:wangsili",
+      "sourceType": "DESIGNED",
+      "status": "ACTIVE",
+      "mimeType": "audio/x-wav",
+      "fileSize": 360492,
+      "durationMs": 4087,
+      "contentHash": "716e09b7ceb8cb7fd1770c57aa4bd6214f437ce3e07ad16b36ba73ccdc267efb",
+      "content": {
+        "schemaVersion": "voice-v1",
+        "creativeCastingProfile": {
+          "dimensions": {
+            "texture": {
+              "value": "CLEAN_SUBTLE_GRAIN",
+              "basisRefs": [
+                "creativeDecisionBasis[5]"
+              ],
+              "confidence": "LOW"
+            },
+            "language": {
+              "value": "zh-CN",
+              "basisRefs": [
+                "VoiceProfile.creativeProfile.language"
+              ],
+              "confidence": "MEDIUM"
+            },
+            "register": {
+              "value": "MID",
+              "basisRefs": [
+                "creativeDecisionBasis[2]"
+              ],
+              "confidence": "MEDIUM"
+            },
+            "vocalAge": {
+              "value": "MATURE_ADULT",
+              "basisRefs": [
+                "creativeDecisionBasis[0]"
+              ],
+              "confidence": "MEDIUM"
+            },
+            "resonance": {
+              "value": "BALANCED",
+              "basisRefs": [
+                "creativeDecisionBasis[3]"
+              ],
+              "confidence": "MEDIUM"
+            },
+            "roughness": {
+              "value": "LOW",
+              "basisRefs": [
+                "creativeDecisionBasis[6]"
+              ],
+              "confidence": "LOW"
+            },
+            "brightness": {
+              "value": "NEUTRAL",
+              "basisRefs": [
+                "creativeDecisionBasis[4]"
+              ],
+              "confidence": "MEDIUM"
+            },
+            "breathiness": {
+              "value": "LOW",
+              "basisRefs": [
+                "creativeDecisionBasis[7]"
+              ],
+              "confidence": "LOW"
+            },
+            "vocalWeight": {
+              "value": "MEDIUM",
+              "basisRefs": [
+                "creativeDecisionBasis[1]"
+              ],
+              "confidence": "MEDIUM"
+            },
+            "articulation": {
+              "value": "FIRM",
+              "basisRefs": [
+                "VoiceProfile.creativeProfile.articulation_firmness"
+              ],
+              "confidence": "MEDIUM"
+            },
+            "baselinePace": {
+              "value": "MODERATE",
+              "basisRefs": [
+                "VoiceProfile.creativeProfile.baseline_pace"
+              ],
+              "confidence": "MEDIUM"
+            },
+            "controlledPower": {
+              "value": "MEDIUM_CONTROLLED",
+              "basisRefs": [
+                "creativeDecisionBasis[8]"
+              ],
+              "confidence": "MEDIUM"
+            },
+            "sentenceFinality": {
+              "value": "MODERATE_REQUEST_REMAINS_OPEN",
+              "basisRefs": [
+                "VoiceProfile.creativeProfile.sentence_finality"
+              ],
+              "confidence": "MEDIUM"
+            }
+          },
+          "schemaVersion": "creative-voice-casting-v1",
+          "sourceProfileId": "transient:speaker:wangsili:fish-dimension-repair",
+          "historicalFactRefs": [
+            "Work.content.historicalActorHierarchy[speakerKey=speaker:wangsili]",
+            "Work.content.historicalSpine[beatId=P2]",
+            "《旧唐书》卷110·王思礼传：少习戎旅、长期军旅经历；生年未载"
+          ],
+          "semanticInvariants": [
+            "older life stage != simply lower pitch",
+            "stable character casting != current scene performance"
+          ],
+          "creativeDecisionBasis": [
+            "Exact age remains UNKNOWN; mature vocal age is an explicit artistic casting decision based on sustained military experience, not a claimed birth year.",
+            "Direct subordinate counsel supports clarity and firmness without assigning final command authority."
+          ]
+        },
+        "sourceProvenance": {
+          "candidateCount": 3,
+          "masterSelection": {
+            "contentHash": "716e09b7ceb8cb7fd1770c57aa4bd6214f437ce3e07ad16b36ba73ccdc267efb",
+            "creativeFit": {
+              "score": 0.653513416361014,
+              "confidence": "LOW_ACOUSTIC_PROXY",
+              "dimensions": {
+                "texture": {
+                  "match": 0.32000000000000006,
+                  "target": 0.32,
+                  "observed": 1.0,
+                  "confidence": "LOW_ACOUSTIC_PROXY"
+                },
+                "vocalAge": {
+                  "match": 0.797716088243565,
+                  "target": 0.55,
+                  "observed": 0.752283911756435,
+                  "confidence": "LOW_ACOUSTIC_PROXY"
+                },
+                "resonance": {
+                  "match": 0.9202767927199031,
+                  "target": 0.5,
+                  "observed": 0.5797232072800967,
+                  "confidence": "LOW_ACOUSTIC_PROXY"
+                },
+                "roughness": {
+                  "match": 0.25,
+                  "target": 0.25,
+                  "observed": 1.0,
+                  "confidence": "LOW_ACOUSTIC_PROXY"
+                },
+                "brightness": {
+                  "match": 0.6503107675344533,
+                  "target": 0.5,
+                  "observed": 0.15031076753445324,
+                  "confidence": "LOW_ACOUSTIC_PROXY"
+                },
+                "breathiness": {
+                  "match": 0.895787709662202,
+                  "target": 0.25,
+                  "observed": 0.354212290337798,
+                  "confidence": "LOW_ACOUSTIC_PROXY"
+                },
+                "vocalWeight": {
+                  "match": 0.9202767927199031,
+                  "target": 0.5,
+                  "observed": 0.5797232072800967,
+                  "confidence": "LOW_ACOUSTIC_PROXY"
+                },
+                "baselinePace": 0.7922914700502174,
+                "sentenceEnding": 0.8201159368714516,
+                "controlledPower": 0.16835860580844386
+              }
+            },
+            "technicalQc": {
+              "cer": 0.0,
+              "extra": [],
+              "status": "PASS",
+              "missing": [],
+              "repetition": [],
+              "sameVendorAsTts": true,
+              "properNounFindings": [],
+              "normalizedTranscript": "请给我三十骑取杨国忠首级为大帅除患"
+            },
+            "candidateIndex": 2
+          },
+          "sourceProfileId": "transient:speaker:wangsili:fish-dimension-repair"
+        },
+        "providerMappings": [
+          {
+            "provider": "fish",
+            "model": "s2-pro",
+            "providerVoiceId": "75f5dad3bf8a41b58797978e241a8079",
+            "materialFingerprint": "5e38c8adcef8ba95e090ce7d02fad217ae0e2693a93c5a6c0a0337d7221c19b4",
+            "status": "ACTIVE",
+            "createdAt": "2026-08-27T15:21:52.804100Z"
+          }
+        ]
+      },
+      "version": 2,
+      "createdAt": "2026-08-27T23:21:48.388000",
+      "updatedAt": "2026-08-27T23:21:53.306000"
+    }
+  },
+  "currentAudioRequests": {
+    "spoken-s1-wangsili-proposal": {
+      "schemaVersion": "speech-generation-v1",
+      "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+      "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+      "spokenContentId": "spoken-s1-wangsili-proposal",
+      "exactText": "请给我三十骑，取杨国忠首级，为大帅除患。",
+      "speakerKey": "speaker:wangsili",
+      "voiceProfile": {
+        "profileId": "voice-profile:speaker:wangsili:7.2s-r",
+        "speakerKey": "speaker:wangsili",
+        "creativeProfile": {
+          "agePresentation": "UNKNOWN",
+          "genderPresentation": null,
+          "timbre": "UNKNOWN",
+          "temperament": "UNKNOWN",
+          "baselinePace": "MODERATE",
+          "power": "UNKNOWN",
+          "restraint": "UNKNOWN",
+          "language": "zh-CN",
+          "register": "CONCISE_INTERNAL_MILITARY_COUNSEL_SUBORDINATE_TO_COMMANDER",
+          "resonance": null,
+          "texture": "UNKNOWN",
+          "authority": null,
+          "articulation": null,
+          "energy": null,
+          "vocalAge": "UNKNOWN",
+          "vocalWeight": "UNKNOWN",
+          "resonanceDepth": "UNKNOWN",
+          "timbreBrightness": "UNKNOWN",
+          "articulationFirmness": "FIRM",
+          "phraseAttack": "DIRECT_REQUEST",
+          "baselineEnergy": "UNKNOWN",
+          "breathSupport": "UNKNOWN",
+          "commandPresence": "MEDIUM_EXECUTION_CAPABLE",
+          "gravitas": "UNKNOWN",
+          "controlledPower": "UNKNOWN",
+          "sentenceFinality": "MODERATE_REQUEST_REMAINS_OPEN",
+          "emotionalContainment": "UNKNOWN",
+          "consistencyNotes": [
+            "保持具体、直接且承认主帅批准权的表达结构",
+            "当前低声、急迫和高克制不进入稳定音色",
+            "不得从姓名、年龄、性别或历史评价补全未知音色"
+          ]
+        },
+        "characterUnderstanding": {
+          "schemaVersion": "character-understanding-v1",
+          "understandingId": "character-understanding:speaker:wangsili:7.2s-r",
+          "speakerKey": "speaker:wangsili",
+          "identityAndLifeStage": {
+            "institutionalRole": {
+              "value": "受主帅节制的军中部将",
+              "confidence": "HIGH",
+              "evidenceRefs": [
+                "Work.content.historicalActorHierarchy[speakerKey=speaker:wangsili]",
+                "Scene.content.spokenContent[id=spoken-s1-wangsili-proposal]"
+              ]
+            },
+            "professionalRole": {
+              "value": "提出并可承担具体军事行动的前线将领",
+              "confidence": "HIGH",
+              "evidenceRefs": [
+                "Work.content.historicalActorHierarchy[speakerKey=speaker:wangsili]",
+                "Work.content.historicalSpine[beatId=P5]"
+              ]
+            },
+            "commandResponsibility": {
+              "value": "具备带领小规模骑兵或前军执行行动的责任，但批准权属于主帅",
+              "confidence": "MEDIUM",
+              "evidenceRefs": [
+                "Scene.content.spokenContent[id=spoken-s1-wangsili-proposal]",
+                "Work.content.historicalSpine[beatId=P5]"
+              ]
+            }
+          },
+          "experienceStructure": {
+            "domainExperience": {
+              "value": "持久层支持其具有军务和前线行动经验",
+              "confidence": "HIGH",
+              "evidenceRefs": [
+                "Work.content.historicalActorHierarchy[speakerKey=speaker:wangsili]",
+                "Work.content.historicalSpine[beatId=P5]"
+              ]
+            },
+            "leadershipExposure": {
+              "value": "具有率领先头部队的经历",
+              "confidence": "HIGH",
+              "evidenceRefs": [
+                "Work.content.historicalSpine[beatId=P5]"
+              ]
+            }
+          },
+          "decisionStyle": {
+            "decisionTempo": {
+              "value": "面对迫近威胁时迅速提出资源和目标明确的行动方案",
+              "confidence": "MEDIUM",
+              "evidenceRefs": [
+                "Scene.content.spokenContent[id=spoken-s1-wangsili-proposal]",
+                "Scene.content.opposition"
+              ]
+            },
+            "riskTolerance": {
+              "value": "愿意提出政治与军事后果均较高的直接行动",
+              "confidence": "HIGH",
+              "evidenceRefs": [
+                "Scene.content.spokenContent[id=spoken-s1-wangsili-proposal]",
+                "Scene.content.stakes",
+                "Work.content.historicalSpine[beatId=P2]"
+              ]
+            },
+            "actionBias": {
+              "value": "倾向把威胁转化为具体、可立即执行的行动",
+              "confidence": "HIGH",
+              "evidenceRefs": [
+                "Scene.content.spokenContent[id=spoken-s1-wangsili-proposal]"
+              ]
+            }
+          },
+          "emotionalRegulation": {},
+          "interactionStyle": {
+            "interactionDirectness": {
+              "value": "直接向主帅提出兵力、目标和预期效用",
+              "confidence": "HIGH",
+              "evidenceRefs": [
+                "Scene.content.spokenContent[id=spoken-s1-wangsili-proposal]"
+              ]
+            },
+            "deferencePattern": {
+              "value": "以请求句式承认主帅的批准权",
+              "confidence": "HIGH",
+              "evidenceRefs": [
+                "Scene.content.spokenContent[id=spoken-s1-wangsili-proposal]",
+                "Work.content.historicalActorHierarchy[speakerKey=speaker:geshuhan]"
+              ]
+            },
+            "persuasionStyle": {
+              "value": "以资源—目标—对主帅效用的短链条进行说服",
+              "confidence": "HIGH",
+              "evidenceRefs": [
+                "Scene.content.spokenContent[id=spoken-s1-wangsili-proposal]"
+              ]
+            }
+          },
+          "authorityAndResponsibility": {
+            "formalAuthority": {
+              "value": "部将层级，正式权力低于统军主帅",
+              "confidence": "HIGH",
+              "evidenceRefs": [
+                "Work.content.historicalActorHierarchy[speakerKey=speaker:wangsili]",
+                "Work.content.historicalActorHierarchy[speakerKey=speaker:geshuhan]"
+              ]
+            },
+            "situationalAuthority": {
+              "value": "对所提小规模行动具有执行能力，但无最终裁决权",
+              "confidence": "MEDIUM",
+              "evidenceRefs": [
+                "Scene.content.spokenContent[id=spoken-s1-wangsili-proposal]",
+                "Shot.content.requiredTransition"
+              ]
+            },
+            "decisionConsequenceWeight": {
+              "value": "提案可能改变军府与朝廷之间的行动边界",
+              "confidence": "HIGH",
+              "evidenceRefs": [
+                "Scene.content.stakes",
+                "Scene.content.turn",
+                "Work.content.historicalSpine[beatId=P2]"
+              ]
+            },
+            "roleConstraintStrength": {
+              "value": "行动受主帅批准权和军令关系约束",
+              "confidence": "HIGH",
+              "evidenceRefs": [
+                "Scene.content.spokenContent[id=spoken-s1-wangsili-proposal]",
+                "Work.content.historicalActorHierarchy[speakerKey=speaker:wangsili]"
+              ]
+            }
+          },
+          "communicationStyle": {
+            "communicationDensity": {
+              "value": "高密度；一句内完成请求、目标与理由",
+              "confidence": "HIGH",
+              "evidenceRefs": [
+                "Scene.content.spokenContent[id=spoken-s1-wangsili-proposal]"
+              ]
+            },
+            "directness": {
+              "value": "高",
+              "confidence": "HIGH",
+              "evidenceRefs": [
+                "Scene.content.spokenContent[id=spoken-s1-wangsili-proposal]"
+              ]
+            },
+            "verbalPrecision": {
+              "value": "明确给出三十骑、行动目标和预期结果",
+              "confidence": "HIGH",
+              "evidenceRefs": [
+                "Scene.content.spokenContent[id=spoken-s1-wangsili-proposal]"
+              ]
+            },
+            "explanationTendency": {
+              "value": "提供最短必要理由，不展开背景说明",
+              "confidence": "HIGH",
+              "evidenceRefs": [
+                "Scene.content.spokenContent[id=spoken-s1-wangsili-proposal]"
+              ]
+            }
+          },
+          "physicalBaseline": {},
+          "presentationModes": {},
+          "alignmentAndConstraints": {
+            "obligationStructure": {
+              "value": "受军务职责和主帅命令关系约束",
+              "confidence": "HIGH",
+              "evidenceRefs": [
+                "Work.content.historicalActorHierarchy[speakerKey=speaker:wangsili]",
+                "Scene.content.spokenContent[id=spoken-s1-wangsili-proposal]"
+              ]
+            },
+            "interestConflict": {
+              "value": "迅速消除政治威胁的方案与现有军令及政治边界发生冲突",
+              "confidence": "HIGH",
+              "evidenceRefs": [
+                "Scene.content.opposition",
+                "Scene.content.turn",
+                "Work.content.historicalSpine[beatId=P2]"
+              ]
+            },
+            "boundaryConstraint": {
+              "value": "不得自行越过主帅的批准权",
+              "confidence": "HIGH",
+              "evidenceRefs": [
+                "Scene.content.spokenContent[id=spoken-s1-wangsili-proposal]"
+              ]
+            }
+          },
+          "unknownFields": [
+            "alignmentConstraints.institutionalAlignment",
+            "alignmentConstraints.loyaltyTarget",
+            "alignmentConstraints.roleConflict",
+            "authorityResponsibility.accountabilityLoad",
+            "authorityResponsibility.publicImageConstraint",
+            "communication.commandFrequency",
+            "communication.pauseHabit",
+            "communication.questionFrequency",
+            "communication.rhetoricalStyle",
+            "communication.sentenceLengthPreference",
+            "communication.verbosity",
+            "decisionStyle.informationThresholdBeforeAction",
+            "decisionStyle.planningHorizon",
+            "decisionStyle.reversibilityPreference",
+            "decisionStyle.uncertaintyTolerance",
+            "emotionalRegulation.angerExpression",
+            "emotionalRegulation.emotionalContainment",
+            "emotionalRegulation.emotionalExpressiveness",
+            "emotionalRegulation.fearExpression",
+            "emotionalRegulation.frustrationExpression",
+            "emotionalRegulation.recoveryTempo",
+            "emotionalRegulation.stressResponse",
+            "experience.experienceDepth",
+            "experience.physicalHardshipExposure",
+            "experience.politicalExposure",
+            "experience.recentExperienceLoad",
+            "identityLifeStage.lifeStage",
+            "identityLifeStage.perceivedAgeRange",
+            "identityLifeStage.socialStanding",
+            "interaction.conflictStyle",
+            "interaction.dominanceExpression",
+            "interaction.relationshipSensitivity",
+            "interaction.socialDistancePreference",
+            "interaction.trustExpression",
+            "physicalBaseline.breathCapacity",
+            "physicalBaseline.fatigue",
+            "physicalBaseline.illnessBurden",
+            "physicalBaseline.mobilityConstraint",
+            "physicalBaseline.pain",
+            "physicalBaseline.physicalCondition",
+            "presentationModes.maskingLevel",
+            "presentationModes.privatePresentation",
+            "presentationModes.publicPresentation",
+            "presentationModes.rolePerformance"
+          ],
+          "sourceRefs": [
+            "Scene.content.opposition",
+            "Scene.content.spokenContent[id=spoken-s1-wangsili-proposal]",
+            "Scene.content.stakes",
+            "Scene.content.turn",
+            "Shot.content.requiredTransition",
+            "Work.content.historicalActorHierarchy[speakerKey=speaker:geshuhan]",
+            "Work.content.historicalActorHierarchy[speakerKey=speaker:wangsili]",
+            "Work.content.historicalSpine[beatId=P2]",
+            "Work.content.historicalSpine[beatId=P5]"
+          ]
+        },
+        "providerMappings": [
+          {
+            "provider": "fish",
+            "model": "s2-pro",
+            "voiceId": "75f5dad3bf8a41b58797978e241a8079",
+            "status": "APPROVED",
+            "materialParameters": {},
+            "nonMaterialMetadata": {}
+          }
+        ],
+        "displayName": null,
+        "nonMaterialMetadata": {
+          "voiceBindingStatus": "PENDING",
+          "source": "skill-driven-prepaid-preflight"
+        }
+      },
+      "creativeCastingProfile": null,
+      "providerMapping": {
+        "provider": "fish",
+        "model": "s2-pro",
+        "voiceId": "75f5dad3bf8a41b58797978e241a8079",
+        "status": "APPROVED",
+        "materialParameters": {},
+        "nonMaterialMetadata": {}
+      },
+      "pronunciationGuidance": [],
+      "sceneState": null,
+      "performanceIntent": {},
+      "audioPerformanceBrief": {
+        "schemaVersion": "audio-projection-v1",
+        "dpdFingerprint": "af9827cf6564228b4c0a9fd8ed6a1ab2cc1813b5ec36ced9015087014ea413e5",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "spokenContentId": "spoken-s1-wangsili-proposal",
+        "speakerKey": "speaker:wangsili",
+        "textFingerprint": "f5cec6a7318203f07960f2e38034a2a1904ccbe1c5f108e72fd53f55056a7268",
+        "voiceProfileId": "voice-profile:speaker:wangsili:7.2s-r",
+        "voiceProfileFingerprint": "0779d9b41c953ca8bf2d5ce390a99ddfeda039337987eec65f1dc029e4eed465",
+        "voiceIdentityRef": "voice_06ac45335157432e8322a9b32e8d9804",
+        "timingContextFingerprint": "e39bde58da18a96f45e3e4dff5bdaa4c844d58ef3afd2a5c059b54a458020711",
+        "pace": "From the MODERATE voice baseline, measured and restrained despite high internal pressure. Use natural dialogue duration, never fill the video duration.",
+        "paceTendency": "SLOWER",
+        "rhythm": "direct opening, measured progression, clear interpersonal ending",
+        "intensity": "internally tense without raised volume",
+        "volumeTendency": "LOWER",
+        "pauseStrategy": "a small clause-boundary turn, then recover direct address; no timed pause",
+        "articulation": "precise and careful without acquiring a superior's command weight",
+        "sentenceEnding": "recover clear finality while carrying the action: seek authorization for a direct intervention",
+        "control": "contained interpersonal delivery, keeping pressure under audible control",
+        "performanceBoundaries": [
+          "do not turn confidential urgency into public incitement",
+          "do not let execution confidence claim final approval authority"
+        ],
+        "fingerprint": "997a6837ba93457f565a4bb166617787661b3d351caeff6b60e6b30983f342d7"
+      },
+      "videoConditionedProjection": {
+        "schemaVersion": "video-conditioned-audio-v1",
+        "baseAudioProjectionFingerprint": "c9d3ff77b0e2d232d0af73a3e0ea9b5be2b9c0c35f07d84ce6d438fe0c63018b",
+        "realizedPerformanceFingerprint": "2ca43baa5f4ab5ba8cab24e9da7090d2c6bc2b579b760bf0d50150a721985405",
+        "videoMediaId": "media_ac9d14c5cdc74c43ba44562752cf9489",
+        "videoContentHash": "066b281d01ba8f330c66c463c8c6ff0f238cc2f56af7c0dffbbaf812e62f677f",
+        "shotId": "shot_83db7eb53b2f49d3a58428d4659e584e",
+        "voiceMaterialFingerprint": "bd6c3e3fa88215c6ada123ff14eec316a7f5e1176dc615ebd1b18b74aeb085c2",
+        "finalAudioPerformanceBrief": {
+          "schemaVersion": "audio-projection-v1",
+          "dpdFingerprint": "af9827cf6564228b4c0a9fd8ed6a1ab2cc1813b5ec36ced9015087014ea413e5",
+          "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+          "spokenContentId": "spoken-s1-wangsili-proposal",
+          "speakerKey": "speaker:wangsili",
+          "textFingerprint": "f5cec6a7318203f07960f2e38034a2a1904ccbe1c5f108e72fd53f55056a7268",
+          "voiceProfileId": "voice-profile:speaker:wangsili:7.2s-r",
+          "voiceProfileFingerprint": "0779d9b41c953ca8bf2d5ce390a99ddfeda039337987eec65f1dc029e4eed465",
+          "voiceIdentityRef": "voice_06ac45335157432e8322a9b32e8d9804",
+          "timingContextFingerprint": "e39bde58da18a96f45e3e4dff5bdaa4c844d58ef3afd2a5c059b54a458020711",
+          "pace": "From the MODERATE voice baseline, measured and restrained despite high internal pressure. Use natural dialogue duration, never fill the video duration.",
+          "paceTendency": "SLOWER",
+          "rhythm": "direct opening, measured progression, clear interpersonal ending",
+          "intensity": "internally tense without raised volume",
+          "volumeTendency": "LOWER",
+          "pauseStrategy": "a small clause-boundary turn, then recover direct address; no timed pause",
+          "articulation": "precise and careful without acquiring a superior's command weight",
+          "sentenceEnding": "recover clear finality while carrying the action: seek authorization for a direct intervention",
+          "control": "contained interpersonal delivery, keeping pressure under audible control",
+          "performanceBoundaries": [
+            "do not turn confidential urgency into public incitement",
+            "do not let execution confidence claim final approval authority"
+          ],
+          "fingerprint": "997a6837ba93457f565a4bb166617787661b3d351caeff6b60e6b30983f342d7"
+        },
+        "fingerprint": "603816890057232601b1e68cddb38c9a853eac0c8cf69ffffe5887ebcef325c2"
+      },
+      "materialRenderParameters": {
+        "performanceRendering": "BRIEF_CUES_V1"
+      },
+      "targetTimingPolicy": {
+        "policy": "NATURAL",
+        "targetDurationMs": null,
+        "allowRateAdjustment": false,
+        "constraints": {}
+      },
+      "nonMaterialMetadata": {}
+    },
+    "spoken-s1-geshuhan-refusal": {
+      "schemaVersion": "speech-generation-v1",
+      "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+      "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+      "spokenContentId": "spoken-s1-geshuhan-refusal",
+      "exactText": "此事若行，我便是反臣。不可。",
+      "speakerKey": "speaker:geshuhan",
+      "voiceProfile": {
+        "profileId": "transient:speaker:geshuhan:fish-dimension-repair",
+        "speakerKey": "speaker:geshuhan",
+        "creativeProfile": {
+          "agePresentation": "UNKNOWN",
+          "genderPresentation": null,
+          "timbre": "UNKNOWN",
+          "temperament": "UNKNOWN",
+          "baselinePace": "MODERATE_DELIBERATE",
+          "power": "UNKNOWN",
+          "restraint": "UNKNOWN",
+          "language": "zh-CN",
+          "register": "CONCISE_MILITARY_COMMAND_DECISION",
+          "resonance": null,
+          "texture": "UNKNOWN",
+          "authority": null,
+          "articulation": null,
+          "energy": null,
+          "vocalAge": "UNKNOWN",
+          "vocalWeight": "UNKNOWN",
+          "resonanceDepth": "UNKNOWN",
+          "timbreBrightness": "UNKNOWN",
+          "articulationFirmness": "FIRM",
+          "phraseAttack": "DELIBERATE_JUDGMENT",
+          "baselineEnergy": "UNKNOWN",
+          "breathSupport": "UNKNOWN",
+          "commandPresence": "HIGH_ACTION_CONSEQUENCE",
+          "gravitas": "HIGH_RESPONSIBILITY_WEIGHT",
+          "controlledPower": "HIGH_WITHOUT_LOUDNESS_REQUIREMENT",
+          "sentenceFinality": "HIGH",
+          "emotionalContainment": "UNKNOWN",
+          "consistencyNotes": [
+            "权力通过裁决后果和句末关闭表达，不以音量替代",
+            "当前 illness、压力、低声和极高克制不进入永久音色",
+            "不得从姓名、年龄、性别或历史评价补全未知音色"
+          ]
+        },
+        "characterUnderstanding": null,
+        "providerMappings": [
+          {
+            "provider": "fish",
+            "model": "s2-pro",
+            "voiceId": "c8baf9ba37274381a1cf363195eae9a7",
+            "status": "APPROVED",
+            "materialParameters": {},
+            "nonMaterialMetadata": {}
+          }
+        ],
+        "displayName": null,
+        "nonMaterialMetadata": {}
+      },
+      "creativeCastingProfile": null,
+      "providerMapping": {
+        "provider": "fish",
+        "model": "s2-pro",
+        "voiceId": "c8baf9ba37274381a1cf363195eae9a7",
+        "status": "APPROVED",
+        "materialParameters": {},
+        "nonMaterialMetadata": {}
+      },
+      "pronunciationGuidance": [],
+      "sceneState": null,
+      "performanceIntent": {},
+      "audioPerformanceBrief": {
+        "schemaVersion": "audio-projection-v1",
+        "dpdFingerprint": "2d826a70c27da23aded5eda30082931b5c122115dd932ce104b3fb590ec90e1b",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "spokenContentId": "spoken-s1-geshuhan-refusal",
+        "speakerKey": "speaker:geshuhan",
+        "textFingerprint": "004e940f9b0a2a942249860535195e584f93f8b381d6889c4db7118383a07024",
+        "voiceProfileId": "transient:speaker:geshuhan:fish-dimension-repair",
+        "voiceProfileFingerprint": "e4d6af757e3defc9559d6efbb808de91986585e517fb53fbd6ca0e82a06cadcd",
+        "voiceIdentityRef": "voice_c59996a23d9046eb8df51cccfb4a0649",
+        "timingContextFingerprint": "e39bde58da18a96f45e3e4dff5bdaa4c844d58ef3afd2a5c059b54a458020711",
+        "pace": "From the MODERATE_DELIBERATE voice baseline, measured and restrained despite high internal pressure. Use natural dialogue duration, never fill the video duration.",
+        "paceTendency": "SLOWER",
+        "rhythm": "direct opening, measured progression, clear interpersonal ending",
+        "intensity": "internally tense without raised volume",
+        "volumeTendency": "NEUTRAL",
+        "pauseStrategy": "a small clause-boundary turn, then recover direct address; no timed pause",
+        "articulation": "firm and explicit, never substituting loudness for authority",
+        "sentenceEnding": "recover clear finality while carrying the action: reject",
+        "control": "contained interpersonal delivery, keeping pressure under audible control",
+        "performanceBoundaries": [
+          "do not collapse authority into shouting",
+          "do not turn refusal into uncontrolled anger"
+        ],
+        "fingerprint": "87292f517a79c4228c4ff505d6ab39067de0d7072e95c15b2819e4868f9f3544"
+      },
+      "videoConditionedProjection": {
+        "schemaVersion": "video-conditioned-audio-v1",
+        "baseAudioProjectionFingerprint": "a39b9b833cf0175317d2316d9eaddcff3585ab89ec2c57e4bb06c41e5e220ab2",
+        "realizedPerformanceFingerprint": "a2d3d311576d75a305e6453089176ac89b0d8cfd9c3acd2a141ee24a13cefd12",
+        "videoMediaId": "media_ac9d14c5cdc74c43ba44562752cf9489",
+        "videoContentHash": "066b281d01ba8f330c66c463c8c6ff0f238cc2f56af7c0dffbbaf812e62f677f",
+        "shotId": "shot_83db7eb53b2f49d3a58428d4659e584e",
+        "voiceMaterialFingerprint": "bc7f548e103bd667ef4e8124d1ce6933d747ff8bcfc48b4dea74eda1cb43597e",
+        "finalAudioPerformanceBrief": {
+          "schemaVersion": "audio-projection-v1",
+          "dpdFingerprint": "2d826a70c27da23aded5eda30082931b5c122115dd932ce104b3fb590ec90e1b",
+          "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+          "spokenContentId": "spoken-s1-geshuhan-refusal",
+          "speakerKey": "speaker:geshuhan",
+          "textFingerprint": "004e940f9b0a2a942249860535195e584f93f8b381d6889c4db7118383a07024",
+          "voiceProfileId": "transient:speaker:geshuhan:fish-dimension-repair",
+          "voiceProfileFingerprint": "e4d6af757e3defc9559d6efbb808de91986585e517fb53fbd6ca0e82a06cadcd",
+          "voiceIdentityRef": "voice_c59996a23d9046eb8df51cccfb4a0649",
+          "timingContextFingerprint": "e39bde58da18a96f45e3e4dff5bdaa4c844d58ef3afd2a5c059b54a458020711",
+          "pace": "From the MODERATE_DELIBERATE voice baseline, measured and restrained despite high internal pressure. Use natural dialogue duration, never fill the video duration.",
+          "paceTendency": "SLOWER",
+          "rhythm": "direct opening, measured progression, clear interpersonal ending",
+          "intensity": "internally tense without raised volume",
+          "volumeTendency": "NEUTRAL",
+          "pauseStrategy": "a small clause-boundary turn, then recover direct address; no timed pause",
+          "articulation": "firm and explicit, never substituting loudness for authority",
+          "sentenceEnding": "recover clear finality while carrying the action: reject",
+          "control": "contained interpersonal delivery, keeping pressure under audible control",
+          "performanceBoundaries": [
+            "do not collapse authority into shouting",
+            "do not turn refusal into uncontrolled anger"
+          ],
+          "fingerprint": "87292f517a79c4228c4ff505d6ab39067de0d7072e95c15b2819e4868f9f3544"
+        },
+        "fingerprint": "0f73577c901d13c8ba62716f825ddea6733d57a2c0e2ab2288b08192f4774a59"
+      },
+      "materialRenderParameters": {
+        "performanceRendering": "BRIEF_CUES_V1"
+      },
+      "targetTimingPolicy": {
+        "policy": "NATURAL",
+        "targetDurationMs": null,
+        "allowRateAdjustment": false,
+        "constraints": {}
+      },
+      "nonMaterialMetadata": {}
+    }
+  },
+  "audioDpdBySpokenContent": {
+    "spoken-s1-wangsili-proposal": {
+      "schemaVersion": "dpd-snapshot-v1",
+      "scene": {
+        "schemaVersion": "dpd-v1",
+        "scope": "SCENE",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "sourceFingerprint": "76b92c25035ba4e2d801391b31ca3aa5010a26b3b1904baf5fe0b86e1e9da1c6",
+        "dramaticPurpose": "bring a politically dangerous remedy before the person who must decide whether it may proceed",
+        "conflictCondition": "the proposed strike may remove an immediate threat but would cross the military command's political boundary",
+        "powerStructure": "the proposing officer can execute a bounded action, while the senior officer alone can approve or refuse it",
+        "emotionalClimate": "private pressure under political suspicion",
+        "urgencyContext": "the perceived threat invites immediate action before the proposal can be tested or rejected",
+        "informationAsymmetry": "both can see the threat, but the proposer does not carry the final decision authority",
+        "socialConstraints": [
+          "confidential military consultation",
+          "the proposal must remain subject to the senior officer's decision"
+        ],
+        "direction": {
+          "objective": null,
+          "interactionTarget": null,
+          "tactic": null,
+          "authorityPosition": null,
+          "relationshipStance": null,
+          "internalActivation": null,
+          "externalControl": null,
+          "publicPrivateContext": "private command-room consultation",
+          "subtext": null,
+          "performanceBoundaries": [
+            "do not turn confidential urgency into public incitement",
+            "do not let execution confidence claim final approval authority"
+          ]
+        }
+      },
+      "beat": {
+        "schemaVersion": "dpd-v1",
+        "scope": "BEAT",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "beatId": "beat-s1-wangsili-production-proposal",
+        "actor": "speaker:wangsili",
+        "obstacle": "the requested action cannot proceed without the senior officer accepting its political consequence",
+        "transitionTrigger": "the unresolved political threat is converted into a specific request for men and action",
+        "direction": {
+          "objective": "secure explicit approval for the proposed action",
+          "interactionTarget": "speaker:geshuhan",
+          "tactic": "offer a bounded force and concrete outcome as confidential counsel",
+          "authorityPosition": "subordinate officer with execution capacity but no final approval authority",
+          "relationshipStance": "deferential counsel under the superior's decision",
+          "internalActivation": "HIGH",
+          "externalControl": "HIGH",
+          "publicPrivateContext": null,
+          "subtext": "the proposal tests whether immediate protection outweighs the political boundary",
+          "performanceBoundaries": null
+        }
+      },
+      "line": {
+        "schemaVersion": "dpd-v1",
+        "scope": "LINE",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "beatId": "beat-s1-wangsili-production-proposal",
+        "spokenContentId": "spoken-s1-wangsili-proposal",
+        "speaker": "speaker:wangsili",
+        "dramaticAction": "seek authorization for a direct intervention",
+        "observableIntent": "state the required force, target and claimed benefit, then leave the decision with the listener",
+        "continuity": "follows the established decision to keep the pass closed while political suspicion remains unresolved",
+        "changeFromPrevious": "turns an unresolved threat into an immediately actionable but unapproved proposal",
+        "direction": null
+      },
+      "effective": {
+        "schemaVersion": "dpd-effective-v1",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "beatId": "beat-s1-wangsili-production-proposal",
+        "spokenContentId": "spoken-s1-wangsili-proposal",
+        "actor": "speaker:wangsili",
+        "speaker": "speaker:wangsili",
+        "dramaticPurpose": "bring a politically dangerous remedy before the person who must decide whether it may proceed",
+        "conflictCondition": "the proposed strike may remove an immediate threat but would cross the military command's political boundary",
+        "powerStructure": "the proposing officer can execute a bounded action, while the senior officer alone can approve or refuse it",
+        "emotionalClimate": "private pressure under political suspicion",
+        "urgencyContext": "the perceived threat invites immediate action before the proposal can be tested or rejected",
+        "informationAsymmetry": "both can see the threat, but the proposer does not carry the final decision authority",
+        "socialConstraints": [
+          "confidential military consultation",
+          "the proposal must remain subject to the senior officer's decision"
+        ],
+        "objective": "secure explicit approval for the proposed action",
+        "interactionTarget": "speaker:geshuhan",
+        "tactic": "offer a bounded force and concrete outcome as confidential counsel",
+        "authorityPosition": "subordinate officer with execution capacity but no final approval authority",
+        "relationshipStance": "deferential counsel under the superior's decision",
+        "internalActivation": "HIGH",
+        "externalControl": "HIGH",
+        "publicPrivateContext": "private command-room consultation",
+        "subtext": "the proposal tests whether immediate protection outweighs the political boundary",
+        "performanceBoundaries": [
+          "do not turn confidential urgency into public incitement",
+          "do not let execution confidence claim final approval authority"
+        ],
+        "obstacle": "the requested action cannot proceed without the senior officer accepting its political consequence",
+        "transitionTrigger": "the unresolved political threat is converted into a specific request for men and action",
+        "dramaticAction": "seek authorization for a direct intervention",
+        "observableIntent": "state the required force, target and claimed benefit, then leave the decision with the listener",
+        "continuity": "follows the established decision to keep the pass closed while political suspicion remains unresolved",
+        "changeFromPrevious": "turns an unresolved threat into an immediately actionable but unapproved proposal"
+      },
+      "fingerprint": "af9827cf6564228b4c0a9fd8ed6a1ab2cc1813b5ec36ced9015087014ea413e5"
+    },
+    "spoken-s1-geshuhan-refusal": {
+      "schemaVersion": "dpd-snapshot-v1",
+      "scene": {
+        "schemaVersion": "dpd-v1",
+        "scope": "SCENE",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "sourceFingerprint": "f1a27d9fdf330503ce65ad18639b1438a931c3662b0e755796acd34d961c7e31",
+        "dramaticPurpose": "reject a politically dangerous proposal while preserving command legitimacy",
+        "conflictCondition": "a subordinate proposes eliminating the political threat through an act that would make the commander a rebel",
+        "powerStructure": "the commander holds formal authority while the subordinate tests the boundary of permissible action",
+        "emotionalClimate": "compressed political danger",
+        "urgencyContext": "the proposal demands an immediate refusal before it becomes an actionable conspiracy",
+        "informationAsymmetry": "both recognize the threat, but only the commander bears the legitimacy consequence",
+        "socialConstraints": [
+          "private military hierarchy",
+          "refusal must close the proposal without public panic"
+        ],
+        "direction": {
+          "objective": null,
+          "interactionTarget": null,
+          "tactic": null,
+          "authorityPosition": null,
+          "relationshipStance": null,
+          "internalActivation": null,
+          "externalControl": null,
+          "publicPrivateContext": "private command consultation",
+          "subtext": null,
+          "performanceBoundaries": [
+            "do not collapse authority into shouting",
+            "do not turn refusal into uncontrolled anger"
+          ]
+        }
+      },
+      "beat": {
+        "schemaVersion": "dpd-v1",
+        "scope": "BEAT",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "beatId": "beat-s1-geshuhan-refusal",
+        "actor": "speaker:geshuhan",
+        "obstacle": "speaker:wangsili presses an expedient solution that crosses the boundary into rebellion",
+        "transitionTrigger": "the proposal is fully stated across the campaign table",
+        "direction": {
+          "objective": "stop the proposal and make the legitimacy boundary unmistakable",
+          "interactionTarget": "speaker:wangsili",
+          "tactic": "controlled refusal",
+          "authorityPosition": "dominant formal commander",
+          "relationshipStance": "commanding but personally exposed",
+          "internalActivation": "HIGH",
+          "externalControl": "HIGH",
+          "publicPrivateContext": null,
+          "subtext": null,
+          "performanceBoundaries": null
+        }
+      },
+      "line": {
+        "schemaVersion": "dpd-v1",
+        "scope": "LINE",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "beatId": "beat-s1-geshuhan-refusal",
+        "spokenContentId": "spoken-s1-geshuhan-refusal",
+        "speaker": "speaker:geshuhan",
+        "dramaticAction": "reject",
+        "observableIntent": "hold the subordinate in direct attention, then close the proposal without escalation",
+        "continuity": "follows the subordinate proposal within the same two-shot",
+        "changeFromPrevious": "converts listening pressure into a definitive refusal",
+        "direction": {
+          "objective": null,
+          "interactionTarget": null,
+          "tactic": null,
+          "authorityPosition": null,
+          "relationshipStance": null,
+          "internalActivation": null,
+          "externalControl": null,
+          "publicPrivateContext": null,
+          "subtext": "accepting the plan would destroy the commanders legitimacy",
+          "performanceBoundaries": null
+        }
+      },
+      "effective": {
+        "schemaVersion": "dpd-effective-v1",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "beatId": "beat-s1-geshuhan-refusal",
+        "spokenContentId": "spoken-s1-geshuhan-refusal",
+        "actor": "speaker:geshuhan",
+        "speaker": "speaker:geshuhan",
+        "dramaticPurpose": "reject a politically dangerous proposal while preserving command legitimacy",
+        "conflictCondition": "a subordinate proposes eliminating the political threat through an act that would make the commander a rebel",
+        "powerStructure": "the commander holds formal authority while the subordinate tests the boundary of permissible action",
+        "emotionalClimate": "compressed political danger",
+        "urgencyContext": "the proposal demands an immediate refusal before it becomes an actionable conspiracy",
+        "informationAsymmetry": "both recognize the threat, but only the commander bears the legitimacy consequence",
+        "socialConstraints": [
+          "private military hierarchy",
+          "refusal must close the proposal without public panic"
+        ],
+        "objective": "stop the proposal and make the legitimacy boundary unmistakable",
+        "interactionTarget": "speaker:wangsili",
+        "tactic": "controlled refusal",
+        "authorityPosition": "dominant formal commander",
+        "relationshipStance": "commanding but personally exposed",
+        "internalActivation": "HIGH",
+        "externalControl": "HIGH",
+        "publicPrivateContext": "private command consultation",
+        "subtext": "accepting the plan would destroy the commanders legitimacy",
+        "performanceBoundaries": [
+          "do not collapse authority into shouting",
+          "do not turn refusal into uncontrolled anger"
+        ],
+        "obstacle": "speaker:wangsili presses an expedient solution that crosses the boundary into rebellion",
+        "transitionTrigger": "the proposal is fully stated across the campaign table",
+        "dramaticAction": "reject",
+        "observableIntent": "hold the subordinate in direct attention, then close the proposal without escalation",
+        "continuity": "follows the subordinate proposal within the same two-shot",
+        "changeFromPrevious": "converts listening pressure into a definitive refusal"
+      },
+      "fingerprint": "2d826a70c27da23aded5eda30082931b5c122115dd932ce104b3fb590ec90e1b"
+    }
+  },
+  "audioRealizedBySpokenContent": {
+    "spoken-s1-wangsili-proposal": {
+      "schemaVersion": "realized-performance-snapshot-v1",
+      "videoMediaId": "media_ac9d14c5cdc74c43ba44562752cf9489",
+      "videoContentHash": "066b281d01ba8f330c66c463c8c6ff0f238cc2f56af7c0dffbbaf812e62f677f",
+      "shotId": "shot_83db7eb53b2f49d3a58428d4659e584e",
+      "videoDurationMs": 11042,
+      "shotScale": "stable medium two-shot",
+      "speakerScreenPresence": "speaker:wangsili is the identified screen-left partner and remains continuously visible",
+      "speakerOrientation": "seated on screen-left with torso and face predominantly oriented screen-right toward speaker:geshuhan",
+      "gazeDirection": "begins toward the screen-right partner, lowers to the map during the middle action, then returns toward the partner",
+      "headMotion": "small restrained motion; lowers toward the map at roughly 3000ms and recovers by roughly 6500ms",
+      "bodyMotion": "seated torso remains stable; the upper body inclines slightly toward the table during the middle action",
+      "visibleActivation": "MEDIUM",
+      "facialTension": "HIGH",
+      "expressionChange": "UNKNOWN",
+      "gestureActivity": "right forearm and hand move forward to point or trace on the map from roughly 3500ms to 6000ms",
+      "interactionDistance": "two seated figures separated by a table at close conversational distance",
+      "preSpeechAction": "UNKNOWN: controlled frame sampling does not establish a reliable mouth onset",
+      "mouthActivity": "UNKNOWN",
+      "postSpeechAction": "returns gaze toward the interaction partner; relation to speech end is UNKNOWN",
+      "speakerVisibleStartMs": 0,
+      "preSpeechMotionWindowMs": null,
+      "mouthActivityWindowsMs": [],
+      "majorHeadMotionWindowsMs": [
+        [
+          3000,
+          6500
+        ]
+      ],
+      "majorGestureWindowsMs": [
+        [
+          3500,
+          6000
+        ]
+      ],
+      "visiblePauseWindowsMs": [],
+      "postSpeechHoldMs": null,
+      "observationMethod": "CONTROLLED_FRAME_SAMPLING",
+      "fingerprint": "2ca43baa5f4ab5ba8cab24e9da7090d2c6bc2b579b760bf0d50150a721985405"
+    },
+    "spoken-s1-geshuhan-refusal": {
+      "schemaVersion": "realized-performance-snapshot-v1",
+      "videoMediaId": "media_ac9d14c5cdc74c43ba44562752cf9489",
+      "videoContentHash": "066b281d01ba8f330c66c463c8c6ff0f238cc2f56af7c0dffbbaf812e62f677f",
+      "shotId": "shot_83db7eb53b2f49d3a58428d4659e584e",
+      "videoDurationMs": 11042,
+      "shotScale": "stable medium two-shot",
+      "speakerScreenPresence": "primary speaker remains continuously visible on screen-right",
+      "speakerOrientation": "seated on screen-right with torso and face predominantly oriented screen-left toward the interaction partner",
+      "gazeDirection": "predominantly toward the screen-left partner; lowers toward the tabletop late, then returns toward the partner near the end",
+      "headMotion": "small restrained adjustments through most of the shot; visible downward head movement late, followed by recovery",
+      "bodyMotion": "seated torso remains stable with low-amplitude motion and no large displacement",
+      "visibleActivation": "MEDIUM",
+      "facialTension": "HIGH",
+      "expressionChange": "PRESENT",
+      "gestureActivity": "no distinct primary-speaker hand gesture is detectable; hands remain near the table and sword area",
+      "interactionDistance": "two seated figures separated by a table at close conversational distance",
+      "preSpeechAction": "UNKNOWN: visible mouth onset cannot be separated reliably from the opening frames",
+      "mouthActivity": "UNKNOWN",
+      "postSpeechAction": "late downward head and gaze movement followed by a partial return toward the partner; relation to speech end is UNKNOWN",
+      "speakerVisibleStartMs": 0,
+      "preSpeechMotionWindowMs": null,
+      "mouthActivityWindowsMs": [],
+      "majorHeadMotionWindowsMs": [
+        [
+          7500,
+          10500
+        ]
+      ],
+      "majorGestureWindowsMs": [],
+      "visiblePauseWindowsMs": [],
+      "postSpeechHoldMs": null,
+      "observationMethod": "CONTROLLED_FRAME_SAMPLING",
+      "fingerprint": "a2d3d311576d75a305e6453089176ac89b0d8cfd9c3acd2a141ee24a13cefd12"
+    }
+  },
+  "audioCandidates": [
+    {
+      "id": "media_a2bd8820636e40ca94185e7029febe8c",
+      "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+      "assetId": null,
+      "shotId": null,
+      "mediaType": "AUDIO",
+      "purpose": "SPEECH_CLIP",
+      "sourceRef": "audio-attempt:d00db9147b5f7db873366e7d0f0ac8473f83bf66b122d6e785f84ea06100a783:4546fc09e3d0405b9629b544c2de72d7",
+      "durationMs": 3600,
+      "mimeType": "audio/x-wav",
+      "fileSize": 172844,
+      "contentHash": "6790eedeb9ba29e763262396a800be6155a92d0ad842237767e6796458d003ab",
+      "content": {
+        "model": "qwen3-tts-instruct-flash",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "provider": "bailian_qwen",
+        "textHash": "f5cec6a7318203f07960f2e38034a2a1904ccbe1c5f108e72fd53f55056a7268",
+        "speakerKey": "speaker:wangsili",
+        "audioSha256": "6790eedeb9ba29e763262396a800be6155a92d0ad842237767e6796458d003ab",
+        "reviewStatus": "PENDING",
+        "providerJobId": "f0ef54dc-8da7-9758-bbf4-519ca454ab44",
+        "schemaVersion": "speech-clip-v1",
+        "providerAudioId": "audio_f0ef54dc-8da7-9758-bbf4-519ca454ab44",
+        "providerVoiceId": "Ethan",
+        "spokenContentId": "spoken-s1-wangsili-proposal",
+        "actualDurationMs": 3600,
+        "providerCallCount": 1,
+        "providerRetryCount": 0,
+        "audioInputFingerprint": "d00db9147b5f7db873366e7d0f0ac8473f83bf66b122d6e785f84ea06100a783",
+        "exactTextInputVerified": true,
+        "voiceProfileFingerprint": "08b52963b4d9de09b7f710953033bae9059350523dcd94faf8a6bc81a35af69d",
+        "pronunciationFingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "providerDownloadCallCount": 1,
+        "providerMappingFingerprint": "c710b5b95f1cddda3bff979379abd0eff8d06e88c850a87f8288fc5be63e5cf1",
+        "providerRequestFingerprint": "bb1304e6846252137dd17b2f2db5be2b6972aec957472345211bf7eda00912dc"
+      }
+    },
+    {
+      "id": "media_11c2aefa09be4ff69e07915f81b468e7",
+      "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+      "assetId": null,
+      "shotId": null,
+      "mediaType": "AUDIO",
+      "purpose": "SPEECH_CLIP",
+      "sourceRef": "audio-attempt:d783c79a2c1e7c1b3f31cd64dd09c9c91dfc17cd55ef03eb03b258fdbcd817f5:29d53f707ed24df08cc799ecf5c379aa",
+      "durationMs": 2720,
+      "mimeType": "audio/x-wav",
+      "fileSize": 130604,
+      "contentHash": "acd48e5336295ee39e4dc3712e9c06624951b281c12b01c75343c3139c879f4e",
+      "content": {
+        "model": "qwen3-tts-instruct-flash",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "provider": "bailian_qwen",
+        "textHash": "004e940f9b0a2a942249860535195e584f93f8b381d6889c4db7118383a07024",
+        "speakerKey": "speaker:geshuhan",
+        "audioSha256": "acd48e5336295ee39e4dc3712e9c06624951b281c12b01c75343c3139c879f4e",
+        "reviewStatus": "PENDING",
+        "providerJobId": "581021dc-3b2a-90a5-85e8-27a68d27514e",
+        "schemaVersion": "speech-clip-v1",
+        "providerAudioId": "audio_581021dc-3b2a-90a5-85e8-27a68d27514e",
+        "providerVoiceId": "Ethan",
+        "spokenContentId": "spoken-s1-geshuhan-refusal",
+        "actualDurationMs": 2720,
+        "providerCallCount": 1,
+        "providerRetryCount": 0,
+        "audioInputFingerprint": "d783c79a2c1e7c1b3f31cd64dd09c9c91dfc17cd55ef03eb03b258fdbcd817f5",
+        "exactTextInputVerified": true,
+        "voiceProfileFingerprint": "c291cff900d121b102d29d94f765b3b9447a63304b5f8b8a0fffb7ccf4ffe61b",
+        "pronunciationFingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "providerDownloadCallCount": 1,
+        "providerMappingFingerprint": "c710b5b95f1cddda3bff979379abd0eff8d06e88c850a87f8288fc5be63e5cf1",
+        "providerRequestFingerprint": "1f367c57d40163bc00c77e2d5aee9a16cb10cefc512b2b77b6478b8d89396fff"
+      }
+    },
+    {
+      "id": "media_ba8fecb6d58d49c19a7b113d24b772c4",
+      "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+      "assetId": null,
+      "shotId": null,
+      "mediaType": "AUDIO",
+      "purpose": "SPEECH_CLIP",
+      "sourceRef": "audio-attempt:3b72123dadf580bafa9902cfb7c8148eb9cd3a0eeb730659ddbe3759a107d15a:c445d1a17d1d49b2aace5180eadd07a2",
+      "durationMs": 5360,
+      "mimeType": "audio/x-wav",
+      "fileSize": 257324,
+      "contentHash": "976f5949e7b1dff8160d0dddbe75b0a07fdea61cf3dcae030ecaaa979b76bcdc",
+      "content": {
+        "model": "qwen3-tts-instruct-flash",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "provider": "bailian_qwen",
+        "textHash": "f5cec6a7318203f07960f2e38034a2a1904ccbe1c5f108e72fd53f55056a7268",
+        "speakerKey": "speaker:wangsili",
+        "audioSha256": "976f5949e7b1dff8160d0dddbe75b0a07fdea61cf3dcae030ecaaa979b76bcdc",
+        "reviewStatus": "PENDING",
+        "providerJobId": "337dfe8d-3ac4-9ad6-a1cc-a88aabbedd53",
+        "schemaVersion": "speech-clip-v1",
+        "providerAudioId": "audio_337dfe8d-3ac4-9ad6-a1cc-a88aabbedd53",
+        "providerVoiceId": "Moon",
+        "spokenContentId": "spoken-s1-wangsili-proposal",
+        "actualDurationMs": 5360,
+        "providerCallCount": 1,
+        "providerRetryCount": 0,
+        "audioInputFingerprint": "3b72123dadf580bafa9902cfb7c8148eb9cd3a0eeb730659ddbe3759a107d15a",
+        "exactTextInputVerified": true,
+        "voiceProfileFingerprint": "08b52963b4d9de09b7f710953033bae9059350523dcd94faf8a6bc81a35af69d",
+        "pronunciationFingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "providerDownloadCallCount": 1,
+        "providerMappingFingerprint": "e464378b173b2e673506e785596d6863eb3da3d1ed7c26e3db4d23c15becb524",
+        "providerRequestFingerprint": "0e94f93be9f86e100a234ff2c32e1e6ace46c495e842d966199f78f7e3a4b8ce"
+      }
+    },
+    {
+      "id": "media_4dbc4dfa0a4a422080d9fa70c5dcad84",
+      "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+      "assetId": null,
+      "shotId": null,
+      "mediaType": "AUDIO",
+      "purpose": "SPEECH_CLIP",
+      "sourceRef": "audio-attempt:df0b6a84147ce2607a6fb7103dd8e7375677da08171d14292987c8be278fd4ed:06d0a026fc8e48fd95d732e0f633198b",
+      "durationMs": 4080,
+      "mimeType": "audio/x-wav",
+      "fileSize": 195884,
+      "contentHash": "928090b3e37023e7b3d5c7171d238cabc5a715285013072067c570020386d2ce",
+      "content": {
+        "model": "qwen3-tts-instruct-flash",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "provider": "bailian_qwen",
+        "textHash": "004e940f9b0a2a942249860535195e584f93f8b381d6889c4db7118383a07024",
+        "speakerKey": "speaker:geshuhan",
+        "audioSha256": "928090b3e37023e7b3d5c7171d238cabc5a715285013072067c570020386d2ce",
+        "reviewStatus": "PENDING",
+        "providerJobId": "5fc3003e-f6ed-9396-9d55-de37c210f7be",
+        "schemaVersion": "speech-clip-v1",
+        "providerAudioId": "audio_5fc3003e-f6ed-9396-9d55-de37c210f7be",
+        "providerVoiceId": "Eldric Sage",
+        "spokenContentId": "spoken-s1-geshuhan-refusal",
+        "actualDurationMs": 4080,
+        "providerCallCount": 1,
+        "providerRetryCount": 0,
+        "audioInputFingerprint": "df0b6a84147ce2607a6fb7103dd8e7375677da08171d14292987c8be278fd4ed",
+        "exactTextInputVerified": true,
+        "voiceProfileFingerprint": "c291cff900d121b102d29d94f765b3b9447a63304b5f8b8a0fffb7ccf4ffe61b",
+        "pronunciationFingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "providerDownloadCallCount": 1,
+        "providerMappingFingerprint": "9a5e8a7a88a54f1cfe1c78670a5bebc9016a0174c0a5dcf10c76dde4dfbd68ab",
+        "providerRequestFingerprint": "31270fe573f5031ef4696a0da9024a99ed8472e66251b848d4a1b1add22dcd84"
+      }
+    },
+    {
+      "id": "media_15a32ca00d494419861c979338fef75c",
+      "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+      "assetId": null,
+      "shotId": null,
+      "mediaType": "AUDIO",
+      "purpose": "SPEECH_CLIP",
+      "sourceRef": "audio-attempt:0e12f3b4faba9f9dcdc551675f96fa3221b9690eb2dc414dea29b020c48de9a7:a7b29f9a35184e12a17f2b29b6dd37bf",
+      "durationMs": 3920,
+      "mimeType": "audio/x-wav",
+      "fileSize": 188204,
+      "contentHash": "0800df5914a6d49e28bc0ac50fb8e37a07be748d7c3858e31ea33d61ddbea3c6",
+      "content": {
+        "model": "qwen3-tts-instruct-flash",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "provider": "bailian_qwen",
+        "textHash": "f5cec6a7318203f07960f2e38034a2a1904ccbe1c5f108e72fd53f55056a7268",
+        "speakerKey": "speaker:wangsili",
+        "audioSha256": "0800df5914a6d49e28bc0ac50fb8e37a07be748d7c3858e31ea33d61ddbea3c6",
+        "reviewStatus": "PENDING",
+        "schemaVersion": "speech-clip-v1",
+        "providerVoiceId": "Neil",
+        "spokenContentId": "spoken-s1-wangsili-proposal",
+        "actualDurationMs": 3920,
+        "providerCallCount": 1,
+        "providerRetryCount": 0,
+        "voiceBindingStatus": "PENDING",
+        "audioInputFingerprint": "0e12f3b4faba9f9dcdc551675f96fa3221b9690eb2dc414dea29b020c48de9a7",
+        "voiceCandidateRanking": [
+          {
+            "rank": 1,
+            "score": 91.667,
+            "voiceId": "Neil",
+            "comparedDimensions": [
+              "articulation_firmness",
+              "baseline_pace",
+              "command_presence"
+            ]
+          },
+          {
+            "rank": 2,
+            "score": 90.0,
+            "voiceId": "Maia",
+            "comparedDimensions": [
+              "articulation_firmness",
+              "baseline_pace",
+              "command_presence"
+            ]
+          },
+          {
+            "rank": 3,
+            "score": 86.667,
+            "voiceId": "Ethan",
+            "comparedDimensions": [
+              "articulation_firmness",
+              "baseline_pace",
+              "command_presence"
+            ]
+          }
+        ],
+        "exactTextInputVerified": true,
+        "voiceProfileFingerprint": "03771e5256cf8e33ca40119a92cb46883265a1a7fc8c5e3df4f90d5cb48a7913",
+        "pronunciationFingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "providerDownloadCallCount": 1,
+        "providerMappingFingerprint": "82b27ca48ab6f18e8cecdee2a8ca7b5d9bb1759e26e1e13063268733bba356da",
+        "providerRequestFingerprint": "f1405b5c4282bb9feca5341421316614c46d502ce144c14ee9636a216f99c458",
+        "resumedAfterLocalImportRootMismatch": true
+      }
+    },
+    {
+      "id": "media_283960a42ef647f0ae9e998b4ed6f8ab",
+      "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+      "assetId": null,
+      "shotId": null,
+      "mediaType": "AUDIO",
+      "purpose": "SPEECH_CLIP",
+      "sourceRef": "audio-attempt:114a6e7513c7921132327ddb8142dc4e3a2cc77cd7436bbeb19fe09ed51d3a1b:7fd50ad8d82d43c5af15dab59bf9b78e",
+      "durationMs": 3920,
+      "mimeType": "audio/x-wav",
+      "fileSize": 188204,
+      "contentHash": "93d1b665a223743baaef6a5ede2ec9acb0505ef4eda70fd9bfaf9fe7fc8f83ee",
+      "content": {
+        "model": "qwen3-tts-instruct-flash",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "provider": "bailian_qwen",
+        "textHash": "f5cec6a7318203f07960f2e38034a2a1904ccbe1c5f108e72fd53f55056a7268",
+        "speakerKey": "speaker:wangsili",
+        "audioSha256": "93d1b665a223743baaef6a5ede2ec9acb0505ef4eda70fd9bfaf9fe7fc8f83ee",
+        "reviewStatus": "PENDING",
+        "providerJobId": "f14ee938-6714-932f-bd11-c23052401700",
+        "schemaVersion": "speech-clip-v1",
+        "providerAudioId": "audio_f14ee938-6714-932f-bd11-c23052401700",
+        "providerVoiceId": "Maia",
+        "spokenContentId": "spoken-s1-wangsili-proposal",
+        "actualDurationMs": 3920,
+        "providerCallCount": 1,
+        "providerRetryCount": 0,
+        "voiceBindingStatus": "PENDING",
+        "audioInputFingerprint": "114a6e7513c7921132327ddb8142dc4e3a2cc77cd7436bbeb19fe09ed51d3a1b",
+        "voiceCandidateRanking": [
+          {
+            "rank": 1,
+            "score": 91.667,
+            "voiceId": "Neil",
+            "comparedDimensions": [
+              "articulation_firmness",
+              "baseline_pace",
+              "command_presence"
+            ]
+          },
+          {
+            "rank": 2,
+            "score": 90.0,
+            "voiceId": "Maia",
+            "comparedDimensions": [
+              "articulation_firmness",
+              "baseline_pace",
+              "command_presence"
+            ]
+          },
+          {
+            "rank": 3,
+            "score": 86.667,
+            "voiceId": "Ethan",
+            "comparedDimensions": [
+              "articulation_firmness",
+              "baseline_pace",
+              "command_presence"
+            ]
+          }
+        ],
+        "exactTextInputVerified": true,
+        "voiceProfileFingerprint": "03771e5256cf8e33ca40119a92cb46883265a1a7fc8c5e3df4f90d5cb48a7913",
+        "pronunciationFingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "providerDownloadCallCount": 1,
+        "providerMappingFingerprint": "2de0e565429891c33cd709a986030813342e93fcfbfc718abdb4df038af6d9c0",
+        "providerRequestFingerprint": "e681176e45cb900a5402fdd0324b8238627bc63c530abbbadf95ee175202cd03"
+      }
+    },
+    {
+      "id": "media_cbed4d3f7e7a4ca883322091753689d3",
+      "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+      "assetId": null,
+      "shotId": null,
+      "mediaType": "AUDIO",
+      "purpose": "SPEECH_CLIP",
+      "sourceRef": "audio-attempt:59f68e8b135a9ab9ce235ebda78e35e64435c72a39956dbe65e495aa48687b1d:a598d4b7096f4cacbf1dce903cc5d6d3",
+      "durationMs": 4960,
+      "mimeType": "audio/x-wav",
+      "fileSize": 238124,
+      "contentHash": "81f994aa5e46c4db321b1fbcd3cae60990d14dae221c2983939136db99e61366",
+      "content": {
+        "model": "qwen3-tts-instruct-flash",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "provider": "bailian_qwen",
+        "textHash": "004e940f9b0a2a942249860535195e584f93f8b381d6889c4db7118383a07024",
+        "speakerKey": "speaker:geshuhan",
+        "audioSha256": "81f994aa5e46c4db321b1fbcd3cae60990d14dae221c2983939136db99e61366",
+        "reviewStatus": "PENDING",
+        "providerJobId": "989fb822-a603-9f5b-9d83-26cb613a0908",
+        "schemaVersion": "speech-clip-v1",
+        "providerAudioId": "audio_989fb822-a603-9f5b-9d83-26cb613a0908",
+        "providerVoiceId": "Eldric Sage",
+        "spokenContentId": "spoken-s1-geshuhan-refusal",
+        "actualDurationMs": 4960,
+        "providerCallCount": 1,
+        "providerRetryCount": 0,
+        "voiceBindingStatus": "PENDING",
+        "audioInputFingerprint": "59f68e8b135a9ab9ce235ebda78e35e64435c72a39956dbe65e495aa48687b1d",
+        "voiceCandidateRanking": [
+          {
+            "rank": 1,
+            "score": 98.0,
+            "voiceId": "Eldric Sage",
+            "comparedDimensions": [
+              "articulation_firmness",
+              "baseline_pace",
+              "command_presence",
+              "controlled_power",
+              "sentence_finality"
+            ]
+          },
+          {
+            "rank": 2,
+            "score": 92.0,
+            "voiceId": "Moon",
+            "comparedDimensions": [
+              "articulation_firmness",
+              "baseline_pace",
+              "command_presence",
+              "controlled_power",
+              "sentence_finality"
+            ]
+          },
+          {
+            "rank": 3,
+            "score": 90.0,
+            "voiceId": "Neil",
+            "comparedDimensions": [
+              "articulation_firmness",
+              "baseline_pace",
+              "command_presence",
+              "controlled_power",
+              "sentence_finality"
+            ]
+          }
+        ],
+        "exactTextInputVerified": true,
+        "voiceProfileFingerprint": "97e9ae73d3095a0e4de85ffa44f3bcaecb5b6c51fdbd63f41ebe20a1f0ed2ad2",
+        "pronunciationFingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "providerDownloadCallCount": 1,
+        "providerMappingFingerprint": "32d0eb36e632874f9cf298d4c938b2a12b69e7a947c60786d3be0c39bdb9fc65",
+        "providerRequestFingerprint": "10b1777c89fecb0a50376670a364911402462be4d6d74195ec311867f916e31d"
+      }
+    },
+    {
+      "id": "media_8b4442503a3a4d99a063b335fc4fac00",
+      "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+      "assetId": null,
+      "shotId": null,
+      "mediaType": "AUDIO",
+      "purpose": "SPEECH_CLIP",
+      "sourceRef": "audio-attempt:027a2e4be9bc4dde2396a3344dbf889436b14ca9fe2f64d6f64b80eb9f50cf6e:56f1a87a95104d7db828d84317b50f01",
+      "durationMs": 3760,
+      "mimeType": "audio/x-wav",
+      "fileSize": 180524,
+      "contentHash": "a9c8c949bd9017dbdfff5867c0be96fd2e3da7d9991024807493c258b32e9800",
+      "content": {
+        "model": "qwen3-tts-instruct-flash",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "provider": "bailian_qwen",
+        "textHash": "004e940f9b0a2a942249860535195e584f93f8b381d6889c4db7118383a07024",
+        "speakerKey": "speaker:geshuhan",
+        "audioSha256": "a9c8c949bd9017dbdfff5867c0be96fd2e3da7d9991024807493c258b32e9800",
+        "reviewStatus": "PENDING",
+        "providerJobId": "6ec66eda-b9c5-9483-9e58-62575d656166",
+        "schemaVersion": "speech-clip-v1",
+        "providerAudioId": "audio_6ec66eda-b9c5-9483-9e58-62575d656166",
+        "providerVoiceId": "Moon",
+        "spokenContentId": "spoken-s1-geshuhan-refusal",
+        "actualDurationMs": 3760,
+        "providerCallCount": 1,
+        "providerRetryCount": 0,
+        "voiceBindingStatus": "PENDING",
+        "audioInputFingerprint": "027a2e4be9bc4dde2396a3344dbf889436b14ca9fe2f64d6f64b80eb9f50cf6e",
+        "voiceCandidateRanking": [
+          {
+            "rank": 1,
+            "score": 98.0,
+            "voiceId": "Eldric Sage",
+            "comparedDimensions": [
+              "articulation_firmness",
+              "baseline_pace",
+              "command_presence",
+              "controlled_power",
+              "sentence_finality"
+            ]
+          },
+          {
+            "rank": 2,
+            "score": 92.0,
+            "voiceId": "Moon",
+            "comparedDimensions": [
+              "articulation_firmness",
+              "baseline_pace",
+              "command_presence",
+              "controlled_power",
+              "sentence_finality"
+            ]
+          },
+          {
+            "rank": 3,
+            "score": 90.0,
+            "voiceId": "Neil",
+            "comparedDimensions": [
+              "articulation_firmness",
+              "baseline_pace",
+              "command_presence",
+              "controlled_power",
+              "sentence_finality"
+            ]
+          }
+        ],
+        "exactTextInputVerified": true,
+        "voiceProfileFingerprint": "97e9ae73d3095a0e4de85ffa44f3bcaecb5b6c51fdbd63f41ebe20a1f0ed2ad2",
+        "pronunciationFingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "providerDownloadCallCount": 1,
+        "providerMappingFingerprint": "3b563edf0892a56d0dcffe1d11f006645b8f03d4cb81da7695e2f66a1e4e95e7",
+        "providerRequestFingerprint": "cd4a5c83eb5245b534df2deba128ac718bdef0d1f9f2b12963d2646b42124b66"
+      }
+    },
+    {
+      "id": "media_f4778987eac844fea461fa51bd489405",
+      "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+      "assetId": null,
+      "shotId": null,
+      "mediaType": "AUDIO",
+      "purpose": "SPEECH_CLIP",
+      "sourceRef": "audio-attempt:242f639c08014a443f0eb80cc71f7eda937bedfa542050191c6fec222c5ba9b9:df89f49804494156981af1415c5b2a43",
+      "durationMs": 12640,
+      "mimeType": "audio/x-wav",
+      "fileSize": 606764,
+      "contentHash": "bdd0e182b763a8d4f077097fc4a7ad96c26b3063f53ac75fc0c83aca7c4b7bb2",
+      "content": {
+        "model": "qwen-audio-3.0-tts-plus",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "provider": "bailian_qwen",
+        "textHash": "f5cec6a7318203f07960f2e38034a2a1904ccbe1c5f108e72fd53f55056a7268",
+        "speakerKey": "speaker:wangsili",
+        "audioSha256": "bdd0e182b763a8d4f077097fc4a7ad96c26b3063f53ac75fc0c83aca7c4b7bb2",
+        "reviewStatus": "PENDING",
+        "providerJobId": "6d420497-1fc6-9697-870e-e2403e26d2d4",
+        "schemaVersion": "speech-clip-v1",
+        "providerAudioId": "audio_6d420497-1fc6-9697-870e-e2403e26d2d4",
+        "providerVoiceId": "qwen-audio-3.0-tts-plus-vd-vd03771e52-e4e4e25bcdbe490b9b955b7de3056e50",
+        "spokenContentId": "spoken-s1-wangsili-proposal",
+        "actualDurationMs": 12640,
+        "providerCallCount": 1,
+        "providerRetryCount": 0,
+        "voiceBindingStatus": "PENDING",
+        "audioInputFingerprint": "242f639c08014a443f0eb80cc71f7eda937bedfa542050191c6fec222c5ba9b9",
+        "exactTextInputVerified": true,
+        "voiceProfileFingerprint": "03771e5256cf8e33ca40119a92cb46883265a1a7fc8c5e3df4f90d5cb48a7913",
+        "pronunciationFingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "providerDownloadCallCount": 1,
+        "providerMappingFingerprint": "ee34dd863dcf40354997c154fbea5cb6b34380678a3e3ccfc7525ad6acd67f41",
+        "providerRequestFingerprint": "28213c5dbf66f2926cb4bd72959625d5d85bb137d09d67cc9cc721bd579ee0ce"
+      }
+    },
+    {
+      "id": "media_f61cd48a30ec4bb6b6adbedb6a60613c",
+      "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+      "assetId": null,
+      "shotId": null,
+      "mediaType": "AUDIO",
+      "purpose": "SPEECH_CLIP",
+      "sourceRef": "audio-attempt:c07e5daca6e6ed1e507b5e40f256f99faa2901d9cf0c7451ca6b0af266735420:512f2c40ab364f24adaa3507e2020341",
+      "durationMs": 12640,
+      "mimeType": "audio/x-wav",
+      "fileSize": 606764,
+      "contentHash": "ffd3471f4e926cd328cb0932cd1dc7d7ec1e42c074227d521beb12bd5d0b88ac",
+      "content": {
+        "model": "qwen-audio-3.0-tts-plus",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "provider": "bailian_qwen",
+        "textHash": "f5cec6a7318203f07960f2e38034a2a1904ccbe1c5f108e72fd53f55056a7268",
+        "speakerKey": "speaker:wangsili",
+        "audioSha256": "ffd3471f4e926cd328cb0932cd1dc7d7ec1e42c074227d521beb12bd5d0b88ac",
+        "reviewStatus": "PENDING",
+        "providerJobId": "f5129e7b-8a2a-994a-b9e2-5debf7bbd0de",
+        "schemaVersion": "speech-clip-v1",
+        "providerAudioId": "audio_f5129e7b-8a2a-994a-b9e2-5debf7bbd0de",
+        "providerVoiceId": "qwen-audio-3.0-tts-plus-vd-vd03771e52-38aec0577f9a495f9732fcb7b4510426",
+        "spokenContentId": "spoken-s1-wangsili-proposal",
+        "actualDurationMs": 12640,
+        "providerCallCount": 1,
+        "providerRetryCount": 0,
+        "voiceBindingStatus": "PENDING",
+        "audioInputFingerprint": "c07e5daca6e6ed1e507b5e40f256f99faa2901d9cf0c7451ca6b0af266735420",
+        "exactTextInputVerified": true,
+        "voiceProfileFingerprint": "03771e5256cf8e33ca40119a92cb46883265a1a7fc8c5e3df4f90d5cb48a7913",
+        "pronunciationFingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "providerDownloadCallCount": 1,
+        "providerMappingFingerprint": "8d1b985b137de69c258a2febe5fd613dfa1623c030bf9cea856c2ffcfee74685",
+        "providerRequestFingerprint": "82064c8fd388156e21130fe7d6952a5b8ac9165b4f10ce9d71156d07a8ff950a"
+      }
+    },
+    {
+      "id": "media_2908cc0a970c43198255311f6bcd346f",
+      "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+      "assetId": null,
+      "shotId": null,
+      "mediaType": "AUDIO",
+      "purpose": "SPEECH_CLIP",
+      "sourceRef": "audio-attempt:f035a09be4b0e7c655890cdb02dc8d12838784a2f0591b9764add30dd5627cbf:868927aaafa845deaac5414caf65832d",
+      "durationMs": 5120,
+      "mimeType": "audio/x-wav",
+      "fileSize": 245804,
+      "contentHash": "98529d4f29a3a03373d95214e46876b5927a3e8dd6bb95a1ff5e048305cc042b",
+      "content": {
+        "model": "qwen-audio-3.0-tts-plus",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "provider": "bailian_qwen",
+        "textHash": "004e940f9b0a2a942249860535195e584f93f8b381d6889c4db7118383a07024",
+        "speakerKey": "speaker:geshuhan",
+        "audioSha256": "98529d4f29a3a03373d95214e46876b5927a3e8dd6bb95a1ff5e048305cc042b",
+        "reviewStatus": "PENDING",
+        "providerJobId": "47885b0c-54a0-98a2-bd0c-6a25fec8cbed",
+        "schemaVersion": "speech-clip-v1",
+        "providerAudioId": "audio_47885b0c-54a0-98a2-bd0c-6a25fec8cbed",
+        "providerVoiceId": "qwen-audio-3.0-tts-plus-vd-vd97e9ae73-c4ef2f218bf74c358c7c7bd02f8e56e4",
+        "spokenContentId": "spoken-s1-geshuhan-refusal",
+        "actualDurationMs": 5120,
+        "providerCallCount": 1,
+        "providerRetryCount": 0,
+        "voiceBindingStatus": "PENDING",
+        "audioInputFingerprint": "f035a09be4b0e7c655890cdb02dc8d12838784a2f0591b9764add30dd5627cbf",
+        "exactTextInputVerified": true,
+        "voiceProfileFingerprint": "97e9ae73d3095a0e4de85ffa44f3bcaecb5b6c51fdbd63f41ebe20a1f0ed2ad2",
+        "pronunciationFingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "providerDownloadCallCount": 1,
+        "providerMappingFingerprint": "0b775f22682639343b9fd11d1bf97864e225981ab90fe7caf25ed938413f82bc",
+        "providerRequestFingerprint": "52b1dcdbc4c1859f2a41cf9e6e9d553dd8e42e729354f9438b9945402970121f"
+      }
+    },
+    {
+      "id": "media_9da68203407e438a99ae2915022e3989",
+      "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+      "assetId": null,
+      "shotId": null,
+      "mediaType": "AUDIO",
+      "purpose": "SPEECH_CLIP",
+      "sourceRef": "audio-attempt:9cdd652f5b5e1384cb65fe1a8611ca313733cac8a03179fa4a24d67275903509:fdbdd92fe0b84e76a57fbaadaf536387",
+      "durationMs": 5120,
+      "mimeType": "audio/x-wav",
+      "fileSize": 245804,
+      "contentHash": "f2cc680c7cad61e55880829b2f203503c1ce3cfe2fb07c4b0d453fcd16acf7fb",
+      "content": {
+        "model": "qwen-audio-3.0-tts-plus",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "provider": "bailian_qwen",
+        "textHash": "004e940f9b0a2a942249860535195e584f93f8b381d6889c4db7118383a07024",
+        "speakerKey": "speaker:geshuhan",
+        "audioSha256": "f2cc680c7cad61e55880829b2f203503c1ce3cfe2fb07c4b0d453fcd16acf7fb",
+        "reviewStatus": "PENDING",
+        "providerJobId": "9c7b31f6-b340-9999-a8f0-f4528d037781",
+        "schemaVersion": "speech-clip-v1",
+        "providerAudioId": "audio_9c7b31f6-b340-9999-a8f0-f4528d037781",
+        "providerVoiceId": "qwen-audio-3.0-tts-plus-vd-vd97e9ae73-72d9683242b34e3caa740c5263741a91",
+        "spokenContentId": "spoken-s1-geshuhan-refusal",
+        "actualDurationMs": 5120,
+        "providerCallCount": 1,
+        "providerRetryCount": 0,
+        "voiceBindingStatus": "PENDING",
+        "audioInputFingerprint": "9cdd652f5b5e1384cb65fe1a8611ca313733cac8a03179fa4a24d67275903509",
+        "exactTextInputVerified": true,
+        "voiceProfileFingerprint": "97e9ae73d3095a0e4de85ffa44f3bcaecb5b6c51fdbd63f41ebe20a1f0ed2ad2",
+        "pronunciationFingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "providerDownloadCallCount": 1,
+        "providerMappingFingerprint": "5c8eb762a65be1ed67cb48f11d7b3fc9308d25ab9f1879346ca99502ba4be92e",
+        "providerRequestFingerprint": "ce6ae4f88970b6f277314916ddd6bbbb92f2df5f571b2ae57002fd8e06b8ad15"
+      }
+    },
+    {
+      "id": "media_dde17eef66804697a1b9be9d6f881cd0",
+      "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+      "assetId": null,
+      "shotId": null,
+      "mediaType": "AUDIO",
+      "purpose": "ROLE_DUBBING_AUDIO",
+      "sourceRef": "role-dubbing:1db12b5884c2ad8e7a9a30e62d477fef1949143f200aefba6a9d073c18dfe638",
+      "durationMs": 3968,
+      "mimeType": "audio/x-wav",
+      "fileSize": 190492,
+      "contentHash": "94cda82e9dc269b04c17a8cc8d2f09af99f0534e9e6f4c72e17e2778646f37ee",
+      "content": {
+        "model": "s2-pro",
+        "shotId": "shot_83db7eb53b2f49d3a58428d4659e584e",
+        "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "voiceId": "voice_06ac45335157432e8322a9b32e8d9804",
+        "provider": "fish",
+        "speakerKey": "speaker:wangsili",
+        "reviewStatus": "PENDING",
+        "exactTextHash": "f5cec6a7318203f07960f2e38034a2a1904ccbe1c5f108e72fd53f55056a7268",
+        "schemaVersion": "role-dubbing-audio-v1",
+        "sameVendorAsTts": true,
+        "spokenContentId": "spoken-s1-wangsili-proposal",
+        "intelligibilityQc": {
+          "cer": 0.0,
+          "extra": [],
+          "status": "PASS",
+          "missing": [],
+          "repetition": [],
+          "sameVendorAsTts": true,
+          "properNounFindings": [],
+          "normalizedTranscript": "请给我三十骑取杨国忠首级为大帅除患"
+        },
+        "technicalReviewStatus": "PASS",
+        "performanceInputFingerprint": "a684441176903ab557c0bf2f4cee2710d974b5bc6fc57a26c20d6fdc637ed7af",
+        "voiceProviderMappingFingerprint": "ff47f660587f0f2dda301e4bb7c16118304802ab21b6eab631402aad08961abc"
+      }
+    },
+    {
+      "id": "media_080486d8b87b45ef8a103f6f4aaa90d5",
+      "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+      "assetId": null,
+      "shotId": null,
+      "mediaType": "AUDIO",
+      "purpose": "ROLE_DUBBING_AUDIO",
+      "sourceRef": "role-dubbing:f97ed04b7b0ba371dc654a7c9b631d74cc38d8e0e6ce942fbf74c84aad0e2405",
+      "durationMs": 3596,
+      "mimeType": "audio/x-wav",
+      "fileSize": 172658,
+      "contentHash": "20e77f334ac650c515a62b4ecd9e0252500f0f3592ed1343d59a0b629e24e2ed",
+      "content": {
+        "model": "s2-pro",
+        "shotId": "shot_83db7eb53b2f49d3a58428d4659e584e",
+        "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "voiceId": "voice_3b83cfdee0fd4d1a9b4728b0ef1714d7",
+        "provider": "fish",
+        "speakerKey": "speaker:geshuhan",
+        "reviewStatus": "PENDING",
+        "exactTextHash": "004e940f9b0a2a942249860535195e584f93f8b381d6889c4db7118383a07024",
+        "schemaVersion": "role-dubbing-audio-v1",
+        "sameVendorAsTts": true,
+        "spokenContentId": "spoken-s1-geshuhan-refusal",
+        "intelligibilityQc": {
+          "cer": 0.0,
+          "extra": [],
+          "status": "PASS",
+          "missing": [],
+          "repetition": [],
+          "sameVendorAsTts": true,
+          "properNounFindings": [],
+          "normalizedTranscript": "此事若行我便是反臣不可"
+        },
+        "technicalReviewStatus": "PASS",
+        "performanceInputFingerprint": "07ebf01622c4236eac6d3e7246138b1dd47cda9c37b83ff0aa36d5d39d3d4bcd",
+        "voiceProviderMappingFingerprint": "dcee3c06b2947fabbbe583fa3b72794f43c78333faeef10237961ea5c559f2ec"
+      }
+    },
+    {
+      "id": "media_b281cdef05c14801b8cc582e33dd8f72",
+      "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+      "assetId": null,
+      "shotId": null,
+      "mediaType": "AUDIO",
+      "purpose": "ROLE_DUBBING_AUDIO",
+      "sourceRef": "role-dubbing:ce33c8c4affe6bcbe11f47fcedbef1d97892176a8d5eaf0263f6da3c35eefc5f",
+      "durationMs": 3712,
+      "mimeType": "audio/x-wav",
+      "fileSize": 178232,
+      "contentHash": "18a8b17508e59a8a47dd6b252c25be0f9de8d1e261b3a5c81db8d3ebf9934fc1",
+      "content": {
+        "model": "s2-pro",
+        "shotId": null,
+        "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "voiceId": "voice_3b83cfdee0fd4d1a9b4728b0ef1714d7",
+        "provider": "fish",
+        "speakerKey": "speaker:geshuhan",
+        "reviewStatus": "PENDING",
+        "exactTextHash": "004e940f9b0a2a942249860535195e584f93f8b381d6889c4db7118383a07024",
+        "schemaVersion": "role-dubbing-audio-v1",
+        "dpdFingerprint": "2d826a70c27da23aded5eda30082931b5c122115dd932ce104b3fb590ec90e1b",
+        "sameVendorAsTts": true,
+        "spokenContentId": "spoken-s1-geshuhan-refusal",
+        "intelligibilityQc": {
+          "cer": 0.0,
+          "extra": [],
+          "status": "PASS",
+          "missing": [],
+          "repetition": [],
+          "sameVendorAsTts": true,
+          "properNounFindings": [],
+          "normalizedTranscript": "此事若行我便是反臣不可"
+        },
+        "sourceVideoMediaId": null,
+        "performanceAuthority": "DPD_AUDIO_PROJECTION",
+        "performanceRendering": "BRIEF_CUES_V1",
+        "audioInputFingerprint": "ce33c8c4affe6bcbe11f47fcedbef1d97892176a8d5eaf0263f6da3c35eefc5f",
+        "fishCapabilityMapping": {
+          "speed": 0.92,
+          "volume": 0.0,
+          "capabilities": [
+            {
+              "reason": "Fish exposes a bounded speed control.",
+              "status": "SUPPORTED",
+              "dimension": "pace",
+              "mappedControl": "prosody.speed"
+            },
+            {
+              "reason": "Fish exposes a bounded volume adjustment.",
+              "status": "SUPPORTED",
+              "dimension": "volumeTendency",
+              "mappedControl": "prosody.volume"
+            },
+            {
+              "reason": "S2 can render phrase separation in text, but production promotion awaits listening review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "rhythm",
+              "mappedControl": "S2 punctuation and [break]/[long-break] markers"
+            },
+            {
+              "reason": "S2 expression markers can render intensity; automatic use awaits listening review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "intensity",
+              "mappedControl": "S2 expression/tone markers"
+            },
+            {
+              "reason": "S2 documents pause markers; automatic use awaits listening review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "pauseStrategy",
+              "mappedControl": "S2 [break]/[long-break] markers"
+            },
+            {
+              "reason": "The verified Fish TTS request has no articulation control.",
+              "status": "UNSUPPORTED",
+              "dimension": "articulation",
+              "mappedControl": null
+            },
+            {
+              "reason": "S2 documents an emphasis marker; automatic use awaits listening review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "emphasis",
+              "mappedControl": "S2 [emphasis] marker"
+            },
+            {
+              "reason": "Punctuation and expression cues can influence endings; automatic use awaits review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "sentenceEnding",
+              "mappedControl": "canonical punctuation plus S2 expression markers"
+            },
+            {
+              "reason": "S2 accepts concise expression cues; automatic use awaits listening review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "control",
+              "mappedControl": "S2 natural-language expression marker"
+            },
+            {
+              "reason": "A leading cue can condition onset style but cannot guarantee an audible preparation.",
+              "status": "APPROXIMATED",
+              "dimension": "preUtterancePreparation",
+              "mappedControl": "leading S2 expression marker"
+            },
+            {
+              "reason": "The verified API has no durable post-utterance hold control.",
+              "status": "UNSUPPORTED",
+              "dimension": "postUtteranceHold",
+              "mappedControl": null
+            }
+          ],
+          "schemaVersion": "fish-audio-performance-mapping-v1",
+          "audioProjectionFingerprint": "c422b79dbbbab73d05bac8bb23b33a2fbb4c5b0654d1a16b1951da1b5a8ea4de"
+        },
+        "technicalReviewStatus": "PASS",
+        "sourceVideoContentHash": null,
+        "voiceMasterContentHash": "62c41957aeeeaf27b5da897731863a138b76b3f213ab2dbb3fcb780224cf3787",
+        "voiceMaterialFingerprint": null,
+        "audioProjectionFingerprint": "c422b79dbbbab73d05bac8bb23b33a2fbb4c5b0654d1a16b1951da1b5a8ea4de",
+        "providerRequestFingerprint": "36a6b5b066eb7dd2799a83ec9c84c49e3b744bad62d0485d621686ea9fd8d384",
+        "performanceInputFingerprint": "c422b79dbbbab73d05bac8bb23b33a2fbb4c5b0654d1a16b1951da1b5a8ea4de",
+        "baseAudioProjectionFingerprint": null,
+        "realizedPerformanceFingerprint": null,
+        "finalAudioProjectionFingerprint": null,
+        "voiceProviderMappingFingerprint": "dcee3c06b2947fabbbe583fa3b72794f43c78333faeef10237961ea5c559f2ec"
+      }
+    },
+    {
+      "id": "media_9b8b1bb59996489c89af39f451be698f",
+      "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+      "assetId": null,
+      "shotId": "shot_83db7eb53b2f49d3a58428d4659e584e",
+      "mediaType": "AUDIO",
+      "purpose": "ROLE_DUBBING_AUDIO",
+      "sourceRef": "role-dubbing:9e4f07fa02c8bad0d7fcdbfb55e31d3d9551d41305f932d291e12a6d8266543f",
+      "durationMs": 3457,
+      "mimeType": "audio/x-wav",
+      "fileSize": 165972,
+      "contentHash": "27bb959353d81ff340db6911fe190097192f647be21fc2da1cddf3f9d65c8793",
+      "content": {
+        "model": "s2-pro",
+        "shotId": "shot_83db7eb53b2f49d3a58428d4659e584e",
+        "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "voiceId": "voice_3b83cfdee0fd4d1a9b4728b0ef1714d7",
+        "provider": "fish",
+        "speakerKey": "speaker:geshuhan",
+        "reviewStatus": "PENDING",
+        "exactTextHash": "004e940f9b0a2a942249860535195e584f93f8b381d6889c4db7118383a07024",
+        "schemaVersion": "role-dubbing-audio-v1",
+        "dpdFingerprint": "2d826a70c27da23aded5eda30082931b5c122115dd932ce104b3fb590ec90e1b",
+        "sameVendorAsTts": true,
+        "spokenContentId": "spoken-s1-geshuhan-refusal",
+        "intelligibilityQc": {
+          "cer": 0.0,
+          "extra": [],
+          "status": "PASS",
+          "missing": [],
+          "repetition": [],
+          "sameVendorAsTts": true,
+          "properNounFindings": [],
+          "normalizedTranscript": "此事若行我便是反臣不可"
+        },
+        "sourceVideoMediaId": "media_ac9d14c5cdc74c43ba44562752cf9489",
+        "performanceAuthority": "VIDEO_CONDITIONED_FINAL_AUDIO",
+        "performanceRendering": "BRIEF_CUES_V1",
+        "audioInputFingerprint": "9e4f07fa02c8bad0d7fcdbfb55e31d3d9551d41305f932d291e12a6d8266543f",
+        "fishCapabilityMapping": {
+          "speed": 0.92,
+          "volume": 0.0,
+          "capabilities": [
+            {
+              "reason": "Fish exposes a bounded speed control.",
+              "status": "SUPPORTED",
+              "dimension": "pace",
+              "mappedControl": "prosody.speed"
+            },
+            {
+              "reason": "Fish exposes a bounded volume adjustment.",
+              "status": "SUPPORTED",
+              "dimension": "volumeTendency",
+              "mappedControl": "prosody.volume"
+            },
+            {
+              "reason": "S2 can render phrase separation in text, but production promotion awaits listening review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "rhythm",
+              "mappedControl": "S2 punctuation and [break]/[long-break] markers"
+            },
+            {
+              "reason": "S2 expression markers can render intensity; automatic use awaits listening review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "intensity",
+              "mappedControl": "S2 expression/tone markers"
+            },
+            {
+              "reason": "S2 documents pause markers; automatic use awaits listening review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "pauseStrategy",
+              "mappedControl": "S2 [break]/[long-break] markers"
+            },
+            {
+              "reason": "The verified Fish TTS request has no articulation control.",
+              "status": "UNSUPPORTED",
+              "dimension": "articulation",
+              "mappedControl": null
+            },
+            {
+              "reason": "S2 documents an emphasis marker; automatic use awaits listening review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "emphasis",
+              "mappedControl": "S2 [emphasis] marker"
+            },
+            {
+              "reason": "Punctuation and expression cues can influence endings; automatic use awaits review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "sentenceEnding",
+              "mappedControl": "canonical punctuation plus S2 expression markers"
+            },
+            {
+              "reason": "S2 accepts concise expression cues; automatic use awaits listening review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "control",
+              "mappedControl": "S2 natural-language expression marker"
+            },
+            {
+              "reason": "A leading cue can condition onset style but cannot guarantee an audible preparation.",
+              "status": "APPROXIMATED",
+              "dimension": "preUtterancePreparation",
+              "mappedControl": "leading S2 expression marker"
+            },
+            {
+              "reason": "The verified API has no durable post-utterance hold control.",
+              "status": "UNSUPPORTED",
+              "dimension": "postUtteranceHold",
+              "mappedControl": null
+            }
+          ],
+          "schemaVersion": "fish-audio-performance-mapping-v1",
+          "audioProjectionFingerprint": "c2ad813970c24de0ba91fdc08da1b2bed9b5e240b452ed9ae028165a78e18156"
+        },
+        "technicalReviewStatus": "PASS",
+        "sourceVideoContentHash": "066b281d01ba8f330c66c463c8c6ff0f238cc2f56af7c0dffbbaf812e62f677f",
+        "voiceMasterContentHash": "62c41957aeeeaf27b5da897731863a138b76b3f213ab2dbb3fcb780224cf3787",
+        "voiceMaterialFingerprint": "1954d55741436b73dd63fe655a00abf451ec3c8fba0272d6a129e5decac0517d",
+        "audioProjectionFingerprint": "c2ad813970c24de0ba91fdc08da1b2bed9b5e240b452ed9ae028165a78e18156",
+        "providerRequestFingerprint": "5a881d45d62a116b66c2be43b90cd1dbd3821fe8e843ef380ab3cc48869c31aa",
+        "performanceInputFingerprint": "c2ad813970c24de0ba91fdc08da1b2bed9b5e240b452ed9ae028165a78e18156",
+        "baseAudioProjectionFingerprint": "c422b79dbbbab73d05bac8bb23b33a2fbb4c5b0654d1a16b1951da1b5a8ea4de",
+        "realizedPerformanceFingerprint": "a2d3d311576d75a305e6453089176ac89b0d8cfd9c3acd2a141ee24a13cefd12",
+        "finalAudioProjectionFingerprint": "66feac9fe97938c6bd0243e7b10699115759e0c6b025d88ab4bc090b5318310f",
+        "voiceProviderMappingFingerprint": "dcee3c06b2947fabbbe583fa3b72794f43c78333faeef10237961ea5c559f2ec"
+      }
+    },
+    {
+      "id": "media_6f4d16d785b84b52b3062e0666a826b5",
+      "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+      "assetId": null,
+      "shotId": "shot_83db7eb53b2f49d3a58428d4659e584e",
+      "mediaType": "AUDIO",
+      "purpose": "ROLE_DUBBING_AUDIO",
+      "sourceRef": "role-dubbing:0bbb6398eba90e83fed76d3c53fdf1b18436798207dfdd573979846b12cd67a4",
+      "durationMs": 4107,
+      "mimeType": "audio/x-wav",
+      "fileSize": 197180,
+      "contentHash": "4db91e1299cb3083db55290e5e23ef8595e012e5a7b3fe185ba80a44121e7a9c",
+      "content": {
+        "model": "s2-pro",
+        "shotId": "shot_83db7eb53b2f49d3a58428d4659e584e",
+        "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "voiceId": "voice_c59996a23d9046eb8df51cccfb4a0649",
+        "provider": "fish",
+        "speakerKey": "speaker:geshuhan",
+        "reviewStatus": "PENDING",
+        "exactTextHash": "004e940f9b0a2a942249860535195e584f93f8b381d6889c4db7118383a07024",
+        "schemaVersion": "role-dubbing-audio-v1",
+        "dpdFingerprint": "2d826a70c27da23aded5eda30082931b5c122115dd932ce104b3fb590ec90e1b",
+        "sameVendorAsTts": true,
+        "spokenContentId": "spoken-s1-geshuhan-refusal",
+        "intelligibilityQc": {
+          "cer": 0.0,
+          "extra": [],
+          "status": "PASS",
+          "missing": [],
+          "repetition": [],
+          "sameVendorAsTts": true,
+          "properNounFindings": [],
+          "normalizedTranscript": "此事若行我便是反臣不可"
+        },
+        "sourceVideoMediaId": "media_ac9d14c5cdc74c43ba44562752cf9489",
+        "performanceAuthority": "VIDEO_CONDITIONED_FINAL_AUDIO",
+        "performanceRendering": "BRIEF_CUES_V1",
+        "audioInputFingerprint": "0bbb6398eba90e83fed76d3c53fdf1b18436798207dfdd573979846b12cd67a4",
+        "fishCapabilityMapping": {
+          "speed": 0.92,
+          "volume": 0.0,
+          "capabilities": [
+            {
+              "reason": "Fish exposes a bounded speed control.",
+              "status": "SUPPORTED",
+              "dimension": "pace",
+              "mappedControl": "prosody.speed"
+            },
+            {
+              "reason": "Fish exposes a bounded volume adjustment.",
+              "status": "SUPPORTED",
+              "dimension": "volumeTendency",
+              "mappedControl": "prosody.volume"
+            },
+            {
+              "reason": "S2 can render phrase separation in text, but production promotion awaits listening review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "rhythm",
+              "mappedControl": "S2 punctuation and [break]/[long-break] markers"
+            },
+            {
+              "reason": "S2 expression markers can render intensity; automatic use awaits listening review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "intensity",
+              "mappedControl": "S2 expression/tone markers"
+            },
+            {
+              "reason": "S2 documents pause markers; automatic use awaits listening review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "pauseStrategy",
+              "mappedControl": "S2 [break]/[long-break] markers"
+            },
+            {
+              "reason": "The verified Fish TTS request has no articulation control.",
+              "status": "UNSUPPORTED",
+              "dimension": "articulation",
+              "mappedControl": null
+            },
+            {
+              "reason": "S2 documents an emphasis marker; automatic use awaits listening review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "emphasis",
+              "mappedControl": "S2 [emphasis] marker"
+            },
+            {
+              "reason": "Punctuation and expression cues can influence endings; automatic use awaits review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "sentenceEnding",
+              "mappedControl": "canonical punctuation plus S2 expression markers"
+            },
+            {
+              "reason": "S2 accepts concise expression cues; automatic use awaits listening review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "control",
+              "mappedControl": "S2 natural-language expression marker"
+            },
+            {
+              "reason": "A leading cue can condition onset style but cannot guarantee an audible preparation.",
+              "status": "APPROXIMATED",
+              "dimension": "preUtterancePreparation",
+              "mappedControl": "leading S2 expression marker"
+            },
+            {
+              "reason": "The verified API has no durable post-utterance hold control.",
+              "status": "UNSUPPORTED",
+              "dimension": "postUtteranceHold",
+              "mappedControl": null
+            }
+          ],
+          "schemaVersion": "fish-audio-performance-mapping-v1",
+          "audioProjectionFingerprint": "87292f517a79c4228c4ff505d6ab39067de0d7072e95c15b2819e4868f9f3544"
+        },
+        "technicalReviewStatus": "PASS",
+        "sourceVideoContentHash": "066b281d01ba8f330c66c463c8c6ff0f238cc2f56af7c0dffbbaf812e62f677f",
+        "voiceMasterContentHash": "59fb527e80eb7a3564caeaed8da68b62226922fd77902967e8e7996842fbd7ad",
+        "voiceMaterialFingerprint": "bc7f548e103bd667ef4e8124d1ce6933d747ff8bcfc48b4dea74eda1cb43597e",
+        "audioProjectionFingerprint": "87292f517a79c4228c4ff505d6ab39067de0d7072e95c15b2819e4868f9f3544",
+        "providerRequestFingerprint": "a3fd17747ac2783b348171353ddfd82c5e4695568338a5d091b546e0d2c63d99",
+        "performanceInputFingerprint": "87292f517a79c4228c4ff505d6ab39067de0d7072e95c15b2819e4868f9f3544",
+        "baseAudioProjectionFingerprint": "a39b9b833cf0175317d2316d9eaddcff3585ab89ec2c57e4bb06c41e5e220ab2",
+        "realizedPerformanceFingerprint": "a2d3d311576d75a305e6453089176ac89b0d8cfd9c3acd2a141ee24a13cefd12",
+        "finalAudioProjectionFingerprint": "0f73577c901d13c8ba62716f825ddea6733d57a2c0e2ab2288b08192f4774a59",
+        "voiceProviderMappingFingerprint": "0d36d2c64434d641169d4e7ac78b46c6d835da88593e931a299955e4590136ee"
+      }
+    },
+    {
+      "id": "media_76a8fb24233246189d030babc7ceffd4",
+      "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+      "assetId": null,
+      "shotId": "shot_83db7eb53b2f49d3a58428d4659e584e",
+      "mediaType": "AUDIO",
+      "purpose": "ROLE_DUBBING_AUDIO",
+      "sourceRef": "role-dubbing:4d22c04cf3133797b72d6db17439baa12a746da63b74dd1317c96010a6c27aa4",
+      "durationMs": 4571,
+      "mimeType": "audio/x-wav",
+      "fileSize": 219470,
+      "contentHash": "0940ec4c83da547a20f547a2ca5b90752443d32d22d013e5cce8ff13c71865c7",
+      "content": {
+        "model": "s2-pro",
+        "shotId": "shot_83db7eb53b2f49d3a58428d4659e584e",
+        "workId": "work_9cc5d11969a64f93bce4a544f349c793",
+        "sceneId": "scene_3ad95aa042e647d9a9be05a51dd8a009",
+        "voiceId": "voice_06ac45335157432e8322a9b32e8d9804",
+        "provider": "fish",
+        "speakerKey": "speaker:wangsili",
+        "reviewStatus": "PENDING",
+        "exactTextHash": "f5cec6a7318203f07960f2e38034a2a1904ccbe1c5f108e72fd53f55056a7268",
+        "schemaVersion": "role-dubbing-audio-v1",
+        "dpdFingerprint": "af9827cf6564228b4c0a9fd8ed6a1ab2cc1813b5ec36ced9015087014ea413e5",
+        "sameVendorAsTts": true,
+        "spokenContentId": "spoken-s1-wangsili-proposal",
+        "intelligibilityQc": {
+          "cer": 0.0,
+          "extra": [],
+          "status": "PASS",
+          "missing": [],
+          "repetition": [],
+          "sameVendorAsTts": true,
+          "properNounFindings": [],
+          "normalizedTranscript": "请给我三十骑取杨国忠首级为大帅除患"
+        },
+        "sourceVideoMediaId": "media_ac9d14c5cdc74c43ba44562752cf9489",
+        "performanceAuthority": "VIDEO_CONDITIONED_FINAL_AUDIO",
+        "performanceRendering": "BRIEF_CUES_V1",
+        "audioInputFingerprint": "4d22c04cf3133797b72d6db17439baa12a746da63b74dd1317c96010a6c27aa4",
+        "fishCapabilityMapping": {
+          "speed": 0.92,
+          "volume": -2.0,
+          "capabilities": [
+            {
+              "reason": "Fish exposes a bounded speed control.",
+              "status": "SUPPORTED",
+              "dimension": "pace",
+              "mappedControl": "prosody.speed"
+            },
+            {
+              "reason": "Fish exposes a bounded volume adjustment.",
+              "status": "SUPPORTED",
+              "dimension": "volumeTendency",
+              "mappedControl": "prosody.volume"
+            },
+            {
+              "reason": "S2 can render phrase separation in text, but production promotion awaits listening review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "rhythm",
+              "mappedControl": "S2 punctuation and [break]/[long-break] markers"
+            },
+            {
+              "reason": "S2 expression markers can render intensity; automatic use awaits listening review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "intensity",
+              "mappedControl": "S2 expression/tone markers"
+            },
+            {
+              "reason": "S2 documents pause markers; automatic use awaits listening review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "pauseStrategy",
+              "mappedControl": "S2 [break]/[long-break] markers"
+            },
+            {
+              "reason": "The verified Fish TTS request has no articulation control.",
+              "status": "UNSUPPORTED",
+              "dimension": "articulation",
+              "mappedControl": null
+            },
+            {
+              "reason": "S2 documents an emphasis marker; automatic use awaits listening review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "emphasis",
+              "mappedControl": "S2 [emphasis] marker"
+            },
+            {
+              "reason": "Punctuation and expression cues can influence endings; automatic use awaits review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "sentenceEnding",
+              "mappedControl": "canonical punctuation plus S2 expression markers"
+            },
+            {
+              "reason": "S2 accepts concise expression cues; automatic use awaits listening review.",
+              "status": "TEXT_RENDERABLE",
+              "dimension": "control",
+              "mappedControl": "S2 natural-language expression marker"
+            },
+            {
+              "reason": "A leading cue can condition onset style but cannot guarantee an audible preparation.",
+              "status": "APPROXIMATED",
+              "dimension": "preUtterancePreparation",
+              "mappedControl": "leading S2 expression marker"
+            },
+            {
+              "reason": "The verified API has no durable post-utterance hold control.",
+              "status": "UNSUPPORTED",
+              "dimension": "postUtteranceHold",
+              "mappedControl": null
+            }
+          ],
+          "schemaVersion": "fish-audio-performance-mapping-v1",
+          "audioProjectionFingerprint": "997a6837ba93457f565a4bb166617787661b3d351caeff6b60e6b30983f342d7"
+        },
+        "technicalReviewStatus": "PASS",
+        "sourceVideoContentHash": "066b281d01ba8f330c66c463c8c6ff0f238cc2f56af7c0dffbbaf812e62f677f",
+        "voiceMasterContentHash": "716e09b7ceb8cb7fd1770c57aa4bd6214f437ce3e07ad16b36ba73ccdc267efb",
+        "voiceMaterialFingerprint": "bd6c3e3fa88215c6ada123ff14eec316a7f5e1176dc615ebd1b18b74aeb085c2",
+        "audioProjectionFingerprint": "997a6837ba93457f565a4bb166617787661b3d351caeff6b60e6b30983f342d7",
+        "providerRequestFingerprint": "ad6bc40c8ad644c255b5f674d94bb5ebb08c022ba27638e655323898be891d65",
+        "performanceInputFingerprint": "997a6837ba93457f565a4bb166617787661b3d351caeff6b60e6b30983f342d7",
+        "baseAudioProjectionFingerprint": "c9d3ff77b0e2d232d0af73a3e0ea9b5be2b9c0c35f07d84ce6d438fe0c63018b",
+        "realizedPerformanceFingerprint": "2ca43baa5f4ab5ba8cab24e9da7090d2c6bc2b579b760bf0d50150a721985405",
+        "finalAudioProjectionFingerprint": "603816890057232601b1e68cddb38c9a853eac0c8cf69ffffe5887ebcef325c2",
+        "voiceProviderMappingFingerprint": "ff47f660587f0f2dda301e4bb7c16118304802ab21b6eab631402aad08961abc"
+      }
+    }
+  ]
+}

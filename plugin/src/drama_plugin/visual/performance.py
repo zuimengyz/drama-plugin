@@ -268,7 +268,7 @@ def couple_dialogue_visual_performance(
                            "dramaticAction": action, "visiblePerformanceFocus": focus,
                            "transitionPurpose": purpose, "relativeTimingRange": [start / duration, end / duration]})
 
-    add(None, plan.turns[0].speaker_key, "establish mutual attention", "both seated and oriented toward each other",
+    add(None, plan.turns[0].speaker_key, "establish mutual attention", "both oriented toward each other in the Shot's established blocking",
         "opening", 0, plan.pre_dialogue_hold_ms)
     boundaries: list[str] = []
     for turn, spoken in zip(plan.turns, ordered_spoken_content):

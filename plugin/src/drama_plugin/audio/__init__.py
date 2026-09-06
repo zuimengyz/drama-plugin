@@ -18,6 +18,7 @@ from drama_plugin.audio.foundation import (
 )
 from drama_plugin.audio.host_media import (
     AvAssemblyCapabilityMissing,
+    assemble_av,
     MediaProbe,
     capability_report,
     mux_video_and_audio,

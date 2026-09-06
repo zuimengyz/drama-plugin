@@ -114,3 +114,35 @@ Never:
 - treat a technically valid candidate as an approved voice or performance.
 
 Stop after the requested small candidate set is technically valid and traceable. Human review owns voice binding, character fit, emotion, rhythm, naturalness, and dramatic acceptance.
+
+## Authorized rendition exception
+
+The exact frozen text rule is the unchanged V1 path. On an explicitly authorized
+performance adaptation, Scene authoring reviews the complete neighboring exchange
+and provides a source-bound performance rendition. Audio consumes exactly that
+version, preserving line ID and speakerKey. The frozen source hash must match;
+working adaptation does not assert that Domain state was saved. See the Audio
+Layer convention extension and `compile_projected_speech_request`.
+
+English (or any target language) is not a leakage heuristic. Check the actual
+lexical content against the active performanceText with existing intelligibility
+QC; extra acting instructions are excess speech even when they share the target
+language. Preserve PHRASE_CUES_V2: only supported short authored cues at the provider
+boundary, full DPD/Brief in provenance. Do not reject punctuation/case alone or
+spend another attempt solely on an uncertain transcription. Do not excuse clear
+wrong words. Voice, pronunciation, expressive fit, sound continuity and mouth sync
+still require listening/visual review; technical QC cannot approve them.
+
+
+## Casting and placement follow an actual need for speech
+
+An existing Work Voice binding and active provider mapping establish identity and
+technical availability, not suitability for a different role/language or an
+accepted take. Review role fit and recognizable cross-clip identity when dubbing
+is necessary. Do not add words to a scene merely to make its voice match another
+clip. An explicit user adoption of native AV requires no new audition or model
+artistic permission. Keep that choice separate from unknown transcript, mouth sync
+and historical-fact verification. Later failed-take or adopted-source decisions
+must be consumed before cache selection; a technically valid cached take does not
+override them. Fitting a full phrase into a window is a feasibility check, never
+proof that the scene should receive that phrase.

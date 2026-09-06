@@ -60,6 +60,18 @@ def test_mismatched_or_partial_sources_fail_closed(mutation):
     with pytest.raises(ValueError): couple_dialogue_visual_performance(**args)
 
 
+def test_dialogue_coupling_preserves_shot_blocking_authority():
+    brief = couple_dialogue_visual_performance(**inputs())
+    labels = {'speaker:wangsili': 'pilot', 'speaker:geshuhan': 'ground helper'}
+    prompt = compile_video_motion_prompt(
+        brief=brief, shot_action='pilot lies prone; helper braces the wing',
+        camera_design='ground-level shared space', speaker_labels=labels,
+    )
+    assert 'pilot lies prone; helper braces the wing' in prompt
+    assert 'both seated' not in prompt
+    assert 'established blocking' in prompt
+
+
 def test_legacy_fingerprint_and_dialogue_request_change():
     args=inputs(); base=next(iter(args['briefs_by_spoken_content'].values()))
     legacy=dump_contract(base,exclude={'fingerprint','dialogue_timing_plan_fingerprint','dialogue_source_fingerprint','dialogue_performance_phases'})

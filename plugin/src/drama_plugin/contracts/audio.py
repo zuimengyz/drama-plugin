@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import re
 from enum import StrEnum
 from typing import Any, Literal
 
@@ -217,6 +218,7 @@ class SpeechGenerationRequest(ContractModel):
     scene_id: str
     spoken_content_id: str
     exact_text: str = Field(min_length=1)
+    performance_rendition: dict[str, Any] | None = None
     speaker_key: str
     voice_profile: VoiceProfile
     creative_casting_profile: CreativeVoiceCastingProfile | None = None
@@ -232,6 +234,17 @@ class SpeechGenerationRequest(ContractModel):
 
     @model_validator(mode="after")
     def validate_voice_resolution(self) -> "SpeechGenerationRequest":
+        if self.performance_rendition is not None:
+            rendition = self.performance_rendition
+            if (rendition.get("sourceLineId") != self.spoken_content_id
+                    or rendition.get("speakerKey") != self.speaker_key
+                    or rendition.get("performanceText") != self.exact_text
+                    or rendition.get("performanceLanguage") != self.voice_profile.creative_profile.language):
+                raise ValueError("performance rendition identity, language and exact text must match request")
+            if (rendition.get("reviewStatus") != "PASS"
+                    or not str(rendition.get("renditionVersion", "")).strip()
+                    or not re.fullmatch(r"[0-9a-f]{64}", str(rendition.get("sourceTextHash", "")))):
+                raise ValueError("performance rendition requires reviewed version and source hash")
         if self.video_conditioned_projection is not None:
             final = self.video_conditioned_projection
             if self.audio_performance_brief != final.final_audio_performance_brief:
@@ -240,7 +253,7 @@ class SpeechGenerationRequest(ContractModel):
             if (timing.policy != "NATURAL" or timing.target_duration_ms is not None
                     or timing.allow_rate_adjustment or timing.constraints):
                 raise ValueError("guessed mouth timing and forced video duration are prohibited")
-            if self.material_render_parameters not in ({"performanceRendering": "BRIEF_CUES_V1"}, {"performanceRendering": "PHRASE_CUES_V1"}):
+            if self.material_render_parameters not in ({"performanceRendering": "BRIEF_CUES_V1"}, {"performanceRendering": "PHRASE_CUES_V1"}, {"performanceRendering": "PHRASE_CUES_V2"}):
                 raise ValueError("video conditioning requires Brief-derived execution only")
         if self.voice_profile.speaker_key != self.speaker_key:
             raise ValueError("voice profile speakerKey must match request speakerKey")
@@ -370,8 +383,8 @@ class AvAssemblyManifest(ContractModel):
 
     @model_validator(mode="after")
     def validate_audio_inputs(self) -> "AvAssemblyManifest":
-        if self.audio_mix_media_id is None and not self.speech_clip_media_ids:
-            raise ValueError("assembly requires an audio mix or speech clips")
+        # No external audio and an empty timeline explicitly reuses the source AV.
+        # SpokenContent preservation does not require a separately dubbed rendition.
         known = set(self.speech_clip_media_ids)
         if self.audio_mix_media_id is None and any(
             item.audio_media_id not in known for item in self.timeline

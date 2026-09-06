@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
-from drama_plugin.audio.foundation import voice_profile_fingerprint
+from drama_plugin.audio.foundation import voice_profile_fingerprint, resolve_performance_text
 from drama_plugin.audio.projection import project_audio_performance, fingerprint_audio_projection
 from drama_plugin.contracts.audio import SpeechGenerationRequest
 from drama_plugin.contracts.audio_projection import AudioPerformanceBrief
@@ -36,7 +36,7 @@ def condition_audio_on_video(
     if base_request.video_conditioned_projection is not None:
         raise ValueError("base request is already video-conditioned")
     if base_request.material_render_parameters not in (
-        {}, {"performanceRendering": "BRIEF_CUES_V1"}, {"performanceRendering": "PHRASE_CUES_V1"}
+        {}, {"performanceRendering": "BRIEF_CUES_V1"}, {"performanceRendering": "PHRASE_CUES_V1"}, {"performanceRendering": "PHRASE_CUES_V2"}
     ):
         raise ValueError("unsupported base rendering parameters; no silent overwrite")
     dpd = compose_dpd(dpd_snapshot.scene, dpd_snapshot.beat, dpd_snapshot.line)
@@ -63,6 +63,9 @@ def condition_audio_on_video(
         raise ValueError("observed speaker mismatch")
     if base_request.spoken_content_id not in shot_spoken_content_ids:
         raise ValueError("SpokenContent binding mismatch")
+    canonical_spoken_content = resolve_performance_text(
+        canonical_spoken_content, base_request.performance_rendition
+    )
     if canonical_spoken_content.get("text") != base_request.exact_text:
         raise ValueError("canonical SpokenContent text mismatch")
     timing = base_request.target_timing_policy
@@ -144,5 +147,5 @@ def condition_audio_on_video(
     payload = dump_contract(base_request)
     payload.update({"audioPerformanceBrief": dump_contract(final_brief),
                     "videoConditionedProjection": dump_contract(wrapper),
-                    "materialRenderParameters": {"performanceRendering": "PHRASE_CUES_V1" if base.phrase_delivery_spans else "BRIEF_CUES_V1"}})
+                    "materialRenderParameters": {"performanceRendering": ("PHRASE_CUES_V2" if base_request.material_render_parameters.get("performanceRendering") == "PHRASE_CUES_V2" else "PHRASE_CUES_V1") if base.phrase_delivery_spans else "BRIEF_CUES_V1"}})
     return SpeechGenerationRequest.model_validate(payload)

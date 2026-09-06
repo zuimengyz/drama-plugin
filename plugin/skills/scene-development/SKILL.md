@@ -48,3 +48,24 @@ No Review PASS means no create or save. Persist only when required context is su
 Use `scene.create_scene` only for a genuinely new Scene after producing the complete initial formal state needed by this Skill. A successful create is the normal first write and returns the stable ID; do not call `scene.save_scene` immediately afterward unless a concrete revision has actually occurred. Use `scene.save_scene` only to revise an already persisted Scene because of a specific request, discovered error, upstream change, or necessary addition.
 
 Organize persistence as **Stable Envelope + Domain Content**. Keep the parent Episode ID, scene order, title, and optional location in the create envelope; use the stable Scene ID, order, title, and optional location for a revision. Put reviewed required spine beats, purpose, characters, time, Narrative Input State, Required Transition, objective/opposition, playable action, turn, Narrative Output State, necessity/coverage evidence, canonical `spokenContent`, and other formal Scene facts in the open `content` object. `spokenContent` is the sole reviewed source and may be empty. Do not persist aliases such as `dialogues`, `dialogueLines`, `spokenLines`, or `speech`, and do not create a Scene-local speaker registry. These are creative content, not new persistence fields. Do not move the parent Episode ID or hide, duplicate, or rename envelope fields inside `content`. Treat the Tool catalog as the sole machine-schema source. Submit save as a full replacement formal state, never as a patch, scratchpad, stringified JSON, or routine follow-up to create; reconcile stable spoken item IDs before replacing content. Use `context.refresh_context` only after a write makes current context stale. Do not specify framing, camera position, coverage, create Shots, resolve assets, or automatically invoke another Skill.
+
+## Performance language adaptation
+
+Keep authoring/review, performance, and subtitle/epilogue languages distinct.
+Resolve the current exchange language from explicit user choice and reviewed
+character/scene context. Explicit dubbed editions remain valid. UI language,
+nationality, and mother tongue alone never decide the exchange language (including
+translation, diplomacy and multilingual scenes).
+
+When the user authorizes a performance rendition, read full neighboring dialogue
+and actions first. Preserve meaning, listener, subtext, character expression,
+action prerequisites, historical events and Cinematic Intent. Review idiomatic
+performance wording before audio production; the provider cannot adapt it.
+Keep the frozen authoring source. A source-bound working artifact may hold
+sourceLineId, speakerKey, sourceTextHash, performanceLanguage, performanceText,
+renditionVersion, reviewStatus and optional subtitleText. Exactly one reviewed
+rendition per line is active in a production attempt. Do not claim formal Scene
+updates when only this artifact exists. Scene authoring owns eventual full-state
+save/reconciliation through existing spokenContent, preserving IDs and source
+provenance; audio production only consumes the selected wording. Unrequested lines
+remain pending, and a wording change does not itself invalidate images/videos.

@@ -194,7 +194,8 @@ class FishAsrResult:
 
 
 def compile_fish_rendered_text(*, canonical_text: str, rendered_text: str,
-                               performance_brief: AudioPerformanceBrief | None = None) -> str:
+                               performance_brief: AudioPerformanceBrief | None = None,
+                               compact_phrases: bool = False) -> str:
     """Validate a small, official S2 rendering surface without rewriting dialogue."""
     if not canonical_text or not rendered_text:
         raise ValueError("Fish canonical and rendered text must not be empty")
@@ -204,11 +205,13 @@ def compile_fish_rendered_text(*, canonical_text: str, rendered_text: str,
     if approved_cue is not None:
         allowed.add(approved_cue)
     if performance_brief is not None and performance_brief.phrase_delivery_spans:
-        parts: list[str] = [f"[{approved_cue}]"]
+        parts: list[str] = [] if compact_phrases else [f"[{approved_cue}]"]
         cursor = 0
         for span in performance_brief.phrase_delivery_spans:
             if span.end_char > len(canonical_text) or span.start_char < cursor:
                 raise ValueError("invalid canonical phrase range")
+            if compact_phrases and len(span.delivery) > 80:
+                raise ValueError("Compact Fish cues require an authored phrase of at most 80 characters")
             parts.extend((canonical_text[cursor:span.start_char], f"[{span.delivery}]", canonical_text[span.start_char:span.end_char]))
             allowed.add(span.delivery)
             cursor = span.end_char
@@ -256,6 +259,7 @@ def compile_fish_tts_payload(
     volume: float | None = None,
     rendered_text: str | None = None,
     performance_brief: AudioPerformanceBrief | None = None,
+    compact_phrases: bool = False,
 ) -> dict[str, Any]:
     if mode not in {"baseline", "directed"}:
         raise ValueError("Fish validation mode must be baseline or directed")
@@ -263,12 +267,16 @@ def compile_fish_tts_payload(
         raise ValueError("Fish TTS exact text must not be empty")
     if not reference_id:
         raise ValueError("Fish TTS reference id must not be empty")
+    if compact_phrases and (performance_brief is None or not performance_brief.phrase_delivery_spans):
+        raise ValueError("Compact Fish rendering requires authored phrase spans")
     if performance_brief is not None:
         if rendered_text is not None:
             raise ValueError("manual rendered text conflicts with Brief-derived rendering")
         rendered_text = f"[{_brief_expression_cue(performance_brief)}]{exact_text}"
         if performance_brief.phrase_delivery_spans:
-            parts = [f"[{_brief_expression_cue(performance_brief)}]"]
+            # Long audit prose can be spoken literally by S2. Keep the full
+            # brief in provenance; this explicit version renders local cues only.
+            parts = [] if compact_phrases else [f"[{_brief_expression_cue(performance_brief)}]"]
             cursor = 0
             for span in performance_brief.phrase_delivery_spans:
                 parts.extend((exact_text[cursor:span.start_char], f"[{span.delivery}]", exact_text[span.start_char:span.end_char]))
@@ -280,6 +288,7 @@ def compile_fish_tts_payload(
             compile_fish_rendered_text(
                 canonical_text=exact_text, rendered_text=rendered_text,
                 performance_brief=performance_brief,
+                compact_phrases=compact_phrases,
             )
             if rendered_text is not None
             else exact_text

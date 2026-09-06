@@ -82,6 +82,14 @@ def audio_input_material(request: SpeechGenerationRequest) -> dict[str, Any]:
         "materialRenderParameters": request.material_render_parameters,
         "targetTimingPolicy": dump_contract(request.target_timing_policy),
     }
+    if request.performance_rendition is not None:
+        # Presentation/reviewer notes are not material; the active version is.
+        material["performanceRendition"] = {
+            key: request.performance_rendition[key] for key in (
+                "sourceLineId", "speakerKey", "sourceTextHash", "performanceLanguage",
+                "performanceText", "renditionVersion",
+            )
+        }
     if request.video_conditioned_projection is not None:
         material["performanceAuthority"] = "VIDEO_CONDITIONED_FINAL_AUDIO"
         material["finalAudioProjectionFingerprint"] = request.video_conditioned_projection.fingerprint
@@ -173,3 +181,33 @@ def compile_speech_request(
         target_timing_policy=target_timing_policy.model_copy(deep=True),
         non_material_metadata=deepcopy(dict(non_material_metadata or {})),
     )
+
+
+def select_performance_language(*, explicit_language: str | None = None,
+                                dubbed_language: str | None = None,
+                                scene_language: str | None = None) -> str:
+    """Caller supplies reviewed scene context; UI language/nationality are not inputs."""
+    language = dubbed_language or explicit_language or scene_language
+    if not language or not language.strip():
+        raise ValueError("performance language needs explicit choice or reviewed scene context")
+    return language.strip()
+
+
+def resolve_performance_text(source: Mapping[str, Any],
+                             rendition: Mapping[str, Any] | None) -> dict[str, Any]:
+    """Return a working spoken item without mutating the frozen Scene source."""
+    working = deepcopy(dict(source))
+    if rendition is None:
+        return working
+    identity = source.get("id") or source.get("spokenContentId")
+    if (rendition.get("sourceLineId") != identity
+            or rendition.get("speakerKey") != source.get("speakerKey")
+            or rendition.get("sourceTextHash") != text_hash(str(source["text"]))):
+        raise ValueError("performance rendition does not match frozen source")
+    for key in ("performanceLanguage", "performanceText", "renditionVersion"):
+        if not isinstance(rendition.get(key), str) or not str(rendition[key]).strip():
+            raise ValueError("performance rendition is incomplete")
+    if rendition.get("reviewStatus") != "PASS":
+        raise ValueError("performance text must be reviewed before synthesis")
+    working["text"] = rendition["performanceText"]
+    return working

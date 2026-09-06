@@ -472,7 +472,8 @@ class FishRoleDubbingProvider:
                                           mode="directed", speed=speed, volume=volume,
                                           performance_brief=(speech.audio_performance_brief
                                               if speech.material_render_parameters.get("performanceRendering")
-                                              in {"BRIEF_CUES_V1", "PHRASE_CUES_V1"} else None))
+                                              in {"BRIEF_CUES_V1", "PHRASE_CUES_V1", "PHRASE_CUES_V2"} else None),
+                                          compact_phrases=speech.material_render_parameters.get("performanceRendering") == "PHRASE_CUES_V2")
         audio, _ = await self.fish.synthesize(payload)
         attempt = self._attempt_directory(speech.spoken_content_id)
         output = attempt / "role-dubbing.wav"
@@ -514,6 +515,7 @@ class FishRoleDubbingProvider:
             "voiceMaterialFingerprint": video_projection.voice_material_fingerprint if video_projection else None,
             "voiceMasterContentHash": voice.content_hash,
             "audioInputFingerprint": fingerprint,
+            "performanceRendition": speech.performance_rendition,
             "performanceRendering": speech.material_render_parameters.get("performanceRendering", "NATIVE"),
             "providerRequestFingerprint": sha256_canonical(payload),
             "fishCapabilityMapping": dump_contract(projected) if projected is not None else None,

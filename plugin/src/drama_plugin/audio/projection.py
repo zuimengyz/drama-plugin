@@ -3,7 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any, Mapping, Sequence
 
-from drama_plugin.audio.foundation import text_hash, voice_profile_fingerprint
+from drama_plugin.audio.foundation import text_hash, voice_profile_fingerprint, resolve_performance_text
 from drama_plugin.contracts.audio import (
     PronunciationGuidance,
     SpeechGenerationRequest,
@@ -195,7 +195,9 @@ def compile_projected_speech_request(
     phrase_delivery_spans: Sequence[PhraseDeliverySpan] = (),
     pronunciation_guidance: list[PronunciationGuidance] | None = None,
     non_material_metadata: Mapping[str, Any] | None = None,
+    performance_rendition: Mapping[str, Any] | None = None,
 ) -> SpeechGenerationRequest:
+    spoken_content = resolve_performance_text(spoken_content, performance_rendition)
     spoken_id, speaker_key, exact_text = _spoken_identity(spoken_content)
     brief = project_audio_performance(
         dpd_snapshot=dpd_snapshot,
@@ -210,6 +212,7 @@ def compile_projected_speech_request(
         scene_id=dpd_snapshot.effective.scene_id,
         spoken_content_id=spoken_id,
         exact_text=exact_text,
+        performance_rendition=deepcopy(dict(performance_rendition)) if performance_rendition else None,
         speaker_key=speaker_key,
         voice_profile=voice_profile.model_copy(deep=True),
         pronunciation_guidance=deepcopy(pronunciation_guidance or []),

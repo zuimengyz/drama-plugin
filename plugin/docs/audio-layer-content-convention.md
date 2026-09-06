@@ -4,6 +4,25 @@ Status: **FROZEN for Audio v1**
 
 This convention defines provider-neutral speech, Media, freshness, and AV assembly semantics. It adds no Audio entity, database table, or Audio CRUD Tool.
 
+## Source adoption before speech generation
+
+This convention's exact-text obligations apply when independent speech is actually
+required. Frozen authoring text remains intact; a latest user selection or reviewed
+semantic/action presentation may adopt the original AV without reproducing every
+source line as external audio. Keep production disposition with the source selection,
+not as a silent rewrite of Scene text or invented transcript. Explicit verbatim/key
+information obligations remain review concerns; a gap is not permission to force
+speech onto unsuitable footage. Technical review must not fabricate artistic approval.
+
+The existing `AvAssemblyManifest` now also accepts sourceVideoMediaId with empty
+speechClipMediaIds/timeline and no audioMixMediaId: this explicitly selects native
+AV. `audio.assemble_av` (public Python Host API, not a new MCP Tool) verifies the
+selected file/hash and returns that same path READY without creating media or
+calling a provider. If external audio is declared, existing binding validation and
+explicit complete-mix replacement remain. The selection owner supplies the current
+source before consulting a take cache. Artifact timestamps and ASR PASS are not
+selection authority. No new entity, approval hierarchy or production service.
+
 ## 1. Dialogue authority
 
 `Scene.content.spokenContent[].text` is the only authoritative Dialogue text. Audio consumers MUST copy the selected item's exact text into `SpeechGenerationRequest.exactText`; they MUST NOT rewrite, add, remove, split, merge, or persist pronunciation changes back into Dialogue. `spokenContentId`, `speakerKey`, `performanceIntent`, and `estimatedDurationMs` remain Scene-owned inputs. Provider markup, phonemes, pinyin, SSML, transcripts, and pronunciation dictionaries are derivative adapter state, never canonical Dialogue.
@@ -130,3 +149,38 @@ The canonical source reference for a fully reviewed result is `final-av:<finalAv
 ## 10. Audio v1 boundary
 
 Voice cloning, BGM, SFX, Foley, ambience, spatial audio, ducking, forced alignment, precise lip-sync, subtitles, mastering, and multi-Scene Audio E2E are deferred. Real speech generation requires a separately authorized Provider run and budget; contract/foundation validation never implies permission to invoke one.
+
+## Opt-in performance rendition and native-mix extension (V2-04R)
+
+V1 contracts/whole-audio replacement remain compatible. When explicitly authorized
+by the user, Scene authoring may supply a reviewed source-bound working rendition
+while keeping the frozen Chinese or other authoring source intact. This is not a
+new Domain object or a second Scene speaker registry. `SpeechGenerationRequest`'s
+optional `performanceRendition` dictionary carries sourceLineId, speakerKey,
+sourceTextHash, performanceLanguage, performanceText, renditionVersion, reviewStatus
+and optional subtitleText. The compiler checks the current source hash and stable
+identity, then uses that one performanceText in exactText and its projection;
+the request validates text, language, identity and review/version. A later formal
+save is Scene authoring's full-state update with stable IDs and source provenance,
+not an audio-provider write. Subtitle text remains a display derivative associated
+with the same rendition, never a separate speech/QC authority.
+
+Audio fingerprint includes the six material lineage/text/language/version fields
+when present; absent means the unchanged V1 fingerprint path. Voice/profile,
+provider mapping, rendering version and audio projection remain material. If a
+running older MCP schema cannot yet carry this optional field, keep the rendition
+in the source-bound artifact/request provenance and put the rendition version in
+the existing material AudioPerformanceBrief voiceProfileId before compiling it.
+Record the actual wire fingerprint and schema limitation; do not pretend the old
+service persisted the new field. Refresh the service after code handoff and
+coordinate this dependency deliberately, without automatic TTS regeneration.
+
+Host `assemble_reviewed_native_mix` requires explicit PRESERVE, MIX or LOCAL_REPLACE
+strategy and evidence, immutable input hashes, one source per line, measured full
+placements, and no duplication or truncation. Pending review can yield preservation
+or additive candidates only; local destructive windows require reviewed findings.
+This helper makes no separation or artistic claims. The caller includes its mix
+fingerprint/strategy/placements in existing FinalAvFingerprintInput.muxSettings,
+plus native source video hash and mixed audio hash. Speech changes stale dependent
+speech, placement, subtitle timing and mix; audio-only changes do not stale all
+reference images or source video. Native-only reviewed reuse requires zero TTS.

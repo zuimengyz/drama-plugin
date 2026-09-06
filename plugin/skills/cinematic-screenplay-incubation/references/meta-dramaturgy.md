@@ -80,3 +80,25 @@ and factual attributes that cannot be changed. A visible original keeps its actu
 wording, including errors; translated or adapted speech is labelled separately. An
 object can function as evidence, emotional focus, transition or anchor, but must not
 silently acquire false provenance, date, author, addressee or causal power.
+
+## Historical epilogue after the drama
+
+An episode may have a separate Historical Epilogue after closing perception, emotional
+completion and an explicit drama-end boundary. Keep it outside the screenplay body and
+shot coverage: no in-character lecture, closing voice-over or immediate explanatory
+interruption. A standalone document uses a distinct supplement section/page; later
+presentation must preserve that separation rather than infer a timed overlay.
+
+Normally choose one to five concise items that clarify a useful omission, misconception,
+near consequence or adaptation boundary. No compulsory categories, full biography,
+encyclopedic background or distant future survey. Omit the supplement when it adds nothing.
+Give each item a source claim/locator and certainty: Confirmed, Probable, Disputed or
+Dramatic Reconstruction. Keep uncertainty; describe contested alternatives when relevant.
+Mark original text, paraphrase and reconstruction explicitly. A script-created line
+cannot become a historical quotation by appearing in the supplement. Original text
+requires exact matching excerpt and locator; general source links do not prove wording.
+
+Review usefulness, brevity, grounding and separation after reading the unchanged ending.
+Record frozen body/closing hashes with the supplement so an explanatory edit cannot
+silently alter drama. The checker validates recorded provenance and separation only;
+reading the actual source and checking the dramatic effect remain reviewer tasks.

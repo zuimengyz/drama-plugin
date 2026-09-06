@@ -61,6 +61,10 @@ Before freeze, run the optional offline [artifact checker](scripts/check_incubat
 
 ## Downstream handoff
 
+When handing a frozen screenplay to Scene/Shot planning, extract a thin source-pinned Cinematic Intent sidecar using [intent handoff](references/cinematic-intent.md). Carry relevant POV, opening/closing, subjective moments and bridges with MUST/SHOULD/FREE priorities through scene working sets. Review meaning against the complete shot coverage, not merely matching IDs. A correct screenplay stays frozen when only its shot interpretation needs repair.
+
+An optional Historical Epilogue follows the completed dramatic ending as a separate reading/presentation block. Use the Historical Epilogue section of the [meta convention](references/meta-dramaturgy.md); it supplies concise evidence-backed context without adding explanatory dialogue or altering the closing anchor.
+
 Provide Character + Scene Dramatic State + canonical Dialogue Intent/Subtext + sparse Performance Intent. DPD owns its existing Scene/Beat/Line direction; the screenplay cannot redesign it. Surface/hidden emotion, target and intent are interpretive inputs; tempo, pause, force, breathing and restraint are upstream advisory language for later projection, not additional DPD fields or numeric controls. Shot anchors express the first/last effective perception and its purpose, not lens, frame size, camera movement, exact duration or shot lists. Detailed execution remains with the existing Scene/Shot/Production owners. Do not select voice identities, synthesize speech, render video, choose reference assets or bind provider parameters here. See the [existing DPD boundary](../../docs/dpd-core-contract.md) only when preparing that handoff.
 
 Complete with a readable screenplay, supporting Bible, scoped review/revision trail and a freeze decision. Keep rejected drafts and review reasoning in local working artifacts, outside formal Domain content.

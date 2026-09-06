@@ -67,3 +67,9 @@ scenes with episodeId, scene POV and their explicit working-set selection. Chara
 elasticity belongs beside invariants. Reuse review findings/rounds for dependency
 analysis; no new global timeline, schema or service. [Working sets](working-sets.md)
 explain the optional deterministic projection/checker convention.
+
+For downstream interpretation keep a source-pinned `cinematicIntent` sidecar or optional
+working section, as described in [intent handoff](cinematic-intent.md). It references
+approved anchors and scene text instead of duplicating them. Historical epilogue is an
+optional, separate episode supplement, never part of canonical spokenContent or a new
+Domain. Frozen older Bibles need no migration to use these local handoff artifacts.

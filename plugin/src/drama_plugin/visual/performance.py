@@ -168,8 +168,8 @@ def compile_video_motion_prompt(
             directions.append(f"{phase.order} ({start:.0%}-{end:.0%} approx): {role}. {phase.dramatic_action}. {phase.visible_performance_focus}.")
         prompt = (f"ACTION: {shot_action}. ORDERED PERFORMANCE, relative phases, not exact speech timestamps: "
                   + " ".join(directions) + f" CAMERA: {camera_design}. "
-                  "Keep both faces readable; no simultaneous speaking. Preserve identities, beard, costume, props and background; "
-                  "one continuous shot. Restrained gaze, head and breath changes; no broad gestures, shouting, standing or table strikes.")
+                  "Keep faces readable within the Shot framing; no simultaneous speaking. Preserve identities, beard, costume, props and background; "
+                  "one continuous shot. Shot action owns posture, movement and gaze; performance cues only modulate that action.")
         if brief.execution_timing_fingerprint:
             boundaries = "; ".join(brief.performance_boundaries)
             prompt += f" Boundaries: {boundaries}."

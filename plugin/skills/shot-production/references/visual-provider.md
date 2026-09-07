@@ -52,6 +52,14 @@ Route by both generation intent and reference count:
 
 Use the Host adapter's current verified preference when it remains available and matches the intent. Discover a replacement official template only when that preference is missing or cannot perform the required intent. Do not create a saved, custom, or dynamic workflow.
 
+Reference-count compatibility is transport evidence, not first-pass quality evidence.
+For new images, use [first-pass production](first-pass-production.md) to bind the
+ordered stable Media hashes to actual provider slots and qualify the model against
+representative Shot types and prop states. Confirm actual output dimensions from
+the template graph; a textual aspect-ratio request does not override linked size
+inputs. A rejected frame alone cannot replace missing character identity masters
+in a repair request. Preserve the reference plan in targeted corrections.
+
 ## Video input and motion contract
 
 Use one fixed input mode per video target:

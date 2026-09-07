@@ -64,11 +64,12 @@ def test_dialogue_coupling_preserves_shot_blocking_authority():
     brief = couple_dialogue_visual_performance(**inputs())
     labels = {'speaker:wangsili': 'pilot', 'speaker:geshuhan': 'ground helper'}
     prompt = compile_video_motion_prompt(
-        brief=brief, shot_action='pilot lies prone; helper braces the wing',
+        brief=brief, shot_action='pilot lies prone; helper stands and braces the wing',
         camera_design='ground-level shared space', speaker_labels=labels,
     )
-    assert 'pilot lies prone; helper braces the wing' in prompt
+    assert 'pilot lies prone; helper stands and braces the wing' in prompt
     assert 'both seated' not in prompt
+    assert 'no broad gestures, shouting, standing' not in prompt
     assert 'established blocking' in prompt
 
 

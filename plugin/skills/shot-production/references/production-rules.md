@@ -88,6 +88,18 @@ Map activation and control compositionally. In particular, high internal activat
 
 ## Per-Shot review and targeted revision
 
+For new image sequences, apply the executable [first-pass production gate](first-pass-production.md)
+before submission. Review a small representative subset of actual planned Shots
+before expansion, and inspect every output before the next reservation. Two
+consecutive failures or a repeated major category in the last three reviews stops
+expansion. This gate precedes cross-Shot continuity review; do not wait for an
+entire batch to finish before recognizing a shared identity or structural failure.
+
+Record output hash, reviewer evidence, applicable checks, category, severity and
+remedy. Major semantic errors require targeted revision; minor nonsemantic issues
+may pass with a documented acceptance or postprocessing task. Unknown observations
+stay incomplete. Never downgrade missing required evidence to a cosmetic issue.
+
 Review only applicable dimensions, including:
 
 - Shot Semantic Accuracy, including every required and forbidden Shot-delta condition;

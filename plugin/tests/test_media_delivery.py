@@ -109,6 +109,22 @@ async def test_candidate_storage_does_not_approve_content_or_adopt(setup):
 
 
 @pytest.mark.asyncio
+async def test_distinct_failed_candidates_preserve_both_attempt_bindings(setup):
+    x=setup
+    first=await x.complete(content_review='FAIL')
+    ident=MediaIdentity(**{**x.ident.__dict__,'source_ref':'paid:job2'})
+    second=await complete_retained_media(x.store,x.memory,x.asset,ident,source=x.video,
+        content={'providerJobId':'job2'},cache=x.tmp/'second',target_id='clip1',content_review='FAIL')
+    assert first['mediaId']!=second['mediaId']
+    bindings=x.data.shot.content['mediaBindings']
+    assert len(bindings)==2 and all(b['contentReview']=='FAIL' and b['userAdoption']=='PENDING' for b in bindings)
+    from drama_plugin.media_delivery import bind_delivery
+    with pytest.raises(PersistenceError,match='conflict'):
+        await bind_delivery(x.memory,x.asset,second,target_id='clip1',retention='CANDIDATE',
+                            content_review='PASS',user_adoption='PENDING')
+
+
+@pytest.mark.asyncio
 async def test_actual_native_consumer_uses_empty_cache_without_source_or_processing(setup,monkeypatch):
     x=setup
     selection={'decision':'REUSE_SOURCE_AV','authority':'USER_EXPLICIT_ADOPTION','audioProcessing':[]}

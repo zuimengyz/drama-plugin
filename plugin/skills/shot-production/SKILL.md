@@ -11,7 +11,7 @@ Discover reference candidates from named visible characters, the Scene, focal pr
 
 Do not require a visual provider for context reads, non-visual planning, Shot design, or other non-visual work. For image or video planning and execution, load [references/visual-provider.md](references/visual-provider.md) so the plan includes the complete reference-to-provider-to-Media handoff. Before actual execution, preflight only the Drama and visual capabilities required by that request. Return `DRAMA_PROVIDER_UNAVAILABLE`, `VISUAL_PROVIDER_UNAVAILABLE`, or `VISUAL_PROVIDER_CAPABILITY_MISSING` when the corresponding capability is unavailable; stop rather than installing, configuring, or simulating a provider.
 
-Before preparing new video inputs, consume a frozen decision from [video model selection](../video-model-selection/SKILL.md). Select only after Shot narrative, performance and sound requirements are fixed. The selected mode determines which existing inputs to reuse and which are genuinely missing. For video and its necessary input images, use one stage budget in [first-pass production](references/first-pass-production.md); submit only the reserved decision request and requalify after any material change.
+Before preparing new video inputs, consume a qualified ProductionRoute from [video model selection](../video-model-selection/SKILL.md). Select only after Shot narrative, performance and sound requirements are fixed. This planning record has input duties, not placeholder Media. Seal the executable video decision only after its actual inputs are reviewed and formally recoverable. For video and its necessary input images, use one stage budget in [first-pass production](references/first-pass-production.md); submit only the reserved request and requalify after any material change.
 
 Before visual generation, compile each approved Shot into stable identity and environment facts plus current action, composition, representative keyframe intent, required visual evidence, forbidden visual outcomes, and continuity constraints. For new image production and image revisions, load [first-pass production](references/first-pass-production.md) and use its executable request preflight and persistent reservation/review gate before calling the Host provider. Qualify up to three representative planned Shots before expansion, preserve reference versions and actor/action ownership, and pause on repeated major failures. Use resolved dialogue only for the visible delivery, reaction, off-screen, or voice-over intent relevant to the binding; never copy its text into the Shot or provider-owned state. Resolve each selected input through `media.resolve_media`, execute the available visual capability, and apply the per-Shot review defined in the production rules. On failure, allow at most one targeted revision while preserving Stable Facts and the Reference Plan unless the review proves that plan incorrect. Do not revise a Shot that already passes.
 
@@ -49,3 +49,24 @@ source first; ambiguity, permission denial, hash conflict or unknown ownership
 blocks completion. Retry transient reads with finite backoff and fresh resolve.
 Never generate again to repair missing cache or persistence. Do not import
 unneeded DEBUG/REJECTED files or invent an output that was never generated.
+
+## New-story route gate
+
+For a new production Work, finish narrative and text identity first, jointly
+plan the route and its minimum input duties with video-model-selection, and save
+that route using the existing Work contract. Asset discovery before route selection
+is read-only. A shared reviewed image may establish several necessary identities;
+do not automatically create separate character, location, prop and endpoint sets.
+Use `shot-production/scripts/route_preflight.py` for the Work-owned stage. Paid
+images must match a current necessary duty and explicit whole-stage budget.
+Materialize and review only the inputs for the current representative target;
+no full-episode asset expansion follows from route selection. Keep all result,
+review, settlement and persistence updates on that same formal stage.
+
+Initial visual identity creation belongs to asset-resolution and may share a
+necessary first frame. Mark `identity_bootstrap` explicitly in the existing image
+preflight; it is a creation intent, never a claim of identity continuity PASS.
+After inspection and formal persistence, bind a joint image once and enumerate
+its `reference_members`; preserve distinct named actor blocking. Subsequent
+frames require the reviewed reference and cannot use bootstrap to bypass identity
+review. Fixed reference limits remain unchanged.

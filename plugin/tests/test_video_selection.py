@@ -218,11 +218,11 @@ def test_quote_balance_unknown_cost_and_protection(tmp_path):
     assert not qualify(r,bad)['eligible']
 
 
-def test_scene_fit_precedes_quality_and_cost(tmp_path):
+def test_input_fit_is_priced_instead_of_vetoing_capable_route(tmp_path):
     r,c,*_=fixture(tmp_path)
     cheap=c.model_copy(update={'candidate_id':'cheap','fit_concerns':('adjacent continuity unverified',),
                               'cost':c.cost.model_copy(update={'components':{'video':1}})})
-    assert choose(r,[cheap,c])['selected']=='c'
+    assert choose(r,[cheap,c])['selected']=='cheap'
     assert c.cost.total()==200
 
 

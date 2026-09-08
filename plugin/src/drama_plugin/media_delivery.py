@@ -196,6 +196,10 @@ async def bind_delivery(memory: MemoryProvider, asset: AssetProvider, receipt: d
     bindings = list(content.get("mediaBindings", []))
     key = (target_id, receipt["purpose"], user_adoption)
     same = [b for b in bindings if (b.get("targetId"), b.get("purpose"), b.get("userAdoption")) == key]
+    # Distinct retained attempts may coexist for review. Selection replacement
+    # stays explicit; the same Media identity cannot acquire conflicting facts.
+    if retention == 'CANDIDATE' and user_adoption == 'PENDING':
+        same = [b for b in same if b.get('mediaId') == receipt['mediaId']]
     if same and same != [binding]:
         raise PersistenceError("Binding/version conflict; an explicit selection revision is required")
     if not same:

@@ -5,11 +5,11 @@ description: Select a video model, input mode and execution path for an approved
 
 # Video Model Selection
 
-Read `shot.get_shot`, `scene.get_scene`, `media.get_media` and `media.resolve_media` only when the approved context or stable input facts are missing. Keep decisions in Agent Run Context, not new domain entities. Select after narrative, performance and sound requirements are settled, before paying for input images. Return the decision to the calling production workflow; selection itself never submits generation, imports Media or adopts a result.
+Read `shot.get_shot`, `scene.get_scene`, `media.get_media` and `media.resolve_media` only when the approved context or stable input facts are missing. Keep alternatives in Agent Run Context. For an authorized persistent production task, save the reviewed route and input duties through existing Work open metadata; do not create route entities or a parallel Skill. Select after narrative, performance and sound requirements are settled, before paying for input images. Return the decision to the calling production workflow; selection itself never submits generation, imports Media or adopts a result.
 
 Freeze Work/Scene/Shot and video target, narrative duration, entry/exit state, actor/action ownership, camera, canonical dialogue rendition and speakers, required sound controls, prop/costume state, adjacent-shot continuity and reviewed input versions. Never shorten required acting, remove dialogue, exchange actions or add external speech to fit a cheaper candidate. An unresolved rendition or required voice control blocks that path only.
 
-Use **suitability > generation quality > price**, with hard requirements as gates, not a compensating weighted score. Translate “keyframes” into first-frame conditioning, independent start/end, subject/style references or actual timed image constraints. Multiple references do not prove endpoints or intermediate timing; independent capabilities do not prove their combination. Preserve the project contract: image preparation has at most three stable references; video accepts exactly one stable image, or one same-target start/end pair, without mixing. Do not enlarge this contract from a provider's higher limit.
+Use creative requirements as admission gates, task-specific quality thresholds, then complete incremental cost among eligible routes. Existing-image compatibility is a reuse benefit or a priced conversion/new-input choice, never the first veto for a new work. Missing endpoints or a different image ratio cannot reject an entire model when an inspected mode and bounded input preparation can meet the requirement. Translate “keyframes” into first-frame conditioning, independent start/end, subject/style references or actual timed image constraints. Multiple references do not prove endpoints or intermediate timing; independent capabilities do not prove their combination. Preserve the project contract: image preparation has at most three stable references; video accepts exactly one stable image, or one same-target start/end pair, without mixing. Do not enlarge this contract from a provider's higher limit.
 
 Inspect a small relevant candidate set through the Host. Separate official model claims, current node/interface support, actual template exposure, project adaptation and project quality samples. A missing current path is not executable even if documentation exists. Host details belong in the adapter, not this core. Unknown nodes, uninspected nested graphs, hidden paid enhancement and additional generation stages must fail closed. Do not switch paid platforms or install local models.
 
@@ -45,3 +45,31 @@ source first; ambiguity, permission denial, hash conflict or unknown ownership
 blocks completion. Retry transient reads with finite backoff and fresh resolve.
 Never generate again to repair missing cache or persistence. Do not import
 unneeded DEBUG/REJECTED files or invent an output that was never generated.
+
+## Production route before images
+
+For a new story, call `ProductionRoute` / `qualify_route` before any paid input.
+Each planned input has a stable target duty, purpose, role, consumer targets,
+preparation choice, specification, rationale and explicit cost key. It has no
+placeholder Media ID. Compare 2–3 relevant routes; preserve fixed reference caps.
+Include image preparation/conversion, each video, native or external audio,
+references, enabled extra nodes and correction reserve. Unknown fees block a
+complete cost claim. Report current cash separately from hypothetical series
+amortization; do not invent a success probability for unknown quality.
+
+The actual new-story Host entry is
+`../shot-production/scripts/route_preflight.py`. Save the route on the new Work,
+then initialize the existing visual stage only after explicit stage-wide monetary
+authorization. Its Work-owned stage is canonical; local state and Excel are
+rebuildable audit views. `check-input` and each reservation enforce the necessary
+input duty and current route. `add-frame` materializes one input or video without
+resetting the stage. After input review and full Media readback, seal the existing
+video decision with actual input identities and the current exact graph quote.
+
+Keep neighboring targets on the same qualified route/specification unless evidence
+justifies a change. First produce the least input needed and one representative
+video. Only a reviewed pass may unlock the adjacent target; a concrete failure
+may spend the second video on a focused correction. UNKNOWN is not a retry trigger.
+Model changes, technical recreation and content correction retain target identity,
+all call events and shared stage exposure. Stop at the task's global video/image
+limits; never count a multiple-generation workflow as one generation.

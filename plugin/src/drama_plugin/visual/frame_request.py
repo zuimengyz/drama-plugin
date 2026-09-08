@@ -81,6 +81,8 @@ class FrameSpec(Record):
     target_size: tuple[int, int]
     crop_review: Text | None = None
     seed: int = Field(ge=0)
+    identity_bootstrap: Text | None = None
+    reference_members: dict[str, tuple[Text, ...]] = Field(default_factory=dict)
 
 
 class Template(Record):
@@ -98,6 +100,7 @@ class Template(Record):
     settings: dict[str, Any] = Field(default_factory=dict)
     # Capability evidence is distinct from an artistic PASS on this task.
     supported_types: tuple[Text, ...] = Field(min_length=1)
+    api_workflow: dict[str, Any] | None = None
 
 
 def _unique(values: list[str], error: str) -> None:
@@ -176,6 +179,12 @@ def compile_frame(spec: FrameSpec, template: Template) -> dict[str, Any]:
     _unique([r.media_id for r in spec.references], "REFERENCE_MEDIA_REUSED_FOR_DISTINCT_ENTITIES")
     _unique([r.upload_name for r in spec.references], "UPLOAD_REUSED_FOR_DISTINCT_ENTITIES")
     refs = {r.entity_key: r for r in spec.references}
+    if spec.identity_bootstrap and spec.references:
+        raise ValueError('BOOTSTRAP_IS_ONLY_FOR_INITIAL_IDENTITY_CREATION')
+    if not set(spec.reference_members) <= set(refs):
+        raise ValueError('SHARED_REFERENCE_NOT_SELECTED')
+    members = [m for group in spec.reference_members.values() for m in group]
+    _unique(members, 'AMBIGUOUS_SHARED_REFERENCE_IDENTITY')
     if set(spec.omitted) & set(refs):
         raise ValueError("REFERENCE_BOTH_SELECTED_AND_OMITTED")
     for r in spec.references:
@@ -190,7 +199,8 @@ def compile_frame(spec: FrameSpec, template: Template) -> dict[str, Any]:
         if receipt.get('name') != r.upload_name or receipt.get('content_hash') != r.content_hash:
             raise ValueError("REFERENCE_UPLOAD_RECEIPT_MISMATCH")
     for a in spec.actors:
-        if a.entity_key not in refs or refs[a.entity_key].kind != "CHARACTER":
+        direct = a.entity_key in refs and refs[a.entity_key].kind == 'CHARACTER'
+        if not direct and a.entity_key not in members and not spec.identity_bootstrap:
             raise ValueError("MISSING_STABLE_REFERENCE:" + a.entity_key)
     _verify_graph(spec, template)
     risks: set[str] = {spec.shot_type}
@@ -212,7 +222,10 @@ def compile_frame(spec: FrameSpec, template: Template) -> dict[str, Any]:
              "SHOT BLOCKING owns pose, screen position, action and gaze. Reference poses do not transfer.",
              f"ENTRY: {spec.entry_state}", f"COMPOSITION: {spec.composition}"]
     for index, r in enumerate(spec.references, 1):
-        parts.append(f"Image {index} binds ONLY {r.entity_key} ({r.kind}); {r.facts}. Reference state: {r.state}.")
+        identities = ', '.join(spec.reference_members.get(r.entity_key, (r.entity_key,)))
+        parts.append(f"Image {index} binds ONLY {identities} ({r.kind}); {r.facts}. Reference state: {r.state}.")
+    if spec.identity_bootstrap:
+        parts.append('INITIAL IDENTITY CREATION (not an approved identity match): ' + spec.identity_bootstrap)
     for a in spec.actors:
         parts.append(f"ACTOR {a.label} [{a.entity_key}]: identity={a.identity}; costume={a.costume}; "
                      f"position={a.position}; pose={a.pose}; action NOW={a.action}; gaze={a.gaze}; visibility={a.visibility}.")
@@ -230,8 +243,38 @@ def compile_frame(spec: FrameSpec, template: Template) -> dict[str, Any]:
     overrides: dict[str, Any] = {slot: {"image": ref.upload_name} for slot, ref in zip(template.image_slots, spec.references)}
     overrides[template.prompt_node] = {**template.settings, template.prompt_key: prompt, template.seed_key: spec.seed}
     request = {"tool": "run_template", "name": template.name, "description": spec.shot_id + "-frame", "input_overrides": overrides}
-    material = {"schema": "visual-frame-preflight-v1", "spec": spec.model_dump(mode="json"),
-                "template": template.model_dump(mode="json"), "request": request, "risks": sorted(risks)}
+    if template.api_workflow is not None:
+        from copy import deepcopy
+        api = deepcopy(template.api_workflow)
+        allowed = {template.prompt_node, *template.image_slots, 'output'}
+        if set(api) != allowed or api[template.prompt_node]['class_type'] != 'Flux2ImageNode':
+            raise ValueError('UNVERIFIED_IMAGE_API_GRAPH')
+        model_inputs = api[template.prompt_node]['inputs']
+        expected_keys = {'prompt', 'model', 'model.width', 'model.height', 'seed'} | {
+            f'model.images.image_{i+1}' for i in range(len(spec.references))}
+        if set(model_inputs) != expected_keys or model_inputs['model'] != template.model:
+            raise ValueError('UNVERIFIED_IMAGE_API_PARAMETERS')
+        if (model_inputs['model.width'], model_inputs['model.height']) != template.output_size:
+            raise ValueError('IMAGE_API_DIMENSION_MISMATCH')
+        for i, slot in enumerate(template.image_slots, 1):
+            if api[slot]['class_type'] != 'LoadImage' or model_inputs[f'model.images.image_{i}'] != [slot, 0]:
+                raise ValueError('IMAGE_API_REFERENCE_WIRING_MISMATCH')
+        output = api['output']
+        if (output.get('class_type') != 'SaveImage' or
+                set(output.get('inputs', {})) != {'images', 'filename_prefix'} or
+                output['inputs']['images'] != [template.prompt_node, 0] or
+                not isinstance(output['inputs']['filename_prefix'], str)):
+            raise ValueError('UNVERIFIED_IMAGE_API_OUTPUT')
+        for slot, values in overrides.items():
+            api[slot]['inputs'].update(values)
+        request = {'tool':'submit_workflow', 'workflow':api}
+    spec_data = spec.model_dump(mode='json'); template_data = template.model_dump(mode='json')
+    # Preserve every legacy compiled fingerprint when these extensions are unused.
+    if not spec.identity_bootstrap: spec_data.pop('identity_bootstrap')
+    if not spec.reference_members: spec_data.pop('reference_members')
+    if template.api_workflow is None: template_data.pop('api_workflow')
+    material = {"schema": "visual-frame-preflight-v1", "spec": spec_data,
+                "template": template_data, "request": request, "risks": sorted(risks)}
     return {**material, "fingerprint": sha256_canonical(material)}
 
 

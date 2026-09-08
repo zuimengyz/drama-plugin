@@ -43,12 +43,24 @@ def verify_visual(frame: dict[str, Any]) -> None:
         verify_compiled(frame)
 
 
-def new_stage(*, stage_id: str, authorization_ref: str, budget_credits: float,
-              frames: list[dict[str, Any]], protected_targets: list[str]) -> dict[str, Any]:
-    if not stage_id.strip() or not authorization_ref.strip() or not math.isfinite(budget_credits) or budget_credits <= 0:
+def new_stage(*, stage_id: str, authorization_ref: str, budget_credits: float | None,
+              frames: list[dict[str, Any]], protected_targets: list[str],
+              production_route: dict[str, Any] | None = None,
+              no_monetary_cap: bool = False) -> dict[str, Any]:
+    unlimited = no_monetary_cap and budget_credits is None and production_route is not None
+    if (not stage_id.strip() or not authorization_ref.strip() or
+            (not unlimited and (budget_credits is None or not math.isfinite(budget_credits) or budget_credits <= 0)) or
+            (no_monetary_cap and not unlimited)):
         raise ValueError('EXPLICIT_STAGE_BUDGET_REQUIRED')
-    if not frames or len({f['spec']['shot_id'] for f in frames}) != len(frames):
+    if (not frames and production_route is None) or len({f['spec']['shot_id'] for f in frames}) != len(frames):
         raise ValueError('EMPTY_OR_DUPLICATE_STAGE_TARGET')
+    if production_route is not None:
+        from drama_plugin.visual.video_selection import ProductionRoute, qualify_route
+        route = ProductionRoute.model_validate(production_route)
+        if route.stage_id != stage_id or not qualify_route(route)['eligible']:
+            raise ValueError('APPROVED_EXECUTABLE_ROUTE_REQUIRED')
+        if budget_credits is not None and qualify_route(route)['incremental_credits'] > budget_credits:
+            raise ValueError('COMPLETE_ROUTE_EXCEEDS_AUTHORIZATION')
     for f in frames:
         verify_visual(f)
         if f.get('schema') == 'video-decision-v1' and f['stage_id'] != stage_id:
@@ -57,18 +69,73 @@ def new_stage(*, stage_id: str, authorization_ref: str, budget_credits: float,
             raise ValueError('PROTECTED_TARGET')
     images = [f for f in frames if f.get('schema') != 'video-decision-v1']
     videos = [f for f in frames if f.get('schema') == 'video-decision-v1']
-    if len(videos) > 1:
+    if len(videos) > (2 if production_route else 1):
         raise ValueError('STAGE_ONE_FORMAL_VIDEO_TARGET')
-    if len(images) > 3:
+    if len(images) > (6 if production_route else 3):
         raise ValueError('STAGE_IMAGE_LIMIT')
     if images:
         new_campaign(images)  # Preserve V2-05 identity/version/risk qualification.
-    return {'schema': 'visual-campaign-v1', 'frames': {f['spec']['shot_id']: f for f in frames},
+    result: dict[str, Any] = {'schema': 'visual-campaign-v1', 'frames': {f['spec']['shot_id']: f for f in frames},
             'plan_fingerprint': sha256_canonical(frames), 'pilots': [f['spec']['shot_id'] for f in frames],
             'attempts': [], 'pause': None, 'remediations': [],
             'stage': {'id': stage_id, 'authorization_ref': authorization_ref,
                       'budget_credits': budget_credits, 'protected_targets': protected_targets,
                       'video_target': videos[0]['spec']['shot_id'] if videos else None}}
+    if production_route is not None:
+        result['production_route'] = deepcopy(production_route)
+        if unlimited:
+            result['stage']['no_monetary_cap'] = True
+        for f in frames:
+            _route_frame_gate(result, f)
+    return result
+
+
+def _route_frame_gate(state: dict[str, Any], frame: dict[str, Any]) -> None:
+    from drama_plugin.visual.video_selection import ProductionRoute, qualify_route, route_input_gate
+    route = ProductionRoute.model_validate(state['production_route'])
+    if not qualify_route(route)['eligible']:
+        raise ValueError('ROUTE_EXPIRED_OR_INCOMPLETE')
+    target = frame['spec']['shot_id']
+    if frame.get('schema') == 'video-decision-v1':
+        if target not in route.video_targets or frame['requirements']['work_id'] != route.work_id:
+            raise ValueError('VIDEO_OUTSIDE_ROUTE_SCOPE')
+        if (frame['requirements']['source_fingerprint'] != route.creative_fingerprint or
+                (route.requirements.get('shots') and frame['requirements']['shot_id'] != route.requirements['shots'].get(target))):
+            raise ValueError('VIDEO_CREATIVE_OR_FORMAL_SHOT_CHANGED')
+        if frame['candidate']['candidate_id'] != route.candidate.candidate_id:
+            raise ValueError('MODEL_SWITCH_REQUIRES_ROUTE_REPLAN')
+        for key in ('model', 'variant', 'mode', 'template', 'graph_hash', 'adapter_fingerprint', 'parameters'):
+            if frame['candidate'][key] != route.candidate.model_dump(mode='json')[key]:
+                raise ValueError('VIDEO_REQUEST_DIFFERS_FROM_ROUTE:' + key)
+        if target != route.video_targets[0] and not any(
+                a.get('media_kind') == 'VIDEO' and a['shot_id'] == route.video_targets[0]
+                and a.get('review_status', '').startswith('PASS') for a in state['attempts']):
+            raise ValueError('FIRST_VIDEO_PASS_REQUIRED_FOR_ADJACENT_TARGET')
+    else:
+        duty = next((i for i in route.inputs if i.target_id == target), None)
+        if duty is None:
+            raise ValueError('PAID_IMAGE_NOT_A_NECESSARY_ROUTE_INPUT')
+        route_input_gate(route, target, duty.purpose)
+        passed = {a['shot_id'] for a in state['attempts'] if a.get('review_status', '').startswith('PASS')}
+        if not set(duty.requires_pass_targets) <= passed:
+            raise ValueError('REQUIRED_INPUT_OR_VIDEO_REVIEW_NOT_PASSED')
+        if frame['spec'].get('identity_bootstrap') and duty.target_id != route.inputs[0].target_id:
+            raise ValueError('BOOTSTRAP_CANNOT_BYPASS_EXISTING_IDENTITIES')
+        if frame['spec']['shot_fingerprint'] != route.creative_fingerprint:
+            raise ValueError('IMAGE_CREATIVE_SOURCE_CHANGED')
+
+
+def add_route_frame(state: dict[str, Any], frame: dict[str, Any]) -> None:
+    """Materialize a planned duty after inputs exist without a second campaign."""
+    check_campaign(state)
+    verify_visual(frame)
+    _route_frame_gate(state, frame)
+    target = frame['spec']['shot_id']
+    if target in state['frames']:
+        raise ValueError('EXISTING_TARGET_REQUIRES_REPLAN')
+    state['frames'][target] = deepcopy(frame)
+    state['pilots'].append(target)
+    state['plan_fingerprint'] = sha256_canonical(list(state['frames'].values()))
 
 
 def _fresh(observation: dict[str, Any]) -> None:
@@ -84,6 +151,8 @@ def exposure(state: dict[str, Any]) -> float:
 
 def _stage_gate(state: dict[str, Any], frame: dict[str, Any], request: dict[str, Any],
                 quote: dict[str, Any] | None, balance: dict[str, Any] | None) -> float:
+    if 'production_route' in state:
+        _route_frame_gate(state, frame)
     if quote is None or balance is None:
         raise ValueError('FRESH_QUOTE_AND_BALANCE_REQUIRED')
     _fresh(quote); _fresh(balance)
@@ -99,13 +168,18 @@ def _stage_gate(state: dict[str, Any], frame: dict[str, Any], request: dict[str,
     if any(not isinstance(x, (int, float)) or not math.isfinite(x) for x in [amount, available, margin]) or min(amount, available) < 0 or amount == 0 or margin <= 0:
         raise ValueError('INVALID_QUOTE_OR_BALANCE')
     unsettled = sum(a['reserved_credits'] for a in state['attempts'] if a['credits'] is None)
-    if exposure(state) + amount > state['stage']['budget_credits'] or unsettled + amount + margin > available:
+    cap = state['stage']['budget_credits']
+    if cap is None and not state['stage'].get('no_monetary_cap'):
+        raise ValueError('EXPLICIT_STAGE_BUDGET_REQUIRED')
+    if (cap is not None and exposure(state) + amount > cap) or unsettled + amount + margin > available:
         raise ValueError('STAGE_BUDGET_OR_BALANCE_EXCEEDED')
     video = frame.get('schema') == 'video-decision-v1'
     if video:
         # Quote may include margin, but cannot undercut the recorded paid path.
         costs = frame['candidate']['cost']['components']
-        minimum = sum(v for k, v in costs.items() if k not in {'correction', 'new_inputs', 'existing_input'})
+        minimum = (state['production_route']['video_request_credits']
+                   if 'production_route' in state else
+                   sum(v for k, v in costs.items() if k not in {'correction', 'new_inputs', 'existing_input'}))
         if amount < minimum:
             raise ValueError('QUOTE_BELOW_SELECTED_PATH_COST')
     if video and frame['stage_id'] != state['stage']['id']:
@@ -113,8 +187,10 @@ def _stage_gate(state: dict[str, Any], frame: dict[str, Any], request: dict[str,
     if video and sum(a.get('media_kind') == 'VIDEO' for a in state['attempts']) >= 2:
         raise ValueError('STAGE_VIDEO_ATTEMPTS_EXHAUSTED')
     if not video:
+        if 'production_route' in state and sum(a.get('media_kind') == 'IMAGE' for a in state['attempts']) >= 6:
+            raise ValueError('STAGE_IMAGE_ATTEMPTS_EXHAUSTED')
         initials = {a['shot_id'] for a in state['attempts'] if a.get('media_kind') == 'IMAGE'}
-        if frame['spec']['shot_id'] not in initials and len(initials) >= 3:
+        if 'production_route' not in state and frame['spec']['shot_id'] not in initials and len(initials) >= 3:
             raise ValueError('STAGE_IMAGE_ATTEMPTS_EXHAUSTED')
     if frame['spec']['shot_id'] in state['stage']['protected_targets']:
         raise ValueError('PROTECTED_TARGET')
@@ -242,8 +318,11 @@ def reserve(state: dict[str, Any], shot_id: str, *, quote: dict[str, Any] | None
     if prior and not is_video:
         t = frame['template']
         correction = '; '.join(f['evidence'] for f in prior[-1]['review']['findings'] if f['severity'] == 'MAJOR')
-        item['input_overrides'][t['prompt_node']][t['prompt_key']] += '\nTARGETED CORRECTION: ' + correction
-        item['description'] = shot_id + '-revision'
+        if item['tool'] == 'submit_workflow':
+            item['workflow'][t['prompt_node']]['inputs'][t['prompt_key']] += '\nTARGETED CORRECTION: ' + correction
+        else:
+            item['input_overrides'][t['prompt_node']][t['prompt_key']] += '\nTARGETED CORRECTION: ' + correction
+            item['description'] = shot_id + '-revision'
     reserved_credits = _stage_gate(state, frame, item, quote, balance) if 'stage' in state else None
     attempt_id = sha256_canonical({'plan': state['plan_fingerprint'], 'shot': shot_id,
                                    'attempt': len(prior) + 1, 'request': item,
@@ -252,6 +331,10 @@ def reserve(state: dict[str, Any], shot_id: str, *, quote: dict[str, Any] | None
                'frame_fingerprint': frame['fingerprint'], 'request': item,
                'request_fingerprint': sha256_canonical(item), 'status': 'RESERVED',
                'job_id': None, 'credits': None, 'billing_event_id': None}
+    if 'production_route' in state:
+        attempt.update(call_id=attempt_id, target_id=shot_id,
+                       call_reason='CONTENT_REWORK' if prior else 'INITIAL',
+                       production_layer='LIMITED_TRIAL')
     if 'stage' in state:
         attempt.update(reserved_credits=reserved_credits, quote=deepcopy(quote), balance=deepcopy(balance),
                        media_kind='VIDEO' if is_video else 'IMAGE', stage_id=state['stage']['id'],
@@ -384,7 +467,9 @@ def replan(state: dict[str, Any], *, frame: dict[str, Any], reason: str) -> None
     if frame.get('schema') == 'video-decision-v1' and frame['stage_id'] != state['stage']['id']:
         raise ValueError('DECISION_BUDGET_SCOPE_MISMATCH')
     video = frame.get('schema') == 'video-decision-v1'
-    if video and state['stage'].get('video_target') not in {None, sid}:
+    if 'production_route' in state:
+        _route_frame_gate(state, frame)
+    if video and 'production_route' not in state and state['stage'].get('video_target') not in {None, sid}:
         raise ValueError('STAGE_ONE_FORMAL_VIDEO_TARGET')
     prior = [a for a in state['attempts'] if a['shot_id'] == sid]
     if any(a['status'] in {'RESERVED', 'UNKNOWN'} or (a['status'] == 'COMPLETED' and 'review' not in a) for a in state['attempts']):
@@ -410,12 +495,12 @@ def replan(state: dict[str, Any], *, frame: dict[str, Any], reason: str) -> None
             raise ValueError('IMAGE_REPLAN_MUST_PRESERVE_FROZEN_SPEC')
     proposed = {**state['frames'], sid: frame}
     images = [f for f in proposed.values() if f.get('schema') != 'video-decision-v1']
-    if len(images) > 3:
+    if len(images) > (6 if 'production_route' in state else 3):
         raise ValueError('STAGE_IMAGE_LIMIT')
     if images:
         new_campaign(images)
     state['frames'] = proposed
-    if video:
+    if video and 'production_route' not in state:
         state['stage']['video_target'] = sid
     state['plan_fingerprint'] = sha256_canonical(list(proposed.values()))
     if sid not in state['pilots']:
@@ -460,7 +545,21 @@ def retry_not_created(state: dict[str, Any], *, attempt_id: str, evidence: str,
     verify_visual(frame)
     if frame['fingerprint'] != a['frame_fingerprint']:
         raise ValueError('RETRY_REQUEST_CHANGED')
-    # Temporarily exclude this same reservation for validation; no second spend.
+    if 'production_route' in state:
+        # Keep each actual submission event visible, including confirmed noncreation.
+        # Conservatively count all submission attempts toward this small stage cap.
+        amount = _stage_gate(state, frame, a['request'], quote, balance)
+        new = deepcopy(a)
+        new_id = sha256_canonical({'retry_of': attempt_id, 'event': len(state['attempts']) + 1})
+        new.update(attempt_id=new_id, call_id=new_id, status='RESERVED',
+                   ordinal=a['ordinal'] + 1, call_reason='TECHNICAL_RETRY',
+                   reserved_credits=amount, quote=deepcopy(quote), balance=deepcopy(balance),
+                   technical_retry_count=a.get('technical_retry_count', 0) + 1,
+                   retry_of=attempt_id, retry_evidence=evidence)
+        state['attempts'].append(new)
+        state['pause'] = None
+        return new
+    # Legacy stages retain their existing recovery contract.
     remaining = {**state, 'attempts': [other for other in state['attempts'] if other is not a]}
     amount = _stage_gate(remaining, frame, a['request'], quote, balance)
     a.update(status='RESERVED', reserved_credits=amount, quote=deepcopy(quote), balance=deepcopy(balance),
@@ -471,13 +570,13 @@ def retry_not_created(state: dict[str, Any], *, attempt_id: str, evidence: str,
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['init', 'init-stage', 'reserve', 'result', 'review', 'resume', 'billing', 'status', 'replan', 'inspect', 'retry-not-created', 'persist'])
+    parser.add_argument('command', choices=['init', 'init-stage', 'reserve', 'result', 'review', 'resume', 'billing', 'status', 'replan', 'inspect', 'retry-not-created', 'persist', 'add-route-frame'])
     parser.add_argument('--state', type=Path, required=True)
     parser.add_argument('--input', type=Path)
     parser.add_argument('--shot')
     args = parser.parse_args()
     payload: Any = json.loads(args.input.read_text()) if args.input else None
-    if args.command in {'init', 'init-stage', 'result', 'review', 'resume', 'billing', 'replan', 'inspect', 'retry-not-created', 'persist'} and args.input is None:
+    if args.command in {'init', 'init-stage', 'result', 'review', 'resume', 'billing', 'replan', 'inspect', 'retry-not-created', 'persist', 'add-route-frame'} and args.input is None:
         parser.error('--input is required for this command')
     if args.command == 'reserve' and not args.shot:
         parser.error('--shot is required for reserve')
@@ -510,6 +609,9 @@ def main() -> None:
                     raise ValueError('STAGE_STATE_PATH_CHANGED')
             if args.command == 'reserve':
                 result = reserve(state, args.shot, **(payload or {}))
+            elif args.command == 'add-route-frame':
+                add_route_frame(state, payload)
+                result = metrics(state)
             elif args.command == 'retry-not-created':
                 result = retry_not_created(state, **payload)
             elif args.command == 'replan':
@@ -537,7 +639,8 @@ def main() -> None:
                 result = metrics(state)
         if 'stage' in state and isinstance(result, dict):
             result['stage_exposure_credits'] = exposure(state)
-            result['stage_remaining_credits'] = state['stage']['budget_credits'] - exposure(state)
+            result['stage_remaining_credits'] = (state['stage']['budget_credits'] - exposure(state)
+                                                 if state['stage']['budget_credits'] is not None else None)
         if args.command != 'status':
             with tempfile.NamedTemporaryFile(mode='w', dir=args.state.parent, delete=False) as f:
                 json.dump(state, f, ensure_ascii=False, indent=2, allow_nan=False)

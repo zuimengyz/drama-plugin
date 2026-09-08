@@ -39,3 +39,16 @@ Never generate again to repair missing cache or persistence. Do not import
 unneeded DEBUG/REJECTED files or invent an output that was never generated.
 
 Use `media.list_media` to reconcile a stable source and `media.resolve_media` for each formal readback.
+
+## New-story route gate
+
+For a new production Work, finish narrative and text identity first, jointly
+plan the route and its minimum input duties with video-model-selection, and save
+that route using the existing Work contract. Asset discovery before route selection
+is read-only. A shared reviewed image may establish several necessary identities;
+do not automatically create separate character, location, prop and endpoint sets.
+Use `shot-production/scripts/route_preflight.py` for the Work-owned stage. Paid
+images must match a current necessary duty and explicit whole-stage budget.
+Materialize and review only the inputs for the current representative target;
+no full-episode asset expansion follows from route selection. Keep all result,
+review, settlement and persistence updates on that same formal stage.

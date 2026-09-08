@@ -44,6 +44,8 @@ def build_tool_registry(memory: MemoryProvider, asset: AssetProvider, research: 
     async def generate_image(prompt: str, reference_asset_ids: list[str] | None = None,
                              reference_media_ids: list[str] | None = None,
                              parameters: dict[str, Any] | None = None) -> Media:
+        from drama_plugin.hosts.route_production import guard_direct_generation
+        await guard_direct_generation(memory, parameters)
         result = await production.generate_image(prompt, reference_asset_ids, reference_media_ids, parameters)
         return await finish_production(result, parameters)
 
@@ -54,6 +56,8 @@ def build_tool_registry(memory: MemoryProvider, asset: AssetProvider, research: 
         reference_media_ids: list[str] | None = None,
         parameters: dict[str, Any] | None = None,
     ) -> Media:
+        from drama_plugin.hosts.route_production import guard_direct_generation
+        await guard_direct_generation(memory, parameters)
         references = reference_media_ids or []
         has_start = start_frame_media_id is not None
         has_end = end_frame_media_id is not None

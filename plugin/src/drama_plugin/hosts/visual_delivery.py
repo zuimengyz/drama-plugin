@@ -28,6 +28,8 @@ async def complete_attempt(state: dict[str, Any], *, attempt_id: str, mcp_config
     async with McpMediaSession(Path(mcp_config)) as session:
         receipt = await complete_retained_media(session.media,session.memory,session.asset,expected,
             source=Path(source_path),content=content,cache=Path(cache),target_id=attempt['shot_id'],
+            content_review=attempt.get('content_status','PENDING_REVIEW'),
+            user_adoption=attempt.get('user_adoption','PENDING'),
             duration_ms=round(float(attempt['technical']['probe'].get('format', {}).get('duration', 0))*1000) or None)
         receipt['toolCalls'] = list(session.calls)
     attempt.update(persistence_status='VERIFIED', delivery_status=receipt['deliveryStatus'], delivery=receipt)

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from pathlib import Path
+import tempfile
 from typing import Any
 
 from pydantic import PositiveInt
@@ -25,6 +27,26 @@ def _domain_tool(code: str, description: str, handler: ToolHandler, output: Any,
 def build_tool_registry(memory: MemoryProvider, asset: AssetProvider, research: ResearchProvider, production: ProductionProvider, media: MediaProvider, context: ContextProvider, voice: VoiceProvider, role_dubbing: RoleDubbingProvider) -> ToolRegistry:
     registry = ToolRegistry()
 
+    async def finish_production(result: Media, parameters: dict[str, Any] | None) -> Media:
+        from drama_plugin.media_delivery import complete_retained_media, MediaIdentity
+        options = parameters or {}
+        for key, field in [('workId','work_id'),('shotId','shot_id'),('assetId','asset_id'),('sourceRef','source_ref')]:
+            if key in options and options[key] != getattr(result, field):
+                raise ContractValidationError('Production result does not match requested business scope/version')
+        # The returned Media is a recovery identity even if completion fails.
+        with tempfile.TemporaryDirectory(prefix="drama-production-readback-") as cache:
+            receipt = await complete_retained_media(media, memory, asset, MediaIdentity.from_media(result),
+                source=None, content=result.content, cache=Path(cache),
+                target_id=str(options.get('targetId') or result.source_ref))
+        return result.model_copy(update={'content': {**result.content, 'delivery': {
+            key: value for key, value in receipt.items() if key != 'cachePath'}}})
+
+    async def generate_image(prompt: str, reference_asset_ids: list[str] | None = None,
+                             reference_media_ids: list[str] | None = None,
+                             parameters: dict[str, Any] | None = None) -> Media:
+        result = await production.generate_image(prompt, reference_asset_ids, reference_media_ids, parameters)
+        return await finish_production(result, parameters)
+
     async def generate_video(
         prompt: str,
         start_frame_media_id: str | None = None,
@@ -48,13 +70,14 @@ def build_tool_registry(memory: MemoryProvider, asset: AssetProvider, research: 
             raise ContractValidationError(
                 "Video motion prompt exceeds the 2000-character contract limit"
             )
-        return await production.generate_video(
+        result = await production.generate_video(
             prompt,
             start_frame_media_id,
             end_frame_media_id,
             references,
             parameters,
         )
+        return await finish_production(result, parameters)
 
     specs = [
         _domain_tool("work.create_work", "Create a complete initial work as persistent memory.", memory.create_work, Work, required={"title": str, "content": dict[str, Any]}, optional={"description": str | None}),
@@ -97,7 +120,7 @@ def build_tool_registry(memory: MemoryProvider, asset: AssetProvider, research: 
         _domain_tool("voice.search_voices", "Search durable Voices by name and lifecycle status.", voice.search_voices, list[Voice], optional={"query": str | None, "status": VoiceStatus | None}),
         _domain_tool("voice.save_voice", "Update provider mappings or lifecycle metadata with optimistic version safety.", voice.update_voice, Voice, required={"voice_id": str, "content": VoiceContent, "expected_version": PositiveInt}, optional={"name": str | None, "status": VoiceStatus | None}),
         _domain_tool("voice.resolve_voice", "Resolve the stable Voice master reference to a temporary Drama Service content URL.", voice.resolve_voice, VoiceResolveResult, required={"voice_id": str}),
-        _domain_tool("production.generate_image", "Generate an image from business-level prompt and stable references.", production.generate_image, Media, required={"prompt": str}, optional={"reference_asset_ids": list[str] | None, "reference_media_ids": list[str] | None, "parameters": dict[str, Any] | None}),
+        _domain_tool("production.generate_image", "Generate an image from business-level prompt and stable references and verified durable completion.", generate_image, Media, required={"prompt": str}, optional={"reference_asset_ids": list[str] | None, "reference_media_ids": list[str] | None, "parameters": dict[str, Any] | None}),
         _domain_tool("production.generate_video", "Generate a video from exactly one source image or one same-target start/end frame pair.", generate_video, Media, required={"prompt": str}, optional={"start_frame_media_id": str | None, "end_frame_media_id": str | None, "reference_media_ids": list[str] | None, "parameters": dict[str, Any] | None}),
         _domain_tool("production.generate_role_dubbing", "Resolve or create a durable role Voice, synthesize exact Dialogue, run intelligibility QC, and persist Audio Media.", role_dubbing.generate_role_dubbing, RoleDubbingResult, required={"request": RoleDubbingRequest}),
         _domain_tool("research.search_sources", "Search external historical sources for the current run.", research.search_sources, list[ResearchSource], required={"query": str}),

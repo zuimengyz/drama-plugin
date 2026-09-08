@@ -32,7 +32,7 @@ from drama_plugin.contracts.audio import (
     RoleDubbingResult,
 )
 from drama_plugin.contracts.base import dump_contract
-from drama_plugin.contracts.media import MediaType
+from drama_plugin.contracts.media import Media, MediaType
 from drama_plugin.contracts.voice import (
     Voice,
     VoiceContent,
@@ -452,7 +452,26 @@ class FishRoleDubbingProvider:
         source_ref = f"role-dubbing:{fingerprint}"
         existing = await self.media.list_media(media_type=MediaType.AUDIO, work_id=speech.work_id,
                                                purpose="ROLE_DUBBING_AUDIO", source_ref=source_ref)
+        recovery = self.output_directory / '_audio_recovery' / fingerprint
+        recovery.mkdir(parents=True, exist_ok=True)
+        output = recovery / 'role-dubbing.wav'
+        pending = recovery / 'pending-import.json'
+
+        async def finish(media: Media) -> None:
+            from drama_plugin.media_delivery import complete_retained_media, MediaIdentity
+            # Audio has no Asset ownership; the asset provider is never called.
+            from typing import cast
+            from drama_plugin.providers.base.interfaces import AssetProvider
+            if output.exists() and media.content_hash != _sha256(output):
+                raise RoleDubbingError('PERSISTENCE_PENDING', 'Formal Audio and generated output hash mismatch')
+            await complete_retained_media(self.media, self.memory, cast(AssetProvider, None),
+                MediaIdentity.from_media(media), source=None, content=media.content,
+                cache=recovery / 'verified', target_id=speech.spoken_content_id)
+
         if existing:
+            if len(existing) != 1:
+                raise RoleDubbingError('PERSISTENCE_PENDING', 'Ambiguous audio source identity')
+            await finish(existing[0])
             rejected = speech.non_material_metadata.get("rejectedAudioHashes", [])
             if any(m.content_hash in rejected or m.content.get("reviewStatus") == "FAIL" for m in existing):
                 raise RoleDubbingError("AUDIO_ARTISTIC_REVIEW_FAILED", "Cached Audio was artistically rejected; change the responsible projection before generation")
@@ -461,6 +480,19 @@ class FishRoleDubbingProvider:
                                      duration_ms=existing[0].duration_ms or 1,
                                      intelligibility_qc=qc, lifecycle_branch=branch,
                                      voice_design_calls=design_calls, create_model_calls=model_calls)
+        if pending.exists():
+            saved = json.loads(pending.read_text())
+            if saved['contentHash'] != _sha256(output):
+                raise RoleDubbingError('PERSISTENCE_PENDING', 'Recovered audio bytes changed')
+            saved['import']['media_type'] = MediaType(saved['import']['media_type'])
+            media = await self.media.import_media(**saved['import'])
+            await finish(media)
+            return RoleDubbingResult(audio_media_id=media.id, voice_id=voice.id,
+                duration_ms=media.duration_ms or 1,
+                intelligibility_qc=IntelligibilityQc.model_validate(media.content['intelligibilityQc']),
+                lifecycle_branch=branch, voice_design_calls=design_calls, create_model_calls=model_calls)
+        if (recovery / 'generation-started.json').exists() or output.exists():
+            raise RoleDubbingError('PERSISTENCE_PENDING', 'Known audio attempt requires recovery; do not synthesize again')
         projected = _projected_performance(request)
         speed, volume = (
             (projected.speed, projected.volume)
@@ -474,9 +506,9 @@ class FishRoleDubbingProvider:
                                               if speech.material_render_parameters.get("performanceRendering")
                                               in {"BRIEF_CUES_V1", "PHRASE_CUES_V1", "PHRASE_CUES_V2"} else None),
                                           compact_phrases=speech.material_render_parameters.get("performanceRendering") == "PHRASE_CUES_V2")
+        with (recovery / 'generation-started.json').open('x') as started:
+            json.dump({'requestFingerprint': sha256_canonical(payload), 'sourceRef': source_ref}, started)
         audio, _ = await self.fish.synthesize(payload)
-        attempt = self._attempt_directory(speech.spoken_content_id)
-        output = attempt / "role-dubbing.wav"
         output.write_bytes(audio)
         physical = self.probe(output)
         if speech.video_conditioned_projection is not None and analyze_pcm_wav(output)["obviousClipping"]:
@@ -524,11 +556,13 @@ class FishRoleDubbingProvider:
             "intelligibilityQc": dump_contract(qc), "technicalReviewStatus": "PASS",
             "reviewStatus": "PENDING", "sameVendorAsTts": True,
         }
-        media = await self.media.import_media(work_id=speech.work_id, media_type=MediaType.AUDIO,
-                                              source_uri=output.resolve().as_uri(), content=content,
-                                              shot_id=video_projection.shot_id if video_projection else None,
-                                              purpose="ROLE_DUBBING_AUDIO", source_ref=source_ref,
-                                              duration_ms=physical.duration_ms)
+        import_args = dict(work_id=speech.work_id, media_type=MediaType.AUDIO,
+            source_uri=output.resolve().as_uri(), content=content,
+            shot_id=video_projection.shot_id if video_projection else None,
+            purpose="ROLE_DUBBING_AUDIO", source_ref=source_ref, duration_ms=physical.duration_ms)
+        pending.write_text(json.dumps({'contentHash': _sha256(output), 'import': import_args}))
+        media = await self.media.import_media(**import_args)  # type: ignore[arg-type]
+        await finish(media)
         return RoleDubbingResult(audio_media_id=media.id, voice_id=voice.id,
                                  duration_ms=physical.duration_ms, intelligibility_qc=qc,
                                  lifecycle_branch=branch, voice_design_calls=design_calls,

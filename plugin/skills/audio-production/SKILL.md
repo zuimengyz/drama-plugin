@@ -94,3 +94,32 @@ replacement calls. Capture mix settings/fingerprint inside existing Final AV
 fingerprint muxSettings and physical audio hashes. Never use MP4 byte equality as
 proof of unchanged video: compare video packets or decoded frames. Lip review is
 ALIGNED / APPROXIMATE / MISMATCH / NOT_VERIFIED independently of technical checks.
+
+
+## Durable completion and recovery
+
+For retained image, video, audio or derived AV, formal completion requires full
+readback SHA-256/size, decodable media, correct business ownership and a queryable
+stable business binding. A local path, upload name, returned ID or temporary URL
+alone is PERSISTENCE_PENDING. Content PASS, user adoption and persistence are
+independent; persistence must never rewrite an existing adoption decision.
+
+The shared completion entry `complete_retained_media` implements import/reuse,
+readback and binding. Visual attempts call it through `visual_preflight.py persist`;
+role speech calls it before returning a production result; `assemble_av_delivery` resolves the declared source and complete mix, performs an
+explicit mux, and calls it on the new output before formal delivery. Adopted native AV consumption uses
+`prepare_bound_media(adopted=True)` to recover the selected original from its formal
+business reference. It performs no dubbing, separation, mixing or remuxing.
+
+After a successful generation, resume at import/readback/binding with the same
+job, output hash and sourceRef. After an uncertain import, query the exact stable
+source first; ambiguity, permission denial, hash conflict or unknown ownership
+blocks completion. Retry transient reads with finite backoff and fresh resolve.
+Never generate again to repair missing cache or persistence. Do not import
+unneeded DEBUG/REJECTED files or invent an output that was never generated.
+
+For an explicitly authorized replacement mix, use
+[scripts/assemble_delivery.py](scripts/assemble_delivery.py) with the declared
+source/mix identities and manifest. A stored derivative remains CANDIDATE until
+content review and adoption are separately resolved. Native source adoption
+continues through `prepare_bound_media` and never enters the replacement path.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Video Model Selection"
+  short_description: "Choose a verified video path before input production"
+  default_prompt: "Use $video-model-selection to qualify a video path for this approved Shot and return a frozen production decision."

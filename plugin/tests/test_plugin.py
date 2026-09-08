@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_plugin_initializes_agent_driven_capabilities() -> None:
     plugin = DramaPlugin.load(ROOT)
     assert plugin.manifest.name == "drama-plugin"
-    assert len(plugin.skills.list()) == 11
+    assert len(plugin.skills.list()) == 12
     codes = {tool.code for tool in plugin.tools.list()}
     assert len(codes) == 50
     assert {"work.search_works", "scene.search_scenes", "shot.search_shots", "asset.search_assets", "voice.get_voice", "production.generate_role_dubbing", "production.generate_video", "context.build_context"} <= codes
@@ -82,5 +82,5 @@ def test_plugin_fails_when_skill_references_missing_tool(monkeypatch: pytest.Mon
             if definition.code != "media.resolve_media": incomplete.register(definition)
         return incomplete
     monkeypatch.setattr("drama_plugin.plugin.build_tool_registry", registry_without_media_resolve)
-    with pytest.raises(SkillLoadError, match=r"audio-production.*media\.resolve_media"):
+    with pytest.raises(SkillLoadError, match=r"(audio-production|asset-resolution).*media\.resolve_media"):
         DramaPlugin.load(ROOT)

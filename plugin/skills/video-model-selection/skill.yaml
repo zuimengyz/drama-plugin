@@ -1,0 +1,15 @@
+code: video-model-selection
+name: Video Model Selection
+description: Select a capability-qualified video path for an approved Shot before new input production.
+context:
+  required: [shot, scene]
+  optional: [work, selectedMediaIds, candidateEvidence, stageBudget, temporaryState]
+  refresh_after: []
+tools:
+  preferred: [shot.get_shot, scene.get_scene, media.get_media, media.resolve_media]
+  allowed: []
+completion:
+  conditions:
+    - A frozen executable decision or explicit capability blocker is returned in Agent Run Context.
+    - Hard requirements precede quality evidence and complete incremental cost; unknown quality is not proven acceptance.
+    - Production consumes the exact decision and preserves the shared stage budget and attempt history.

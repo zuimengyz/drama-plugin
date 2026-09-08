@@ -180,7 +180,7 @@ async def test_final_role_dubbing_lineage_and_stale_inputs_before_cache(tmp_path
 
     class MediaStore(FakeMediaProvider):
         async def get_media(self, media_id):
-            return args["video_media"]
+            return args["video_media"] if media_id == args["video_media"].id else await super().get_media(media_id)
 
         async def import_media(self, **kwargs):
             assert kwargs["shot_id"] == args["shot_id"]

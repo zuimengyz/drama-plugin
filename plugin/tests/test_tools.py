@@ -87,7 +87,12 @@ def test_representative_output_contracts() -> None:
 
 
 @pytest.mark.asyncio
-async def test_video_generation_accepts_only_fixed_input_modes_and_bounded_prompt() -> None:
+async def test_video_generation_accepts_only_fixed_input_modes_and_bounded_prompt(monkeypatch) -> None:
+    # This test isolates input shape. Actual completion is tested with real fixture
+    # bytes and object failures in test_media_delivery.py.
+    async def simulated_completion(*args, **kwargs):
+        return {'persistenceStatus':'OFFLINE_SIMULATION_ONLY'}
+    monkeypatch.setattr('drama_plugin.media_delivery.complete_retained_media', simulated_completion)
     plugin = DramaPlugin.load(ROOT)
     tool = plugin.tools.get("production.generate_video")
 

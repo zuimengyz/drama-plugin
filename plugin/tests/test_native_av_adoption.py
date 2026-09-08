@@ -15,7 +15,7 @@ from test_performance_native_mix import sounds
 def test_native_manifest_succeeds_without_external_audio_and_reuses_source(sounds):
     video,_,tmp=sounds;digest=hashlib.sha256(video.read_bytes()).hexdigest()
     result=assemble_av(video,manifest=AvAssemblyManifest(source_video_media_id='video-original',timeline=[]),source_video_hash=digest,output=tmp/'unnecessary.mp4')
-    assert result['operation']=='REUSE_SOURCE_AV' and result['status']=='READY'
+    assert result['operation']=='REUSE_SOURCE_AV' and result['status']=='LOCAL_READY'
     assert result['path']==result['videoSourcePath']==result['audioSourcePath']==str(video)
     assert not (tmp/'unnecessary.mp4').exists() and not result['createdMedia']
     assert result['audioProcessing']==[] and result['independentArtisticReview']=='NOT_VERIFIED'
@@ -57,12 +57,12 @@ def test_actual_adopted_files_ignore_legacy_takes_and_never_process_audio(monkey
     def deny(*a,**k):raise AssertionError('No network in adoption preparation')
     monkeypatch.setattr(subprocess,'run',guarded);monkeypatch.setattr(Path,'read_text',read)
     monkeypatch.setattr(socket.socket,'connect',deny);monkeypatch.setattr(socket,'create_connection',deny)
-    result=module.prepare(persist=False)
+    result=module.prepare(persist=False,offline=True)
     assert len(result['selectedClips'])==2 and len(result['unselectedClipIds'])==20
     for row in result['selectedClips']:
         expected=(module.A/'visual/video'/f"{row['clipId']}.mp4").resolve()
         assert Path(row['path'])==expected and Path(row['audioSourcePath'])==expected
-        assert row['status']=='READY' and row['operation']=='REUSE_SOURCE_AV'
+        assert row['status']=='LOCAL_READY' and row['operation']=='REUSE_SOURCE_AV'
         assert row['additionalDubbingLineIds']==[] and row['audioProcessing']==[]
         assert row['lipSyncReview']=='NOT_VERIFIED' and row['independentArtisticReview']=='NOT_VERIFIED'
     assert result['generationCalls']==result['newMediaFiles']==0 and commands
@@ -76,11 +76,11 @@ def test_actual_rejected_derivative_cannot_replace_explicit_original_even_with_v
     # path with the original identity is rejected by the physical hash check.
     chosen['sourcePath']='artifacts/v2-04r/final/C07-native-mix.mp4'
     monkeypatch.setattr(module,'load_selection',lambda:selection)
-    with pytest.raises(ValueError,match='hash mismatch'):module.prepare(persist=False)
+    with pytest.raises(ValueError,match='hash mismatch'):module.prepare(persist=False,offline=True)
 
 
 def test_adoption_does_not_silently_apply_to_changed_source_coverage(monkeypatch):
     module=editor();selection=deepcopy(module.load_selection())
     selection['selectedClips'][0]['sourceLineIds'].append('new-key-information')
     monkeypatch.setattr(module,'load_selection',lambda:selection)
-    with pytest.raises(ValueError,match='coverage changed'):module.prepare(persist=False)
+    with pytest.raises(ValueError,match='coverage changed'):module.prepare(persist=False,offline=True)

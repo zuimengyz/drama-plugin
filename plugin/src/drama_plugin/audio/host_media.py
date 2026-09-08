@@ -289,7 +289,8 @@ def assemble_av(
 
     An empty external-audio manifest is a completed reuse operation: return the
     original file, without generating a new Media, mix, or MP4. An explicit mix
-    retains V1 replacement semantics. This is physical assembly, not artistic QC.
+    retains V1 replacement semantics. This is physical assembly, not formal delivery or artistic QC.
+    Formal consumers must use prepare_bound_media / complete_retained_media.
     """
     from drama_plugin.contracts.base import dump_contract, sha256_canonical
 
@@ -306,7 +307,8 @@ def assemble_av(
         if manifest.timeline or audio_mix is not None or audio_mix_hash is not None:
             raise ValueError("source AV reuse cannot also add external dialogue or a mix")
         return {
-            "operation": "REUSE_SOURCE_AV", "status": "READY", "path": str(source),
+            "operation": "REUSE_SOURCE_AV", "status": "LOCAL_READY",
+            "persistenceStatus": "PERSISTENCE_PENDING", "path": str(source),
             "videoSourcePath": str(source),
             "audioSourcePath": str(source) if "audio" in kinds else None,
             "sourceVideoMediaId": manifest.source_video_media_id,

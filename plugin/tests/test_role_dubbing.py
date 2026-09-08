@@ -22,7 +22,7 @@ from drama_plugin.contracts.audio import (
     VoiceProfile,
 )
 from drama_plugin.contracts.dpd import BeatDPD, DPDLayerState, LineDPD, SceneDPD
-from drama_plugin.contracts.media import Media, MediaType
+from drama_plugin.contracts.media import Media, MediaType, MediaResolveResult
 from drama_plugin.contracts.voice import (
     Voice,
     VoiceContent,
@@ -125,6 +125,20 @@ class RecoverableVoiceProvider(FakeVoiceProvider):
 class FakeMediaProvider:
     def __init__(self) -> None:
         self.values: list[Media] = []
+        self.objects: dict[str, bytes] = {}
+
+    async def get_media(self, media_id):
+        return next(m for m in self.values if m.id == media_id)
+
+    async def resolve_media(self, media_id):
+        m = await self.get_media(media_id)
+        return MediaResolveResult(media_id=m.id,url='https://formal.invalid/content/'+m.id,
+            expires_at=datetime.now(UTC)+timedelta(minutes=5),mime_type=m.mime_type,size_bytes=m.file_size)
+
+    async def download_media(self, media_id, destination):
+        destination.write_bytes(self.objects[media_id])
+        return await self.resolve_media(media_id)
+
 
     async def list_media(self, media_type: MediaType | None = None, work_id: str | None = None,
                          purpose: str | None = None, source_ref: str | None = None,
@@ -141,10 +155,11 @@ class FakeMediaProvider:
                            source_ref: str | None = None, duration_ms: int | None = None) -> Media:
         path = Path(source_uri.removeprefix("file://"))
         media = Media(id=f"media-{len(self.values) + 1}", work_id=work_id,
-                      media_type=media_type, purpose=purpose, source_ref=source_ref or "test",
+                      media_type=media_type, purpose=purpose, shot_id=shot_id, asset_id=asset_id, source_ref=source_ref or "test",
                       duration_ms=duration_ms, mime_type="audio/wav", file_size=path.stat().st_size,
                       content_hash=hashlib.sha256(path.read_bytes()).hexdigest(), content=content)
         self.values.append(media)
+        self.objects[media.id] = path.read_bytes()
         return media
 
 
@@ -486,3 +501,27 @@ async def test_approval_hash_mismatch_never_activates_or_materializes(
     assert voices.values == {}
     assert fish.design_calls == 1
     assert fish.model_calls == fish.tts_calls == 0
+
+
+@pytest.mark.asyncio
+async def test_audio_import_failure_resumes_without_repeating_synthesis_or_asr(tmp_path):
+    from drama_plugin.exceptions import RemoteServiceError
+    data=MockDramaData();voices=FakeVoiceProvider(tmp_path);media=FakeMediaProvider()
+    master=tmp_path/'master.wav';master.write_bytes(wav_bytes())
+    voice=await voices.import_voice('existing',VoiceSourceType.DESIGNED,master.as_uri(),400,VoiceContent(
+        creative_casting_profile={},source_provenance={'referenceText':'你可知道后果？'}))
+    mapping=VoiceProviderMapping(provider='fish',model='s2-pro',provider_voice_id='fixed',
+        material_fingerprint='a'*64,status='ACTIVE',created_at=datetime.now(UTC))
+    voices.values[voice.id]=voice.model_copy(update={'content':voice.content.model_copy(update={'provider_mappings':[mapping]})})
+    data.work.content['voiceProfiles']=[{'speakerKey':'speaker:commander','voiceId':voice.id}]
+    fish=FakeFish('你可知道后果？')
+    provider=FishRoleDubbingProvider(memory=MockMemoryProvider(data),voices=voices,media=media,fish=fish,
+        output_directory=tmp_path/'outputs',probe=probe)
+    original=media.import_media
+    async def unavailable(**kw):raise RemoteServiceError('storage unavailable',status_code=503)
+    media.import_media=unavailable
+    with pytest.raises(RemoteServiceError):await provider.generate_role_dubbing(projected_request(voice.id))
+    assert fish.tts_calls==1 and fish.asr_calls==1
+    media.import_media=original
+    result=await provider.generate_role_dubbing(projected_request(voice.id))
+    assert result.audio_media_id and fish.tts_calls==1 and fish.asr_calls==1 and len(media.values)==1

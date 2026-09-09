@@ -67,9 +67,11 @@ def new_stage(*, stage_id: str, authorization_ref: str, budget_credits: float | 
             raise ValueError('PROTECTED_TARGET')
     images = [f for f in frames if f.get('schema') != 'video-decision-v1']
     videos = [f for f in frames if f.get('schema') == 'video-decision-v1']
-    if len(videos) > (2 if production_route else 1):
+    video_limit = production_route.get('max_video_attempts', 2) if production_route else 1
+    image_limit = production_route.get('max_image_attempts', 6) if production_route else 3
+    if video_limit is not None and len(videos) > video_limit:
         raise ValueError('STAGE_ONE_FORMAL_VIDEO_TARGET')
-    if len(images) > (6 if production_route else 3):
+    if image_limit is not None and len(images) > image_limit:
         raise ValueError('STAGE_IMAGE_LIMIT')
     if images:
         new_campaign(images)  # Preserve V2-05 identity/version/risk qualification.
@@ -185,8 +187,8 @@ def _stage_gate(state: dict[str, Any], frame: dict[str, Any], request: dict[str,
     cap = state['stage']['budget_credits']
     if cap is None and not state['stage'].get('no_monetary_cap'):
         raise ValueError('EXPLICIT_STAGE_BUDGET_REQUIRED')
-    if available is None and not state['stage'].get('no_monetary_cap'):
-        raise ValueError('BALANCE_REQUIRED_FOR_CAPPED_STAGE')
+    # An unavailable provider balance is recorded as unknown. The explicit
+    # stage ceiling still bounds all paid and unsettled requests below.
     if (cap is not None and exposure(state) + amount > cap) or (available is not None and unsettled + amount + margin > available):
         raise ValueError('STAGE_BUDGET_OR_BALANCE_EXCEEDED')
     video = frame.get('schema') == 'video-decision-v1'
@@ -200,10 +202,12 @@ def _stage_gate(state: dict[str, Any], frame: dict[str, Any], request: dict[str,
             raise ValueError('QUOTE_BELOW_SELECTED_PATH_COST')
     if video and frame['stage_id'] != state['stage']['id']:
         raise ValueError('DECISION_BUDGET_SCOPE_MISMATCH')
-    if video and sum(a.get('media_kind') == 'VIDEO' and a['status'] != 'NOT_CREATED' for a in state['attempts']) >= 2:
+    video_limit = state.get('production_route', {}).get('max_video_attempts', 2)
+    image_limit = state.get('production_route', {}).get('max_image_attempts', 6)
+    if video and video_limit is not None and sum(a.get('media_kind') == 'VIDEO' and a['status'] != 'NOT_CREATED' for a in state['attempts']) >= video_limit:
         raise ValueError('STAGE_VIDEO_ATTEMPTS_EXHAUSTED')
     if not video:
-        if 'production_route' in state and sum(a.get('media_kind') == 'IMAGE' and a['status'] != 'NOT_CREATED' for a in state['attempts']) >= 6:
+        if 'production_route' in state and image_limit is not None and sum(a.get('media_kind') == 'IMAGE' and a['status'] != 'NOT_CREATED' for a in state['attempts']) >= image_limit:
             raise ValueError('STAGE_IMAGE_ATTEMPTS_EXHAUSTED')
         initials = {a['shot_id'] for a in state['attempts'] if a.get('media_kind') == 'IMAGE'}
         if 'production_route' not in state and frame['spec']['shot_id'] not in initials and len(initials) >= 3:

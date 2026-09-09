@@ -43,6 +43,29 @@ class Memory:
  async def save_work(self,wid,title,content,description):assert wid=='W';self.work.content=deepcopy(content)
 
 @pytest.mark.asyncio
+async def test_new_monetary_stage_accepts_continuous_scope_without_legacy_caps(tmp_path):
+ raw=route(tmp_path).model_dump(mode='json')
+ raw.update(video_targets=['S1','S2','S3','S4'],max_image_attempts=None,max_video_attempts=None)
+ raw['inputs'][0]['for_targets']=raw['video_targets']
+ raw['candidate']['cost']['components']['video']=400
+ m=Memory();await save_route(m,'W',raw)
+ result=await operate(m,'W','init-stage',{'authorization_ref':'OFFLINE new monetary authorization','budget_credits':500})
+ assert result['state']['production_route']['max_video_attempts'] is None
+ assert len(result['state']['production_route']['video_targets'])==4
+ assert route(tmp_path).max_video_attempts==2
+ raw['candidate']['cost']['components']['video']=200
+ assert not qualify_route(ProductionRoute.model_validate(raw))['eligible']
+
+def test_unknown_live_balance_keeps_capped_stage_exposure(tmp_path,monkeypatch):
+ monkeypatch.setattr(p,'video_verifier',verify_execution)
+ r=route(tmp_path);d=decision(tmp_path)
+ s=p.new_stage(stage_id='v206',authorization_ref='OFFLINE',budget_credits=250,frames=[d],protected_targets=[],production_route=r.model_dump(mode='json'))
+ q=quote(d);q['balance']['available_credits']=None
+ assert p._stage_gate(s,d,d['request'],q['quote'],q['balance'])==100
+ s['attempts']=[dict(credits=None,reserved_credits=200,status='COMPLETED')]
+ with pytest.raises(ValueError,match='BUDGET'):p._stage_gate(s,d,d['request'],q['quote'],q['balance'])
+
+@pytest.mark.asyncio
 async def test_formal_entry_no_route_no_budget_no_provider(tmp_path):
  m=Memory()
  with pytest.raises(ValueError,match='FORMAL_ROUTE'):await operate(m,'W','check-input',{'target_id':'I','purpose':'START'})

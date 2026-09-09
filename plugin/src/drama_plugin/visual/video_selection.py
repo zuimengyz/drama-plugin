@@ -219,10 +219,14 @@ class ProductionRoute(Record):
     work_id: Text
     stage_id: Text
     creative_fingerprint: Hash
-    video_targets: tuple[Text, ...] = Field(min_length=1, max_length=2)
+    video_targets: tuple[Text, ...] = Field(min_length=1)
+    # Legacy stages retain their original limits; a newly authorized stage may
+    # use a monetary envelope without inheriting another story's call counts.
+    max_image_attempts: int | None = Field(default=6, gt=0)
+    max_video_attempts: int | None = Field(default=2, gt=0)
     requirements: dict[Text, Any] = Field(min_length=1)
     candidate: Candidate
-    inputs: tuple[PlannedInput, ...] = Field(min_length=1, max_length=6)
+    inputs: tuple[PlannedInput, ...] = Field(min_length=1)
     quality_thresholds: dict[Text, Text] = Field(min_length=1)
     stops: tuple[Text, ...] = Field(min_length=1)
     fallback: Text
@@ -277,7 +281,7 @@ def qualify_route(route: ProductionRoute, *, now: datetime | None = None) -> dic
         if i.preparation == 'REUSE' and not i.source_media_id:
             reasons.append('REUSE_SOURCE_REQUIRED')
     required_costs = {i.cost_key for i in route.inputs} | {'video', 'audio', 'references', 'addons', 'correction'}
-    if c.cost.components.get('video', 0) < 2 * route.video_request_credits:
+    if c.cost.components.get('video', 0) < max(2, len(route.video_targets)) * route.video_request_credits:
         reasons.append('SHARED_TWO_REQUEST_VIDEO_ENVELOPE_MISSING')
     if not required_costs <= set(c.cost.components) or c.cost.uncertainty or not c.cost.evidence.current(now):
         reasons.append('COMPLETE_ROUTE_COST_UNRESOLVED')

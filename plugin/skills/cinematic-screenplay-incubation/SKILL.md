@@ -5,6 +5,8 @@ description: Incubate a historical screen drama from evidence through character,
 
 # Cinematic Screenplay Incubation · 影视编剧孵化
 
+Consume the unified `creativeRhythm` from the actual creation context before planning, even when source text is already supplied. Follow [narrative rhythm](../../docs/narrative-rhythm.md); Skills never read env directly. Pin this profile to the creative revision; refresh/resume keeps it, while a new revision reads current configuration.
+
 Own the creative working process from Historical Material to a readable, reviewed screenplay. The six modules below are stages of one Agent's work, not separate agents or an automatic skill chain. Preserve an already approved foundation; choose only the stages affected by the request.
 
 ## Scope and compatibility
@@ -55,7 +57,7 @@ Use a small number of purposeful motifs and a chosen narrative texture. Test whe
 
 Apply [layered review](references/review.md) to the complete draft and the Bible. Record `problem`, `severity`, `layer`, exact `evidence`, `recommendedRevisionScope`, then declare changed facts, owner, invalidated consumers, unaffected scopes and required rechecks before revising. Recheck affected dependencies even if their words remain unchanged; do not regenerate them automatically. A dialogue defect does not authorize whole-Work regeneration.
 
-Bound the process to Initial Draft + at most two targeted revision rounds. Each round may resolve several findings in their declared scopes. Review changed scenes and their dependencies, then recheck full-work coherence. Preserve before/after bodies and unchanged-scope hashes. Unresolved major defects at the limit produce PARTIAL/FAIL with concrete findings; do not label them PASS or continue indefinitely. A clean draft needs no manufactured defect, but a requested incubation regression must demonstrate at least one genuine targeted improvement.
+Prefer focused revision rounds; a failed draft does not permanently stop the task. The Host may change strategy within the current scope without renewed creative approval. Each round may resolve several findings in their declared scopes. Review changed scenes and their dependencies, then recheck full-work coherence. Preserve before/after bodies and unchanged-scope hashes. Retain unresolved major defects as concrete findings; ordinary flaws do not prevent a usable text candidate. Avoid repeating an ineffective method. A clean draft needs no manufactured defect, but a requested incubation regression must demonstrate at least one genuine targeted improvement.
 
 Before freeze, run the optional offline [artifact checker](scripts/check_incubation.py) when using the Bible convention. It verifies references, recorded continuity/knowledge, optional meta control records, projection references, revision scope and budget; it cannot judge acting, prose quality or historical truth. Machine success never substitutes for reading the complete script. Freeze records the exact revision and outstanding limitations; user artistic acceptance stays separate from author review.
 

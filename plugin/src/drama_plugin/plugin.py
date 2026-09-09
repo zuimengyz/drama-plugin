@@ -9,6 +9,7 @@ from pydantic import ValidationError
 
 from drama_plugin.config import DramaPluginConfig, ServiceConfig, load_config
 from drama_plugin.context import ContextBuilder, LocalContextProvider
+from drama_plugin.context.rhythm import RhythmContextProvider
 from drama_plugin.contracts.manifest import PluginManifest
 from drama_plugin.exceptions import ConfigurationError
 from drama_plugin.providers.base import AssetProvider, ContextProvider, MediaProvider, MemoryProvider, ProductionProvider, ResearchProvider, RoleDubbingProvider, VoiceProvider
@@ -105,6 +106,7 @@ class DramaPlugin:
                 output_directory=Path(role_config.output_directory),
             )
         context: ContextProvider = LocalContextProvider(memory, asset, media) if selections.context.mode == "local" else RemoteContextProvider(client(services.context))
+        context = RhythmContextProvider(context, config)
         return ProviderBundle(memory, asset, research, production, media, context, voice, role_dubbing), clients
 
     def capabilities(self) -> dict[str, Any]:

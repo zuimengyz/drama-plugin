@@ -5,6 +5,7 @@ import pytest
 from drama_plugin import DramaPlugin
 from drama_plugin.config import DramaPluginConfig
 from drama_plugin.context import LocalContextProvider
+from drama_plugin.context.rhythm import RhythmContextProvider
 from drama_plugin.exceptions import ConfigurationError, SkillLoadError
 from drama_plugin.providers.http import HttpAssetProvider, HttpMediaProvider, HttpMemoryProvider, RemoteContextProvider
 from drama_plugin.providers.mock import MockAssetProvider, MockMediaProvider, MockMemoryProvider
@@ -36,7 +37,8 @@ async def test_context_http_can_initialize_with_other_domains_mock(monkeypatch: 
     plugin = DramaPlugin.load(ROOT)
     assert isinstance(plugin.providers.memory, MockMemoryProvider)
     assert isinstance(plugin.providers.asset, MockAssetProvider)
-    assert isinstance(plugin.providers.context, RemoteContextProvider)
+    assert isinstance(plugin.providers.context, RhythmContextProvider)
+    assert isinstance(plugin.providers.context.provider, RemoteContextProvider)
     assert len(plugin._http_clients) == 1
     await plugin.aclose()
 
@@ -47,7 +49,8 @@ async def test_memory_http_can_mix_with_local_context(monkeypatch: pytest.Monkey
     monkeypatch.setattr("drama_plugin.plugin.load_config", lambda _: config)
     plugin = DramaPlugin.load(ROOT)
     assert isinstance(plugin.providers.memory, HttpMemoryProvider)
-    assert isinstance(plugin.providers.context, LocalContextProvider)
+    assert isinstance(plugin.providers.context, RhythmContextProvider)
+    assert isinstance(plugin.providers.context.provider, LocalContextProvider)
     assert len(plugin._http_clients) == 1
     await plugin.aclose()
 

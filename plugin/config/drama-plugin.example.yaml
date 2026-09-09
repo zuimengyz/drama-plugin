@@ -1,3 +1,5 @@
+# Narrative organization only; environment rhythm_speed overrides this value.
+rhythm_speed: medium
 plugin:
   name: drama-plugin
   version: 0.1.0

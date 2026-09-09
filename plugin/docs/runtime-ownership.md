@@ -24,6 +24,8 @@ embedded. That physical fact does not merge their configuration ownership.
 
 ## Drama Plugin
 
+`rhythm_speed` is the sole narrative setting (medium/fast; default medium). See [narrative rhythm](narrative-rhythm.md). It is exported by the existing shell loader and projected into creation context, never read separately by Skills.
+
 | Variable | Secret | Purpose |
 | --- | ---: | --- |
 | `DRAMA_PLUGIN_PROVIDER_MEMORY_MODE` | no | Memory provider selection |

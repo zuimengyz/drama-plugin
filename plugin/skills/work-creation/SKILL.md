@@ -5,6 +5,8 @@ description: Create or revise a historical-drama Work from research context. Use
 
 # Work Creation
 
+Consume the unified `creativeRhythm` from the actual creation context before planning, even when source text is already supplied. Follow [narrative rhythm](../../docs/narrative-rhythm.md); Skills never read env directly. Pin this profile to the creative revision; refresh/resume keeps it, while a new revision reads current configuration.
+
 Turn research context into a historically governed story foundation that can guide later screen adaptation, not a historical-event summary or a premature Script. Establish scope and historical causality before selecting a protagonist or dramatic structure. The required order is:
 
 ```text

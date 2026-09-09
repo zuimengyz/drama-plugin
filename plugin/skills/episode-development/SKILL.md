@@ -5,6 +5,8 @@ description: Develop or revise one historical short-drama Episode from a Script.
 
 # Episode Development
 
+Consume the unified `creativeRhythm` from the actual creation context before planning, even when source text is already supplied. Follow [narrative rhythm](../../docs/narrative-rhythm.md); Skills never read env directly. Pin this profile to the creative revision; refresh/resume keeps it, while a new revision reads current configuration.
+
 Turn one approved part of a Script into a necessary dramatic unit that covers its assigned historical beats, declares Narrative Input State, Narrative Output State, and Required Transition, and remains continuous with the whole-series progression. Do not mechanically slice the Script or write detailed Scenes.
 
 When a [shared Dramatic Bible](../cinematic-screenplay-incubation/references/bible.md) is supplied, inherit character invariants, outstanding promises, knowledge and emotional/tension progression across episodes. Update only the affected episode and causal dependents; retain this standalone lifecycle and its parent Script authority.

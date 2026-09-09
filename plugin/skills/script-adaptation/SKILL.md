@@ -5,6 +5,8 @@ description: Adapt a historical-drama Work into a screen Script. Use when design
 
 # Script Adaptation
 
+Consume the unified `creativeRhythm` from the actual creation context before planning, even when source text is already supplied. Follow [narrative rhythm](../../docs/narrative-rhythm.md); Skills never read env directly. Pin this profile to the creative revision; refresh/resume keeps it, while a new revision reads current configuration.
+
 Convert an approved Work into a screen-adaptable formal Script state that can govern later Episode development. Inherit its Historical Scope, Spine, actor attribution, Narrative Authority, protagonist alignment, architecture mappings, and evidence boundary while designing playable progression and coverage; do not redesign the Work or prematurely write Scene/Shot detail.
 
 For complete screenplay incubation, this adaptation architecture is a stage of [Cinematic Screenplay Incubation](../cinematic-screenplay-incubation/SKILL.md). Reuse supplied character, information and continuity constraints from its Dramatic Bible. This standalone entrypoint retains its approved-Work boundary and formal write gates.

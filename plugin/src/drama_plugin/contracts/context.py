@@ -41,12 +41,19 @@ class ContextBuildRequest(ContractModel):
     options: dict[str, Any] = Field(default_factory=dict)
 
 
+class CreativeRhythm(ContractModel):
+    rhythm_speed: Literal["medium", "fast"] = Field(serialization_alias="rhythm_speed")
+    source: str
+    semantics: str
+
+
 class DramaRunContext(ContractModel):
     context_id: str
     version: int = Field(ge=1)
     built_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     scope: ContextScope
     purpose: str
+    creative_rhythm: CreativeRhythm | None = None
     work: Work | None = None
     script: Script | None = None
     episode: Episode | None = None

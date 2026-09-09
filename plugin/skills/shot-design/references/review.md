@@ -1,6 +1,6 @@
 # Shot Review and Revision
 
-Apply this rubric to the complete coverage group before persisting any Shot. Keep evaluation binary and simple: every listed row is critical because a failure can break Scene meaning, continuity, or production; one unresolved failure means Review FAIL for the group.
+Apply this rubric to the complete coverage group before persisting any Shot. Use each row to inspect relevance, not to manufacture a blocker. Reject only confirmed major problems affecting story understanding, core action, important facts or key continuity; explain the visible/textual evidence and its consequence. Ordinary flaws remain notes, uncertainty remains uncertainty.
 
 ## Domain rubric
 

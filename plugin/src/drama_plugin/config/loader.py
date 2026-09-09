@@ -17,6 +17,11 @@ _SERVICE_NAMES = ("memory", "asset", "research", "production", "media", "context
 
 def _environment_overrides(environment: Mapping[str, str]) -> dict[str, Any]:
     overrides: dict[str, Any] = {}
+    if "rhythm_speed" in environment:
+        rhythm_value = environment["rhythm_speed"].strip()
+        if rhythm_value not in {"medium", "fast"}:
+            raise ConfigurationError("Invalid rhythm_speed in environment: expected medium or fast")
+        overrides["rhythm_speed"] = rhythm_value
     providers: dict[str, dict[str, str]] = {}
     services: dict[str, dict[str, Any]] = {}
     for service in _SERVICE_NAMES:
@@ -85,6 +90,11 @@ def load_config(
     source_environment = environment if environment is not None else os.environ
     merged = _deep_merge(payload, _environment_overrides(source_environment))
     try:
-        return DramaPluginConfig.model_validate(merged)
+        config = DramaPluginConfig.model_validate(merged)
+        config._rhythm_source = ("environment:rhythm_speed" if "rhythm_speed" in source_environment else
+                                f"config:{path}:rhythm_speed" if "rhythm_speed" in payload else "default:medium")
+        return config
     except ValidationError as exc:
+        if any(e["loc"] and e["loc"][0] == "rhythm_speed" for e in exc.errors()):
+            raise ConfigurationError(f"Invalid rhythm_speed in configuration {path}: expected medium or fast") from exc
         raise ConfigurationError("Invalid Drama Plugin configuration") from exc

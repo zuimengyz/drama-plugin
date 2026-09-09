@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, SecretStr
+from pydantic import BaseModel, ConfigDict, Field, SecretStr, PrivateAttr, field_validator
 
 
 class ServiceConfig(BaseModel):
@@ -71,6 +71,18 @@ class ServicesConfig(BaseModel):
 
 class DramaPluginConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
+
+    rhythm_speed: Literal["medium", "fast"] = "medium"
+    _rhythm_source: str = PrivateAttr(default="default:medium")
+
+    @field_validator("rhythm_speed", mode="before")
+    @classmethod
+    def trim_rhythm(cls, value: object) -> object:
+        return value.strip() if isinstance(value, str) else value
+
+    @property
+    def rhythm_source(self) -> str:
+        return self._rhythm_source
 
     plugin: PluginIdentityConfig = PluginIdentityConfig()
     providers: ProvidersConfig = ProvidersConfig()

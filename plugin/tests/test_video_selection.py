@@ -187,10 +187,11 @@ def test_copies_not_generations_technical_not_content(tmp_path):
     copies=a['copies']*2
     p.inspect_output(s,attempt_id=a['attempt_id'],technical=a['technical'],copies=copies,content_observation='still needs listening')
     assert len(s['attempts'])==1 and p.exposure(s)==100
-    with pytest.raises(ValueError,match='NEEDS_OUTCOME'):reserve(s)
+    with pytest.raises(ValueError,match='OUTCOME_RECOVERY'):reserve(s)
     r=review(s,a);r=r.model_copy(update={'checks':{**r.checks,'SOUND':'UNKNOWN'}})
-    with pytest.raises(ValueError,match='INCOMPLETE'):p.record_review(s,r)
-    p.record_review(s,review(s,a));assert a['user_adoption']=='PENDING'
+    assert p.record_review(s,r)=='PENDING_REVIEW'
+    p.revise_review(s,review=review(s,a).model_dump(mode='json'),reason='Observed audio with the existing clip',expected_review_hash=fp(a['review']))
+    assert a['user_adoption']=='PENDING'
     with pytest.raises(ValueError,match='PASSED'):reserve(s)
 
 
@@ -200,8 +201,11 @@ def test_global_video_limit_and_new_campaign_cannot_clear_it(tmp_path):
     d['request_fingerprint']=fp(d['request']);d['fingerprint']=fp({k:v for k,v in d.items() if k!='fingerprint'})
     p.replan(s,frame=d,reason='OFFLINE one targeted correction')
     a=reserve(s);complete(s,a,tmp_path);p.record_review(s,review(s,a,fail=True))
-    assert len(s['attempts'])==2 and s['pause']=='TARGETED_REVISION_FAILED'
-    with pytest.raises(ValueError,match='EXHAUSTED'):p.replan(s,frame=d,reason='try third model')
+    assert len(s['attempts'])==2 and s['pause']=='CONTENT_REPLAN_REQUIRED'
+    d['candidate']['parameters']['seed']=44;d['request']['input_overrides']['2']['seed']=44
+    d['request_fingerprint']=fp(d['request']);d['fingerprint']=fp({k:v for k,v in d.items() if k!='fingerprint'})
+    p.replan(s,frame=d,reason='Host revises strategy while preserving stage totals')
+    with pytest.raises(ValueError,match='EXHAUSTED'):reserve(s)
     with pytest.raises(ValueError,match='ONE_FORMAL_VIDEO'):p.replan(s,frame=decision(tmp_path,'S2'),reason='new campaign')
     assert p.exposure(s)==200
 

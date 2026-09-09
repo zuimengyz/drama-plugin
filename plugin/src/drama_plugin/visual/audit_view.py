@@ -24,7 +24,7 @@ def project(work: dict[str, Any]) -> dict[str, Any]:
     ids = [i['target_id'] for i in route['inputs']] + route['video_targets']
     if any(a['shot_id'] not in ids for a in attempts.values()):
         raise ValueError('AUDIT_CALL_OUTSIDE_ROUTE')
-    calls = []; usage = []; adopted: dict[str, list[tuple[float, float]]] = {}
+    calls = []; usage = []; reviews = []; adopted: dict[str, list[tuple[float, float]]] = {}
     for key, a in attempts.items():
         created = bool(a.get('job_id'))
         status = '已创建' if created else '确认未创建' if a['status'] == 'NOT_CREATED' else '结果不明'
@@ -45,7 +45,12 @@ def project(work: dict[str, Any]) -> dict[str, Any]:
             new = old + [tuple(x) for x in a['adopted_intervals']]
             seconds = length(new) - length(old); adopted[digest] = new
         evidence = {'stage': route['stage_id'], 'review': a.get('review_status'),
-                    'reviewCategories': [f['category'] for f in a.get('review', {}).get('findings', [])],
+                    'originalReview': a.get('original_review_status', a.get('review_status')),
+                    'originalCategories': [f['category'] for f in a.get('review', {}).get('findings', [])],
+                    'reviewRevisions': [{'result':r['result'], 'reason':r['reason'],
+                                         'reviewHash':sha256_canonical(r['review'])}
+                                        for r in a.get('review_revisions', [])],
+                    'reviewCategories': [f['category'] for f in a.get('current_review', a.get('review', {})).get('findings', [])],
                     'billingEvent': a.get('billing_event_id'), 'outputHash': a.get('output_hash'),
                     'providerUsageIsSettlement': False}
         reason = {'INITIAL':'首次生成','CONTENT_REWORK':'内容返工','TECHNICAL_RETRY':'技术重试'}.get(a.get('call_reason','INITIAL'),'首次生成')
@@ -54,12 +59,16 @@ def project(work: dict[str, Any]) -> dict[str, Any]:
                       a.get('retry_evidence') or a.get('content_observation'),a.get('job_id'),a.get('delivery',{}).get('mediaId', a.get('media_id')),str(evidence)])
         observed = a.get('provider_usage', {})
         usage.append([observed.get('credits'), a.get('reserved_credits'), observed.get('event_id')])
+        revisions = a.get('review_revisions', [])
+        reviews.append([a.get('original_review_status', a.get('review_status')),
+                        a.get('review_status'), revisions[-1]['reason'] if revisions else None])
     targets = []
     for target in ids:
         duty = next((i for i in route['inputs'] if i['target_id'] == target), None)
         related = [a for a in attempts.values() if a['shot_id'] == target]
         first = next((a for a in related if a.get('job_id')), None)
-        review = None if first is None else ('通过' if first.get('review_status','').startswith('PASS') else '失败' if first.get('review_status') == 'FAIL' else '待审')
+        original = first.get('original_review_status', first.get('review_status','')) if first else ''
+        review = None if first is None else ('通过' if original.startswith('PASS') else '失败' if original == 'FAIL' else '待审')
         selected = [a for a in related if a.get('user_adoption') == 'USER_SELECTED']
         intent = (duty['specification'] if duty else route['requirements'].get('shotIntents',{}).get(target, target+'；按正式镜头动作要求验收'))
         targets.append([target,'镜头帧' if duty else '视频',intent,
@@ -67,5 +76,5 @@ def project(work: dict[str, Any]) -> dict[str, Any]:
                         first.get('review',{}).get('evidence') if first else None])
     return {'schema':'v207-audit-view-v1','workId':work['id'],'title':work['title'],
             'source':'work.get_work.content.productionStage','sourceFingerprint':sha256_canonical(stage),
-            'targets':targets,'calls':calls,'usage':usage,
+            'targets':targets,'calls':calls,'usage':usage,'reviews':reviews,
             'authorization':stage.get('stage',{}).get('authorization_ref'), 'pause':stage.get('pause')}

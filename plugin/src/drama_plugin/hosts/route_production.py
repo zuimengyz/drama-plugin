@@ -39,8 +39,7 @@ async def save_route(memory: MemoryProvider, work_id: str, raw: dict[str, Any]) 
     if existing == raw:
         return qualify_route(route)
     stage = work.content.get('productionStage')
-    if stage and any(a['status'] in {'RESERVED', 'UNKNOWN'} or
-                     (a['status'] == 'COMPLETED' and 'review' not in a) for a in stage['attempts']):
+    if stage and any(a['status'] in {'RESERVED', 'UNKNOWN'} for a in stage['attempts']):
         raise ValueError('RECOVER_OR_REVIEW_BEFORE_ROUTE_CHANGE')
     result = qualify_route(route)
     if not result['eligible']:
@@ -53,6 +52,8 @@ async def save_route(memory: MemoryProvider, work_id: str, raw: dict[str, Any]) 
         if stage['stage']['budget_credits'] is not None and result['incremental_credits'] > stage['stage']['budget_credits']:
             raise ValueError('ROUTE_CHANGE_EXCEEDS_AUTHORIZATION')
         stage = deepcopy(stage)
+        stage.setdefault('route_revisions', []).append({'previous_route': existing,
+            'after_attempt': len(stage['attempts']), 'next_route_id': route.route_id})
         stage['production_route'] = raw
     content = {**work.content, 'productionPolicy': {**work.content.get('productionPolicy', {}), 'routeRequired': True}, 'productionRoute': raw}
     if stage:
@@ -90,8 +91,12 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
         if original_stage is None:
             raise ValueError('EXPLICIT_V2_STAGE_BUDGET_REQUIRED')
         state = deepcopy(original_stage)
+        if command == 'reseal-plan':
+            production.reseal_plan(state, **payload)
         production.check_campaign(state)
-        if command == 'add-frame':
+        if command == 'reseal-plan':
+            result = {'resealed': True}
+        elif command == 'add-frame':
             production.add_route_frame(state, payload['frame']); result = {'added': True}
         elif command == 'reserve':
             result = production.reserve(state, **payload)
@@ -117,6 +122,15 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
             result = {'usageRecorded': True, 'invoiceSettlement': 'UNKNOWN'}
         elif command == 'review':
             result = {'review': production.record_review(state, production.Review.model_validate(payload))}
+        elif command == 'revise-review':
+            result = {'review': production.revise_review(state, **payload)}
+        elif command == 'select-input':
+            result = production.select_input(state, **payload)
+        elif command == 'resume':
+            production.resume(state, **payload); result = production.metrics(state)
+        elif command == 'sync-review':
+            from drama_plugin.hosts.visual_delivery import sync_review
+            result = await sync_review(state, **payload)
         elif command == 'inspect':
             production.inspect_output(state, **payload); result = production.metrics(state)
         elif command == 'persist':

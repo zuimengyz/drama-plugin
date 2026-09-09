@@ -35,7 +35,7 @@ Apply idempotency by operation stage:
 
 Budgets are per independent operation, not shared across a Batch. Do not restart the production loop when a later stage exhausts its budget. On exhaustion, return `VISUAL_PROVIDER_TEMPORARILY_UNAVAILABLE` with failed stage, error class, total attempt count, last error, and any existing `jobId`; never record infrastructure failure as Visual Review or generation-quality failure.
 
-Technical retry is not Visual Revise. A completed generation increments `generationCount`; a concrete Visual Review FAIL may trigger the one allowed targeted revision and increments `generationCount` again. Transport retries, status polling retries, output fetch retries, and download retries do not.
+Technical retry is not Visual Revise. A completed generation increments `generationCount`; a concrete Visual Review FAIL may trigger a Host-chosen targeted revision and increments `generationCount` again. Transport retries, status polling retries, output fetch retries, and download retries do not.
 
 ## Reference policy
 
@@ -71,7 +71,7 @@ Reject zero or multiple single-image inputs, partial start-end pairs, mixed mode
 
 Compile a compact motion prompt from Shot semantics. Retain only subject/body motion, facial micro-expression, camera motion, environment motion, speed/intensity, critical continuity, and forbidden semantic changes. Keep it at or below 2,000 characters and compact by meaning rather than truncating blindly.
 
-For video review, inspect the dynamic process using playback or representative frames across the clip. Check identity, age/hair/costume, motion and anatomy, Shot semantic preservation, camera compliance, Scene stability, lighting, and prop state. A completed job or readable file is not content PASS. Allow at most one targeted motion-prompt revision after a concrete content failure; a revision increments `generationCount`, while technical retry never does.
+For video review, inspect the dynamic process using playback or representative frames across the clip. Check identity, age/hair/costume, motion and anatomy, Shot semantic preservation, camera compliance, Scene stability, lighting, and prop state. A completed job or readable file is not content PASS. Let the Host replan or target a motion-prompt revision after a material content failure; a revision increments `generationCount`, while technical retry never does.
 
 ## Input and output handoff
 
@@ -87,4 +87,4 @@ After generation, require:
 wait -> fetch local output -> Visual Review PASS -> Drama Media import -> stable mediaId
 ```
 
-Visual Review checks that the file is valid, the intended subject is present, selected references have a reasonable effect, the Shot or Asset goal is met, and no obvious prohibited content appears. Apply the detailed semantic and continuity gates in [production-rules.md](production-rules.md). On Review FAIL, allow at most one minimal revision, targeted only at confirmed errors, while preserving Stable Facts and the Reference Plan; change that plan only when review proves it incorrect. If the revision fails, return the production or review failure; do not benchmark models or repair workflows automatically.
+Visual Review checks that the file is valid, the intended subject is present, selected references have a reasonable effect, the Shot or Asset goal is met, and no obvious prohibited content appears. Apply the detailed semantic and continuity gates in [production-rules.md](production-rules.md). On material Review FAIL, reject that candidate and apply the autonomous recovery rules in SKILL.md. Reassess or change strategy within the existing task and stage limits, preserving core story facts and user adoption. Do not assume reference editing offers unsupported local guarantees.

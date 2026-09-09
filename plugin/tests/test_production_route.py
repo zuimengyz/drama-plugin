@@ -67,8 +67,10 @@ def test_technical_recreation_keeps_original_call_and_video_limit(tmp_path,monke
  b=p.retry_not_created(s,attempt_id=a['attempt_id'],evidence='OFFLINE confirmed',**quote(d))
  assert len(s['attempts'])==2 and a['status']=='NOT_CREATED' and b['call_reason']=='TECHNICAL_RETRY'
  p.record_result(s,attempt_id=b['attempt_id'],status='NOT_CREATED',job_id=None,evidence='OFFLINE confirms')
- with pytest.raises(ValueError,match='EXHAUSTED'):p.retry_not_created(s,attempt_id=b['attempt_id'],evidence='OFFLINE',**quote(d))
- assert p.exposure(s)==200
+ c=p.retry_not_created(s,attempt_id=b['attempt_id'],evidence='OFFLINE',**quote(d))
+ p.record_result(s,attempt_id=c['attempt_id'],status='NOT_CREATED',job_id=None,evidence='OFFLINE confirms')
+ with pytest.raises(ValueError,match='EXHAUSTED'):p.retry_not_created(s,attempt_id=c['attempt_id'],evidence='OFFLINE',**quote(d))
+ assert p.exposure(s)==300 and len(s['attempts'])==3
 
 def test_route_change_cannot_relabel_model(tmp_path,monkeypatch):
  monkeypatch.setattr(p,'video_verifier',verify_execution)

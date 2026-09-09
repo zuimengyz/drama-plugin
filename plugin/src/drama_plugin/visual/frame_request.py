@@ -52,6 +52,19 @@ class Actor(Record):
     visibility: Literal["FACE", "PARTIAL", "POV"] = "FACE"
 
 
+class EditSource(Record):
+    """An exact retained frame to edit, never an invented Asset or identity master."""
+    media_id: Text
+    content_hash: Hash
+    local_path: Text
+    upload_name: Text
+    uploaded_hash: Hash
+    upload_receipt: Text
+    review: Literal['PASS', 'PASS_WITH_NOTES', 'EDIT_BASELINE']
+    evidence: Text
+    instruction: Text
+
+
 class Prop(Record):
     entity_key: Text
     state: Text
@@ -83,6 +96,7 @@ class FrameSpec(Record):
     seed: int = Field(ge=0)
     identity_bootstrap: Text | None = None
     reference_members: dict[str, tuple[Text, ...]] = Field(default_factory=dict)
+    edit_source: EditSource | None = None
 
 
 class Template(Record):
@@ -139,7 +153,7 @@ def _verify_graph(spec: FrameSpec, template: Template) -> None:
                 raise ValueError("UNSUPPORTED_TEMPLATE_DIMENSION_SOURCE")
             source = next(p for p in size_node['inputs'] if p['name'] == 'image')
             slot = str(links[source['link']][1])
-            ref = spec.references[template.image_slots.index(slot)]
+            ref = spec.edit_source or spec.references[template.image_slots.index(slot)]
             with Path(ref.local_path).open('rb') as stream:
                 header = stream.read(24)
             if not header.startswith(b'\x89PNG\r\n\x1a\n') or len(header) != 24:
@@ -156,7 +170,10 @@ def compile_frame(spec: FrameSpec, template: Template) -> dict[str, Any]:
     # Revalidate even model_copy/update callers; Pydantic does not validate updates.
     spec = FrameSpec.model_validate(spec.model_dump())
     template = Template.model_validate(template.model_dump())
-    if len(template.image_slots) != len(spec.references):
+    inputs: tuple[EditSource | Reference, ...] = (spec.edit_source,) if spec.edit_source else spec.references
+    if spec.edit_source and (spec.references or spec.identity_bootstrap or spec.reference_members):
+        raise ValueError('EDIT_SOURCE_CANNOT_MIX_WITH_IDENTITY_BOOTSTRAP_OR_REFERENCES')
+    if len(template.image_slots) != len(inputs):
         raise ValueError("REFERENCE_SLOT_COUNT_MISMATCH")
     _unique(list(template.image_slots), "DUPLICATE_PROVIDER_SLOT")
     if template.prompt_node in template.image_slots:
@@ -187,8 +204,9 @@ def compile_frame(spec: FrameSpec, template: Template) -> dict[str, Any]:
     _unique(members, 'AMBIGUOUS_SHARED_REFERENCE_IDENTITY')
     if set(spec.omitted) & set(refs):
         raise ValueError("REFERENCE_BOTH_SELECTED_AND_OMITTED")
-    for r in spec.references:
-        lock_key = f"{r.asset_id}/{r.media_id}/{r.version}"
+    for r in inputs:
+        lock_key = (f"media/{r.media_id}" if isinstance(r, EditSource)
+                    else f"{r.asset_id}/{r.media_id}/{r.version}")
         if spec.reference_lock.get(lock_key) != r.content_hash:
             raise ValueError("REFERENCE_VERSION_NOT_LOCKED")
         if hashlib.sha256(Path(r.local_path).read_bytes()).hexdigest() != r.content_hash:
@@ -200,7 +218,7 @@ def compile_frame(spec: FrameSpec, template: Template) -> dict[str, Any]:
             raise ValueError("REFERENCE_UPLOAD_RECEIPT_MISMATCH")
     for a in spec.actors:
         direct = a.entity_key in refs and refs[a.entity_key].kind == 'CHARACTER'
-        if not direct and a.entity_key not in members and not spec.identity_bootstrap:
+        if not direct and a.entity_key not in members and not spec.identity_bootstrap and not spec.edit_source:
             raise ValueError("MISSING_STABLE_REFERENCE:" + a.entity_key)
     _verify_graph(spec, template)
     risks: set[str] = {spec.shot_type}
@@ -240,7 +258,10 @@ def compile_frame(spec: FrameSpec, template: Template) -> dict[str, Any]:
     parts += [f"ENVIRONMENT: {spec.environment}", "MUST SHOW: " + "; ".join(spec.required),
               "MUST NOT SHOW: " + "; ".join(spec.forbidden)]
     prompt = "\n".join(parts)
-    overrides: dict[str, Any] = {slot: {"image": ref.upload_name} for slot, ref in zip(template.image_slots, spec.references)}
+    if spec.edit_source:
+        prompt = ('Edit the supplied exact frame. Preserve the two existing people and the scene. '
+                  'This is reference-conditioned editing, with no mask control.\n' + spec.edit_source.instruction)
+    overrides: dict[str, Any] = {slot: {"image": ref.upload_name} for slot, ref in zip(template.image_slots, inputs)}
     overrides[template.prompt_node] = {**template.settings, template.prompt_key: prompt, template.seed_key: spec.seed}
     request = {"tool": "run_template", "name": template.name, "description": spec.shot_id + "-frame", "input_overrides": overrides}
     if template.api_workflow is not None:
@@ -251,7 +272,7 @@ def compile_frame(spec: FrameSpec, template: Template) -> dict[str, Any]:
             raise ValueError('UNVERIFIED_IMAGE_API_GRAPH')
         model_inputs = api[template.prompt_node]['inputs']
         expected_keys = {'prompt', 'model', 'model.width', 'model.height', 'seed'} | {
-            f'model.images.image_{i+1}' for i in range(len(spec.references))}
+            f'model.images.image_{i+1}' for i in range(len(inputs))}
         if set(model_inputs) != expected_keys or model_inputs['model'] != template.model:
             raise ValueError('UNVERIFIED_IMAGE_API_PARAMETERS')
         if (model_inputs['model.width'], model_inputs['model.height']) != template.output_size:
@@ -272,6 +293,7 @@ def compile_frame(spec: FrameSpec, template: Template) -> dict[str, Any]:
     # Preserve every legacy compiled fingerprint when these extensions are unused.
     if not spec.identity_bootstrap: spec_data.pop('identity_bootstrap')
     if not spec.reference_members: spec_data.pop('reference_members')
+    if not spec.edit_source: spec_data.pop('edit_source')
     if template.api_workflow is None: template_data.pop('api_workflow')
     material = {"schema": "visual-frame-preflight-v1", "spec": spec_data,
                 "template": template_data, "request": request, "risks": sorted(risks)}

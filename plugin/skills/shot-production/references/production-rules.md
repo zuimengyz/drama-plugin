@@ -88,30 +88,9 @@ Map activation and control compositionally. In particular, high internal activat
 
 ## Per-Shot review and targeted revision
 
-For new image sequences, apply the executable [first-pass production gate](first-pass-production.md)
-before submission. Review a small representative subset of actual planned Shots
-before expansion, and inspect every output before the next reservation. Two
-consecutive failures or a repeated major category in the last three reviews stops
-expansion. This gate precedes cross-Shot continuity review; do not wait for an
-entire batch to finish before recognizing a shared identity or structural failure.
+Use the normal-viewing, use-based review in SKILL.md. Check applicable core action, causality, important facts and established continuity; distinguish visible errors from unconfirmed details. Ordinary flaws pass with notes. Explain each major observation and its effect on the intended use. Do not assign severity from a category or demand literal realization of every prompt detail.
 
-Record output hash, reviewer evidence, applicable checks, category, severity and
-remedy. Major semantic errors require targeted revision; minor nonsemantic issues
-may pass with a documented acceptance or postprocessing task. Unknown observations
-stay incomplete. Never downgrade missing required evidence to a cosmetic issue.
-
-Review only applicable dimensions, including:
-
-- Shot Semantic Accuracy, including every required and forbidden Shot-delta condition;
-- Character Identity, Age, Hair / Beard, and Costume;
-- Scene and Lighting;
-- Prop State and Composition;
-- Anatomy / Structural Errors;
-- Historical Plausibility and Modern Artifact Check.
-
-Treat Shot-specific semantic correctness as a hard gate. Beauty or general identity similarity cannot compensate for a failed action, forbidden reading, prop state, or composition.
-
-Generate once. Revise only after a concrete Review FAIL, and allow at most one targeted revision. Preserve Stable Facts and the Reference Plan; change only constraints connected to confirmed failures. Change the Reference Plan only when review proves it was wrong, such as omitting a key visible character. Do not regenerate stable references, replace the entire prompt, switch references without evidence, benchmark alternatives, or loop until PASS.
+Reject the current candidate when necessary, then the Host chooses a better historical candidate or a materially changed production strategy within existing stage totals. One correction is a default suggestion, never an unrecoverable target budget. Append reassessment and planning history; do not require creative authorization or discard prior spending. Unknown facts remain unknown and prompt active observation only where relevant.
 
 ## Cross-Shot continuity review
 
@@ -127,7 +106,7 @@ Compare only Shots that passed per-Shot review. Check:
 
 Require Locked Facts to remain stable, allow Allowed Delta, and require each Shot-specific Delta to be visible. Continuity is not visual duplication.
 
-When one Shot drifts, identify the failed dimension and apply its one allowed targeted revision while preserving Stable Facts and Reference Plan. When two or more Shots would need continuity regeneration, stop with `SEQUENCE_CONTINUITY_REQUIRES_REPLAN` rather than starting a regeneration loop.
+For material continuity drift, the Host replans the affected sequence while preserving core facts and user decisions. Prefer reuse and changed methods to repeating the same failed method; stage totals remain authoritative.
 
 ## Review, annotation, and persistence order
 

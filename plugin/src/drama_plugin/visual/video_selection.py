@@ -211,6 +211,7 @@ class PlannedInput(Record):
     source_media_id: Text | None = None
     roles_by_target: dict[Text, Literal['FIRST_FRAME', 'LAST_FRAME', 'REFERENCE']] = Field(default_factory=dict)
     requires_pass_targets: tuple[Text, ...] = ()
+    active: bool = True
 
 
 class ProductionRoute(Record):
@@ -259,7 +260,7 @@ def qualify_route(route: ProductionRoute, *, now: datetime | None = None) -> dic
     if len({i.target_id for i in route.inputs}) != len(route.inputs):
         reasons.append('DUPLICATE_INPUT_DUTY')
     for target in route.video_targets:
-        roles = [i.roles_by_target.get(target, i.role) for i in route.inputs if target in i.for_targets]
+        roles = [i.roles_by_target.get(target, i.role) for i in route.inputs if i.active and target in i.for_targets]
         if c.mode == 'START_END' and sorted(roles) != ['FIRST_FRAME', 'LAST_FRAME']:
             reasons.append('PLANNED_ENDPOINT_PAIR_REQUIRED:' + target)
         if c.mode == 'SINGLE_IMAGE' and roles not in [['FIRST_FRAME'], ['REFERENCE']]:
@@ -302,6 +303,6 @@ def route_input_gate(route: ProductionRoute, target_id: str, purpose: str) -> Pl
     if not result['eligible']:
         raise ValueError('ROUTE_NOT_EXECUTABLE:' + ','.join(result['exclusions']))
     matches = [i for i in route.inputs if i.target_id == target_id and i.purpose == purpose]
-    if len(matches) != 1 or matches[0].preparation == 'REUSE':
+    if len(matches) != 1 or not matches[0].active or matches[0].preparation == 'REUSE':
         raise ValueError('PAID_IMAGE_NOT_A_NECESSARY_ROUTE_INPUT')
     return matches[0]

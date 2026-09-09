@@ -8,7 +8,6 @@ reserved across process restarts and cannot silently spend again.
 from __future__ import annotations
 
 import argparse
-from collections import Counter
 from copy import deepcopy
 import json
 import math
@@ -25,8 +24,7 @@ from drama_plugin.visual.frame_request import Hash, Record, Text, verify_compile
 CATEGORIES = Literal["IDENTITY", "COSTUME", "BLOCKING", "PROP_STRUCTURE", "PROP_STATE",
                      "SCENE", "ANATOMY", "MODERN_ARTIFACT", "CROP", "COSMETIC",
                      "ACTION", "CAMERA", "DIALOGUE", "SPEAKER", "SOUND", "CONTINUITY", "ENDPOINTS"]
-HARD = {"IDENTITY", "COSTUME", "BLOCKING", "PROP_STRUCTURE", "PROP_STATE", "ANATOMY",
-        "ACTION", "DIALOGUE", "SPEAKER", "SOUND", "CONTINUITY", "ENDPOINTS"}
+
 
 
 video_verifier: Callable[[dict[str, Any]], None] | None = None
@@ -76,7 +74,7 @@ def new_stage(*, stage_id: str, authorization_ref: str, budget_credits: float | 
     if images:
         new_campaign(images)  # Preserve V2-05 identity/version/risk qualification.
     result: dict[str, Any] = {'schema': 'visual-campaign-v1', 'frames': {f['spec']['shot_id']: f for f in frames},
-            'plan_fingerprint': sha256_canonical(frames), 'pilots': [f['spec']['shot_id'] for f in frames],
+            'plan_fingerprint': sha256_canonical({f['spec']['shot_id']: f for f in frames}), 'pilots': [f['spec']['shot_id'] for f in frames],
             'attempts': [], 'pause': None, 'remediations': [],
             'stage': {'id': stage_id, 'authorization_ref': authorization_ref,
                       'budget_credits': budget_credits, 'protected_targets': protected_targets,
@@ -123,6 +121,19 @@ def _route_frame_gate(state: dict[str, Any], frame: dict[str, Any]) -> None:
             raise ValueError('BOOTSTRAP_CANNOT_BYPASS_EXISTING_IDENTITIES')
         if frame['spec']['shot_fingerprint'] != route.creative_fingerprint:
             raise ValueError('IMAGE_CREATIVE_SOURCE_CHANGED')
+        source = frame['spec'].get('edit_source')
+        if source:
+            matches = [a for a in state['attempts'] if a.get('output_hash') == source['content_hash']
+                       and a.get('delivery', {}).get('mediaId') == source['media_id']
+                       and a.get('persistence_status') == 'VERIFIED']
+            if len(matches) != 1:
+                raise ValueError('EDIT_SOURCE_REQUIRES_VERIFIED_FORMAL_ATTEMPT')
+            baseline = matches[0]
+            if source['review'] == 'EDIT_BASELINE':
+                if target != baseline['shot_id'] or not baseline.get('current_review'):
+                    raise ValueError('EDIT_BASELINE_REQUIRES_SAME_TARGET_REASSESSMENT')
+            elif baseline.get('review_status') != source['review']:
+                raise ValueError('EDIT_SOURCE_CURRENT_REVIEW_MISMATCH')
 
 
 def add_route_frame(state: dict[str, Any], frame: dict[str, Any]) -> None:
@@ -135,7 +146,7 @@ def add_route_frame(state: dict[str, Any], frame: dict[str, Any]) -> None:
         raise ValueError('EXISTING_TARGET_REQUIRES_REPLAN')
     state['frames'][target] = deepcopy(frame)
     state['pilots'].append(target)
-    state['plan_fingerprint'] = sha256_canonical(list(state['frames'].values()))
+    state['plan_fingerprint'] = sha256_canonical(state['frames'])
 
 
 def _fresh(observation: dict[str, Any]) -> None:
@@ -153,9 +164,12 @@ def _stage_gate(state: dict[str, Any], frame: dict[str, Any], request: dict[str,
                 quote: dict[str, Any] | None, balance: dict[str, Any] | None) -> float:
     if 'production_route' in state:
         _route_frame_gate(state, frame)
-    if quote is None or balance is None:
+    if quote is None:
         raise ValueError('FRESH_QUOTE_AND_BALANCE_REQUIRED')
-    _fresh(quote); _fresh(balance)
+    _fresh(quote)
+    if balance is None:
+        raise ValueError('ACCOUNT_OBSERVATION_REQUIRED')
+    _fresh(balance)
     from datetime import datetime
     observed = datetime.fromisoformat(balance['evidence']['checked_at'])
     if any(a.get('billing_reconciled_at') and observed <= datetime.fromisoformat(a['billing_reconciled_at']) for a in state['attempts']):
@@ -165,13 +179,15 @@ def _stage_gate(state: dict[str, Any], frame: dict[str, Any], request: dict[str,
     if quote.get('unit') != 'credits' or balance.get('unit') != 'credits':
         raise ValueError('BUDGET_UNIT_MISMATCH')
     amount = quote['conservative_credits']; available = balance['available_credits']; margin = balance['margin_credits']
-    if any(not isinstance(x, (int, float)) or not math.isfinite(x) for x in [amount, available, margin]) or min(amount, available) < 0 or amount == 0 or margin <= 0:
+    if any(not isinstance(x, (int, float)) or not math.isfinite(x) for x in [amount, margin]) or amount <= 0 or margin <= 0 or (available is not None and (not isinstance(available,(int,float)) or not math.isfinite(available) or available < 0)):
         raise ValueError('INVALID_QUOTE_OR_BALANCE')
     unsettled = sum(a['reserved_credits'] for a in state['attempts'] if a['credits'] is None)
     cap = state['stage']['budget_credits']
     if cap is None and not state['stage'].get('no_monetary_cap'):
         raise ValueError('EXPLICIT_STAGE_BUDGET_REQUIRED')
-    if (cap is not None and exposure(state) + amount > cap) or unsettled + amount + margin > available:
+    if available is None and not state['stage'].get('no_monetary_cap'):
+        raise ValueError('BALANCE_REQUIRED_FOR_CAPPED_STAGE')
+    if (cap is not None and exposure(state) + amount > cap) or (available is not None and unsettled + amount + margin > available):
         raise ValueError('STAGE_BUDGET_OR_BALANCE_EXCEEDED')
     video = frame.get('schema') == 'video-decision-v1'
     if video:
@@ -184,10 +200,10 @@ def _stage_gate(state: dict[str, Any], frame: dict[str, Any], request: dict[str,
             raise ValueError('QUOTE_BELOW_SELECTED_PATH_COST')
     if video and frame['stage_id'] != state['stage']['id']:
         raise ValueError('DECISION_BUDGET_SCOPE_MISMATCH')
-    if video and sum(a.get('media_kind') == 'VIDEO' for a in state['attempts']) >= 2:
+    if video and sum(a.get('media_kind') == 'VIDEO' and a['status'] != 'NOT_CREATED' for a in state['attempts']) >= 2:
         raise ValueError('STAGE_VIDEO_ATTEMPTS_EXHAUSTED')
     if not video:
-        if 'production_route' in state and sum(a.get('media_kind') == 'IMAGE' for a in state['attempts']) >= 6:
+        if 'production_route' in state and sum(a.get('media_kind') == 'IMAGE' and a['status'] != 'NOT_CREATED' for a in state['attempts']) >= 6:
             raise ValueError('STAGE_IMAGE_ATTEMPTS_EXHAUSTED')
         initials = {a['shot_id'] for a in state['attempts'] if a.get('media_kind') == 'IMAGE'}
         if 'production_route' not in state and frame['spec']['shot_id'] not in initials and len(initials) >= 3:
@@ -215,20 +231,25 @@ class Review(Record):
 
 
 def _review_status(review: Review) -> str:
-    for f in review.findings:
-        if f.category in HARD and (f.severity != "MAJOR" or f.remedy != "REGENERATE"):
-            raise ValueError("SEMANTIC_FAILURE_CANNOT_BE_DOWNGRADED")
-        if f.severity == "MAJOR" and f.remedy != "REGENERATE":
-            raise ValueError("MAJOR_FAILURE_REQUIRES_REVISION")
-        if f.severity == "MINOR" and f.remedy == "REGENERATE":
-            raise ValueError("MINOR_FAILURE_USE_ACCEPT_OR_POSTPROCESS")
-    if "UNKNOWN" in review.checks.values():
-        raise ValueError("REVIEW_INCOMPLETE")
-    failed = "FAIL" in review.checks.values()
-    major = any(f.severity == "MAJOR" for f in review.findings)
-    if failed != major:
-        raise ValueError("CHECKS_AND_FINDINGS_DISAGREE")
-    return "FAIL" if major else "PASS_WITH_NOTES" if review.findings else "PASS"
+    # The Host assesses narrative impact; category names do not assign severity.
+    major = any(f.severity == 'MAJOR' for f in review.findings)
+    if any(f.severity == 'MINOR' and f.remedy == 'REGENERATE' for f in review.findings):
+        raise ValueError('MINOR_FAILURE_USE_ACCEPT_OR_POSTPROCESS')
+    if ('FAIL' in review.checks.values()) != major:
+        raise ValueError('CHECKS_AND_FINDINGS_DISAGREE')
+    if major:
+        return 'FAIL'
+    if 'UNKNOWN' in review.checks.values():
+        return 'PENDING_REVIEW'
+    return 'PASS_WITH_NOTES' if review.findings else 'PASS'
+
+
+def current_review(attempt: dict[str, Any]) -> dict[str, Any]:
+    return dict(attempt.get('current_review', attempt.get('review', {})))
+
+
+def usable(attempt: dict[str, Any]) -> bool:
+    return str(attempt.get('review_status', '')).startswith('PASS')
 
 
 def new_campaign(frames: list[dict[str, Any]]) -> dict[str, Any]:
@@ -276,13 +297,26 @@ def new_campaign(frames: list[dict[str, Any]]) -> dict[str, Any]:
     if len(pilots) > 3:
         raise ValueError("SPLIT_CAMPAIGN_BY_RISK_OR_REFERENCE_STATE: more than 3 representative shots needed")
     return {"schema": "visual-campaign-v1", "frames": {f['spec']['shot_id']: f for f in frames},
-            "plan_fingerprint": sha256_canonical(frames), "pilots": pilots,
+            "plan_fingerprint": sha256_canonical({f['spec']['shot_id']: f for f in frames}), "pilots": pilots,
             "attempts": [], "pause": None, "remediations": []}
+
+
+def reseal_plan(state: dict[str, Any], *, sealed_frames: list[dict[str, Any]]) -> None:
+    """Recover an order-sensitive legacy seal using its exact saved request receipt."""
+    before = state['plan_fingerprint']
+    if sha256_canonical(sealed_frames) != before:
+        raise ValueError('ORIGINAL_PLAN_SEAL_REQUIRED')
+    if {f['spec']['shot_id']: f for f in sealed_frames} != state['frames']:
+        raise ValueError('SEALED_PLAN_CONTENT_CHANGED')
+    state.setdefault('plan_revisions', []).append({'previous_fingerprint': before,
+        'reason': 'Verified original receipt; canonical mapping ignores storage object-key order'})
+    state['plan_fingerprint'] = sha256_canonical(state['frames'])
+    check_campaign(state)
 
 
 def check_campaign(state: dict[str, Any], *, verify_inputs: bool = False) -> None:
     frames = list(state['frames'].values())
-    if state['plan_fingerprint'] != sha256_canonical(frames):
+    if state['plan_fingerprint'] not in (sha256_canonical(state['frames']), sha256_canonical(frames)):
         raise ValueError("CAMPAIGN_PLAN_CHANGED")
     for frame in frames:
         if frame['fingerprint'] != sha256_canonical({k: v for k, v in frame.items() if k != 'fingerprint'}):
@@ -293,19 +327,18 @@ def check_campaign(state: dict[str, Any], *, verify_inputs: bool = False) -> Non
 
 def reserve(state: dict[str, Any], shot_id: str, *, quote: dict[str, Any] | None = None,
             balance: dict[str, Any] | None = None) -> dict[str, Any]:
-    check_campaign(state, verify_inputs=True)
+    check_campaign(state)
+    verify_visual(state['frames'][shot_id])
     if state['pause']:
         raise ValueError("CAMPAIGN_PAUSED:" + state['pause'])
-    if any(a['status'] in {'RESERVED', 'UNKNOWN', 'COMPLETED'} and 'review' not in a for a in state['attempts']):
+    if any(a['status'] in {'RESERVED', 'UNKNOWN'} for a in state['attempts']):
         raise ValueError("PREVIOUS_ATTEMPT_NEEDS_OUTCOME_OR_REVIEW")
     frame = state['frames'][shot_id]
     prior = [a for a in state['attempts'] if a['shot_id'] == shot_id]
-    if any(a.get('review_status', '').startswith('PASS') for a in prior):
-        raise ValueError("DO_NOT_REGENERATE_PASSED_SHOT")
-    if len(prior) >= 2:
-        raise ValueError("TARGETED_REVISION_BUDGET_EXHAUSTED")
+    if any(usable(a) for a in prior):
+        raise ValueError('DO_NOT_REGENERATE_PASSED_SHOT')
     if prior and prior[-1].get('review_status') != 'FAIL':
-        raise ValueError("TECHNICAL_FAILURE_REQUIRES_OUTCOME_RECOVERY_NOT_VISUAL_REVISION")
+        raise ValueError('TECHNICAL_FAILURE_REQUIRES_OUTCOME_RECOVERY_NOT_VISUAL_REVISION')
     passed = {a['shot_id'] for a in state['attempts'] if a.get('review_status', '').startswith('PASS')}
     if shot_id not in state['pilots'] and not set(state['pilots']) <= passed:
         raise ValueError("REPRESENTATIVE_REVIEW_REQUIRED")
@@ -315,9 +348,9 @@ def reserve(state: dict[str, Any], shot_id: str, *, quote: dict[str, Any] | None
         raise ValueError('VIDEO_REQUIRES_SHARED_STAGE_BUDGET')
     if prior and is_video and prior[-1]['frame_fingerprint'] == frame['fingerprint']:
         raise ValueError('VIDEO_REVISION_REQUIRES_REQUALIFIED_DECISION')
-    if prior and not is_video:
+    if prior and not is_video and not frame['spec'].get('edit_source'):
         t = frame['template']
-        correction = '; '.join(f['evidence'] for f in prior[-1]['review']['findings'] if f['severity'] == 'MAJOR')
+        correction = '; '.join(f['evidence'] for f in prior[-1].get('current_review', prior[-1]['review'])['findings'] if f['severity'] == 'MAJOR')
         if item['tool'] == 'submit_workflow':
             item['workflow'][t['prompt_node']]['inputs'][t['prompt_key']] += '\nTARGETED CORRECTION: ' + correction
         else:
@@ -328,7 +361,7 @@ def reserve(state: dict[str, Any], shot_id: str, *, quote: dict[str, Any] | None
                                    'attempt': len(prior) + 1, 'request': item,
                                    'remediations': state['remediations']})
     attempt = {'attempt_id': attempt_id, 'shot_id': shot_id, 'ordinal': len(prior) + 1,
-               'frame_fingerprint': frame['fingerprint'], 'request': item,
+               'frame_fingerprint': frame['fingerprint'], 'frame_snapshot': deepcopy(frame), 'request': item,
                'request_fingerprint': sha256_canonical(item), 'status': 'RESERVED',
                'job_id': None, 'credits': None, 'billing_event_id': None}
     if 'production_route' in state:
@@ -394,61 +427,80 @@ def record_review(state: dict[str, Any], review: Review) -> str:
         raise ValueError("REVIEW_OUTPUT_MISMATCH")
     if 'review' in attempt:
         raise ValueError("REVIEW_ALREADY_RECORDED")
-    spec = state['frames'][attempt['shot_id']]['spec']
-    required_checks = {'IDENTITY', 'COSTUME', 'BLOCKING', 'PROP_STRUCTURE', 'PROP_STATE',
-                       'SCENE', 'ANATOMY', 'MODERN_ARTIFACT', 'CROP'}
-    # An irrelevant dimension is explicitly PASS with rationale in evidence.
-    required_checks |= {'required:' + x for x in spec['required']}
-    required_checks |= {'forbidden:' + x for x in spec['forbidden']}
-    if attempt.get('media_kind') == 'VIDEO':
-        required_checks |= {'ACTION', 'CAMERA', 'DIALOGUE', 'SPEAKER', 'SOUND', 'CONTINUITY', 'ENDPOINTS'}
-        if attempt['technical_status'] != 'PASS':
-            raise ValueError('VIDEO_TECHNICAL_REVIEW_REQUIRED')
-    if not required_checks <= set(review.checks):
-        raise ValueError("REQUIRED_REVIEW_CHECKS_MISSING")
+    if attempt.get('media_kind') == 'VIDEO' and attempt.get('technical_status') != 'PASS':
+        raise ValueError('VIDEO_TECHNICAL_REVIEW_REQUIRED')
     result = _review_status(review)
     attempt.update(review=review.model_dump(mode='json'), review_status=result)
     if 'stage' in state:
         attempt['content_status'] = result
-    since = state['remediations'][-1]['after_attempt'] if state['remediations'] else 0
-    reviewed = [a for a in state['attempts'][since:] if 'review' in a]
-    recent = reviewed[-3:]
-    counts = Counter(f['category'] for a in recent for f in {
-        f['category']: f for f in a['review']['findings'] if f['severity'] == 'MAJOR'}.values())
-    if any(n >= 2 for n in counts.values()):
-        state['pause'] = 'COMMON_FAILURE_REPLAN'
-    if len(reviewed) >= 2 and all(a['review_status'] == 'FAIL' for a in reviewed[-2:]):
-        state['pause'] = 'CONSECUTIVE_FAILURE_REPLAN'
-    if result == 'FAIL' and attempt['ordinal'] == 2:
-        state['pause'] = 'TARGETED_REVISION_FAILED'
+    previous_pause = state.get('pause')
+    if result == 'FAIL':
+        state['pause'] = 'CONTENT_REPLAN_REQUIRED'
+    state.setdefault('review_events', []).append({'attempt_id':attempt['attempt_id'],
+        'result':result,'previous_pause':previous_pause,'pause':state.get('pause')})
     return result
 
 
-def resume(state: dict[str, Any], *, reason: str) -> None:
-    """A review-backed replan can release the breaker, never erase attempts.
+def revise_review(state: dict[str, Any], *, review: dict[str, Any], reason: str,
+                  expected_review_hash: str) -> str:
+    """Append a reassessment while preserving the original event and paid history."""
+    revised = Review.model_validate(review)
+    attempt = next(a for a in state['attempts'] if a['attempt_id'] == revised.attempt_id)
+    if not reason.strip() or 'review' not in attempt:
+        raise ValueError('ORIGINAL_REVIEW_AND_REVISION_REASON_REQUIRED')
+    current = attempt.get('current_review', attempt['review'])
+    if sha256_canonical(current) != expected_review_hash:
+        raise ValueError('REVIEW_CHANGED_RELOAD')
+    # Reuse every existing output/hash/check validation without replacing history.
+    check = deepcopy(state)
+    candidate = next(a for a in check['attempts'] if a['attempt_id'] == revised.attempt_id)
+    candidate.pop('review')
+    result = record_review(check, revised)
+    from datetime import datetime, timezone
+    event = {'review': revised.model_dump(mode='json'), 'reason': reason,
+             'previous_review_hash': expected_review_hash, 'result': result,
+             'recorded_at': datetime.now(timezone.utc).isoformat()}
+    attempt.setdefault('original_review_status', attempt['review_status'])
+    attempt.setdefault('review_revisions', []).append(event)
+    attempt.update(current_review=event['review'], review_status=result, content_status=result)
+    return result
 
-The frozen plan remains authoritative; reference/model/Shot changes require a
-separate, explicitly scoped campaign. Failed second attempts remain exhausted.
-"""
-    if not reason.strip() or state['pause'] not in {'COMMON_FAILURE_REPLAN', 'CONSECUTIVE_FAILURE_REPLAN'}:
-        raise ValueError("REPLAN_EVIDENCE_REQUIRED_OR_NOT_RESUMABLE")
-    failed = {a['shot_id'] for a in state['attempts'] if a.get('review_status') == 'FAIL'}
-    if any(sum(a['shot_id'] == sid for a in state['attempts']) >= 2 for sid in failed):
-        raise ValueError("TARGETED_REVISION_BUDGET_EXHAUSTED")
-    if len(set(state['pilots']) | failed) > 3:
-        raise ValueError("SPLIT_AND_REPLAN_REQUIRED")
-    state['pilots'] = sorted(set(state['pilots']) | failed)
-    state['remediations'].append({'reason': reason, 'after_attempt': len(state['attempts'])})
+
+def resume(state: dict[str, Any], *, reason: str, incremental_credits: float = 0) -> None:
+    """Host records its next strategy; no creative approval token or counter reset."""
+    if not reason.strip() or not math.isfinite(incremental_credits) or incremental_credits < 0:
+        raise ValueError('REPLAN_REASON_AND_COST_REQUIRED')
+    if any(a['status'] in {'RESERVED','UNKNOWN'} for a in state['attempts']):
+        raise ValueError('RECOVER_ORIGINAL_SUBMISSION_FIRST')
+    state['remediations'].append({'reason':reason,'incremental_credits':incremental_credits,
+        'after_attempt':len(state['attempts']),'previous_pause':state.get('pause')})
     state['pause'] = None
+
+
+def select_input(state: dict[str, Any], *, attempt_id: str, purpose: str, reason: str,
+                 incremental_credits: float = 0) -> dict[str, Any]:
+    a = next(a for a in state['attempts'] if a['attempt_id'] == attempt_id)
+    if not usable(a) or a.get('persistence_status') != 'VERIFIED' or not a.get('delivery', {}).get('mediaId'):
+        raise ValueError('USABLE_PERSISTED_INPUT_REQUIRED')
+    if not purpose.strip():
+        raise ValueError('INPUT_PURPOSE_REQUIRED')
+    selection = dict(attempt_id=attempt_id,media_id=a['delivery']['mediaId'],
+        content_hash=a['output_hash'],review_hash=sha256_canonical(current_review(a)),
+        authority='HOST_WORKING_INPUT',purpose=purpose,reason=reason)
+    resume(state,reason=reason,incremental_credits=incremental_credits)
+    old=state.setdefault('input_selections',{}).get(a['shot_id'])
+    state['remediations'][-1].update(target=a['shot_id'],previous_selection=old,selection=selection)
+    state['input_selections'][a['shot_id']]=selection
+    return selection
 
 
 def metrics(state: dict[str, Any]) -> dict[str, Any]:
     first = [a for a in state['attempts'] if a['ordinal'] == 1 and 'review' in a]
-    passed = sum(a['review_status'].startswith('PASS') for a in first)
+    passed = sum(a.get('original_review_status',a['review_status']).startswith('PASS') for a in first)
     return {'first_reviewed': len(first), 'first_usable': passed,
             'first_pass_yield': passed / len(first) if first else None,
             'unreviewed': sum(a['status'] == 'COMPLETED' and 'review' not in a for a in state['attempts']),
-            'generation_attempts': len(state['attempts']),
+            'generation_attempts': sum(bool(a.get('job_id')) for a in state['attempts']),
             'technical_failures': sum(a['status'] in {'FAILED', 'NOT_CREATED'} for a in state['attempts']),
             'known_credits': sum(a['credits'] or 0 for a in state['attempts']),
             'in_flight_or_unknown_count': sum(a['status'] in {'RESERVED', 'UNKNOWN'} for a in state['attempts']),
@@ -456,7 +508,8 @@ def metrics(state: dict[str, Any]) -> dict[str, Any]:
             'pause': state['pause']}
 
 
-def replan(state: dict[str, Any], *, frame: dict[str, Any], reason: str) -> None:
+def replan(state: dict[str, Any], *, frame: dict[str, Any], reason: str,
+           incremental_credits: float = 0) -> None:
     """Replace one path in the same stage, retaining all failure and spending history."""
     if 'stage' not in state or not reason.strip():
         raise ValueError('SHARED_STAGE_AND_REPLAN_EVIDENCE_REQUIRED')
@@ -472,12 +525,8 @@ def replan(state: dict[str, Any], *, frame: dict[str, Any], reason: str) -> None
     if video and 'production_route' not in state and state['stage'].get('video_target') not in {None, sid}:
         raise ValueError('STAGE_ONE_FORMAL_VIDEO_TARGET')
     prior = [a for a in state['attempts'] if a['shot_id'] == sid]
-    if any(a['status'] in {'RESERVED', 'UNKNOWN'} or (a['status'] == 'COMPLETED' and 'review' not in a) for a in state['attempts']):
+    if any(a['status'] in {'RESERVED', 'UNKNOWN'}  for a in state['attempts']):
         raise ValueError('RECOVER_OR_REVIEW_ORIGINAL_ATTEMPT')
-    if any(a.get('review_status', '').startswith('PASS') for a in prior) or len(prior) >= 2:
-        raise ValueError('PASSED_OR_EXHAUSTED_TARGET')
-    if prior and prior[-1].get('review_status') != 'FAIL':
-        raise ValueError('TECHNICAL_FAILURE_NOT_AN_ARTISTIC_RETRY')
     old = state['frames'].get(sid)
     if old:
         if old.get('schema') != frame.get('schema'):
@@ -491,22 +540,26 @@ def replan(state: dict[str, Any], *, frame: dict[str, Any], reason: str) -> None
                 return {k: v for k, v in f['requirements']['frozen_creative'].items() if k != 'motion_prompt'}
             if creative(old) != creative(frame):
                 raise ValueError('CREATIVE_REQUIREMENTS_CHANGED')
-        elif old['spec'] != frame['spec']:
-            raise ValueError('IMAGE_REPLAN_MUST_PRESERVE_FROZEN_SPEC')
+        else:
+            for key in ('shot_id','shot_fingerprint'):
+                if old['spec'][key] != frame['spec'][key]:
+                    raise ValueError('IMAGE_CREATIVE_SOURCE_CHANGED')
+    if not math.isfinite(incremental_credits) or incremental_credits < 0:
+        raise ValueError('INVALID_REPLAN_COST')
     proposed = {**state['frames'], sid: frame}
     images = [f for f in proposed.values() if f.get('schema') != 'video-decision-v1']
     if len(images) > (6 if 'production_route' in state else 3):
         raise ValueError('STAGE_IMAGE_LIMIT')
-    if images:
-        new_campaign(images)
     state['frames'] = proposed
     if video and 'production_route' not in state:
         state['stage']['video_target'] = sid
-    state['plan_fingerprint'] = sha256_canonical(list(proposed.values()))
+    state['plan_fingerprint'] = sha256_canonical(proposed)
     if sid not in state['pilots']:
         state['pilots'].append(sid)
     state['remediations'].append({'reason': reason, 'after_attempt': len(state['attempts']), 'target': sid,
                                   'previous_fingerprint': old['fingerprint'] if old else None})
+    state['remediations'][-1].update(previous_frame=old, previous_pause=state.get('pause'),
+        incremental_credits=incremental_credits,frame_fingerprint=frame['fingerprint'])
     state['pause'] = None
 
 

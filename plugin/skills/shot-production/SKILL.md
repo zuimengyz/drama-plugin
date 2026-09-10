@@ -5,6 +5,12 @@ description: Produce image, video, or audio media for an approved historical-dra
 
 # Shot Production
 
+New Shot production consumes a frozen `CinematicShotSpec` from cinematic-direction
+before video-model-selection. Use the existing [director handoff](../../docs/cinematic-direction-contract.md)
+to carry acting beats, camera motivation, reference duties and execution demands
+into the same route/request checks. Do not replace it with a free emotional label,
+skip its frozen projection, or change an adopted original AV while adding direction.
+
 Use `shot.get_shot` and `scene.get_scene` when their stable IDs are known and the approved production context was not already supplied. For a continuous Scene, establish one shared Sequence Context before producing its Shots. Load [references/production-rules.md](references/production-rules.md) to plan stable facts, references, Shot deltas, review, and revision. When a Shot has `spokenContentBindings`, also load the [Dialogue Layer content convention](../../docs/dialogue-layer-content-convention.md), resolve every binding against the Scene's canonical `spokenContent`, and require numeric `plannedDurationMs` plus a passed `DURATION_FEASIBILITY` check before physical media production. Keep these decisions in Agent Run Context rather than creating new domain records.
 
 Discover reference candidates from named visible characters, the Scene, focal props, costume variants, and other relevant stable visual entities. Use `asset.get_asset`, `asset.list_assets`, or `asset.search_assets` without inventing references. Inspect stable reference Media with `media.get_media`; use `media.list_media` only for a clear structural media scope, not broad discovery. Select no more than three stable Asset-plus-Media references. Record selected and omitted candidates with rationale. Return `MISSING_STABLE_REFERENCE` for a key visible character whose stable identity is absent; do not silently omit it, substitute an informal image, or generate an unreviewed master inside Shot production. This blocks only media that must show that character; it does not invalidate the Work-scoped `speakerKey`, Scene dialogue authoring, narration, or non-visual speaker identity.
@@ -23,7 +29,7 @@ Use `context.build_context` only when required Shot context was not supplied, an
 
 ## Dialogue-coupled execution
 
-When complete actual Audio exists, derive this Video's execution timing from its measured durations, the immutable DialogueTimingPlan's protected reactions/holds, and the production target. Never let original estimates exclusively determine speech phases. Consume the derived material in VisualPerformanceBrief and the real request; emit active speaker, listener, visible action, reaction, transition purpose and performance boundaries rather than only hashing them.
+When complete actual Audio exists, derive this Video's execution timing from its measured durations, the immutable DialogueTimingPlan's protected reactions/holds, and the production target. Never let original estimates exclusively determine speech phases. Consume the derived material in the schema-authoritative projection (legacy VisualPerformanceBrief or new CinematicShotSpec) and the real request; emit active speaker, listener, visible action, reaction, transition purpose and performance boundaries rather than only hashing them.
 
 Keep monolithic production for the current single-Shot baseline. New Video requires new shot-level RP and speaker-specific snapshots with observedSpeakerKey; null denotes aggregate only. Observe visible participation and handoff, not guessed psychological states or mouth-as-speech-onset. A physical fit does not prove visual fit. Respect latest user rejection and the current task's explicit intermediate-review authorization. Record one shared corrective visual rebuild budget; if that fails, do not enter an unbounded Audio/Video loop. Mouth derivatives require fresh face/non-speaker/identity/continuity observation, preserving original source Media and timing authority.
 
@@ -78,3 +84,27 @@ Judge whether the shot works at normal viewing size, duration and in context. Na
 Record applicable checks, notes and major findings in existing reviews. Omit irrelevant dimensions; relevant unknown evidence remains pending and the Host first seeks observations. Pending sound does not block independent visual work or become sound PASS. Append reassessments without replacing original review or paid/rework events. Consume the latest effective review for the stated use. The Host can choose a verified suitable Media as HOST_WORKING_INPUT; this never implies USER_SELECTED or final artistic acceptance.
 
 Use existing route_preflight revise-review, select-input, resume and replan operations. Old TARGETED_REVISION_FAILED records remain historical; normal Host replanning releases the content pause without resetting attempts or requesting an exception. Requalify changed routes and compile/seal changed requests normally. Confirmed created jobs count toward stage totals; confirmed noncreation stays a bounded technical attempt, unknown creation must be recovered before another submission. Unknown settlement retains its reserve but is not a running generation. Never repeat a failed approach without changed strategy or reasonable success evidence.
+
+## One visual execution authority
+
+For `creative_schema = cinematic-shot-v1`, DPD is the dramatic authority and
+CinematicShotSpec is the only visual/time/camera execution projection. The
+VisualPerformanceBrief instructions above apply only to legacy schemas; keep old
+briefs as lineage, never another compiled motion prompt. RealizedPerformanceSnapshot
+remains observation of actual Media after generation.
+
+The existing Host adapter must preserve every execution-critical semantic in its
+projection manifest. REQUIRED references need formal Media identity, sourceRef,
+hash/type, reviewed duty and actual slot, or an explicit supported equivalent.
+Static portraits cannot fulfill performance references. Check observed endpoint
+state against frozen Opening/Ending; conflict requires re-plan. Input caps remain.
+
+SourceSoundIntent covers generation-time native speech, diegetic/ambient sound,
+silence, unwanted music and continuity. It does not choose voices or mix audio.
+Original AV stays immutable; authorized repairs create new derivatives.
+
+`scripts/compile_video.py` uses the actual compiler/seal offline and always emits
+non-submittable dry requests. Paid use requires fresh canon/Media through
+`route_preflight.py`, current capability, complete quote and the existing stage
+reservation. Unknown complete cost stays unknown. Only verified provider metadata
+may impose a prompt limit; no shared 2000-character cap or silent truncation.

@@ -10,14 +10,18 @@ from copy import deepcopy
 from typing import Any
 
 from drama_plugin.contracts.base import sha256_canonical
+from drama_plugin.contracts.creation import Work
 from drama_plugin.exceptions import ContractValidationError
-from drama_plugin.providers.base import MemoryProvider
-from drama_plugin.visual.video_selection import ProductionRoute, qualify_route, route_input_gate
+from drama_plugin.providers.base import MemoryProvider, MediaProvider
+from drama_plugin.visual.video_selection import ProductionRoute, qualify_route, route_input_gate, choose_routes
+from drama_plugin.config.video_route import VideoRoutePolicy
 from drama_plugin.visual import production
 
 
 async def guard_direct_generation(memory: MemoryProvider, parameters: dict[str, Any] | None) -> None:
     options = parameters or {}
+    if options.get('creative_schema') == 'cinematic-shot-v1' or options.get('cinematic_direction'):
+        raise ContractValidationError('USE_FORMAL_ROUTE_FOR_CINEMATIC_EXECUTION_CONTRACT')
     wid = options.get('workId')
     if not wid:
         # Preserve legacy unscoped callers. New story orchestration always supplies
@@ -30,18 +34,43 @@ async def guard_direct_generation(memory: MemoryProvider, parameters: dict[str, 
         raise ContractValidationError('USE_FORMAL_ROUTE_RESERVATION_BEFORE_PAID_GENERATION')
 
 
-async def save_route(memory: MemoryProvider, work_id: str, raw: dict[str, Any]) -> dict[str, Any]:
+async def validate_route_direction_sources(memory: MemoryProvider, work: Work, route: ProductionRoute) -> None:
+    # Source-pinned director artifacts use the same route, not another selector.
+    # Re-read canon before a new/revised route can become a production plan.
+    if route.requirements.get('cinematic_directions'):
+        from drama_plugin.visual.cinematic import validate_canon, verify_frozen
+        for frozen in route.requirements['cinematic_directions'].values():
+            spec = verify_frozen(frozen)
+            shot = await memory.get_shot(spec.shot_id)
+            scene = await memory.get_scene(shot.scene_id)
+            episode = await memory.get_episode(scene.episode_id)
+            script = await memory.get_script(episode.script_id)
+            context: dict[str, Any] = {key: value.model_dump(mode='json') for key, value in
+                [('work', work), ('script', script), ('episode', episode), ('scene', scene), ('shot', shot)]}
+            if frozen.get('dialogueCoverage'):
+                context['dialogueCoverage'] = frozen['dialogueCoverage']
+                context['sceneShots'] = [s.model_dump(mode='json') for s in await memory.list_shots(scene.id)]
+            validate_canon(spec, context)
+
+
+async def save_route(memory: MemoryProvider, work_id: str, raw: dict[str, Any], *,
+                     policy: VideoRoutePolicy | None = None, task_policy: VideoRoutePolicy | None = None) -> dict[str, Any]:
     route = ProductionRoute.model_validate(raw)
     if route.work_id != work_id:
         raise ValueError('ROUTE_WORK_MISMATCH')
     work = await memory.get_work(work_id)
+    await validate_route_direction_sources(memory, work, route)
     existing = work.content.get('productionRoute')
-    if existing == raw:
+    if existing == raw and policy is None and task_policy is None:
         return qualify_route(route)
     stage = work.content.get('productionStage')
     if stage and any(a['status'] in {'RESERVED', 'UNKNOWN'} for a in stage['attempts']):
         raise ValueError('RECOVER_OR_REVIEW_BEFORE_ROUTE_CHANGE')
+    choice = choose_routes([route], policy=policy, task_policy=task_policy)
+    if not choice['selected']:
+        raise ValueError('NO_EXECUTABLE_CANDIDATE:' + str(choice['route_policy_resolution']))
     result = qualify_route(route)
+    result['route_policy_resolution'] = choice['route_policy_resolution']
     if not result['eligible']:
         raise ValueError('INCOMPLETE_OR_INELIGIBLE_PRODUCTION_ROUTE')
     if stage:
@@ -55,18 +84,20 @@ async def save_route(memory: MemoryProvider, work_id: str, raw: dict[str, Any]) 
         stage.setdefault('route_revisions', []).append({'previous_route': existing,
             'after_attempt': len(stage['attempts']), 'next_route_id': route.route_id})
         stage['production_route'] = raw
-    content = {**work.content, 'productionPolicy': {**work.content.get('productionPolicy', {}), 'routeRequired': True}, 'productionRoute': raw}
+    content = {**work.content, 'productionPolicy': {**work.content.get('productionPolicy', {}), 'routeRequired': True,
+               'videoRoutePolicyResolution': choice['route_policy_resolution']}, 'productionRoute': raw}
     if stage:
         content['productionStage'] = stage
     await memory.save_work(work.id, work.title, content, work.description)
     fresh = await memory.get_work(work.id)
-    if fresh.content.get('productionRoute') != raw:
+    if (fresh.content.get('productionRoute') != raw or
+            fresh.content.get('productionPolicy', {}).get('videoRoutePolicyResolution') != choice['route_policy_resolution']):
         raise ValueError('ROUTE_WRITE_NOT_VERIFIED')
     return result
 
 
 async def operate(memory: MemoryProvider, work_id: str, command: str,
-                  payload: dict[str, Any]) -> dict[str, Any]:
+                  payload: dict[str, Any], *, media: MediaProvider | None = None) -> dict[str, Any]:
     work = await memory.get_work(work_id)
     raw_route = work.content.get('productionRoute')
     if not raw_route:
@@ -74,6 +105,8 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
     route = ProductionRoute.model_validate(raw_route)
     if route.work_id != work.id:
         raise ValueError('ROUTE_WORK_MISMATCH')
+    if command in {'check-input', 'init-stage', 'add-frame', 'reserve', 'replan', 'retry-not-created'}:
+        await validate_route_direction_sources(memory, work, route)
     if command == 'check-input':
         duty = route_input_gate(route, payload['target_id'], payload['purpose'])
         if not work.content.get('productionStage'):
@@ -81,6 +114,23 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
         return {'duty': duty.model_dump(mode='json'), 'submissionAllowed': False,
                 'next': 'compile actual inputs and reserve the exact request'}
     original_stage = work.content.get('productionStage')
+    if command in {'reserve', 'retry-not-created', 'add-frame', 'replan'}:
+        from drama_plugin.visual.video_selection import Requirements
+        from drama_plugin.visual.reference_duties import validate_media_snapshot
+        frame = payload.get('frame')
+        if frame is None and original_stage:
+            target = payload.get('shot_id')
+            if command == 'retry-not-created':
+                target = next(a['shot_id'] for a in original_stage['attempts'] if a['attempt_id'] == payload['attempt_id'])
+            frame = original_stage['frames'].get(target)
+        if frame and frame.get('requirements', {}).get('frozen_creative', {}).get('creative_schema') == 'cinematic-shot-v1':
+            req = Requirements.model_validate(frame['requirements'])
+            if req.inputs and media is None:
+                raise ValueError('FORMAL_REFERENCE_REFRESH_REQUIRED')
+            for inp in req.inputs:
+                assert media is not None
+                fresh_media = await media.get_media(inp.media_id)
+                validate_media_snapshot(inp, fresh_media.model_dump(mode='json'), work_id=work_id)
     if command == 'init-stage':
         if original_stage is not None:
             raise ValueError('RESTORE_EXISTING_FORMAL_STAGE')

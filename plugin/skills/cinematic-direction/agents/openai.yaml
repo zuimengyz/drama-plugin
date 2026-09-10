@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cinematic Direction & Performance"
+  short_description: "Direct observable acting, camera and a timed Shot arc"
+  default_prompt: "Use $cinematic-direction to turn an approved Shot into inherited visual direction, observable acting and a frozen director timeline before video model selection."

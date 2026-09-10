@@ -5,6 +5,14 @@ description: Select a video model, input mode and execution path for an approved
 
 # Video Model Selection
 
+For new Shot authoring, freeze cinematic-direction's source-pinned
+`CinematicShotSpec` before selection. Consume its structured Execution Requirements,
+Reference Requirements and `CINEMATIC_DIRECTION_FROZEN` through the
+[director handoff](../../docs/cinematic-direction-contract.md). Narrative → director
+execution → frozen direction → this selection → input preparation → production is
+the freeze boundary. Existing adopted and archived routes retain their original
+identity; this is not permission to restage them or enlarge reference limits.
+
 Read `shot.get_shot`, `scene.get_scene`, `media.get_media` and `media.resolve_media` only when the approved context or stable input facts are missing. Keep alternatives in Agent Run Context. For an authorized persistent production task, save the reviewed route and input duties through existing Work open metadata; do not create route entities or a parallel Skill. Select after narrative, performance and sound requirements are settled, before paying for input images. Return the decision to the calling production workflow; selection itself never submits generation, imports Media or adopts a result.
 
 Freeze Work/Scene/Shot and video target, narrative duration, entry/exit state, actor/action ownership, camera, canonical dialogue rendition and speakers, required sound controls, prop/costume state, adjacent-shot continuity and reviewed input versions. Never shorten required acting, remove dialogue, exchange actions or add external speech to fit a cheaper candidate. An unresolved rendition or required voice control blocks that path only.
@@ -73,3 +81,22 @@ may spend the second video on a focused correction. UNKNOWN is not a retry trigg
 Model changes, technical recreation and content correction retain target identity,
 all call events and shared stage exposure. Stop at the task's global video/image
 limits; never count a multiple-generation workflow as one generation.
+
+## Execution contract reconciliation
+
+For cinematic-shot-v1 consume frozen direction, reference duties and source sound.
+An unfulfilled REQUIRED reference is ineligible even for LIMITED_TRIAL. A route
+may plan future inputs; a materialized request cannot claim they already exist.
+Preparation remains capped at three references; video uses qualified zero-image
+text mode, single image/reference or a same-target endpoint pair. Extra exposed
+multimodal slots do not expand project authorization.
+
+The Host's single semantic projection binds direction, canonical dialogue,
+reference package, qualification, schema/template, duration, resolution and audio
+policy to the existing request seal. Requalify on drift. Official interface plus
+offline execution is not visual quality: UNKNOWN quality remains LIMITED_TRIAL,
+and paid eligibility still requires complete current cost. Partial price metadata
+is not a complete zero cost. Offline seals cannot reserve/submit; real production
+keeps the formal Work stage, budget and billing history. No second selector.
+
+See [the execution reconciliation contract](../../docs/video-execution-reconciliation.md) for current request sealing and reference/coverage checks.

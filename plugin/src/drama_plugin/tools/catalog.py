@@ -70,10 +70,6 @@ def build_tool_registry(memory: MemoryProvider, asset: AssetProvider, research: 
             raise ContractValidationError(
                 "Single-image video requires exactly one reference media input"
             )
-        if len(prompt) > 2000:
-            raise ContractValidationError(
-                "Video motion prompt exceeds the 2000-character contract limit"
-            )
         result = await production.generate_video(
             prompt,
             start_frame_media_id,

@@ -104,8 +104,11 @@ def _route_frame_gate(state: dict[str, Any], frame: dict[str, Any]) -> None:
             raise ValueError('VIDEO_CREATIVE_OR_FORMAL_SHOT_CHANGED')
         if frame['candidate']['candidate_id'] != route.candidate.candidate_id:
             raise ValueError('MODEL_SWITCH_REQUIRES_ROUTE_REPLAN')
-        for key in ('model', 'variant', 'mode', 'template', 'graph_hash', 'adapter_fingerprint', 'parameters'):
-            if frame['candidate'][key] != route.candidate.model_dump(mode='json')[key]:
+        directions = route.requirements.get('cinematic_directions', {})
+        if directions and frame['requirements']['frozen_creative'].get('cinematic_direction') != directions.get(target):
+            raise ValueError('DIRECTOR_CHANGE_REQUIRES_ROUTE_REPLAN')
+        for key in ('model', 'variant', 'mode', 'template', 'graph_hash', 'adapter_fingerprint', 'parameters', 'capability'):
+            if frame['candidate'].get(key, {}) != route.candidate.model_dump(mode='json').get(key, {}):
                 raise ValueError('VIDEO_REQUEST_DIFFERS_FROM_ROUTE:' + key)
         if target != route.video_targets[0] and not any(
                 a.get('media_kind') == 'VIDEO' and a['shot_id'] == route.video_targets[0]
@@ -195,6 +198,8 @@ def _stage_gate(state: dict[str, Any], frame: dict[str, Any], request: dict[str,
     if video:
         # Quote may include margin, but cannot undercut the recorded paid path.
         costs = frame['candidate']['cost']['components']
+        if any(v is None for v in costs.values()):
+            raise ValueError('COMPLETE_COST_REQUIRED_BEFORE_RESERVATION')
         minimum = (state['production_route']['video_request_credits']
                    if 'production_route' in state else
                    sum(v for k, v in costs.items() if k not in {'correction', 'new_inputs', 'existing_input'}))
@@ -541,7 +546,18 @@ def replan(state: dict[str, Any], *, frame: dict[str, Any], reason: str,
                 if old['requirements'][key] != frame['requirements'][key]:
                     raise ValueError('CREATIVE_REQUIREMENTS_CHANGED')
             def creative(f: dict[str, Any]) -> dict[str, Any]:
-                return {k: v for k, v in f['requirements']['frozen_creative'].items() if k != 'motion_prompt'}
+                material = dict(f['requirements']['frozen_creative'])
+                if 'cinematic_direction' in material:
+                    from drama_plugin.visual.cinematic import verify_frozen
+                    spec = verify_frozen(material['cinematic_direction'])
+                    # Re-plan director execution within the same canonical Shot;
+                    # the route gate above requires the new qualified artifact.
+                    for key in ('motion_prompt','cinematic_direction','execution_requirements','reference_requirements'):
+                        material.pop(key, None)
+                    material['director_source'] = (spec.work_id, spec.scene_id, spec.shot_id,
+                        spec.source_fingerprint, spec.creative_revision, spec.duration_seconds)
+                    return material
+                return {k: v for k, v in material.items() if k != 'motion_prompt'}
             if creative(old) != creative(frame):
                 raise ValueError('CREATIVE_REQUIREMENTS_CHANGED')
         else:
@@ -660,6 +676,10 @@ def main() -> None:
         else:
             state = json.loads(args.state.read_text())
             check_campaign(state)
+            if args.command in {'reserve', 'retry-not-created'} and any(
+                    f.get('requirements', {}).get('frozen_creative', {}).get('creative_schema') == 'cinematic-shot-v1'
+                    for f in state.get('frames', {}).values()):
+                raise ValueError('USE_FORMAL_ROUTE_FOR_CANON_AND_REFERENCE_REFRESH')
             if 'stage' in state:
                 anchor = args.state.parent / ('.visual-stage-' + sha256_canonical(state['stage']['id']) + '.json')
                 if json.loads(anchor.read_text())['state_path'] != str(args.state.resolve()):

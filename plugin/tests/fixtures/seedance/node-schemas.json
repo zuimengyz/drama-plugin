@@ -1,0 +1,698 @@
+{
+  "ByteDance2TextToVideoNode": {
+    "name": "ByteDance2TextToVideoNode",
+    "display_name": "ByteDance Seedance 2.5 Text to Video",
+    "description": "Generate video using Seedance 2.5 or 2.0 models based on a text prompt.",
+    "category": "partner/video/ByteDance",
+    "pack": "core",
+    "inputs": {
+      "required": [
+        "COMFY_DYNAMICCOMBO_V3",
+        "STRING",
+        "COMBO",
+        "COMBO",
+        "INT",
+        "BOOLEAN",
+        "COMBO",
+        "INT",
+        "BOOLEAN"
+      ]
+    },
+    "input_details": [
+      {
+        "name": "model",
+        "type": "COMFY_DYNAMICCOMBO_V3",
+        "required": true,
+        "dynamic_combo": true,
+        "options": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "tooltip": "Seedance 2.5 for the newest model, videos up to 30 seconds and mp4/mov output; Seedance 2.0 for maximum quality and 4k; Fast for speed optimization; Mini for the fastest, lowest-cost generation.",
+        "hint": "Dynamic combo: pick one `options` value for `model`, then send each conditional sub-field below using its full dotted name (prefixed with `model.`, e.g. `model.<sub_field>`). Auto-grow list slots nest one level deeper (e.g. `model.<list>.<slot_1>`). Sending these fields flat (without the prefix) fails with required_input_missing."
+      },
+      {
+        "name": "model.prompt",
+        "type": "STRING",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "default": "",
+        "tooltip": "Text prompt for video generation. Put spoken lines in double quotes to steer the generated dialogue."
+      },
+      {
+        "name": "model.resolution",
+        "type": "COMBO",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "default": "720p",
+        "options": [
+          "480p",
+          "720p",
+          "1080p",
+          "4k"
+        ],
+        "tooltip": "Resolution of the output video."
+      },
+      {
+        "name": "model.ratio",
+        "type": "COMBO",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "default": "16:9",
+        "options": [
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16",
+          "21:9",
+          "adaptive"
+        ],
+        "tooltip": "Aspect ratio of the output video."
+      },
+      {
+        "name": "model.duration",
+        "type": "INT",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "default": 5,
+        "min": 4,
+        "max": 30,
+        "tooltip": "Duration of the output video in seconds (4-30)."
+      },
+      {
+        "name": "model.generate_audio",
+        "type": "BOOLEAN",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "default": true,
+        "tooltip": "Enable audio generation for the output video."
+      },
+      {
+        "name": "model.output_format",
+        "type": "COMBO",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5"
+        ],
+        "default": "mp4",
+        "options": [
+          "mp4"
+        ],
+        "tooltip": "Container format of the output video."
+      },
+      {
+        "name": "seed",
+        "type": "INT",
+        "required": true,
+        "default": 0,
+        "min": 0,
+        "max": 2147483647,
+        "tooltip": "Seed controls whether the node should re-run; results are non-deterministic regardless of seed."
+      },
+      {
+        "name": "watermark",
+        "type": "BOOLEAN",
+        "required": true,
+        "default": false,
+        "tooltip": "Whether to add a watermark to the video."
+      }
+    ],
+    "outputs": [
+      "VIDEO"
+    ],
+    "api_node": true,
+    "output_node": false,
+    "deprecated": false
+  },
+  "ByteDance2FirstLastFrameNode": {
+    "name": "ByteDance2FirstLastFrameNode",
+    "display_name": "ByteDance Seedance 2.5 First-Last-Frame to Video",
+    "description": "Generate video using Seedance 2.5 or 2.0 from a first frame image and optional last frame image.",
+    "category": "partner/video/ByteDance",
+    "pack": "core",
+    "inputs": {
+      "required": [
+        "COMFY_DYNAMICCOMBO_V3",
+        "STRING",
+        "COMBO",
+        "INT",
+        "BOOLEAN",
+        "COMBO",
+        "COMBO",
+        "INT",
+        "BOOLEAN"
+      ],
+      "optional": [
+        "IMAGE",
+        "IMAGE",
+        "STRING",
+        "STRING"
+      ]
+    },
+    "input_details": [
+      {
+        "name": "model",
+        "type": "COMFY_DYNAMICCOMBO_V3",
+        "required": true,
+        "dynamic_combo": true,
+        "options": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "tooltip": "Seedance 2.5 for the newest model, videos up to 30 seconds and mp4/mov output; Seedance 2.0 for maximum quality and 4k; Fast for speed optimization; Mini for the fastest, lowest-cost generation.",
+        "hint": "Dynamic combo: pick one `options` value for `model`, then send each conditional sub-field below using its full dotted name (prefixed with `model.`, e.g. `model.<sub_field>`). Auto-grow list slots nest one level deeper (e.g. `model.<list>.<slot_1>`). Sending these fields flat (without the prefix) fails with required_input_missing."
+      },
+      {
+        "name": "model.prompt",
+        "type": "STRING",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "default": "",
+        "tooltip": "Text prompt for video generation. Put spoken lines in double quotes to steer the generated dialogue."
+      },
+      {
+        "name": "model.resolution",
+        "type": "COMBO",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "default": "720p",
+        "options": [
+          "480p",
+          "720p",
+          "1080p",
+          "4k"
+        ],
+        "tooltip": "Resolution of the output video."
+      },
+      {
+        "name": "model.duration",
+        "type": "INT",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "default": 5,
+        "min": 4,
+        "max": 30,
+        "tooltip": "Duration of the output video in seconds (4-30)."
+      },
+      {
+        "name": "model.generate_audio",
+        "type": "BOOLEAN",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "default": true,
+        "tooltip": "Enable audio generation for the output video."
+      },
+      {
+        "name": "model.output_format",
+        "type": "COMBO",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5"
+        ],
+        "default": "mp4",
+        "options": [
+          "mp4"
+        ],
+        "tooltip": "Container format of the output video."
+      },
+      {
+        "name": "model.ratio",
+        "type": "COMBO",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "default": "adaptive",
+        "options": [
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16",
+          "21:9",
+          "adaptive"
+        ],
+        "tooltip": "Aspect ratio of the output video."
+      },
+      {
+        "name": "seed",
+        "type": "INT",
+        "required": true,
+        "default": 0,
+        "min": 0,
+        "max": 2147483647,
+        "tooltip": "Seed controls whether the node should re-run; results are non-deterministic regardless of seed."
+      },
+      {
+        "name": "watermark",
+        "type": "BOOLEAN",
+        "required": true,
+        "default": false,
+        "tooltip": "Whether to add a watermark to the video."
+      },
+      {
+        "name": "first_frame",
+        "type": "IMAGE",
+        "required": false,
+        "tooltip": "First frame image for the video."
+      },
+      {
+        "name": "last_frame",
+        "type": "IMAGE",
+        "required": false,
+        "tooltip": "Last frame image for the video."
+      },
+      {
+        "name": "first_frame_asset_id",
+        "type": "STRING",
+        "required": false,
+        "default": "",
+        "tooltip": "Seedance asset_id to use as the first frame. Mutually exclusive with the first_frame image input."
+      },
+      {
+        "name": "last_frame_asset_id",
+        "type": "STRING",
+        "required": false,
+        "default": "",
+        "tooltip": "Seedance asset_id to use as the last frame. Mutually exclusive with the last_frame image input."
+      }
+    ],
+    "outputs": [
+      "VIDEO"
+    ],
+    "api_node": true,
+    "output_node": false,
+    "deprecated": false
+  },
+  "ByteDance2ReferenceNodeV2": {
+    "name": "ByteDance2ReferenceNodeV2",
+    "display_name": "ByteDance Seedance 2.5 Reference to Video",
+    "description": "Generate, edit, or extend video using Seedance 2.5 or 2.0 with reference images, videos, and audio. Supports multimodal reference, video editing, and video extension.",
+    "category": "partner/video/ByteDance",
+    "pack": "core",
+    "inputs": {
+      "required": [
+        "COMFY_DYNAMICCOMBO_V3",
+        "STRING",
+        "COMBO",
+        "COMBO",
+        "INT",
+        "BOOLEAN",
+        "COMBO",
+        "COMBO",
+        "IMAGE",
+        "VIDEO",
+        "AUDIO",
+        "STRING",
+        "BOOLEAN",
+        "BOOLEAN",
+        "INT",
+        "BOOLEAN"
+      ]
+    },
+    "input_details": [
+      {
+        "name": "model",
+        "type": "COMFY_DYNAMICCOMBO_V3",
+        "required": true,
+        "dynamic_combo": true,
+        "options": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "tooltip": "Seedance 2.5 for the newest model, videos up to 30 seconds and mp4/mov output; Seedance 2.0 for maximum quality and 4k; Fast for speed optimization; Mini for the fastest, lowest-cost generation.",
+        "hint": "Dynamic combo: pick one `options` value for `model`, then send each conditional sub-field below using its full dotted name (prefixed with `model.`, e.g. `model.<sub_field>`). Auto-grow list slots nest one level deeper (e.g. `model.<list>.<slot_1>`). Sending these fields flat (without the prefix) fails with required_input_missing."
+      },
+      {
+        "name": "model.prompt",
+        "type": "STRING",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "default": "",
+        "tooltip": "Text prompt for video generation. Put spoken lines in double quotes to steer the generated dialogue."
+      },
+      {
+        "name": "model.resolution",
+        "type": "COMBO",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "default": "720p",
+        "options": [
+          "480p",
+          "720p",
+          "1080p",
+          "4k"
+        ],
+        "tooltip": "Resolution of the output video."
+      },
+      {
+        "name": "model.ratio",
+        "type": "COMBO",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "default": "16:9",
+        "options": [
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16",
+          "21:9",
+          "adaptive"
+        ],
+        "tooltip": "Aspect ratio of the output video."
+      },
+      {
+        "name": "model.duration",
+        "type": "INT",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "default": 5,
+        "min": 4,
+        "max": 30,
+        "tooltip": "Duration of the output video in seconds (4-30)."
+      },
+      {
+        "name": "model.generate_audio",
+        "type": "BOOLEAN",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "default": true,
+        "tooltip": "Enable audio generation for the output video."
+      },
+      {
+        "name": "model.task_type",
+        "type": "COMBO",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5"
+        ],
+        "default": "auto",
+        "options": [
+          "auto",
+          "reference",
+          "edit",
+          "extend"
+        ],
+        "tooltip": "What to do with the reference media. Every value except auto is validated when the task is submitted, so mismatched settings fail before generation starts. auto: the model infers the task from the prompt and inputs, and settings that conflict with its reading fail only after generation has started. reference: generate a new video guided by the reference images, videos, and audio. edit: change a connected reference video (add, remove, replace); the output keeps the source clip's own length and aspect ratio, and the duration and ratio widgets are ignored. extend: continue a connected reference video forward or backward; the prompt should say 'extend forward', 'extend backward', or 'continue', the aspect ratio follows the source clip, and the output contains only the newly generated segment of the duration you set, not the source clip."
+      },
+      {
+        "name": "model.output_format",
+        "type": "COMBO",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5"
+        ],
+        "default": "mp4",
+        "options": [
+          "mp4"
+        ],
+        "tooltip": "Container format of the output video."
+      },
+      {
+        "name": "model.reference_images.image_1",
+        "type": "IMAGE",
+        "required": false,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "auto_grow_slots": [
+          "model.reference_images.image_1",
+          "model.reference_images.image_2",
+          "model.reference_images.image_3",
+          "model.reference_images.image_4",
+          "model.reference_images.image_5",
+          "model.reference_images.image_6",
+          "model.reference_images.image_7",
+          "model.reference_images.image_8",
+          "model.reference_images.image_9",
+          "model.reference_images.image_10",
+          "model.reference_images.image_11",
+          "model.reference_images.image_12",
+          "model.reference_images.image_13",
+          "model.reference_images.image_14",
+          "model.reference_images.image_15",
+          "model.reference_images.image_16",
+          "model.reference_images.image_17",
+          "model.reference_images.image_18",
+          "model.reference_images.image_19",
+          "model.reference_images.image_20",
+          "model.reference_images.image_21",
+          "model.reference_images.image_22",
+          "model.reference_images.image_23",
+          "model.reference_images.image_24",
+          "model.reference_images.image_25",
+          "model.reference_images.image_26",
+          "model.reference_images.image_27",
+          "model.reference_images.image_28",
+          "model.reference_images.image_29",
+          "model.reference_images.image_30"
+        ]
+      },
+      {
+        "name": "model.reference_videos.video_1",
+        "type": "VIDEO",
+        "required": false,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "auto_grow_slots": [
+          "model.reference_videos.video_1",
+          "model.reference_videos.video_2",
+          "model.reference_videos.video_3",
+          "model.reference_videos.video_4",
+          "model.reference_videos.video_5",
+          "model.reference_videos.video_6",
+          "model.reference_videos.video_7",
+          "model.reference_videos.video_8",
+          "model.reference_videos.video_9",
+          "model.reference_videos.video_10"
+        ]
+      },
+      {
+        "name": "model.reference_audios.audio_1",
+        "type": "AUDIO",
+        "required": false,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "auto_grow_slots": [
+          "model.reference_audios.audio_1",
+          "model.reference_audios.audio_2",
+          "model.reference_audios.audio_3",
+          "model.reference_audios.audio_4",
+          "model.reference_audios.audio_5",
+          "model.reference_audios.audio_6",
+          "model.reference_audios.audio_7",
+          "model.reference_audios.audio_8",
+          "model.reference_audios.audio_9",
+          "model.reference_audios.audio_10"
+        ]
+      },
+      {
+        "name": "model.reference_assets.asset_1",
+        "type": "STRING",
+        "required": false,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "auto_grow_slots": [
+          "model.reference_assets.asset_1",
+          "model.reference_assets.asset_2",
+          "model.reference_assets.asset_3",
+          "model.reference_assets.asset_4",
+          "model.reference_assets.asset_5",
+          "model.reference_assets.asset_6",
+          "model.reference_assets.asset_7",
+          "model.reference_assets.asset_8",
+          "model.reference_assets.asset_9",
+          "model.reference_assets.asset_10",
+          "model.reference_assets.asset_11",
+          "model.reference_assets.asset_12",
+          "model.reference_assets.asset_13",
+          "model.reference_assets.asset_14",
+          "model.reference_assets.asset_15",
+          "model.reference_assets.asset_16",
+          "model.reference_assets.asset_17",
+          "model.reference_assets.asset_18",
+          "model.reference_assets.asset_19",
+          "model.reference_assets.asset_20",
+          "model.reference_assets.asset_21",
+          "model.reference_assets.asset_22",
+          "model.reference_assets.asset_23",
+          "model.reference_assets.asset_24",
+          "model.reference_assets.asset_25",
+          "model.reference_assets.asset_26",
+          "model.reference_assets.asset_27",
+          "model.reference_assets.asset_28",
+          "model.reference_assets.asset_29",
+          "model.reference_assets.asset_30"
+        ]
+      },
+      {
+        "name": "model.auto_downscale",
+        "type": "BOOLEAN",
+        "required": false,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "default": true,
+        "tooltip": "Automatically downscale reference videos that exceed the model's pixel budget for the selected resolution. Aspect ratio is preserved; videos already within limits are untouched."
+      },
+      {
+        "name": "model.auto_upscale",
+        "type": "BOOLEAN",
+        "required": false,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "default": false,
+        "tooltip": "Automatically upscale reference videos that are below the model's minimum pixel count for the selected resolution. Aspect ratio is preserved; videos already meeting the minimum are untouched. Note: upscaling a low-resolution source does not add real detail and may produce lower-quality generations."
+      },
+      {
+        "name": "seed",
+        "type": "INT",
+        "required": true,
+        "default": 0,
+        "min": 0,
+        "max": 2147483647,
+        "tooltip": "Seed controls whether the node should re-run; results are non-deterministic regardless of seed."
+      },
+      {
+        "name": "watermark",
+        "type": "BOOLEAN",
+        "required": true,
+        "default": false,
+        "tooltip": "Whether to add a watermark to the video."
+      }
+    ],
+    "outputs": [
+      "VIDEO"
+    ],
+    "api_node": true,
+    "output_node": false,
+    "deprecated": false
+  }
+}

@@ -4,6 +4,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, PrivateAttr, field_validator
 
+from drama_plugin.config.video_route import VideoRoutePolicy
+
 
 class ServiceConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -72,6 +74,7 @@ class ServicesConfig(BaseModel):
 class DramaPluginConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    video_route_policy: VideoRoutePolicy = Field(default_factory=VideoRoutePolicy)
     rhythm_speed: Literal["medium", "fast"] = "medium"
     _rhythm_source: str = PrivateAttr(default="default:medium")
 

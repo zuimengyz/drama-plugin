@@ -87,7 +87,7 @@ def test_representative_output_contracts() -> None:
 
 
 @pytest.mark.asyncio
-async def test_video_generation_accepts_only_fixed_input_modes_and_bounded_prompt(monkeypatch) -> None:
+async def test_video_generation_accepts_fixed_input_modes_and_untruncated_prompt(monkeypatch) -> None:
     # This test isolates input shape. Actual completion is tested with real fixture
     # bytes and object failures in test_media_delivery.py.
     async def simulated_completion(*args, **kwargs):
@@ -121,8 +121,13 @@ async def test_video_generation_accepts_only_fixed_input_modes_and_bounded_promp
         with pytest.raises(ContractValidationError):
             await tool.handler(prompt="subtle motion", **arguments)
 
-    with pytest.raises(ContractValidationError):
-        await tool.handler(prompt="x" * 2001, reference_media_ids=["media-start"])
+    # V2-12 removes the obsolete cross-provider cap; mocked provider preserves all bytes.
+    long_prompt = "x" * 2001 + "END"
+    output = await tool.handler(prompt=long_prompt, reference_media_ids=["media-start"])
+    assert output.content["prompt"] == long_prompt
+    with pytest.raises(ContractValidationError, match="FORMAL_ROUTE_FOR_CINEMATIC"):
+        await tool.handler(prompt=long_prompt, reference_media_ids=["media-start"],
+                           parameters={"creative_schema":"cinematic-shot-v1"})
 
 
 def test_persistent_memory_and_production_contracts_are_minimal() -> None:

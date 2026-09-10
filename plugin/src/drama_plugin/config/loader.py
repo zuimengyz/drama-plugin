@@ -22,6 +22,13 @@ def _environment_overrides(environment: Mapping[str, str]) -> dict[str, Any]:
         if rhythm_value not in {"medium", "fast"}:
             raise ConfigurationError("Invalid rhythm_speed in environment: expected medium or fast")
         overrides["rhythm_speed"] = rhythm_value
+    route = {field: environment[key].strip() for field, key in {
+        "mode": "DRAMA_PLUGIN_VIDEO_ROUTE_MODE",
+        "preferred_model": "DRAMA_PLUGIN_VIDEO_MODEL_PREFERRED",
+        "fallbacks": "DRAMA_PLUGIN_VIDEO_MODEL_FALLBACKS",
+    }.items() if key in environment and environment[key].strip()}
+    if route:
+        overrides["video_route_policy"] = {**route, "source": "PLUGIN_ENV_DEFAULT"}
     providers: dict[str, dict[str, str]] = {}
     services: dict[str, dict[str, Any]] = {}
     for service in _SERVICE_NAMES:
@@ -89,6 +96,8 @@ def load_config(
         payload = raw
     source_environment = environment if environment is not None else os.environ
     merged = _deep_merge(payload, _environment_overrides(source_environment))
+    if isinstance(merged.get("video_route_policy"), dict):
+        merged["video_route_policy"] = {**merged["video_route_policy"], "source": "PLUGIN_ENV_DEFAULT"}
     try:
         config = DramaPluginConfig.model_validate(merged)
         config._rhythm_source = ("environment:rhythm_speed" if "rhythm_speed" in source_environment else
@@ -97,4 +106,7 @@ def load_config(
     except ValidationError as exc:
         if any(e["loc"] and e["loc"][0] == "rhythm_speed" for e in exc.errors()):
             raise ConfigurationError(f"Invalid rhythm_speed in configuration {path}: expected medium or fast") from exc
+        route_errors = [e["msg"] for e in exc.errors() if e["loc"] and e["loc"][0] == "video_route_policy"]
+        if route_errors:
+            raise ConfigurationError("Invalid video route policy: " + "; ".join(route_errors)) from exc
         raise ConfigurationError("Invalid Drama Plugin configuration") from exc

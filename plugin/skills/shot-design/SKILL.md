@@ -5,6 +5,12 @@ description: Design or revise shots for a historical-drama Scene. Use when choos
 
 # Shot Design
 
+After the reviewed narrative Shot exists, hand its source-pinned action, opening,
+ending, duration, exact dialogue, rhythm and cinematic intent to cinematic-direction
+for physical acting and camera execution before video model selection. Follow the
+[director IR boundary](../../docs/cinematic-direction-contract.md); do not choose
+a model or generate media from this Shot-authoring step.
+
 Consume the unified `creativeRhythm` from the actual creation context before planning, even when source text is already supplied. Follow [narrative rhythm](../../docs/narrative-rhythm.md); Skills never read env directly. Pin this profile to the creative revision; refresh/resume keeps it, while a new revision reads current configuration.
 
 Express an approved Scene through minimal necessary, narratively motivated, continuous, provider-agnostic coverage. Plan the group before individual Shots; every Shot must declare Narrative Input State, Required Transition, and Narrative Output State in addition to visual entry/exit state. Do not redesign the Scene or produce media.

@@ -144,9 +144,12 @@ def compile_video_motion_prompt(
     shot_action: str,
     camera_design: str,
     speaker_labels: Mapping[str, str] | None = None,
+    creative_schema: str = "legacy",
 ) -> str:
     """Combine separate performance and Shot-owned camera facts for materialization."""
 
+    if creative_schema == "cinematic-shot-v1":
+        raise VisualProjectionError("CINEMATIC_SPEC_IS_SINGLE_EXECUTION_AUTHORITY")
     if not shot_action.strip() or not camera_design.strip():
         raise VisualProjectionError("Shot action and camera design are required")
     if brief.fingerprint != fingerprint_visual_projection(brief):
@@ -173,8 +176,6 @@ def compile_video_motion_prompt(
         if brief.execution_timing_fingerprint:
             boundaries = "; ".join(brief.performance_boundaries)
             prompt += f" Boundaries: {boundaries}."
-        if len(prompt) > 2000:
-            raise VisualProjectionError("compiled video motion prompt exceeds 2000 characters")
         return prompt
     performance = "; ".join(
         (
@@ -195,8 +196,6 @@ def compile_video_motion_prompt(
         "Preserve the source image identities, costume, environment, props, and composition; "
         "one continuous shot; no new characters; no identity or costume changes."
     )
-    if len(prompt) > 2000:
-        raise VisualProjectionError("compiled video motion prompt exceeds 2000 characters")
     return prompt
 
 

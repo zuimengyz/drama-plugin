@@ -67,6 +67,15 @@ The Plugin does not consume `DB_*`, `MYSQL_*`, `MINIO_*`, `S3_*`, or
 `DRAMA_MEDIA_STORAGE_*`. Voice and Media bytes are downloaded only from a URL
 owned by the configured Drama Service HTTP origin.
 
+## Video route preference (Plugin only)
+
+`DRAMA_PLUGIN_VIDEO_ROUTE_MODE`, `DRAMA_PLUGIN_VIDEO_MODEL_PREFERRED` and
+`DRAMA_PLUGIN_VIDEO_MODEL_FALLBACKS` are non-secret Plugin preference keys.
+The existing shell loader exports them; only Plugin Config parses them.
+MCP Host consumes typed config; Drama Service never reads these keys.
+See [route contract and examples](video-route-policy.md). No real external env is
+changed by adding this support.
+
 ## Drama Service
 
 | Variable | Secret | Purpose |

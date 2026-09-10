@@ -62,14 +62,14 @@ in a repair request. Preserve the reference plan in targeted corrections.
 
 ## Video input and motion contract
 
-Use one fixed input mode per video target:
+Use one qualified fixed input mode per video target. TEXT_TO_VIDEO (zero image inputs) is supported through the inspected Host route; the legacy general production tool below retains its existing image modes:
 
 - **Single image**: exactly one stable source Media in `reference_media_ids`; no start or end frame fields.
 - **Start-end**: exactly one `start_frame_media_id` and one `end_frame_media_id` belonging to the same Shot/video target; no arbitrary reference list.
 
 Reject zero or multiple single-image inputs, partial start-end pairs, mixed modes, and cross-Shot images presented as one frame pair. Do not create new frame assets only to satisfy a test surface.
 
-Compile a compact motion prompt from Shot semantics. Retain only subject/body motion, facial micro-expression, camera motion, environment motion, speed/intensity, critical continuity, and forbidden semantic changes. Keep it at or below 2,000 characters and compact by meaning rather than truncating blindly.
+Compile a compact motion prompt from Shot semantics. Retain only subject/body motion, facial micro-expression, camera motion, environment motion, speed/intensity, critical continuity, and forbidden semantic changes. Use the schema-authoritative semantic projection and verified provider-specific transport limits. No shared character cap and no silent truncation. Preserve all execution-critical direction; compact governance text only when meaning is retained.
 
 For video review, inspect the dynamic process using playback or representative frames across the clip. Check identity, age/hair/costume, motion and anatomy, Shot semantic preservation, camera compliance, Scene stability, lighting, and prop state. A completed job or readable file is not content PASS. Let the Host replan or target a motion-prompt revision after a material content failure; a revision increments `generationCount`, while technical retry never does.
 

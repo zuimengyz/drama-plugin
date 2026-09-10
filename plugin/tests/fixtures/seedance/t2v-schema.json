@@ -1,0 +1,31 @@
+{
+  "id": "api_seedance2_5_t2v",
+  "slots": [],
+  "note": "This template does not expose its inputs through a subgraph, so it has no slot_overrides addresses — `slots` is empty for that reason, not because the template is uneditable. Override it with run_template's `input_overrides` instead, keyed by the node ids in `nodes` below: {\"<id>\": {\"<input_name>\": value}}. `nodes` is the executed graph run_template submits, so these ids and input names are exactly the ones input_overrides resolves against. Inputs wired from another node are omitted — setting one would replace the link with a constant; use get_template + submit_workflow for that kind of structural edit.",
+  "nodes": [
+    {
+      "id": "2",
+      "class_type": "SaveVideo",
+      "inputs": {
+        "filename_prefix": "video/Seedance2.5_t2v",
+        "format": "auto",
+        "format.codec": "auto"
+      }
+    },
+    {
+      "id": "9",
+      "class_type": "ByteDance2TextToVideoNode",
+      "inputs": {
+        "model": "Seedance 2.5",
+        "model.prompt": "Classic western comedy, live-action, spaghetti western look, golden hour desert. Two bank robbers stumble out of a bank with sacks of cash, only to find a llama sheriff in a star and cowboy hat blocking their way. The llama tips its hat; the robbers drop the sacks and raise their hands. Slow motion, Morricone style guitar music, no black frames, no text overlays.",
+        "model.resolution": "720p",
+        "model.ratio": "16:9",
+        "model.duration": 5,
+        "model.generate_audio": true,
+        "model.output_format": "mp4",
+        "seed": 0,
+        "watermark": false
+      }
+    }
+  ]
+}

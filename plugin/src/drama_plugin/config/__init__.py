@@ -1,3 +1,4 @@
+from drama_plugin.config.video_route import VideoRoutePolicy, RouteMode, PolicySource
 from drama_plugin.config.loader import load_config
 from drama_plugin.config.models import (
     ContextProviderConfig,
@@ -16,4 +17,5 @@ __all__ = [
     "ServiceConfig",
     "ServicesConfig",
     "load_config",
+    "VideoRoutePolicy", "RouteMode", "PolicySource",
 ]

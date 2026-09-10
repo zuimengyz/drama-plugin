@@ -9,7 +9,7 @@ from drama_plugin.exceptions import SkillLoadError
 from drama_plugin.skills import SkillRegistry
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED = {"cinematic-finishing", "video-model-selection", "cinematic-screenplay-incubation", "historical-research", "work-creation", "script-adaptation", "episode-development", "scene-development", "dramatic-performance-direction", "shot-design", "asset-resolution", "shot-production", "audio-production"}
+EXPECTED = {"cinematic-direction", "cinematic-finishing", "video-model-selection", "cinematic-screenplay-incubation", "historical-research", "work-creation", "script-adaptation", "episode-development", "scene-development", "dramatic-performance-direction", "shot-design", "asset-resolution", "shot-production", "audio-production"}
 CREATIVE = {
     "work-creation": ("work.create_work", "work.save_work", ("historical_spine_complete", "fact_attribution_valid", "protagonist_scope_alignment", "structure_covers_spine")),
     "script-adaptation": ("script.create_script", "script.save_script", ("historical spine", "fact attribution", "episode architecture", "climax")),
@@ -617,11 +617,14 @@ def test_shot_production_video_contract_covers_motion_review_and_idempotency() -
         "exactly one stable source Media",
         "exactly one `start_frame_media_id` and one `end_frame_media_id`",
         "same Shot/video target",
-        "2,000 characters",
+        "No shared character cap and no silent truncation",
         "representative frames across the clip",
         "technical retry never does",
     ):
         assert phrase in capability
+
+    # V2-12 explicitly replaces this former global policy, while keeping input/retry checks.
+    assert "Keep it at or below 2,000 characters" not in capability
 
 
 def test_visual_provider_retry_policy_fixture_covers_nine_required_decisions() -> None:

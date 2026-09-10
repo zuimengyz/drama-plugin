@@ -1,0 +1,49 @@
+{
+  "id": "api_seedance2_5_flf2v",
+  "slots": [],
+  "note": "This template does not expose its inputs through a subgraph, so it has no slot_overrides addresses — `slots` is empty for that reason, not because the template is uneditable. Override it with run_template's `input_overrides` instead, keyed by the node ids in `nodes` below: {\"<id>\": {\"<input_name>\": value}}. `nodes` is the executed graph run_template submits, so these ids and input names are exactly the ones input_overrides resolves against. Inputs wired from another node are omitted — setting one would replace the link with a constant; use get_template + submit_workflow for that kind of structural edit. Some values below are not shown verbatim: an entry with `values_truncated` lists the input names whose string value is a clipped prefix, and `inputs_truncated` means inputs were left out entirely (too many, or a value too large to render). Do not echo a clipped value back as an override — read the full value from get_template.",
+  "nodes": [
+    {
+      "id": "16",
+      "class_type": "SaveVideo",
+      "inputs": {
+        "filename_prefix": "video/Seedance2.5_flf2v",
+        "format": "auto",
+        "format.codec": "auto"
+      }
+    },
+    {
+      "id": "38",
+      "class_type": "ByteDance2FirstLastFrameNode",
+      "inputs": {
+        "model": "Seedance 2.5",
+        "model.prompt": "The input images are the first and last frames: @image1 is the wide pool view before the activity starts, @image2 is the final top-down view. Smooth cinematic transition, 5 seconds. [0-1.5s] Starting from the first frame, the camera pushes in from the wide view toward the quiet pool, people standing around the edges, activity not yet started. [1.5-3.5s] Swimmers begin jumping into the pool one after another, splashes erupting, the crowd getting excited and lively, many people in swimsuits leaping in from a…",
+        "model.resolution": "720p",
+        "model.duration": 5,
+        "model.generate_audio": true,
+        "model.output_format": "mp4",
+        "seed": 0,
+        "watermark": false,
+        "first_frame_asset_id": "",
+        "last_frame_asset_id": ""
+      },
+      "values_truncated": [
+        "model.prompt"
+      ]
+    },
+    {
+      "id": "40",
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "pool_end_frame.png"
+      }
+    },
+    {
+      "id": "41",
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "pool_start_frame.png"
+      }
+    }
+  ]
+}

@@ -172,7 +172,7 @@ def test_budget_unsettled_restart_and_replan(tmp_path):
     with pytest.raises(ValueError,match='NEEDS_OUTCOME'):reserve(s)
     a=s['attempts'][0];complete(s,a,tmp_path);p.record_review(s,review(s,a,fail=True))
     d=deepcopy(s['frames']['S1']);d['candidate']['parameters']['seed']=43;d['request']['input_overrides']['2']['seed']=43
-    d['request_fingerprint']=fp(d['request']);d['fingerprint']=fp({k:v for k,v in d.items() if k!='fingerprint'})
+    d=seal_decision(Requirements.model_validate(d['requirements']), Candidate.model_validate(d['candidate']), d['request'], stage_id=d['stage_id'], rationale=d['rationale'], comparisons=d['comparisons'], fallback=d['fallback'], host_adapter=d.get('host_adapter'))
     p.replan(s,frame=d,reason='OFFLINE seed change after missing lift, same creative requirements')
     with pytest.raises(ValueError,match='BUDGET'):reserve(s)
     assert s['attempts'][0]['credits'] is None and p.exposure(s)==100
@@ -198,12 +198,12 @@ def test_copies_not_generations_technical_not_content(tmp_path):
 def test_global_video_limit_and_new_campaign_cannot_clear_it(tmp_path):
     s=stage(tmp_path,budget=1000);a=reserve(s);complete(s,a,tmp_path);p.record_review(s,review(s,a,fail=True))
     d=deepcopy(s['frames']['S1']);d['candidate']['parameters']['seed']=43;d['request']['input_overrides']['2']['seed']=43
-    d['request_fingerprint']=fp(d['request']);d['fingerprint']=fp({k:v for k,v in d.items() if k!='fingerprint'})
+    d=seal_decision(Requirements.model_validate(d['requirements']), Candidate.model_validate(d['candidate']), d['request'], stage_id=d['stage_id'], rationale=d['rationale'], comparisons=d['comparisons'], fallback=d['fallback'], host_adapter=d.get('host_adapter'))
     p.replan(s,frame=d,reason='OFFLINE one targeted correction')
     a=reserve(s);complete(s,a,tmp_path);p.record_review(s,review(s,a,fail=True))
     assert len(s['attempts'])==2 and s['pause']=='CONTENT_REPLAN_REQUIRED'
     d['candidate']['parameters']['seed']=44;d['request']['input_overrides']['2']['seed']=44
-    d['request_fingerprint']=fp(d['request']);d['fingerprint']=fp({k:v for k,v in d.items() if k!='fingerprint'})
+    d=seal_decision(Requirements.model_validate(d['requirements']), Candidate.model_validate(d['candidate']), d['request'], stage_id=d['stage_id'], rationale=d['rationale'], comparisons=d['comparisons'], fallback=d['fallback'], host_adapter=d.get('host_adapter'))
     p.replan(s,frame=d,reason='Host revises strategy while preserving stage totals')
     with pytest.raises(ValueError,match='EXHAUSTED'):reserve(s)
     with pytest.raises(ValueError,match='ONE_FORMAL_VIDEO'):p.replan(s,frame=decision(tmp_path,'S2'),reason='new campaign')

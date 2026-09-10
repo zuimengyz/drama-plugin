@@ -1,0 +1,16 @@
+code: cinematic-direction
+name: Cinematic Direction & Performance
+description: Source-pinned look, camera, physical performance and temporal Shot execution before video selection.
+context:
+  required: [work, script, episode, scene, shot]
+  optional: [dpdSnapshot, temporaryState]
+  refresh_after: [shot.save_shot]
+tools:
+  preferred: [shot.get_shot, scene.get_scene, episode.get_episode, script.get_script, work.get_work]
+  allowed: [context.build_context, shot.save_shot]
+completion:
+  conditions:
+    - One CinematicShotSpec realizes canon through observable behavior and consistent Opening-to-Ending beats.
+    - Work visual direction plus explicit Episode Scene Shot overrides resolve traceably.
+    - Frozen director source and visual fingerprints reach existing video selection without changing reference caps or production authority.
+    - Offline direction is not paid authorization or proof of actual visual quality.

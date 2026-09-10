@@ -5,6 +5,12 @@ description: Produce exact-text dialogue speech clips, dialogue mixes, and final
 
 # Audio Production
 
+For local finishing of an existing edited passage (scene ambience continuity,
+optional BGM or isolated sound repair), use the opt-in
+[cinematic finishing contract](../../docs/cinematic-finishing-host.md). It
+preserves this Skill's speech authority and original Media; it does not start
+new dubbing or convert unknown listening evidence to PASS.
+
 ## Choose the adopted performance before processing
 
 Audio production is complete when an appropriate existing audiovisual performance

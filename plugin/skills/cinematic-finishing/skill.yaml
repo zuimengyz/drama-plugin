@@ -1,0 +1,16 @@
+code: cinematic-finishing
+name: Cinematic Finishing
+description: Scene sound continuity and optional music through local finishing of existing Media.
+context:
+  required: [work, scene]
+  optional: [shot, sourceVideoMediaId, audioMediaIds, temporaryState]
+  refresh_after: [media.import_media, work.save_work, scene.save_scene]
+tools:
+  preferred: [work.get_work, scene.get_scene, shot.get_shot, media.get_media, media.resolve_media]
+  allowed: [media.list_media, media.import_media, work.save_work, scene.save_scene]
+completion:
+  conditions:
+    - Scene cues and BGM decisions have dramatic purposes independent of Shot file boundaries.
+    - Local output preserves source video packets and timestamps with protected dialogue and traceable audio ranges.
+    - Derived Media is verified and bound independently of audio review and user adoption.
+    - Missing sources or actual listening evidence remain explicit without implicit generation.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cinematic Finishing"
+  short_description: "Finish scene sound continuity and optional BGM locally"
+  default_prompt: "Use $cinematic-finishing to recover the formal assembly, plan scene sound continuity and optional music, execute local finishing, preserve video packets, and retain a derived Media with honest listening review."

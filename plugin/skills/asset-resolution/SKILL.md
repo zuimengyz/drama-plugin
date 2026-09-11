@@ -52,3 +52,31 @@ images must match a current necessary duty and explicit whole-stage budget.
 Materialize and review only the inputs for the current representative target;
 no full-episode asset expansion follows from route selection. Keep all result,
 review, settlement and persistence updates on that same formal stage.
+
+## Creative text and music memory
+
+The same Asset tools also register provider-neutral creative knowledge and BGM.
+Cinematic language uses OTHER with creativeKind=CINEMATIC_LANGUAGE, semanticKey,
+REFERENCE_PATTERN, structured pattern, provenance and validation. Media is optional:
+never fabricate a txt file or Media to store text. Use canonical content SHA-256
+for references, and PROJECT_DERIVED / OBSERVED_PATTERN until actual evidence exists.
+Never copy third-party long prompts into the library.
+
+BGM uses AUDIO_INPUT with creativeKind=MUSIC and role=BGM; referenceMediaIds binds
+the existing Media and content.media pins its sourceRef/hash. A path is original
+provenance only. Import real existing project audio via media.import_media if
+needed, then resolve and verify full bytes. UNKNOWN rights may be registered but
+productionEligible must be false. Do not generate music for registration.
+
+Search before create by exact cinematic semanticKey, or BGM contentHash within
+the Work. `creative_assets.remember` reuses identical content, reports differing
+content as a revision conflict, and verifies create/get/search. Server serializes
+same-work creative creation to avoid duplicates. Deliberate revisions use existing
+save_asset with full state; preserve the stable key, unrelated content and old
+frozen Shot snapshots. Reuse existing Media by hash before any import; use a
+deterministic sourceRef based on Work/hash for first import retry safety. Never
+create another BGM identity merely because a filename changes.
+
+For a confirmed local project source, `creative_assets.retain_bgm_media` searches
+existing Media by hash, uses a deterministic sourceRef only for the first import,
+and verifies resolve/readback. A saturated listing blocks ambiguous imports.

@@ -102,7 +102,8 @@ class MockMemoryProvider:
 class MockAssetProvider:
     def __init__(self, data: MockDramaData) -> None: self.data = data
     async def create_asset(self, work_id: str, asset_type: AssetType, name: str, content: dict[str, Any], episode_id: str | None = None, scene_id: str | None = None, shot_id: str | None = None, description: str | None = None, reference_media_ids: list[str] | None = None) -> Asset:
-        asset = Asset(id="asset-new", work_id=work_id, episode_id=episode_id, scene_id=scene_id, shot_id=shot_id, asset_type=asset_type, name=name, description=description, reference_media_ids=reference_media_ids or [], content=content); self.data.assets.append(asset); return asset
+        from uuid import uuid4
+        asset = Asset(id="asset-" + uuid4().hex, work_id=work_id, episode_id=episode_id, scene_id=scene_id, shot_id=shot_id, asset_type=asset_type, name=name, description=description, reference_media_ids=reference_media_ids or [], content=content); self.data.assets.append(asset); return asset
     async def get_asset(self, asset_id: str) -> Asset:
         match = next((item for item in self.data.assets if item.id == asset_id), None)
         if match is None: raise ProviderError(f"Mock asset not found: {asset_id}")
@@ -114,7 +115,7 @@ class MockAssetProvider:
         return asset
     async def list_assets(self, asset_type: AssetType | None = None) -> list[Asset]: return [item for item in self.data.assets if asset_type is None or item.asset_type is asset_type]
     async def search_assets(self, query: str, asset_type: AssetType | None = None) -> list[Asset]:
-        lowered = query.lower(); return [item for item in await self.list_assets(asset_type) if lowered in f"{item.name} {item.description or ''}".lower()]
+        lowered = query.lower(); return [item for item in await self.list_assets(asset_type) if lowered in f"{item.name} {item.description or ''} {item.content}".lower()]
 
 
 class MockResearchProvider:

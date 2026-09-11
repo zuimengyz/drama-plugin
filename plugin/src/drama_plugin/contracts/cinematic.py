@@ -5,6 +5,7 @@ from typing import Annotated, Literal, Self
 
 from pydantic import Field, StringConstraints, model_validator
 from drama_plugin.contracts.base import ContractModel
+from drama_plugin.contracts.creative_asset import CinematicLanguageRef
 
 Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 Hash = Annotated[str, StringConstraints(pattern=r'^[0-9a-f]{64}$')]
@@ -201,9 +202,12 @@ class CinematicShotSpec(ContractModel):
     execution_requirements: ExecutionRequirements
     ending_state: Text
     source_sound_intent: SourceSoundIntent | None = None
+    cinematic_language_refs: tuple[CinematicLanguageRef, ...] = ()
 
     @model_validator(mode='after')
     def consistent_execution(self) -> Self:
+        if len({r.asset_id for r in self.cinematic_language_refs}) != len(self.cinematic_language_refs):
+            raise ValueError('Duplicate cinematic language reference')
         beats = self.performance.beats
         if beats[0].start != 0 or beats[-1].end != self.duration_seconds:
             raise ValueError('Timeline must cover Opening through Ending; holds are explicit beats')

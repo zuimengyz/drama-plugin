@@ -6,7 +6,7 @@ context:
   optional: [shot, sourceVideoMediaId, audioMediaIds, temporaryState]
   refresh_after: [media.import_media, work.save_work, scene.save_scene]
 tools:
-  preferred: [work.get_work, scene.get_scene, shot.get_shot, media.get_media, media.resolve_media]
+  preferred: [asset.search_assets, asset.get_asset, work.get_work, scene.get_scene, shot.get_shot, media.get_media, media.resolve_media]
   allowed: [media.list_media, media.import_media, work.save_work, scene.save_scene]
 completion:
   conditions:

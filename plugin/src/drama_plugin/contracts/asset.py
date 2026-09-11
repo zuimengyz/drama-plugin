@@ -1,7 +1,8 @@
 from enum import StrEnum
 from typing import Any
 
-from pydantic import Field
+from pydantic import Field, model_validator
+from typing import Self
 
 from drama_plugin.contracts.base import ContractModel
 
@@ -36,3 +37,19 @@ class Asset(ContractModel):
     description: str | None = None
     reference_media_ids: list[str] = Field(default_factory=list)
     content: dict[str, Any] = Field(default_factory=dict)
+
+    @model_validator(mode='after')
+    def creative_content(self) -> Self:
+        from drama_plugin.contracts.creative_asset import BgmContent, CinematicLanguageContent
+        kind = self.content.get('creativeKind')
+        if kind == 'CINEMATIC_LANGUAGE':
+            CinematicLanguageContent.model_validate(self.content)
+            if self.asset_type != AssetType.OTHER:
+                raise ValueError('Cinematic language uses OTHER')
+        elif kind == 'MUSIC' and self.content.get('role') == 'BGM':
+            music = BgmContent.model_validate(self.content)
+            if self.asset_type != AssetType.AUDIO_INPUT:
+                raise ValueError('BGM uses AUDIO_INPUT')
+            if music.media and music.media.media_id not in self.reference_media_ids:
+                raise ValueError('BGM Media must be bound in referenceMediaIds')
+        return self

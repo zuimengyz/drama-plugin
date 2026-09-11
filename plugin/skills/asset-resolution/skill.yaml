@@ -1,6 +1,6 @@
 code: asset-resolution
 name: Asset Resolution
-description: Let the Agent discover, judge, reuse, or register stable visual memory.
+description: Let the Agent discover, judge, reuse, or register stable visual and creative memory.
 context:
   required: [currentCreativeObject]
   optional: [work, script, episode, scene, shot, selectedAssetIds, generatedMediaIds, researchContext]

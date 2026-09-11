@@ -45,6 +45,16 @@ def test_actual_scene_cue_crosses_cuts_ducks_and_removes_only_local_effect(mater
     if role == 'BGM':
         recipe['soundPlan']['bgm'].update(decision='SUBTLE',sourceKind='EXISTING_MEDIA',purpose='Carry tension across the cut, retreat for dialogue')
         recipe['layers'][0]['role']='BGM'
+        # Isolated synthetic renderer fixture only; never registered as formal BGM.
+        from test_creative_assets import bgm_fixture
+        from drama_plugin.contracts.base import dump_contract
+        from drama_plugin.creative_assets import select_bgm
+        asset,media=bgm_fixture(known=True)
+        media.content_hash=recipe['sources']['audio']
+        media.file_size=Path(paths['audio']).stat().st_size
+        asset.content['media']['contentHash']=media.content_hash
+        selection=select_bgm(asset,media,decision='SUBTLE',selected_range=(0,3),reason='isolated cross-cut cue')
+        recipe['layers'][0].update(bgmAsset=dump_contract(asset),bgmMedia=dump_contract(media),bgmSelection=dump_contract(selection))
     r=render(recipe,paths,tmp/'render');mix=tmp/'render/mix.wav'
     # Cue remains on both sides of the first Shot cut, then ducks for dialogue.
     assert amplitude(mix,.85,.1,880)>.02 and amplitude(mix,1.01,.05,880)>.018

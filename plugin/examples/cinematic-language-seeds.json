@@ -1,0 +1,375 @@
+[
+  {
+    "creativeKind": "CINEMATIC_LANGUAGE",
+    "semanticKey": "cinematic-language/restrained-motivated-push-in",
+    "title": "克制式动机推近 / Restrained Motivated Push-In",
+    "purpose": "表现逐渐意识到重要事实的心理压力。",
+    "usageMode": "REFERENCE_PATTERN",
+    "suitableFor": [
+      "realization",
+      "doubt",
+      "suspicion",
+      "controlled tension",
+      "dialogue",
+      "restrained"
+    ],
+    "avoidWhen": [
+      "高速动作",
+      "大规模战斗主体镜头",
+      "没有情绪变化的普通对白"
+    ],
+    "pattern": {
+      "performance": "剧情信息先作用于人物，先出现细微行为变化。",
+      "camera": "起始稳定；明确的信息或行为 trigger 之后才极轻微推近，不环绕、不突然加速。",
+      "timing": "人物真正意识到问题后停止推进并 hold。",
+      "stability": "推进幅度服从现有空间与连续性。"
+    },
+    "adaptationRules": [
+      "结合人物、剧情目标、场景、行为锚点、前后镜头、空间、时长及摄影设计重新判断；可不用，可改写，不整段拼贴。"
+    ],
+    "tags": [
+      "realization",
+      "doubt",
+      "suspicion",
+      "controlled tension",
+      "dialogue",
+      "restrained"
+    ],
+    "provenance": {
+      "sourceType": "PROJECT_DERIVED",
+      "sourceNote": "由用户提供的优秀AI影视案例观察与项目影视创作分析抽象而来；保存的是通用影视方法，不保存第三方原始Prompt。"
+    },
+    "validation": {
+      "status": "PROJECT_DERIVED",
+      "evidenceRefs": []
+    },
+    "notes": []
+  },
+  {
+    "creativeKind": "CINEMATIC_LANGUAGE",
+    "semanticKey": "cinematic-language/post-line-hold",
+    "title": "台词后停留 / Post-Line Hold",
+    "purpose": "让观众看到重要台词结束后的真实心理反应。",
+    "usageMode": "REFERENCE_PATTERN",
+    "suitableFor": [
+      "dialogue",
+      "reaction",
+      "post-line",
+      "restrained"
+    ],
+    "avoidWhen": [],
+    "pattern": {
+      "performance": "话说完后，让呼吸、视线、手部残余动作或对方无言反应继续表达压力。",
+      "camera": "保持当前构图，或仅有极弱运动；不因台词结束立即切镜。",
+      "timing": "停留长短由戏剧压力和回应决定，不规定固定秒数。"
+    },
+    "adaptationRules": [
+      "结合人物、剧情目标、场景、行为锚点、前后镜头、空间、时长及摄影设计重新判断；可不用，可改写，不整段拼贴。"
+    ],
+    "tags": [
+      "dialogue",
+      "reaction",
+      "post-line",
+      "restrained"
+    ],
+    "provenance": {
+      "sourceType": "PROJECT_DERIVED",
+      "sourceNote": "由用户提供的优秀AI影视案例观察与项目影视创作分析抽象而来；保存的是通用影视方法，不保存第三方原始Prompt。"
+    },
+    "validation": {
+      "status": "PROJECT_DERIVED",
+      "evidenceRefs": []
+    },
+    "notes": []
+  },
+  {
+    "creativeKind": "CINEMATIC_LANGUAGE",
+    "semanticKey": "cinematic-language/eyes-lead-head-follows",
+    "title": "视线先于转头 / Eyes Lead, Head Follows",
+    "purpose": "避免注意力转移时整个头部机械同步转向。",
+    "usageMode": "REFERENCE_PATTERN",
+    "suitableFor": [
+      "reaction",
+      "attention",
+      "suspicion",
+      "dialogue",
+      "restrained"
+    ],
+    "avoidWhen": [],
+    "pattern": {
+      "performance": "新声音或信息到来，先停止原动作，视线先变化；短暂延迟后头部有限度转向，必要时肩与身体最后跟随。",
+      "timing": "延迟应可感知但自然，不机械分解为固定节拍。"
+    },
+    "adaptationRules": [
+      "结合人物、剧情目标、场景、行为锚点、前后镜头、空间、时长及摄影设计重新判断；可不用，可改写，不整段拼贴。"
+    ],
+    "tags": [
+      "reaction",
+      "attention",
+      "suspicion",
+      "dialogue",
+      "restrained"
+    ],
+    "provenance": {
+      "sourceType": "PROJECT_DERIVED",
+      "sourceNote": "由用户提供的优秀AI影视案例观察与项目影视创作分析抽象而来；保存的是通用影视方法，不保存第三方原始Prompt。"
+    },
+    "validation": {
+      "status": "PROJECT_DERIVED",
+      "evidenceRefs": []
+    },
+    "notes": []
+  },
+  {
+    "creativeKind": "CINEMATIC_LANGUAGE",
+    "semanticKey": "cinematic-language/behavior-anchor",
+    "title": "人物先存在于场景 / Behavior Anchor",
+    "purpose": "让人物在剧情打断之前已生活于场景。",
+    "usageMode": "REFERENCE_PATTERN",
+    "suitableFor": [
+      "behavior",
+      "continuity",
+      "interruption"
+    ],
+    "avoidWhen": [
+      "主要动作已经开始且不需要前置行为"
+    ],
+    "pattern": {
+      "narrative": "主要信息进入前，人物已在做符合身份、地点、剧情状态的事；信息使原行为中断、改变或继续。",
+      "performance": "用已有任务或道具形成自然行为锚点，不像等待剧情触发的 NPC。",
+      "stability": "行为锚点不得创造新的核心剧情或改变既有连续性。"
+    },
+    "adaptationRules": [
+      "结合人物、剧情目标、场景、行为锚点、前后镜头、空间、时长及摄影设计重新判断；可不用，可改写，不整段拼贴。"
+    ],
+    "tags": [
+      "behavior",
+      "continuity",
+      "interruption"
+    ],
+    "provenance": {
+      "sourceType": "PROJECT_DERIVED",
+      "sourceNote": "由用户提供的优秀AI影视案例观察与项目影视创作分析抽象而来；保存的是通用影视方法，不保存第三方原始Prompt。"
+    },
+    "validation": {
+      "status": "PROJECT_DERIVED",
+      "evidenceRefs": []
+    },
+    "notes": []
+  },
+  {
+    "creativeKind": "CINEMATIC_LANGUAGE",
+    "semanticKey": "cinematic-language/motivated-low-key-lighting",
+    "title": "低调动机照明 / Motivated Low-Key Lighting",
+    "purpose": "减少均匀打光和没有场景依据的亮脸。",
+    "usageMode": "REFERENCE_PATTERN",
+    "suitableFor": [
+      "lighting",
+      "low-key",
+      "motivated"
+    ],
+    "avoidWhen": [],
+    "pattern": {
+      "lighting": "主照明来自场景中合理的窗、火、烛、灯、门、月光或屏幕；高光有来源，人物允许部分进入阴影，不凭空加满光。",
+      "environment": "人物与环境共同服从同一光源逻辑。"
+    },
+    "adaptationRules": [
+      "结合人物、剧情目标、场景、行为锚点、前后镜头、空间、时长及摄影设计重新判断；可不用，可改写，不整段拼贴。"
+    ],
+    "tags": [
+      "lighting",
+      "low-key",
+      "motivated"
+    ],
+    "provenance": {
+      "sourceType": "PROJECT_DERIVED",
+      "sourceNote": "由用户提供的优秀AI影视案例观察与项目影视创作分析抽象而来；保存的是通用影视方法，不保存第三方原始Prompt。"
+    },
+    "validation": {
+      "status": "PROJECT_DERIVED",
+      "evidenceRefs": []
+    },
+    "notes": []
+  },
+  {
+    "creativeKind": "CINEMATIC_LANGUAGE",
+    "semanticKey": "cinematic-language/negative-fill-portrait",
+    "title": "负补光人物近景 / Negative-Fill Portrait",
+    "purpose": "保留人物近景的体积和心理压力。",
+    "usageMode": "REFERENCE_PATTERN",
+    "suitableFor": [
+      "portrait",
+      "negative-fill",
+      "tension"
+    ],
+    "avoidWhen": [
+      "要求完全清楚的商业展示",
+      "证件式正面表现"
+    ],
+    "pattern": {
+      "lighting": "避免正面均匀填充；允许一侧面部深阴影，仍保持眼睛与关键表情可读；不自动添加美容灯或肤色提亮。",
+      "environment": "背景可比人物更暗，但服从实际场景。"
+    },
+    "adaptationRules": [
+      "结合人物、剧情目标、场景、行为锚点、前后镜头、空间、时长及摄影设计重新判断；可不用，可改写，不整段拼贴。"
+    ],
+    "tags": [
+      "portrait",
+      "negative-fill",
+      "tension"
+    ],
+    "provenance": {
+      "sourceType": "PROJECT_DERIVED",
+      "sourceNote": "由用户提供的优秀AI影视案例观察与项目影视创作分析抽象而来；保存的是通用影视方法，不保存第三方原始Prompt。"
+    },
+    "validation": {
+      "status": "PROJECT_DERIVED",
+      "evidenceRefs": []
+    },
+    "notes": []
+  },
+  {
+    "creativeKind": "CINEMATIC_LANGUAGE",
+    "semanticKey": "cinematic-language/secondary-motion",
+    "title": "主动作后的二级运动 / Secondary Motion",
+    "purpose": "用有因果的惯性连接人物、物件与环境。",
+    "usageMode": "REFERENCE_PATTERN",
+    "suitableFor": [
+      "motion",
+      "inertia",
+      "physical"
+    ],
+    "avoidWhen": [],
+    "pattern": {
+      "performance": "主体动作之后，相关衣袖、发丝、饰物或随身物件产生更小且稍延迟的响应。",
+      "environment": "烟尘、帘布等响应已建立的风、重力或接触。",
+      "stability": "二级运动必须有物理原因，禁止无原因全画面持续飘动。"
+    },
+    "adaptationRules": [
+      "结合人物、剧情目标、场景、行为锚点、前后镜头、空间、时长及摄影设计重新判断；可不用，可改写，不整段拼贴。"
+    ],
+    "tags": [
+      "motion",
+      "inertia",
+      "physical"
+    ],
+    "provenance": {
+      "sourceType": "PROJECT_DERIVED",
+      "sourceNote": "由用户提供的优秀AI影视案例观察与项目影视创作分析抽象而来；保存的是通用影视方法，不保存第三方原始Prompt。"
+    },
+    "validation": {
+      "status": "PROJECT_DERIVED",
+      "evidenceRefs": []
+    },
+    "notes": []
+  },
+  {
+    "creativeKind": "CINEMATIC_LANGUAGE",
+    "semanticKey": "cinematic-language/environment-interaction",
+    "title": "环境物理反馈 / Environment Interaction",
+    "purpose": "让人物、效果和环境属于同一个物理世界。",
+    "usageMode": "REFERENCE_PATTERN",
+    "suitableFor": [
+      "physical",
+      "environment",
+      "interaction"
+    ],
+    "avoidWhen": [],
+    "pattern": {
+      "environment": "从动作或效果的原因检查空气、地面、衣物、金属、水、尘、烟、光线、遮挡、反射与声音的必要反馈；接触导致受力，火光影响邻近反射，靠近光源改变局部亮度。",
+      "stability": "只表现该场景实际需要的反馈；效果不能像后贴图层一样与环境无关。"
+    },
+    "adaptationRules": [
+      "结合人物、剧情目标、场景、行为锚点、前后镜头、空间、时长及摄影设计重新判断；可不用，可改写，不整段拼贴。"
+    ],
+    "tags": [
+      "physical",
+      "environment",
+      "interaction"
+    ],
+    "provenance": {
+      "sourceType": "PROJECT_DERIVED",
+      "sourceNote": "由用户提供的优秀AI影视案例观察与项目影视创作分析抽象而来；保存的是通用影视方法，不保存第三方原始Prompt。"
+    },
+    "validation": {
+      "status": "PROJECT_DERIVED",
+      "evidenceRefs": []
+    },
+    "notes": []
+  },
+  {
+    "creativeKind": "CINEMATIC_LANGUAGE",
+    "semanticKey": "cinematic-language/locked-camera-performance",
+    "title": "固定机位情绪表演 / Locked Camera Performance",
+    "purpose": "当表演最重要时，用主动选择的摄影机静止保留注意力。",
+    "usageMode": "REFERENCE_PATTERN",
+    "suitableFor": [
+      "dialogue",
+      "reaction",
+      "restrained",
+      "performance",
+      "locked"
+    ],
+    "avoidWhen": [],
+    "pattern": {
+      "camera": "固定或近乎固定机位；不推拉、不环绕、不改变焦距。",
+      "performance": "变化来自眼神、呼吸、微表情、重心、道具动作或对方反应。",
+      "narrative": "摄影机静止是有意的导演选择，而不是缺乏运镜设计。"
+    },
+    "adaptationRules": [
+      "结合人物、剧情目标、场景、行为锚点、前后镜头、空间、时长及摄影设计重新判断；可不用，可改写，不整段拼贴。"
+    ],
+    "tags": [
+      "dialogue",
+      "reaction",
+      "restrained",
+      "performance",
+      "locked"
+    ],
+    "provenance": {
+      "sourceType": "PROJECT_DERIVED",
+      "sourceNote": "由用户提供的优秀AI影视案例观察与项目影视创作分析抽象而来；保存的是通用影视方法，不保存第三方原始Prompt。"
+    },
+    "validation": {
+      "status": "PROJECT_DERIVED",
+      "evidenceRefs": []
+    },
+    "notes": []
+  },
+  {
+    "creativeKind": "CINEMATIC_LANGUAGE",
+    "semanticKey": "cinematic-language/multi-beat-micro-expression",
+    "title": "多 Beat 微表情演进 / Multi-Beat Micro-Expression Progression",
+    "purpose": "避免用一个静态情绪表情覆盖镜头全部时间。",
+    "usageMode": "REFERENCE_PATTERN",
+    "suitableFor": [
+      "dialogue",
+      "reaction",
+      "micro-expression",
+      "multi-beat"
+    ],
+    "avoidWhen": [],
+    "pattern": {
+      "performance": "将抽象情绪转成按时间发生的可观察变化：察觉、停顿、压住情绪、看向对方、开口、等回应，以及随回应改变的控制；按剧情选择眼睑、视线、下颌、呼吸、手或姿态。",
+      "timing": "Emotion → Observable Behaviour → Temporal Execution；不是每个 Beat 都填满每个身体部位，也不强制固定情绪顺序。"
+    },
+    "adaptationRules": [
+      "结合人物、剧情目标、场景、行为锚点、前后镜头、空间、时长及摄影设计重新判断；可不用，可改写，不整段拼贴。"
+    ],
+    "tags": [
+      "dialogue",
+      "reaction",
+      "micro-expression",
+      "multi-beat"
+    ],
+    "provenance": {
+      "sourceType": "PROJECT_DERIVED",
+      "sourceNote": "由用户提供的优秀AI影视案例观察与项目影视创作分析抽象而来；保存的是通用影视方法，不保存第三方原始Prompt。"
+    },
+    "validation": {
+      "status": "PROJECT_DERIVED",
+      "evidenceRefs": []
+    },
+    "notes": []
+  }
+]

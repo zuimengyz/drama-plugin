@@ -6,7 +6,7 @@ context:
   optional: [dpdSnapshot, temporaryState]
   refresh_after: [shot.save_shot]
 tools:
-  preferred: [shot.get_shot, scene.get_scene, episode.get_episode, script.get_script, work.get_work]
+  preferred: [asset.search_assets, asset.get_asset, shot.get_shot, scene.get_scene, episode.get_episode, script.get_script, work.get_work]
   allowed: [context.build_context, shot.save_shot]
 completion:
   conditions:

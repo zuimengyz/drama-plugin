@@ -79,3 +79,24 @@ selection and the user's eventual USER_SELECTED are distinct. Repeating the same
 revision reuses the same Media; ambiguous imports are queried before any write.
 Storage failure recovers identical output, never generates another picture.
 Completion states exactly what was rendered, heard, verified and still unknown.
+
+## Long-term BGM retrieval and rights
+
+Decide NO_BGM / SUBTLE / ACTIVE before retrieval. NO_BGM skips music search,
+selection and assembly. Otherwise call `asset.search_assets(query="BGM",
+asset_type="AUDIO_INPUT")`, retaining only `creativeKind=MUSIC, role=BGM`.
+`creative_assets.search_bgm` applies optional mood/narrative-function filters and
+returns explainable candidates; assess energy, dialogue compatibility, duration,
+entry/exit and rights. Search rank never makes the final choice; listen when needed.
+
+UNKNOWN rights remain discoverable memory with productionEligible=false. Production
+requires VERIFIED source/license/commercialUse/attribution plus bound durable
+AUDIO Media. Refresh `asset.get_asset` rights before a new production, verify
+`media.get_media`, resolve and full hash. Never infer rights, BPM or instruments.
+
+Explicit selection uses `creative_assets.select_bgm` and records assetId,
+assetFingerprint, mediaId, contentHash, selectedRange and reason. Each BGM recipe
+layer retains `bgmSelection`, `bgmAsset` and `bgmMedia` snapshots. Existing render
+validates rights, ranges and lineage before even reusing a cached output; normal
+full-byte hash checks remain mandatory. Missing/unknown rights stop BGM execution.
+Metadata edits never regenerate audio. See [creative memory contract](../../docs/creative-assets.md).

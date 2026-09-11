@@ -158,3 +158,23 @@ meaningful diegetic/ambient sound, silence, generated music policy and continuit
 No Voice, mix, repair recipe or generation belongs here. DPD → CinematicShotSpec
 is the single new-schema execution authority; legacy visual briefs are lineage.
 Reference roles pass downstream for actual fulfillment; absence is not fulfillment.
+
+## Long-term cinematic language retrieval
+
+Before authoring a CinematicShotSpec, optionally diagnose the current directing
+problem and call `asset.search_assets(query="reaction", asset_type="OTHER")` (or
+`restrained`, `dialogue`, a purpose, or a semantic key). Keep only content with
+`creativeKind=CINEMATIC_LANGUAGE`; call `asset.get_asset` for selected IDs and inspect purpose, suitableFor, avoidWhen, tags,
+provenance and validation. `creative_assets.search_patterns` provides explained
+candidates using the same tools. REJECTED patterns cannot be selected.
+
+These are REFERENCE_PATTERN, never MANDATORY_TEMPLATE. Usually choose 1–3; zero
+is valid. Reconsider character, narrative goal, Scene, Behavior Anchor, adjacent
+Shots, space, duration and photography; do not map emotion labels to fixed assets.
+Expand only the adapted performance/camera/timing/lighting semantics in the spec,
+never concatenate asset documents. For each actually adopted pattern, create
+`cinematicLanguageRefs` using `creative_assets.pattern_ref`: assetId,
+contentFingerprint (SHA-256 canonical complete content), appliedPurpose. Freeze
+this snapshot with the existing spec. Later Asset edits never refresh frozen
+references or execution text; the Provider brief does not include Asset IDs.
+See [creative memory contract](../../docs/creative-assets.md).

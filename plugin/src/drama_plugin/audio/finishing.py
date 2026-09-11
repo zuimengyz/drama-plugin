@@ -55,6 +55,8 @@ def envelope(points: list[list[float]]) -> str:
 
 def render(recipe: dict[str, Any], paths: dict[str, str], directory: Path) -> dict[str, Any]:
     """Render deterministic local recipe; paths are disposable, IDs/hashes authoritative."""
+    from drama_plugin.creative_assets import validate_music_recipe
+    validate_music_recipe(recipe)
     directory.mkdir(parents=True, exist_ok=True)
     fingerprint = digest(recipe)
     journal = directory / 'render.json'

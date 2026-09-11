@@ -1,6 +1,23 @@
 # First-pass image production
 
 Use for new Shot images and image revisions. Existing adopted AV is outside this gate.
+
+An explicit user request for one new comparison candidate may continue the same
+Work-owned stage with `ProductionRoute.continuation`. Bind the authorization,
+original stage/attempt fingerprints, same formal target, one new video and quoted
+credit ceiling. Refresh current Canon rather than inheriting an old attempt's
+duration. Save the route revision and replan the frame; preserve every original
+attempt/review/output and the stage budget/exposure. This is not ordinary recovery
+or authority to regenerate a PASS without that new request. Reusing the same
+authorization cannot reset its baseline or grant a second generated candidate.
+
+A fresh balance observation can enumerate `included_usage_events` already
+reflected in that balance, but only completed/failed owned jobs with recorded
+provider usage may be excluded from the additional cash hold. Their unknown
+invoice settlement continues to retain the full reserve against the stage budget.
+Never exclude an unknown/running job or invent a usage event. A continuation retry
+requires explicit NO TASK and NO CHARGE evidence and is limited to one transport
+retry; artistic retry remains outside its authorization.
 The Host still owns provider execution; the Python helper only builds, validates,
 reserves and records requests in local Agent Run Context. It neither creates Domain
 records nor calls the cloud. Run it with the plugin's Python dependencies available.

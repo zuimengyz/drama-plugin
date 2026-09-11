@@ -1,3 +1,4 @@
+from seedance_helpers import execution_contract,execution_plan
 """OFFLINE director IR and existing selection/Host paths; no media submission."""
 from copy import deepcopy
 import json
@@ -177,7 +178,7 @@ def test_existing_v206_qualification_and_host_compiler_receive_frozen_direction(
     from drama_plugin.hosts.comfy_video import inspect_graph
     assert request['input_overrides']['2']['prompt']==project(r,c,inspect_graph(g,s))['prompt']
     assert 'Hold it.' in request['input_overrides']['2']['prompt']
-    d=seal_decision(r,c,request,stage_id='OFFLINE',rationale='OFFLINE',comparisons=[],fallback='requalify',host_adapter=a)
+    d=seal_decision(r,c,request,stage_id='OFFLINE',rationale='OFFLINE',comparisons=[],fallback='requalify',host_adapter=a,production_route=execution_plan(r,c))
     assert d['requirements']['frozen_creative']['cinematic_direction']['fingerprint']==f['fingerprint']
     altered=deepcopy(material);altered['motion_prompt']='cinematic only'
     with pytest.raises(ValueError):validate_requirements(Requirements.model_validate({**r.model_dump(),'frozen_creative':altered}))
@@ -189,6 +190,7 @@ def test_existing_v206_qualification_and_host_compiler_receive_frozen_direction(
 
 def test_route_before_inputs_and_real_frame_gate_preserve_direction(tmp_path):
     route=route_fixture(tmp_path);raw=route.model_dump();f=frozen_example()
+    raw['execution']=execution_contract('flux-3')
     raw['requirements'].update(creative_schema='cinematic-shot-v1',cinematic_directions={'S1':f},shots={'S1':'SHOT'})
     from drama_plugin.visual.video_selection import ProductionRoute
     route=ProductionRoute.model_validate(raw)
@@ -198,7 +200,7 @@ def test_route_before_inputs_and_real_frame_gate_preserve_direction(tmp_path):
     from seedance_helpers import add_director_inputs
     r=add_director_inputs(r,a,f)
     request=compile_request(r,c,g,s,a['bindings'],r.frozen_creative['motion_prompt'])
-    decision=seal_decision(r,c,request,stage_id='v206',rationale='OFFLINE',comparisons=[],fallback='requalify',host_adapter=a)
+    decision=seal_decision(r,c,request,stage_id='v206',rationale='OFFLINE',comparisons=[],fallback='requalify',host_adapter=a,production_route=route)
     from drama_plugin.visual.production import _route_frame_gate
     state={'production_route':route.model_dump(mode='json'),'attempts':[]}
     _route_frame_gate(state,decision)
@@ -219,7 +221,7 @@ def test_existing_replan_accepts_director_revision_without_resetting_history(tmp
         from seedance_helpers import add_director_inputs
         req=add_director_inputs(req,adapter,frozen)
         request=compile_request(req,c,g,s,adapter['bindings'],req.frozen_creative['motion_prompt'])
-        return seal_decision(req,c,request,stage_id='v206',rationale='OFFLINE',comparisons=[],fallback='requalify',host_adapter=adapter)
+        return seal_decision(req,c,request,stage_id='v206',rationale='OFFLINE',comparisons=[],fallback='requalify',host_adapter=adapter,production_route=execution_plan(req,c,'v206'))
     old=decision(spec);state=p.new_stage(stage_id='v206',authorization_ref='OFFLINE',budget_credits=300,frames=[old],protected_targets=['C07','C12'])
     state['attempts']=[{'shot_id':'S1','status':'FAILED','credits':100,'reserved_credits':100}]
     history=deepcopy(state['attempts']);changed=deepcopy(spec)
@@ -255,6 +257,7 @@ async def test_actual_host_refreshes_canon_before_route_and_submission_boundary(
         async def save_work(self,wid,title,content,description):
             self.writes+=1;entities['work'].content=deepcopy(content)
     memory=Memory();raw=route_fixture(tmp_path).model_dump(mode='json')
+    raw['execution']=execution_contract('flux-3')
     raw['requirements'].update(creative_schema='cinematic-shot-v1',cinematic_directions={'S1':frozen},shots={'S1':'SHOT'})
     await save_route(memory,'W',raw)
     await operate(memory,'W','init-stage',{'authorization_ref':'OFFLINE','budget_credits':300})

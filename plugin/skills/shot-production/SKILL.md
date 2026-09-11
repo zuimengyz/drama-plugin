@@ -5,6 +5,23 @@ description: Produce image, video, or audio media for an approved historical-dra
 
 # Shot Production
 
+For a ProductionRoute with `execution.transport=MCP`, the Host MUST generate
+through a connected MCP tool matching the sealed backend/provider, model and
+capability. Discover that capability; do not choose another execution backend.
+Comfy Desktop, ComfyUI Desktop and Host-specific GUI automation are
+`HOST_LOCAL_IMPLEMENTATION_DETAIL`, never formal visual provider capabilities.
+The Host MUST NOT use desktop/local GUI automation, a browser workflow runner,
+direct localhost Comfy API or direct provider calls as a fallback. Missing MCP
+returns `MCP_CAPABILITY_UNAVAILABLE`; conflicting execution identity returns
+`EXECUTION_ROUTE_MISMATCH`. Stop that execution without changing models.
+
+New cinematic requests require the existing ProductionRoute's typed execution
+contract in their seal. Use the [MCP-first Host integration contract](../../docs/visual-provider-host-integration.md#mcp-first-execution)
+for discovery, reservation, invocation and result identity checks. MCP is the
+transport; a cloud, private or local backend must remain behind it. Concrete tool
+names are runtime evidence, not Skill Core. Authentication renewal may resume the
+same sealed request within existing authorization; it never enlarges paid scope.
+
 New Shot production consumes a frozen `CinematicShotSpec` from cinematic-direction
 before video-model-selection. Use the existing [director handoff](../../docs/cinematic-direction-contract.md)
 to carry acting beats, camera motivation, reference duties and execution demands

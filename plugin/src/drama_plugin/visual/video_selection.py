@@ -11,6 +11,7 @@ from drama_plugin.config.video_route import VideoRoutePolicy, RouteMode, resolve
 from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.visual.frame_request import Hash, Record, Text
 from drama_plugin.visual.reference_duties import ReferenceDuty, validate_duties, validate_endpoint
+from drama_plugin.visual.execution import ExecutionRoute, require_execution
 
 
 class Evidence(Record):
@@ -315,6 +316,7 @@ def seal_decision(r: Requirements, c: Candidate, request: dict[str, Any], *, sta
                   rationale: str, comparisons: list[dict[str, Any]], fallback: str,
                   host_adapter: dict[str, Any] | None = None,
                   now: datetime | None = None, dry_run: bool = False,
+                  production_route: ProductionRoute | None = None,
                   policy_resolution: dict[str, Any] | None = None) -> dict[str, Any]:
     r = Requirements.model_validate(r.model_dump())
     c = Candidate.model_validate(c.model_dump())
@@ -336,6 +338,18 @@ def seal_decision(r: Requirements, c: Candidate, request: dict[str, Any], *, sta
         material['submission_allowed'] = False
     if host_adapter is not None:
         material['host_adapter'] = host_adapter
+    if production_route is not None:
+        route = ProductionRoute.model_validate(production_route.model_dump())
+        execution = require_execution(route.execution, model_key(c))
+        if (route.stage_id != stage_id or route.work_id != r.work_id or r.target_id not in route.video_targets
+                or not same_execution_candidate(route.candidate, c)):
+            raise ValueError('EXECUTION_ROUTE_MISMATCH: decision scope or candidate')
+        material.update(production_route=route.model_dump(mode='json'),
+                        route_fingerprint=sha256_canonical(route.model_dump(mode='json')),
+                        execution=execution.model_dump(mode='json'),
+                        execution_fingerprint=sha256_canonical(execution.model_dump(mode='json')))
+    elif r.frozen_creative.get('creative_schema') == 'cinematic-shot-v1' and not dry_run:
+        raise ValueError('MCP_CAPABILITY_UNAVAILABLE: production route required for sealing')
     if r.frozen_creative.get('creative_schema') == 'cinematic-shot-v1':
         if host_adapter is None:
             raise ValueError('INSPECTED_HOST_ADAPTER_REQUIRED')
@@ -363,6 +377,17 @@ def verify_decision(d: dict[str, Any], *, now: datetime | None = None, allow_dry
         verify_policy_resolution(d['route_policy_resolution'], c, result, dry_run=bool(d.get('dry_run_only')))
     if d['request_fingerprint'] != sha256_canonical(d['request']):
         raise ValueError('REQUEST_CHANGED')
+    if d.get('production_route') is not None:
+        route = ProductionRoute.model_validate(d['production_route'])
+        execution = require_execution(route.execution, model_key(c)).model_dump(mode='json')
+        if (d.get('route_fingerprint') != sha256_canonical(d['production_route'])
+                or d.get('execution') != execution
+                or d.get('execution_fingerprint') != sha256_canonical(execution)
+                or not same_execution_candidate(route.candidate, c) or route.work_id != r.work_id
+                or route.stage_id != d['stage_id'] or r.target_id not in route.video_targets):
+            raise ValueError('EXECUTION_ROUTE_MISMATCH: sealed route')
+    elif r.frozen_creative.get('creative_schema') == 'cinematic-shot-v1' and not (allow_dry_run and d.get('dry_run_only')):
+        raise ValueError('MCP_CAPABILITY_UNAVAILABLE: legacy cinematic seal must be resealed')
 
 
 class PlannedInput(Record):
@@ -381,6 +406,25 @@ class PlannedInput(Record):
     active: bool = True
 
 
+def same_execution_candidate(planned: Candidate, actual: Candidate) -> bool:
+    # Planning prices the whole stage; a materialized decision prices this call.
+    return all(getattr(planned, key) == getattr(actual, key) for key in (
+        'candidate_id', 'model', 'variant', 'mode', 'template', 'graph_hash',
+        'adapter_fingerprint', 'parameters', 'capability'))
+
+
+class ContinuationAuthorization(Record):
+    """Explicit one-candidate continuation of the same Work-owned stage."""
+    authorization_ref: Text
+    reason: Text
+    target_id: Text
+    baseline_stage_fingerprint: Hash
+    baseline_attempts_fingerprint: Hash
+    baseline_attempt_count: int = Field(ge=1)
+    max_new_video_attempts: Literal[1] = 1
+    max_quoted_credits: float = Field(gt=0, allow_inf_nan=False)
+
+
 class ProductionRoute(Record):
     route_id: Text
     work_id: Text
@@ -393,6 +437,9 @@ class ProductionRoute(Record):
     max_video_attempts: int | None = Field(default=2, gt=0)
     requirements: dict[Text, Any] = Field(min_length=1)
     candidate: Candidate
+    # Optional only for historical records; new cinematic production requires it.
+    execution: ExecutionRoute | None = None
+    continuation: ContinuationAuthorization | None = None
     inputs: tuple[PlannedInput, ...] = ()
     quality_thresholds: dict[Text, Text] = Field(min_length=1)
     stops: tuple[Text, ...] = Field(min_length=1)
@@ -415,7 +462,11 @@ def qualify_route(route: ProductionRoute, *, now: datetime | None = None) -> dic
     now = now or datetime.now(timezone.utc)
     reasons: list[str] = []
     directions: dict[str, Any] = {}
+    if route.continuation and (route.video_targets != (route.continuation.target_id,)
+                              or r.get('creative_schema') != 'cinematic-shot-v1'):
+        raise ValueError('CONTINUATION_REQUIRES_ONE_FROZEN_TARGET')
     if r.get('creative_schema') == 'cinematic-shot-v1' or r.get('cinematic_directions'):
+        require_execution(route.execution, model_key(c))
         from drama_plugin.visual.cinematic import verify_frozen
         raw_directions = r.get('cinematic_directions', {})
         if set(raw_directions) != set(route.video_targets):
@@ -463,7 +514,8 @@ def qualify_route(route: ProductionRoute, *, now: datetime | None = None) -> dic
         if i.preparation == 'REUSE' and not i.source_media_id:
             reasons.append('REUSE_SOURCE_REQUIRED')
     required_costs = {i.cost_key for i in route.inputs} | {'video', 'audio', 'references', 'addons', 'correction'}
-    if (c.cost.components.get('video') or 0) < max(2, len(route.video_targets)) * route.video_request_credits:
+    calls = 1 if route.continuation else max(2, len(route.video_targets))
+    if (c.cost.components.get('video') or 0) < calls * route.video_request_credits:
         reasons.append('SHARED_TWO_REQUEST_VIDEO_ENVELOPE_MISSING')
     if not required_costs <= set(c.cost.components) or c.cost.uncertainty or not c.cost.evidence.current(now) or c.cost.total() is None:
         reasons.append('COMPLETE_ROUTE_COST_UNRESOLVED')

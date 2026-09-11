@@ -17,7 +17,7 @@ from drama_plugin.config import load_config, VideoRoutePolicy
 
 async def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('command', choices=['save-route','reseal-plan','check-input','init-stage','add-frame','reserve',
+    p.add_argument('command', choices=['save-route','reseal-plan','check-input','init-stage','add-frame','reserve','begin-submission',
                     'result','billing','usage','review','revise-review','select-input','sync-review','resume','inspect','persist','replan','retry-not-created'])
     p.add_argument('--mcp-config', type=Path, required=True)
     p.add_argument('--work-id', required=True)

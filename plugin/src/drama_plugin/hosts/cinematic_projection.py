@@ -112,7 +112,9 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
     if set(manifest) != set(all_fields):
         raise ValueError('UNPROJECTED_CANONICAL_FIELDS:' + ','.join(set(all_fields)-set(manifest)))
     result = {'schema':'provider-semantic-projection-v1','prompt':'\n\n'.join(sections),
-              'generate_audio':audio,'manifest':list(manifest.values())}
+              # Map iteration order is not a creative instruction. Formal JSON
+              # storage may reorder object keys; the audit manifest must not drift.
+              'generate_audio':audio,'manifest':[manifest[k] for k in sorted(manifest)]}
     validate_projection(result)
     return {**result,'fingerprint':sha256_canonical(result)}
 

@@ -61,15 +61,16 @@ def test_skill_core_is_platform_neutral_and_has_no_skill_chaining() -> None:
     forbidden = (
         "codex",
         "mcp server",
-        "localhost",
         "127.0.0.1",
         "fastapi",
         "spring boot",
         "java service",
-        "comfyui",
         "openai agents sdk",
         "mcpserverstreamablehttp",
     )
+    # V2-12C explicitly names ComfyUI/localhost as forbidden execution fallbacks.
+    # Their presence in prose is not a Host dependency. The executable MCP-only
+    # route and mixed-surface tests in test_mcp_execution guard that boundary.
     for directory in (ROOT / "skills").iterdir():
         if directory.name not in EXPECTED: continue
         core = ((directory / "SKILL.md").read_text(encoding="utf-8") + (directory / "skill.yaml").read_text(encoding="utf-8")).lower()

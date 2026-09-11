@@ -75,7 +75,20 @@ async def save_route(memory: MemoryProvider, work_id: str, raw: dict[str, Any], 
         raise ValueError('INCOMPLETE_OR_INELIGIBLE_PRODUCTION_ROUTE')
     if stage:
         old = ProductionRoute.model_validate(stage['production_route'])
-        if (route.work_id, route.stage_id, route.video_targets, route.creative_fingerprint) != (
+        if route.continuation:
+            previous = [old] + [ProductionRoute.model_validate(r['previous_route'])
+                for r in stage.get('route_revisions', []) if r.get('previous_route')]
+            same = [p.continuation for p in previous if p.continuation and
+                    p.continuation.authorization_ref == route.continuation.authorization_ref]
+            if same and any(a != route.continuation for a in same):
+                raise ValueError('CONTINUATION_AUTHORIZATION_CANNOT_RESET_BASELINE')
+            production.continuation_baseline(stage, route, opening=not same)
+            target = route.continuation.target_id
+            if (route.work_id != old.work_id or route.stage_id != old.stage_id
+                    or target not in old.video_targets
+                    or route.requirements.get('shots', {}).get(target) != old.requirements.get('shots', {}).get(target)):
+                raise ValueError('CONTINUATION_CANNOT_CHANGE_FORMAL_TARGET_OR_STAGE')
+        elif (route.work_id, route.stage_id, route.video_targets, route.creative_fingerprint) != (
                 old.work_id, old.stage_id, old.video_targets, old.creative_fingerprint):
             raise ValueError('ROUTE_CHANGE_CANNOT_RESET_TARGET_OR_STAGE')
         if stage['stage']['budget_credits'] is not None and result['incremental_credits'] > stage['stage']['budget_credits']:
@@ -105,7 +118,7 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
     route = ProductionRoute.model_validate(raw_route)
     if route.work_id != work.id:
         raise ValueError('ROUTE_WORK_MISMATCH')
-    if command in {'check-input', 'init-stage', 'add-frame', 'reserve', 'replan', 'retry-not-created'}:
+    if command in {'check-input', 'init-stage', 'add-frame', 'reserve', 'begin-submission', 'replan', 'retry-not-created'}:
         await validate_route_direction_sources(memory, work, route)
     if command == 'check-input':
         duty = route_input_gate(route, payload['target_id'], payload['purpose'])
@@ -114,13 +127,13 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
         return {'duty': duty.model_dump(mode='json'), 'submissionAllowed': False,
                 'next': 'compile actual inputs and reserve the exact request'}
     original_stage = work.content.get('productionStage')
-    if command in {'reserve', 'retry-not-created', 'add-frame', 'replan'}:
+    if command in {'reserve', 'begin-submission', 'retry-not-created', 'add-frame', 'replan'}:
         from drama_plugin.visual.video_selection import Requirements
         from drama_plugin.visual.reference_duties import validate_media_snapshot
         frame = payload.get('frame')
         if frame is None and original_stage:
             target = payload.get('shot_id')
-            if command == 'retry-not-created':
+            if command in {'retry-not-created', 'begin-submission'}:
                 target = next(a['shot_id'] for a in original_stage['attempts'] if a['attempt_id'] == payload['attempt_id'])
             frame = original_stage['frames'].get(target)
         if frame and frame.get('requirements', {}).get('frozen_creative', {}).get('creative_schema') == 'cinematic-shot-v1':
@@ -150,6 +163,8 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
             production.add_route_frame(state, payload['frame']); result = {'added': True}
         elif command == 'reserve':
             result = production.reserve(state, **payload)
+        elif command == 'begin-submission':
+            result = production.begin_submission(state, **payload)
         elif command == 'result':
             production.record_result(state, **payload); result = production.metrics(state)
         elif command == 'billing':

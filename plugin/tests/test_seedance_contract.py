@@ -11,13 +11,13 @@ from drama_plugin.visual.cinematic import freeze_direction,selection_handoff,val
 from drama_plugin.visual.video_selection import Requirements,Candidate,qualify,seal_decision,verify_decision
 from drama_plugin.hosts.comfy_video import compile_request,inspect_graph,verify_execution,bind_capability
 from drama_plugin.hosts.cinematic_projection import project,validate_projection
-from seedance_helpers import seed_fixture
+from seedance_helpers import seed_fixture,execution_plan
 
 
 def compile_all(r,c,g,s,a):return compile_request(r,c,g,s,a['bindings'],r.frozen_creative['motion_prompt'])
 
 def seal(r,c,g,s,a,**kw):
- return seal_decision(r,c,compile_all(r,c,g,s,a),stage_id='OFFLINE',rationale='OFFLINE',comparisons=[],fallback='requalify',host_adapter=a,**kw)
+ return seal_decision(r,c,compile_all(r,c,g,s,a),stage_id='OFFLINE',rationale='OFFLINE',comparisons=[],fallback='requalify',host_adapter=a,production_route=execution_plan(r,c),**kw)
 
 @pytest.mark.parametrize('mode',['t2v','r2v','flf2v'])
 def test_official_modes_and_limited_trial(tmp_path,mode):
@@ -259,3 +259,13 @@ def test_legacy_seal_without_new_optional_fields_replays(tmp_path):
  d['fingerprint']=fp({k:v for k,v in d.items() if k!='fingerprint'})
  before=deepcopy(d);verify_execution(d)
  assert d==before
+
+
+def test_formal_json_key_order_preserves_execution_seal_and_prompt(tmp_path):
+ r,c,g,s,a=seed_fixture(tmp_path);d=seal(r,c,g,s,a)
+ # JSON object storage can change nested map order without changing any fact.
+ stored=json.loads(json.dumps(d,sort_keys=True,ensure_ascii=False))
+ verify_execution(stored)
+ assert stored['request']==d['request'] and stored['fingerprint']==d['fingerprint']
+ rr=Requirements.model_validate(stored['requirements']);cc=Candidate.model_validate(stored['candidate'])
+ assert compile_all(rr,cc,g,s,a)==d['request']

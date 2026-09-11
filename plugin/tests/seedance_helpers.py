@@ -42,3 +42,19 @@ def seed_fixture(tmp_path,mode='r2v',resolution='720p',duration=8):
     Path(a['graph_path']).write_text(json.dumps(g));Path(a['schema_path']).write_text(json.dumps(s))
     c=Candidate.model_validate({**c.model_dump(),'model':'Seedance 2.5','variant':'Seedance 2.5','candidate_id':'seedance-2.5-'+mode,'mode':ins['mode'],'template':s['id'],'graph_hash':fp(g),'adapter_fingerprint':fp(ins),'parameters':params,'capability':bind_capability(node,g,s,evidence()),'controls':r.controls,'combinations':[r.controls],'durations':list(range(4,31))})
     return r,c,g,s,a
+
+
+def execution_contract(model_key='seedance-2.5', provider='comfy-cloud'):
+    return dict(transport='MCP',backend=dict(provider=provider,backend_key='https://cloud.comfy.org/mcp' if provider=='comfy-cloud' else 'offline:local-mcp'),capability=dict(kind='video_generation',model_key=model_key),mcp=dict(capability_key='comfy.video_generation'))
+
+
+def execution_plan(r,c,stage_id='OFFLINE'):
+    from drama_plugin.visual.video_selection import ProductionRoute,model_key
+    return ProductionRoute(route_id='OFFLINE-MCP',work_id=r.work_id,stage_id=stage_id,
+        creative_fingerprint=r.source_fingerprint,video_targets=[r.target_id],candidate=c,
+        execution=execution_contract(model_key(c)),requirements=dict(controls=r.controls,
+        duration_seconds=r.duration_seconds,aspect_ratio=r.aspect_ratio,sound=r.sound,
+        language=r.language,shot_type=r.shot_type,creative_schema='cinematic-shot-v1',
+        cinematic_directions={r.target_id:r.frozen_creative['cinematic_direction']},shots={r.target_id:r.shot_id}),
+        quality_thresholds={'action_narrative':'coherent'},stops=['OFFLINE'],fallback='stop',
+        generations_per_video_request=1,generation_count_evidence=evidence(),video_request_credits=100)

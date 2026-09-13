@@ -181,6 +181,13 @@ def freeze_direction(spec: CinematicShotSpec, *, context: dict[str, Any], visual
     material = {'state': 'CINEMATIC_DIRECTION_FROZEN', 'spec': dump_contract(spec),
                 'visualResolution': {k: v for k, v in resolved.items() if k != 'layers'},
                 'review': review, 'hostReview': host_review}
+    if context.get('productionDesign'):
+        from drama_plugin.production_design import verify_design_handoff
+        for design in context['productionDesign']:
+            verify_design_handoff(design, production=True)
+            if design['consumer'] != 'cinematic-direction':
+                raise ValueError('Wrong production design consumer')
+        material['productionDesign'] = deepcopy(context['productionDesign'])
     material['canonicalDialogue'] = context['scene']['content'].get('spokenContent', [])
     if context.get('dialogueCoverage'):
         material['dialogueCoverage'] = context['dialogueCoverage']
@@ -193,6 +200,10 @@ def verify_frozen(raw: dict[str, Any]) -> CinematicShotSpec:
     if raw.get('state') != 'CINEMATIC_DIRECTION_FROZEN' or raw.get('fingerprint') != sha256_canonical({k:v for k,v in raw.items() if k!='fingerprint'}):
         raise ValueError('CINEMATIC_DIRECTION_NOT_FROZEN_OR_CHANGED')
     spec = CinematicShotSpec.model_validate(raw['spec'])
+    if raw.get('productionDesign'):
+        from drama_plugin.production_design import verify_design_handoff
+        for design in raw['productionDesign']:
+            verify_design_handoff(design, production=True)
     if spec.source_sound_intent and list(spec.source_sound_intent.canonical_dialogue_bindings) != [d.spoken_content_id for d in spec.dialogue]:
         raise ValueError('SOURCE_SOUND_CANONICAL_BINDINGS_CHANGED')
     if 'canonicalDialogue' in raw:

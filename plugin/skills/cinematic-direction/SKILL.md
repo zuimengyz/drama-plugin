@@ -178,3 +178,7 @@ contentFingerprint (SHA-256 canonical complete content), appliedPurpose. Freeze
 this snapshot with the existing spec. Later Asset edits never refresh frozen
 references or execution text; the Provider brief does not include Asset IDs.
 See [creative memory contract](../../docs/creative-assets.md).
+
+## Stable production design
+
+Consume approved production-design handoffs alongside VisualBible; they decide stable character, costume, set and motif design. Do not rewrite CharacterVisualSpec to achieve a camera effect. Apply current Scene/Shot state separately. `freeze_direction` accepts context.productionDesign, verifies approved content/policy fingerprints and seals exact snapshots. A candidate stays offline; existing frozen directions remain valid and unchanged. Use the [peak/editorial handoff](../../docs/dramatic-peak-editorial-contract.md) to inherit coverage and HoldReason; do not invent screenplay peaks or equate model duration with Shot need.

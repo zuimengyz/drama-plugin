@@ -71,3 +71,7 @@ updates when only this artifact exists. Scene authoring owns eventual full-state
 save/reconciliation through existing spokenContent, preserving IDs and source
 provenance; audio production only consumes the selected wording. Unrequested lines
 remain pending, and a wording change does not itself invalidate images/videos.
+
+## Pressure, release and first appearance
+
+Use the [peak/editorial contract](../../docs/dramatic-peak-editorial-contract.md) for PressureRelease and Scene-level DramaticPeakMap. State starting pressure, escalation, turn, release (or purposeful deferral) and aftermath, so equal tension at entry/exit is not mistaken for progression. Scene decides how a character enters; production-design decides visual importance; shot-design chooses the exact view. A core FirstAppearanceContract checks silhouette, costume/space/light priority, surrounding reactions and the first readable action/attitude. A name caption cannot replace these. Equal treatment with extras requires a hidden-identity story purpose. Do not write recommended peak changes over approved Canon merely to obtain intensity.

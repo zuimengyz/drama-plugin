@@ -1,6 +1,6 @@
 code: cinematic-finishing
 name: Cinematic Finishing
-description: Scene sound continuity and optional music through local finishing of existing Media.
+description: Picture edit planning after actual performance review, plus scene sound continuity and optional music on existing Media.
 context:
   required: [work, scene]
   optional: [shot, sourceVideoMediaId, audioMediaIds, temporaryState]

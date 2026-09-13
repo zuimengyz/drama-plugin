@@ -1,6 +1,6 @@
 ---
 name: cinematic-finishing
-description: Finish existing edited drama with scene sound continuity, local ambience repair, optional BGM and a retained derived Media. Use after picture editing when dialogue, performances and picture timing should remain intact.
+description: Finish existing edited drama with scene sound continuity, local ambience repair, optional BGM and a retained derived Media. Use for picture edit planning from reviewed source Media, or for sound finishing after picture editing when performances and timing should remain intact.
 ---
 
 # Cinematic Finishing
@@ -100,3 +100,7 @@ layer retains `bgmSelection`, `bgmAsset` and `bgmMedia` snapshots. Existing rend
 validates rights, ranges and lineage before even reusing a cached output; normal
 full-byte hash checks remain mandatory. Missing/unknown rights stop BGM execution.
 Metadata edits never regenerate audio. See [creative memory contract](../../docs/creative-assets.md).
+
+## Picture Edit Plan
+
+After actual performance review, use the [picture-edit contract](../../docs/dramatic-peak-editorial-contract.md) and typed PictureEditPlan. Select sourceIn/sourceOut by information and measured action, rather than always using the whole generated file; record cut reason, reaction hold, match action, audio carry and pace function. Verify Media ID/hash/range and protected dialogue through `production_design.picture_edit_handoff`. Unknown listening remains DRAFT. This extends picture planning only; the existing sound renderer's source-packet preservation is unchanged. A picture assembly is separately authorized and produces a derived Media. Do not rewrite Script peaks, alter original AV or add music to manufacture a missing payoff. Review monotony, overcutting, missing reactions/detail/establishing context and contrast across the passage.

@@ -65,7 +65,7 @@ def test_registry_adds_exactly_one_skill_and_no_new_domain_tools():
     expected={'asset-resolution','audio-production','cinematic-finishing','cinematic-screenplay-incubation',
         'dramatic-performance-direction','episode-development','historical-research','scene-development',
         'script-adaptation','shot-design','shot-production','video-model-selection','work-creation'}
-    assert {s.code for s in p.skills.list()} == expected | {'cinematic-direction'}
+    assert {s.code for s in p.skills.list()} == expected | {'cinematic-direction', 'production-design'}
     assert len(p.tools.list()) == 50
 
 

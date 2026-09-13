@@ -10,6 +10,7 @@ from drama_plugin.contracts.creative_asset import (
     BgmContent, BgmSelection, CinematicLanguageContent, CinematicLanguageRef,
 )
 from drama_plugin.contracts.media import Media, MediaType
+from drama_plugin.contracts.production_design import ProductionDesignContent
 from drama_plugin.tools.registry import ToolRegistry
 from drama_plugin.providers.base.interfaces import MediaProvider
 
@@ -53,16 +54,16 @@ async def retain_bgm_media(tools: ToolRegistry, provider: MediaProvider, *, work
 
 
 async def remember(tools: ToolRegistry, work_id: str,
-                   content: CinematicLanguageContent | BgmContent) -> tuple[Asset, str]:
+                   content: CinematicLanguageContent | BgmContent | ProductionDesignContent) -> tuple[Asset, str]:
     """Search before create; mismatching revisions require explicit review, never overwrite.
 
     The service serializes same-work creative creates. After an uncertain write,
     rerun this operation to reconcile the same key/hash before attempting a write.
     """
     raw = dump_contract(content)
-    is_language = isinstance(content, CinematicLanguageContent)
+    is_language = isinstance(content, (CinematicLanguageContent, ProductionDesignContent))
     kind = AssetType.OTHER if is_language else AssetType.AUDIO_INPUT
-    if isinstance(content, CinematicLanguageContent):
+    if isinstance(content, (CinematicLanguageContent, ProductionDesignContent)):
         key = content.semantic_key
     else:
         if not content.media:

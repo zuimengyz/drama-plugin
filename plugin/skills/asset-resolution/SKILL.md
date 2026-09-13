@@ -80,3 +80,7 @@ create another BGM identity merely because a filename changes.
 For a confirmed local project source, `creative_assets.retain_bgm_media` searches
 existing Media by hash, uses a deterministic sourceRef only for the first import,
 and verifies resolve/readback. A saturated listing blocks ambiguous imports.
+
+## Designed casting and identity authority
+
+For new or revised casting, consume production-design's source-pinned CharacterVisualSpec and HistoricalCanonPolicy. production-design decides what the character should look like; this skill finds/creates/reuses and maintains the corresponding identity. Validate the approved fingerprint with `production_design.validate_reference_design`; do not redesign stable traits to fit an available reference. Legacy references remain readable. A candidate spec is not authority to replace current referenceMediaIds. State remains Scene/Shot state; a new accepted design needs a new reference revision, preserving old Media. Text-only production design uses OTHER and the four typed creative kinds through the same `creative_assets.remember` flow.

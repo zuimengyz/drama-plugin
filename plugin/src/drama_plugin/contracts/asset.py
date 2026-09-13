@@ -46,6 +46,11 @@ class Asset(ContractModel):
             CinematicLanguageContent.model_validate(self.content)
             if self.asset_type != AssetType.OTHER:
                 raise ValueError('Cinematic language uses OTHER')
+        elif kind in {'CHARACTER_VISUAL_SPEC','FACTION_VISUAL_SYSTEM','LOCATION_DESIGN','VISUAL_MOTIF'}:
+            from drama_plugin.contracts.production_design import ProductionDesignContent
+            ProductionDesignContent.model_validate(self.content)
+            if self.asset_type != AssetType.OTHER or self.reference_media_ids:
+                raise ValueError('Production design is an OTHER text-only design, not a replacement Character image')
         elif kind == 'MUSIC' and self.content.get('role') == 'BGM':
             music = BgmContent.model_validate(self.content)
             if self.asset_type != AssetType.AUDIO_INPUT:

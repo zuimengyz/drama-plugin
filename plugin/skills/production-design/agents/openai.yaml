@@ -1,0 +1,4 @@
+interface:
+  display_name: "Production Design & Casting"
+  short_description: "Design casting, visual hierarchy, sets and motifs"
+  default_prompt: "Use $production-design to design story-specific casting and production design with evidence constraints and a reusable candidate handoff."

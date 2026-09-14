@@ -8,9 +8,15 @@ description: Design reusable character casting, faction costume hierarchy, sets 
 Decide what the world and characters should look like, using dramatic role, age,
 experience, class, story phase and audience readability. Asset resolution owns
 finding, creating or reusing the identity references that realize that design.
-Identity continuity alone never proves casting suitability. Attractive means
-appropriate and watchable, not cosmetic perfection: do not equate protagonists
-with idol styling, antagonists with ugliness or heroes with exaggerated muscles.
+Identity continuity alone never proves casting suitability. For historical screen
+drama, combine historical plausibility, modern cinematic screen appeal, character
+personality and leading-character visual authority. History constrains facts and
+period semantics; it does not require museum-reenactment plainness. Reasonable face
+and body idealization is a design choice. Distinguish role-specific attractiveness
+from idol styling or cosmetic perfection; do not make every role beautiful, every
+antagonist ugly, or every hero muscular. Preserve explicitly intended ordinary or
+unconventional casting. Never copy a real star or use fantasy armor to supply the
+authority missing from the person.
 
 Read the [design and handoff contract](references/design.md) when authoring a
 revision. Consume approved story, existing visual identity, actual media review
@@ -71,3 +77,10 @@ and `media.get_media`. Verify consequential evidence with `research.search_sourc
 and `research.verify_claim`. After a complete reusable candidate exists,
 `asset.create_asset` is the first write; `asset.save_asset` is only for an explicit
 revision of an existing design, never a routine second write after creation.
+
+For a sequence, contribute source-pinned Bible entries and usable geography to the
+[sequence package](../../docs/sequence-production-contract.md). Keep each declared
+asset interaction test proportional to actual coverage needs; a motif description
+does not by itself establish a prop's grip, scale, contact or continuity state.
+
+For formal sequence production, freeze approved visual duties with typed ProductionDesignFreeze and CinematicStylizationPolicy in the [sequence contract](../../docs/sequence-production-contract.md#production-design-freeze-and-executable-closure). Candidate suitability never implies user casting approval; keep missing visual approvals separate from blocking-design readiness.

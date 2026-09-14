@@ -182,3 +182,9 @@ See [creative memory contract](../../docs/creative-assets.md).
 ## Stable production design
 
 Consume approved production-design handoffs alongside VisualBible; they decide stable character, costume, set and motif design. Do not rewrite CharacterVisualSpec to achieve a camera effect. Apply current Scene/Shot state separately. `freeze_direction` accepts context.productionDesign, verifies approved content/policy fingerprints and seals exact snapshots. A candidate stays offline; existing frozen directions remain valid and unchanged. Use the [peak/editorial handoff](../../docs/dramatic-peak-editorial-contract.md) to inherit coverage and HoldReason; do not invent screenplay peaks or equate model duration with Shot need.
+
+## Sequence production handoff
+
+When directing a complete passage, consume the [sequence receiver contract](../../docs/sequence-production-contract.md). A shot ending must leave the declared incoming condition for its neighbor; examine world positions separately from their screen projection after a camera change. Apply only motivated motion, visual or audio bridges and carry unresolved obligations to finishing.
+
+For a Sequence, compile ActionChoreographyBeat and MountInteraction from blocking and source-pinned Bible duties: approach, contact, reaction, spatial result and follower opportunity. Consume the ProductionDesignFreeze; do not replace missing approved visual duties with prompt descriptions. Design readiness does not authorize generation.

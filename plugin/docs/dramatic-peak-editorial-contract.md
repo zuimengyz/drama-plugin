@@ -45,8 +45,9 @@ Host assembly may consume the plan. It never renders or mutates source bytes.
 Provider output length is not mandatory final-cut length. Planning picture cuts
 is separate from the existing sound-only finishing renderer, whose packet/timestamp
 preservation remains unchanged. Do not feed arbitrary picture cuts into that renderer.
-A future authorized assembly must retain a derived Media and account for keyframe/
-reencoding constraints; original native AV remains immutable.
+The bounded Host assembly in [sequence production](sequence-production-contract.md)
+uses reviewed ranges and explicitly re-encodes a new candidate. Retain a derived
+Media before formal delivery; original native AV remains immutable.
 
 Finishing cannot rewrite Script peaks. It may carry original source audio across a
 picture cut after checking measured speech/action; unknown native singing or mixed

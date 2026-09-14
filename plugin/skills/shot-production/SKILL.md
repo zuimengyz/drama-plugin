@@ -125,3 +125,5 @@ non-submittable dry requests. Paid use requires fresh canon/Media through
 `route_preflight.py`, current capability, complete quote and the existing stage
 reservation. Unknown complete cost stays unknown. Only verified provider metadata
 may impose a prompt limit; no shared 2000-character cap or silent truncation.
+
+Formal Sequence submissions, including retries, MUST use the [ProductionDesignFreeze entry](../../docs/sequence-production-contract.md#production-design-freeze-and-executable-closure) through `hosts.sequence_execution.invoke_sequence_reserved` before the existing MCP submission. Run `scripts/sequence_preflight.py` for offline readiness. Refresh approval/Asset/Media evidence, bind the exact compiled request to package/freeze/clip fingerprints, and keep existing route, projection, quote and budget gates. INCOMPLETE freeze blocks submission; never bypass it by invoking the single-Shot helper or treating old formal casting as user approval.

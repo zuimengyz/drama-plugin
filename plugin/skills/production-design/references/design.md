@@ -41,3 +41,20 @@ not this skill. Audit every compiled projection before spending; an audit PASS
 proves field propagation and equality, not visual adherence. Review the actual
 images before any shortlist costume fit. Neither shortlist nor fit permits formal
 reference replacement or video without the user's explicit casting decision.
+
+## Screen appeal and candidate reconciliation
+
+Author the positive casting target before exclusions: apparent age, distinctive
+face/body relationships, temperament and why a viewer wants to keep watching this
+particular person. “Not an idol” does not mean “ordinary, unremarkable or old.”
+Young authority may include confidence, pride and controlled physical ease. Name
+the intended personality; a permanent frown cannot substitute for it. Evaluate
+neutral face/body suitability independently from lighting, armor and background.
+Only then test how costume and blocking realize the character's social position.
+
+A user-directed search-profile revision can express this new target while keeping
+its source CharacterVisualSpec immutable. Explicitly resolve ambiguous old wording
+in the candidate brief; do not silently strip prohibitions from a frozen prompt.
+Allowed film idealization never permits modern star copying, modern hair, Western
+medieval drift or xianxia styling. Those are task/period constraints, not reasons
+to suppress screen appeal. Candidate review remains separate from user selection.

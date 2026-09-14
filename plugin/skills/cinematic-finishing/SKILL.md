@@ -104,3 +104,9 @@ Metadata edits never regenerate audio. See [creative memory contract](../../docs
 ## Picture Edit Plan
 
 After actual performance review, use the [picture-edit contract](../../docs/dramatic-peak-editorial-contract.md) and typed PictureEditPlan. Select sourceIn/sourceOut by information and measured action, rather than always using the whole generated file; record cut reason, reaction hold, match action, audio carry and pace function. Verify Media ID/hash/range and protected dialogue through `production_design.picture_edit_handoff`. Unknown listening remains DRAFT. This extends picture planning only; the existing sound renderer's source-packet preservation is unchanged. A picture assembly is separately authorized and produces a derived Media. Do not rewrite Script peaks, alter original AV or add music to manufacture a missing payoff. Review monotony, overcutting, missing reactions/detail/establishing context and contrast across the passage.
+
+## Sequence production handoff
+
+For authorized picture assembly, use the bounded local [sequence execution and review contract](../../docs/sequence-production-contract.md) and scripts/edit_picture.py. Reuse PictureEditPlan; hard picture cuts and native audio trims produce a new candidate. Then fulfill sound bridges, retain Media and review the complete rendered passage. Whole-film observation and findings are source-hash pinned; stills and technical checks cannot grant full AV review.
+
+Consume executable Sequence audio/edit obligations separately from design readiness. Bind the actual output hash to FilmReview; UNKNOWN sound or missing normal AV coverage cannot become REVIEWED. Keep produced, reviewed and user-adopted states distinct.

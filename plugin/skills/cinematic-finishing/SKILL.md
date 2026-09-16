@@ -5,6 +5,11 @@ description: Finish existing edited drama with scene sound continuity, local amb
 
 # Cinematic Finishing
 
+## Opt-in Director authority
+
+Keep EditorialRhythmPlan, PictureEditPlan, SequencePackage and FilmReview as the original owners. Director intent governs acceptance without a parallel edit plan or review. Return existing output/evidence references; use the optional FilmReview director facet for actual-media intent coverage and causal disposition. A design-only judgment stays in Bible review, never a fabricated AV review. Director approval does not imply user adoption, and technical success does not imply Director approval. Native-audio policy and source-preserving finishing remain unchanged.
+
+
 If the user later adopts an `authorial-voice` candidate, preserve its literary text,
 provenance, intent, form and semantic position. Finishing owns its actual screen/sound
 delivery (subtitle, black, overlay, reading or silent display) and timing. The presence

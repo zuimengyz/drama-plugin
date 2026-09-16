@@ -33,7 +33,7 @@ def _coverage(review: FilmReview, modes: set[str]) -> list[list[float]]:
     return missing
 
 
-def film_review_verdict(review: FilmReview, current_media_hash: str) -> dict[str, Any]:
+def film_review_verdict(review: FilmReview, current_media_hash: str, *, require_director: bool = False) -> dict[str, Any]:
     review = FilmReview.model_validate(dump_contract(review))
     if review.media_hash != current_media_hash:
         raise ValueError('Review belongs to different rendered bytes; rewatch repaired output')
@@ -43,6 +43,10 @@ def film_review_verdict(review: FilmReview, current_media_hash: str) -> dict[str
     status = 'REPAIR_REQUIRED' if blocked or 'FAIL' in checks else 'REVIEW_INCOMPLETE'
     if not blocked and not gaps and all(c == 'PASS' for c in checks) and review.persistence_verified:
         status = 'CONTENT_REVIEW_COMPLETE_PENDING_USER_ADOPTION'
+    if require_director and review.director is None:
+        status = 'INSUFFICIENT_EVIDENCE'
+    elif review.director and review.director.disposition != 'APPROVE':
+        status = 'INSUFFICIENT_EVIDENCE' if review.director.disposition == 'INSUFFICIENT_EVIDENCE' else 'REPAIR_REQUIRED'
     return {'status': status, 'normalAvCoverageGaps': gaps, 'unresolvedMajorFindings': blocked,
             'persistenceVerified': review.persistence_verified, 'userAdoption': 'UNCHANGED',
             'warning': 'Observation records are observer attestations, not proof that a tool or model can hear or watch.'}
@@ -87,4 +91,3 @@ def executable_sequence_handoff(package: SequencePackage, current_fingerprints: 
             'reviewInterface': {'required': 'FilmReview.mediaHash == actual output SHA-256',
                                 'observation': 'NORMAL_AV coverage remains mandatory for film completion'},
             'status': 'EXECUTABLE_DESIGN_READY' if ready else 'PARTIAL'}
-

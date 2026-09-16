@@ -5,6 +5,11 @@ description: Translate approved Shot narrative into source-pinned visual directi
 
 # Cinematic Direction & Performance
 
+## Opt-in Director authority
+
+Director owns WHY and global acceptance; this Skill owns route-specific HOW through the existing CinematicShotSpec. Consume pinned Director intent and prohibitions with the approved Shot/DPD, and return the frozen projection plus evidence/limits. Camera and Performance Grammar cannot rewrite Scene purpose, Script or Director intent. The existing phrase director execution describes within-shot realization, not a competing global authority. Source conflicts return upstream; production feasibility returns to Director via the selection/production owner.
+
+
 影视导演、摄影质感与人物表演。 One Skill, four connected capabilities:
 **Look Development, Cinematography, Performance Direction, Temporal Beat Planning**.
 Their common output is `CinematicShotSpec`, not four independently versioned plans.

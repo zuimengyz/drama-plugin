@@ -131,43 +131,48 @@ def test_pilot_then_expansion_and_pass_cannot_be_reworked(tmp_path):
     assert metrics(state)['first_pass_yield']==1
 
 
-def test_two_failures_stop_and_resume_keeps_revision_budget(tmp_path):
+def test_each_failure_pauses_and_explicit_resume_preserves_attempt_history(tmp_path):
+    # V3-03D: current owner stops on each content failure, with explicit Host replan.
     state=new_campaign(frames(tmp_path))
-    for sid in ['S1','S2']:
-        a=reserve(state,sid);outcome(state,a);record_review(state,review_for(state,a,'PROP_STRUCTURE'))
-    assert state['pause']
-    with pytest.raises(ValueError,match='PAUSED'):reserve(state,'S3')
-    resume(state,reason='Reviewed reference conflict; preserve masters and enforce exact component count')
+    a=reserve(state,'S1');outcome(state,a);record_review(state,review_for(state,a,'PROP_STRUCTURE'))
+    assert state['pause']=='CONTENT_REPLAN_REQUIRED'
+    with pytest.raises(ValueError,match='PAUSED'):reserve(state,'S2')
+    resume(state,reason='Reviewed reference conflict; explicit targeted strategy')
     a=reserve(state,'S1');assert a['ordinal']==2
     assert 'TARGETED CORRECTION' in a['request']['input_overrides']['18']['prompt']
     outcome(state,a);record_review(state,review_for(state,a,'PROP_STRUCTURE'))
-    assert state['pause']=='TARGETED_REVISION_FAILED'
-    with pytest.raises(ValueError):resume(state,reason='try again')
+    assert state['pause']=='CONTENT_REPLAN_REQUIRED'
+    assert len(state['attempts'])==2 and len(state['remediations'])==1
     assert metrics(state)['first_pass_yield']==0
+    # Director integration bounds iterations; production never resumes itself.
+    with pytest.raises(ValueError,match='PAUSED'):reserve(state,'S1')
 
 
-def test_common_nonconsecutive_and_consecutive_different_failures(tmp_path):
+def test_different_failure_categories_each_require_explicit_replan(tmp_path):
     state=new_campaign(frames(tmp_path))
-    for sid,category in [('S1','IDENTITY'),('S2',None),('S3','IDENTITY')]:
+    for sid,category in [('S1','IDENTITY'),('S2',None),('S3','BLOCKING')]:
         a=reserve(state,sid);outcome(state,a);record_review(state,review_for(state,a,category))
-    assert state['pause']=='COMMON_FAILURE_REPLAN'
-    state=new_campaign(frames(tmp_path))
-    for sid,category in [('S1','IDENTITY'),('S2','BLOCKING')]:
-        a=reserve(state,sid);outcome(state,a);record_review(state,review_for(state,a,category))
-    assert state['pause']=='CONSECUTIVE_FAILURE_REPLAN'
+        if category:
+            assert state['pause']=='CONTENT_REPLAN_REQUIRED'
+            with pytest.raises(ValueError,match='PAUSED'):reserve(state,'S4')
+            resume(state,reason='Host reviewed '+category+' at its causal owner')
+    assert len(state['attempts'])==3 and len(state['remediations'])==2
+    assert metrics(state)['first_pass_yield']==1/3
 
 
-def test_minor_review_and_wrong_output_or_missing_evidence(tmp_path):
+def test_minor_review_wrong_output_and_unknown_remain_distinct(tmp_path):
     state=new_campaign(frames(tmp_path));a=reserve(state,'S1');outcome(state,a)
     r=review_for(state,a,'COSMETIC',minor=True)
     with pytest.raises(ValueError,match='OUTPUT_MISMATCH'):record_review(state,r.model_copy(update={'output_hash':'b'*64}))
-    checks=dict(r.checks);checks.pop('required:pilot prone')
-    with pytest.raises(ValueError,match='CHECKS_MISSING'):record_review(state,r.model_copy(update={'checks':checks}))
+    checks=dict(r.checks);checks['BLOCKING']='FAIL'
+    with pytest.raises(ValueError,match='CHECKS_AND_FINDINGS_DISAGREE'):record_review(state,r.model_copy(update={'checks':checks}))
     checks=dict(r.checks);checks['BLOCKING']='UNKNOWN'
-    with pytest.raises(ValueError,match='INCOMPLETE'):record_review(state,r.model_copy(update={'checks':checks}))
-    with pytest.raises(ValueError,match='DOWNGRADED'):record_review(state,review_for(state,a,'IDENTITY',minor=True))
-    assert record_review(state,r)=='PASS_WITH_NOTES'
-    assert metrics(state)['first_usable']==1
+    assert record_review(state,r.model_copy(update={'checks':checks}))=='PENDING_REVIEW'
+    assert metrics(state)['first_usable']==0
+    from drama_plugin.visual.production import revise_review
+    assert revise_review(state,review=r.model_dump(mode='json'),reason='Completed missing observation',expected_review_hash=sha256_canonical(a['review']))=='PASS_WITH_NOTES'
+    assert a['review']['checks']['BLOCKING']=='UNKNOWN'  # retained original evidence
+    assert a['current_review']['checks']['BLOCKING']=='PASS'
 
 
 def test_uncertain_job_survives_restart_and_does_not_double_submit(tmp_path):
@@ -208,12 +213,14 @@ def test_replan_can_recover_without_resetting_first_pass_yield(tmp_path):
     state=new_campaign(frames(tmp_path))
     for sid in ['S1','S2']:
         a=reserve(state,sid);outcome(state,a);record_review(state,review_for(state,a,'PROP_STRUCTURE'))
-    resume(state,reason='Inspected repeated structural defect and wrote exact targeted correction')
+        assert state['pause']=='CONTENT_REPLAN_REQUIRED'
+        resume(state,reason='Inspected structural defect and selected targeted correction')
     for sid in state['pilots']:
         a=reserve(state,sid);outcome(state,a);record_review(state,review_for(state,a))
     assert not state['pause']
     assert reserve(state,'S4')['ordinal']==1
     assert metrics(state)['first_pass_yield']==1/3
+    assert len(state['remediations'])==2
 
 
 def test_late_billing_cannot_attach_to_wrong_job_or_count_twice(tmp_path):

@@ -1,7 +1,7 @@
 """Sequence sidecars compose existing owners; no new business entity or adoption authority."""
 from __future__ import annotations
-from typing import Annotated, Literal, Self
-from pydantic import Field, model_validator
+from typing import Annotated, Any, Literal, Self
+from pydantic import ConfigDict, Field, SerializerFunctionWrapHandler, model_serializer, model_validator
 from drama_plugin.contracts.base import ContractModel
 from drama_plugin.contracts.creative_asset import Hash, Text
 from drama_plugin.contracts.dramatic_editorial import EditorialRhythmPlan, Seconds
@@ -163,6 +163,37 @@ class FilmFinding(ContractModel):
         return self
 
 
+DirectorDisposition = Literal['APPROVE', 'REVISE_EXECUTION', 'REVISE_PERFORMANCE',
+    'REVISE_BLOCKING', 'REVISE_COVERAGE', 'REVISE_EDIT', 'REVISE_SOUND', 'REPLAN_SCENE',
+    'REQUEST_SCRIPT_REVIEW', 'ESCALATE_PRODUCTION_METHOD', 'INSUFFICIENT_EVIDENCE']
+
+
+class DirectorReviewFacet(ContractModel):
+    """Optional binding in the existing FilmReview or Bible design review, never a second review."""
+    model_config = ConfigDict(frozen=True)
+    workspace_id: Text
+    branch_id: Text
+    scope_id: Text
+    source_pins: tuple[SourcePin, ...] = Field(min_length=1)
+    route_ref: SourcePin | None = None
+    intent_refs: tuple[SourcePin, ...] = Field(min_length=1)
+    request_ref: SourcePin
+    feedback_ref: SourcePin
+    intent_coverage: dict[str, Literal['PASS', 'FAIL', 'UNKNOWN']] = Field(min_length=1)
+    disposition: DirectorDisposition
+    finding_keys: tuple[Text, ...] = ()  # Repair owner/body stay in the original findings.
+    reason_summary: Text
+    adopted_delta_ref: SourcePin | None = None
+
+    @model_validator(mode='after')
+    def coverage(self) -> Self:
+        if set(self.intent_coverage) != {p.key for p in self.intent_refs}:
+            raise ValueError('Director review must cover every assigned intent')
+        if self.disposition == 'APPROVE' and any(v != 'PASS' for v in self.intent_coverage.values()):
+            raise ValueError('UNKNOWN or failed intent cannot be approved')
+        return self
+
+
 class FilmReview(ContractModel):
     media_hash: Hash
     duration: Annotated[float, Field(gt=0, allow_inf_nan=False)]
@@ -173,9 +204,19 @@ class FilmReview(ContractModel):
     visual_continuity: Literal['PASS', 'FAIL', 'UNKNOWN'] = 'UNKNOWN'
     sound: Literal['PASS', 'FAIL', 'UNKNOWN'] = 'UNKNOWN'
     persistence_verified: bool = False
+    director: DirectorReviewFacet | None = None
+
+    @model_serializer(mode='wrap')
+    def legacy_serialization(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data: dict[str, Any] = handler(self)
+        if self.director is None:
+            data.pop('director', None)
+        return data
 
     @model_validator(mode='after')
     def ranges(self) -> Self:
         if any(o.end > self.duration for o in self.observations) or any(f.end > self.duration for f in self.findings):
             raise ValueError('Review range exceeds actual file')
+        if self.director and not set(self.director.finding_keys) <= {f.key for f in self.findings}:
+            raise ValueError('Director finding reference is missing')
         return self

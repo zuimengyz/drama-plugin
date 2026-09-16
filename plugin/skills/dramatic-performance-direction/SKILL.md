@@ -5,6 +5,11 @@ description: Build a replayable, provider- and modality-neutral Scene/Beat/Line 
 
 # Dramatic Performance Direction
 
+## Opt-in Director authority
+
+DPD remains the canonical owner of objective, obstacle, tactic and subtext. Consume a Director request as pinned intent and constraints, not another psychological truth. Its Scene dramaticPurpose is a source-derived summary, not independently editable purpose. Return the original DPD snapshot/fingerprint, evidence and unmet requirements in CapabilityFeedback. Director may accept or return the proposal; conflicts with source dialogue require upstream review rather than a silent rewrite.
+
+
 Build one compact `dpd-v1` direction for an approved Scene before modality-specific production. Read the [DPD Core contract](../../docs/dpd-core-contract.md) before composing it.
 
 Load only the context needed to explain the current dramatic action. Start with `scene.get_scene`; use `episode.get_episode`, `script.get_script`, and `work.get_work` only for unresolved dramatic purpose, stable speaker identity, relationship, hierarchy, or historical/social constraint. Use `context.build_context` only when these direct reads cannot supply a required parent relation. Do not retrieve history independently or copy whole Character profiles into the direction.

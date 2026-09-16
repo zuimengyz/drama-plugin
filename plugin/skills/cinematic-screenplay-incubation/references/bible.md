@@ -73,3 +73,23 @@ working section, as described in [intent handoff](cinematic-intent.md). It refer
 approved anchors and scene text instead of duplicating them. Historical epilogue is an
 optional, separate episode supplement, never part of canonical spokenContent or a new
 Domain. Frozen older Bibles need no migration to use these local handoff artifacts.
+
+## Opt-in reviewed presentation receipts
+
+Narrative ledger remains screenplay authority. Keep presentation receipts separate:
+only a meaningful adopted audience disclosure, relationship presentation, motif use,
+sound strategy or character presentation warrants one. A receipt references the
+original review, reviewed sparse delta, source pins, branch and prior adopted head.
+It does not store another character state, DPD, prompt, retry or production log.
+Planned requests and observed feedback never update adopted state by themselves.
+
+For no-media work use existing review with `subjectKind: DESIGN_ONLY`, `findings`
+and the same optional director binding vocabulary as FilmReview. Bind source,
+intent, request, feedback and branch; store disposition and reason summary, not
+private reasoning. Real AV uses FilmReview with real duration/hash/observations.
+The artifact adapter commits receipt + adopted head only after the pure review gate.
+A design receipt records adoption of a design, never actual audience perception.
+Failed or unknown observations remain evidence; user approval stays at its original
+gate and never transfers across route/revision branches. A new branch starts without
+adopted presentation. Frozen Bibles are not rewritten: receipts are external linked
+ledger revisions in the project workspace.

@@ -1,0 +1,761 @@
+{
+  "mode": "OFFLINE_IMPLEMENTATION_FIXTURE_ONLY",
+  "source": "artifacts/v3-03b/audit-evidence.json + artifacts/v3-02/runtime/after/formal.json",
+  "samples": [
+    {
+      "mode": "OFFLINE_PROPOSED_DPD_NOT_ADOPTED_NOT_GENERATED",
+      "sceneId": "scene_5707a01b9d9d4999b48dd2ecd218ea29",
+      "sceneNo": 2,
+      "sourceHash": "cc2ebae5b496731ed184199f1e9ebad230cec934919f1683ab8d49452d623c49",
+      "sourceRevision": "gaixia-r1",
+      "canonicalLineId": "s2-song",
+      "existingShotIds": [
+        "shot_8e252a47cb75423d9024aaba65c6a31e",
+        "shot_a31cedff6e254764ae8edab44af424c5",
+        "shot_7369efe871144a8593884c58ac93a350"
+      ],
+      "dpdSnapshot": {
+        "schemaVersion": "dpd-snapshot-v1",
+        "scene": {
+          "schemaVersion": "dpd-v1",
+          "scope": "SCENE",
+          "sceneId": "scene_5707a01b9d9d4999b48dd2ecd218ea29",
+          "sourceFingerprint": "cc2ebae5b496731ed184199f1e9ebad230cec934919f1683ab8d49452d623c49",
+          "dramaticPurpose": "粮尽与楚歌使继续守营的空间更窄；项羽改为率能骑者突围，营中大军与主将分开。",
+          "conflictCondition": "无人有确切军报",
+          "powerStructure": "统帅仍保有命令权",
+          "emotionalClimate": null,
+          "urgencyContext": null,
+          "informationAsymmetry": null,
+          "socialConstraints": [],
+          "direction": {
+            "objective": "求证楚歌意味着什么",
+            "interactionTarget": "speaker:chu_officer",
+            "tactic": "向能提供军情的人追问",
+            "authorityPosition": "统帅仍保有命令权",
+            "relationshipStance": "力求对方回应",
+            "internalActivation": "HIGH",
+            "externalControl": "HIGH",
+            "publicPrivateContext": "在场对话，非面向观众独白",
+            "subtext": "楚地已失只是假设，不作旁白事实",
+            "performanceBoundaries": null
+          }
+        },
+        "beat": {
+          "schemaVersion": "dpd-v1",
+          "scope": "BEAT",
+          "sceneId": "scene_5707a01b9d9d4999b48dd2ecd218ea29",
+          "beatId": "DESIGN_ONLY_S2_beat",
+          "actor": "speaker:xiang_yu",
+          "obstacle": "无人有确切军报",
+          "transitionTrigger": "既有源动作或对方回应改变当前阻力",
+          "direction": {
+            "objective": null,
+            "interactionTarget": null,
+            "tactic": "向能提供军情的人追问",
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": null,
+            "performanceBoundaries": null
+          }
+        },
+        "line": {
+          "schemaVersion": "dpd-v1",
+          "scope": "LINE",
+          "sceneId": "scene_5707a01b9d9d4999b48dd2ecd218ea29",
+          "beatId": "DESIGN_ONLY_S2_beat",
+          "spokenContentId": "s2-song",
+          "speaker": "speaker:xiang_yu",
+          "dramaticAction": "求证楚歌意味着什么",
+          "observableIntent": "作用于在场听者",
+          "continuity": "承接原Scene输入与已发生动作",
+          "changeFromPrevious": "依原line位置改变当前策略",
+          "direction": null
+        },
+        "effective": {
+          "schemaVersion": "dpd-effective-v1",
+          "sceneId": "scene_5707a01b9d9d4999b48dd2ecd218ea29",
+          "beatId": "DESIGN_ONLY_S2_beat",
+          "spokenContentId": "s2-song",
+          "actor": "speaker:xiang_yu",
+          "speaker": "speaker:xiang_yu",
+          "dramaticPurpose": "粮尽与楚歌使继续守营的空间更窄；项羽改为率能骑者突围，营中大军与主将分开。",
+          "conflictCondition": "无人有确切军报",
+          "powerStructure": "统帅仍保有命令权",
+          "emotionalClimate": null,
+          "urgencyContext": null,
+          "informationAsymmetry": null,
+          "socialConstraints": [],
+          "objective": "求证楚歌意味着什么",
+          "interactionTarget": "speaker:chu_officer",
+          "tactic": "向能提供军情的人追问",
+          "authorityPosition": "统帅仍保有命令权",
+          "relationshipStance": "力求对方回应",
+          "internalActivation": "HIGH",
+          "externalControl": "HIGH",
+          "publicPrivateContext": "在场对话，非面向观众独白",
+          "subtext": "楚地已失只是假设，不作旁白事实",
+          "performanceBoundaries": [],
+          "obstacle": "无人有确切军报",
+          "transitionTrigger": "既有源动作或对方回应改变当前阻力",
+          "dramaticAction": "求证楚歌意味着什么",
+          "observableIntent": "作用于在场听者",
+          "continuity": "承接原Scene输入与已发生动作",
+          "changeFromPrevious": "依原line位置改变当前策略"
+        },
+        "fingerprint": "8b0581afcb075e68c2dcb2e3733d0e59b240159f94f546102d2e294d19f77883"
+      },
+      "actualMediaObserved": false,
+      "directorAVDecision": "INSUFFICIENT_EVIDENCE",
+      "adoptedStateDelta": [],
+      "canonicalScene": {
+        "id": "scene_5707a01b9d9d4999b48dd2ecd218ea29",
+        "episode_id": "episode_0b00fe449fd1494b89f403c9ed66646b",
+        "order": 2,
+        "title": "粮器与楚歌",
+        "location": "垓下楚营",
+        "content": {
+          "time": "战后，夜；不锁定距交战经过几日",
+          "rhythm": {
+            "source": "environment:rhythm_speed",
+            "semantics": "自然、紧凑而相对从容；保留必要环境认知、人物观察、关键动作过程与有作用的反应停顿，不以重复搬放、空等或完整工艺演示填时长。两档均非播放或台词倍速，不统一乘时长系数，不设镜头时长/动作密度/切镜次数硬指标。保留观众导航、关键事实、核心动作与时间因果；普通瑕疵不阻断。节奏不选择媒体模型、分辨率、费用或声音服务。",
+            "rhythm_speed": "medium"
+          },
+          "objective": "项羽判断还能否以营中军队继续抵抗",
+          "characters": [
+            "项羽",
+            "楚军吏"
+          ],
+          "revisionId": "gaixia-r1",
+          "textReview": {
+            "note": "重大剧情、人物、史料及空间时间因果可成立；场内军令与局部动作按戏剧化补足，不宣称逐项史书记载。",
+            "status": "PASS_WITH_NOTES",
+            "reviewer": "HOST"
+          },
+          "spokenContent": [
+            {
+              "id": "s2-food-q",
+              "kind": "DIALOGUE",
+              "text": "还能支撑几顿？",
+              "intent": "判断营内守战余地。",
+              "mustKeep": true,
+              "provenance": {
+                "relation": "DRAMATIZED",
+                "sourceRefs": [
+                  "S1"
+                ],
+                "adaptationNote": "据对应史料的行动或话意改写；具体命令与无名职役回报属可删除而不改变史实因果的戏剧化补足。"
+              },
+              "speakerKey": "speaker:xiang_yu",
+              "performanceIntent": "正常语速，随场内对象与行动说话；不作为面向观众的预言或口号。",
+              "estimatedDurationMs": 2500
+            },
+            {
+              "id": "s2-food-a",
+              "kind": "DIALOGUE",
+              "text": "没有下一顿了。",
+              "intent": "把粮尽变成可决定的现实。",
+              "mustKeep": true,
+              "provenance": {
+                "relation": "DRAMATIZED",
+                "sourceRefs": [
+                  "S1"
+                ],
+                "adaptationNote": "据对应史料的行动或话意改写；具体命令与无名职役回报属可删除而不改变史实因果的戏剧化补足。"
+              },
+              "speakerKey": "speaker:chu_officer",
+              "performanceIntent": "正常语速，随场内对象与行动说话；不作为面向观众的预言或口号。",
+              "estimatedDurationMs": 2500
+            },
+            {
+              "id": "s2-song",
+              "kind": "DIALOGUE",
+              "text": "汉军把楚地都得去了？怎么有这样多楚人？",
+              "intent": "惊疑声音来源，求证而没有答案。",
+              "mustKeep": true,
+              "provenance": {
+                "relation": "ADAPTED",
+                "sourceRefs": [
+                  "S1"
+                ],
+                "adaptationNote": "据对应史料的行动或话意改写；具体命令与无名职役回报属可删除而不改变史实因果的戏剧化补足。"
+              },
+              "speakerKey": "speaker:xiang_yu",
+              "performanceIntent": "正常语速，随场内对象与行动说话；不作为面向观众的预言或口号。",
+              "estimatedDurationMs": 6100
+            },
+            {
+              "id": "s2-number-q",
+              "kind": "DIALOGUE",
+              "text": "能随我走的，有多少骑？",
+              "intent": "确认能执行突围的队伍规模。",
+              "mustKeep": true,
+              "provenance": {
+                "relation": "DRAMATIZED",
+                "sourceRefs": [
+                  "S1"
+                ],
+                "adaptationNote": "据对应史料的行动或话意改写；具体命令与无名职役回报属可删除而不改变史实因果的戏剧化补足。"
+              },
+              "speakerKey": "speaker:xiang_yu",
+              "performanceIntent": "正常语速，随场内对象与行动说话；不作为面向观众的预言或口号。",
+              "estimatedDurationMs": 3700
+            },
+            {
+              "id": "s2-number-a",
+              "kind": "DIALOGUE",
+              "text": "八百余骑。",
+              "intent": "回报可骑随行者，不宣称只剩八百人。",
+              "mustKeep": true,
+              "provenance": {
+                "relation": "DRAMATIZED",
+                "sourceRefs": [
+                  "S1"
+                ],
+                "adaptationNote": "据对应史料的行动或话意改写；具体命令与无名职役回报属可删除而不改变史实因果的戏剧化补足。"
+              },
+              "speakerKey": "speaker:chu_officer",
+              "performanceIntent": "正常语速，随场内对象与行动说话；不作为面向观众的预言或口号。",
+              "estimatedDurationMs": 1900
+            },
+            {
+              "id": "s2-leave",
+              "kind": "DIALOGUE",
+              "text": "随我南出。",
+              "intent": "执行自己决定的突围。",
+              "mustKeep": true,
+              "provenance": {
+                "relation": "DRAMATIZED",
+                "sourceRefs": [
+                  "S1"
+                ],
+                "adaptationNote": "据对应史料的行动或话意改写；具体命令与无名职役回报属可删除而不改变史实因果的戏剧化补足。"
+              },
+              "speakerKey": "speaker:xiang_yu",
+              "performanceIntent": "正常语速，随场内对象与行动说话；不作为面向观众的预言或口号。",
+              "estimatedDurationMs": 1900
+            }
+          ],
+          "screenplayAction": "营内一名军吏把空粮器倾斜，刮出的只有零星碎屑，领粮的兵没有再伸手。项羽从他们身边经过，询问还能支撑多久，军吏直接回报已经没有下一顿。外围忽然传来楚地歌调。近处士卒停下嚼咽和包扎，侧耳去听；另一个方向也响起声音。项羽先看一个方向，又转向另一个方向，问汉军是否连楚地也尽得了。没有人能够用一份军报回答，他所见的是将士自己熟悉的歌从围兵中传来。较晚，项羽立在备好的坐骑旁，营内已有一队队骑兵等候。他询问人数，听到八百余骑，回望仍靠着营垒坐着的徒卒，改变当前行动：率骑南出。没有托付虚构少年拯救余军，没有以虞美人的牺牲解释这道命令。",
+          "requiredTransition": "粮尽与楚歌使继续守营的空间更窄；项羽改为率能骑者突围，营中大军与主将分开。",
+          "finishingReferences": [
+            {
+              "workId": "work_65286074132f4a91ad111a0e203051a0",
+              "revision": "gaixia-finishing-r1",
+              "recipeHash": "26cfa84695473c98f1b25770c2832bd343693161345cf59a4e15c85d4442d40f",
+              "sourceMediaId": "media_6922ed0dcbe44619bfe5f0ac7c144f44",
+              "derivedMediaId": "media_a662059659e74aea957a7b278dcbba87"
+            }
+          ],
+          "narrativeInputState": "楚军在营垒内，外围为汉军及诸侯军多重包围；项羽还试图掌握部队可用状况。",
+          "narrativeOutputState": "项羽与八百余骑准备夜间南出；众多徒卒仍在营内，突围不是全军救出。",
+          "requiredSpineBeatIds": [
+            "H2",
+            "H3"
+          ],
+          "userArtisticAcceptance": "PENDING",
+          "suggestedDurationRangeSeconds": [
+            38,
+            50
+          ]
+        }
+      }
+    },
+    {
+      "mode": "OFFLINE_PROPOSED_DPD_NOT_ADOPTED_NOT_GENERATED",
+      "sceneId": "scene_1059c72f855e46b2a1fb132ac701d6c0",
+      "sceneNo": 7,
+      "sourceHash": "1551b36e99c71f7db7c80d51d790ee38ddd1715006f3987a4b1a774c4d49e240",
+      "sourceRevision": "gaixia-r1",
+      "canonicalLineId": "s7-how",
+      "existingShotIds": [
+        "shot_7e5aae41f00840e78def572520a18de6",
+        "shot_8832189932f04e279b8c69923db823ae",
+        "shot_87c3c3bdbf6d48cc8207a0a370fb2431",
+        "shot_8565f7b2d48d4e57933a02e02f1ea8b4",
+        "shot_037906a359f947abaf96d35fed149af4",
+        "shot_8f3d16f7ac7442439b28a3d5be7f9353",
+        "shot_02a76751d3864ef2a293462303b1175b"
+      ],
+      "dpdSnapshot": {
+        "schemaVersion": "dpd-snapshot-v1",
+        "scene": {
+          "schemaVersion": "dpd-v1",
+          "scope": "SCENE",
+          "sceneId": "scene_1059c72f855e46b2a1fb132ac701d6c0",
+          "sourceFingerprint": "1551b36e99c71f7db7c80d51d790ee38ddd1715006f3987a4b1a774c4d49e240",
+          "dramaticPurpose": "快战的局部成功得到从骑承认，但汉军能够分队重围，楚方只剩一小队人，战争未被扭转。",
+          "conflictCondition": "局部成功未换回大军",
+          "powerStructure": "统帅仍保有命令权",
+          "emotionalClimate": null,
+          "urgencyContext": null,
+          "informationAsymmetry": null,
+          "socialConstraints": [],
+          "direction": {
+            "objective": "要求同伴确认局部能战",
+            "interactionTarget": "speaker:chu_rider",
+            "tactic": "索取战果见证",
+            "authorityPosition": "统帅仍保有命令权",
+            "relationshipStance": "力求对方回应",
+            "internalActivation": "HIGH",
+            "externalControl": "HIGH",
+            "publicPrivateContext": "在场对话，非面向观众独白",
+            "subtext": "自证仍能战，不等于改写全局败势",
+            "performanceBoundaries": null
+          }
+        },
+        "beat": {
+          "schemaVersion": "dpd-v1",
+          "scope": "BEAT",
+          "sceneId": "scene_1059c72f855e46b2a1fb132ac701d6c0",
+          "beatId": "DESIGN_ONLY_S7_beat",
+          "actor": "speaker:xiang_yu",
+          "obstacle": "局部成功未换回大军",
+          "transitionTrigger": "既有源动作或对方回应改变当前阻力",
+          "direction": {
+            "objective": null,
+            "interactionTarget": null,
+            "tactic": "索取战果见证",
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": null,
+            "performanceBoundaries": null
+          }
+        },
+        "line": {
+          "schemaVersion": "dpd-v1",
+          "scope": "LINE",
+          "sceneId": "scene_1059c72f855e46b2a1fb132ac701d6c0",
+          "beatId": "DESIGN_ONLY_S7_beat",
+          "spokenContentId": "s7-how",
+          "speaker": "speaker:xiang_yu",
+          "dramaticAction": "要求同伴确认局部能战",
+          "observableIntent": "作用于在场听者",
+          "continuity": "承接原Scene输入与已发生动作",
+          "changeFromPrevious": "依原line位置改变当前策略",
+          "direction": null
+        },
+        "effective": {
+          "schemaVersion": "dpd-effective-v1",
+          "sceneId": "scene_1059c72f855e46b2a1fb132ac701d6c0",
+          "beatId": "DESIGN_ONLY_S7_beat",
+          "spokenContentId": "s7-how",
+          "actor": "speaker:xiang_yu",
+          "speaker": "speaker:xiang_yu",
+          "dramaticPurpose": "快战的局部成功得到从骑承认，但汉军能够分队重围，楚方只剩一小队人，战争未被扭转。",
+          "conflictCondition": "局部成功未换回大军",
+          "powerStructure": "统帅仍保有命令权",
+          "emotionalClimate": null,
+          "urgencyContext": null,
+          "informationAsymmetry": null,
+          "socialConstraints": [],
+          "objective": "要求同伴确认局部能战",
+          "interactionTarget": "speaker:chu_rider",
+          "tactic": "索取战果见证",
+          "authorityPosition": "统帅仍保有命令权",
+          "relationshipStance": "力求对方回应",
+          "internalActivation": "HIGH",
+          "externalControl": "HIGH",
+          "publicPrivateContext": "在场对话，非面向观众独白",
+          "subtext": "自证仍能战，不等于改写全局败势",
+          "performanceBoundaries": [],
+          "obstacle": "局部成功未换回大军",
+          "transitionTrigger": "既有源动作或对方回应改变当前阻力",
+          "dramaticAction": "要求同伴确认局部能战",
+          "observableIntent": "作用于在场听者",
+          "continuity": "承接原Scene输入与已发生动作",
+          "changeFromPrevious": "依原line位置改变当前策略"
+        },
+        "fingerprint": "b7b7e97717712d61bc09b8371b7c92e8112822329ee54a3b596e3874a8acf193"
+      },
+      "actualMediaObserved": false,
+      "directorAVDecision": "INSUFFICIENT_EVIDENCE",
+      "adoptedStateDelta": [],
+      "canonicalScene": {
+        "id": "scene_1059c72f855e46b2a1fb132ac701d6c0",
+        "episode_id": "episode_0b00fe449fd1494b89f403c9ed66646b",
+        "order": 7,
+        "title": "再破一阵",
+        "location": "东城附近坡地、山的东侧",
+        "content": {
+          "time": "其后，追骑已至；不指定今地山名",
+          "rhythm": {
+            "source": "environment:rhythm_speed",
+            "semantics": "自然、紧凑而相对从容；保留必要环境认知、人物观察、关键动作过程与有作用的反应停顿，不以重复搬放、空等或完整工艺演示填时长。两档均非播放或台词倍速，不统一乘时长系数，不设镜头时长/动作密度/切镜次数硬指标。保留观众导航、关键事实、核心动作与时间因果；普通瑕疵不阻断。节奏不选择媒体模型、分辨率、费用或声音服务。",
+            "rhythm_speed": "medium"
+          },
+          "objective": "项羽向从骑证明仍能战并再破围",
+          "characters": [
+            "项羽",
+            "楚从骑代表"
+          ],
+          "revisionId": "gaixia-r1",
+          "textReview": {
+            "note": "重大剧情、人物、史料及空间时间因果可成立；场内军令与局部动作按戏剧化补足，不宣称逐项史书记载。",
+            "status": "PASS_WITH_NOTES",
+            "reviewer": "HOST"
+          },
+          "spokenContent": [
+            {
+              "id": "s7-last",
+              "kind": "DIALOGUE",
+              "text": "今日与诸君决死。我再替诸君破阵——让你们看，是天亡我，不是我不能战。",
+              "intent": "把战斗转为向从骑自证，不能用旁白认可归因。",
+              "mustKeep": true,
+              "provenance": {
+                "relation": "ADAPTED",
+                "sourceRefs": [
+                  "S1"
+                ],
+                "adaptationNote": "据对应史料的行动或话意改写；具体命令与无名职役回报属可删除而不改变史实因果的戏剧化补足。"
+              },
+              "speakerKey": "speaker:xiang_yu",
+              "performanceIntent": "正常语速，随场内对象与行动说话；不作为面向观众的预言或口号。",
+              "estimatedDurationMs": 10600
+            },
+            {
+              "id": "s7-four",
+              "kind": "DIALOGUE",
+              "text": "分四队。冲下去，到山的东面会合！",
+              "intent": "以分向突击及预定会点执行快战。",
+              "mustKeep": true,
+              "provenance": {
+                "relation": "ADAPTED",
+                "sourceRefs": [
+                  "S1"
+                ],
+                "adaptationNote": "据对应史料的行动或话意改写；具体命令与无名职役回报属可删除而不改变史实因果的戏剧化补足。"
+              },
+              "speakerKey": "speaker:xiang_yu",
+              "performanceIntent": "正常语速，随场内对象与行动说话；不作为面向观众的预言或口号。",
+              "estimatedDurationMs": 5200
+            },
+            {
+              "id": "s7-how",
+              "kind": "DIALOGUE",
+              "text": "何如？",
+              "intent": "要求同伴确认自己仍能战。",
+              "mustKeep": true,
+              "provenance": {
+                "relation": "ADAPTED",
+                "sourceRefs": [
+                  "S1"
+                ],
+                "adaptationNote": "据对应史料的行动或话意改写；具体命令与无名职役回报属可删除而不改变史实因果的戏剧化补足。"
+              },
+              "speakerKey": "speaker:xiang_yu",
+              "performanceIntent": "正常语速，随场内对象与行动说话；不作为面向观众的预言或口号。",
+              "estimatedDurationMs": 1300
+            },
+            {
+              "id": "s7-as",
+              "kind": "DIALOGUE",
+              "text": "如大王言。",
+              "intent": "代表从骑承认局部战果，不代表史家判定战争无罪。",
+              "mustKeep": true,
+              "provenance": {
+                "relation": "ADAPTED",
+                "sourceRefs": [
+                  "S1"
+                ],
+                "adaptationNote": "据对应史料的行动或话意改写；具体命令与无名职役回报属可删除而不改变史实因果的戏剧化补足。"
+              },
+              "speakerKey": "speaker:chu_rider",
+              "performanceIntent": "正常语速，随场内对象与行动说话；不作为面向观众的预言或口号。",
+              "estimatedDurationMs": 1900
+            },
+            {
+              "id": "s7-east",
+              "kind": "DIALOGUE",
+              "text": "向东。",
+              "intent": "没有恢复大军，只能继续行路。",
+              "mustKeep": true,
+              "provenance": {
+                "relation": "DRAMATIZED",
+                "sourceRefs": [
+                  "S1"
+                ],
+                "adaptationNote": "据对应史料的行动或话意改写；具体命令与无名职役回报属可删除而不改变史实因果的戏剧化补足。"
+              },
+              "speakerKey": "speaker:xiang_yu",
+              "performanceIntent": "正常语速，随场内对象与行动说话；不作为面向观众的预言或口号。",
+              "estimatedDurationMs": 1300
+            }
+          ],
+          "screenplayAction": "项羽在坡上止住马，身边从骑只围成稀薄一圈，坡下追骑正在分路靠近。他不再询问还可召来多少军队，而向在场的人说自己今日决死，要替他们再破一阵，让他们看见不是自己不能战。他将骑者分为四队，指明山的东侧三处会合。四队向不同方向驰下，汉骑被迫转向接战。项羽冲向一名带队汉将，将其斩落，带从骑打穿近处队列，越过山侧。骑队依约在三处出现，追兵一时分不清项羽所在，随后也分成三路重新围逼。项羽再次突击，斩一都尉，收拢骑者。只有两骑未归，其余人伏身回应他的问话，承认方才的战果。项羽听见，却没有等到一支大军重新出现在身后；仍须从这些同伴之间看向下一段路。他带人向东续走，保留自己主动试图到江边的行动，不凭空写他在此已彻底认错。",
+          "requiredTransition": "快战的局部成功得到从骑承认，但汉军能够分队重围，楚方只剩一小队人，战争未被扭转。",
+          "narrativeInputState": "楚从骑只二十八，汉追骑数千；项羽自度不得脱。",
+          "narrativeOutputState": "项羽及余骑继续向乌江，亭长将提供一个不同于再冲阵的选择。",
+          "requiredSpineBeatIds": [
+            "H5"
+          ],
+          "userArtisticAcceptance": "PENDING",
+          "suggestedDurationRangeSeconds": [
+            92,
+            122
+          ]
+        }
+      }
+    },
+    {
+      "mode": "OFFLINE_PROPOSED_DPD_NOT_ADOPTED_NOT_GENERATED",
+      "sceneId": "scene_541c47fe59124af8b92a1589c8dba37f",
+      "sceneNo": 8,
+      "sourceHash": "52f9260f41508bb5ade56cb2d1a10e367e9ea375ee12c9d5b8904c53622d5bc1",
+      "sourceRevision": "gaixia-r1",
+      "canonicalLineId": "s8-here",
+      "existingShotIds": [
+        "shot_7f89206c864a41be82f333bf3ed93853",
+        "shot_738669593b184b808fddd9c7d449c865",
+        "shot_5c917aa9fef24dc2aa7698b492b8d206",
+        "shot_5f57df85e30c424faf5d9f60c5978fbe",
+        "shot_cbd7afcb59bd4b7f82d6e27f75d49f12"
+      ],
+      "dpdSnapshot": {
+        "schemaVersion": "dpd-snapshot-v1",
+        "scene": {
+          "schemaVersion": "dpd-v1",
+          "scope": "SCENE",
+          "sceneId": "scene_541c47fe59124af8b92a1589c8dba37f",
+          "sourceFingerprint": "52f9260f41508bb5ade56cb2d1a10e367e9ea375ee12c9d5b8904c53622d5bc1",
+          "dramaticPurpose": "亭长主动提供的生还路线被项羽拒绝；赠马、下马使选择落实。",
+          "conflictCondition": "项羽已经拒绝",
+          "powerStructure": "亭长提供渡江资源",
+          "emotionalClimate": null,
+          "urgencyContext": null,
+          "informationAsymmetry": null,
+          "socialConstraints": [],
+          "direction": {
+            "objective": "仍促其接受可行的渡江选择",
+            "interactionTarget": "speaker:xiang_yu",
+            "tactic": "把劝说拉回眼前可用的船",
+            "authorityPosition": "亭长提供渡江资源",
+            "relationshipStance": "力求对方回应",
+            "internalActivation": "HIGH",
+            "externalControl": "HIGH",
+            "publicPrivateContext": "在场对话，非面向观众独白",
+            "subtext": "拒绝已显露仍不放弃劝渡，不预知必死",
+            "performanceBoundaries": null
+          }
+        },
+        "beat": {
+          "schemaVersion": "dpd-v1",
+          "scope": "BEAT",
+          "sceneId": "scene_541c47fe59124af8b92a1589c8dba37f",
+          "beatId": "DESIGN_ONLY_S8_beat",
+          "actor": "speaker:boatman",
+          "obstacle": "项羽已经拒绝",
+          "transitionTrigger": "既有源动作或对方回应改变当前阻力",
+          "direction": {
+            "objective": null,
+            "interactionTarget": null,
+            "tactic": "把劝说拉回眼前可用的船",
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": null,
+            "performanceBoundaries": null
+          }
+        },
+        "line": {
+          "schemaVersion": "dpd-v1",
+          "scope": "LINE",
+          "sceneId": "scene_541c47fe59124af8b92a1589c8dba37f",
+          "beatId": "DESIGN_ONLY_S8_beat",
+          "spokenContentId": "s8-here",
+          "speaker": "speaker:boatman",
+          "dramaticAction": "仍促其接受可行的渡江选择",
+          "observableIntent": "作用于在场听者",
+          "continuity": "承接原Scene输入与已发生动作",
+          "changeFromPrevious": "依原line位置改变当前策略",
+          "direction": null
+        },
+        "effective": {
+          "schemaVersion": "dpd-effective-v1",
+          "sceneId": "scene_541c47fe59124af8b92a1589c8dba37f",
+          "beatId": "DESIGN_ONLY_S8_beat",
+          "spokenContentId": "s8-here",
+          "actor": "speaker:boatman",
+          "speaker": "speaker:boatman",
+          "dramaticPurpose": "亭长主动提供的生还路线被项羽拒绝；赠马、下马使选择落实。",
+          "conflictCondition": "项羽已经拒绝",
+          "powerStructure": "亭长提供渡江资源",
+          "emotionalClimate": null,
+          "urgencyContext": null,
+          "informationAsymmetry": null,
+          "socialConstraints": [],
+          "objective": "仍促其接受可行的渡江选择",
+          "interactionTarget": "speaker:xiang_yu",
+          "tactic": "把劝说拉回眼前可用的船",
+          "authorityPosition": "亭长提供渡江资源",
+          "relationshipStance": "力求对方回应",
+          "internalActivation": "HIGH",
+          "externalControl": "HIGH",
+          "publicPrivateContext": "在场对话，非面向观众独白",
+          "subtext": "拒绝已显露仍不放弃劝渡，不预知必死",
+          "performanceBoundaries": [],
+          "obstacle": "项羽已经拒绝",
+          "transitionTrigger": "既有源动作或对方回应改变当前阻力",
+          "dramaticAction": "仍促其接受可行的渡江选择",
+          "observableIntent": "作用于在场听者",
+          "continuity": "承接原Scene输入与已发生动作",
+          "changeFromPrevious": "依原line位置改变当前策略"
+        },
+        "fingerprint": "0a9000fa92c382c7438a75b87dccc79e4f2220159167db5c6a83263930259967"
+      },
+      "actualMediaObserved": false,
+      "directorAVDecision": "INSUFFICIENT_EVIDENCE",
+      "adoptedStateDelta": [],
+      "canonicalScene": {
+        "id": "scene_541c47fe59124af8b92a1589c8dba37f",
+        "episode_id": "episode_0b00fe449fd1494b89f403c9ed66646b",
+        "order": 8,
+        "title": "船在岸边",
+        "location": "乌江渡处",
+        "content": {
+          "time": "由东城续行抵达以后，白日；不精确标分钟或路程",
+          "rhythm": {
+            "source": "environment:rhythm_speed",
+            "semantics": "自然、紧凑而相对从容；保留必要环境认知、人物观察、关键动作过程与有作用的反应停顿，不以重复搬放、空等或完整工艺演示填时长。两档均非播放或台词倍速，不统一乘时长系数，不设镜头时长/动作密度/切镜次数硬指标。保留观众导航、关键事实、核心动作与时间因果；普通瑕疵不阻断。节奏不选择媒体模型、分辨率、费用或声音服务。",
+            "rhythm_speed": "medium"
+          },
+          "objective": "亭长促项羽渡江生还，项羽决定是否接受",
+          "characters": [
+            "项羽",
+            "乌江亭长"
+          ],
+          "revisionId": "gaixia-r1",
+          "textReview": {
+            "note": "重大剧情、人物、史料及空间时间因果可成立；场内军令与局部动作按戏剧化补足，不宣称逐项史书记载。",
+            "status": "PASS_WITH_NOTES",
+            "reviewer": "HOST"
+          },
+          "spokenContent": [
+            {
+              "id": "s8-boat",
+              "kind": "DIALOGUE",
+              "text": "大王，上船！",
+              "intent": "先接人，不先发表悲壮演说。",
+              "mustKeep": true,
+              "provenance": {
+                "relation": "DRAMATIZED",
+                "sourceRefs": [
+                  "S1"
+                ],
+                "adaptationNote": "据对应史料的行动或话意改写；具体命令与无名职役回报属可删除而不改变史实因果的戏剧化补足。"
+              },
+              "speakerKey": "speaker:boatman",
+              "performanceIntent": "正常语速，随场内对象与行动说话；不作为面向观众的预言或口号。",
+              "estimatedDurationMs": 2200
+            },
+            {
+              "id": "s8-urge",
+              "kind": "DIALOGUE",
+              "text": "江东还有土地、百姓，足可再立大王。这里有我的船；汉军一到，便走不得了。",
+              "intent": "提出有资源与时间约束的生还方案。",
+              "mustKeep": true,
+              "provenance": {
+                "relation": "ADAPTED",
+                "sourceRefs": [
+                  "S1"
+                ],
+                "adaptationNote": "据对应史料的行动或话意改写；具体命令与无名职役回报属可删除而不改变史实因果的戏剧化补足。"
+              },
+              "speakerKey": "speaker:boatman",
+              "performanceIntent": "正常语速，随场内对象与行动说话；不作为面向观众的预言或口号。",
+              "estimatedDurationMs": 10900
+            },
+            {
+              "id": "s8-refuse",
+              "kind": "DIALOGUE",
+              "text": "我带江东八千子弟渡江西来，如今一个也没带回去。父兄便肯再立我，我又拿什么脸面见他们？",
+              "intent": "以自身原文愧意拒绝渡江，不宣称现场从骑籍贯。",
+              "mustKeep": true,
+              "provenance": {
+                "relation": "ADAPTED",
+                "sourceRefs": [
+                  "S1"
+                ],
+                "adaptationNote": "据对应史料的行动或话意改写；具体命令与无名职役回报属可删除而不改变史实因果的戏剧化补足。"
+              },
+              "speakerKey": "speaker:xiang_yu",
+              "performanceIntent": "正常语速，随场内对象与行动说话；不作为面向观众的预言或口号。",
+              "estimatedDurationMs": 13000
+            },
+            {
+              "id": "s8-here",
+              "kind": "DIALOGUE",
+              "text": "船就在这里。",
+              "intent": "仍试图把他拉回眼前的可行选择。",
+              "mustKeep": true,
+              "provenance": {
+                "relation": "DRAMATIZED",
+                "sourceRefs": [
+                  "S1"
+                ],
+                "adaptationNote": "据对应史料的行动或话意改写；具体命令与无名职役回报属可删除而不改变史实因果的戏剧化补足。"
+              },
+              "speakerKey": "speaker:boatman",
+              "performanceIntent": "正常语速，随场内对象与行动说话；不作为面向观众的预言或口号。",
+              "estimatedDurationMs": 2200
+            },
+            {
+              "id": "s8-horse",
+              "kind": "DIALOGUE",
+              "text": "这马随我五年了。我不忍杀它，送给你。",
+              "intent": "以赠马落实人不登船的决定。",
+              "mustKeep": true,
+              "provenance": {
+                "relation": "ADAPTED",
+                "sourceRefs": [
+                  "S1"
+                ],
+                "adaptationNote": "据对应史料的行动或话意改写；具体命令与无名职役回报属可删除而不改变史实因果的戏剧化补足。"
+              },
+              "speakerKey": "speaker:xiang_yu",
+              "performanceIntent": "正常语速，随场内对象与行动说话；不作为面向观众的预言或口号。",
+              "estimatedDurationMs": 5800
+            },
+            {
+              "id": "s8-down",
+              "kind": "DIALOGUE",
+              "text": "下马，持短兵！",
+              "intent": "从骑战转入岸边最后的步战。",
+              "mustKeep": true,
+              "provenance": {
+                "relation": "ADAPTED",
+                "sourceRefs": [
+                  "S1"
+                ],
+                "adaptationNote": "据对应史料的行动或话意改写；具体命令与无名职役回报属可删除而不改变史实因果的戏剧化补足。"
+              },
+              "speakerKey": "speaker:xiang_yu",
+              "performanceIntent": "正常语速，随场内对象与行动说话；不作为面向观众的预言或口号。",
+              "estimatedDurationMs": 2500
+            }
+          ],
+          "screenplayAction": "船正泊在岸边，亭长迎着项羽把船稳住，示意他登船，马与骑者在后面停下。亭长劝他：江东仍有人地，仍可立足为王；此处只有自己备有船，汉军到了就难走。项羽已经朝船走近两步，看见对岸，停住。他提起自己当年带八千江东子弟西来、如今无人带回的愧意，拒绝接受父兄再次奉立。亭长将登船的位置让得更开，强调船就在这里，劝渡仍是实际行动。项羽转回坐骑，将缰绳交给亭长，说马随自己多年，不忍杀掉，送给他。亭长握住缰绳，项羽却留在岸上，向从骑下令下马持短兵。这使“不渡”成为动作上的确定选择，不是供下一集改口的悬念。",
+          "requiredTransition": "亭长主动提供的生还路线被项羽拒绝；赠马、下马使选择落实。",
+          "narrativeInputState": "项羽来到江边，有一条由亭长把持的船可供他渡江，追军仍可能到来。",
+          "narrativeOutputState": "项羽不渡，带余骑步战；亭长得到马，本集不虚构他与楚军一道战死或保证所有余骑渡江。",
+          "requiredSpineBeatIds": [
+            "H6"
+          ],
+          "userArtisticAcceptance": "PENDING",
+          "suggestedDurationRangeSeconds": [
+            70,
+            94
+          ]
+        }
+      }
+    }
+  ]
+}

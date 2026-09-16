@@ -36,7 +36,7 @@ def picture():
 
 def test_skill_discovery_and_no_generation_access():
  p=DramaPlugin.load(ROOT);s=p.skills.get('production-design')
- assert s.name=='Production Design & Casting' and len(p.skills.list())==17 and len(p.tools.list())==50
+ assert s.name=='Production Design & Casting' and len(p.skills.list())==18 and len(p.tools.list())==50
  assert all(n in {t.code for t in p.tools.list()} for n in s.tools.preferred+s.tools.allowed)
  assert not any(n.startswith(('production.','media.import','media.save')) for n in s.tools.preferred+s.tools.allowed)
 

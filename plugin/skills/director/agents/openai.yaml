@@ -1,0 +1,4 @@
+interface:
+  display_name: "Director"
+  short_description: "Coordinate intent, evidence and global creative decisions"
+  default_prompt: "Use $director to interpret this approved scope, select only needed capabilities, and review their source-bound results before adoption."

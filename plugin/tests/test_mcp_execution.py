@@ -192,7 +192,7 @@ def test_core_has_no_host_api_dependency_or_model_dispatch():
             assert forbidden not in text
     source=(root/'src/drama_plugin/visual/execution.py').read_text()
     assert all(x not in source for x in ('hosts.', 'comfy', 'seedance', 'Codex', 'subprocess'))
-    assert len(list((root/'skills').glob('*/skill.yaml')))==17
+    assert len(list((root/'skills').glob('*/skill.yaml')))==18
 
 
 @pytest.mark.asyncio

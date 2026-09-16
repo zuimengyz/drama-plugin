@@ -5,6 +5,11 @@ description: Design or revise shots for a historical-drama Scene. Use when choos
 
 # Shot Design
 
+## Opt-in Director authority
+
+Shot / EditorialRhythmPlan retain coverage, blocking and editorial necessity. Consume the Director request and its source/intent pins; propose realization in those existing owners and return result/evidence/limitations. Director judges global usefulness, priority and rejection; it does not create DirectorShotPlan or replace canonical blocking. A constraint that cannot be realized returns to Director for an explicit disposition; locked event changes require upstream review.
+
+
 After the reviewed narrative Shot exists, hand its source-pinned action, opening,
 ending, duration, exact dialogue, rhythm and cinematic intent to cinematic-direction
 for physical acting and camera execution before video model selection. Follow the

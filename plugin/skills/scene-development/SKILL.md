@@ -5,6 +5,11 @@ description: Develop or revise a historical-drama Scene from an Episode. Use whe
 
 # Scene Development
 
+## Opt-in Director authority
+
+Scene remains the canonical owner of scene event, purpose and spoken meaning. In an opt-in Director request, consume pinned intent, preservation constraints and evidence obligations; develop the existing Scene structure and return its source-bound result or conflict. Director selects audience emphasis and reviews global usefulness, not a second Scene purpose. If requested emphasis changes locked causality or dialogue meaning, return DIRECTOR_REQUESTS_SCRIPT_REVIEW before any source change.
+
+
 Consume the unified `creativeRhythm` from the actual creation context before planning, even when source text is already supplied. Follow [narrative rhythm](../../docs/narrative-rhythm.md); Skills never read env directly. Pin this profile to the creative revision; refresh/resume keeps it, while a new revision reads current configuration.
 
 Turn one approved part of an Episode into a necessary, playable, state-changing dramatic event that covers assigned historical beats and realizes an explicit Narrative Input State → Required Transition → Narrative Output State. Do not design Shots.

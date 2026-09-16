@@ -78,3 +78,15 @@ do not hide a whole Bible or reviewer scratchpad there. Selected intent may acco
 the approved production context. Breathing, attention and perceptual distance remain
 advisory inputs to later Visual and DPD/Audio interpretation, never new DPD fields.
 This handoff does not authorize media generation or claim final audiovisual preservation.
+
+## Opt-in Director hierarchy
+
+Keep the same item meaning/why/priority/avoid. Add `scopeLevel` (FILM, EPISODE,
+SCENE, SHOT or COVERAGE_GROUP), `scopeRef`, source pins, and a `parentRef` using
+SourcePin key + canonical fingerprint. The parent is an item in this same sidecar:
+Shot/coverage → Scene → Episode → Film. `drama_plugin.director.trace_intent` checks
+this chain and stale parent hashes; it cannot prove artistic meaning. Film remains
+a scope. Legacy sidecars need no migration. Optional understanding holds only
+source-derived presentation philosophy absent from the original Bible, not a
+second theme, event purpose, DPD or Shot body. Route expression remains downstream.
+Pin the whole consumed sidecar revision in DirectorWorkspace / CapabilityRequest.

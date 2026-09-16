@@ -89,3 +89,5 @@ asset interaction test proportional to actual coverage needs; a motif descriptio
 does not by itself establish a prop's grip, scale, contact or continuity state.
 
 For formal sequence production, freeze approved visual duties with typed ProductionDesignFreeze and CinematicStylizationPolicy in the [sequence contract](../../docs/sequence-production-contract.md#production-design-freeze-and-executable-closure). Candidate suitability never implies user casting approval; keep missing visual approvals separate from blocking-design readiness.
+
+For parallel live-action/CG design, read [visual routes](references/visual-routes.md). Keep route-specific proposals and references separate from existing approved design.

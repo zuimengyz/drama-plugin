@@ -127,3 +127,5 @@ reservation. Unknown complete cost stays unknown. Only verified provider metadat
 may impose a prompt limit; no shared 2000-character cap or silent truncation.
 
 Formal Sequence submissions, including retries, MUST use the [ProductionDesignFreeze entry](../../docs/sequence-production-contract.md#production-design-freeze-and-executable-closure) through `hosts.sequence_execution.invoke_sequence_reserved` before the existing MCP submission. Run `scripts/sequence_preflight.py` for offline readiness. Refresh approval/Asset/Media evidence, bind the exact compiled request to package/freeze/clip fingerprints, and keep existing route, projection, quote and budget gates. INCOMPLETE freeze blocks submission; never bypass it by invoking the single-Shot helper or treating old formal casting as user approval.
+
+A [visual route](../../docs/visual-route-contract.md) is separate from provider/input route. Before any future route-specific production, verify every input against the same resolved visual route and existing approved design. A V3-02 design sidecar is not production approval; never silently drop a CG route marker into the legacy paid path.

@@ -1,0 +1,11 @@
+# Route-aware casting
+
+Read [visual route contract](../../../docs/visual-route-contract.md) when a route is explicitly selected. Existing unbound calls preserve their old serialization and behavior. Use casting.py compile/check-projection --route-context for opt-in RouteCastingContext; author a new profile and plan revision rather than appending CG to an old realist prompt. Bind route context to character identity, exact profile and plan fingerprints. Route metadata must accompany the prompt and reviews.
+
+Live action emphasizes actor plausibility, photographic facial structure and believable observation. CG emphasizes silhouette, face-shape distinction, authored plane and curve relationships, readable emotional deformation, consistency with the route's rendering system, and role-specific screen attraction. ROLE SALIENCE BEFORE BEAUTY applies to both. CG is not a universal hero/big-jaw default; physical exaggeration follows role obligations and declared anatomical limits.
+
+Search can explore uncommon craniofacial mass and body scale. Avoid treating a successful static silhouette as proof of facial acting, shared-plane scale or social authority. Separate FACE, relative SCALE, SOCIAL and PERFORMANCE duties according to the existing role plan. Include neutral versus active expression and front/three-quarter/profile continuity before accepting a design for animation; these are future evidence needs, not permission to generate a fixed image set.
+
+Never let large eyes, permanent frowns, monster proportions, fantasy armor or copied IP features replace intended readability. Shape language must retain room for listening, generosity, resolve and refusal. Design selection remains source-pinned and user-owned. A prior live-action approval does not approve a CG revision, even with the same character identity.
+
+Current opt-in route compiler is a design/search handoff. It emits route-specific criteria and route-stage conditions fingerprint; it does not grant CG production or implement a shortcut around all existing proof gates. Route-context on legacy selection/brief modes is rejected rather than silently discarded. Until actual route-bound proof review is supplied, keep output DESIGN_DRY_RUN and no candidate adoption.

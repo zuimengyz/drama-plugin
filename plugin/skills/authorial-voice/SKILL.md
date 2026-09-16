@@ -65,3 +65,5 @@ Only future explicit user adoption may retain text as an existing text-only Crea
 Asset with provenance. Then cinematic-finishing owns subtitles, black, overlay,
 reading/silence and exact timing. This skill hands over only literary content, intent,
 form requirements and semantic position; no animation or UI timings.
+
+For a declared visual route, read [route-sensitive presentation](references/visual-routes.md). The literary gate and scarcity remain shared; presentation cannot grant literary eligibility.

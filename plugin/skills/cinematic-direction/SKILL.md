@@ -188,3 +188,5 @@ Consume approved production-design handoffs alongside VisualBible; they decide s
 When directing a complete passage, consume the [sequence receiver contract](../../docs/sequence-production-contract.md). A shot ending must leave the declared incoming condition for its neighbor; examine world positions separately from their screen projection after a camera change. Apply only motivated motion, visual or audio bridges and carry unresolved obligations to finishing.
 
 For a Sequence, compile ActionChoreographyBeat and MountInteraction from blocking and source-pinned Bible duties: approach, contact, reaction, spatial result and follower opportunity. Consume the ProductionDesignFreeze; do not replace missing approved visual duties with prompt descriptions. Design readiness does not authorize generation.
+
+For a declared CG visual route, read [route-sensitive cinematic projection](references/visual-routes.md); preserve canonical action and existing frozen directions.

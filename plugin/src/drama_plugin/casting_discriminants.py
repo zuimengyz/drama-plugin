@@ -3,6 +3,7 @@ from typing import Any, Sequence
 from drama_plugin.contracts.base import dump_contract, sha256_canonical
 from drama_plugin.contracts.performance_casting import RoleArchetypeProfile, CastingReview
 from drama_plugin.contracts.casting_discriminants import VisualCastingPlan, ProofStage
+from drama_plugin.contracts.visual_route import RouteCastingContext
 from drama_plugin.performance_casting import profile_fingerprint, excavation_gate, user_selection_gate
 
 
@@ -62,7 +63,8 @@ def validate_visual_plan(profile: RoleArchetypeProfile, plan: VisualCastingPlan)
 
 def compile_visual_discriminants(profile: RoleArchetypeProfile, plan: VisualCastingPlan,
         variant_key: str, stage: ProofStage, *, purpose: str = 'CANDIDATE',
-        calibration_conditions: dict[str, str] | None = None) -> dict[str, Any]:
+        calibration_conditions: dict[str, str] | None = None,
+        route_context: RouteCastingContext | None = None) -> dict[str, Any]:
     meta = validate_visual_plan(profile, plan)
     if purpose not in {'CANDIDATE', 'CALIBRATION'}:
         raise ValueError('Unknown compilation purpose')
@@ -109,7 +111,7 @@ def compile_visual_discriminants(profile: RoleArchetypeProfile, plan: VisualCast
     prompt = '\n'.join(sections)
     if any(name.casefold() in prompt.casefold() for ref in profile.archetype_references for name in ref.proper_names):
         raise ValueError('REFERENCE_PROPER_NAME_IN_PROVIDER_PROMPT')
-    return {'phase': 'SEARCH', 'purpose': purpose, 'stage': stage, 'variant': variant_key,
+    result = {'phase': 'SEARCH', 'purpose': purpose, 'stage': stage, 'variant': variant_key,
         'profileFingerprint': plan.profile_fingerprint, 'planFingerprint': meta['planFingerprint'],
         'conditionsFingerprint': sha256_canonical(conditions), 'prompt': prompt,
         'promptFingerprint': sha256_canonical(prompt), 'trace': trace, 'responsibilityBuckets': buckets,
@@ -130,6 +132,12 @@ def compile_visual_discriminants(profile: RoleArchetypeProfile, plan: VisualCast
             if profile.archetypal_exaggeration else None),
         'approvalEligible': False, 'transportRequirement': 'MCP',
         'boundary': 'Compilation is not spend authorization, provider adherence, a stage pass, or user approval.'}
+    if route_context is not None:
+        from drama_plugin.visual_route import project_casting_route
+        result = project_casting_route(result, route_context, character_identity=profile.identity)
+        if any(name.casefold() in result['prompt'].casefold() for ref in profile.archetype_references for name in ref.proper_names):
+            raise ValueError('REFERENCE_PROPER_NAME_IN_PROVIDER_PROMPT')
+    return result
 
 
 def verify_submitted_projection(compiled: dict[str, Any], submitted_prompt: str) -> dict[str, Any]:

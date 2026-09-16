@@ -109,3 +109,5 @@ For source reads use `work.get_work`, `script.get_script`, `scene.get_scene`,
 and `media.list_media`. Retained physical outputs use `media.import_media` followed
 by `media.resolve_media` and full-byte readback. Do not use source/adoption writes
 to persist the local casting profile. The tool catalog remains unchanged.
+
+For an explicit visual-medium route, read [route-aware casting](references/visual-routes.md). The route is separate from the face-first/body-first proof order; omitted route context preserves existing live-action behavior.

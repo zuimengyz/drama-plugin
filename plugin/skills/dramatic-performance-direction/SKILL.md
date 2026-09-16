@@ -24,3 +24,5 @@ Do not add speech speed, pitch, loudness, pause milliseconds, breath, articulati
 Finish when the three contracts validate, the effective direction is materially playable and distinct from character identity, and the canonical fingerprint is recorded. If essential objective, target, relationship, or historical/social constraint is unsupported or contradictory, report the missing input instead of filling it with stereotype or provider detail.
 
 For a text-only candidate, pin the selected screenplay artifact revision and line locators instead of pretending it is an adopted Scene. Extract only its dramatic action; do not copy or rewrite its speech. Keep the same Scene/Beat/Line ownership and clearly local identities. An unapproved visual design does not block this offline interpretation or authorize production. See [whole-scene craft proof](../cinematic-screenplay-incubation/references/scene-craft-proof.md).
+
+An explicit [visual route](../../docs/visual-route-contract.md) belongs to the downstream visual projection. Preserve this modality-neutral DPD and its fingerprint; cinematic-direction binds the route-specific physical realization separately.

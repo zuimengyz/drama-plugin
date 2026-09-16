@@ -1,0 +1,15 @@
+# Visual routes: parallel design authority
+
+Use when a project explicitly chooses a visual medium, adds a parallel medium, or overrides a sequence. VisualRoute is a visual-language choice, separate from the existing model/input production route. Valid values are live_action_realist and stylized_cinematic_cg. Default project interpretation stays live action; CG must be explicitly enabled and selected. Resolve with the [route contract](../../../docs/visual-route-contract.md) and [offline entry](../scripts/visual_route.py).
+
+Keep shared canon, character understanding and dramatic action. Author separate design revisions, references, review evidence and source pins for each route. Bind old approved payloads in an external sidecar; never inject a default field into old sealed objects. Route discovery returns possible references, not approval. A sequence override needs a reason and separate sequence identity; a concrete clip uses one resolved route.
+
+For CG, choose deliberate silhouette and face planes, costume construction and material response together. Preserve emotional human articulation and the declared historical world. Strength of exaggeration is role-specific: an ordinary messenger may need quick readable hands and a compact silhouette, not a large jaw. Character type is a design hypothesis, never a facial morality classifier.
+
+Art Bible duties: silhouette/face-plane differences; military/civil and role/rank legibility; supported faction distinctions; cloth/armor layering that permits acting; cloth/leather/metal/lacquer/wood response; motivated wear; palette hierarchy and motivated lighting; limits on decoration and invented historical details. Distinguish actual period evidence from later analogies and project inventions. Saturation, broad planes and simplified textures may vary without inventing magic, impossible anatomy or contemporary costumes.
+
+Keep hero distinction readable without exclusive gold, giant shoulder armor or brighter skin. One coherent rendering system can support a ruler, a craft worker and an elder with different silhouettes, cloth rhythms, posture and degrees of facial simplification. Age or gender does not prescribe passivity, beauty or moral alignment.
+
+Anti-game imitation is about dramatic function, not a claim that games lack cinema: no mandatory pose orbit, combat skill loop, costume showcase or idle gesture cycle. Evaluate what information, relationship or material consequence a choice makes visible. Do not name an existing IP as the general route style.
+
+Bind route-specific art/camera/performance notes as DESIGN_DRY_RUN. Text validity establishes no rendered quality or production approval. Existing ProductionDesignFreeze and explicit user adoption remain necessary downstream. This route extension cannot authorize a provider, paid trial or replacement Asset.

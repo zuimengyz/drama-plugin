@@ -1,0 +1,4 @@
+interface:
+  display_name: "Authorial Voice"
+  short_description: "Judge earned literary intervention, default to silence"
+  default_prompt: "Use $authorial-voice to compare silence with restrained source-pinned literary options at this story closure."

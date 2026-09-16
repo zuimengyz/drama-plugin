@@ -1,0 +1,15 @@
+code: authorial-voice
+name: Authorial Voice
+description: Sparse source-pinned literary intervention after an earned story closure, defaulting to silence.
+context:
+  required: []
+  optional: [work, script, scene, temporaryState]
+  refresh_after: []
+tools:
+  preferred: [work.get_work, script.get_script, scene.get_scene]
+  allowed: [asset.get_asset, asset.list_assets]
+completion:
+  conditions:
+    - Silence is evaluated before text, with source-pinned eligibility and literary intent.
+    - Character, world and authorial voices remain separate; no dialogue or Canon is changed.
+    - Provenance and scarcity are explicit; candidates are not automatically adopted.

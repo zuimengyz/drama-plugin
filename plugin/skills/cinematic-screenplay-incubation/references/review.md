@@ -39,8 +39,9 @@ fact from a deliberate but weak creative interpretation.
 4. Recheck historical/causal integrity and the complete rhythm curve; record before,
    after, outcome and residual issue. A resolved record needs textual evidence.
 
-At most two revision rounds after Initial Draft. A round may batch independent
-findings, but is not permission to rewrite everything. Do not manufacture a weak
+Use focused rounds while there is a concrete new intervention. A round may batch
+independent findings, but is not permission to rewrite everything. Stop repeating
+an ineffective pass; a round count alone does not permanently stop creative work. Do not manufacture a weak
 draft to demonstrate the mechanism. If a requested incubation test starts strong,
 identify one real reader-facing improvement and preserve the comparison.
 
@@ -50,8 +51,8 @@ Freeze only the exact reviewed revision, with no unresolved CRITICAL/MAJOR issue
 an explicit disposition for minor limitations. All sixteen base layers, applicable meta reviews and twenty craft
 dimensions need PASS/PARTIAL/N/A plus a concrete locator or scope reason. Record both
 author review and human artistic review; human PENDING is not system FAIL but is not
-human PASS. If the limit is reached with major issues, return PARTIAL/FAIL and leave
-the draft UNFROZEN. No test or artifact checker can certify literary quality.
+human PASS. If major issues remain without a useful next intervention, return a concrete
+PARTIAL finding and leave the draft UNFROZEN; a usable candidate may still be delivered. No test or artifact checker can certify literary quality.
 
 ## Five meta reviews for complete/new incubation
 
@@ -63,7 +64,7 @@ the draft UNFROZEN. No test or artifact checker can certify literary quality.
 |LONG_HORIZON|Check body/status/place/relationship/knowledge/promises across episode boundaries, payoff expiry and multi-scale rhythm; neither all climax nor all setup.|changed state and identified downstream consumers|
 |STYLE_BIAS|Would a different material justify a different texture? Inspect whether the last work's restraint, grandeur, sorrow or speed has been copied without cause.|derived style and affected scenes|
 
-Use the same finding/severity/evidence/scope format and the same two-round ceiling.
+Use the same finding/severity/evidence/scope format and improvement-based stopping rule.
 Dependency analysis precedes editing: distinguish scenes needing recheck from scenes
 needing changed words. Read prose as well as records; declarations cannot prove absence
 of omniscience or style bias. Human artistic acceptance remains separate.

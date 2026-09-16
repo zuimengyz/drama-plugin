@@ -18,6 +18,11 @@ antagonist ugly, or every hero muscular. Preserve explicitly intended ordinary o
 unconventional casting. Never copy a real star or use fantasy armor to supply the
 authority missing from the person.
 
+For staged face, relative-scale and performance proof searches, use
+[performance-casting](../performance-casting/SKILL.md); this skill retains stable
+visual design authority. A neutral one-person portrait cannot establish a relative
+stature claim.
+
 Read the [design and handoff contract](references/design.md) when authoring a
 revision. Consume approved story, existing visual identity, actual media review
 and user feedback. When historical accuracy matters, inherit HistoricalCanonPolicy

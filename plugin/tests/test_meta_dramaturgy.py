@@ -130,10 +130,10 @@ def test_opening_closing_not_full_shot_plan():
     assert any('contains shot execution' in e for e in checker.check(b))
 
 
-def test_revision_budget_still_enforced():
+def test_empty_revisions_still_rejected_without_round_ceiling():
     b = meta_ledger()
     b['review']['rounds'] = [dict(number=i, findingIds=[], changedScopes=[], before={}, after={}) for i in range(1,4)]
-    assert any('two corrective rounds' in e for e in checker.check(b))
+    assert any('no change or change outside findings' in e for e in checker.check(b))
 
 
 def test_v2_01_ledger_remains_valid_without_meta():

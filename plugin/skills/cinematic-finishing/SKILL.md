@@ -5,6 +5,11 @@ description: Finish existing edited drama with scene sound continuity, local amb
 
 # Cinematic Finishing
 
+If the user later adopts an `authorial-voice` candidate, preserve its literary text,
+provenance, intent, form and semantic position. Finishing owns its actual screen/sound
+delivery (subtitle, black, overlay, reading or silent display) and timing. The presence
+of an unadopted literary sidecar does not authorize adding a coda to the film.
+
 Recover the selected assembly with `work.get_work`, its actual `shot.get_shot`
 and `scene.get_scene` relations, and `media.get_media` / `media.resolve_media`.
 Use `media.list_media` for scoped source material discovery. Source bytes, hash,

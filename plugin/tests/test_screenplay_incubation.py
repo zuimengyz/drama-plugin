@@ -92,13 +92,19 @@ def test_targeted_revision_preserves_unaffected_scope() -> None:
     assert any("outside findings" in error for error in errors)
 
 
-def test_round_budget_and_false_freeze_are_blocked() -> None:
+def test_continued_revision_preserves_chain_and_severe_finding_gate() -> None:
     data = revision_ledger()
-    data["review"]["rounds"] *= 3
+    for number in (2, 3):
+        previous = data["review"]["rounds"][-1]["after"].copy()
+        data["review"]["rounds"].append({
+            "number": number, "findingIds": ["f1"], "changedScopes": ["s1"],
+            "before": previous, "after": {**previous, "s1": f"revision-{number}"},
+        })
+    assert checker.check(data) == []
     data["review"]["findings"][0]["resolved"] = False
-    errors = checker.check(data)
-    assert any("two corrective rounds" in error for error in errors)
-    assert any("unresolved severe" in error for error in errors)
+    assert any("unresolved severe" in error for error in checker.check(data))
+    data["review"]["rounds"][2]["before"]["s1"] = "unrelated source"
+    assert any("previous round" in error for error in checker.check(data))
 
 
 def test_payoff_cannot_precede_setup_or_claim_nonexistent_payoff() -> None:
@@ -111,4 +117,7 @@ def test_skill_reference_links_resolve() -> None:
     import re
     for path in [SKILL / "SKILL.md", *SKILL.glob("references/*.md")]:
         for target in re.findall(r"\]\(([^)]+)\)", path.read_text()):
+            # This test resolves local resource links; source citations are URLs.
+            if target.startswith(("https://", "http://")):
+                continue
             assert (path.parent / target).exists(), (path, target)

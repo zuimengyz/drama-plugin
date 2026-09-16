@@ -34,8 +34,11 @@ to state population/regional direction, apparent-age range, hair, observable
 face/body proportions and avoid conditions. Keep this user-directed search profile
 separate from the unchanged formal CharacterVisualSpec. `casting_briefs` consumes
 the source-pinned asset-resolution handoff and identical `CastingTestConditions`;
-only each candidate's bone-structure direction varies. The first test is unarmored,
-with one person, so costume and comparison extras cannot become casting variables.
+only each candidate's bone-structure direction varies. That legacy reconciliation
+contract is a single-person test, not a universal casting sequence. For a staged
+role search or relative scale claim, use performance-casting's role-neutral artifacts;
+they permit declared reference people and a shared-plane scale proof. Do not stretch
+the legacy additional_people=0 contract to represent a three-person proof.
 Provider-specific projection belongs to the Host (`hosts/casting_projection.py`),
 not this skill. Audit every compiled projection before spending; an audit PASS
 proves field propagation and equality, not visual adherence. Review the actual

@@ -88,8 +88,6 @@ def check(bible: dict[str, Any]) -> list[str]:
             if not finding.get(field):
                 errors.append(f"REVIEW {finding['id']} missing {field}")
     rounds = review["rounds"]
-    if len(rounds) > 2:
-        errors.append("REVISION exceeds two corrective rounds")
     previous_after = None
     for number, revision in enumerate(rounds, 1):
         if revision["number"] != number:

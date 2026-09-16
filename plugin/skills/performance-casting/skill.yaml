@@ -1,0 +1,17 @@
+code: performance-casting
+name: Performance Casting
+description: Role-specific face, relative-scale and performance proofs with source-pinned reviews and explicit user selection.
+context:
+  required: []
+  optional: [work, script, scene, characterAsset, visualBible, directorArtifact, userFeedback, temporaryState]
+  refresh_after: [media.import_media]
+tools:
+  preferred: [asset.get_asset, media.get_media, media.resolve_media]
+  allowed: [work.get_work, script.get_script, scene.get_scene, asset.search_assets, asset.list_assets, media.list_media, media.import_media]
+completion:
+  conditions:
+    - Role interpretation and visible proof claims are source-pinned and do not rewrite adopted narrative or identity.
+    - Stage order and omitted proofs follow the role; failed prerequisites cannot be silently waived.
+    - Actual face, relative-scale and performance observations remain separate from technical validation.
+    - Retained media has verified identity and full-byte hashes; candidates remain pending user review.
+    - Contact sheets, concrete limitations and the user-selection gate are delivered without automatic approval or production.

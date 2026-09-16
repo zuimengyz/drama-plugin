@@ -3,6 +3,13 @@ name: cinematic-screenplay-incubation
 description: Incubate a historical screen drama from evidence through character, story, scenes and dialogue, with a shared Dramatic Bible and bounded targeted revision. Use for complete screenplay creation or cross-scene creative repair; production remains downstream.
 ---
 
+# Authorial closure handoff
+
+At an already-developed closure point, `authorial-voice` may compare silence with
+sparse literary intervention. It does not rewrite character dialogue or story.
+Keep Character Voice and World Voice in the screenplay; an authorial candidate
+remains a separate, unadopted sidecar until the user selects it.
+
 # Cinematic Screenplay Incubation · 影视编剧孵化
 
 Consume the unified `creativeRhythm` from the actual creation context before planning, even when source text is already supplied. Follow [narrative rhythm](../../docs/narrative-rhythm.md); Skills never read env directly. Pin this profile to the creative revision; refresh/resume keeps it, while a new revision reads current configuration.
@@ -42,6 +49,12 @@ Turn traits into behavior under pressure, disagreement, humiliation, uncertainty
 Derive thesis, narrative POV and the smallest coherent scope from the causal spine. Build story and episode jobs before selecting counts. Compare Beat → Scene → Sequence → Episode → Multi-Episode Arc; each episode records its start/end state, turn, peak, breathing space, after-effect and next pressure. Track pressure, development, breathing, escalation, turn, climax and aftermath as changes in options and knowledge, not timing quotas. Review adjacent scenes for repeated argument, meeting, battle or emotional peak. A quiet scene still changes something; do not remove needed causality merely to accelerate.
 
 ### 4. Scene & Dialogue
+
+For literary register, long speeches, in-scene documents or a closure comparison, read
+[literary craft](references/literary-craft.md). Record who speaks to whom and what the
+words change before choosing classical or plain language.
+
+For complete-passage creation or craft repair, read [whole-scene craft proof](references/scene-craft-proof.md). Preserve adopted versions while distinguishing historical constraints from revisable AI expression; write the contest before its explanatory notes.
 
 For each scene establish owner, goal, obstacle, tactic, counter-tactic, information/relationship/power/emotional change, turn and exit hook. Answer why the next scene follows. Track each speaker's knowledge at the moment of choice, not just at scene end. Give necessary dialogue exact words, differentiated diction, surface meaning, intent and subtext; allow a silent scene.
 

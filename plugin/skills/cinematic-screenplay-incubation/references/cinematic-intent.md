@@ -62,7 +62,7 @@ When source and intent are correct but coverage loses meaning, owner = SHOT_PLAN
 Declare finding, priority, affected shots/continuity neighbors, unaffected screenplay/
 dialogue/history, then revise only that scope and re-review the complete group. If the
 source is ambiguous or wrong, route to the relevant screenplay/intent owner instead.
-Use the existing maximum of two targeted rounds; do not manufacture a defect to use it.
+Revise while a concrete intervention improves the affected meaning; do not manufacture defects or repeat ineffective passes.
 
 The optional [handoff checker](../scripts/check_handoff.py) projects explicit selections,
 checks review coverage/references and epilogue attribution. It cannot judge cinematic

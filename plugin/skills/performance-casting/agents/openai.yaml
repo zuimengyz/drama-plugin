@@ -1,0 +1,4 @@
+interface:
+  display_name: "Performance Casting"
+  short_description: "Test role-specific face, scale and performance proofs"
+  default_prompt: "Use $performance-casting to build a source-pinned role profile and staged casting proofs without automatically approving a candidate."

@@ -120,3 +120,7 @@ After actual performance review, use the [picture-edit contract](../../docs/dram
 For authorized picture assembly, use the bounded local [sequence execution and review contract](../../docs/sequence-production-contract.md) and scripts/edit_picture.py. Reuse PictureEditPlan; hard picture cuts and native audio trims produce a new candidate. Then fulfill sound bridges, retain Media and review the complete rendered passage. Whole-film observation and findings are source-hash pinned; stills and technical checks cannot grant full AV review.
 
 Consume executable Sequence audio/edit obligations separately from design readiness. Bind the actual output hash to FilmReview; UNKNOWN sound or missing normal AV coverage cannot become REVIEWED. Keep produced, reviewed and user-adopted states distinct.
+
+## Intended transitions are upstream requirements
+
+Consume shot-design's EditorialRhythmPlan.transitions as intended continuity, including time/space and sound carry. Finishing owns the actual measured-media cut and PictureEditPlan. Do not treat a planned match action or prelap as already observed or executed. Return infeasible continuity to its owner and retain actual Media evidence.

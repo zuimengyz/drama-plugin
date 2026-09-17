@@ -3,7 +3,7 @@ name: Cinematic Direction & Performance
 description: Source-pinned look, camera, physical performance and temporal Shot execution before video selection.
 context:
   required: [work, script, episode, scene, shot]
-  optional: [dpdSnapshot, temporaryState]
+  optional: [dpdSnapshot, temporaryState, sceneDesignPacket, lightingScript, colorScript, costumeState]
   refresh_after: [shot.save_shot]
 tools:
   preferred: [asset.search_assets, asset.get_asset, shot.get_shot, scene.get_scene, episode.get_episode, script.get_script, work.get_work]
@@ -14,3 +14,4 @@ completion:
     - Work visual direction plus explicit Episode Scene Shot overrides resolve traceably.
     - Frozen director source and visual fingerprints reach existing video selection without changing reference caps or production authority.
     - Offline direction is not paid authorization or proof of actual visual quality.
+    - Scene lighting is motivated, readable and continuous before within-shot projection; route approval remains independent.

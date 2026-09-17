@@ -1,8 +1,8 @@
 """Three opt-in Director envelopes. Specialized content remains at its original owner."""
 from __future__ import annotations
 
-from typing import Literal, Self
-from pydantic import ConfigDict, Field, model_validator
+from typing import Literal, Self, Any
+from pydantic import ConfigDict, Field, model_validator, model_serializer, SerializerFunctionWrapHandler
 from drama_plugin.contracts.base import ContractModel
 from drama_plugin.contracts.creative_asset import Text
 from drama_plugin.contracts.sequence import SourcePin
@@ -25,6 +25,17 @@ class DirectorWorkspace(ContractModel):
     review_ref: SourcePin | None = None
     adopted_head: SourcePin | None = None  # Only a reviewed Bible presentation receipt
     stale_keys: tuple[Text, ...] = ()
+    preproduction_required: bool = False
+    readiness_ref: SourcePin | None = None
+
+    @model_serializer(mode='wrap')
+    def legacy_dump(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data: dict[str, Any] = dict(handler(self))
+        if not self.preproduction_required:
+            data.pop('preproductionRequired', None); data.pop('preproduction_required', None)
+        if self.readiness_ref is None:
+            data.pop('readinessRef', None); data.pop('readiness_ref', None)
+        return data
 
     @model_validator(mode='after')
     def coherent_index(self) -> Self:

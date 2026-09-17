@@ -73,3 +73,7 @@ Before coverage, read the [peak/editorial contract](../../docs/dramatic-peak-edi
 For multi-shot production, compose the existing coverage into the [sequence package](../../docs/sequence-production-contract.md): ordered storyboard cards, current source pins, geography, and an explicit receiver at every cut. Keep proposed subshots outside formal Canon until coverage revision is authorized. Minimum necessary coverage means no redundant shots; it does not mean placing several incompatible attention changes in one long provider clip.
 
 For executable Sequence coverage, retain source Shot IDs and provide each receiver with ProductionClip semantics, action consequences and observable bridge criteria. Mount/rider interactions belong to the existing Bible; use the [executable sequence contract](../../docs/sequence-production-contract.md#production-design-freeze-and-executable-closure). Proposed subclips do not create formal Shots.
+
+## Shot Transition Plan in existing editorial contract
+
+Before full Production Book completion, follow [intended transitions](references/shot-transitions.md). Audit every adjacent shot and scene boundary for direction, axis, eyeline, motion, sound, time and space. Actual edits remain with finishing.

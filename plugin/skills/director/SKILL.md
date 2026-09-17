@@ -98,3 +98,9 @@ External outcome recovery remains the original execution owner's responsibility;
 an unresolved dispatched request stays paused. No new business persistence or
 automatic migration is required. Without this opt-in workspace, legacy Skills and
 FilmReview continue unchanged. Offline loop validation is not production readiness.
+
+## Full-film preproduction gate and department integration
+
+For a complete film/episode Director Book, follow [preproduction registry and orchestration](../../docs/cinematic-preproduction.md). Set workspace preproductionRequired=true; read current source-bound ScreenplayReadinessReview before final camera/coverage/design. Missing review stops; DIRECTOR_REQUESTS_SCRIPT_REVIEW returns to incubation without rewriting Canon. Legacy narrow-shot mode cannot claim full-book readiness.
+
+After preliminary intent, integrate the existing owners' film design/color, scene/layout, costume/props, lighting, DPD/performance/blocking, coverage/transitions and sound. Resolve original refs through department_integration. Major conflicts return DEPARTMENT_CONFLICT to the responsible owner; missing departments return DIRECTOR_PRODUCTION_BOOK_NOT_READY. Read all department originals before DESIGN_ONLY self review. Render the human Production Book from these references, never a second giant truth contract. Stop at user review; design completeness does not advance G10–G16.

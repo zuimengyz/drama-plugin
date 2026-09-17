@@ -3,7 +3,7 @@ name: Director
 description: Make source-bound global creative decisions and review specialized results through an opt-in project artifact workspace.
 context:
   required: [scope, sourceRevision]
-  optional: [directorWorkspaceRef, cinematicIntent, dramaticBible, capabilityFeedback, approvalReferences]
+  optional: [directorWorkspaceRef, cinematicIntent, dramaticBible, capabilityFeedback, approvalReferences, screenplayReadinessRef, directorDepartmentPacket, preproductionRequired]
   refresh_after: []
 tools:
   preferred: [work.get_work, script.get_script, episode.get_episode, scene.get_scene, shot.get_shot]
@@ -13,3 +13,4 @@ completion:
     - Intent and capability requests reference canonical owners and current source pins without duplicating their semantic content.
     - Results receive explicit evidence-bound review and causal disposition before any adopted presentation receipt.
     - The project workspace retains a safe resume boundary; unknowns and original user approval gates remain independent.
+    - Full-film preproduction requires current readiness, complete department originals and conflict review before user review; design is not production authorization.

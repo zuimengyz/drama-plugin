@@ -3,7 +3,7 @@ name: Cinematic Screenplay Incubation
 description: Incubate an evidence-governed screenplay with shared creative state and targeted revision.
 context:
   required: [creativeGoal]
-  optional: [suppliedEvidence, work, script, episode, scenes, dramaticBible, temporaryState]
+  optional: [suppliedEvidence, work, script, episode, scenes, dramaticBible, temporaryState, screenplayReadinessReview, historicalDramaticAffordances]
   refresh_after: []
 tools:
   preferred: [research.search_sources, research.verify_claim]
@@ -13,3 +13,4 @@ completion:
     - A readable screenplay and compact Dramatic Bible preserve supported historical causality, character and information continuity.
     - All twenty creative dimensions have an evidenced applicability/review result, with targeted revision bounded to two rounds.
     - Freeze identifies the reviewed revision and remaining limitations; mechanical validation does not imply user artistic acceptance or production approval.
+    - Full-film handoff records readiness dimensions and historical opportunity decisions; major upstream issues stop direction.

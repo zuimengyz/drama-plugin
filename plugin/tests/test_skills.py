@@ -31,7 +31,7 @@ PROFESSIONAL_REFERENCES = {
     "script-adaptation": ("planning.md", "review.md"),
     "episode-development": ("planning.md", "review.md"),
     "scene-development": ("planning.md", "review.md"),
-    "shot-design": ("planning.md", "review.md"),
+    "shot-design": ("planning.md", "review.md", "shot-transitions.md"),
 }
 
 
@@ -562,7 +562,9 @@ def test_shot_production_has_minimal_conditional_visual_provider_contract() -> N
             "visual.job.wait",
             "visual.output.fetch",
             "referenceCount ∈ {0, 1, 2, 3}",
-            "at most one minimal revision",
+            "Host-chosen targeted revision",
+            "PROVIDER_SUBMISSION_OUTCOME_UNKNOWN",
+            "MAX_TECHNICAL_RETRIES = 2",
         )
     )
     assert "runtime provider owns the executable tool schemas" in capability
@@ -574,7 +576,8 @@ def test_shot_production_has_minimal_conditional_visual_provider_contract() -> N
             "MISSING_STABLE_REFERENCE",
             "Required Visual Evidence",
             "Forbidden Visual Outcome",
-            "SEQUENCE_CONTINUITY_REQUIRES_REPLAN",
+            "Host replans the affected sequence",
+            "stage totals remain authoritative",
             "Visual Content Review PASS",
             "Identity Annotation",
         )

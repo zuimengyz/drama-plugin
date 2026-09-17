@@ -3,7 +3,7 @@ name: Production Design & Casting
 description: Story-led casting, faction hierarchy, set construction and reusable visual motifs before asset resolution.
 context:
   required: [work]
-  optional: [script, episode, scene, shot, characterAsset, visualBible, researchContext, userFeedback, temporaryState]
+  optional: [script, episode, scene, shot, characterAsset, visualBible, researchContext, userFeedback, temporaryState, screenplayReadinessRef, filmProductionDesign, sceneDesignPacket, costumeContinuity]
   refresh_after: [asset.create_asset, asset.save_asset]
 tools:
   preferred: [work.get_work, asset.get_asset, asset.search_assets, media.get_media]
@@ -15,3 +15,4 @@ completion:
     - Design review distinguishes evidence, hypotheses and untested visual suitability.
     - Reusable text-only candidate Assets preserve existing Character and Media references.
     - Source-pinned handoff contains no provider selection, executable prompt or paid action.
+    - Film design, color script, scene layout and costume states share source and intent pins; changes preserve predecessor causes.

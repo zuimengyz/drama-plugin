@@ -117,7 +117,8 @@ class DirectorArtifactStore:
                 ref = SourcePin.model_validate(self._read(path))
         if ref:
             feedback = CapabilityFeedback.model_validate(self.read_ref(ref))
-        result = enter(workspace, current, request, feedback)
+        result = enter(workspace, current, request, feedback,
+            self.read_ref(workspace.readiness_ref) if workspace.readiness_ref else None)
         return {**result, 'workspace': dump_contract(workspace),
                 'recoveredFeedbackRef': dump_contract(ref) if ref else None}
 

@@ -3,7 +3,7 @@ name: Shot Design
 description: Express Scene intent as concise, continuity-aware Shot design.
 context:
   required: [scene]
-  optional: [shotId, neighboringShots, selectedAssetIds, researchContext, temporaryState]
+  optional: [shotId, neighboringShots, selectedAssetIds, researchContext, temporaryState, sceneDesignPacket, lightingScript, screenplayReadinessRef]
   refresh_after: [shot.create_shot, shot.save_shot]
 tools:
   preferred: [scene.get_scene, shot.get_shot, shot.list_shots, shot.search_shots, shot.create_shot, shot.save_shot]
@@ -12,4 +12,4 @@ completion:
   conditions:
     - A Scene-faithful coverage strategy gives every Shot a Narrative Input State, Required Transition, Narrative Output State, purpose, executable action, and visual entry/exit state.
     - Visual, action, Scene-state, causal-narrative, historical-beat, and full-story continuity are reviewed separately; visual PASS cannot hide narrative FAIL.
-    - Persistence follows sufficient context, an internal plan, complete draft coverage, and a passing Shot review with no unresolved historical or continuity conflict.
+    - Persistence follows sufficient context, an internal plan, complete draft coverage, and a passing Shot review with no unresolved historical or continuity conflict. Full preproduction audits intended shot and scene transitions in EditorialRhythmPlan; actual edits remain downstream.

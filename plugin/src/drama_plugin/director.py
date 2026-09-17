@@ -45,6 +45,8 @@ def freshness(pins: tuple[SourcePin, ...], current: Mapping[str, str]) -> tuple[
 
 def dependencies(workspace: DirectorWorkspace, request: CapabilityRequest | None = None) -> tuple[SourcePin, ...]:
     refs = workspace.source_pins + workspace.intent_refs
+    if workspace.readiness_ref:
+        refs += (workspace.readiness_ref,)
     if workspace.route_ref:
         refs += (workspace.route_ref,)
     if request:
@@ -67,7 +69,8 @@ def validate_feedback(request: CapabilityRequest, feedback: CapabilityFeedback) 
 
 def enter(workspace: DirectorWorkspace, current: Mapping[str, str],
           request: CapabilityRequest | None = None,
-          feedback: CapabilityFeedback | None = None) -> dict[str, Any]:
+          feedback: CapabilityFeedback | None = None,
+          readiness_review: dict[str, Any] | None = None) -> dict[str, Any]:
     """One start/resume entry; a dispatched unknown is reconciled, never resubmitted."""
     workspace = DirectorWorkspace.model_validate(dump_contract(workspace))
     if workspace.request_ref and request is None:
@@ -87,6 +90,18 @@ def enter(workspace: DirectorWorkspace, current: Mapping[str, str],
         changed = freshness(feedback.result_refs + feedback.evidence_refs, current)
         if changed:
             return {'action': 'STALE_SOURCE', 'staleKeys': list(changed), 'delegate': False}
+    if workspace.preproduction_required:
+        if workspace.readiness_ref is None or readiness_review is None:
+            return {'action': 'SCREENPLAY_READINESS_REQUIRED', 'delegate': False}
+        from drama_plugin.contracts.preproduction import ScreenplayReadinessReview
+        from drama_plugin.preproduction import readiness
+        r = ScreenplayReadinessReview.model_validate(readiness_review)
+        if (workspace.readiness_ref.fingerprint != sha256_canonical(r) or
+            r.scope_id != workspace.scope_id or r.source_pins != workspace.source_pins):
+            raise DirectorError('INVALID_SOURCE', 'Readiness must bind exact full scope/source')
+        gate = readiness(r, current)
+        if not gate['directionAllowed']:
+            return {'action': gate['status'], 'delegate': False, 'readiness': gate}
     action: str
     if workspace.checkpoint == 'REVISION_PENDING':
         action = workspace.checkpoint

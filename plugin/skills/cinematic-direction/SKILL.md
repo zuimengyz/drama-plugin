@@ -195,3 +195,7 @@ When directing a complete passage, consume the [sequence receiver contract](../.
 For a Sequence, compile ActionChoreographyBeat and MountInteraction from blocking and source-pinned Bible duties: approach, contact, reaction, spatial result and follower opportunity. Consume the ProductionDesignFreeze; do not replace missing approved visual duties with prompt descriptions. Design readiness does not authorize generation.
 
 For a declared CG visual route, read [route-sensitive cinematic projection](references/visual-routes.md); preserve canonical action and existing frozen directions.
+
+## Scene cinematography and Lighting Script
+
+Use [preproduction lighting](references/preproduction-lighting.md) for scene-level light/camera design, consuming approved readiness, Director intent, scene layout, color and costume refs. Motivated sources and readable dramatic light precede within-shot execution.

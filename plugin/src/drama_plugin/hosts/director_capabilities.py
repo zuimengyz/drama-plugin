@@ -24,7 +24,7 @@ from drama_plugin.visual.video_selection import Requirements, Candidate, qualify
 from drama_plugin.visual_route import bind_route_artifact
 from drama_plugin.hosts.director_artifacts import DirectorArtifactStore
 
-CAPABILITIES = frozenset({'scene-development', 'dramatic-performance-direction', 'shot-design',
+CAPABILITIES = frozenset({'cinematic-screenplay-incubation', 'production-design', 'scene-development', 'dramatic-performance-direction', 'shot-design',
     'cinematic-direction', 'video-model-selection', 'shot-production', 'audio-production', 'cinematic-finishing'})
 # Explicit dispatch destinations, not a mandatory chain or autonomous repair loop.
 REVISION_TARGETS = {
@@ -94,6 +94,34 @@ class LocalCapabilityBridge:
         def scope(value: str) -> None:
             if value != q.scope_id:
                 raise DirectorError('INVALID_SOURCE', 'Capability belongs to another scene/scope')
+        if name in {'cinematic-screenplay-incubation', 'production-design'}:
+            from drama_plugin.contracts.preproduction import ScreenplayReadinessReview, FilmProductionDesign, SceneProductionDesignPacket
+            from drama_plugin.preproduction import readiness, stylization
+            if name == 'cinematic-screenplay-incubation':
+                review = ScreenplayReadinessReview.model_validate(data['readiness']); scope(review.scope_id)
+                if review.source_pins != q.source_pins:
+                    raise DirectorError('INVALID_SOURCE', 'Readiness source mismatch')
+                gate = readiness(review, current)
+                return {'readiness': dump_contract(review), 'gate': gate}, ({
+                    'limitations': ('DIRECTOR_REQUESTS_SCRIPT_REVIEW',),
+                    'feasibility': 'UNSUPPORTED_CURRENTLY',
+                    'next_responsibility': 'cinematic-screenplay-incubation'} if not gate['directionAllowed'] else {})
+            if 'filmDesign' in data:
+                film = FilmProductionDesign.model_validate(data['filmDesign']); scope(film.scope_id)
+                if film.source_pins != q.source_pins or film.intent_ref not in q.intent_refs:
+                    raise DirectorError('INVALID_SOURCE', 'Film design source/intent mismatch')
+                return dump_contract(film), ({'limitations': ('STYLIZATION_REVIEW_FAILED',),
+                    'feasibility': 'UNSUPPORTED_CURRENTLY'} if stylization(film.stylization)['violations'] else {})
+            scene_design = SceneProductionDesignPacket.model_validate(data['sceneDesign']); scope(scene_design.scene_id)
+            if scene_design.source_pins != q.source_pins:
+                raise DirectorError('INVALID_SOURCE', 'Scene design source mismatch')
+            return dump_contract(scene_design), {}
+        if name == 'cinematic-direction' and 'lightingScript' in data:
+            from drama_plugin.contracts.preproduction import LightingScript
+            light = LightingScript.model_validate(data['lightingScript']); scope(light.scene_id)
+            if light.source_pins != q.source_pins:
+                raise DirectorError('INVALID_SOURCE', 'Lighting source mismatch')
+            return dump_contract(light), {}
         if name == 'scene-development':
             scene = Scene.model_validate(data['scene']); scope(scene.id)
             if not any(p.fingerprint == sha256_canonical(scene) for p in q.source_pins):

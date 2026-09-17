@@ -1,7 +1,7 @@
 """Story/coverage/edit sidecars; plans never write Canon or render Media."""
 from __future__ import annotations
-from typing import Annotated, Literal, Self
-from pydantic import Field, model_validator
+from typing import Annotated, Literal, Self, Any
+from pydantic import Field, model_validator, model_serializer, SerializerFunctionWrapHandler
 from drama_plugin.contracts.base import ContractModel
 from drama_plugin.contracts.creative_asset import Text, Hash
 from drama_plugin.contracts.production_design import HistoricalCanonPolicy
@@ -145,6 +145,32 @@ class ReactionLink(ContractModel):
     changes: Text
 
 
+class ShotTransition(ContractModel):
+    """Intended continuity; finishing owns the actual measured-media cut."""
+    from_shot: Text
+    to_shot: Text
+    end_state: Text
+    opening_state: Text
+    cut_trigger: Text
+    transition_type: Text
+    screen_direction: Text
+    axis: Text
+    eyeline: Text
+    motion_continuity: Text
+    composition_relation: Text
+    sound_carry: Literal['carry', 'cut', 'fade', 'prelap', 'offscreen continuation']
+    sound_intent: Text
+    time_relation: Literal['continuous', 'compressed continuous', 'explicit ellipsis', 'new time', 'parallel']
+    space_relation: Text
+    why_this_cut_exists: Text
+
+    @model_validator(mode='after')
+    def different_shots(self) -> Self:
+        if self.from_shot == self.to_shot:
+            raise ValueError('Transition requires two different views')
+        return self
+
+
 class EditorialRhythmPlan(ContractModel):
     schema_version: Literal['editorial-rhythm-v1'] = 'editorial-rhythm-v1'
     scene_ids: tuple[Text, ...] = Field(min_length=1)
@@ -154,11 +180,23 @@ class EditorialRhythmPlan(ContractModel):
     coverage: tuple[CoverageShot, ...] = Field(min_length=1)
     cuts: tuple[CutMotivation, ...] = ()
     reaction_chain: tuple[ReactionLink, ...] = ()
+    transitions: tuple[ShotTransition, ...] = ()
+    transition_omission_reason: Text | None = None
     establishing_need: Text
     rhythm_acceleration: Text | None = None
     rhythm_deceleration: Text | None = None
     visual_contrast_rhythm: Text
     set_piece_coverage: dict[Literal['setup','escalation','hero','reaction','payoff','aftermath'], tuple[Text, ...]] | None = None
+
+    @model_serializer(mode='wrap')
+    def compatible_dump(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data: dict[str, Any] = dict(handler(self))
+        if not self.transitions:
+            data.pop('transitions', None)
+        if self.transition_omission_reason is None:
+            data.pop('transitionOmissionReason', None)
+            data.pop('transition_omission_reason', None)
+        return data
 
     @model_validator(mode='after')
     def coverage_links(self) -> Self:
@@ -171,6 +209,9 @@ class EditorialRhythmPlan(ContractModel):
             required={'setup','escalation','hero','reaction','payoff','aftermath'}
             if set(self.set_piece_coverage)!=required or any(not ids or not set(ids)<=shots for ids in self.set_piece_coverage.values()):
                 raise ValueError('Set piece needs complete, existing coverage roles')
+        pairs = [(t.from_shot, t.to_shot) for t in self.transitions]
+        if len(set(pairs)) != len(pairs) or any(a not in shots or b not in shots for a,b in pairs):
+            raise ValueError('Duplicate or unknown transition shot')
         return self
 
 

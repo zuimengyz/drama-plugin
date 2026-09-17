@@ -5,9 +5,15 @@ description: Produce image, video, or audio media for an approved historical-dra
 
 # Shot Production
 
+## Every performance-bearing Shot and silent Beat (R3)
+
+Read [full performance coverage and isolation](../../docs/full-performance-coverage.md). Require standard acting direction for every actor-bearing Shot and significant silent action; complexity only increases detail. NO_ACTOR_PERFORMANCE_REQUIRED needs an explicit reason and no actors, vocal performance or performing ensemble. Validate source/scene/target/prop refs and context fingerprint; no sample-prose fallback. Preserve each group layer's attention, received cue, response latency and continuing task instead of synchronized NPC acting.
+
+After authorized production, collect observations for all performance-bearing fragments, not only critical Beats. Actual observation/adoption is separate from full design coverage. Apply the current full inventory to FilmReview; one missing ordinary Beat blocks completion. No formal Shot or Media is created by a screenplay-only coverage fixture.
+
 ## Actor / visual projection and realized evidence (R2)
 
-Read the [shared performance contract](../../docs/cross-modal-performance-direction.md) for critical performance Beats. Extend the existing VisualPerformanceBrief with the validated Director projection: observable body, posture, weight, gaze, head, hands, breathing, prop, partner, distance, timing, release, continuity and DO NOT. An adjective alone is not an instruction. Stillness has attention and an active task. CG projection reads the current CG Performance Grammar; DPD and Director intent stay route-independent.
+Read the [shared performance contract](../../docs/cross-modal-performance-direction.md) for all performance-bearing fragments. Extend the existing VisualPerformanceBrief with the validated Director projection: observable body, posture, weight, gaze, head, hands, breathing, prop, partner, distance, timing, release, continuity and DO NOT. An adjective alone is not an instruction. Stillness has attention and an active task. CG projection reads the current CG Performance Grammar; DPD and Director intent stay route-independent.
 
 For cinematic-shot-v1 transfer the visual projection and native voice direction into the single CinematicShotSpec via `attach_cinematic_performance`; never dispatch a parallel visual prompt. After authorized production, record actual visible events in RealizedPerformanceSnapshot, pinned to bytes, speaker and Beat. Preserve a deviating observation. Story-meaning deviation requires VISUAL_REVISION_REQUIRED, not corrective dialogue; observation/persistence does not authorize dubbing or adoption. Audio evidence requires listening, never inference from still frames.
 

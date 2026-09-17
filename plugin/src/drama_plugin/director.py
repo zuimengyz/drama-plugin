@@ -122,7 +122,8 @@ def enter(workspace: DirectorWorkspace, current: Mapping[str, str],
 
 def reviewed_receipt(workspace: DirectorWorkspace, request: CapabilityRequest,
                      feedback: CapabilityFeedback, review: dict[str, Any], review_ref: SourcePin,
-                     current: Mapping[str, str], approved_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any] | None:
+                     current: Mapping[str, str], approved_refs: tuple[SourcePin, ...] = (), *,
+                     performance_coverage_bundle: dict[str, Any] | None = None) -> dict[str, Any] | None:
     """Validate an original review; return a sparse Bible receipt only after all gates.
 
     approved_refs are current, branch-scoped attestations resolved by the original gate
@@ -138,6 +139,8 @@ def reviewed_receipt(workspace: DirectorWorkspace, request: CapabilityRequest,
         film = FilmReview.model_validate(review)
         if 'AV_PERFORMANCE_ALIGNMENT' in request.required_evidence and not film.performance_alignment:
             raise DirectorError('INSUFFICIENT_EVIDENCE', 'AV performance review required before adoption')
+        if 'FULL_AV_PERFORMANCE_COVERAGE' in request.required_evidence and not film.performance_coverage_fingerprint:
+            raise DirectorError('INSUFFICIENT_EVIDENCE', 'All performance-bearing fragments require observed coverage')
         facet = film.director
     else:
         if set(review) != {'subjectKind', 'director', 'findings'} or review['subjectKind'] != 'DESIGN_ONLY':
@@ -145,6 +148,16 @@ def reviewed_receipt(workspace: DirectorWorkspace, request: CapabilityRequest,
         facet = DirectorReviewFacet.model_validate(review['director'])
         if not set(facet.finding_keys) <= {f['id'] for f in review['findings']}:
             raise DirectorError('INVALID_SOURCE', 'Missing Bible finding')
+    if 'FULL_PERFORMANCE_COVERAGE' in request.required_evidence:
+        if performance_coverage_bundle is None:
+            raise DirectorError('INSUFFICIENT_EVIDENCE', 'Full-film performance coverage bundle required')
+        from drama_plugin.performance_coverage import full_performance_coverage_gate
+        bundle = performance_coverage_bundle
+        if bundle['current_source_hash'] not in {p.fingerprint for p in request.source_pins}:
+            raise DirectorError('INVALID_SOURCE', 'Coverage source is not pinned by the request')
+        coverage = full_performance_coverage_gate(**bundle)
+        if coverage['status'] != 'FULL_PERFORMANCE_COVERAGE_READY' or sha256_canonical(coverage) not in {p.fingerprint for p in feedback.evidence_refs}:
+            raise DirectorError('INSUFFICIENT_EVIDENCE', 'Complete source-bound coverage evidence required')
     if facet is None:
         raise DirectorError('INSUFFICIENT_EVIDENCE', 'Director facet is required on the opt-in path')
     for name in ('workspace_id', 'scope_id', 'branch_id', 'route_ref', 'source_pins', 'intent_refs'):

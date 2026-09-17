@@ -29,6 +29,9 @@ def source_audio(spec: Any, sound: str) -> bool:
     intent = spec.source_sound_intent
     if intent is None:
         raise ValueError('SOURCE_SOUND_INTENT_REQUIRED_FOR_NEW_REQUEST')
+    from drama_plugin.vocal_direction import require_vocal_capability
+    for delivery in (*intent.vocal_performances, *(d.voice_performance.vocal_delivery for d in spec.dialogue if d.voice_performance and d.voice_performance.vocal_delivery)):
+        require_vocal_capability(delivery, supported_modes={'SPOKEN'})
     enabled = sound != 'SILENT'
     if (intent.native_audio_policy == 'REQUIRED' and not enabled or
             intent.native_audio_policy == 'DISABLED' and enabled):

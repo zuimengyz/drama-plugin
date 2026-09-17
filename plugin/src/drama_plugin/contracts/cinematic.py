@@ -5,7 +5,7 @@ from typing import Annotated, Literal, Self, Any
 
 from pydantic import Field, StringConstraints, model_validator, model_serializer, SerializerFunctionWrapHandler
 from drama_plugin.contracts.base import ContractModel
-from drama_plugin.contracts.performance_direction import PerformanceProjection
+from drama_plugin.contracts.performance_direction import PerformanceProjection, VocalDelivery
 from drama_plugin.contracts.creative_asset import CinematicLanguageRef
 
 Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
@@ -128,6 +128,14 @@ class SourceSoundIntent(ContractModel):
     intentional_silence: tuple[Text, ...] = ()
     generated_music: Literal['FORBIDDEN', 'ALLOWED'] = 'FORBIDDEN'
     continuity: tuple[Text, ...] = ()
+    vocal_performances: tuple[VocalDelivery, ...] = ()
+
+    @model_serializer(mode='wrap')
+    def legacy_sound(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        result: dict[str, Any] = handler(self)
+        if not self.vocal_performances:
+            result.pop('vocalPerformances', None); result.pop('vocal_performances', None)
+        return result
 
 
 class Cinematography(ContractModel):

@@ -3,8 +3,8 @@
 No psychology, dialogue, provider controls, independent beat identity or approval.
 """
 from __future__ import annotations
-from typing import Annotated, Literal, Self
-from pydantic import ConfigDict, Field, StringConstraints, model_validator
+from typing import Annotated, Literal, Self, Any
+from pydantic import ConfigDict, Field, StringConstraints, model_validator, model_serializer, SerializerFunctionWrapHandler
 from drama_plugin.contracts.base import ContractModel
 
 Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
@@ -69,6 +69,25 @@ class DirectorPerformanceIntent(ContractModel):
         return self
 
 
+class VocalDelivery(ContractModel):
+    """Nested execution semantics, not a song, melody or new content entity."""
+    mode: Literal['SPOKEN', 'RECITATIVE', 'SUNG', 'SHARED_RESPONSE', 'NONVERBAL']
+    source_ref: Text
+    lyric_status: Literal['EXACT_SOURCE', 'NO_APPROVED_LYRICS']
+    melody_status: Literal['NOT_APPLICABLE', 'UNRESOLVED', 'APPROVED']
+    melody_ref: Text | None = None
+
+    @model_validator(mode='after')
+    def melody_boundary(self) -> Self:
+        if (self.melody_status == 'APPROVED') != bool(self.melody_ref):
+            raise ValueError('MELODY_APPROVAL_REFERENCE_REQUIRED')
+        if self.mode in ('SUNG', 'RECITATIVE', 'SHARED_RESPONSE') and self.melody_status == 'NOT_APPLICABLE':
+            raise ValueError('Vocal composition choice must remain explicit; no invented melody')
+        if self.mode == 'NONVERBAL' and self.lyric_status != 'NO_APPROVED_LYRICS':
+            raise ValueError('Nonverbal vocalization cannot contain new lyrics')
+        return self
+
+
 class PerformanceProjection(ContractModel):
     """Nested in the existing Visual/Audio Brief; no own identity or authority."""
     director_intent_fingerprint: Hash
@@ -87,11 +106,27 @@ class PerformanceProjection(ContractModel):
     coordination: tuple[BeatCoordination, ...] = ()
     instructions: dict[Text, Text] = Field(min_length=1)
     behaviors: tuple[Text, ...] = ()
+    vocal_delivery: VocalDelivery | None = None
+    context_fingerprint: Hash | None = None
+    context_refs: tuple[Text, ...] = ()
+
+    @model_serializer(mode="wrap")
+    def legacy_projection(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        result: dict[str, Any] = handler(self)
+        for snake, camel in (("vocal_delivery", "vocalDelivery"), ("context_fingerprint", "contextFingerprint"), ("context_refs", "contextRefs")):
+            if not getattr(self, snake):
+                result.pop(snake, None); result.pop(camel, None)
+        return result
+
     route: Literal['stylized_cinematic_cg', 'live_action'] | None = None
     grammar_fingerprint: Hash | None = None
 
     @model_validator(mode='after')
     def channel_boundary(self) -> Self:
+        if self.channel == 'VISUAL' and self.vocal_delivery:
+            raise ValueError('Vocal mode belongs to voice projection')
+        if bool(self.context_fingerprint) != bool(self.context_refs):
+            raise ValueError('Context fingerprint and resolved refs are required together')
         visual = {'body_state', 'posture', 'weight', 'movement', 'eyes', 'head', 'hands',
                   'visible_breath', 'prop', 'partner', 'distance', 'timing', 'release',
                   'continuity', 'do_not'}

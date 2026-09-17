@@ -5,9 +5,15 @@ description: Interpret a complete film or an existing dramatic scope, choose and
 
 # Director
 
+## Full-film performance coverage (R3)
+
+Read [full performance coverage and isolation](../../docs/full-performance-coverage.md). Direct every Scene, performance-bearing Shot, SpokenContent, significant silent action, interaction and ensemble beat. STANDARD is concise real direction; EXPANDED adds detail, never permission to omit other fragments. Inventory current sources before authoring. Require FULL_PERFORMANCE_COVERAGE for a full Production Book design review and provide its source-bound bundle to reviewed_receipt; pin the derived gate result in feedback evidence. Future media review requires FULL_AV_PERFORMANCE_COVERAGE. A proposal with no formal Shots is explicitly incomplete for formal Book use, not fictional 100% Shot coverage.
+
+Build continuity maps from DPD refs and observable execution states, not copied psychology. Verify all previous-exit/next-entry edges, fatigue and temporary release. Summaries may highlight key moments; the body must cover the entire film. R1 proposal fixtures remain unapproved and cannot start the formal Book.
+
 ## Cross-modal performance direction (R2)
 
-For performance-critical Beats, read the [shared performance contract](../../docs/cross-modal-performance-direction.md). Pin one `DirectorPerformanceIntent` to the current DPD and source: articulate audience experience, containment, permitted release, partner focus, rhythm and continuity in human language. Do not create Director subtext or actor/voice psychology. High internal pressure does not imply high external amplitude.
+For all performance-bearing fragments, read the [shared performance contract](../../docs/cross-modal-performance-direction.md). Pin one `DirectorPerformanceIntent` to the current DPD and source: articulate audience experience, containment, permitted release, partner focus, rhythm and continuity in human language. Do not create Director subtext or actor/voice psychology. High internal pressure does not imply high external amplitude.
 
 Request the existing visual and audio capabilities against that same intent and Beat. Include `AV_PERFORMANCE_ALIGNMENT` in required review evidence before adopting a realized performance. Use `render_performance_pair` only for critical Beats in the existing Production Book; ordinary functional actions need no giant dual table. A controlled tear does not permanently change the character baseline; real joy must finish before consequences return. Design-only fixtures cannot pass a real-media adoption gate. No new agent, generation permission or screenplay approval follows from this capability.
 

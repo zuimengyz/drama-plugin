@@ -125,7 +125,8 @@ class DirectorArtifactStore:
     def transition(self, expected: DirectorWorkspace,
                    event: Literal['REQUEST', 'DISPATCH', 'FEEDBACK', 'REVIEW'],
                    payload_ref: SourcePin | None, current: Mapping[str, str], *,
-                   approved_refs: tuple[SourcePin, ...] = ()) -> DirectorWorkspace:
+                   approved_refs: tuple[SourcePin, ...] = (),
+                   performance_coverage_bundle: dict[str, Any] | None = None) -> DirectorWorkspace:
         """CAS transition; caller supplies refs, never a replacement head or approval boolean."""
         with self._writer():
             old = self.load(expected.workspace_id, expected.branch_id)
@@ -178,7 +179,7 @@ class DirectorArtifactStore:
                     raise DirectorError('INSUFFICIENT_EVIDENCE', 'Review requires an unreviewed observed result')
                 feedback = CapabilityFeedback.model_validate(self.read_ref(old.feedback_ref))
                 review = self.read_ref(payload_ref)
-                receipt = reviewed_receipt(old, request, feedback, review, payload_ref, current, approved_refs)
+                receipt = reviewed_receipt(old, request, feedback, review, payload_ref, current, approved_refs, performance_coverage_bundle=performance_coverage_bundle)
                 facet = DirectorReviewFacet.model_validate(review['director'])
                 if receipt:
                     delta = self.read_ref(facet.adopted_delta_ref) if facet.adopted_delta_ref else {}

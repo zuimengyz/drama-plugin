@@ -5,6 +5,10 @@ description: Translate approved Shot narrative into source-pinned visual directi
 
 # Cinematic Direction & Performance
 
+## Context-bound full execution direction (R3)
+
+Read [full performance coverage and isolation](../../docs/full-performance-coverage.md). The single CinematicShotSpec must carry all relevant body/voice/interaction/group direction from the full inventory, including ordinary Shots. Render names and objects through bound context refs; context/grammar staleness invalidates the projection. Standard vs expanded controls detail only. Carry non-lexical vocal intent through SourceSoundIntent.vocalPerformances without fabricating Dialogue. Vocal mode and melody requirements reach qualification; current unqualified Host routes fail closed for singing rather than dropping the requirement.
+
 ## Body and native voice share one intent (R2)
 
 Read the [shared performance contract](../../docs/cross-modal-performance-direction.md). After intent, character, acting and blocking, carry validated VisualPerformanceBrief and AudioPerformanceBrief projections into the existing CinematicShotSpec with `attach_cinematic_performance`. Its performance objective/target must still equal DPD, and its dialogue text/speaker must match the existing SpokenContent binding. Freeze and verify the Director intent and current source/grammar pins with the spec. The execution brief includes both body and native voice instructions, without creating a second motion prompt or binding a provider. Camera movement cannot steal a partner's unfinished performance Beat.

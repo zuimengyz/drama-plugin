@@ -18,7 +18,7 @@ Use `validate_intent`, `performance_envelope`, `project_visual_performance` and 
 
 Each projection carries concrete authored language, not an emotion-to-prompt heuristic. Actor fields cover body, posture, weight, movement, eyes, head, hands, visible breath, prop, partner, distance, timing, release, continuity and do_not. Voice fields cover voice core, interaction, spatial projection, pace, rhythm, intensity, breath support, phrase attack, articulation, emphasis, pause function, closure, coloration, release, continuity and do_not. The DPD target/control must match; release and amplitude stay within intent. HIGH pressure + HIGH control may yield LOW expression. Emotion does not automatically produce sobbing, collapse, shaking, shouting or whispering.
 
-Use `render_performance_pair` for critical Beat inserts in the existing Production Book. It does not generate a new book contract. The authored language must say what an observer sees/hears and why an action waits for the partner. Merely writing “restrained / sad” fails creative review even if a string validator accepts it.
+Every performance-bearing fragment requires direction. Use `render_performance_pair` for expanded critical Beat inserts; concise standard direction covers every other fragment. See [R3 full coverage](full-performance-coverage.md). It does not generate a new book contract. The authored language must say what an observer sees/hears and why an action waits for the partner. Merely writing “restrained / sad” fails creative review even if a string validator accepts it.
 
 Use `attach_cinematic_performance` before freezing CinematicShotSpec. Frozen direction binds the intent and source/grammar pins; native video execution carries the two channels through the same spec. Do not send a second independent visual prompt. Legacy speech adaptation rejects extended R2 briefs with `DIRECTOR_VOICE_ADAPTER_QUALIFICATION_REQUIRED` until a later adapter qualification preserves all intended semantics. Never remove the new fields to bypass this guard. No provider is selected by this contract.
 
@@ -32,7 +32,7 @@ Observe actual output into RealizedPerformanceSnapshot and FilmReview: media has
 
 ## Review and native audio
 
-`review_av_performance` extends existing FilmReview with 13 alignment dimensions and per-required-Beat results, planned source refs and observations. It preserves findings from other Beats. FilmFinding already provides evidence text, interval, severity, repair_owner and proposed_repair. Voice mismatch → audio-production; body/story deviation → shot-production; inconsistent release/continuity intent → director; only contradictory DPD semantics → dramatic-performance-direction. A timing repair names the owner of the offending event. No new AVPerformanceReview is needed.
+`review_av_performance` extends existing FilmReview with 13 alignment dimensions and per-required-performance-bearing-Beat results, planned source refs and observations. It preserves findings from other Beats. FilmFinding already provides evidence text, interval, severity, repair_owner and proposed_repair. Voice mismatch → audio-production; body/story deviation → shot-production; inconsistent release/continuity intent → director; only contradictory DPD semantics → dramatic-performance-direction. A timing repair names the owner of the offending event. No new AVPerformanceReview is needed.
 
 `native_audio_disposition` is read-only:
 

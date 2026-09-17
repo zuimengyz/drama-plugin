@@ -209,6 +209,8 @@ class FilmReview(ContractModel):
     performance_alignment: dict[str, Literal["PASS", "FAIL", "UNKNOWN"]] = Field(default_factory=dict)
     performance_beats: dict[str, dict[str, Literal["PASS", "FAIL", "UNKNOWN"]]] = Field(default_factory=dict)
     performance_required_beats: tuple[str, ...] = ()
+    performance_coverage_fingerprint: Hash | None = None
+    performance_coverage_channels: dict[str, tuple[Literal["VISUAL", "VOICE"], ...]] = Field(default_factory=dict)
     performance_refs: tuple[SourcePin, ...] = ()
     performance_observations: tuple[PerformanceObservation, ...] = ()
     performance_review_basis: Literal["DESIGN_ONLY", "OBSERVED_MEDIA"] | None = None
@@ -219,7 +221,7 @@ class FilmReview(ContractModel):
         data: dict[str, Any] = handler(self)
         if self.director is None:
             data.pop('director', None)
-        for snake, camel in [('performance_beats', 'performanceBeats'), ('performance_required_beats', 'performanceRequiredBeats'), ('performance_alignment', 'performanceAlignment'), ('performance_refs', 'performanceRefs'), ('performance_observations', 'performanceObservations'), ('performance_review_basis', 'performanceReviewBasis'), ('native_audio_suitability', 'nativeAudioSuitability')]:
+        for snake, camel in [('performance_coverage_channels', 'performanceCoverageChannels'), ('performance_coverage_fingerprint', 'performanceCoverageFingerprint'), ('performance_beats', 'performanceBeats'), ('performance_required_beats', 'performanceRequiredBeats'), ('performance_alignment', 'performanceAlignment'), ('performance_refs', 'performanceRefs'), ('performance_observations', 'performanceObservations'), ('performance_review_basis', 'performanceReviewBasis'), ('native_audio_suitability', 'nativeAudioSuitability')]:
             if not getattr(self, snake):
                 data.pop(snake, None); data.pop(camel, None)
         return data

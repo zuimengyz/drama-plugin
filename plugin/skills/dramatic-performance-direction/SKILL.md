@@ -5,6 +5,10 @@ description: Build a replayable, provider- and modality-neutral Scene/Beat/Line 
 
 # Dramatic Performance Direction
 
+## Partners and groups are source-owned too (R3)
+
+Read [full performance coverage and isolation](../../docs/full-performance-coverage.md). Every important listener needs its own sourced DPD task, obstacle and tactic, not a reaction label or a Director-invented psychology. Missing partner direction returns PARTNER_DPD_REQUIRED to this owner. Background listeners may use an existing BeatDPD group task; no Crowd Psychology. Candidate screenplay previews stay DESIGN_FIXTURE_ONLY, separately stored from formal DPD. Continuity summaries reference these DPDs without copying objective/subtext/knowledge/relationship truth.
+
 ## One cross-modal performance truth (R2)
 
 Read the [shared performance contract](../../docs/cross-modal-performance-direction.md) when projecting into body and voice. Scene/Beat/Line DPD and the composed snapshot remain the only owners of objective, obstacle, tactic, subtext, knowledge, relationship, internal activation, external control and interaction target. Preserve the source and composition fingerprints; an inconsistent snapshot requires DPD review.

@@ -5,6 +5,12 @@ description: Produce exact-text dialogue speech clips, dialogue mixes, and final
 
 # Audio Production
 
+## Every spoken item and vocal mode (R3)
+
+Read [full performance coverage and isolation](../../docs/full-performance-coverage.md). Scene voice baselines may be shared, but every source line still needs speech action, resolved target, delivery change, pause/handoff and closure. Resolve space from that target's bound location, never a copied sample partner. Preserve non-lexical source vocal behavior separately; no invented words or lyrics.
+
+The existing projection embeds optional VocalDelivery: SPOKEN, RECITATIVE, SUNG, SHARED_RESPONSE or NONVERBAL. Mode is not melody. Keep unresolved composition UNRESOLVED, with no claim to reconstruct an ancient tune. New production must qualify the requested mode and approved composition; unsupported mode fails VOCAL_MODE_CAPABILITY_REQUIRED, never silent sung-to-TTS fallback. Good existing sung native audio still wins KEEP_NATIVE. This capability does not authorize an audition, TTS or paid generation.
+
 ## Voice Direction capability (R2)
 
 Read the [shared performance contract](../../docs/cross-modal-performance-direction.md). First ask whether dubbing is needed. Use `native_audio_disposition` against a reviewed FilmReview: good native performance remains KEEP_NATIVE even when a Voice Direction exists; bounded defects stay LOCAL_REPAIR. DUBBING_REQUIRED needs an actual corresponding failed native dimension. This decision does not dispatch or approve spending.

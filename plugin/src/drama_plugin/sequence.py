@@ -54,6 +54,10 @@ def film_review_verdict(review: FilmReview, current_media_hash: str, *, require_
               or set(review.performance_beats) != set(review.performance_required_beats)
               or any(set(row) != ALIGNMENT_DIMENSIONS or any(v != 'PASS' for v in row.values()) for row in review.performance_beats.values())):
             status = 'REVIEW_INCOMPLETE'
+    if review.performance_coverage_fingerprint:
+        from drama_plugin.performance_coverage import full_av_coverage
+        if full_av_coverage(review)['status'] != 'COVERED':
+            status = 'AV_PERFORMANCE_COVERAGE_INCOMPLETE'
     if require_director and review.director is None:
         status = 'INSUFFICIENT_EVIDENCE'
     elif review.director and review.director.disposition != 'APPROVE':

@@ -67,6 +67,8 @@ def validate_projection(intent: DirectorPerformanceIntent, dpd: DPDSnapshot,
         raise ValueError('BEAT_COORDINATION_MISMATCH')
     if (p.continuity_in, p.continuity_out) != (intent.continuity_in, intent.continuity_out):
         raise ValueError('PERFORMANCE_CONTINUITY_MISMATCH')
+    if p.context_fingerprint and (current.get('performance-context') != p.context_fingerprint or any(current.get('context-ref:'+r) != p.context_fingerprint for r in p.context_refs)):
+        raise ValueError('STALE_PERFORMANCE_CONTEXT')
     if p.channel == 'VISUAL' and current.get('grammar:' + str(p.route)) != p.grammar_fingerprint:
         raise ValueError('STALE_VISUAL_PERFORMANCE_GRAMMAR')
     return p

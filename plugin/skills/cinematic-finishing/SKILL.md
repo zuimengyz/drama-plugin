@@ -5,11 +5,15 @@ description: Finish existing edited drama with scene sound continuity, local amb
 
 # Cinematic Finishing
 
+## Full AV observation coverage (R3)
+
+Read [full performance coverage and isolation](../../docs/full-performance-coverage.md). Bind FilmReview with bind_full_performance_review from all performance-bearing source fragments. performance_required_beats is the full set, not a highlight reel. Keep required channel coverage per fragment: silent actions require visible evidence, spoken/shared vocal responses also require listening. One missing ordinary Beat yields AV_PERFORMANCE_COVERAGE_INCOMPLETE; UNKNOWN is never PASS. A full design manifest is only an observation obligation, not playback evidence. Preserve R2 evidence when a later semantic defect is found; report the finding with actual source context and repair owner.
+
 ## AV performance alignment facet (R2)
 
 Read the [shared performance contract](../../docs/cross-modal-performance-direction.md). Use existing FilmReview / FilmFinding, not a parallel AV review contract. Compare pinned planned DPD/Director/visual/voice with actual RealizedPerformanceSnapshot and listening evidence across amplitude, control, target, physical/vocal effort, breath, timing, pause, spatial reach, partner cue, release, continuity, native suitability and meaning. Include byte hash, speaker/Beat/line, observed time interval and evidence reference. Missing evidence remains UNKNOWN.
 
-Review every required critical Beat; a later PASS cannot erase an earlier failure. Each finding names the visual, audio or Director repair owner; DPD review is reserved for actual source-psychology conflict. Review repaired bytes again before adoption. DESIGN_ONLY evidence never proves observed media; OBSERVED never means ADOPTED. Full native reuse needs listening coverage; a local sound defect cannot authorize full dialogue replacement. Contract-valid alignment does not establish moving or artistically successful acting.
+Review every required performance-bearing Beat; a later PASS cannot erase an earlier failure. Each finding names the visual, audio or Director repair owner; DPD review is reserved for actual source-psychology conflict. Review repaired bytes again before adoption. DESIGN_ONLY evidence never proves observed media; OBSERVED never means ADOPTED. Full native reuse needs listening coverage; a local sound defect cannot authorize full dialogue replacement. Contract-valid alignment does not establish moving or artistically successful acting.
 
 ## Opt-in Director authority
 

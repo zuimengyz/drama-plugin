@@ -5,6 +5,12 @@ description: Interpret a complete film or an existing dramatic scope, choose and
 
 # Director
 
+## Cross-modal performance direction (R2)
+
+For performance-critical Beats, read the [shared performance contract](../../docs/cross-modal-performance-direction.md). Pin one `DirectorPerformanceIntent` to the current DPD and source: articulate audience experience, containment, permitted release, partner focus, rhythm and continuity in human language. Do not create Director subtext or actor/voice psychology. High internal pressure does not imply high external amplitude.
+
+Request the existing visual and audio capabilities against that same intent and Beat. Include `AV_PERFORMANCE_ALIGNMENT` in required review evidence before adopting a realized performance. Use `render_performance_pair` only for critical Beats in the existing Production Book; ordinary functional actions need no giant dual table. A controlled tear does not permanently change the character baseline; real joy must finish before consequences return. Design-only fixtures cannot pass a real-media adoption gate. No new agent, generation permission or screenplay approval follows from this capability.
+
 Own creative decisions, not implementations. Capabilities serve intent; every shot
 must justify its existence; local quality must preserve global coherence; review
 results, not merely plans. Apply cinematic discipline to historical short-form work:

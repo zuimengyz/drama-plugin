@@ -4,6 +4,7 @@ from typing import Any, Iterable, Mapping, Sequence
 
 from drama_plugin.contracts.base import dump_contract, sha256_canonical
 from drama_plugin.contracts.dpd import DPDSnapshot, PerformanceLevel
+from drama_plugin.contracts.performance_direction import DirectorPerformanceIntent, PerformanceProjection
 from drama_plugin.contracts.dialogue_timing import DialogueTimingPlan
 from drama_plugin.dpd import compose_dpd
 from drama_plugin.dialogue_timing import derive_visual_execution_timing
@@ -99,6 +100,9 @@ def project_visual_performance(
     character_identity_key: str,
     character_visual_identity_fingerprint: str,
     scene_visual_identity_fingerprint: str,
+    director_intent: DirectorPerformanceIntent | None = None,
+    performance_projection: PerformanceProjection | None = None,
+    current_fingerprints: Mapping[str, str] | None = None,
 ) -> VisualPerformanceBrief:
     """Translate authoritative DPD into visible behavior without camera or identity design."""
 
@@ -118,6 +122,15 @@ def project_visual_performance(
     if effective.actor != primary_character_key or effective.speaker != primary_character_key:
         raise VisualProjectionError("DPD actor/speaker and primary character mismatch")
 
+    language: dict[str, Any] = dict(_visible_language(dpd_snapshot))
+    boundaries = effective.performance_boundaries
+    if director_intent is not None or performance_projection is not None:
+        if director_intent is None or performance_projection is None or current_fingerprints is None:
+            raise VisualProjectionError("DIRECTOR_PERFORMANCE_INPUTS_REQUIRED")
+        from drama_plugin.performance_direction import validate_projection, visual_language
+        projected = validate_projection(director_intent, dpd_snapshot, performance_projection, current_fingerprints, "VISUAL")
+        language = visual_language(projected)
+        boundaries = tuple(dict.fromkeys((*boundaries, *director_intent.do_not, projected.instructions["do_not"])))
     material: dict[str, Any] = {
         "schemaVersion": "visual-performance-brief-v1",
         "dpdFingerprint": dpd_snapshot.fingerprint,
@@ -127,8 +140,8 @@ def project_visual_performance(
         "primaryCharacterKey": primary_character_key,
         "characterVisualIdentityFingerprint": character_visual_identity_fingerprint,
         "sceneVisualIdentityFingerprint": scene_visual_identity_fingerprint,
-        **_visible_language(dpd_snapshot),
-        "performanceBoundaries": effective.performance_boundaries,
+        **language,
+        "performanceBoundaries": boundaries,
     }
     provisional = VisualPerformanceBrief.model_validate(
         {**material, "fingerprint": "0" * 64}

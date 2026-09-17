@@ -6,6 +6,7 @@ from typing import Annotated, Literal, Any
 from pydantic import Field, StringConstraints, model_validator, model_serializer, SerializerFunctionWrapHandler
 
 from drama_plugin.contracts.base import ContractModel
+from drama_plugin.contracts.performance_direction import PerformanceProjection
 
 
 NonBlankText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
@@ -67,11 +68,14 @@ class AudioPerformanceBrief(ContractModel):
     control: NonBlankText
     performance_boundaries: tuple[NonBlankText, ...] = ()
     phrase_delivery_spans: tuple[PhraseDeliverySpan, ...] = ()
+    director_performance: PerformanceProjection | None = None
     fingerprint: Fingerprint
 
     @model_serializer(mode="wrap")
     def serialize_material(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
         result: dict[str, Any] = handler(self)
+        if self.director_performance is None:
+            result.pop("directorPerformance", None); result.pop("director_performance", None)
         if not self.phrase_delivery_spans:
             result.pop("phraseDeliverySpans", None)
             result.pop("phrase_delivery_spans", None)
@@ -79,6 +83,8 @@ class AudioPerformanceBrief(ContractModel):
 
     @model_validator(mode="after")
     def validate_phrase_order(self) -> "AudioPerformanceBrief":
+        if self.director_performance and (self.director_performance.channel != "VOICE" or self.director_performance.spoken_content_id != self.spoken_content_id):
+            raise ValueError("Audio Brief must project its bound voice line")
         if len(self.phrase_delivery_spans) > 12 or any(
             a.end_char > b.start_char for a, b in zip(self.phrase_delivery_spans, self.phrase_delivery_spans[1:])
         ):

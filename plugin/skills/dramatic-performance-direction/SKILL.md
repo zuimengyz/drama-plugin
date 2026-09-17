@@ -5,6 +5,12 @@ description: Build a replayable, provider- and modality-neutral Scene/Beat/Line 
 
 # Dramatic Performance Direction
 
+## One cross-modal performance truth (R2)
+
+Read the [shared performance contract](../../docs/cross-modal-performance-direction.md) when projecting into body and voice. Scene/Beat/Line DPD and the composed snapshot remain the only owners of objective, obstacle, tactic, subtext, knowledge, relationship, internal activation, external control and interaction target. Preserve the source and composition fingerprints; an inconsistent snapshot requires DPD review.
+
+The Director adds audience-facing performance scale and release, not another psychological layer. VisualPerformanceBrief and AudioPerformanceBrief reference the same DPD, Director intent, Beat and SpokenContent. Never translate HIGH internalActivation automatically into crying, shouting, shaking or whispering. Keep externalControl independent. Return an actual conflict in source psychology to this owner; execution mismatch alone belongs to visual/audio repair.
+
 ## Opt-in Director authority
 
 DPD remains the canonical owner of objective, obstacle, tactic and subtext. Consume a Director request as pinned intent and constraints, not another psychological truth. Its Scene dramaticPurpose is a source-derived summary, not independently editable purpose. Return the original DPD snapshot/fingerprint, evidence and unmet requirements in CapabilityFeedback. Director may accept or return the proposal; conflicts with source dialogue require upstream review rather than a silent rewrite.

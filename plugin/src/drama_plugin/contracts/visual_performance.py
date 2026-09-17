@@ -5,6 +5,7 @@ from typing import Annotated, Literal, Any
 from pydantic import Field, StringConstraints, model_validator, model_serializer, SerializerFunctionWrapHandler
 
 from drama_plugin.contracts.base import ContractModel
+from drama_plugin.contracts.performance_direction import PerformanceProjection, PerformanceObservation
 
 
 NonBlankText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
@@ -61,11 +62,14 @@ class VisualPerformanceBrief(ContractModel):
     dialogue_timing_plan_fingerprint: Fingerprint | None = None
     dialogue_source_fingerprint: Fingerprint | None = None
     dialogue_performance_phases: tuple[DialoguePerformancePhase, ...] = ()
+    director_performance: PerformanceProjection | None = None
     fingerprint: Fingerprint
 
     @model_serializer(mode="wrap")
     def serialize_material(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
         result: dict[str, Any] = handler(self)
+        if self.director_performance is None:
+            result.pop("directorPerformance", None); result.pop("director_performance", None)
         if self.execution_timing_fingerprint is None:
             result.pop("executionTimingFingerprint", None)
             result.pop("execution_timing_fingerprint", None)
@@ -73,6 +77,8 @@ class VisualPerformanceBrief(ContractModel):
 
     @model_validator(mode="after")
     def validate_dialogue_phases(self) -> "VisualPerformanceBrief":
+        if self.director_performance and self.director_performance.channel != "VISUAL":
+            raise ValueError("Visual Brief cannot carry a voice projection")
         phases = self.dialogue_performance_phases
         if bool(phases) != bool(self.dialogue_timing_plan_fingerprint and self.dialogue_source_fingerprint):
             raise ValueError("DIALOGUE_PHASES_REQUIRE_SOURCE_LINEAGE")
@@ -120,10 +126,18 @@ class RealizedPerformanceSnapshot(ContractModel):
     major_gesture_windows_ms: tuple[TimeWindowMs, ...] = ()
     visible_pause_windows_ms: tuple[TimeWindowMs, ...] = ()
     post_speech_hold_ms: NonNegativeMs | None = None
+    performance_observations: tuple[PerformanceObservation, ...] = ()
     observation_method: Literal["CONTROLLED_FRAME_SAMPLING"] = (
         "CONTROLLED_FRAME_SAMPLING"
     )
     fingerprint: Fingerprint
+
+    @model_serializer(mode="wrap")
+    def legacy_observations(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        result: dict[str, Any] = handler(self)
+        if not self.performance_observations:
+            result.pop("performanceObservations", None); result.pop("performance_observations", None)
+        return result
 
     @model_validator(mode="after")
     def validate_observed_timing(self) -> "RealizedPerformanceSnapshot":
@@ -138,6 +152,11 @@ class RealizedPerformanceSnapshot(ContractModel):
         ):
             raise ValueError("post-speech hold exceeds video duration")
 
+        for o in self.performance_observations:
+            if (o.channel != "VISUAL" or o.media_hash != self.video_content_hash
+                    or o.end_ms > self.video_duration_ms
+                    or (self.observed_speaker_key and o.speaker_key != self.observed_speaker_key)):
+                raise ValueError("Realized performance evidence binding mismatch")
         windows: tuple[TimeWindowMs, ...] = (
             (() if self.pre_speech_motion_window_ms is None else (self.pre_speech_motion_window_ms,))
             + self.mouth_activity_windows_ms

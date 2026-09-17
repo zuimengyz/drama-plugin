@@ -43,6 +43,17 @@ def film_review_verdict(review: FilmReview, current_media_hash: str, *, require_
     status = 'REPAIR_REQUIRED' if blocked or 'FAIL' in checks else 'REVIEW_INCOMPLETE'
     if not blocked and not gaps and all(c == 'PASS' for c in checks) and review.persistence_verified:
         status = 'CONTENT_REVIEW_COMPLETE_PENDING_USER_ADOPTION'
+    if review.performance_alignment:
+        from drama_plugin.performance_direction import ALIGNMENT_DIMENSIONS
+        if 'FAIL' in review.performance_alignment.values():
+            status = 'REPAIR_REQUIRED'
+        elif (set(review.performance_alignment) != ALIGNMENT_DIMENSIONS
+              or 'UNKNOWN' in review.performance_alignment.values()
+              or review.performance_review_basis != 'OBSERVED_MEDIA'
+              or not review.performance_required_beats
+              or set(review.performance_beats) != set(review.performance_required_beats)
+              or any(set(row) != ALIGNMENT_DIMENSIONS or any(v != 'PASS' for v in row.values()) for row in review.performance_beats.values())):
+            status = 'REVIEW_INCOMPLETE'
     if require_director and review.director is None:
         status = 'INSUFFICIENT_EVIDENCE'
     elif review.director and review.director.disposition != 'APPROVE':

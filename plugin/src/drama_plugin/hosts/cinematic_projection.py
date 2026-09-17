@@ -65,6 +65,8 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
         mark('behaviorAnchor.continuityBasis','UPSTREAM_LOCK','frozen','历史/连续性依据，无需作为独立动作',False)
     for key in ('objective','interactionTarget','intendedBelief','concealed','emotionalArc'):
         emit('PERFORMANCE '+key, 'performance.'+key, raw['performance'][key])
+    if spec.performance.director_performance:
+        emit('ACTOR DIRECTION / SHARED PERFORMANCE INTENT', 'performance.directorPerformance', raw['performance']['directorPerformance'])
     for i,beat in enumerate(spec.performance.beats):
         data = raw['performance']['beats'][i]
         # Formatting only: no quantization, retiming or invented beat.
@@ -74,6 +76,8 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
         text = d.text if d.text_range is None else d.text[d.text_range[0]:d.text_range[1]]
         sections.append(f'AUDIO / DIALOGUE [{d.start:g}–{d.end:g}s] {d.coverage_intent} '
                         f'{d.speaker_key} → {d.target}: "{text}"；{d.delivery}；after: {d.after_line}')
+        if d.voice_performance:
+            sections.append('NATIVE VOICE DIRECTION / SAME PERFORMANCE: ' + prose(dump_contract(d.voice_performance)))
         mark(f'dialogue[{i}]','PROMPT',prompt_field,'仅说当前覆盖片段；整句正文保留为 Canon，不重复整句')
         if d.text_range is not None:
             manifest[f'dialogue[{i}].text']['executed_text_range'] = list(d.text_range)

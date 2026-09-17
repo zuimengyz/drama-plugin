@@ -10,7 +10,8 @@ from drama_plugin.contracts.base import dump_contract, sha256_canonical
 from drama_plugin.contracts.dpd import DPDSnapshot, PerformanceLevel
 from drama_plugin.contracts.media import Media, MediaType
 from drama_plugin.contracts.video_conditioned_audio import VideoConditionedAudioProjection
-from drama_plugin.contracts.visual_performance import RealizedPerformanceSnapshot
+from drama_plugin.contracts.visual_performance import RealizedPerformanceSnapshot, VisualPerformanceBrief
+from drama_plugin.contracts.performance_direction import DirectorPerformanceIntent
 from drama_plugin.dpd import compose_dpd
 from drama_plugin.visual import fingerprint_realized_performance
 
@@ -29,6 +30,9 @@ def condition_audio_on_video(
     bound_voice_id: str,
     voice_content_hash: str,
     accepted_realized_fingerprint: str,
+    director_intent: DirectorPerformanceIntent | None = None,
+    visual_brief: VisualPerformanceBrief | None = None,
+    current_fingerprints: Mapping[str, str] | None = None,
 ) -> SpeechGenerationRequest:
     """Condition execution on accepted pixels while preserving dramatic/text/voice authority."""
     if dpd_snapshot is None or realized_snapshot is None:
@@ -74,10 +78,23 @@ def condition_audio_on_video(
         raise ValueError("natural delivery required; guessed mouth timing is prohibited")
     if base_request.performance_intent or base_request.scene_state is not None:
         raise ValueError("legacy performance authority conflict")
+    authored = base_request.audio_performance_brief
+    r2 = authored.director_performance if authored is not None else None
+    reconciled: dict[str, Any] | None = None
+    if r2:
+        if director_intent is None or visual_brief is None or current_fingerprints is None:
+            raise ValueError("REALIZED_DIRECTOR_PERFORMANCE_INPUTS_REQUIRED")
+        from drama_plugin.performance_direction import reconcile_realized_performance
+        reconciled = reconcile_realized_performance(dpd, director_intent, visual_brief, realized, current_fingerprints)
+        if reconciled["status"] != "REALIZED_TIMING_AVAILABLE":
+            raise ValueError(reconciled["status"] + ": " + reconciled.get("reason", ""))
     base = project_audio_performance(
         dpd_snapshot=dpd, spoken_content=canonical_spoken_content,
         voice_profile=base_request.voice_profile, voice_identity_ref=bound_voice_id,
         timing_policy=timing,
+        director_intent=director_intent if r2 else None, performance_projection=r2,
+        current_fingerprints=current_fingerprints if r2 else None,
+        phrase_delivery_spans=authored.phrase_delivery_spans if r2 and authored else (),
     )
     authored = base_request.audio_performance_brief
     if authored is not None and authored.phrase_delivery_spans:
@@ -119,10 +136,13 @@ def condition_audio_on_video(
         ),
         "sentence_ending": f"recover clear finality while carrying the action: {dpd.effective.dramatic_action}",
     }
-    if base.phrase_delivery_spans:
+    if base.phrase_delivery_spans or r2:
         # Preserve approved interpersonal/phrase/ending directions. An observed
         # motion is evidence for review, never a mandatory vocal reinterpretation.
         updates = {}
+    if reconciled:
+        updates["pause_strategy"] = base.pause_strategy + " Observed action events (ms): " + str(reconciled["observedEventsMs"]) + "; reconcile pauses with these actual events; do not fill the video or infer speech from mouth motion."
+        updates["control"] = base.control + " Observed body load: " + str(reconciled["bodyLoad"]) + "; breath: " + str(reconciled["breath"]) + ". Preserve Voice identity and DPD; no substitute dialogue."
     material = {**base.model_dump(mode="json", exclude={"fingerprint"}), **updates}
     final_brief = AudioPerformanceBrief.model_validate({**material, "fingerprint": "0" * 64})
     final_brief = final_brief.model_copy(update={

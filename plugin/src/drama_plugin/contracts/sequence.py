@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Annotated, Any, Literal, Self
 from pydantic import ConfigDict, Field, SerializerFunctionWrapHandler, model_serializer, model_validator
 from drama_plugin.contracts.base import ContractModel
+from drama_plugin.contracts.performance_direction import PerformanceObservation
 from drama_plugin.contracts.creative_asset import Hash, Text
 from drama_plugin.contracts.dramatic_editorial import EditorialRhythmPlan, Seconds
 from drama_plugin.contracts.production_freeze import FreezeReference
@@ -205,18 +206,35 @@ class FilmReview(ContractModel):
     sound: Literal['PASS', 'FAIL', 'UNKNOWN'] = 'UNKNOWN'
     persistence_verified: bool = False
     director: DirectorReviewFacet | None = None
+    performance_alignment: dict[str, Literal["PASS", "FAIL", "UNKNOWN"]] = Field(default_factory=dict)
+    performance_beats: dict[str, dict[str, Literal["PASS", "FAIL", "UNKNOWN"]]] = Field(default_factory=dict)
+    performance_required_beats: tuple[str, ...] = ()
+    performance_refs: tuple[SourcePin, ...] = ()
+    performance_observations: tuple[PerformanceObservation, ...] = ()
+    performance_review_basis: Literal["DESIGN_ONLY", "OBSERVED_MEDIA"] | None = None
+    native_audio_suitability: dict[str, Literal["PASS", "FAIL", "UNKNOWN"]] = Field(default_factory=dict)
 
     @model_serializer(mode='wrap')
     def legacy_serialization(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
         data: dict[str, Any] = handler(self)
         if self.director is None:
             data.pop('director', None)
+        for snake, camel in [('performance_beats', 'performanceBeats'), ('performance_required_beats', 'performanceRequiredBeats'), ('performance_alignment', 'performanceAlignment'), ('performance_refs', 'performanceRefs'), ('performance_observations', 'performanceObservations'), ('performance_review_basis', 'performanceReviewBasis'), ('native_audio_suitability', 'nativeAudioSuitability')]:
+            if not getattr(self, snake):
+                data.pop(snake, None); data.pop(camel, None)
         return data
 
     @model_validator(mode='after')
     def ranges(self) -> Self:
         if any(o.end > self.duration for o in self.observations) or any(f.end > self.duration for f in self.findings):
             raise ValueError('Review range exceeds actual file')
+        if self.performance_alignment and (not self.performance_refs or not self.performance_review_basis):
+            raise ValueError('AV alignment requires compared source refs and review basis')
+        for o in self.performance_observations:
+            if o.media_hash != self.media_hash or o.end_ms > self.duration * 1000:
+                raise ValueError('Performance observation belongs to different media/range')
+            if self.performance_review_basis == 'OBSERVED_MEDIA' and o.method == 'DESIGN_FIXTURE':
+                raise ValueError('Design fixture is not observed media evidence')
         if self.director and not set(self.director.finding_keys) <= {f.key for f in self.findings}:
             raise ValueError('Director finding reference is missing')
         return self

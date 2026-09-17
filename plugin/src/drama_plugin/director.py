@@ -136,6 +136,8 @@ def reviewed_receipt(workspace: DirectorWorkspace, request: CapabilityRequest,
         raise DirectorError('INVALID_SOURCE', 'Review bytes changed')
     if request.result_kind == 'MEDIA':
         film = FilmReview.model_validate(review)
+        if 'AV_PERFORMANCE_ALIGNMENT' in request.required_evidence and not film.performance_alignment:
+            raise DirectorError('INSUFFICIENT_EVIDENCE', 'AV performance review required before adoption')
         facet = film.director
     else:
         if set(review) != {'subjectKind', 'director', 'findings'} or review['subjectKind'] != 'DESIGN_ONLY':

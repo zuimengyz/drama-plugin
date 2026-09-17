@@ -68,6 +68,8 @@ class FishAudioPerformanceMapping(ContractModel):
 def map_audio_performance_to_fish(
     brief: AudioPerformanceBrief,
 ) -> FishAudioPerformanceMapping:
+    if brief.director_performance is not None:
+        raise ValueError("DIRECTOR_VOICE_ADAPTER_QUALIFICATION_REQUIRED: new semantic dimensions must not be silently dropped")
     speed = {
         PaceTendency.SLOWER: 0.92,
         PaceTendency.NEUTRAL: 1.0,
@@ -261,6 +263,8 @@ def compile_fish_tts_payload(
     performance_brief: AudioPerformanceBrief | None = None,
     compact_phrases: bool = False,
 ) -> dict[str, Any]:
+    if performance_brief is not None and performance_brief.director_performance is not None:
+        raise ValueError("DIRECTOR_VOICE_ADAPTER_QUALIFICATION_REQUIRED")
     if mode not in {"baseline", "directed"}:
         raise ValueError("Fish validation mode must be baseline or directed")
     if not exact_text:

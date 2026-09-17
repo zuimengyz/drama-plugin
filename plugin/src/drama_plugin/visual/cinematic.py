@@ -138,6 +138,8 @@ def execution_brief(spec: CinematicShotSpec) -> str:
              f'运动：{c.movement}，幅度{c.amplitude}；触发{c.trigger or "保持观察"}；动机{c.motivation or "固定构图容纳行动"}',
              f'焦点：{c.focus_target}；{c.focus_transition}；构图{c.opening_composition}→{c.ending_composition}',
              f'表演目的：{spec.performance.objective}；对象{spec.performance.interaction_target}']
+    if spec.performance.director_performance:
+        lines.append('演员方向：' + '；'.join(spec.performance.director_performance.instructions.values()))
     if spec.behavior_anchor:
         a = spec.behavior_anchor
         lines.append(f'正在进行：{a.actor}{a.ongoing_activity}；被{a.interruption}打断/改变。')
@@ -146,6 +148,9 @@ def execution_brief(spec: CinematicShotSpec) -> str:
             f'{a.actor}：{a.behavior}' + (f'（因{a.trigger}）' if a.trigger else '') for a in beat.actions))
     for d in spec.dialogue:
         lines.append(f'{d.start:g}–{d.end:g}秒 {d.speaker_key}对{d.target}说：“{d.text}” {d.delivery}；说完{d.after_line}')
+    for d in spec.dialogue:
+        if d.voice_performance:
+            lines.append('声音方向：' + '；'.join(d.voice_performance.instructions.values()))
     lines += [f'二级运动：{m.cause}→{m.element}{m.response}；边界{m.limit}' for m in spec.secondary_motion]
     lines += [f'物理反馈：{m.source}{m.effect}→{m.affected}{m.response}；{m.occlusion_or_depth}' for m in spec.environment_interaction]
     lines += [f'稳定边界 {r.dimension}：允许{r.allowed}；不允许{r.forbidden}' for r in spec.stability_contract]
@@ -193,6 +198,26 @@ def freeze_direction(spec: CinematicShotSpec, *, context: dict[str, Any], visual
         material['dialogueCoverage'] = context['dialogueCoverage']
     if context.get('dpdSnapshot'):
         material['upstreamPerformance'] = validated_upstream_performance(context['dpdSnapshot'], spec)
+    if any(d.voice_performance for d in spec.dialogue) and not spec.performance.director_performance:
+        raise ValueError('SHARED_VISUAL_DIRECTION_REQUIRED')
+    if spec.performance.director_performance:
+        from drama_plugin.contracts.performance_direction import DirectorPerformanceIntent
+        from drama_plugin.contracts.dpd import DPDSnapshot
+        from drama_plugin.performance_direction import validate_projection
+        intent = DirectorPerformanceIntent.model_validate(context.get('directorPerformanceIntent'))
+        dpd = DPDSnapshot.model_validate(context.get('dpdSnapshot'))
+        validate_projection(intent, dpd, spec.performance.director_performance, context['currentPerformanceSources'], 'VISUAL')
+        if spec.performance.objective != dpd.effective.objective or spec.performance.interaction_target != dpd.effective.interaction_target:
+            raise ValueError('DPD_AUTHORITY_MISMATCH')
+        for dialogue in spec.dialogue:
+            if dialogue.voice_performance:
+                validate_projection(intent, dpd, dialogue.voice_performance, context['currentPerformanceSources'], 'VOICE')
+                if dialogue.spoken_content_id != dialogue.voice_performance.spoken_content_id or dialogue.speaker_key != dpd.effective.speaker:
+                    raise ValueError('CANONICAL_VOICE_BINDING_MISMATCH')
+        if not any(d.voice_performance for d in spec.dialogue):
+            raise ValueError('SHARED_NATIVE_VOICE_DIRECTION_REQUIRED')
+        material['directorPerformanceIntent'] = dump_contract(intent)
+        material['performanceSourcePins'] = dict(context['currentPerformanceSources'])
     return {**material, 'fingerprint': sha256_canonical(material)}
 
 
@@ -229,6 +254,23 @@ def verify_frozen(raw: dict[str, Any]) -> CinematicShotSpec:
         raise ValueError('Frozen direction has major execution findings')
     if raw.get('upstreamPerformance'):
         validated_upstream_performance(raw['upstreamPerformance'], spec)
+    if any(d.voice_performance for d in spec.dialogue) and not spec.performance.director_performance:
+        raise ValueError('SHARED_VISUAL_DIRECTION_REQUIRED')
+    if spec.performance.director_performance:
+        from drama_plugin.contracts.performance_direction import DirectorPerformanceIntent
+        from drama_plugin.contracts.dpd import DPDSnapshot
+        from drama_plugin.performance_direction import validate_projection
+        dpd = DPDSnapshot.model_validate(raw.get('upstreamPerformance'))
+        validate_projection(DirectorPerformanceIntent.model_validate(raw.get('directorPerformanceIntent')), dpd, spec.performance.director_performance, raw['performanceSourcePins'], 'VISUAL')
+        if (spec.performance.objective, spec.performance.interaction_target) != (dpd.effective.objective, dpd.effective.interaction_target):
+            raise ValueError('DPD_AUTHORITY_MISMATCH')
+        if not any(d.voice_performance for d in spec.dialogue):
+            raise ValueError('SHARED_NATIVE_VOICE_DIRECTION_REQUIRED')
+        for dialogue in spec.dialogue:
+            if dialogue.voice_performance:
+                validate_projection(DirectorPerformanceIntent.model_validate(raw['directorPerformanceIntent']), dpd, dialogue.voice_performance, raw['performanceSourcePins'], 'VOICE')
+                if dialogue.spoken_content_id != dialogue.voice_performance.spoken_content_id or dialogue.speaker_key != dpd.effective.speaker:
+                    raise ValueError('CANONICAL_VOICE_BINDING_MISMATCH')
     vr = raw['visualResolution']; resolved = resolve_visual_bible(vr['base'], vr['overrides'])
     if (vr != {k:v for k,v in resolved.items() if k!='layers'} or
             resolved['fingerprint'] != spec.visual_bible_fingerprint or resolved['effective'] != dump_contract(spec.visual_bible)):

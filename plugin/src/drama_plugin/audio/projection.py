@@ -18,6 +18,7 @@ from drama_plugin.contracts.audio_projection import (
 )
 from drama_plugin.contracts.base import dump_contract, sha256_canonical
 from drama_plugin.contracts.dpd import DPDSnapshot, PerformanceLevel
+from drama_plugin.contracts.performance_direction import DirectorPerformanceIntent, PerformanceProjection
 
 
 class AudioProjectionError(ValueError):
@@ -129,6 +130,9 @@ def project_audio_performance(
     voice_identity_ref: str,
     timing_policy: TargetTimingPolicy,
     phrase_delivery_spans: Sequence[PhraseDeliverySpan] = (),
+    director_intent: DirectorPerformanceIntent | None = None,
+    performance_projection: PerformanceProjection | None = None,
+    current_fingerprints: Mapping[str, str] | None = None,
 ) -> AudioPerformanceBrief:
     if dpd_snapshot is None:
         raise AudioProjectionError("DPDSnapshot is required")
@@ -144,8 +148,19 @@ def project_audio_performance(
     if not voice_identity_ref.strip():
         raise AudioProjectionError("stable Voice or Casting identity reference is required")
 
-    direction = _performance_language(dpd_snapshot)
-    if phrase_delivery_spans:
+    boundaries = dpd_snapshot.effective.performance_boundaries
+    if director_intent is not None or performance_projection is not None:
+        if director_intent is None or performance_projection is None or current_fingerprints is None:
+            raise AudioProjectionError("DIRECTOR_PERFORMANCE_INPUTS_REQUIRED")
+        from drama_plugin.performance_direction import validate_projection, voice_language
+        projected = validate_projection(director_intent, dpd_snapshot, performance_projection, current_fingerprints, "VOICE")
+        direction = voice_language(projected)
+        boundaries = tuple(dict.fromkeys((*boundaries, *director_intent.do_not, projected.instructions["do_not"])))
+    else:
+        direction = _performance_language(dpd_snapshot)
+    if any(span.end_char > len(exact_text) for span in phrase_delivery_spans):
+        raise AudioProjectionError("phrase span exceeds canonical text")
+    if phrase_delivery_spans and director_intent is None:
         effective = dpd_snapshot.effective
         direction.update({
             "control": f"Address {effective.interaction_target} in the live scene: {effective.dramatic_action}. No audience address.",
@@ -173,7 +188,7 @@ def project_audio_performance(
         "timingContextFingerprint": sha256_canonical(dump_contract(timing_policy)),
         **direction,
         "pace": pace,
-        "performanceBoundaries": dpd_snapshot.effective.performance_boundaries,
+        "performanceBoundaries": boundaries,
         "phraseDeliverySpans": [dump_contract(span) for span in phrase_delivery_spans],
     }
     provisional = AudioPerformanceBrief.model_validate(
@@ -196,6 +211,9 @@ def compile_projected_speech_request(
     pronunciation_guidance: list[PronunciationGuidance] | None = None,
     non_material_metadata: Mapping[str, Any] | None = None,
     performance_rendition: Mapping[str, Any] | None = None,
+    director_intent: DirectorPerformanceIntent | None = None,
+    performance_projection: PerformanceProjection | None = None,
+    current_fingerprints: Mapping[str, str] | None = None,
 ) -> SpeechGenerationRequest:
     spoken_content = resolve_performance_text(spoken_content, performance_rendition)
     spoken_id, speaker_key, exact_text = _spoken_identity(spoken_content)
@@ -206,6 +224,8 @@ def compile_projected_speech_request(
         voice_identity_ref=voice_identity_ref,
         timing_policy=timing_policy,
         phrase_delivery_spans=phrase_delivery_spans,
+        director_intent=director_intent, performance_projection=performance_projection,
+        current_fingerprints=current_fingerprints,
     )
     return SpeechGenerationRequest(
         work_id=work_id,

@@ -5,6 +5,12 @@ description: Finish existing edited drama with scene sound continuity, local amb
 
 # Cinematic Finishing
 
+## AV performance alignment facet (R2)
+
+Read the [shared performance contract](../../docs/cross-modal-performance-direction.md). Use existing FilmReview / FilmFinding, not a parallel AV review contract. Compare pinned planned DPD/Director/visual/voice with actual RealizedPerformanceSnapshot and listening evidence across amplitude, control, target, physical/vocal effort, breath, timing, pause, spatial reach, partner cue, release, continuity, native suitability and meaning. Include byte hash, speaker/Beat/line, observed time interval and evidence reference. Missing evidence remains UNKNOWN.
+
+Review every required critical Beat; a later PASS cannot erase an earlier failure. Each finding names the visual, audio or Director repair owner; DPD review is reserved for actual source-psychology conflict. Review repaired bytes again before adoption. DESIGN_ONLY evidence never proves observed media; OBSERVED never means ADOPTED. Full native reuse needs listening coverage; a local sound defect cannot authorize full dialogue replacement. Contract-valid alignment does not establish moving or artistically successful acting.
+
 ## Opt-in Director authority
 
 Keep EditorialRhythmPlan, PictureEditPlan, SequencePackage and FilmReview as the original owners. Director intent governs acceptance without a parallel edit plan or review. Return existing output/evidence references; use the optional FilmReview director facet for actual-media intent coverage and causal disposition. A design-only judgment stays in Bible review, never a fabricated AV review. Director approval does not imply user adoption, and technical success does not imply Director approval. Native-audio policy and source-preserving finishing remain unchanged.

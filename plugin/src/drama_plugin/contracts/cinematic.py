@@ -1,10 +1,11 @@
 """Compact creative IR for director-authored, source-pinned Shot execution."""
 from __future__ import annotations
 
-from typing import Annotated, Literal, Self
+from typing import Annotated, Literal, Self, Any
 
-from pydantic import Field, StringConstraints, model_validator
+from pydantic import Field, StringConstraints, model_validator, model_serializer, SerializerFunctionWrapHandler
 from drama_plugin.contracts.base import ContractModel
+from drama_plugin.contracts.performance_direction import PerformanceProjection
 from drama_plugin.contracts.creative_asset import CinematicLanguageRef
 
 Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
@@ -83,6 +84,14 @@ class Performance(ContractModel):
     concealed: Text | None = None
     emotional_arc: tuple[Text, ...] = ()
     beats: tuple[PerformanceBeat, ...] = Field(min_length=1)
+    director_performance: PerformanceProjection | None = None
+
+    @model_serializer(mode="wrap")
+    def legacy_performance(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        result: dict[str, Any] = handler(self)
+        if self.director_performance is None:
+            result.pop("directorPerformance", None); result.pop("director_performance", None)
+        return result
 
 
 class DialogueDirection(ContractModel):
@@ -97,6 +106,15 @@ class DialogueDirection(ContractModel):
     coverage_intent: Literal['ON_SCREEN_SPEAKER', 'REACTION', 'OFF_SCREEN', 'VOICE_OVER'] = 'ON_SCREEN_SPEAKER'
     # Canonical sentence offset, not another Dialogue entity. The group artifact
     # proves these local slices; text remains the exact canonical full sentence.
+    voice_performance: PerformanceProjection | None = None
+
+    @model_serializer(mode='wrap')
+    def legacy_voice(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        result: dict[str, Any] = handler(self)
+        if self.voice_performance is None:
+            result.pop('voicePerformance', None); result.pop('voice_performance', None)
+        return result
+
     canonical_interval: tuple[Seconds, Seconds] | None = None
     text_range: tuple[int, int] | None = None
 

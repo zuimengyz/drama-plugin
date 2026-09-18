@@ -2,7 +2,7 @@
 
 `visualRoute` is `live_action_realist` or `stylized_cinematic_cg`. It is the chosen visual language, not the existing provider/input route, casting proof order or a business entity. V1 is a design-only extension: it supplies deterministic resolution, casting projection, generic creative handoffs and read-only Asset discovery. It does not implement an approved CG production run or inherit adoption.
 
-`contracts/visual_route.py` exports ProjectVisualRoutes, SequenceVisualRoute, ResolvedVisualRoute, RouteStyleContract, RouteContext and RouteCastingContext. Unknown fields/routes fail. Project defaults to live_action_realist and enables only that route until explicitly configured. A project can enable both while keeping its existing default. Sequence override names Work and sequence, requires a reason and must select an enabled route. There is no global config write.
+`contracts/visual_route.py` exports ProjectVisualRoutes, SequenceVisualRoute, ResolvedVisualRoute, RouteStyleContract, RouteContext and RouteCastingContext. Unknown fields/unregistered plain route names fail. Explicit provider:<mode> design routes are permitted with PROVIDER_DEFINED medium; no provider call or support is implied. Project defaults to live_action_realist and enables only that route until explicitly configured. A project can enable both while keeping its existing default. Sequence override names Work and sequence, requires a reason and must select an enabled route. There is no global config write.
 
 Resolve project → sequence using `visual_route.resolve_visual_route`. One concrete clip has one route. For a side-by-side comparison create separate sequence keys referencing the same narrative source. Same-route settings may share style resources; each resolved snapshot pins project/sequence revisions. A changed context makes previous packets stale for new use, without changing those packets or their original approvals.
 
@@ -28,3 +28,5 @@ python skills/production-design/scripts/visual_route.py discover --context conte
 ```
 
 Authorial Gate and Literary Craft remain route-independent. Bind presentation requirements separately; never turn NO_AUTHORIAL_INTERVENTION into text eligibility, count unadopted alternatives as uses, or relabel original text as historical because it is rendered on a stone. A visual coda must preserve the same canon discipline.
+
+Additional configurable design media: stylized_animation / DESIGNED_ANIMATION, hybrid / HYBRID; provider:<mode> / PROVIDER_DEFINED. Existing two-route performance/execution adapters remain separately gated and cannot silently map an unsupported route to realism or CG. All selections remain Work/Sequence scoped; defaults unchanged.

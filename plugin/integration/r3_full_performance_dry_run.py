@@ -1,4 +1,5 @@
-"""Offline, installed-package R3 full proposal coverage. No formal Shots/media."""
+"""Work-specific integration EXAMPLE/TEST HARNESS, not a generic preset.
+Offline, installed-package R3 full proposal coverage. No formal Shots/media."""
 from __future__ import annotations
 import argparse
 import hashlib

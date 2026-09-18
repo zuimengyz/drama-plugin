@@ -1,4 +1,5 @@
-"""Host-owned Stable Audio local qualification and two-candidate PoC. No formal writes."""
+"""Work-specific Gaixia integration EXAMPLE/TEST HARNESS; not a generic default.
+Host-owned local qualification and two-candidate PoC. No formal writes."""
 from __future__ import annotations
 import argparse
 import hashlib
@@ -64,6 +65,8 @@ def main() -> None:
     installation = provider.inspect_capabilities()
     plan, r, brief, current, review = inputs(args.foundation, args.proposal)
     translation = json.loads((out/'c03-translation.json').read_text())
+    # Work-specific exclusion example, kept outside the reusable adapter.
+    translation['protectedPerformanceTexts'] = ['力拔山', '氣蓋世', '气盖世', '時不利', '时不利', '騅不逝', '骓不逝', '虞兮', '奈若何']
     mapping = map_brief(brief, translation)
     write_json(out/'validation/source-binding.json', {'package':str(PACKAGE), 'planFingerprint':fp(plan),
         'composerBriefFingerprint':fp(brief), 'requirementsFingerprint':fp(r), 'current':current,

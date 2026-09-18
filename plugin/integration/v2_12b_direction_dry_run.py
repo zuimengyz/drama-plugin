@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Host-authored A-D using fresh formal snapshots and retrieved assets; writes IR only."""
+"""Work-specific integration EXAMPLE/TEST HARNESS, not a generic preset.
+Host-authored A-D using fresh formal snapshots and retrieved assets; writes IR only."""
 import json
 from copy import deepcopy
 from pathlib import Path

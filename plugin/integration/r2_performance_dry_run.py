@@ -1,4 +1,5 @@
-"""Offline R2 chain from an explicitly selected source/installed package.
+"""Work-specific integration EXAMPLE/TEST HARNESS, not a generic preset.
+Offline R2 chain from an explicitly selected source/installed package.
 
 No formal owner, media generation, provider dispatch, or screenplay mutation.
 Observations below are synthetic design fixtures, never actual playback.

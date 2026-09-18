@@ -30,7 +30,7 @@ def installed(tmp_path):
     return sa.LocalConfig(root,Path(sys.executable),'medium')
 
 def translation(b):
-    return {'composerBriefFingerprint':fp(b),'fields':{k:'Pinned translation of '+k for k in sa.REQUIRED_FIELDS}}
+    return {'composerBriefFingerprint':fp(b),'protectedPerformanceTexts':['力拔山', '虞兮'],'fields':{k:'Pinned translation of '+k for k in sa.REQUIRED_FIELDS}}
 
 def evidence(i):
     names=['instrumental_control','duration_control','structural_control','continuation','revision','motif_consistency',
@@ -191,3 +191,14 @@ def test_real_worker_denies_network_and_missing_weight_download(tmp_path,attack)
     assert result.returncode != 0
     expected='OFFLINE_EXECUTION_NO_NETWORK_OR_CHILD_PROCESS' if attack=='network' else 'LOCAL_MODEL_INCOMPLETE_NO_DOWNLOAD'
     assert expected in result.stderr and 'download must never run' not in result.stderr
+
+
+def test_translation_policy_is_explicit_and_work_specific(inputs):
+    b=inputs[2];t=translation(b);del t['protectedPerformanceTexts']
+    with pytest.raises(ValueError,match='EXPLICIT_PROTECTED'):sa.map_brief(b,t)
+    t=translation(b);t['protectedPerformanceTexts']=['A fictional court lament'];t['fields']['cueArc']='A fictional court lament'
+    with pytest.raises(ValueError,match='HISTORICAL_VERSE'):sa.map_brief(b,t)
+    t['fields']['cueArc']='Tension releases through fewer instruments'
+    m=sa.map_brief(b,t);assert m['protectedPerformanceTextsFingerprint']==fp(t['protectedPerformanceTexts'])
+    t['protectedPerformanceTexts']=[]
+    sa.map_brief(b,t)  # Explicitly no protected source text in this different work.

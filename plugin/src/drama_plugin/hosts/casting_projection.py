@@ -35,7 +35,7 @@ def seedream_casting_projection(brief: CastingBrief, *, seed: int) -> dict[str, 
         '明确排除：' + '；'.join(r.avoid),
         '源规格禁项：' + '；'.join(spec.avoid),
         '历史边界：' + '；'.join(spec.historical_constraints.constraints),
-        '这是一张尚待用户选择的选角提案；比例和具体面孔是影视设计选择，不是项羽真实肖像复原。无文字、标签、水印。',
+        '这是一张尚待用户选择的选角提案；比例和具体面孔是影视设计选择，不是历史人物真实肖像复原。无文字、标签、水印。',
     ]
     return {'tool': 'run_template', 'name': 'api_bytedance_seedream_5_0_pro_t2i',
             'description': brief.candidate_id,

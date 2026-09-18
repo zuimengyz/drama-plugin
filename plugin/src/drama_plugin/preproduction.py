@@ -255,6 +255,11 @@ def complete_production_book(packet: DirectorDepartmentPacket, review: Screenpla
     """
     departments=department_integration(packet,review,current,artifacts)
     missing: list[str]=[]
+    from drama_plugin.director_runtime import review_runtime
+    try:
+        review_runtime(packet.expected_runtime, scene_ids=packet.scene_ids, current=current)
+    except ValueError as exc:
+        missing.append(str(exc))
     if departments['status']!='DEPARTMENT_REVIEW_READY':missing.append('R0_DEPARTMENT_INTEGRATION')
     if performance is None:
         return {'status':'DIRECTOR_PRODUCTION_BOOK_NOT_READY','missing':missing+['FULL_FORMAL_PERFORMANCE_REQUIRED'],'productionAuthorized':False}

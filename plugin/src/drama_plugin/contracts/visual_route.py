@@ -1,10 +1,10 @@
 """Opt-in visual-route sidecars. Existing canon and approval schemas stay byte-stable."""
-from typing import Literal, Self
+from typing import Literal, Self, Annotated
 from pydantic import Field, model_validator
 from drama_plugin.contracts.base import ContractModel
 from drama_plugin.contracts.creative_asset import Text, Hash
 
-VisualRoute = Literal['live_action_realist', 'stylized_cinematic_cg']
+VisualRoute = Literal['live_action_realist', 'stylized_cinematic_cg', 'stylized_animation', 'hybrid'] | Annotated[str, Field(pattern=r'^provider:[a-z][a-z0-9_.-]+$')]
 
 
 class ProjectVisualRoutes(ContractModel):
@@ -45,7 +45,7 @@ class ResolvedVisualRoute(ContractModel):
 class RouteStyleContract(ContractModel):
     visual_route: VisualRoute
     revision: Text
-    medium: Literal['PHOTOGRAPHIC', 'DESIGNED_CG']
+    medium: Literal['PHOTOGRAPHIC', 'DESIGNED_CG', 'DESIGNED_ANIMATION', 'HYBRID', 'PROVIDER_DEFINED']
     rendering: Text
     casting_criteria: tuple[Text, ...] = Field(min_length=1)
     shape_language: Text
@@ -57,7 +57,7 @@ class RouteStyleContract(ContractModel):
 
     @model_validator(mode='after')
     def medium_matches(self) -> Self:
-        expected = 'DESIGNED_CG' if self.visual_route == 'stylized_cinematic_cg' else 'PHOTOGRAPHIC'
+        expected = {'live_action_realist':'PHOTOGRAPHIC', 'stylized_cinematic_cg':'DESIGNED_CG', 'stylized_animation':'DESIGNED_ANIMATION', 'hybrid':'HYBRID'}.get(self.visual_route, 'PROVIDER_DEFINED')
         if self.medium != expected:
             raise ValueError('VISUAL_ROUTE_MEDIUM_MISMATCH')
         return self

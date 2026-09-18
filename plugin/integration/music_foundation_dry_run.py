@@ -1,4 +1,5 @@
-"""Offline authored music foundation proof. Writes only requested local artifacts."""
+"""Work-specific integration EXAMPLE/TEST HARNESS, not a generic preset.
+Offline authored music foundation proof. Writes only requested local artifacts."""
 from __future__ import annotations
 import argparse
 import hashlib

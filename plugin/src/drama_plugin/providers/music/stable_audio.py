@@ -29,7 +29,7 @@ STATUSES = {'PASS', 'FAIL', 'UNKNOWN', 'NOT_SUPPORTED', 'NOT_APPLICABLE_WITH_REA
 PREFIX = 'DRAMA_PLUGIN_STABLE_AUDIO_LOCAL_'
 REQUIRED_FIELDS = ('dramaticFunction', 'cueArc', 'timbrePalette', 'rhythmicFunction',
                    'dialogueWindows', 'entryTrigger', 'exitTrigger', 'doNot')
-VERSE = re.compile(r'力拔山|氣蓋世|气盖世|時不利|时不利|騅不逝|骓不逝|虞兮|奈若何|HISTORICAL_VERSE_PERFORMANCE|DECLAMED_VERSE')
+VERSE = re.compile(r'HISTORICAL_VERSE_PERFORMANCE|DECLAMED_VERSE')
 
 
 def digest(path: Path) -> str:
@@ -117,15 +117,19 @@ def map_brief(brief: Mapping[str, Any], translation: Mapping[str, Any]) -> dict[
     """
     if translation.get('composerBriefFingerprint') != sha256_canonical(brief):
         raise ValueError('STALE_PROMPT_TRANSLATION')
+    protected = translation.get('protectedPerformanceTexts')
+    if not isinstance(protected, list) or any(not isinstance(x, str) or not x.strip() for x in protected):
+        raise ValueError('EXPLICIT_PROTECTED_PERFORMANCE_TEXT_POLICY_REQUIRED')
     fields = translation.get('fields', {})
     if set(fields) != set(REQUIRED_FIELDS) or not all(isinstance(v, str) and v.strip() for v in fields.values()):
         raise ValueError('COMPLETE_FIELD_TRANSLATION_REQUIRED')
     prompt = 'Instrumental film score. ' + ' '.join(fields[k] for k in REQUIRED_FIELDS if k != 'doNot')
     negative = 'singing, chant, choir, vocal texture, spoken words. ' + fields['doNot']
-    if VERSE.search(prompt + negative):
+    if VERSE.search(prompt + negative) or any(x in prompt + negative for x in protected):
         raise ValueError('HISTORICAL_VERSE_NOT_APPLICABLE_TO_MUSIC_PROVIDER')
     return {'renderedPrompt':prompt, 'negativeInstructions':negative,
-            'translationFingerprint':sha256_canonical(translation), 'fieldMapping':dict(fields)}
+            'translationFingerprint':sha256_canonical(translation), 'fieldMapping':dict(fields),
+            'protectedPerformanceTextsFingerprint':sha256_canonical(protected)}
 
 
 def inspect_wav(path: Path, requested: float) -> dict[str, Any]:
@@ -231,7 +235,7 @@ class StableAudio3Provider:
             raise ValueError('DURATION_OUTSIDE_REQUIREMENTS')
         mapping = map_brief(brief, translation)
         trace_path = self.directory / f'provider-mapping-{candidate}.json'
-        output = self.directory / 'audio' / f'C03-local-{candidate}.wav'
+        output = self.directory / 'audio' / f'candidate-{candidate}.wav'
         (self.directory / 'audio').mkdir(exist_ok=True)
         trace = {**mapping, 'providerFamily':FAMILY, 'route':'LOCAL', 'model':self.config.model,
                  'installationBinding':install['binding'], 'composerBriefFingerprint':sha256_canonical(brief),

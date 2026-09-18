@@ -11,6 +11,7 @@ from drama_plugin.contracts.creative_asset import Text
 from drama_plugin.contracts.sequence import SourcePin
 from drama_plugin.contracts.production_design import HistoricalCanonPolicy, CharacterState, LocationDesignSpec
 from drama_plugin.contracts.visual_route import VisualRoute
+from drama_plugin.contracts.director import DirectorRuntimeEstimate
 
 READINESS_DIMENSIONS = frozenset({
     'historical_causality', 'narrative_spine', 'protagonist_decision_arc', 'character_arc',
@@ -268,6 +269,7 @@ class DepartmentConflict(ContractModel):
 
 
 class DirectorDepartmentPacket(ContractModel):
+    expected_runtime: DirectorRuntimeEstimate | None = None
     scope_id: Text
     scene_ids: tuple[Text, ...] = Field(min_length=1)
     source_pins: tuple[SourcePin, ...] = Field(min_length=1)

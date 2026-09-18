@@ -185,3 +185,23 @@ Bindings contain stable mediaId/sourceRef/hash and review/adoption semantics.
 Temporary provider upload names, content URLs and paths are transport/cache data,
 not business identities. Adapter configuration selects the existing MCP endpoint;
 Java continues to own private object-storage access and credentials.
+
+
+## Conditional template inspection
+
+ADAPTER_IMPLEMENTATION_ONLY. Load only for the selected compatible graph route; these details do not constrain historical storytelling or choose a provider.
+
+Inspect the official template once per revision: ordered image slots must match
+actual image_1/2/3 links, prompt and seed slots must be overwritten, and output size
+must match the target ratio or have a concrete reviewed crop plan. The 3-input Flux
+Object Swap template inherits dimensions from its first reference. Text saying
+“16:9” does not change its 3:2 input dimensions. Do not change a template graph or
+create a workflow to bypass this check. Select another suitable official template
+when necessary. `Template.evidence`/`graph_hash` retain the inspected capability
+source; `supported_types` records the Host's intent assessment, not proven quality.
+Save the inspected workflow object (its `nodes` and `links`) to `graph_path` and
+fingerprint that object with `sha256_canonical` as `graph_hash`. The current helper
+validates direct LoadImage-to-numbered-image ports and direct numeric dimensions
+or GetImageSize from a PNG reference. Other port/dimension encodings fail closed;
+add a narrowly tested inspection adapter before using another official template.
+

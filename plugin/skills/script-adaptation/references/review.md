@@ -13,7 +13,7 @@ Apply this rubric to the complete Script draft before persistence. Treat every r
 | Main line | A clear whole-series pursuit and dramatic question govern all major segments. | The Script is an event list or unrelated collection of episodes. |
 | Character motivation | Invented actions have bounded motivation and supported historical actions retain their actual cause. | Motivation fabricates or replaces historical causality. |
 | Interpretive progression | Optional Work interpretation becomes observable without carrying historical causality. | Invented growth or relationship change explains an outcome. |
-| Secondary lines | Each secondary line serves the main line, arc, theme, or climax. | A subplot is detached, repetitive, or oversized for short form. |
+| Secondary lines | Each secondary line serves the main line, arc, theme, or climax. | A subplot is detached, repetitive, or oversized for the approved format and dramatic scope. |
 | Conflict escalation | Costs, constraints, and irreversibility increase toward crisis and climax. | Later units repeat the same conflict at the same intensity. |
 | Causality | Decisions produce consequences and changed story states. | Chronology rather than choice connects the dramatic units. |
 | Information reveal | Discoveries change decisions, danger, or relationships. | Characters lecture each other or explain facts both already know. |

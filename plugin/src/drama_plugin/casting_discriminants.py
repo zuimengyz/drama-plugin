@@ -130,7 +130,7 @@ def compile_visual_discriminants(profile: RoleArchetypeProfile, plan: VisualCast
             'anatomicalLimit': profile.archetypal_exaggeration.anatomical_limit,
             'projectedChoices': [row for row in trace if row['discriminant'] in profile.archetypal_exaggeration.defining_discriminant_ids]}
             if profile.archetypal_exaggeration else None),
-        'approvalEligible': False, 'transportRequirement': 'MCP',
+        'approvalEligible': False,
         'boundary': 'Compilation is not spend authorization, provider adherence, a stage pass, or user approval.'}
     if route_context is not None:
         from drama_plugin.visual_route import project_casting_route

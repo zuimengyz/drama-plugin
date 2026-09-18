@@ -10,8 +10,9 @@ VisualRoute = Literal['live_action_realist', 'stylized_cinematic_cg', 'stylized_
 class ProjectVisualRoutes(ContractModel):
     work_id: Text
     revision: Text
-    visual_route: VisualRoute = 'live_action_realist'
-    enabled_routes: tuple[VisualRoute, ...] = ('live_action_realist',)
+    # New project declarations require an authored route; never infer medium.
+    visual_route: VisualRoute
+    enabled_routes: tuple[VisualRoute, ...] = Field(min_length=1)
 
     @model_validator(mode='after')
     def enabled_default(self) -> Self:

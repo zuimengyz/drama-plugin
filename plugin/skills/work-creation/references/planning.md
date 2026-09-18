@@ -4,7 +4,7 @@ Use this method during the Work `Plan` stage. Keep comparisons and rejected opti
 
 ## 1. Frame the creative brief and evidence boundary
 
-Record type, audience, tone, period, scale, short-form intent, and explicit requirements. Sort consequential material into documented/supported, disputed/uncertain, and dramatic invention space. Preserve supported actor identity, sequence, outcome, and material causality; retain uncertainty where evidence is uncertain.
+Record type, audience, tone, period, scale, intended format, and explicit requirements. Sort consequential material into documented/supported, disputed/uncertain, and dramatic invention space. Preserve supported actor identity, sequence, outcome, and material causality; retain uncertainty where evidence is uncertain.
 
 The Work designs a historical story foundation. It does not write detailed Episodes, Scenes, dialogue, or Shots.
 
@@ -36,8 +36,8 @@ The same person may have different authority under a different scope. Never upgr
 
 Derive the protagonist only after Scope, Spine, and Narrative Authority.
 
-- For a main battlefield, main decision, or main political process, choose a protagonist from actors with `PRIMARY` Narrative Authority.
-- A `SECONDARY` or peripheral actor may be protagonist only when the narrative scope is explicitly narrowed to that actor's experience.
+- When claiming to explain an attested decision or result, preserve the PRIMARY actors who caused it, regardless of viewpoint.
+- A peripheral or invented protagonist may carry a broader historical film through their own experience; their viewpoint does not take ownership of attested decisions.
 - Narrowing viewpoint does not transfer decisions or causal actions from higher-authority actors.
 
 The governing rule is: **Viewpoint can move downward. Historical causality cannot be reassigned downward.** Compare viable protagonist/viewpoint options only within these constraints.
@@ -46,7 +46,7 @@ The governing rule is: **Viewpoint can move downward. Historical causality canno
 
 Define a premise, external pursuit where evidence supports one, capable opposition, and political, military, social, historical, or moral stakes. Personal stakes require evidence or must be labeled compatible invention that does not explain the historical result.
 
-`internalNeed`, a heroic agency arc, and private relationship arcs are not mandatory. If useful, treat internal tendency as interpretive/performance guidance only; it cannot create historical events or demand psychological growth. When private relationship evidence is thin, record `historicalRelationship`, allowed interaction, and evidence boundary instead of inventing trust, betrayal, or change.
+`internalNeed`, a heroic agency arc, and private relationship arcs are not mandatory. Derive any arc from the Work brief. Sparse evidence does not ban clearly labeled dramatic relationships, personal choices or change. Mark these as invention and preserve the historical actors, outcomes and causal claims; do not pass invented psychology off as why documented history occurred.
 
 Theme is downstream of history:
 
@@ -101,3 +101,7 @@ The selected plan must support a draft that independently communicates:
 - coverage-derived `structureEstimate` and its reasoning.
 
 If Script adaptation would need to invent historical causality, actor attribution, scope, protagonist qualification, indispensable beats, or the main architecture, the Work plan is incomplete.
+
+## Historical causality and dramatic invention
+
+The historical-spine/deletion safeguard protects attested actors, events and causal attribution. It does not require every invented personal event to be dramatically removable. A fictional household conflict, relationship change or peripheral viewpoint may drive its own labeled D-layer story. Apply historical evidence requirements to historical claims and compatibility requirements to invention; never present either as the other. No war, heroic protagonist, tragic ending or revelation arc is mandatory.

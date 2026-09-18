@@ -42,7 +42,7 @@ class ContextBuildRequest(ContractModel):
 
 
 class CreativeRhythm(ContractModel):
-    rhythm_speed: Literal["medium", "fast"] = Field(serialization_alias="rhythm_speed")
+    rhythm_speed: Literal["work_defined", "slow", "medium", "fast"] = Field(serialization_alias="rhythm_speed")
     source: str
     semantics: str
 

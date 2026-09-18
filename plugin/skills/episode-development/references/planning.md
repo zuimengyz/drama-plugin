@@ -43,7 +43,7 @@ Define the central character's immediate Episode objective, the force that can p
 
 ## 5. Earn the opening and turn
 
-Open with an immediate problem, unresolved danger, urgent decision, unexpected consequence, new information, or relationship rupture that activates the dramatic job. Reject surprise unrelated to the main progression.
+Open in the manner needed by the approved dramatic job: an immediate problem or a sustained observation may both be valid. Do not add danger, urgency or rupture merely to satisfy a hook formula. Reject surprise unrelated to the main progression.
 
 Make the turn a new fact, betrayal, decision, failure, unexpected success, relationship reversal, power shift, lost option, or public commitment that changes what characters can do next.
 
@@ -53,7 +53,7 @@ End with a cliffhanger, decision, reversal, revelation, loss, costly victory, te
 
 Connect the exit state to the next structural destination without pre-writing the next Episode.
 
-## 7. Prove necessity and short-form fitness
+## 7. Prove necessity and format fitness
 
 Apply a planning-level Delete Episode Test. Identify what the series would lose if this unit disappeared:
 
@@ -62,7 +62,7 @@ Apply a planning-level Delete Episode Test. Identify what the series would lose 
 - consequential historical causality or information;
 - an irreversible decision, commitment, resource, or power change.
 
-If the loss is negligible, delete, merge, or re-plan. Fit the unit to target short-form duration through early pressure, material progression, and dense but legible change; do not overload one Episode with several independent climaxes.
+If the loss is negligible, delete, merge, or re-plan. Fit the unit to its approved runtime and format through legible material progression; early pressure and dense change are choices for suitable work; do not overload one Episode with several independent climaxes.
 
 ## 8. Complete the Episode draft contract
 
@@ -72,7 +72,7 @@ The plan must support a formal Episode draft containing:
 - entry state, objective, obstacle, stakes, progression, turn, and exit state;
 - information, character, and relationship changes where relevant;
 - opening hook and ending earned by the same causal process;
-- neighbor continuity, historical boundary, necessity evidence, and short-form rhythm;
+- neighbor continuity, historical boundary, necessity evidence, and format-appropriate rhythm;
 - enough sequence-level intention for Scene development without detailed Scene dialogue/action.
 
 If Scene development must invent why the Episode exists or what state it must change, the Episode plan is incomplete.

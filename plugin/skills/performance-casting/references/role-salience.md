@@ -62,4 +62,4 @@ ProductionDesignFreeze is a separate existing gate and cannot be auto-completed.
 CALIBRATION retains role-scoped salience and anatomical limits when present. Its
 neutral controls cannot silently bypass the very exaggeration being tested. Retain
 reference mechanism-to-selected-choice and exaggeration projection traces, then compare
-the exact installed compiler prompt to the MCP request and returned execution graph.
+the exact installed compiler prompt to the qualified Host request and returned execution evidence.

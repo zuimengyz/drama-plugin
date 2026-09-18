@@ -52,12 +52,12 @@ class DramaPlugin:
         )
 
     @classmethod
-    def load(cls, root: Path | str | None = None, config_path: Path | str | None = None) -> "DramaPlugin":
+    def load(cls, root: Path | str | None = None, config_path: Path | str | None = None, *, mock_data: MockDramaData | None = None) -> "DramaPlugin":
         plugin_root = Path(root) if root is not None else Path(__file__).resolve().parents[2]
         manifest = cls._load_manifest(plugin_root / "plugin.yaml")
         config = load_config(config_path)
         if config.plugin.name != manifest.name: raise ConfigurationError("Configuration plugin name does not match plugin manifest")
-        providers, clients = cls._initialize_providers(config)
+        providers, clients = cls._initialize_providers(config, mock_data=mock_data)
         skills = SkillRegistry(); skills.load_directory(plugin_root / manifest.skills_directory)
         if providers.voice is None or providers.role_dubbing is None:
             raise ConfigurationError("Voice and Role Dubbing providers must be configured")
@@ -71,8 +71,8 @@ class DramaPlugin:
         except (OSError, yaml.YAMLError, ValidationError) as exc: raise ConfigurationError(f"Invalid plugin manifest: {path}") from exc
 
     @staticmethod
-    def _initialize_providers(config: DramaPluginConfig) -> tuple[ProviderBundle, list[HttpProviderClient]]:
-        data = MockDramaData(); services = config.services; selections = config.providers
+    def _initialize_providers(config: DramaPluginConfig, *, mock_data: MockDramaData | None = None) -> tuple[ProviderBundle, list[HttpProviderClient]]:
+        data = mock_data if mock_data is not None else MockDramaData.empty(); services = config.services; selections = config.providers
         modes = {"memory": selections.memory.mode, "asset": selections.asset.mode, "research": selections.research.mode, "production": selections.production.mode, "media": selections.media.mode, "context": selections.context.mode, "voice": selections.voice.mode}
         for name, mode in modes.items():
             service = getattr(services, name)

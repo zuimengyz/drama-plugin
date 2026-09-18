@@ -15,11 +15,11 @@ Build continuity maps from DPD refs and observable execution states, not copied 
 
 For all performance-bearing fragments, read the [shared performance contract](../../docs/cross-modal-performance-direction.md). Pin one `DirectorPerformanceIntent` to the current DPD and source: articulate audience experience, containment, permitted release, partner focus, rhythm and continuity in human language. Do not create Director subtext or actor/voice psychology. High internal pressure does not imply high external amplitude.
 
-Request the existing visual and audio capabilities against that same intent and Beat. Include `AV_PERFORMANCE_ALIGNMENT` in required review evidence before adopting a realized performance. Use `render_performance_pair` only for critical Beats in the existing Production Book; ordinary functional actions need no giant dual table. A controlled tear does not permanently change the character baseline; real joy must finish before consequences return. Design-only fixtures cannot pass a real-media adoption gate. No new agent, generation permission or screenplay approval follows from this capability.
+Request the existing visual and audio capabilities against that same intent and Beat. Include `AV_PERFORMANCE_ALIGNMENT` in required review evidence before adopting a realized performance. Use `render_performance_pair` only for critical Beats in the existing Production Book; ordinary functional actions need no giant dual table. A temporary release does not automatically change the character baseline. Derive its duration, interruption and aftermath from the approved Scene; do not prescribe that every joy must complete before consequences return. Design-only fixtures cannot pass a real-media adoption gate. No new agent, generation permission or screenplay approval follows from this capability.
 
 Own creative decisions, not implementations. Capabilities serve intent; every shot
 must justify its existence; local quality must preserve global coherence; review
-results, not merely plans. Apply cinematic discipline to historical short-form work:
+results, not merely plans. Apply cinematic discipline to historical film and drama:
 earned payoff, readable space, consequential character choices and restraint.
 
 ## One entry, on demand

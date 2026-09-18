@@ -1,18 +1,20 @@
 # 叙事节奏与文字候选
 
-外置 `~/.config/historical-plugin/drama-plugin.env` 使用唯一键 `rhythm_speed`，仅 `medium` / `fast`。默认 medium，去首尾空白，显式非法值（含空串）报出键名和配置来源。已有合法值保留。它只属于 Plugin；不写入 MCP Host 或 Java env。
+外置 `~/.config/historical-plugin/drama-plugin.env` 使用唯一键 `rhythm_speed`，支持 `work_defined` / `slow` / `medium` / `fast`。未指定时为 work_defined，由当前 Work 决定，去首尾空白，显式非法值（含空串）报出键名和配置来源。已有合法值保留。它只属于 Plugin；不写入 MCP Host 或 Java env。
 
 ```sh
-# 叙事节奏：medium / fast；不设置时默认 medium
-rhythm_speed=medium
+# 叙事节奏：work_defined / slow / medium / fast；不设置时交给当前 Work
+rhythm_speed=work_defined
 ```
 
 `scripts/load-env.sh` 在 source 期间启用 allexport，启动脚本把小写键传入进程；`load_config` 统一解析。`RhythmContextProvider` 装饰现有本地或 HTTP 上下文 Provider，再注册到真正的 `context.build_context` / `context.refresh_context`，故 SDK 和 MCP 同源。有效 `creativeRhythm` 含 `rhythm_speed`、来源与完整语义，不含其他 env。
 
+- work_defined：不注入全局创作速度，由当前已批准的叙事意图决定。
+- slow：允许持续观察和较长接收，不按短剧规模自动压缩。
 - medium：自然、紧凑而相对从容，保留必要环境认知、人物观察、动作过程和有意义的停顿，不填充空等或重复搬放。
 - fast：较早进入矛盾/有效行动，及时转向结果与下一步；压缩无新信息的准备收拾；在自然可行时让对白、操作和观察并行，令关键细节兼顾人物、事实与关系。
 
-两者不是视频或台词倍速，不统一乘时长系数、不堆“迅速”、不设每镜秒数、动作密度或最低切镜数。必要观众导航、人物立场、工序时间因果和结局保留，不能塞入不自然的并行动作。没有影响剧情、核心动作、重要事实或关键连续性的重大问题即可作为文字候选继续；普通瑕疵备注，Host自主调整。
+这些设置不是视频或台词倍速，不统一乘时长系数、不堆“迅速”、不设每镜秒数、动作密度或最低切镜数。必要观众导航、人物立场、工序时间因果和结局保留，不能塞入不自然的并行动作。没有影响剧情、核心动作、重要事实或关键连续性的重大问题即可作为文字候选继续；普通瑕疵备注，Host自主调整。
 
 影视编剧孵化在故事组织阶段消费语义；Work保留事实与主题，Script分配揭示和推进，Episode安排冲突/反应/收尾，Scene组织可演行动和对白，Shot决定切入/切出、声画覆盖及自然估时。全链引用同一上下文语义，不复制一套评分表。节奏不自动决定媒体模型、分辨率、输入模式、预算或声音服务。
 

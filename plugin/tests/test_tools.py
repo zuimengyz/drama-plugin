@@ -1,3 +1,4 @@
+from drama_plugin.providers.mock import MockDramaData
 import inspect
 from pathlib import Path
 
@@ -49,7 +50,7 @@ def test_missing_tool_fails() -> None:
 
 
 def test_every_registered_tool_has_stable_input_and_output_schema() -> None:
-    plugin = DramaPlugin.load(ROOT)
+    plugin = DramaPlugin.load(ROOT, mock_data=MockDramaData())
     assert len(plugin.tools.list()) == 50
     for tool in plugin.tools.list():
         assert tool.input_schema["type"] == "object"
@@ -69,7 +70,7 @@ def test_every_registered_tool_has_stable_input_and_output_schema() -> None:
 
 
 def test_context_tools_expose_real_pydantic_schemas() -> None:
-    plugin = DramaPlugin.load(ROOT)
+    plugin = DramaPlugin.load(ROOT, mock_data=MockDramaData())
     build = plugin.tools.get("context.build_context")
     request_schema = build.input_schema["properties"]["request"]
     assert request_schema["title"] == "ContextBuildRequest"
@@ -79,7 +80,7 @@ def test_context_tools_expose_real_pydantic_schemas() -> None:
 
 
 def test_representative_output_contracts() -> None:
-    plugin = DramaPlugin.load(ROOT)
+    plugin = DramaPlugin.load(ROOT, mock_data=MockDramaData())
     assert plugin.tools.get("asset.get_asset").output_schema["title"] == "Asset"
     assert plugin.tools.get("work.create_work").output_schema["title"] == "Work"
     assert plugin.tools.get("production.generate_image").output_schema["title"] == "Media"
@@ -93,7 +94,7 @@ async def test_video_generation_accepts_fixed_input_modes_and_untruncated_prompt
     async def simulated_completion(*args, **kwargs):
         return {'persistenceStatus':'OFFLINE_SIMULATION_ONLY'}
     monkeypatch.setattr('drama_plugin.media_delivery.complete_retained_media', simulated_completion)
-    plugin = DramaPlugin.load(ROOT)
+    plugin = DramaPlugin.load(ROOT, mock_data=MockDramaData())
     tool = plugin.tools.get("production.generate_video")
 
     single = await tool.handler(prompt="subtle motion", reference_media_ids=["media-start"])
@@ -131,7 +132,7 @@ async def test_video_generation_accepts_fixed_input_modes_and_untruncated_prompt
 
 
 def test_persistent_memory_and_production_contracts_are_minimal() -> None:
-    plugin = DramaPlugin.load(ROOT)
+    plugin = DramaPlugin.load(ROOT, mock_data=MockDramaData())
     expected = (
         {f"work.{action}_work" if action != "list" else "work.list_works" for action in ("create", "get", "save", "list")}
         | {f"script.{action}_script" if action != "list" else "script.list_scripts" for action in ("create", "get", "save", "list")}
@@ -159,7 +160,7 @@ def test_persistent_memory_and_production_contracts_are_minimal() -> None:
 
 
 def test_get_list_and_search_contracts_have_distinct_minimal_semantics() -> None:
-    plugin = DramaPlugin.load(ROOT)
+    plugin = DramaPlugin.load(ROOT, mock_data=MockDramaData())
     assert plugin.tools.get("work.list_works").input_schema["properties"] == {}
     assert plugin.tools.get("work.search_works").input_schema["required"] == ["query"]
     assert plugin.tools.get("scene.search_scenes").input_schema["required"] == ["query"]
@@ -177,14 +178,14 @@ def test_get_list_and_search_contracts_have_distinct_minimal_semantics() -> None
 
 
 def test_no_duplicate_legacy_memory_tool_synonyms() -> None:
-    plugin = DramaPlugin.load(ROOT)
+    plugin = DramaPlugin.load(ROOT, mock_data=MockDramaData())
     forbidden_actions = ("fetch_", "load_", "find_", "query_", "lookup_", "update_")
     assert not any(tool.name.startswith(forbidden_actions) for tool in plugin.tools.list())
 
 
 @pytest.mark.asyncio
 async def test_tool_contracts_do_not_change_with_http_provider_bindings() -> None:
-    mock_plugin = DramaPlugin.load(ROOT)
+    mock_plugin = DramaPlugin.load(ROOT, mock_data=MockDramaData())
     service = {"base_url": "https://unit.invalid", "api_token": "test-only", "operations": {}}
     config = DramaPluginConfig.model_validate(
         {
@@ -219,7 +220,7 @@ async def test_tool_contracts_do_not_change_with_http_provider_bindings() -> Non
 
 
 def test_long_term_memory_create_and_save_envelopes_are_frozen() -> None:
-    plugin = DramaPlugin.load(ROOT)
+    plugin = DramaPlugin.load(ROOT, mock_data=MockDramaData())
     expected: dict[str, tuple[set[str], set[str]]] = {
         "work.create_work": ({"title", "content"}, {"title", "description", "content"}),
         "work.save_work": ({"work_id", "title", "content"}, {"work_id", "title", "description", "content"}),
@@ -251,7 +252,7 @@ def test_long_term_memory_create_and_save_envelopes_are_frozen() -> None:
 
 
 def test_save_contracts_cannot_move_stable_parent_or_identity_fields() -> None:
-    plugin = DramaPlugin.load(ROOT)
+    plugin = DramaPlugin.load(ROOT, mock_data=MockDramaData())
     forbidden = {
         "script.save_script": {"work_id"},
         "episode.save_episode": {"script_id"},

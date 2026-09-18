@@ -11,12 +11,14 @@ background separation, practicals, atmosphere, daytime logic, relationship to
 color key, continuity in/out and route-specific risks. At night, use plausible
 sources and designed bounce/separation to let a decision be seen. Physical
 plausibility does not demand unreadable blackness or flat incidental light.
-Avoid unexplained daylight, permanent glamour rim, neon or unmotivated gold.
+Avoid unexplained sources and automatic glamour treatment; practical neon or gold
+light is eligible only when supported by this period, location and dramatic intent.
 Compare costume value and material response against each dramatic light state.
 
-Night interior → exterior → dawn must retain motivated direction and time change:
-the doorway's spill falls away outside, sky fill emerges, dawn direction replaces
-the night source with an explicit temporal bridge. Do not call all three blue.
+Trace only the time and location transitions actually present in the screenplay.
+For example, if a scene moves from a night interior through outdoors to dawn,
+account for doorway spill, sky fill and changed direction. This is a
+NON_NORMATIVE_EXAMPLE, not a required sequence or blue palette.
 Camera plan: philosophy, dominant scale, height logic, lens family, motivated
 movement, depth, axis, restraint on heroic privilege and environment framing.
 CG virtual freedom does not permit unmotivated orbit, equipment display or a

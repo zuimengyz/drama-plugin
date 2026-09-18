@@ -1,3 +1,4 @@
+from drama_plugin.providers.mock import MockDramaData
 """Narrative configuration reaches the public creation tool and survives resume."""
 import json
 import os
@@ -14,13 +15,13 @@ from drama_plugin.providers.mock import MockMemoryProvider
 ROOT = Path(__file__).resolve().parents[1]
 WORKSPACE = ROOT.parents[1]
 
-@pytest.mark.parametrize(('value', 'expected'), [(None, 'medium'), ('medium', 'medium'), (' fast \t', 'fast')])
+@pytest.mark.parametrize(('value', 'expected'), [(None, 'work_defined'), ('slow', 'slow'), ('work_defined', 'work_defined'), ('medium', 'medium'), (' fast \t', 'fast')])
 def test_config_rhythm(value, expected):
     config = load_config(environment={} if value is None else {'rhythm_speed': value})
     assert config.rhythm_speed == expected
-    assert config.rhythm_source == ('default:medium' if value is None else 'environment:rhythm_speed')
+    assert config.rhythm_source == ('default:work_defined' if value is None else 'environment:rhythm_speed')
 
-@pytest.mark.parametrize('value', ['', ' ', 'FAST', 'slow', '1'])
+@pytest.mark.parametrize('value', ['', ' ', 'FAST', 'unknown', '1'])
 def test_invalid_rhythm_identifies_key_and_source(value):
     with pytest.raises(ConfigurationError, match='rhythm_speed in environment'):
         load_config(environment={'rhythm_speed': value})
@@ -40,12 +41,12 @@ def test_yaml_rhythm_trim_override_and_error(tmp_path):
 async def test_actual_tool_new_revision_resume_and_refresh(monkeypatch):
     request = ContextBuildRequest(scope='EPISODE', resource_id='episode-1', purpose='SHOT_DESIGN')
     monkeypatch.setenv('rhythm_speed', 'medium')
-    async with DramaPlugin.load(ROOT) as first:
+    async with DramaPlugin.load(ROOT, mock_data=MockDramaData()) as first:
         saved = await first.tools.invoke('context.build_context', request=request)
         assert saved.creative_rhythm.rhythm_speed == 'medium'
         profile = saved.creative_rhythm.model_dump(by_alias=True)
     monkeypatch.setenv('rhythm_speed', 'fast')
-    async with DramaPlugin.load(ROOT) as second:
+    async with DramaPlugin.load(ROOT, mock_data=MockDramaData()) as second:
         memory = second.providers.memory
         assert isinstance(memory, MockMemoryProvider)
         memory.data.work = memory.data.work.model_copy(update={'content': {
@@ -72,7 +73,8 @@ def test_source_export_exec_reaches_public_tool(tmp_path, shell):
     child.write_text('''import asyncio, json
 from drama_plugin import DramaPlugin, ContextBuildRequest
 async def main():
- async with DramaPlugin.load() as p:
+ from drama_plugin.providers.mock import MockDramaData
+ async with DramaPlugin.load(mock_data=MockDramaData()) as p:
   c = await p.tools.invoke("context.build_context", request=ContextBuildRequest(scope="EPISODE",resource_id="episode-1",purpose="SHOT_DESIGN"))
   print(json.dumps(c.creative_rhythm.model_dump(by_alias=True)))
 asyncio.run(main())

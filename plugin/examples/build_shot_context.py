@@ -1,15 +1,17 @@
+"""NON_NORMATIVE_EXAMPLE; RUNTIME_DEFAULT=false. Explicit isolated demo data."""
 from __future__ import annotations
 
 import asyncio
 from pathlib import Path
 
 from drama_plugin import ContextBuildRequest, DramaPlugin
+from drama_plugin.providers.mock import MockDramaData
 from drama_plugin.contracts import ContextPurpose, ContextScope
 
 
 async def main() -> None:
     root = Path(__file__).resolve().parents[1]
-    plugin = DramaPlugin.load(root)
+    plugin = DramaPlugin.load(root, mock_data=MockDramaData())
     skill = plugin.skills.get("shot-production")
     context = await plugin.context.build(
         ContextBuildRequest(

@@ -22,8 +22,10 @@ sparse records nor historical discipline require plain museum reconstruction.
 Fine workmanship, richer layered armor, coherent materials, stronger silhouettes
 and elegant color hierarchy are allowed when compatible with status, movement,
 faction and era. Plain functional design is equally valid for its dramatic job.
-Reject fantasy/MMO skins, neon/glowing runes, impossible structures, modern
-fashion tailoring, oversized purposeless decoration and universal legendary gear.
+Reject unsupported imports from another era, culture, genre or IP. Resolve
+permitted stylization from the current Work: a twentieth-century story may need
+modern tailoring or practical neon, while an earlier world may exclude them.
+Separate subjective or legendary imagery from claims about attested physical reality.
 Do not beautify all people alike. Ordinary occupations need specific movement,
 wear, material economy and social position, not gray interchangeable props.
 

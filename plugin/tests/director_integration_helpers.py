@@ -24,7 +24,7 @@ MEANING = {2:'楚歌引起求证而非证明楚地已失；选择收缩',8:'看�
 
 def route(scene_id, cg=False):
     name = 'stylized_cinematic_cg' if cg else 'live_action_realist'
-    return RouteContext.model_validate({'project':{'workId':SOURCES['work']['id'],'revision':'retained-r1',
+    return RouteContext.model_validate({'project':{'workId':SOURCES['work']['id'],'revision':'retained-r1','visualRoute':'live_action_realist',
         'enabledRoutes':['live_action_realist','stylized_cinematic_cg']},
         'sequence':{'workId':SOURCES['work']['id'],'sequenceKey':scene_id,'visualRoute':name,'overrideReason':'isolated offline comparison'},
         'style':{'visualRoute':name,'revision':'design-only', 'medium':'DESIGNED_CG' if cg else 'PHOTOGRAPHIC',

@@ -18,8 +18,9 @@ is WARN/REVISE, not an automatic failure or a demand to insert a battle.
 Scene owns starting pressure, escalation, turn, release and aftermath. Scene and
 production-design jointly plan first appearance: silhouette, costume/blocking/
 light/camera hierarchy, surrounding reaction, first readable action/attitude and
-whether a caption is needed. Equal treatment with extras needs an explicit hidden
-identity purpose. Shot owns the actual framing and the cost of each attention shift.
+whether a caption is needed. Assign first-appearance salience from the approved character function; an ordinary
+ensemble member need not receive heroic distinction. Hidden identity is one possible
+reason for reduced emphasis, not the only legitimate one. Shot owns the actual framing and the cost of each attention shift.
 
 Shot-design authors EditorialRhythmPlan: information beats, cut motivation,
 reaction/detail/establishing needs, earned HeroShot, pace changes and hold reasons.
@@ -29,8 +30,8 @@ requires SingleTakeFeasibility (YES/NO/CONDITIONAL with staging or an alternativ
 Duration comes from dramatic information and later measured performance, never a
 model maximum. A long single take is valid when blocking/focus can carry its changes.
 
-Set pieces account for setup, escalation, hero, reaction, payoff and aftermath
-coverage; a shot may serve several functions. ReactionChain records actual action
+Set pieces account for setup, escalation, reaction, payoff and aftermath
+coverage. Hero coverage is optional and requires the Work to call for it; a shot may serve several functions. ReactionChain records actual action
 and how others respond, not automatic mass cheering. Review shot-size, movement,
 light, space, subject and silence/noise contrasts. Not every function needs its own
 shot. Check overload, gratuitous cuts, missing reactions/details/navigation and

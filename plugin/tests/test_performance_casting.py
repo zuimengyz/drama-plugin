@@ -53,7 +53,7 @@ def test_budget_mcp():
  p=profile();b=CastingBudget(cap=10,recordedCost=5,outstandingReservations=2,requestedReservation=3,costLimitations='quote only');assert stage_brief(p,'FACE',['one'],budget=b,execution='MCP')
  b.requested_reservation=3.01
  with pytest.raises(ValueError,match='BUDGET_STOP'):stage_brief(p,'FACE',['one'],budget=b,execution='MCP')
- with pytest.raises(ValueError,match='MCP_REQUIRED'):stage_brief(p,'FACE',['one'],execution='GUI')
+ with pytest.raises(ValueError,match='CASTING_EXECUTION_INTENT_REQUIRED'):stage_brief(p,'FACE',['one'],execution='GUI')
  with pytest.raises(ValueError,match='CURRENT_BUDGET_REQUIRED'):stage_brief(p,'FACE',['one'],execution='MCP')
 
 def test_selection_lineage_and_nonapproval():

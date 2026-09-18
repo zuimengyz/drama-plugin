@@ -259,7 +259,7 @@ def compile_frame(spec: FrameSpec, template: Template) -> dict[str, Any]:
               "MUST NOT SHOW: " + "; ".join(spec.forbidden)]
     prompt = "\n".join(parts)
     if spec.edit_source:
-        prompt = ('Edit the supplied exact frame. Preserve the two existing people and the scene. '
+        prompt = ('Edit the supplied exact frame. Preserve the source frame identities, subject count and scene except for the explicitly requested edit. '
                   'This is reference-conditioned editing, with no mask control.\n' + spec.edit_source.instruction)
     overrides: dict[str, Any] = {slot: {"image": ref.upload_name} for slot, ref in zip(template.image_slots, inputs)}
     overrides[template.prompt_node] = {**template.settings, template.prompt_key: prompt, template.seed_key: spec.seed}

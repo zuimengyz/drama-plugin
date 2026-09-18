@@ -8,9 +8,9 @@ Record the approved Work foundation that the Script must inherit:
 
 - Historical Scope, ordered Historical Spine, actor hierarchy, Narrative Authority, protagonist alignment, and architecture mappings;
 - premise, supported conflict/stakes, thematic question, and ending;
-- any optional non-causal character or relationship interpretation;
+- any optional character or relationship interpretation that preserves historical attribution;
 - supported facts, disputed areas, invention boundary, and forbidden historical changes;
-- major story turns, format, audience, tone, scale, and short-form intent.
+- major story turns, format, audience, tone, scale, and intended format.
 
 The Script may redesign screen structure, episode allocation, information reveal, visual storytelling, dialogue strategy, and pacing. It may not silently replace the protagonist, premise, theme, historical boundary, major ending, or other approved Work foundation. Mark such a need as an upstream Work issue.
 
@@ -30,11 +30,11 @@ Ensure the line is playable without reassigning causal acts. A supported chronol
 
 ## 3. Control secondary lines
 
-Use only secondary lines that advance the main line, character arc, theme, climax, or an essential relationship. Define where each line intersects and changes the main progression. Delete, merge, or reduce a line that remains detached. Keep the number appropriate for short-form drama.
+Use only secondary lines that advance the main line, character arc, theme, climax, or an essential relationship. Define where each line intersects and changes the main progression. Delete, merge, or reduce a line that remains detached. Keep the number appropriate for the approved format, runtime and dramatic scope.
 
 ## 4. Translate optional interpretation to the screen
 
-Map each approved non-causal Work interpretation, when present, to observable progression:
+Map each approved, provenance-labeled Work interpretation, when present, to observable progression:
 
 - action taken under pressure;
 - decision and sacrifice;
@@ -68,9 +68,9 @@ Script may plan the series architecture without creating Episode entities. For e
 
 Allocate by required beat coverage, transition, dramatic task, and state change, not by equal page count, a preset quota, or arbitrary chronology slices. Record `requiredSpineBeatIds` for each proposed unit. Split, merge, or adjust the estimate when a unit is overloaded or a required transition is missing. Detailed single-episode design belongs downstream.
 
-## 8. Shape short-form pacing
+## 8. Shape pacing for the approved format
 
-Enter pressure early, give each unit material progress, remove repeated exposition and redundant beats, maintain high information and conflict density, and make hooks arise from real change. Do not force platform folklore such as a reversal every thirty seconds or a fixed number of humiliations.
+Derive the timing of pressure, observation, information and change from the approved format and audience experience. Short-form work may enter pressure early; sustained historical drama may need a slower setup. Give units a purposeful progression without imposing high density on every passage. Do not force platform folklore such as a reversal every thirty seconds or a fixed number of humiliations.
 
 ## 9. Make the Script screenable
 

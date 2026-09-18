@@ -112,7 +112,8 @@ class MusicCue(ContractModel):
     scene_ids: tuple[Text,...] = Field(min_length=1)
     content_kind: Literal['FILM_SCORE'] = 'FILM_SCORE'
     narrative_function: Text
-    emotional_direction: Literal['PROPULSION','JOY','NEUTRAL_TEXTURE','MOURNING']
+    # Open Work-authored direction; legacy labels remain valid.
+    emotional_direction: Text
     performance_relation: Literal['ADD_INFORMATION','SUPPORT_ACTION','SUPPORT_EARNED_RELEASE','DUPLICATE_EMOTION','PREMATURE_FORESHADOWING']
     audience_effect: Text
     entry_trigger: Text
@@ -188,7 +189,7 @@ class FilmScorePlan(ContractModel):
     score_world: Text
     score_palette: ScorePalette
     motifs: tuple[ScoreMotif,...] = ()
-    character_theme_policy: Text = 'NO_CHARACTER_THEME unless dramatically necessary'
+    character_theme_policy: Text = 'UNDECIDED: derive character-theme policy from current Director intent'
     silence_policy: Text
     diegetic_boundary: Text
     score_dynamic_range: Text

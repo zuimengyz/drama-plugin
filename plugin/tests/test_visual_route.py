@@ -11,7 +11,7 @@ from test_casting_reconciliation import reconciled,reference
 CG='stylized_cinematic_cg';REAL='live_action_realist'
 
 def context(route=CG):
- return RouteContext(project=ProjectVisualRoutes(work_id='w',revision='1',enabled_routes=(REAL,CG)),
+ return RouteContext(project=ProjectVisualRoutes(work_id='w',revision='1',visual_route=REAL,enabled_routes=(REAL,CG)),
   sequence=SequenceVisualRoute(work_id='w',sequence_key='excerpt',visual_route=route,override_reason='Separate design study'),
   style=RouteStyleContract(visual_route=route,revision='1',medium='DESIGNED_CG' if route==CG else 'PHOTOGRAPHIC',
    rendering='Designed volumetric surfaces' if route==CG else 'Photographic surfaces',casting_criteria=['Role readable under motion'],
@@ -20,7 +20,7 @@ def context(route=CG):
 
 
 def test_default_and_override_are_project_scoped_without_global_mutation():
- a=ProjectVisualRoutes(work_id='a',revision='1');b=ProjectVisualRoutes(work_id='b',revision='1')
+ a=ProjectVisualRoutes(work_id='a',revision='1',visual_route=REAL,enabled_routes=(REAL,));b=ProjectVisualRoutes(work_id='b',revision='1',visual_route=REAL,enabled_routes=(REAL,))
  assert resolve_visual_route(a,SequenceVisualRoute(work_id='a',sequence_key='s')).visual_route==REAL
  a.enabled_routes=(REAL,CG);a.visual_route=CG
  assert b.visual_route==REAL and b.enabled_routes==(REAL,)

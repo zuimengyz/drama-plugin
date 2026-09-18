@@ -1,13 +1,13 @@
 # Drama Plugin
 
-Drama Plugin 是精简、平台无关的历史短剧 Skill Package。它提供创作方法论、稳定 Tool Contract、最小领域模型与可替换 Provider；不实现 Agent Loop、固定 Workflow、数据库、Java 服务、MCP Server 或 ComfyUI。
+Drama Plugin 是精简、平台无关的历史影视 Skill Package。它提供创作方法论、稳定 Tool Contract、最小领域模型与可替换 Provider；不实现 Agent Loop、固定 Workflow、数据库、Java 服务、MCP Server 或 ComfyUI。
 
 ## 核心关系
 
 ```text
 Agent Host
   ├─ Agent：读取 Context、选择 Skill、调用 Tool、判断 Result 与下一步
-  ├─ Skill：历史短剧创作方法论、业务规则、最小 Context 和完成标准
+  ├─ Skill：历史影视创作方法论、业务规则、最小 Context 和完成标准
   └─ Tool：无业务决策的可执行动作
        └─ MCP / HTTP：能力协议与长期事实访问接口
             ├─ Java Drama Service：Persistent Memory / System of Record

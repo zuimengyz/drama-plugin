@@ -34,7 +34,7 @@ answers or a reason why a contrast is inapplicable are preferable to generic ess
 Keep source-supported facts, project interpretation and casting implications separate.
 `IDENTITY_LOST` and `ERA_CONTEXT_LOST` must both PASS: remove the name and check whether
 occupation/status and situated values remain recognizable. Missing, failed or stale
-excavation blocks new MCP generation. Legacy profiles remain readable, not spend-ready.
+excavation blocks new media generation. Legacy profiles remain readable, not spend-ready.
 
 Casting does not impose charm. It discovers the character's watchability.
 DO NOT CAST THE ENDING INTO THE FACE: betrayal need not look deceitful, sacrifice
@@ -95,7 +95,7 @@ to complete the pipeline. A reduced route requires a reason in the original prof
 not an after-failure waiver. Stop the search under the user's count/budget rules;
 artistic dislike is not a technical retry.
 
-For authorized generation, use existing MCP-first visual production and durable
+For authorized generation, use the qualified Host visual execution route and durable
 media completion. Read live capabilities and quotes; unknown balance remains unknown.
 Keep owned task IDs, exact identity inputs, sourceRef and full-byte hashes. Import
 successful outputs with media.import_media, resolve/read back, and retain candidates
@@ -110,4 +110,4 @@ and `media.list_media`. Retained physical outputs use `media.import_media` follo
 by `media.resolve_media` and full-byte readback. Do not use source/adoption writes
 to persist the local casting profile. The tool catalog remains unchanged.
 
-For an explicit visual-medium route, read [route-aware casting](references/visual-routes.md). The route is separate from the face-first/body-first proof order; omitted route context preserves existing live-action behavior.
+For an explicit visual-medium route, read [route-aware casting](references/visual-routes.md). The route is separate from the face-first/body-first proof order; an omitted route sidecar preserves a frozen legacy brief without asserting its medium. New route-specific design requires an explicit Work route.

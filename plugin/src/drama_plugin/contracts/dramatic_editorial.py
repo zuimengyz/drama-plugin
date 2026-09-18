@@ -206,8 +206,9 @@ class EditorialRhythmPlan(ContractModel):
         if beats != {b for s in self.coverage for b in s.beat_ids}:raise ValueError('Uncovered information beat')
         if any(c.from_beat not in beats or c.to_beat not in beats for c in self.cuts):raise ValueError('Unknown cut beat')
         if self.set_piece_coverage is not None:
-            required={'setup','escalation','hero','reaction','payoff','aftermath'}
-            if set(self.set_piece_coverage)!=required or any(not ids or not set(ids)<=shots for ids in self.set_piece_coverage.values()):
+            required={'setup','escalation','reaction','payoff','aftermath'}
+            # Hero emphasis is optional, including for a political or civilian set piece.
+            if not required <= set(self.set_piece_coverage) or any(not ids or not set(ids)<=shots for ids in self.set_piece_coverage.values()):
                 raise ValueError('Set piece needs complete, existing coverage roles')
         pairs = [(t.from_shot, t.to_shot) for t in self.transitions]
         if len(set(pairs)) != len(pairs) or any(a not in shots or b not in shots for a,b in pairs):

@@ -1,3 +1,4 @@
+from drama_plugin.providers.mock import MockDramaData
 from pathlib import Path
 
 import pytest
@@ -11,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 @pytest.mark.asyncio
 async def test_build_shot_context_contains_minimal_persistent_chain() -> None:
-    plugin = DramaPlugin.load(ROOT)
+    plugin = DramaPlugin.load(ROOT, mock_data=MockDramaData())
     request = ContextBuildRequest(scope=ContextScope.SHOT, resource_id="shot-1", purpose=ContextPurpose.SHOT_PRODUCTION, options={"selectedAssetIds": ["asset-di"]})
     context = await plugin.context.build(request)
     assert context.version == 1
@@ -26,7 +27,7 @@ async def test_build_shot_context_contains_minimal_persistent_chain() -> None:
 
 @pytest.mark.asyncio
 async def test_refresh_patch_updates_domain_content() -> None:
-    plugin = DramaPlugin.load(ROOT)
+    plugin = DramaPlugin.load(ROOT, mock_data=MockDramaData())
     request = ContextBuildRequest(scope=ContextScope.SHOT, resource_id="shot-1", purpose=ContextPurpose.SHOT_DESIGN)
     context = await plugin.context.build(request)
     memory = plugin.providers.memory
@@ -41,7 +42,7 @@ async def test_refresh_patch_updates_domain_content() -> None:
 
 @pytest.mark.asyncio
 async def test_build_scene_context_does_not_load_assets_or_media() -> None:
-    plugin = DramaPlugin.load(ROOT)
+    plugin = DramaPlugin.load(ROOT, mock_data=MockDramaData())
     context = await plugin.context.build(ContextBuildRequest(scope=ContextScope.SCENE, resource_id="scene-1", purpose=ContextPurpose.SCENE_DEVELOPMENT))
     assert context.scene and context.scene.title == "狄府书房雨夜密谈"
     assert context.shot is None

@@ -1,6 +1,6 @@
 ---
 name: episode-development
-description: Develop or revise one historical short-drama Episode from a Script. Use when deciding the episode goal, opening hook, conflict progression, information gain, character change, ending hook, or cross-episode continuity.
+description: Develop or revise one historical-drama Episode from a Script. Use when deciding the episode goal, opening hook, conflict progression, information gain, character change, ending hook, or cross-episode continuity.
 ---
 
 # Episode Development
@@ -33,7 +33,7 @@ Execute the plan as a complete candidate formal Episode state. Progress from obj
 
 ### 5. Review
 
-Before any write, read [Episode Review and Revision](references/review.md) and apply the entire domain rubric and Delete Episode Test. Critical checks cover dramatic job, Script fidelity, required historical beat coverage, fact attribution, Narrative Input/Output State, Required Transition, conflict progression, meaningful turn, earned ending, causal neighbor continuity, Episode necessity, short-form rhythm, and downstream readiness. A mechanical split, inert summary, repeated conflict, fake hook, or removable Episode is a critical failure. Mark Review PASS only when every critical check passes; otherwise mark Review FAIL.
+Before any write, read [Episode Review and Revision](references/review.md) and apply the entire domain rubric and Delete Episode Test. Critical checks cover dramatic job, Script fidelity, required historical beat coverage, fact attribution, Narrative Input/Output State, Required Transition, conflict progression, meaningful turn, earned ending, causal neighbor continuity, Episode necessity, format-appropriate rhythm, and downstream readiness. A mechanical split, inert summary, repeated conflict, fake hook, or removable Episode is a critical failure. Mark Review PASS only when every critical check passes; otherwise mark Review FAIL.
 
 ### 6. Revise or Re-plan
 

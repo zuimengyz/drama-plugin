@@ -79,14 +79,15 @@ def stage_brief(profile: RoleArchetypeProfile, stage: Stage, candidate_ids: Sequ
     plan = plans[index]
     if len(set(candidate_ids)) != len(candidate_ids) or not plan.minimum_candidates <= len(candidate_ids) <= plan.maximum_candidates:
         raise ValueError('STAGE_CANDIDATE_COUNT')
-    if execution not in {'DRY_RUN', 'MCP'}:
-        raise ValueError('MCP_REQUIRED')
-    if execution == 'MCP' and (budget is None or budget.requested_reservation <= 0):
+    # EXECUTE is intent, not a transport. MCP remains a legacy caller alias.
+    if execution not in {'DRY_RUN', 'EXECUTE', 'MCP'}:
+        raise ValueError('CASTING_EXECUTION_INTENT_REQUIRED')
+    if execution != 'DRY_RUN' and (budget is None or budget.requested_reservation <= 0):
         raise ValueError('CURRENT_BUDGET_REQUIRED')
     if budget and budget.recorded_cost + budget.outstanding_reservations + budget.requested_reservation > budget.cap:
         raise ValueError('BUDGET_STOP')
     context_gate = excavation_gate(profile)
-    if execution == 'MCP' and context_gate['status'] != 'PASS':
+    if execution != 'DRY_RUN' and context_gate['status'] != 'PASS':
         raise ValueError('CHARACTER_EXCAVATION_BLOCKED:' + ','.join(context_gate['reasons']))
     refs: dict[str, Any] = {}
     if index:

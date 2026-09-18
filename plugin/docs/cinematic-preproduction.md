@@ -11,8 +11,8 @@ Book or bypass this gate by selecting legacy mode.
 G0 current formal source; G1 Screenplay Readiness; G2 Director preliminary intent;
 G3 route design; G4 film production design; G5 scene visual development;
 G6 cinematography and lighting; G7 coverage and transitions; G8 production book
-self review; G9 user directorial review. G10 CG character/casting, G11 CG Lookdev,
-G12 CG identity/art approval, G13 ProductionDesignFreeze, G14 current model
+self review; G9 user directorial review. G10 route-specific character/casting, G11 route-specific visual development,
+G12 route-specific identity/art approval, G13 ProductionDesignFreeze, G14 current model
 qualification, G15 production preflight, G16 user production authorization retain
 their existing owners. No downstream result upgrades an earlier gate. Design
 completeness is never freeze, artistic approval or spending permission.

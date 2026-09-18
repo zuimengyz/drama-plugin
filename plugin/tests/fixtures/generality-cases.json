@@ -1,0 +1,9 @@
+{
+  "NON_NORMATIVE": true,
+  "RUNTIME_DEFAULT": false,
+  "cases": [
+    {"id":"court","title":"封存账册","period":"虚构的十六世纪城邦宫廷","region":"地中海港城","route":"live_action_realist","runtime":480,"protagonist":"书记伊莱","traits":"善于听取异议，谨慎核对记录","purpose":"迫使议事官当众承认账册缺页","action":"书记把原册留在桌上，等待三位议事官轮流核对","dialogue":"请先看这一页。","costume":"依身份和地区证据拟定的文官服，无甲胄","visual":"桌面与相互遮挡的视线，眼平构图，午间窗光","performance":"先听完反对意见，再把页角递给对方","music":"NO_SCORE","ending":"暂时封存账册，责任仍待查清","war":false},
+    {"id":"battle","title":"石桥后卫","period":"虚构的十二世纪边境冲突","region":"高原贸易通道","route":"stylized_animation","runtime":620,"protagonist":"后卫领队萨林","traits":"擅长判断距离，愿意听工匠意见","purpose":"让队伍与伤者通过石桥后撤","action":"领队移动盾列，给驮队留下转弯通道","dialogue":"等最后一辆过桥。","costume":"当地资料支持的防护与行装，轮廓属于此片","visual":"石桥两端的方向与人群间距，平面动画的分层运动","performance":"接到车队信号后才改变手势，疲劳不改变撤退目的","music":"SCORE_OPTIONAL","ending":"后卫渡桥，冲突并未结束，也不预设悲剧","war":true},
+    {"id":"civilian","title":"修表铺的欠账","period":"虚构的十九世纪末小镇","region":"中欧内陆","route":"hybrid","runtime":360,"protagonist":"修表匠米拉","traits":"手艺细致，难以开口讨账","purpose":"与邻居商定偿付，而不毁掉日常关系","action":"修表匠把修好的表留在柜台，两人重新商量日期","dialogue":"这个月能付多少？","costume":"当时当地的日常工作服与围裙，无英雄装束","visual":"小铺柜台、自然头身比例，实景空间结合局部动画机械细节","performance":"保持普通社交距离，听答复后松开压账本的手","music":"NO_SCORE","ending":"分期约定成立，店继续营业","war":false}
+  ]
+}

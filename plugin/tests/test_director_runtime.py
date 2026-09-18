@@ -13,7 +13,7 @@ def budget():
 def test_nonwar_non_cg_story_runtime_is_its_own():
     e=DirectorRuntimeEstimate.model_validate(budget());r=review_runtime(e,scene_ids=['palace-room','palace-corridor'],current={'palace-room':'a'*64,'palace-corridor':'a'*64})
     assert r['targetSeconds']==310 and r['sequenceSeconds']=={'account':310} and not r['artisticApproval'] and r['actualMediaDuration'] is None
-    p=ProjectVisualRoutes(work_id='palace-story',revision='draft');assert p.visual_route=='live_action_realist'
+    p=ProjectVisualRoutes(work_id='palace-story',revision='draft',visual_route='live_action_realist',enabled_routes=['live_action_realist']);assert p.visual_route=='live_action_realist'
     assert not any(x in str(dump_contract(e)) for x in ['Gaixia','Xiang','项羽','虞','乌江','CG'])
 
 @pytest.mark.parametrize('fault',['negative','nan','range','total','overlap','music','duplicate','act'])
@@ -57,5 +57,5 @@ def test_every_route_explicit_work_scoped_no_global_default(route,medium):
     assert resolve_visual_route(p,s).visual_route==route
     style=dict(visualRoute=route,revision='1',medium=medium,rendering='declared',castingCriteria=['individual identity'],shapeLanguage='own profile',materialPalette='wood and textile',cameraGrammar='inspect the account',performanceGrammar='listen and choose',historicalBoundary='fictional historical setting',forbiddenDrifts=['unmotivated spectacle'])
     RouteStyleContract.model_validate(style)
-    assert ProjectVisualRoutes(work_id='another',revision='1').visual_route=='live_action_realist'
+    with pytest.raises(ValueError):ProjectVisualRoutes(work_id='another',revision='1')
     with pytest.raises(ValueError):resolve_visual_route(p,s.model_copy(update={'work_id':'other'}))

@@ -1,3 +1,4 @@
+from drama_plugin.providers.mock import MockDramaData
 """V2-12B: isolated contract/Tool/IR tests; no paid generation or formal writes."""
 from copy import deepcopy
 import json
@@ -39,7 +40,7 @@ def bgm_fixture(*, known=False, media_id='audio', work_id='w'):
 
 @pytest.mark.asyncio
 async def test_ten_seeds_tool_persistence_rerun_search_and_conflict():
-    p=DramaPlugin.load(ROOT); work=p.providers.memory.data.work.id
+    p=DramaPlugin.load(ROOT, mock_data=MockDramaData()); work=p.providers.memory.data.work.id
     ids=[]
     for seed in seeds():
         a,state=await remember(p.tools,work,seed)
@@ -91,7 +92,7 @@ def test_frozen_reference_survives_asset_revision_and_zero_path():
 
 @pytest.mark.asyncio
 async def test_music_unknown_searchable_production_blocked_hash_dedup_and_no_bgm():
-    p=DramaPlugin.load(ROOT);a,m=bgm_fixture(work_id=p.providers.memory.data.work.id)
+    p=DramaPlugin.load(ROOT, mock_data=MockDramaData());a,m=bgm_fixture(work_id=p.providers.memory.data.work.id)
     p.providers.media.data.media.append(m)
     c=BgmContent.model_validate(a.content)
     first,state=await remember(p.tools,m.work_id,c)
@@ -140,7 +141,7 @@ def test_existing_asset_no_music_rights_requirement(kind):
 
 
 def test_skill_tool_architecture():
-    p=DramaPlugin.load(ROOT)
+    p=DramaPlugin.load(ROOT, mock_data=MockDramaData())
     assert len(p.skills.list())==19 and len(p.tools.list())==50
     for skill in ['cinematic-direction','cinematic-finishing']:
         text=(ROOT/'skills'/skill/'skill.yaml').read_text()
@@ -155,7 +156,7 @@ async def test_bgm_media_resolve_readback_rename_and_metadata_do_not_reimport(ma
     from drama_plugin.creative_assets import retain_bgm_media
     from drama_plugin.media_delivery import file_hash
     _, paths, tmp = material  # Existing isolated synthetic renderer fixture, never formal BGM.
-    p=DramaPlugin.load(ROOT);store=Store();work=p.providers.memory.data.work.id
+    p=DramaPlugin.load(ROOT, mock_data=MockDramaData());store=Store();work=p.providers.memory.data.work.id
     from dataclasses import replace
     from drama_plugin.tools.registry import ToolRegistry
     registry=ToolRegistry()

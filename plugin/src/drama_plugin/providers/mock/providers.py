@@ -24,8 +24,8 @@ class MockMemoryProvider:
         return self.data.work
     async def get_work(self, work_id: str) -> Work: return self._get(self.data.work, work_id, "work")
     async def save_work(self, work_id: str, title: str, content: dict[str, Any], description: str | None = None) -> Work:
-        self._get(self.data.work, work_id, "work")
-        self.data.work = Work(id=work_id, title=title, description=description, content=content, version=self.data.work.version + 1)
+        existing = self._get(self.data.work, work_id, "work")
+        self.data.work = Work(id=work_id, title=title, description=description, content=content, version=existing.version + 1)
         return self.data.work
     async def bind_work_voice(self, work_id: str, speaker_key: str, voice_id: str, expected_version: int) -> Work:
         work = self._get(self.data.work, work_id, "work")
@@ -38,8 +38,8 @@ class MockMemoryProvider:
         binding["voiceId"] = voice_id
         self.data.work = work.model_copy(update={"content": content, "version": work.version + 1})
         return self.data.work
-    async def list_works(self) -> list[Work]: return [self.data.work]
-    async def search_works(self, query: str) -> list[Work]: return [self.data.work] if self._matches(query, self.data.work.title, self.data.work.description, self.data.work.content) else []
+    async def list_works(self) -> list[Work]: return [self.data.work] if self.data.work is not None else []
+    async def search_works(self, query: str) -> list[Work]: return [self.data.work] if self.data.work is not None and self._matches(query, self.data.work.title, self.data.work.description, self.data.work.content) else []
 
     async def create_script(self, work_id: str, title: str, content: dict[str, Any]) -> Script:
         self.data.script = Script(id="script-new", work_id=work_id, title=title, content=content); return self.data.script
@@ -48,7 +48,7 @@ class MockMemoryProvider:
         existing = self._get(self.data.script, script_id, "script")
         self.data.script = Script(id=script_id, work_id=existing.work_id, title=title, content=content)
         return self.data.script
-    async def list_scripts(self, work_id: str) -> list[Script]: return [self.data.script] if self.data.script.work_id == work_id else []
+    async def list_scripts(self, work_id: str) -> list[Script]: return [self.data.script] if self.data.script is not None and self.data.script.work_id == work_id else []
 
     async def create_episode(self, script_id: str, episode_no: int, title: str, content: dict[str, Any]) -> Episode:
         self.data.episode = Episode(id="episode-new", script_id=script_id, episode_no=episode_no, title=title, content=content); return self.data.episode
@@ -59,6 +59,7 @@ class MockMemoryProvider:
         return self.data.episode
     async def list_episodes(self, script_id: str, episode_no: int | None = None, title: str | None = None) -> list[Episode]:
         episode = self.data.episode
+        if episode is None: return []
         return [episode] if episode.script_id == script_id and (episode_no is None or episode.episode_no == episode_no) and (title is None or title.lower() in episode.title.lower()) else []
 
     async def create_scene(self, episode_id: str, order: int, title: str, content: dict[str, Any], location: str | None = None) -> Scene:
@@ -70,9 +71,11 @@ class MockMemoryProvider:
         return self.data.scene
     async def list_scenes(self, episode_id: str, order: int | None = None, location: str | None = None, character: str | None = None) -> list[Scene]:
         scene = self.data.scene
+        if scene is None: return []
         return [scene] if scene.episode_id == episode_id and (order is None or scene.order == order) and (location is None or self._matches(location, scene.location)) and (character is None or self._matches(character, scene.content)) else []
     async def search_scenes(self, query: str, episode_id: str | None = None) -> list[Scene]:
         scene = self.data.scene
+        if scene is None: return []
         return [scene] if (episode_id is None or scene.episode_id == episode_id) and self._matches(query, scene.title, scene.location, scene.content) else []
 
     async def create_shot(self, scene_id: str, shot_no: str, content: dict[str, Any], title: str | None = None, shot_type: str | None = None) -> Shot:
@@ -84,14 +87,16 @@ class MockMemoryProvider:
         return self.data.shot
     async def list_shots(self, scene_id: str, shot_no: str | None = None, shot_type: str | None = None, character: str | None = None) -> list[Shot]:
         shot = self.data.shot
+        if shot is None: return []
         return [shot] if shot.scene_id == scene_id and (shot_no is None or shot.shot_no == shot_no) and (shot_type is None or shot.shot_type == shot_type) and (character is None or self._matches(character, shot.content)) else []
     async def search_shots(self, query: str, scene_id: str | None = None) -> list[Shot]:
         shot = self.data.shot
+        if shot is None: return []
         return [shot] if (scene_id is None or shot.scene_id == scene_id) and self._matches(query, shot.title, shot.content) else []
 
     @staticmethod
-    def _get(value: T, requested_id: str, kind: str) -> T:
-        if value.id != requested_id: raise ProviderError(f"Mock {kind} not found: {requested_id}")
+    def _get(value: T | None, requested_id: str, kind: str) -> T:
+        if value is None or value.id != requested_id: raise ProviderError(f"Mock {kind} not found: {requested_id}")
         return value
 
     @staticmethod
@@ -120,11 +125,11 @@ class MockAssetProvider:
 
 class MockResearchProvider:
     def __init__(self, data: MockDramaData) -> None: self.data = data
-    async def search_sources(self, query: str) -> list[ResearchSource]: return [self.data.source]
-    async def search_events(self, query: str) -> list[ResearchEvidence]: return [self.data.evidence]
-    async def search_people(self, query: str) -> list[ResearchEvidence]: return [self.data.evidence]
-    async def search_locations(self, query: str) -> list[ResearchEvidence]: return [self.data.evidence]
-    async def verify_claim(self, claim: str) -> ClaimAssessment: return ClaimAssessment(claim=claim, supported=True, evidence=[self.data.evidence], rationale="Mock evidence supports the claim.")
+    async def search_sources(self, query: str) -> list[ResearchSource]: return [self.data.source] if self.data.source is not None else []
+    async def search_events(self, query: str) -> list[ResearchEvidence]: return [self.data.evidence] if self.data.evidence is not None else []
+    async def search_people(self, query: str) -> list[ResearchEvidence]: return [self.data.evidence] if self.data.evidence is not None else []
+    async def search_locations(self, query: str) -> list[ResearchEvidence]: return [self.data.evidence] if self.data.evidence is not None else []
+    async def verify_claim(self, claim: str) -> ClaimAssessment: return ClaimAssessment(claim=claim, supported=False, evidence=[self.data.evidence] if self.data.evidence is not None else [], rationale="UNVERIFIED: mock fixtures cannot verify a historical claim.")
 
 
 class MockMediaProvider:
@@ -166,7 +171,7 @@ class MockProductionProvider:
     async def generate_video(self, prompt: str, start_frame_media_id: str | None = None, end_frame_media_id: str | None = None, reference_media_ids: list[str] | None = None, parameters: dict[str, Any] | None = None) -> Media:
         refs = [item for item in [start_frame_media_id, end_frame_media_id, *(reference_media_ids or [])] if item]; return await self._result(MediaType.VIDEO, "video/mp4", prompt, refs)
     async def _result(self, media_type: MediaType, mime_type: str, prompt: str, refs: list[str] | None, parameters: dict[str, Any] | None = None) -> Media:
-        media = Media(id=f"media-generated-{media_type.value.lower()}", work_id=self.data.work.id, media_type=media_type, purpose="GENERATED_OUTPUT", source_ref=f"mock:generated:{media_type.value.lower()}", content={"mime_type": mime_type, "prompt": prompt, "reference_media_ids": refs or [], "parameters": parameters or {}}); self.data.media.append(media); return media
+        media = Media(id=f"media-generated-{media_type.value.lower()}", work_id=MockMemoryProvider._get(self.data.work, self.data.work.id if self.data.work else "", "work").id, media_type=media_type, purpose="GENERATED_OUTPUT", source_ref=f"mock:generated:{media_type.value.lower()}", content={"mime_type": mime_type, "prompt": prompt, "reference_media_ids": refs or [], "parameters": parameters or {}}); self.data.media.append(media); return media
 
 
 class MockVoiceProvider:

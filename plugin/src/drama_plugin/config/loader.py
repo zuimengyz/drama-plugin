@@ -19,8 +19,8 @@ def _environment_overrides(environment: Mapping[str, str]) -> dict[str, Any]:
     overrides: dict[str, Any] = {}
     if "rhythm_speed" in environment:
         rhythm_value = environment["rhythm_speed"].strip()
-        if rhythm_value not in {"medium", "fast"}:
-            raise ConfigurationError("Invalid rhythm_speed in environment: expected medium or fast")
+        if rhythm_value not in {"work_defined", "slow", "medium", "fast"}:
+            raise ConfigurationError("Invalid rhythm_speed in environment: expected work_defined, slow, medium or fast")
         overrides["rhythm_speed"] = rhythm_value
     route = {field: environment[key].strip() for field, key in {
         "mode": "DRAMA_PLUGIN_VIDEO_ROUTE_MODE",
@@ -101,11 +101,11 @@ def load_config(
     try:
         config = DramaPluginConfig.model_validate(merged)
         config._rhythm_source = ("environment:rhythm_speed" if "rhythm_speed" in source_environment else
-                                f"config:{path}:rhythm_speed" if "rhythm_speed" in payload else "default:medium")
+                                f"config:{path}:rhythm_speed" if "rhythm_speed" in payload else "default:work_defined")
         return config
     except ValidationError as exc:
         if any(e["loc"] and e["loc"][0] == "rhythm_speed" for e in exc.errors()):
-            raise ConfigurationError(f"Invalid rhythm_speed in configuration {path}: expected medium or fast") from exc
+            raise ConfigurationError(f"Invalid rhythm_speed in configuration {path}: expected work_defined, slow, medium or fast") from exc
         route_errors = [e["msg"] for e in exc.errors() if e["loc"] and e["loc"][0] == "video_route_policy"]
         if route_errors:
             raise ConfigurationError("Invalid video route policy: " + "; ".join(route_errors)) from exc

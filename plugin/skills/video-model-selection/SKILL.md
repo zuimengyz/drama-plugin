@@ -5,18 +5,14 @@ description: Select a video model, input mode and execution path for an approved
 
 # Video Model Selection
 
-Model qualification and execution binding are separate facts. This Skill retains
-all model fit, quality, reference, duration, native-audio and cost decisions.
-After qualification, record `ProductionRoute.execution`: transport `MCP`, backend
-provider/key, capability kind/model key and logical MCP capability key. Resolve
-only that selected model through connected MCP capabilities; do not rank models
-again or switch models because MCP is missing. MCP does not imply a cloud backend.
-The Host MUST preserve this execution contract through compilation, sealing and
-invocation. Missing matching MCP blocks with `MCP_CAPABILITY_UNAVAILABLE`;
-Desktop/GUI availability cannot supply a route or fallback. Backend, provider or
-transport drift requires recompile/reseal and requalification where applicable.
-See the [MCP-first execution contract](../../docs/visual-provider-host-integration.md#mcp-first-execution).
-
+Model qualification and execution binding are separate facts. Retain all model
+fit, quality, reference, duration, native-audio and cost decisions. Bind the
+selected capability to an explicitly supported Host execution route; preserve
+its backend/model/transport identity through compilation, sealing and invocation.
+Missing capabilities block that route, never silently switch provider or transport.
+The packaged MCP integration is one qualified implementation described in the
+[Host adapter contract](../../docs/visual-provider-host-integration.md#mcp-first-execution).
+This Skill neither requires a particular GUI nor grants an unimplemented transport.
 For new Shot authoring, freeze cinematic-direction's source-pinned
 `CinematicShotSpec` before selection. Consume its structured Execution Requirements,
 Reference Requirements and `CINEMATIC_DIRECTION_FROZEN` through the

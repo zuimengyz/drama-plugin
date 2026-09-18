@@ -58,6 +58,8 @@ Only then test how costume and blocking realize the character's social position.
 A user-directed search-profile revision can express this new target while keeping
 its source CharacterVisualSpec immutable. Explicitly resolve ambiguous old wording
 in the candidate brief; do not silently strip prohibitions from a frozen prompt.
-Allowed film idealization never permits modern star copying, modern hair, Western
-medieval drift or xianxia styling. Those are task/period constraints, not reasons
-to suppress screen appeal. Candidate review remains separate from user selection.
+Derive period, regional and stylization exclusions from the approved Work evidence
+and visual route. Contemporary hair, European medieval dress or mythic imagery
+are mismatches only when they contradict that particular world or declared mode.
+Do not copy a specific performer or IP design. Preserve screen appeal within the
+current character and historical boundary. Candidate review remains separate from user selection.

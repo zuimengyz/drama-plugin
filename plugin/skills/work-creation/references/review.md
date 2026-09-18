@@ -15,7 +15,7 @@ Apply this rubric to the complete Work draft before persistence. Evaluation is b
 | Protagonist/scope alignment | The protagonist has PRIMARY authority for broad event scope, or scope is narrowed for a secondary actor. | A supporting actor is promoted while broad scope and historical causality remain claimed. |
 | Causal promotion | No actor receives unsupported judgment, decision, persuasion, or decisive action. | Protagonist agency depends on reassigned causality. |
 | Opposition and stakes | Opposition is intelligible; stakes are historical/political/military/social or evidence-supported personal stakes. | Unsupported personal stakes or a flat villain are invented to force drama. |
-| Interpretive material | Optional internal/relationship material stays non-causal and within evidence boundaries. | An invented need, trust, betrayal, or growth explains a historical outcome. |
+| Interpretive material | Optional internal/relationship material is labeled and does not falsify attested historical causality; it may cause invented personal events. | An invented need, trust, betrayal, or growth explains a historical outcome. |
 | Theme | The thematic question emerges from existing spine beats and consequences. | Theme requires a new major historical decision or event. |
 | Dramatic causality | Dramatic pressure and consequences present the supported historical chain. | Fiction replaces the cause of an actual outcome. |
 | Dramatization deletion | Removing every important compatible invention leaves the main Historical Spine intact. | Deleting an invention breaks the explanation of history. |

@@ -75,8 +75,8 @@ class DramaPluginConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     video_route_policy: VideoRoutePolicy = Field(default_factory=VideoRoutePolicy)
-    rhythm_speed: Literal["medium", "fast"] = "medium"
-    _rhythm_source: str = PrivateAttr(default="default:medium")
+    rhythm_speed: Literal["work_defined", "slow", "medium", "fast"] = "work_defined"
+    _rhythm_source: str = PrivateAttr(default="default:work_defined")
 
     @field_validator("rhythm_speed", mode="before")
     @classmethod

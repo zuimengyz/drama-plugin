@@ -1,3 +1,4 @@
+from drama_plugin.providers.mock import MockDramaData
 from copy import deepcopy
 from pathlib import Path
 import pytest
@@ -35,7 +36,7 @@ def picture():
 
 
 def test_skill_discovery_and_no_generation_access():
- p=DramaPlugin.load(ROOT);s=p.skills.get('production-design')
+ p=DramaPlugin.load(ROOT, mock_data=MockDramaData());s=p.skills.get('production-design')
  assert s.name=='Production Design & Casting' and len(p.skills.list())==19 and len(p.tools.list())==50
  assert all(n in {t.code for t in p.tools.list()} for n in s.tools.preferred+s.tools.allowed)
  assert not any(n.startswith(('production.','media.import','media.save')) for n in s.tools.preferred+s.tools.allowed)
@@ -98,7 +99,7 @@ def test_director_freeze_preserves_stable_design():
 
 @pytest.mark.asyncio
 async def test_text_asset_create_get_search_reuse_conflict_no_media():
- p=DramaPlugin.load(ROOT);c=content();w=p.providers.memory.data.work.id
+ p=DramaPlugin.load(ROOT, mock_data=MockDramaData());c=content();w=p.providers.memory.data.work.id
  a,status=await remember(p.tools,w,c);assert status=='CREATED' and a.asset_type==AssetType.OTHER and a.reference_media_ids==[]
  assert (await remember(p.tools,w,c))[1]=='REUSED'
  changed=c.model_copy(deep=True);changed.spec.silhouette='New revision'
@@ -177,7 +178,7 @@ async def test_other_design_modes_use_existing_text_asset_memory(kind):
  else:
   spec=VisualMotifSpec(motif='lamp',revision='1',physical_form='Work lamp',serves='PLOT',narrative_function='Signal occupancy',recurrence_change='Lit to dark',avoid_decoration='Only where someone works')
  c=content().model_copy(update={'creative_kind':kind,'spec':spec,'semantic_key':'production-design/station/'+kind.lower().replace('_','-')})
- c=ProductionDesignContent.model_validate(dump_contract(c));p=DramaPlugin.load(ROOT)
+ c=ProductionDesignContent.model_validate(dump_contract(c));p=DramaPlugin.load(ROOT, mock_data=MockDramaData())
  a,status=await remember(p.tools,p.providers.memory.data.work.id,c)
  assert status=='CREATED' and not a.reference_media_ids and a.asset_type==AssetType.OTHER
  assert ProductionDesignContent.model_validate(a.content)==c

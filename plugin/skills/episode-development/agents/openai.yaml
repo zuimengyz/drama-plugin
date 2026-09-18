@@ -1,4 +1,4 @@
 interface:
   display_name: "Episode Development"
-  short_description: "Develop a focused historical short-drama Episode"
+  short_description: "Develop a focused historical-drama Episode"
   default_prompt: "Use $episode-development to cover the assigned historical beats with an explicit, continuous narrative state transition."

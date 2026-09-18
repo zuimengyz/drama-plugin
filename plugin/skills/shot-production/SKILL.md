@@ -17,22 +17,12 @@ Read the [shared performance contract](../../docs/cross-modal-performance-direct
 
 For cinematic-shot-v1 transfer the visual projection and native voice direction into the single CinematicShotSpec via `attach_cinematic_performance`; never dispatch a parallel visual prompt. After authorized production, record actual visible events in RealizedPerformanceSnapshot, pinned to bytes, speaker and Beat. Preserve a deviating observation. Story-meaning deviation requires VISUAL_REVISION_REQUIRED, not corrective dialogue; observation/persistence does not authorize dubbing or adoption. Audio evidence requires listening, never inference from still frames.
 
-For a ProductionRoute with `execution.transport=MCP`, the Host MUST generate
-through a connected MCP tool matching the sealed backend/provider, model and
-capability. Discover that capability; do not choose another execution backend.
-Comfy Desktop, ComfyUI Desktop and Host-specific GUI automation are
-`HOST_LOCAL_IMPLEMENTATION_DETAIL`, never formal visual provider capabilities.
-The Host MUST NOT use desktop/local GUI automation, a browser workflow runner,
-direct localhost Comfy API or direct provider calls as a fallback. Missing MCP
-returns `MCP_CAPABILITY_UNAVAILABLE`; conflicting execution identity returns
-`EXECUTION_ROUTE_MISMATCH`. Stop that execution without changing models.
-
-New cinematic requests require the existing ProductionRoute's typed execution
-contract in their seal. Use the [MCP-first Host integration contract](../../docs/visual-provider-host-integration.md#mcp-first-execution)
-for discovery, reservation, invocation and result identity checks. MCP is the
-transport; a cloud, private or local backend must remain behind it. Concrete tool
-names are runtime evidence, not Skill Core. Authentication renewal may resume the
-same sealed request within existing authorization; it never enlarges paid scope.
+Honor the sealed Host execution identity and source-bound capability requirements.
+Invoke only the qualified backend/model/transport; unavailable capability or drift
+fails closed without an alternate GUI, direct API or provider fallback. The
+[current Host adapter contract](../../docs/visual-provider-host-integration.md#mcp-first-execution)
+owns connection discovery, invocation and result identity checks. Its supported
+transport does not become a creative rule or imply support for another transport.
 
 New Shot production consumes a frozen `CinematicShotSpec` from cinematic-direction
 before video-model-selection. Use the existing [director handoff](../../docs/cinematic-direction-contract.md)
@@ -138,6 +128,6 @@ non-submittable dry requests. Paid use requires fresh canon/Media through
 reservation. Unknown complete cost stays unknown. Only verified provider metadata
 may impose a prompt limit; no shared 2000-character cap or silent truncation.
 
-Formal Sequence submissions, including retries, MUST use the [ProductionDesignFreeze entry](../../docs/sequence-production-contract.md#production-design-freeze-and-executable-closure) through `hosts.sequence_execution.invoke_sequence_reserved` before the existing MCP submission. Run `scripts/sequence_preflight.py` for offline readiness. Refresh approval/Asset/Media evidence, bind the exact compiled request to package/freeze/clip fingerprints, and keep existing route, projection, quote and budget gates. INCOMPLETE freeze blocks submission; never bypass it by invoking the single-Shot helper or treating old formal casting as user approval.
+Formal Sequence submissions, including retries, must validate the [ProductionDesignFreeze entry](../../docs/sequence-production-contract.md#production-design-freeze-and-executable-closure) before execution. In the packaged MCP adapter, this is enforced through `hosts.sequence_execution.invoke_sequence_reserved` before submission. Other Hosts must implement equivalent gates before their route can be qualified. Run `scripts/sequence_preflight.py` for offline readiness. Refresh approval/Asset/Media evidence, bind the exact compiled request to package/freeze/clip fingerprints, and keep existing route, projection, quote and budget gates. INCOMPLETE freeze blocks submission; never bypass it by invoking the single-Shot helper or treating old formal casting as user approval.
 
 A [visual route](../../docs/visual-route-contract.md) is separate from provider/input route. Before any future route-specific production, verify every input against the same resolved visual route and existing approved design. A V3-02 design sidecar is not production approval; never silently drop a CG route marker into the legacy paid path.

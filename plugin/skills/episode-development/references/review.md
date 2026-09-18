@@ -21,7 +21,7 @@ Apply this rubric to the complete Episode draft before persistence. Keep evaluat
 | Ending logic | Hook/resolution is earned by the Episode progression. | A fake cliffhanger is appended to static material. |
 | Neighbor continuity | Entry follows prior state and exit supports the next destination. | State, knowledge, motivation, or history jumps without cause. |
 | Episode necessity | Deletion would materially damage line, arc, causality, information, or escalation. | The whole series works almost unchanged without it. |
-| Short-form rhythm | Pressure begins early and every major beat serves the job. | Recap, exposition, repetition, or overload dominates. |
+| Format-appropriate rhythm | Pressure, observation and change follow the approved audience experience; every major beat serves the job. | Recap, exposition, repetition, or overload dominates. |
 | Downstream readiness | Scene development can realize the unit without inventing its job or state change. | Only a synopsis exists or detailed Scenes prematurely replace Episode design. |
 
 ## Reject common anti-patterns

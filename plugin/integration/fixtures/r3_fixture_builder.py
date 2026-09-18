@@ -10,15 +10,15 @@ from drama_plugin.contracts.audio import VoiceProfile, CreativeVoiceProfile, Tar
 from drama_plugin.audio.projection import compile_projected_speech_request
 from drama_plugin.performance_direction import validate_projection
 from drama_plugin.performance_coverage import parse_proposal, CATEGORIES, render_bound_direction, full_performance_coverage_gate
-from r3_direction_data import SCENES, LINES, SILENT_OWNERS
+from r3_direction_data import SCENES, LINES, SILENT_OWNERS, PERFORMANCE_RANGES, SCENE_CEILINGS
 
 
-def build_fixture(text: str, grammar_hash: str, route: Literal['stylized_cinematic_cg','live_action']='stylized_cinematic_cg') -> dict[str, Any]:
+def build_fixture(text: str, grammar_hash: str, route: Literal['stylized_cinematic_cg','live_action']='stylized_cinematic_cg', music_constraints: dict[str,tuple[str,...]] | None = None) -> dict[str, Any]:
     source=hashlib.sha256(text.encode()).hexdigest();scenes=parse_proposal(text)
     assert {s['ref'] for s in scenes}==set(SCENES)
     actual={line['ref'] for s in scenes for line in s['spoken']}
     assert actual==set(LINES), ('source lexical inventory changed', actual.symmetric_difference(LINES))
-    inventory: dict[str, Any]={'scope':'PROPOSAL_ONLY','source_hash':source,'not_applicable':{'shots':'R1 screenplay is not approved; no proposal Shots are fabricated. Formal Production Book must supply real Shot inventory.'},**{k:[] for k in CATEGORIES}}
+    inventory: dict[str, Any]={'scope':'PROPOSAL_ONLY','source_hash':source,'not_applicable':{'shots':'Approved proposal remains non-formal; no proposal Shots are fabricated. Formal Production Book must supply real Shot inventory.'},**{k:[] for k in CATEGORIES}}
     contexts: dict[str, Any]={};directions: dict[str, Any]={};dpds: dict[str, Any]={};intents={};projections={};scene_rows: list[dict[str,Any]]=[];continuity_maps: dict[str,list[Any]]={}
     def actor_ref(scene: str,name: str) -> str:return scene+':actor:'+name
     def add_entity(ctx: dict[str,Any],name: str,kind: str,evidence: str) -> str:
@@ -29,7 +29,7 @@ def build_fixture(text: str, grammar_hash: str, route: Literal['stylized_cinemat
         data=SCENES[s['ref']];ctx=contexts[s['ref']]
         target_ref=next((k for k,e in ctx['entities'].items() if e['display']==target),None)
         if target_ref is None:target_ref=add_entity(ctx,target,'partner',s['body'])
-        d={'ref':ref,'scene':s['ref'],'source_ref':s['ref']+':R1-proposal','status':'COVERED','detail':detail,'core':core,'objective_ref':task_ref,'target_ref':target_ref,'expression':'LOW→MEDIUM，受控；仅具体动作触发释放','physical':physical,'partner':'把注意交给'+target+'的当前任务，不预演回应','continuity_in':data['entry'],'continuity_out':data['exit'],'do_not':data['do_not'],'context_refs':[target_ref],'context_fingerprint':'pending','semantic_review':{'status':'PASS','evidence':'作者逐场对照R1动作／对象／交接顺序；具体执行：'+physical,'source_context':s['ref']}}
+        d={'ref':ref,'scene':s['ref'],'source_ref':s['ref']+':R1-proposal','status':'COVERED','detail':detail,'core':core,'objective_ref':task_ref,'target_ref':target_ref,'expression':SCENE_CEILINGS[s['ref']]+' ceiling；实际角色范围由绑定 DPD 与当前动作决定','physical':physical,'partner':'把注意交给'+target+'的当前任务，不预演回应','continuity_in':data['entry'],'continuity_out':data['exit'],'do_not':data['do_not'],'context_refs':[target_ref],'context_fingerprint':'pending','semantic_review':{'status':'PASS','evidence':'作者逐场对照R1动作／对象／交接顺序；具体执行：'+physical,'source_context':s['ref']}}
         if vocal:d.update(voice=physical,speech_action=core,vocal_mode='SPOKEN',handoff='等绑定对象完成回应再进入下一动作',closure='按该句实际行动收口')
         directions[ref]=d;return d
     def item(category: str,ref: str,s: dict[str,Any],**kwargs: Any) -> None:
@@ -51,9 +51,10 @@ def build_fixture(text: str, grammar_hash: str, route: Literal['stylized_cinemat
         char_rows=[]
         for name,(objective,obstacle,tactic,target,body,voice) in data['characters'].items():
             ref=actor_ref(key,name)
-            dpds[ref]=BeatDPD(scene_id=key,beat_id=ref,actor=name,obstacle=obstacle,transition_trigger=data['exit'],direction=DPDLayerState(objective=objective,interaction_target=target,tactic=tactic,external_control=PerformanceLevel.HIGH,internal_activation=PerformanceLevel.HIGH,relationship_stance=('她获得共同相处何时完成的决定权' if name=='虞美人' else '保留源中的当下关系，不补新的阵营或私人历史')))
+            activation,control,expression=PERFORMANCE_RANGES[key][name]
+            dpds[ref]=BeatDPD(scene_id=key,beat_id=ref,actor=name,obstacle=obstacle,transition_trigger=data['exit'],direction=DPDLayerState(objective=objective,interaction_target=target,tactic=tactic,external_control=PerformanceLevel(control),internal_activation=PerformanceLevel(activation),relationship_stance=('她获得共同相处何时完成的决定权' if name=='虞美人' else '保留源中的当下关系，不补新的阵营或私人历史')))
             d=direction(ref,s,ref,'当前行动：'+objective,body,target,'EXPANDED' if key in ('P03','P08','P09','P10') else 'STANDARD')
-            d['voice_baseline']=voice;item('characters',ref,s)
+            d['expression']=expression+'；身体幅度不等于声音音量';d['voice_baseline']=voice;item('characters',ref,s)
             char_rows.append({'name':name,'dpd_ref':ref,'direction_ref':ref,'objective':objective,'obstacle':obstacle,'tactic':tactic,'target':target,'body':body,'voice':voice})
             load='HIGH' if key in ('P06','P07','P08','P09','P10') and name in ('项羽','楚从骑甲','从骑','剩余楚方') else 'MEDIUM' if key in ('P01','P04','P05') or name=='项羽' else 'LOW'
             state={'physical_load':load,'fatigue':'已有作战／行路负荷保留，未见充分恢复事件，不因外放降低清零' if name in ('项羽','楚从骑甲','从骑','剩余楚方') else '只按源中当前任务受力，不补额外损伤','injury':'多处受伤影响承重' if key=='P10' and name=='项羽' else '未新增明确伤势','breath_load':load,'voice_load':load,'expression_baseline':'能接收、能执行，保持外部控制','release_residue':'TEMPORARY:私人泪落，出场恢复行动' if key=='P03' and name=='项羽' else 'TEMPORARY:真实笑已完成，新追兵信息进入' if key=='P08' and name=='项羽' else '没有永久情绪模板','attention':data['exit'],'interaction_residue':'本场已完成的对象交接，不重置人物身份','return_condition':data['exit']}
@@ -94,7 +95,7 @@ def build_fixture(text: str, grammar_hash: str, route: Literal['stylized_cinemat
             speaker='楚从骑甲' if line['speaker']=='楚从骑' else line['speaker']
             base=dpds[actor_ref(key,speaker)];assert isinstance(base,BeatDPD)
             beat=key+':line:'+line['ref']
-            line_state=DPDLayerState(objective=action,interaction_target=target,tactic=base.direction.tactic,authority_position='按源中当前职役与相对位置',relationship_stance=base.direction.relationship_stance,internal_activation=PerformanceLevel.HIGH,external_control=PerformanceLevel.HIGH,public_private_context=data['location'])
+            line_state=DPDLayerState(objective=action,interaction_target=target,tactic=base.direction.tactic,authority_position='按源中当前职役与相对位置',relationship_stance=base.direction.relationship_stance,internal_activation=base.direction.internal_activation,external_control=base.direction.external_control,public_private_context=data['location'])
             snapshot=compose_dpd(SceneDPD(scene_id=key,source_fingerprint=source,dramatic_purpose=s['purpose'],conflict_condition=base.obstacle,power_structure='源中角色关系，非新增心理',information_asymmetry='只使用当场可见可听信息；不补未来结局知识',direction=line_state),BeatDPD(scene_id=key,beat_id=beat,actor=speaker,obstacle=base.obstacle,transition_trigger=handoff,direction=line_state),LineDPD(scene_id=key,beat_id=beat,spoken_content_id=line['ref'],speaker=speaker,dramatic_action=action,observable_intent=action,continuity=data['entry'],change_from_previous=delivery))
             dpds[beat]=snapshot;line_snapshots.append(snapshot)
             ref=key+':spoken:'+line['ref'];d=direction(ref,s,beat,action,SCENES[key]['characters'][speaker][4],target,'EXPANDED' if key in ('P03','P08','P09','P10') else 'STANDARD',True)
@@ -110,7 +111,9 @@ def build_fixture(text: str, grammar_hash: str, route: Literal['stylized_cinemat
                 dpds[actor_ref(key,actor)]=BeatDPD(scene_id=key,beat_id=key+':vocal-behavior',actor=actor,obstacle='源未给歌词，不得补词或心理',transition_trigger=action,direction=DPDLayerState(objective=action,interaction_target=actor,tactic='仅执行源中允许的声音行为'))
             ref=key+':nonlexical-vocal';d=direction(ref,s,actor_ref(key,actor),action,action,actor,'EXPANDED',True);d.update(voice=action,speech_action=action,vocal_mode=mode,handoff='依据本场源中的声尾与接收动作，不叠压伙伴',closure='行为结束即收，不补未批准的词',vocal_delivery=dump_contract(vocal_event))
             item('voice',ref,s,vocal=True);nonlex=[{'ref':ref,'actor':actor,'action':action,'delivery':dump_contract(vocal_event)}]
-        intent=DirectorPerformanceIntent(scene_id=key,source_fingerprints={'r1-proposal':source},dpd_fingerprints=tuple(x.fingerprint for x in line_snapshots),beat_ids=tuple(x.effective.beat_id for x in line_snapshots),performance_core=data['core'],audience_experience=s['purpose'],primary_focus=data['core'],containment=data['do_not'],external_expression_ceiling='MEDIUM',permitted_release=('controlled_tear','hand_pause') if key=='P03' else ('real_smile','one_breath_release') if key=='P08' else (),release_point=data['exit'],partner_focus='服从每条DPD的当场对象',performance_rhythm=data['core'],continuity_in=data['entry'],continuity_out=data['exit'],do_not=(data['do_not'],),forbidden_behaviors=('sobbing','collapse','continuous_shaking','heroic_declamation'),review_basis='DESIGN_FIXTURE_ONLY')
+        intent=DirectorPerformanceIntent(scene_id=key,source_fingerprints={'r1-proposal':source},dpd_fingerprints=tuple(x.fingerprint for x in line_snapshots),beat_ids=tuple(x.effective.beat_id for x in line_snapshots),performance_core=data['core'],audience_experience=s['purpose'],primary_focus=data['core'],containment=data['do_not'],external_expression_ceiling=SCENE_CEILINGS[key],permitted_release=('controlled_tear','hand_pause') if key=='P03' else ('real_smile','one_breath_release','high_physical_energy') if key=='P08' else (),release_point=data['exit'],partner_focus='服从每条DPD的当场对象',performance_rhythm=data['core'],continuity_in=data['entry'],continuity_out=data['exit'],do_not=(data['do_not'],),forbidden_behaviors=('sobbing','emotional_collapse','continuous_shaking','heroic_declamation'),music_constraints=(music_constraints or {}).get(key,()),review_basis='DESIGN_FIXTURE_ONLY')
+        if key=='P10':
+            intent=intent.model_copy(update={'physical_consequences':{key+':silent:06':s['action_paragraphs'][5]}})
         intents[key]=intent
         scene_rows.append({'scene':s,'data':data,'characters':char_rows,'silent':silent_rows,'interactions':interaction_rows,'ensemble':group_rows,'spoken':spoken_rows,'nonlexical':nonlex})
     edges=[]
@@ -145,12 +148,12 @@ def build_fixture(text: str, grammar_hash: str, route: Literal['stylized_cinemat
         for line in row['spoken']:
             d=directions[line['ref']];dpd=dpds[line['dpd_ref']];current={'r1-proposal':source,'grammar:'+route:grammar_hash,'performance-context':fp(contexts[key])}
             current.update({'context-ref:'+r:fp(contexts[key]) for r in contexts[key]['entities']})
-            actor_body=d['physical'];voice=d['voice'];common=dict(director_intent_fingerprint=fp(intent),beat_id=dpd.effective.beat_id,spoken_content_id=dpd.effective.spoken_content_id,interaction_target=dpd.effective.interaction_target,spatial_projection=SCENES[key]['location']+'中声音抵达'+line['target'],external_expression='LOW' if key in ('P02','P03','P06','P09','P10') else 'MEDIUM',external_control='HIGH',body_load='HIGH' if key in ('P06','P07','P08','P09','P10') and line['speaker']=='项羽' else 'MEDIUM',breath=d['breath'],release=(),continuity_in=intent.continuity_in,continuity_out=intent.continuity_out,context_fingerprint=current['performance-context'],context_refs=tuple(d['context_refs']))
+            actor_body=d['physical'];voice=d['voice'];common=dict(director_intent_fingerprint=fp(intent),beat_id=dpd.effective.beat_id,spoken_content_id=dpd.effective.spoken_content_id,interaction_target=dpd.effective.interaction_target,spatial_projection=SCENES[key]['location']+'中声音抵达'+line['target'],external_expression=PERFORMANCE_RANGES[key][line['speaker']][2],external_control=dpd.effective.external_control.value,body_load='HIGH' if key in ('P06','P07','P08','P09','P10') and line['speaker']=='项羽' else 'MEDIUM',breath=d['breath'],release=(),continuity_in=intent.continuity_in,continuity_out=intent.continuity_out,context_fingerprint=current['performance-context'],context_refs=tuple(d['context_refs']))
             vi={'body_state':actor_body,'posture':actor_body,'weight':'按当前动作保留真实承重，不用情绪代替受力','movement':actor_body+('；CG姿态轴线与轮廓服务动作可读' if route=='stylized_cinematic_cg' else '；真人保留受力中的自然微调'),'eyes':'目光服务当前对象：'+line['target'],'head':'跟随必要的注意变化，不固定点头','hands':actor_body,'visible_breath':d['breath'],'prop':'只允许绑定场景中已给出的物件与动作','partner':line['target'],'distance':common['spatial_projection'],'timing':d['handoff'],'release':'只允许本场意图指定的动作触发释放','continuity':intent.continuity_out,'do_not':d['do_not']}
             ai={'voice_core':voice,'interaction':line['target'],'spatial_projection':common['spatial_projection'],'pace':d['pace'],'rhythm':voice,'intensity':'按对象距离投射；内压不自动变音量','breath_support':d['breath'],'phrase_attack':voice,'articulation':'保留原文与字头，状态不改变声音身份','emphasis':d['speech_action'],'pause_function':d['pause'],'sentence_closure':d['closure'],'coloration':'身体负荷作用于气息与收句，不换身份','release':'不抢伙伴的声尾；释放由场内事件触发','continuity':intent.continuity_out,'do_not':d['do_not']}
             vocal=VocalDelivery(mode=d['vocal_mode'],source_ref=line['ref'],lyric_status='EXACT_SOURCE',melody_status='UNRESOLVED' if d['vocal_mode']=='SUNG' else 'NOT_APPLICABLE')
-            vp=PerformanceProjection(**common,channel='VISUAL',instructions=vi,route=route,grammar_fingerprint=grammar_hash)
-            ap=PerformanceProjection(**common,channel='VOICE',instructions=ai,vocal_delivery=vocal)
+            vp=PerformanceProjection(**{**common, 'release':('high_physical_energy','real_smile') if key=='P08' else ()},channel='VISUAL',instructions=vi,route=route,grammar_fingerprint=grammar_hash)
+            ap=PerformanceProjection(**{**common, 'external_expression':'MEDIUM' if common['external_expression']=='HIGH' else common['external_expression']},channel='VOICE',instructions=ai,vocal_delivery=vocal)
             validate_projection(intent,dpd,vp,current,'VISUAL')
             request=compile_projected_speech_request(work_id='R1-PROPOSAL-ONLY',dpd_snapshot=dpd,spoken_content={'id':dpd.effective.spoken_content_id,'speakerKey':line['speaker'],'text':line['text']},voice_profile=VoiceProfile(profile_id='DESIGN_ONLY:'+line['speaker'],speaker_key=line['speaker'],creative_profile=CreativeVoiceProfile(vocal_age='ADULT',vocal_weight='MEDIUM',baseline_pace='MODERATE')),voice_identity_ref='UNAPPROVED_DESIGN_VOICE:'+line['speaker'],timing_policy=TargetTimingPolicy(policy='NATURAL'),director_intent=intent,performance_projection=ap,current_fingerprints=current)
             assert request.audio_performance_brief is not None

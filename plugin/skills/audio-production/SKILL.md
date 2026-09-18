@@ -143,3 +143,7 @@ For an explicitly authorized replacement mix, use
 source/mix identities and manifest. A stored derivative remains CANDIDATE until
 content review and adoption are separately resolved. Native source adoption
 continues through `prepare_bound_media` and never enters the replacement path.
+
+## Film score boundary
+
+Historical verse may use source-bound DECLAMED_VERSE without melody claims, not a modern song or AI score. Apply current user amendments and retain unresolved shared responses without invented lyrics. Music execution remains a future qualified adapter; no voice or score generation is implied by a Composer Brief. See [Film Score Direction](../../docs/film-score-direction.md).

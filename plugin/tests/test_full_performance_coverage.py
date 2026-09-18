@@ -48,7 +48,7 @@ def test_shrinking_inventory_cannot_fake_100_percent(film: dict[str,Any],categor
 
 def test_formal_book_must_supply_real_shots(film: dict[str,Any]) -> None:
     f=deepcopy(film);f['inventory']['scope']='FORMAL_PRODUCTION_BOOK'
-    assert any(x['reason']=='FORMAL_SHOT_INVENTORY_REQUIRED' for x in gate(f)['findings'])
+    with pytest.raises(ValueError,match='TRUSTED_FORMAL_READER_REQUIRED'):gate(f)
 
 
 def test_no_actor_exemption_requires_reason_and_no_actor_voice_group(film: dict[str,Any]) -> None:

@@ -28,7 +28,7 @@ def main() -> None:
     from r3_fixture_builder import build_fixture
     from performance_direction_helpers import make_case
     assert Path(core.__file__).is_relative_to(package)
-    plugin=DramaPlugin.load(package);assert len(plugin.skills.list())==18 and len(plugin.tools.list())==50
+    plugin=DramaPlugin.load(package);assert len(plugin.skills.list())==19 and len(plugin.tools.list())==50
     source=a.proposal.read_text(encoding='utf-8');grammar=hashlib.sha256(a.grammar.read_bytes()).hexdigest();f=build_fixture(source,grammar)
     assert f['gate']['status']=='FULL_PERFORMANCE_COVERAGE_READY',f['gate']['findings']
     live=build_fixture(source,fp('LIVE_ACTION_DESIGN_GRAMMAR_ONLY'),'live_action')
@@ -50,7 +50,8 @@ def main() -> None:
         # Names resolve from this bound context, not a global example template.
         def resolved(name: str) -> str:
             ref=next(r for r,e in ctx['entities'].items() if e['display']==name)
-            return core.render_bound_direction('{'+ref+'}',ctx)
+            result: str = core.render_bound_direction('{'+ref+'}',ctx)
+            return result
         part=[f"## {key} {s['title']}",f"\n**Scene Purpose（候选源）**：{s['purpose']}",f"\n**Scene Performance Core**：{data['core']}",f"\n**Continuity In**：{data['entry']}",f"\n**Continuity Out**：{data['exit']}",'\n### Character / Actor Direction']
         for ch in row['characters']:
             part += [f"\n**{resolved(ch['name'])}** · DPD preview `{ch['dpd_ref']}`",f"\n目的：{ch['objective']}。阻力：{ch['obstacle']}。策略：{ch['tactic']}。对象：{ch['target']}。",f"\nActor：{ch['body']}。Voice baseline：{ch['voice']}。"]
@@ -110,7 +111,7 @@ def main() -> None:
     regression={'generic':generic,'sentinelFailuresDetected':sentinels,'songQualificationBlocks':blocked,'goodNativeSong':keep,'liveAction':f"PASS; same DPD, intents, interaction, continuity and {len(f['projections'])} Audio Briefs"}
     save('contracts/generic-isolation-regression.json',regression)
     md('generic-and-template-isolation-regression.md',['# 通用与模板隔离回归','\n全部DESIGN_FIXTURE_ONLY / NOT HISTORICAL CLAIM。','\nintimate：独立工作交接配置；身体停下整理工具，声音等待搭档，禁止虞／杯等历史道具或伙伴。','\nvictory：共同救援后的真实释放；对象是队员，身体卸力但仍恢复气息，不复用从骑或何如语句。','\ndecision：地图前向同事求复核；空间来自地图与同事，不再出现船边亭长。','\n六类A/B唯一sentinel：人物、伙伴、道具、地点、动作、声音对象；外来引用与外来文本均作为FAIL，正确B只解析B的refs。','\n新群体fixture：会议解释者、记录者与守门者，分别先听问题、写完抬头、确认出口；未收到线索者持续原任务（安装测试执行）。','\n新发声fixture：SUNG保持SUNG；仅支持SPOKEN的映射被VOCAL_MODE_CAPABILITY_REQUIRED阻断；支持SUNG但旋律未定仍MELODY_UNRESOLVED。已有合适原生演唱优先KEEP_NATIVE。','\n完整LIVE_ACTION十场覆盖通过，DPD／Intent／Interaction／Continuity及AudioBrief保持不变；只切换视觉语法。','\n检查器不能理解任意自然语言。具体发现、证据、来源上下文见[机器记录](contracts/generic-isolation-regression.json)；十场另逐段进行作者语义审阅，非仅looks good。'])
-    summary={'status':'PASS','timestamp':datetime.now(timezone.utc).isoformat(),'package':str(package),'loadedCore':core.__file__,'sourceHash':f['source_hash'],'route':'STYLIZED_CINEMATIC_CG','coverage':f['gate']['coverage'],'lexicalSpokenCount':len(f['inventory']['spoken']),'newTopLevelContracts':0,'skills':18,'tools':50,'newAgents':0,'genericFixtures':3,'foreignSentinelTypesDetected':6,'liveActionFullCoverage':'PASS','vocalMode':'PASS','nativeAudioFirst':'PASS','actualAvCoverage':'INCOMPLETE_NO_MEDIA_AS_EXPECTED','providerCalls':0,'networkAttempts':len(attempts),'formalWrites':0,'r1ProposalChanged':False,'r2ArtifactsChanged':False,'directorProductionBookStarted':False,'userScriptApproval':False,'artisticSuccess':'NOT_ASSESSED'}
+    summary={'status':'PASS','timestamp':datetime.now(timezone.utc).isoformat(),'package':str(package),'loadedCore':core.__file__,'sourceHash':f['source_hash'],'route':'STYLIZED_CINEMATIC_CG','coverage':f['gate']['coverage'],'lexicalSpokenCount':len(f['inventory']['spoken']),'newTopLevelContracts':0,'skills':19,'tools':50,'newAgents':0,'genericFixtures':3,'foreignSentinelTypesDetected':6,'liveActionFullCoverage':'PASS','vocalMode':'PASS','nativeAudioFirst':'PASS','actualAvCoverage':'INCOMPLETE_NO_MEDIA_AS_EXPECTED','providerCalls':0,'networkAttempts':len(attempts),'formalWrites':0,'r1ProposalChanged':False,'r2ArtifactsChanged':False,'directorProductionBookStarted':False,'userScriptApproval':False,'artisticSuccess':'NOT_ASSESSED'}
     assert not attempts;save('dry-run-summary.json',summary);print(json.dumps(summary,ensure_ascii=False))
 
 

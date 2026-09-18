@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import re
-from typing import Annotated, Literal, Self
+from typing import Annotated, Literal, Self, Any
 
-from pydantic import Field, StringConstraints, model_validator
+from pydantic import Field, StringConstraints, model_validator, model_serializer, SerializerFunctionWrapHandler
 
 from drama_plugin.contracts.base import ContractModel
 
@@ -76,7 +76,19 @@ class MusicRights(ContractModel):
     commercial_use: bool | None = None
     status: Literal['UNKNOWN', 'VERIFIED', 'RESTRICTED'] = 'UNKNOWN'
 
+    composition_rights: Literal['UNKNOWN','CLEARED','PUBLIC_DOMAIN','RESTRICTED'] | None = None
+    recording_rights: Literal['UNKNOWN','CLEARED','RESTRICTED'] | None = None
+
+    @model_serializer(mode='wrap')
+    def legacy_rights(self, handler: SerializerFunctionWrapHandler) -> dict[str,Any]:
+        result: dict[str,Any]=handler(self)
+        for snake,camel in (('composition_rights','compositionRights'),('recording_rights','recordingRights')):
+            if getattr(self,snake) is None:result.pop(snake,None);result.pop(camel,None)
+        return result
+
     def allows_production(self) -> bool:
+        if self.composition_rights is not None or self.recording_rights is not None:
+            if self.composition_rights not in ('CLEARED','PUBLIC_DOMAIN') or self.recording_rights!='CLEARED':return False
         return (self.status == 'VERIFIED' and self.commercial_use is True
                 and bool(self.source) and bool(self.license)
                 and self.source != 'UNKNOWN' and self.license != 'UNKNOWN'

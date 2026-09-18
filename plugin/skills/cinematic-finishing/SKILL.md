@@ -134,3 +134,11 @@ Consume executable Sequence audio/edit obligations separately from design readin
 ## Intended transitions are upstream requirements
 
 Consume shot-design's EditorialRhythmPlan.transitions as intended continuity, including time/space and sound carry. Finishing owns the actual measured-media cut and PictureEditPlan. Do not treat a planned match action or prelap as already observed or executed. Return infeasible continuity to its owner and retain actual Media evidence.
+
+## Film score boundary
+
+Consume music-direction FilmScorePlan dramatic triggers as requirements. Own measured picture conform, fades/duck/stems; preserve legacy NO_BGM and local repairs. Report music/performance conflicts through existing FilmReview, without changing acting or dialogue. See [Film Score Direction](../../docs/film-score-direction.md).
+
+For every available FilmScorePlan, attach the current plan and source evidence in the existing recipe scorePlacement facet, and bind each BGM layer with scoreBinding. Do not omit a known plan to bypass its protection. NO_SCORE, NO_SCORE_MUST_PRESERVE and DIEGETIC_ONLY block score; empty space is not permission to fill it. Only Director/music-direction re-review may change the plan. Proposal-only plans cannot render into formal finishing. Existing legacy recipes with no score plan remain compatible.
+
+Before impact the score may dominate; at physical contact native impact, breath, horse and armor may take over. Follow the reviewed event policy; no automatic music return after dialogue, real joy, pursuit or death. Map actual source events to reviewed Shot/Beat and Media intervals only after picture exists. An action combining build and impact requires observed phase refinement before execution. This semantic guard does not verify sample-level overlap by itself.

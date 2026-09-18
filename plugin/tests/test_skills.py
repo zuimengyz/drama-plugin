@@ -9,7 +9,7 @@ from drama_plugin.exceptions import SkillLoadError
 from drama_plugin.skills import SkillRegistry
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED = {"director", "authorial-voice", "performance-casting", "production-design", "cinematic-direction", "cinematic-finishing", "video-model-selection", "cinematic-screenplay-incubation", "historical-research", "work-creation", "script-adaptation", "episode-development", "scene-development", "dramatic-performance-direction", "shot-design", "asset-resolution", "shot-production", "audio-production"}
+EXPECTED = {"music-direction", "director", "authorial-voice", "performance-casting", "production-design", "cinematic-direction", "cinematic-finishing", "video-model-selection", "cinematic-screenplay-incubation", "historical-research", "work-creation", "script-adaptation", "episode-development", "scene-development", "dramatic-performance-direction", "shot-design", "asset-resolution", "shot-production", "audio-production"}
 CREATIVE = {
     "work-creation": ("work.create_work", "work.save_work", ("historical_spine_complete", "fact_attribution_valid", "protagonist_scope_alignment", "structure_covers_spine")),
     "script-adaptation": ("script.create_script", "script.save_script", ("historical spine", "fact attribution", "episode architecture", "climax")),
@@ -518,6 +518,10 @@ def test_media_registration_is_not_duplicated_after_generation() -> None:
 def test_openai_adapters_are_optional_interface_metadata_only() -> None:
     for directory in (ROOT / "skills").iterdir():
         if directory.name not in EXPECTED: continue
+        if directory.name == "music-direction":
+            # This capability intentionally adds no Agent or Host adapter.
+            assert not (directory / "agents").exists()
+            continue
         adapter = yaml.safe_load((directory / "agents" / "openai.yaml").read_text(encoding="utf-8"))
         assert set(adapter) == ({"interface", "dependencies"} if directory.name == "shot-production" else {"interface"})
         assert set(adapter["interface"]) == {"display_name", "short_description", "default_prompt"}

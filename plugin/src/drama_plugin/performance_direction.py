@@ -57,7 +57,9 @@ def validate_projection(intent: DirectorPerformanceIntent, dpd: DPDSnapshot,
         raise ValueError('ANTI_OVERACTING: expression exceeds Director envelope')
     forbidden = set(intent.forbidden_behaviors)
     if e.external_control.value == 'HIGH':
-        forbidden |= {'sobbing', 'collapse', 'continuous_shaking', 'theatrical_trembling'}
+        forbidden |= {'sobbing', 'collapse', 'emotional_collapse', 'continuous_shaking', 'theatrical_trembling'}
+    if 'scripted_physical_loss_of_support' in p.behaviors and ('scripted_physical_loss_of_support' not in p.release or channel != 'VISUAL'):
+        raise ValueError('SOURCE_BOUND_PHYSICAL_CONSEQUENCE_REQUIRED')
     if forbidden & set(p.behaviors):
         raise ValueError('ANTI_OVERACTING: forbidden observable behavior')
     if not set(p.release) <= set(intent.permitted_release):
@@ -186,7 +188,7 @@ def reconcile_realized_performance(dpd: DPDSnapshot, intent: DirectorPerformance
         return {'status': 'INSUFFICIENT_EVIDENCE', 'owner': 'cinematic-finishing', 'reason': 'Review observed meaning before conditioning speech.'}
     forbidden = set(intent.forbidden_behaviors)
     if dpd.effective.external_control.value == 'HIGH':
-        forbidden |= {'sobbing', 'collapse', 'continuous_shaking', 'theatrical_trembling'}
+        forbidden |= {'sobbing', 'collapse', 'emotional_collapse', 'continuous_shaking', 'theatrical_trembling'}
     if forbidden & set(o.behaviors):
         return {'status': 'VISUAL_REVISION_REQUIRED', 'owner': 'shot-production', 'reason': 'Observed body violates the performance envelope.'}
     # Do not infer mouth onset or invent a replacement speech duration.
@@ -241,7 +243,7 @@ def review_av_performance(*, dpd: DPDSnapshot, intent: DirectorPerformanceIntent
         amp = 'UNKNOWN' if 'UNKNOWN' in (vo.external_expression, ao.external_expression) else ('PASS' if max(LEVEL[vo.external_expression], LEVEL[ao.external_expression]) <= LEVEL[intent.external_expression_ceiling] else 'FAIL')
         forbidden = set(intent.forbidden_behaviors)
         if dpd.effective.external_control.value == 'HIGH':
-            forbidden |= {'sobbing', 'collapse', 'continuous_shaking', 'theatrical_trembling'}
+            forbidden |= {'sobbing', 'collapse', 'emotional_collapse', 'continuous_shaking', 'theatrical_trembling'}
         bad_v = bool(forbidden & set(vo.behaviors)); bad_a = bool(forbidden & set(ao.behaviors))
         if bad_v or bad_a: amp = 'FAIL'
         owner = 'shot-production' if bad_v or (vo.external_expression != 'UNKNOWN' and LEVEL[vo.external_expression] > LEVEL[intent.external_expression_ceiling]) else 'audio-production'
@@ -341,3 +343,13 @@ def native_audio_disposition(review: FilmReview, *, local_finding_keys: tuple[st
         raise ValueError('Dubbing reason has no corresponding reviewed failure')
     return {**base, 'disposition': 'DUBBING_REQUIRED', 'existingStrategy': 'explicit reviewed speech + AvAssemblyManifest',
             'reason': replacement_reason, 'owner': 'audio-production', 'needsRealizedPerformance': True}
+
+
+def validate_action_performance(intent: DirectorPerformanceIntent, *, action_ref: str,
+                                source_action: str, behavior: str, action_completed: bool) -> None:
+    """Silent/action projection uses a source-exact anchor, not a vocal emotion cap."""
+    if behavior in intent.forbidden_behaviors or behavior in {'collapse','emotional_collapse'}:
+        raise ValueError('ANTI_OVERACTING: emotional or ambiguous collapse')
+    if behavior == 'scripted_physical_loss_of_support':
+        if intent.physical_consequences.get(action_ref)!=source_action or not action_completed:
+            raise ValueError('SCRIPTED_PHYSICAL_CONSEQUENCE_ORDER_REQUIRED')

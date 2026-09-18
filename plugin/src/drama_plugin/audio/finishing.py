@@ -7,7 +7,7 @@ import math
 import subprocess
 from array import array
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from drama_plugin.media_delivery import file_hash
 
@@ -22,13 +22,13 @@ def run(args: list[str]) -> bytes:
 
 
 def probe(path: Path) -> dict[str, Any]:
-    return json.loads(run(['ffprobe', '-v', 'error', '-show_streams', '-show_format', '-of', 'json', str(path)]))
+    return cast(dict[str, Any], json.loads(run(['ffprobe', '-v', 'error', '-show_streams', '-show_format', '-of', 'json', str(path)])))
 
 
 def video_packets(path: Path) -> list[dict[str, Any]]:
-    return json.loads(run(['ffprobe', '-v', 'error', '-select_streams', 'v:0',
+    return cast(list[dict[str, Any]], json.loads(run(['ffprobe', '-v', 'error', '-select_streams', 'v:0',
         '-show_packets', '-show_data_hash', 'sha256', '-show_entries',
-        'packet=pts_time,dts_time,duration_time,data_hash', '-of', 'json', str(path)]))['packets']
+        'packet=pts_time,dts_time,duration_time,data_hash', '-of', 'json', str(path)]))['packets'])
 
 
 def number(value: Any) -> float:
@@ -56,6 +56,8 @@ def envelope(points: list[list[float]]) -> str:
 def render(recipe: dict[str, Any], paths: dict[str, str], directory: Path) -> dict[str, Any]:
     """Render deterministic local recipe; paths are disposable, IDs/hashes authoritative."""
     from drama_plugin.creative_assets import validate_music_recipe
+    from drama_plugin.music_placement import validate_finishing_score_binding
+    validate_finishing_score_binding(recipe)
     validate_music_recipe(recipe)
     directory.mkdir(parents=True, exist_ok=True)
     fingerprint = digest(recipe)
@@ -65,7 +67,7 @@ def render(recipe: dict[str, Any], paths: dict[str, str], directory: Path) -> di
         if old['recipeHash'] != fingerprint:
             raise ValueError('Existing output belongs to a different recipe; use a new revision directory')
         if file_hash(Path(old['output'])) == old['outputHash']:
-            return old
+            return cast(dict[str, Any], old)
         raise ValueError('Retained local output changed; recover it before rendering again')
     source_id = recipe['sourceMediaId']
     expected = {**recipe['sources'], source_id: recipe['sourceHash']}

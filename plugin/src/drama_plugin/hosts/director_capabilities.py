@@ -24,7 +24,7 @@ from drama_plugin.visual.video_selection import Requirements, Candidate, qualify
 from drama_plugin.visual_route import bind_route_artifact
 from drama_plugin.hosts.director_artifacts import DirectorArtifactStore
 
-CAPABILITIES = frozenset({'cinematic-screenplay-incubation', 'production-design', 'scene-development', 'dramatic-performance-direction', 'shot-design',
+CAPABILITIES = frozenset({'music-direction', 'cinematic-screenplay-incubation', 'production-design', 'scene-development', 'dramatic-performance-direction', 'shot-design',
     'cinematic-direction', 'video-model-selection', 'shot-production', 'audio-production', 'cinematic-finishing'})
 # Explicit dispatch destinations, not a mandatory chain or autonomous repair loop.
 REVISION_TARGETS = {
@@ -94,7 +94,18 @@ class LocalCapabilityBridge:
         def scope(value: str) -> None:
             if value != q.scope_id:
                 raise DirectorError('INVALID_SOURCE', 'Capability belongs to another scene/scope')
-        if name in {'cinematic-screenplay-incubation', 'production-design'}:
+        if name == 'music-direction':
+            from drama_plugin.contracts.film_score import FilmScorePlan
+            from drama_plugin.contracts.performance_direction import DirectorPerformanceIntent
+            from drama_plugin.music_direction import review_score_plan
+            score=FilmScorePlan.model_validate(data['plan']);scope(score.scope_id)
+            if score.source_pins!=q.source_pins or score.film_intent_ref not in q.intent_refs:
+                raise DirectorError('INVALID_SOURCE','Score must bind the requested source and Director intent')
+            result=review_score_plan(score,current=current,expected_scene_ids=data['sceneIds'],
+                performance_intents={k:DirectorPerformanceIntent.model_validate(v) for k,v in data['performanceIntents'].items()},
+                excluded_performance_refs=data.get('excludedPerformanceRefs',()))
+            return {'plan':dump_contract(score),'review':result}, {'limitations':tuple(c['code'] for c in result['conflicts'])}
+        if name in {'cinematic-screenplay-incubation' , 'production-design'}:
             from drama_plugin.contracts.preproduction import ScreenplayReadinessReview, FilmProductionDesign, SceneProductionDesignPacket
             from drama_plugin.preproduction import readiness, stylization
             if name == 'cinematic-screenplay-incubation':

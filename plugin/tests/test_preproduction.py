@@ -27,7 +27,7 @@ def changed_review(r, dimension, verdict):
 def test_three_genres_same_pipeline_and_route_isolation(name,route):
     p,r,c,a=make_case(name,route)
     out=department_integration(p,r,c,a)
-    assert out['status']=='DIRECTOR_PRODUCTION_BOOK_READY_FOR_USER_REVIEW'
+    assert out['status']=='DEPARTMENT_REVIEW_READY'
     assert out['productionAuthorized'] is False and out['userApproved'] is False
     assert readiness(r,c)['status']=='READY_FOR_DIRECTION'
     assert a[name+':film-design']['stylization']['cgPolicyApplied']==(route=='stylized_cinematic_cg')

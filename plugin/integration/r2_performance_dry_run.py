@@ -39,12 +39,13 @@ def main() -> None:
     from performance_direction_helpers import make_case, CASES
     assert Path(core.__file__).is_relative_to(package)
     plugin = DramaPlugin.load(package)
-    assert len(plugin.skills.list()) == 18 and len(plugin.tools.list()) == 50
+    assert len(plugin.skills.list()) == 19 and len(plugin.tools.list()) == 50
     out.mkdir(parents=True, exist_ok=True); (out/'contracts').mkdir(exist_ok=True)
     def save(path: Path, value: Any) -> None:
         path.write_text(json.dumps(value, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
     def case(name: str, route: Literal['stylized_cinematic_cg', 'live_action'] = 'stylized_cinematic_cg') -> dict[str, Any]:
-        return make_case(name, route, args.proposal, args.grammar if route == 'stylized_cinematic_cg' else None)
+        result: dict[str,Any] = make_case(name, route, args.proposal, args.grammar if route == 'stylized_cinematic_cg' else None)
+        return result
     def review(c: dict[str, Any]) -> Any:
         return core.review_av_performance(dpd=c['dpd'], intent=c['intent'], visual=c['visual'], audio=c['audio'], realized=c['realized'], review=c['review'], current=c['current'])
     def change(c: dict[str, Any], channel: str, updates: dict[str, Any]) -> None:
@@ -123,7 +124,7 @@ def main() -> None:
     (out/'r1-proposal-performance-direction-dry-run.md').write_text('# R1候选 · 跨模态表演方向设计验证\n\nPROPOSAL ONLY / DESIGN FIXTURE ONLY / NOT FORMAL GAIXIA SOURCE。未批准R1、未生成视频或声音、未开始Director Production Book。以下DPD是候选设计预览，不替代正式DPD。\n\n《垓下歌》的次序：N04力量自陈 → 失势收束 → N05向虞发问。先读P03-strength，再读P03的接收与泪落。\n\n'+''.join(books[k] for k in ('P03-strength','P03','P08','P09')),encoding='utf-8')
     table='| 对抗案例 | 结果 | Repair owner |\n|---|---|---|\n'+''.join(f"| {x['case']} | {x['actual']}（预期） | {x['finding']['repairOwner']} |\n" for x in failures)
     (out/'generic-cross-modal-performance-dry-run.md').write_text('# 通用跨模态表演设计验证\n\n全部DESIGN_FIXTURE_ONLY / NOT HISTORICAL CLAIM。\n\n'+''.join(books[k] for k in ('intimate','victory','decision'))+'## 对抗案例\n\n'+table+'\n上述FAIL是正确发现错误，不是正向链执行失败。\n\n## 真人路线兼容\n\n同一decision fixture在LIVE_ACTION与STYLIZED_CINEMATIC_CG中DPD、Director Intent与AudioPerformanceBrief完全相等。只更换视觉投射与grammar pin。真人身体保留自然微调，不要求CG轮廓强化；两条路线的设计对齐均通过。真人语法引用是标明的设计fixture，不冒充正式美术批准。\n',encoding='utf-8')
-    summary={'status':'PASS','timestamp':datetime.now(timezone.utc).isoformat(),'package':str(package),'loadedCore':core.__file__,'coreHash':hashlib.sha256(Path(core.__file__).read_bytes()).hexdigest(),'proposalHash':hashlib.sha256(args.proposal.read_bytes()).hexdigest(),'grammarHash':hashlib.sha256(args.grammar.read_bytes()).hexdigest(),'skills':18,'tools':50,'positiveFixtures':len(results),'liveActionCompatibility':True,'adversarialCases':len(failures),'adversarialDetected':len(failures),'nativeDecisions':['KEEP_NATIVE','LOCAL_REPAIR','DUBBING_REQUIRED'],'realizedTimingConsumed':True,'storyMeaningChange':'VISUAL_REVISION_REQUIRED','basis':'DESIGN_FIXTURE_ONLY','actualMediaReviewed':False,'providerCalls':0,'networkAttempts':len(network_attempts),'formalWrites':0,'newMedia':0,'artisticSuccess':'NOT_ASSESSED','userApproval':False}
+    summary={'status':'PASS','timestamp':datetime.now(timezone.utc).isoformat(),'package':str(package),'loadedCore':core.__file__,'coreHash':hashlib.sha256(Path(core.__file__).read_bytes()).hexdigest(),'proposalHash':hashlib.sha256(args.proposal.read_bytes()).hexdigest(),'grammarHash':hashlib.sha256(args.grammar.read_bytes()).hexdigest(),'skills':19,'tools':50,'positiveFixtures':len(results),'liveActionCompatibility':True,'adversarialCases':len(failures),'adversarialDetected':len(failures),'nativeDecisions':['KEEP_NATIVE','LOCAL_REPAIR','DUBBING_REQUIRED'],'realizedTimingConsumed':True,'storyMeaningChange':'VISUAL_REVISION_REQUIRED','basis':'DESIGN_FIXTURE_ONLY','actualMediaReviewed':False,'providerCalls':0,'networkAttempts':len(network_attempts),'formalWrites':0,'newMedia':0,'artisticSuccess':'NOT_ASSESSED','userApproval':False}
     assert not network_attempts
     save(out/'dry-run-summary.json',summary)
     print(json.dumps(summary,ensure_ascii=False))

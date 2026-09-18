@@ -102,3 +102,20 @@ SILENT_OWNERS: dict[str, list[str]] = {
 'P09':['亭长','项羽','亭长','项羽','亭长','项羽','项羽','亭长','项羽','从骑'],
 'P10':['项羽','项羽','项羽','吕马童','项羽','项羽','近汉兵','后续汉军'],
 }
+
+
+# DPD-owner authored preview ranges, bound to the existing scene task; no runtime
+# character defaults. Tuple = internal activation / external control / expression.
+PERFORMANCE_RANGES = {
+ 'P01': {'项羽':('HIGH','HIGH','HIGH'), '韩信':('MEDIUM','HIGH','MEDIUM')},
+ 'P02': {'项羽':('HIGH','HIGH','LOW'), '军吏':('MEDIUM','HIGH','LOW'), '楚从骑甲':('MEDIUM','MEDIUM','LOW')},
+ 'P03': {'项羽':('HIGH','HIGH','LOW'), '虞美人':('MEDIUM','HIGH','LOW'), '侍从':('LOW','HIGH','LOW')},
+ 'P04': {'项羽':('MEDIUM','HIGH','MEDIUM'), '军吏':('LOW','HIGH','LOW'), '楚从骑甲':('MEDIUM','HIGH','MEDIUM'), '落后骑者':('HIGH','MEDIUM','HIGH')},
+ 'P05': {'灌婴':('MEDIUM','HIGH','MEDIUM')},
+ 'P06': {'项羽':('MEDIUM','HIGH','LOW'), '楚从骑甲':('HIGH','MEDIUM','LOW')},
+ 'P07': {'项羽':('HIGH','HIGH','HIGH'), '田父':('LOW','MEDIUM','LOW'), '楚从骑甲':('HIGH','MEDIUM','HIGH'), '陷泽骑者':('HIGH','MEDIUM','HIGH')},
+ 'P08': {'项羽':('HIGH','HIGH','HIGH'), '楚从骑甲':('HIGH','MEDIUM','HIGH')},
+ 'P09': {'项羽':('HIGH','HIGH','LOW'), '亭长':('HIGH','MEDIUM','MEDIUM'), '从骑':('MEDIUM','MEDIUM','MEDIUM')},
+ 'P10': {'项羽':('HIGH','HIGH','LOW'), '吕马童':('MEDIUM','HIGH','MEDIUM'), '王翳':('MEDIUM','MEDIUM','MEDIUM'), '剩余楚方':('HIGH','MEDIUM','MEDIUM')},
+}
+SCENE_CEILINGS = {'P01':'HIGH','P02':'LOW','P03':'LOW','P04':'HIGH','P05':'MEDIUM','P06':'LOW','P07':'HIGH','P08':'HIGH','P09':'MEDIUM','P10':'MEDIUM'}

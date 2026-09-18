@@ -239,6 +239,81 @@ def department_integration(packet: DirectorDepartmentPacket, review: ScreenplayR
                        ('costume_light', 'layout_blocking', 'direction_axis', 'color_hierarchy'))):
             missing.append('DIRECTOR_SELF_REVIEW_INCOMPLETE')
     return {'status': 'DEPARTMENT_CONFLICT' if conflicts else
-            'DIRECTOR_PRODUCTION_BOOK_NOT_READY' if missing else 'DIRECTOR_PRODUCTION_BOOK_READY_FOR_USER_REVIEW',
+            'DIRECTOR_PRODUCTION_BOOK_NOT_READY' if missing else 'DEPARTMENT_REVIEW_READY',
             'missing': missing, 'conflicts': conflicts, 'userApproved': False,
             'productionAuthorized': False, 'productionDesignFreeze': 'NOT_REACHED'}
+
+
+def complete_production_book(packet: DirectorDepartmentPacket, review: ScreenplayReadinessReview,
+                             current: Mapping[str,str], artifacts: Mapping[str,dict[str,Any]], *,
+                             performance: Mapping[str,Any] | None = None,
+                             score_plan: Any = None) -> dict[str,Any]:
+    """Unique full-book completion entry; R0 department readiness is insufficient.
+
+    Performance evidence is recomputed from an ephemeral Host canonical witness.
+    A JSON status, label or proposal manifest cannot replace formal evidence.
+    """
+    departments=department_integration(packet,review,current,artifacts)
+    missing: list[str]=[]
+    if departments['status']!='DEPARTMENT_REVIEW_READY':missing.append('R0_DEPARTMENT_INTEGRATION')
+    if performance is None:
+        return {'status':'DIRECTOR_PRODUCTION_BOOK_NOT_READY','missing':missing+['FULL_FORMAL_PERFORMANCE_REQUIRED'],'productionAuthorized':False}
+    try:
+        from drama_plugin.hosts.formal_performance import FormalSourceWitness
+        from drama_plugin.performance_coverage import full_performance_coverage_gate
+        from drama_plugin.performance_direction import validate_projection
+        from drama_plugin.contracts.performance_direction import DirectorPerformanceIntent, PerformanceProjection
+        from drama_plugin.contracts.dpd import DPDSnapshot
+        from drama_plugin.contracts.visual_route import RouteContext
+        witness=performance.get('formal_source')
+        if not isinstance(witness,FormalSourceWitness):raise ValueError('TRUSTED_FORMAL_READER_REQUIRED')
+        if packet.scope_id != witness.tree['work'][0]['id']:raise ValueError('FULL_BOOK_WORK_SCOPE_MISMATCH')
+        if {p.key:p.fingerprint for p in packet.source_pins}!=witness.pins:
+            raise ValueError('FULL_BOOK_FORMAL_SOURCE_MISMATCH')
+        if set(packet.scene_ids)!={s['id'] for s in witness.tree['scenes']}:
+            raise ValueError('FULL_BOOK_SCENE_INVENTORY_MISMATCH')
+        coverage=full_performance_coverage_gate(performance['inventory'],performance['directions'],
+            current_source_hash=witness.fingerprint,contexts=performance['contexts'],dpds=performance['dpds'],
+            formal_source=witness,scene_dpds=performance['scene_dpds'])
+        if coverage['status']!='FULL_PERFORMANCE_COVERAGE_READY':raise ValueError('FULL_PERFORMANCE_COVERAGE_INCOMPLETE')
+        intents={k:DirectorPerformanceIntent.model_validate(v) for k,v in performance['intents'].items()}
+        if set(intents)!=set(packet.scene_ids):raise ValueError('DIRECTOR_PERFORMANCE_INTENT_INCOMPLETE')
+        route=RouteContext.model_validate(artifacts[packet.route_ref.key])
+        route_name=route.sequence.visual_route or route.project.visual_route
+        expected=witness.obligations()['spoken']
+        if set(performance['projections'])!=set(expected):raise ValueError('FULL_VISUAL_VOICE_PROJECTION_REQUIRED')
+        for ref,item in expected.items():
+            d=performance['directions'][ref];dpd=performance['dpds'][d['objective_ref']]
+            if not isinstance(dpd,DPDSnapshot):raise ValueError('FORMAL_LINE_DPD_REQUIRED')
+            intent=intents[item['scene']]
+            if intent.review_basis!='SOURCE_BOUND_DESIGN':raise ValueError('PROPOSAL_DPD_NOT_FORMAL')
+            if any(current.get(k)!=v for k,v in intent.source_fingerprints.items()):raise ValueError('STALE_PERFORMANCE_INTENT')
+            for channel in ('VISUAL','VOICE'):
+                projection=PerformanceProjection.model_validate(performance['projections'][ref][channel])
+                validate_projection(intent,dpd,projection,current,channel)
+                if channel=='VISUAL' and projection.route!=route_name:raise ValueError('FULL_BOOK_ROUTE_MISMATCH')
+        # Every action and Shot is already covered by source enumeration. Expanded
+        # dual-channel briefs do not exempt ordinary silent/interaction fragments.
+        from drama_plugin.contracts.film_score import FilmScorePlan
+        from drama_plugin.music_direction import review_score_plan
+        if score_plan is None:raise ValueError('EXPLICIT_REVIEWED_FILM_SCORE_PLAN_REQUIRED')
+        score=FilmScorePlan.model_validate(score_plan)
+        if (score.source_kind!='FORMAL' or score.scope_id!=packet.scope_id or score.source_pins!=packet.source_pins
+                or score.film_intent_ref!=packet.intent_ref or score.review_status!='DESIGN_REVIEWED'):
+            raise ValueError('FULL_BOOK_MUSIC_SOURCE_REVIEW_MISMATCH')
+        excluded=[s['id']+':spoken:'+line['id'] for s in witness.tree['scenes'] for line in s['content'].get('spokenContent',[])
+                  if line.get('vocalDelivery',{}).get('mode')=='DECLAMED_VERSE']
+        music=review_score_plan(score,current=current,expected_scene_ids=packet.scene_ids,performance_intents=intents,
+                               excluded_performance_refs=excluded)
+        if music['status']!='SCORE_DESIGN_REVIEW_READY':raise ValueError('MUSIC_PERFORMANCE_CONFLICT')
+        reviewed={'score_plan':dump_contract(score),'inventory':performance['inventory'],'directions':performance['directions'],
+                  'scene_dpds':{k:dump_contract(v) for k,v in performance['scene_dpds'].items()},'dpds':{k:dump_contract(v) for k,v in performance['dpds'].items()},
+                  'intents':{k:dump_contract(v) for k,v in intents.items()},'projections':{k:{channel:dump_contract(PerformanceProjection.model_validate(v)) for channel,v in pair.items()} for k,pair in performance['projections'].items()}}
+        self_review=performance.get('self_review',{})
+        if (self_review.get('verdict')!='PASS' or self_review.get('reviewedFingerprint')!=sha256_canonical(reviewed)
+                or self_review.get('sourcePins')!=witness.pins or self_review.get('routeRef')!=dump_contract(packet.route_ref)):
+            raise ValueError('FULL_BOOK_SELF_REVIEW_REQUIRED')
+    except (ValueError,KeyError,TypeError) as exc:
+        missing.append(str(exc))
+    return {'status':'DIRECTOR_PRODUCTION_BOOK_NOT_READY' if missing else 'DIRECTOR_PRODUCTION_BOOK_READY_FOR_USER_REVIEW',
+            'missing':missing,'userApproved':False,'productionAuthorized':False,'productionDesignFreeze':'NOT_REACHED'}

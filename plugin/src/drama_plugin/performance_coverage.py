@@ -5,11 +5,14 @@ Natural-language review is an attestation; lexical checks are not semantic AI.
 """
 from __future__ import annotations
 import re
-from typing import Any, Mapping, Sequence
+from typing import Any, Mapping, Sequence, TYPE_CHECKING
 from drama_plugin.contracts.base import dump_contract, sha256_canonical
-from drama_plugin.contracts.dpd import DPDSnapshot, BeatDPD
+from drama_plugin.contracts.dpd import DPDSnapshot, BeatDPD, SceneDPD
 from drama_plugin.dpd import compose_dpd
 from drama_plugin.contracts.sequence import FilmReview, SourcePin
+
+if TYPE_CHECKING:
+    from drama_plugin.hosts.formal_performance import FormalSourceWitness
 
 CATEGORIES = ('scenes', 'characters', 'shots', 'spoken', 'silent', 'interactions', 'ensemble', 'continuity', 'voice', 'av_plan')
 STANDARD = frozenset({'core','objective_ref','target_ref','expression','physical','partner','continuity_in','continuity_out','do_not'})
@@ -116,8 +119,15 @@ def validate_continuity_edge(edge: Mapping[str, Any]) -> None:
 
 
 def full_performance_coverage_gate(inventory: Mapping[str, Any], directions: Mapping[str, Any], *, current_source_hash: str,
-                                    contexts: Mapping[str, Any], dpds: Mapping[str, DPDSnapshot | BeatDPD], source_text: str | None = None) -> dict[str, Any]:
+                                    contexts: Mapping[str, Any], dpds: Mapping[str, DPDSnapshot | BeatDPD], source_text: str | None = None, formal_source: FormalSourceWitness | None = None,
+                                    scene_dpds: Mapping[str, SceneDPD] | None = None) -> dict[str, Any]:
     if inventory.get('source_hash')!=current_source_hash:raise ValueError('STALE_SOURCE')
+    if inventory.get('scope') == 'FORMAL_PRODUCTION_BOOK':
+        from drama_plugin.hosts.formal_performance import FormalSourceWitness
+        if not isinstance(formal_source, FormalSourceWitness):raise ValueError('TRUSTED_FORMAL_READER_REQUIRED')
+        formal_source.validate(inventory,directions,dpds,scene_dpds or {},current_source_hash)
+    elif inventory.get('scope') not in ('PROPOSAL_ONLY','DESIGN_FIXTURE_ONLY'):
+        raise ValueError('PERFORMANCE_SOURCE_KIND_REQUIRED')
     if inventory.get('scope') == 'PROPOSAL_ONLY':
         import hashlib
         if source_text is None or hashlib.sha256(source_text.encode()).hexdigest() != current_source_hash:

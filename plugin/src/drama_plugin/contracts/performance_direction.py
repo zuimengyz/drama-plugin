@@ -56,7 +56,16 @@ class DirectorPerformanceIntent(ContractModel):
     do_not: tuple[Text, ...] = Field(min_length=1)
     forbidden_behaviors: tuple[Text, ...] = ()
     coordination: tuple[BeatCoordination, ...] = ()
+    music_constraints: tuple[Text, ...] = ()
+    physical_consequences: dict[Text, Text] = Field(default_factory=dict)
     review_basis: Literal['DESIGN_FIXTURE_ONLY', 'SOURCE_BOUND_DESIGN']
+
+    @model_serializer(mode='wrap')
+    def legacy_intent(self, handler: SerializerFunctionWrapHandler) -> dict[str,Any]:
+        result: dict[str,Any]=handler(self)
+        for snake,camel in (('music_constraints','musicConstraints'),('physical_consequences','physicalConsequences')):
+            if not getattr(self,snake):result.pop(snake,None);result.pop(camel,None)
+        return result
 
     @model_validator(mode='after')
     def source_scoped(self) -> Self:
@@ -71,17 +80,26 @@ class DirectorPerformanceIntent(ContractModel):
 
 class VocalDelivery(ContractModel):
     """Nested execution semantics, not a song, melody or new content entity."""
-    mode: Literal['SPOKEN', 'RECITATIVE', 'SUNG', 'SHARED_RESPONSE', 'NONVERBAL']
+    mode: Literal['SPOKEN', 'RECITATIVE', 'SUNG', 'SHARED_RESPONSE', 'NONVERBAL', 'DECLAMED_VERSE']
     source_ref: Text
     lyric_status: Literal['EXACT_SOURCE', 'NO_APPROVED_LYRICS']
     melody_status: Literal['NOT_APPLICABLE', 'UNRESOLVED', 'APPROVED']
     melody_ref: Text | None = None
+    realization_status: Literal['RESOLVED','UNRESOLVED','DO_NOT_REALIZE_AS_SEPARATE_MODERN_VOCAL'] = 'RESOLVED'
+
+    @model_serializer(mode='wrap')
+    def legacy_vocal(self, handler: SerializerFunctionWrapHandler) -> dict[str,Any]:
+        result: dict[str,Any]=handler(self)
+        if self.realization_status=='RESOLVED':result.pop('realization_status',None);result.pop('realizationStatus',None)
+        return result
 
     @model_validator(mode='after')
     def melody_boundary(self) -> Self:
         if (self.melody_status == 'APPROVED') != bool(self.melody_ref):
             raise ValueError('MELODY_APPROVAL_REFERENCE_REQUIRED')
-        if self.mode in ('SUNG', 'RECITATIVE', 'SHARED_RESPONSE') and self.melody_status == 'NOT_APPLICABLE':
+        if self.mode == 'DECLAMED_VERSE' and self.melody_status!='NOT_APPLICABLE':
+            raise ValueError('HISTORICAL_VERSE_CANNOT_CLAIM_MELODY')
+        if self.mode in ('SUNG', 'RECITATIVE', 'SHARED_RESPONSE') and self.melody_status == 'NOT_APPLICABLE' and self.realization_status=='RESOLVED':
             raise ValueError('Vocal composition choice must remain explicit; no invented melody')
         if self.mode == 'NONVERBAL' and self.lyric_status != 'NO_APPROVED_LYRICS':
             raise ValueError('Nonverbal vocalization cannot contain new lyrics')

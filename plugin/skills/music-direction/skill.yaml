@@ -1,0 +1,15 @@
+code: music-direction
+name: Music Direction
+description: Design and review the film score under source-bound Director intent without generation or timeline mixing.
+context:
+  required: [scope, sourcePins, filmIntentRef, directorPerformanceIntents]
+  optional: [sceneSourceSound, shotTransitions, filmScorePlan, currentUserAmendments, rightsEvidence]
+  refresh_after: []
+tools:
+  preferred: [work.get_work, script.get_script, episode.get_episode, scene.get_scene]
+  allowed: [shot.get_shot, asset.search_assets, asset.get_asset, media.get_media, context.build_context]
+completion:
+  conditions:
+    - Every source Scene has a reviewed music or silence decision with source and performance bindings.
+    - Score cues carry dramatic entry and exit, source strategy, rights requirements and provider-neutral execution requirements when needed.
+    - Historical verse remains excluded and all user approval, production and finishing boundaries remain unchanged.

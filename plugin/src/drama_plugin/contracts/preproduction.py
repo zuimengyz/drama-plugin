@@ -262,7 +262,7 @@ class DepartmentConflict(ContractModel):
     code: Text
     subject_refs: tuple[SourcePin, ...] = Field(min_length=2)
     evidence: Text
-    repair_owner: Literal['production-design', 'cinematic-direction', 'dramatic-performance-direction', 'shot-design', 'cinematic-screenplay-incubation']
+    repair_owner: Literal['production-design', 'cinematic-direction', 'dramatic-performance-direction', 'shot-design', 'cinematic-screenplay-incubation', 'music-direction', 'director']
     severity: Literal['MAJOR', 'NOTE'] = 'MAJOR'
     resolved_by: SourcePin | None = None
 

@@ -41,3 +41,9 @@ Finish when the three contracts validate, the effective direction is materially 
 For a text-only candidate, pin the selected screenplay artifact revision and line locators instead of pretending it is an adopted Scene. Extract only its dramatic action; do not copy or rewrite its speech. Keep the same Scene/Beat/Line ownership and clearly local identities. An unapproved visual design does not block this offline interpretation or authorize production. See [whole-scene craft proof](../cinematic-screenplay-incubation/references/scene-craft-proof.md).
 
 An explicit [visual route](../../docs/visual-route-contract.md) belongs to the downstream visual projection. Preserve this modality-neutral DPD and its fingerprint; cinematic-direction binds the route-specific physical realization separately.
+
+## Range and formal source safeguards
+
+Author internalActivation and externalControl per actor and Beat; never assign a film-wide HIGH/HIGH default. Anti-overacting does not mean low physical energy. Director envelopes can permit high physical release while voice projection remains limited to the actual listeners. Distinguish forbidden emotional collapse from a scripted physical loss of support after its source action; source-exact physical consequences are scoped in Director intent and checked by validate_action_performance. Never use a global “no collapse” to contradict Script.
+
+For formal review, SceneDPD must bind the current canonical Scene fingerprint, with real parent/Beat/SpokenContent and speaker bindings. Proposal previews cannot be relabeled formal; compose DPD anew after promotion. See [formal completion](../../docs/formal-book-completion.md).

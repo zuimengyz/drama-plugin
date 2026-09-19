@@ -136,7 +136,7 @@ class PerformanceProjection(ContractModel):
                 result.pop(snake, None); result.pop(camel, None)
         return result
 
-    route: Literal['stylized_cinematic_cg', 'live_action'] | None = None
+    route: Literal['stylized_cinematic_cg', 'live_action', 'live_action_realist'] | None = None
     grammar_fingerprint: Hash | None = None
 
     @model_validator(mode='after')

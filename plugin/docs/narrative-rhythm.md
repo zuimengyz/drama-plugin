@@ -20,6 +20,8 @@ rhythm_speed=work_defined
 
 ## 新修订与恢复
 
+首次创建 Work 前，调用 `context.build_context`，使用 `scope="WORK"`、`purpose="WORK_CREATION"`、本轮唯一的 `resourceId` 和 `options.newWork=true`。此显式入口只返回当前配置的创作节奏、可选 `options.researchContext` 和空领域对象链，不读取或创建任何 Work，也不检索旧创作；`resourceId` 是本轮上下文标识，不冒充正式 Work ID。不得同时提供 `creativeRevisionId`，也不得用于其他 scope 或 purpose。完整初稿经 Work Skill 审查后，仍通过 `work.create_work` 正式创建。普通缺失 ID 不会自动进入此入口。
+
 新建上下文不带 `options.creativeRevisionId`，读取本进程已解析配置。保存文字候选时将 `context.creativeRhythm` 原样放在现有 `Work.content.creativeRevisions[修订ID].rhythm`，正文、共同源引用和文本审查同置，采用状态独立保留。没有独立版本实体时使用此开放 content 约定；本地镜号不冒充正式 Shot ID。
 
 恢复传入 `options.creativeRevisionId`，上下文读取正式保存的节奏语义，缺记录时报错，不回退当前 env。已有上下文的 refresh 也保留自身节奏。显式新修订重新 build 才读取新配置。对照实验依次运行隔离进程；不改共享全局 env，不覆盖活动 Script/Scene/Shot 或生产账本。

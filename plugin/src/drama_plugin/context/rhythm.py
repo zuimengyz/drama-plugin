@@ -21,7 +21,19 @@ class RhythmContextProvider:
                                      semantics=SEMANTICS[config.rhythm_speed] + COMMON)
 
     async def build_context(self, request: ContextBuildRequest) -> DramaRunContext:
-        context = await self.provider.build_context(request)
+        # An explicit new-Work context precedes the first reviewed domain write.
+        # Never probe an existing object or silently treat a missing ID as new.
+        if request.options.get("newWork") is True:
+            if request.scope != "WORK" or request.purpose != "WORK_CREATION" or request.options.get("creativeRevisionId"):
+                raise ContextBuildError("newWork requires WORK/WORK_CREATION without a saved revision")
+            context = DramaRunContext(
+                context_id=f"drama:creation:{request.resource_id}", version=1,
+                scope=request.scope, purpose=str(request.purpose),
+                research_context=dict(request.options.get("researchContext", {})),
+                temporary_state={"newWork": True},
+            )
+        else:
+            context = await self.provider.build_context(request)
         revision_id = request.options.get("creativeRevisionId")
         if revision_id:
             revisions = context.work.content.get("creativeRevisions", {}) if context.work else {}

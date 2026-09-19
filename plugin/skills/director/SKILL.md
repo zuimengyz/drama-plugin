@@ -5,6 +5,15 @@ description: Interpret a complete film or an existing dramatic scope, choose and
 
 # Director
 
+## Work-level directing authority
+
+For full preproduction, follow [work-owned film grammar and Book responsibilities](../../docs/work-directing-authority.md).
+Create source-pinned film grammar and aesthetic criteria with sequence evolution,
+then render scene-specific direction from the existing department owners. Use the
+opt-in work authority facet, never a global style or a second screenplay. Report
+capability maturity separately from prose coverage. Downstream intent interfaces
+do not authorize or implement editorial or adaptive media review.
+
 ## Full-film performance coverage (R3)
 
 Read [full performance coverage and isolation](../../docs/full-performance-coverage.md). Direct every Scene, performance-bearing Shot, SpokenContent, significant silent action, interaction and ensemble beat. STANDARD is concise real direction; EXPANDED adds detail, never permission to omit other fragments. Inventory current sources before authoring. Require FULL_PERFORMANCE_COVERAGE for a full Production Book design review and provide its source-bound bundle to reviewed_receipt; pin the derived gate result in feedback evidence. Future media review requires FULL_AV_PERFORMANCE_COVERAGE. A proposal with no formal Shots is explicitly incomplete for formal Book use, not fictional 100% Shot coverage.
@@ -126,3 +135,20 @@ Full Production Books now require the reviewed FilmScorePlan through complete_pr
 Every new full Director Screenplay and Production Book must supply expected_runtime using the nested DirectorRuntimeEstimate facet. See [creative runtime accounting](../../docs/director-runtime.md). Derive target and range from actual scene obligations, never from provider clip limits or a fixed example length. Dialogue, action, silent performance and transition form one non-overlapping duration partition; music-bearing, intentional no-music and unresolved music form a separate overlay partition. Report Scene, Sequence and Act totals. A proposal estimate is not measured media or a mandate to fill time.
 
 Performance architecture validation is not screenplay artistic approval. A user-authorized upstream rewrite may change scenes, relationships, action and rhythm; preserve prior revisions and explicitly mark downstream mappings pending. Keep historical attestation, reconstruction and invention separate; source-based words spoken by a character are not automatically the author's historical conclusion. All work-specific choices and runtime values belong to the work's artifacts. Stop at the requested review boundary.
+
+## Film editorial authority facet
+
+For work-level minimum coverage, event-protected cuts or dailies usability, read
+[film editorial authority](../../docs/film-editorial-authority.md). Reuse the existing
+EditorialRhythmPlan and FilmReview optional facets, and retain PictureEditPlan as
+the measured picture timeline. Work-approved priorities and sources govern all
+substitution; missing performance values are not permission to author them.
+
+## Coverage production formalization
+
+When approved editorial Coverage enters shot design, generation planning or dailies,
+use [coverage production formalization](../../docs/coverage-production-formalization.md).
+Keep Coverage IDs stable; resolve split/shared realization through the existing
+Shot, SequencePackage and Media owners. The opt-in Host runs realization_handoff,
+generation_handoff and media_handoff at their respective boundaries. Policy-ready
+is not formalized, and intended lineage is not observed evidence.

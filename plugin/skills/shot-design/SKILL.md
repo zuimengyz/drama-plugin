@@ -77,3 +77,20 @@ For executable Sequence coverage, retain source Shot IDs and provide each receiv
 ## Shot Transition Plan in existing editorial contract
 
 Before full Production Book completion, follow [intended transitions](references/shot-transitions.md). Audit every adjacent shot and scene boundary for direction, axis, eyeline, motion, sound, time and space. Actual edits remain with finishing.
+
+## Film editorial authority facet
+
+For work-level minimum coverage, event-protected cuts or dailies usability, read
+[film editorial authority](../../docs/film-editorial-authority.md). Reuse the existing
+EditorialRhythmPlan and FilmReview optional facets, and retain PictureEditPlan as
+the measured picture timeline. Work-approved priorities and sources govern all
+substitution; missing performance values are not permission to author them.
+
+## Coverage production formalization
+
+When approved editorial Coverage enters shot design, generation planning or dailies,
+use [coverage production formalization](../../docs/coverage-production-formalization.md).
+Keep Coverage IDs stable; resolve split/shared realization through the existing
+Shot, SequencePackage and Media owners. The opt-in Host runs realization_handoff,
+generation_handoff and media_handoff at their respective boundaries. Policy-ready
+is not formalized, and intended lineage is not observed evidence.

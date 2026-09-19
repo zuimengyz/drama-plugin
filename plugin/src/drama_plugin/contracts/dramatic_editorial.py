@@ -3,6 +3,8 @@ from __future__ import annotations
 from typing import Annotated, Literal, Self, Any
 from pydantic import Field, model_validator, model_serializer, SerializerFunctionWrapHandler
 from drama_plugin.contracts.base import ContractModel
+from drama_plugin.contracts.editorial_authority import EditorialAuthority
+from drama_plugin.contracts.coverage_realization import CoverageRealizationPlan
 from drama_plugin.contracts.creative_asset import Text, Hash
 from drama_plugin.contracts.production_design import HistoricalCanonPolicy
 Seconds = Annotated[float, Field(ge=0, allow_inf_nan=False)]
@@ -172,6 +174,8 @@ class ShotTransition(ContractModel):
 
 
 class EditorialRhythmPlan(ContractModel):
+    editorial_authority: EditorialAuthority | None = None
+    coverage_realizations: tuple[CoverageRealizationPlan, ...] = ()
     schema_version: Literal['editorial-rhythm-v1'] = 'editorial-rhythm-v1'
     scene_ids: tuple[Text, ...] = Field(min_length=1)
     source_fingerprint: Hash
@@ -191,6 +195,10 @@ class EditorialRhythmPlan(ContractModel):
     @model_serializer(mode='wrap')
     def compatible_dump(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
         data: dict[str, Any] = dict(handler(self))
+        if not self.coverage_realizations:
+            data.pop('coverageRealizations', None); data.pop('coverage_realizations', None)
+        if self.editorial_authority is None:
+            data.pop('editorialAuthority', None); data.pop('editorial_authority', None)
         if not self.transitions:
             data.pop('transitions', None)
         if self.transition_omission_reason is None:
@@ -200,6 +208,11 @@ class EditorialRhythmPlan(ContractModel):
 
     @model_validator(mode='after')
     def coverage_links(self) -> Self:
+        if self.coverage_realizations:
+            if not self.editorial_authority:raise ValueError('Realization requires existing editorial authority')
+            if {p.coverage_unit_id for p in self.coverage_realizations}!={u.key for u in self.editorial_authority.coverage_units} or len(self.coverage_realizations)!=len(self.editorial_authority.coverage_units):raise ValueError('Realization identity set mismatch')
+        if self.editorial_authority and set(self.scene_ids) != set(self.editorial_authority.scene_order):
+            raise ValueError('Editorial authority scene scope differs from rhythm plan')
         beats={b.key for b in self.information_beats};shots={s.key for s in self.coverage}
         if len(beats)!=len(self.information_beats) or len(shots)!=len(self.coverage):raise ValueError('Duplicate coverage key')
         if any(not set(s.beat_ids)<=beats for s in self.coverage):raise ValueError('Unknown visual information beat')

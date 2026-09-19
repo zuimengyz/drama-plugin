@@ -142,3 +142,20 @@ Consume music-direction FilmScorePlan dramatic triggers as requirements. Own mea
 For every available FilmScorePlan, attach the current plan and source evidence in the existing recipe scorePlacement facet, and bind each BGM layer with scoreBinding. Do not omit a known plan to bypass its protection. NO_SCORE, NO_SCORE_MUST_PRESERVE and DIEGETIC_ONLY block score; empty space is not permission to fill it. Only Director/music-direction re-review may change the plan. Proposal-only plans cannot render into formal finishing. Existing legacy recipes with no score plan remain compatible.
 
 Before impact the score may dominate; at physical contact native impact, breath, horse and armor may take over. Follow the reviewed event policy; no automatic music return after dialogue, real joy, pursuit or death. Map actual source events to reviewed Shot/Beat and Media intervals only after picture exists. An action combining build and impact requires observed phase refinement before execution. This semantic guard does not verify sample-level overlap by itself.
+
+## Film editorial authority facet
+
+For work-level minimum coverage, event-protected cuts or dailies usability, read
+[film editorial authority](../../docs/film-editorial-authority.md). Reuse the existing
+EditorialRhythmPlan and FilmReview optional facets, and retain PictureEditPlan as
+the measured picture timeline. Work-approved priorities and sources govern all
+substitution; missing performance values are not permission to author them.
+
+## Coverage production formalization
+
+When approved editorial Coverage enters shot design, generation planning or dailies,
+use [coverage production formalization](../../docs/coverage-production-formalization.md).
+Keep Coverage IDs stable; resolve split/shared realization through the existing
+Shot, SequencePackage and Media owners. The opt-in Host runs realization_handoff,
+generation_handoff and media_handoff at their respective boundaries. Policy-ready
+is not formalized, and intended lineage is not observed evidence.

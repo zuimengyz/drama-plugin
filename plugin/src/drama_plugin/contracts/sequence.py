@@ -2,18 +2,14 @@
 from __future__ import annotations
 from typing import Annotated, Any, Literal, Self
 from pydantic import ConfigDict, Field, SerializerFunctionWrapHandler, model_serializer, model_validator
+from drama_plugin.contracts.editorial_authority import EditorialUsability
+from drama_plugin.contracts.source_pin import SourcePin as SourcePin
 from drama_plugin.contracts.base import ContractModel
 from drama_plugin.contracts.performance_direction import PerformanceObservation
 from drama_plugin.contracts.creative_asset import Hash, Text
 from drama_plugin.contracts.dramatic_editorial import EditorialRhythmPlan, Seconds
 from drama_plugin.contracts.production_freeze import FreezeReference
 from drama_plugin.contracts.sequence_execution import MountInteraction, ProductionClip, AcceptanceCriterion
-
-
-class SourcePin(ContractModel):
-    key: Text
-    kind: Literal['CANON', 'ASSET', 'DESIGN', 'DIRECTION', 'MEDIA']
-    fingerprint: Hash
 
 
 class BibleEntry(ContractModel):
@@ -196,6 +192,7 @@ class DirectorReviewFacet(ContractModel):
 
 
 class FilmReview(ContractModel):
+    editorial_usability: tuple[EditorialUsability, ...] = ()
     media_hash: Hash
     duration: Annotated[float, Field(gt=0, allow_inf_nan=False)]
     observations: tuple[PlaybackObservation, ...] = ()
@@ -219,6 +216,8 @@ class FilmReview(ContractModel):
     @model_serializer(mode='wrap')
     def legacy_serialization(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
         data: dict[str, Any] = handler(self)
+        if not self.editorial_usability:
+            data.pop('editorialUsability', None); data.pop('editorial_usability', None)
         if self.director is None:
             data.pop('director', None)
         for snake, camel in [('performance_coverage_channels', 'performanceCoverageChannels'), ('performance_coverage_fingerprint', 'performanceCoverageFingerprint'), ('performance_beats', 'performanceBeats'), ('performance_required_beats', 'performanceRequiredBeats'), ('performance_alignment', 'performanceAlignment'), ('performance_refs', 'performanceRefs'), ('performance_observations', 'performanceObservations'), ('performance_review_basis', 'performanceReviewBasis'), ('native_audio_suitability', 'nativeAudioSuitability')]:
@@ -228,6 +227,19 @@ class FilmReview(ContractModel):
 
     @model_validator(mode='after')
     def ranges(self) -> Self:
+        for e in self.editorial_usability:
+            if e.media_hash != self.media_hash or any(r.end > self.duration for r in e.usable_ranges):
+                raise ValueError('Editorial usability is outside this FilmReview media/range')
+            if e.basis == 'OBSERVED_MEDIA':
+                if not self.observations:
+                    raise ValueError('Observed editorial usability requires playback evidence')
+                for usable in e.usable_ranges:
+                    cursor = usable.start
+                    for observation in sorted(self.observations, key=lambda o: o.start):
+                        if observation.mode == 'NORMAL_AV' and observation.start <= cursor:
+                            cursor = max(cursor, observation.end)
+                    if cursor < usable.end:
+                        raise ValueError('Usable range lacks normal AV observation coverage')
         if any(o.end > self.duration for o in self.observations) or any(f.end > self.duration for f in self.findings):
             raise ValueError('Review range exceeds actual file')
         if self.performance_alignment and (not self.performance_refs or not self.performance_review_basis):

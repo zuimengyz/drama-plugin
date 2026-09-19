@@ -207,3 +207,12 @@ For a declared CG visual route, read [route-sensitive cinematic projection](refe
 ## Scene cinematography and Lighting Script
 
 Use [preproduction lighting](references/preproduction-lighting.md) for scene-level light/camera design, consuming approved readiness, Director intent, scene layout, color and costume refs. Motivated sources and readable dramatic light precede within-shot execution.
+
+## Coverage production formalization
+
+When approved editorial Coverage enters shot design, generation planning or dailies,
+use [coverage production formalization](../../docs/coverage-production-formalization.md).
+Keep Coverage IDs stable; resolve split/shared realization through the existing
+Shot, SequencePackage and Media owners. The opt-in Host runs realization_handoff,
+generation_handoff and media_handoff at their respective boundaries. Policy-ready
+is not formalized, and intended lineage is not observed evidence.

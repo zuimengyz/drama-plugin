@@ -62,6 +62,13 @@ def film_review_verdict(review: FilmReview, current_media_hash: str, *, require_
         status = 'INSUFFICIENT_EVIDENCE'
     elif review.director and review.director.disposition != 'APPROVE':
         status = 'INSUFFICIENT_EVIDENCE' if review.director.disposition == 'INSUFFICIENT_EVIDENCE' else 'REPAIR_REQUIRED'
+    if review.editorial_usability:
+        if any(e.outside_approved_intent for e in review.editorial_usability):
+            status = 'REQUIRES_ADAPTIVE_DIRECTOR_REVIEW'
+        elif any(e.basis != 'OBSERVED_MEDIA' for e in review.editorial_usability):
+            status = 'REVIEW_INCOMPLETE'
+        elif any(e.editorial_usability != 'USABLE_FULL' for e in review.editorial_usability):
+            status = 'EDITORIAL_REPAIR_REQUIRED'
     return {'status': status, 'normalAvCoverageGaps': gaps, 'unresolvedMajorFindings': blocked,
             'persistenceVerified': review.persistence_verified, 'userAdoption': 'UNCHANGED',
             'warning': 'Observation records are observer attestations, not proof that a tool or model can hear or watch.'}

@@ -5,8 +5,8 @@ These contracts validate design structure, never formal Book readiness or taste.
 """
 from __future__ import annotations
 
-from typing import Literal, Self
-from pydantic import Field, model_validator
+from typing import Literal, Self, Any
+from pydantic import Field, model_validator, model_serializer, SerializerFunctionWrapHandler
 from drama_plugin.contracts.base import ContractModel
 from drama_plugin.contracts.creative_asset import Text
 from drama_plugin.contracts.sequence import SourcePin
@@ -90,10 +90,28 @@ class AdaptiveIntentHandoff(ContractModel):
 class AestheticPairwiseReviewContract(ContractModel):
     """Future evidence payload, referenced by existing feedback; not a review entity.
 
-    No current consumer selects, adopts, observes or repairs candidate media.
+    Adaptive consumer validates a qualitative comparison; it never observes or adopts media.
     A future owner must verify original evidence, scope, source freshness and human
     review separately; construction never constitutes artistic approval.
     """
+    work_id: Text | None = None
+    coverage_refs: tuple[Text, ...] = ()
+    director_intent_refs: tuple[Text, ...] = ()
+    sound_difference: Text | None = None
+    candidate_risks: dict[Literal['A','B'],dict[Text,Text]] | None = None
+    user_preference: Literal['A','B','NEITHER','UNSPECIFIED'] = 'UNSPECIFIED'
+    user_preference_reason: Text | None = None
+    user_feedback_ref: SourcePin | None = None
+    constitution_rule_refs: tuple[Text, ...] = ()
+
+    @model_serializer(mode='wrap')
+    def compatible_pairwise(self, handler: SerializerFunctionWrapHandler) -> dict[str,Any]:
+        data:dict[str,Any]=dict(handler(self))
+        for snake,camel in [('work_id','workId'),('coverage_refs','coverageRefs'),('director_intent_refs','directorIntentRefs'),('sound_difference','soundDifference'),('candidate_risks','candidateRisks'),('user_preference_reason','userPreferenceReason'),('user_feedback_ref','userFeedbackRef'),('constitution_rule_refs','constitutionRuleRefs')]:
+            if not getattr(self,snake):data.pop(snake,None);data.pop(camel,None)
+        if self.user_preference=='UNSPECIFIED':data.pop('userPreference',None);data.pop('user_preference',None)
+        return data
+
     source_pins: tuple[SourcePin, ...] = Field(min_length=1)
     constitution_ref: SourcePin
     candidate_a: SourcePin
@@ -115,6 +133,9 @@ class AestheticPairwiseReviewContract(ContractModel):
 
     @model_validator(mode='after')
     def evidence_boundary(self) -> Self:
+        if self.work_id and (not self.coverage_refs or not self.director_intent_refs or not self.sound_difference or not self.candidate_risks or set(self.candidate_risks)!={'A','B'}):raise ValueError('Adaptive pairwise requires common scope and separated candidate risks')
+        if self.user_preference!='UNSPECIFIED' and (not self.work_id or not self.user_preference_reason or not self.user_feedback_ref or not self.constitution_rule_refs):raise ValueError('User calibration requires explicit work-scoped feedback and rule refs')
+        if self.reason.strip() in ('更高级','更漂亮','more premium'):raise ValueError('Pairwise reason must name a concrete relationship')
         if self.candidate_a == self.candidate_b:
             raise ValueError('Pairwise comparison needs distinct candidates')
         if self.preferred_candidate != 'UNDETERMINED' and not self.evidence_refs:

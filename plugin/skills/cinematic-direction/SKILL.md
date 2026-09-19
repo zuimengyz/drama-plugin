@@ -216,3 +216,12 @@ Keep Coverage IDs stable; resolve split/shared realization through the existing
 Shot, SequencePackage and Media owners. The opt-in Host runs realization_handoff,
 generation_handoff and media_handoff at their respective boundaries. Policy-ready
 is not formalized, and intended lineage is not observed evidence.
+
+## Observed adaptive direction
+
+For evidence-based performance correction, useful unplanned results or adaptive
+repair decisions, follow [adaptive director review](../../docs/adaptive-director-review.md).
+Reuse FilmReview and Director feedback; separate intended authority, observable
+facts and judgment. Resolve the production lineage before live review, preserve
+UNSPECIFIED and good material, and pass only a minimal source-bound execution delta
+to the existing owner. A dry-run never authorizes production or media adoption.

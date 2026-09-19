@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Annotated, Any, Literal, Self
 from pydantic import ConfigDict, Field, SerializerFunctionWrapHandler, model_serializer, model_validator
 from drama_plugin.contracts.editorial_authority import EditorialUsability
+from drama_plugin.contracts.adaptive_direction import ObservedMaterialEvidence, AdaptiveDecision
 from drama_plugin.contracts.source_pin import SourcePin as SourcePin
 from drama_plugin.contracts.base import ContractModel
 from drama_plugin.contracts.performance_direction import PerformanceObservation
@@ -129,7 +130,7 @@ class SequencePackage(ContractModel):
 class PlaybackObservation(ContractModel):
     start: Seconds
     end: Seconds
-    mode: Literal['NORMAL_AV', 'NORMAL_VIDEO', 'AUDIO', 'FRAMES', 'TECHNICAL']
+    mode: Literal['NORMAL_AV', 'NORMAL_VIDEO', 'TEMPORAL_VISUAL', 'AUDIO', 'FRAMES', 'TECHNICAL']
     observer: Text
     evidence_ref: Text
 
@@ -192,6 +193,8 @@ class DirectorReviewFacet(ContractModel):
 
 
 class FilmReview(ContractModel):
+    observed_material_evidence: tuple[ObservedMaterialEvidence, ...] = ()
+    adaptive_decisions: tuple[AdaptiveDecision, ...] = ()
     editorial_usability: tuple[EditorialUsability, ...] = ()
     media_hash: Hash
     duration: Annotated[float, Field(gt=0, allow_inf_nan=False)]
@@ -216,6 +219,10 @@ class FilmReview(ContractModel):
     @model_serializer(mode='wrap')
     def legacy_serialization(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
         data: dict[str, Any] = handler(self)
+        if not self.observed_material_evidence:
+            data.pop('observedMaterialEvidence', None); data.pop('observed_material_evidence', None)
+        if not self.adaptive_decisions:
+            data.pop('adaptiveDecisions', None); data.pop('adaptive_decisions', None)
         if not self.editorial_usability:
             data.pop('editorialUsability', None); data.pop('editorial_usability', None)
         if self.director is None:
@@ -227,6 +234,18 @@ class FilmReview(ContractModel):
 
     @model_validator(mode='after')
     def ranges(self) -> Self:
+        evidence={e.key:e for e in self.observed_material_evidence}
+        if len(evidence)!=len(self.observed_material_evidence):raise ValueError('Duplicate observed evidence')
+        for fact in self.observed_material_evidence:
+            if fact.media_hash!=self.media_hash or fact.end>self.duration:raise ValueError('Adaptive evidence range/hash mismatch')
+            if fact.basis=='OBSERVED_MEDIA':
+                cursor=fact.start
+                for o in sorted(self.observations,key=lambda x:x.start):
+                    if o.mode==fact.method and o.evidence_ref in {p.key for p in fact.evidence_refs} and o.start<=cursor:cursor=max(cursor,o.end)
+                if cursor<fact.end:raise ValueError('Adaptive observed fact lacks matching playback evidence')
+        for decision in self.adaptive_decisions:
+            if not set(decision.evidence_refs)<=set(evidence):raise ValueError('Adaptive decision missing evidence')
+            if any(evidence[k].media_ref!=decision.media_ref for k in decision.evidence_refs):raise ValueError('Adaptive decision references other media')
         for e in self.editorial_usability:
             if e.media_hash != self.media_hash or any(r.end > self.duration for r in e.usable_ranges):
                 raise ValueError('Editorial usability is outside this FilmReview media/range')
@@ -244,10 +263,10 @@ class FilmReview(ContractModel):
             raise ValueError('Review range exceeds actual file')
         if self.performance_alignment and (not self.performance_refs or not self.performance_review_basis):
             raise ValueError('AV alignment requires compared source refs and review basis')
-        for o in self.performance_observations:
-            if o.media_hash != self.media_hash or o.end_ms > self.duration * 1000:
+        for performance_observation in self.performance_observations:
+            if performance_observation.media_hash != self.media_hash or performance_observation.end_ms > self.duration * 1000:
                 raise ValueError('Performance observation belongs to different media/range')
-            if self.performance_review_basis == 'OBSERVED_MEDIA' and o.method == 'DESIGN_FIXTURE':
+            if self.performance_review_basis == 'OBSERVED_MEDIA' and performance_observation.method == 'DESIGN_FIXTURE':
                 raise ValueError('Design fixture is not observed media evidence')
         if self.director and not set(self.director.finding_keys) <= {f.key for f in self.findings}:
             raise ValueError('Director finding reference is missing')

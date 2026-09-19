@@ -47,3 +47,12 @@ An explicit [visual route](../../docs/visual-route-contract.md) belongs to the d
 Author internalActivation and externalControl per actor and Beat; never assign a film-wide HIGH/HIGH default. Anti-overacting does not mean low physical energy. Director envelopes can permit high physical release while voice projection remains limited to the actual listeners. Distinguish forbidden emotional collapse from a scripted physical loss of support after its source action; source-exact physical consequences are scoped in Director intent and checked by validate_action_performance. Never use a global “no collapse” to contradict Script.
 
 For formal review, SceneDPD must bind the current canonical Scene fingerprint, with real parent/Beat/SpokenContent and speaker bindings. Proposal previews cannot be relabeled formal; compose DPD anew after promotion. See [formal completion](../../docs/formal-book-completion.md).
+
+## Observed adaptive direction
+
+For evidence-based performance correction, useful unplanned results or adaptive
+repair decisions, follow [adaptive director review](../../docs/adaptive-director-review.md).
+Reuse FilmReview and Director feedback; separate intended authority, observable
+facts and judgment. Resolve the production lineage before live review, preserve
+UNSPECIFIED and good material, and pass only a minimal source-bound execution delta
+to the existing owner. A dry-run never authorizes production or media adoption.

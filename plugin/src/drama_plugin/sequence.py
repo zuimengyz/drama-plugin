@@ -69,6 +69,11 @@ def film_review_verdict(review: FilmReview, current_media_hash: str, *, require_
             status = 'REVIEW_INCOMPLETE'
         elif any(e.editorial_usability != 'USABLE_FULL' for e in review.editorial_usability):
             status = 'EDITORIAL_REPAIR_REQUIRED'
+    if review.adaptive_decisions:
+        if any(e.basis=='STRUCTURED_FIXTURE' for e in review.observed_material_evidence):
+            status='ADAPTIVE_DRY_RUN_ONLY'
+        else:
+            status='ADAPTIVE_AUTHORITY_REVIEW_REQUIRED'
     return {'status': status, 'normalAvCoverageGaps': gaps, 'unresolvedMajorFindings': blocked,
             'persistenceVerified': review.persistence_verified, 'userAdoption': 'UNCHANGED',
             'warning': 'Observation records are observer attestations, not proof that a tool or model can hear or watch.'}

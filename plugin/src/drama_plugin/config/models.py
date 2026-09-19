@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import Literal
+from typing import Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field, SecretStr, PrivateAttr, field_validator
+from pydantic import BaseModel, ConfigDict, Field, SecretStr, PrivateAttr, field_validator, model_validator
+from drama_plugin.config.audio_semantic import AudioSemanticProviderConfig, QwenOmniConfig
 
 from drama_plugin.config.video_route import VideoRoutePolicy
 
@@ -45,6 +46,7 @@ class ProvidersConfig(BaseModel):
     media: DomainProviderConfig = DomainProviderConfig()
     context: ContextProviderConfig = ContextProviderConfig()
     voice: DomainProviderConfig = DomainProviderConfig()
+    audio_semantic: AudioSemanticProviderConfig = AudioSemanticProviderConfig()
 
 
 class RoleDubbingServiceConfig(BaseModel):
@@ -69,6 +71,7 @@ class ServicesConfig(BaseModel):
     context: ServiceConfig = ServiceConfig(timeout_seconds=30.0)
     voice: ServiceConfig = ServiceConfig()
     role_dubbing: RoleDubbingServiceConfig = RoleDubbingServiceConfig()
+    qwen_omni: QwenOmniConfig = QwenOmniConfig()
 
 
 class DramaPluginConfig(BaseModel):
@@ -90,3 +93,11 @@ class DramaPluginConfig(BaseModel):
     plugin: PluginIdentityConfig = PluginIdentityConfig()
     providers: ProvidersConfig = ProvidersConfig()
     services: ServicesConfig = ServicesConfig()
+
+    @model_validator(mode='after')
+    def optional_audio_semantics(self) -> Self:
+        if self.providers.audio_semantic.mode == 'bailian_qwen_omni':
+            qwen = self.services.qwen_omni
+            if not qwen.api_key or not qwen.api_key.get_secret_value().strip() or not qwen.base_url.strip():
+                raise ValueError('MISSING_QWEN_OMNI_RUNTIME_CONFIGURATION: API_KEY and BASE_URL required when enabled')
+        return self

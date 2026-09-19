@@ -67,6 +67,17 @@ def _environment_overrides(environment: Mapping[str, str]) -> dict[str, Any]:
             raise ConfigurationError("Invalid Fish Role Dubbing timeout") from exc
     if role_values:
         overrides.setdefault("services", {})["role_dubbing"] = role_values
+    if mode := environment.get('DRAMA_PLUGIN_PROVIDER_AUDIO_SEMANTIC_MODE'):
+        overrides.setdefault('providers', {})['audio_semantic'] = {'mode': mode.strip().lower()}
+    audio_values = {field: environment[key].strip() for field, key in {
+        'api_key': 'DRAMA_PLUGIN_PROVIDER_QWEN_OMNI_API_KEY',
+        'base_url': 'DRAMA_PLUGIN_PROVIDER_QWEN_OMNI_BASE_URL',
+        'model': 'DRAMA_PLUGIN_PROVIDER_QWEN_OMNI_MODEL',
+        'reasoning_effort': 'DRAMA_PLUGIN_PROVIDER_QWEN_OMNI_REASONING_EFFORT',
+        'use_multichannel': 'DRAMA_PLUGIN_PROVIDER_QWEN_OMNI_USE_MULTICHANNEL',
+    }.items() if environment.get(key, '').strip()}
+    if audio_values:
+        overrides.setdefault('services', {})['qwen_omni'] = audio_values
     return overrides
 
 
@@ -104,6 +115,9 @@ def load_config(
                                 f"config:{path}:rhythm_speed" if "rhythm_speed" in payload else "default:work_defined")
         return config
     except ValidationError as exc:
+        if 'qwen_omni' in merged.get('services', {}) or 'audio_semantic' in merged.get('providers', {}):
+            # Do not chain a Pydantic exception containing the original secret input.
+            raise ConfigurationError('Invalid audio semantic configuration; enabled mode requires API_KEY + HTTPS BASE_URL and valid options') from None
         if any(e["loc"] and e["loc"][0] == "rhythm_speed" for e in exc.errors()):
             raise ConfigurationError(f"Invalid rhythm_speed in configuration {path}: expected work_defined, slow, medium or fast") from exc
         route_errors = [e["msg"] for e in exc.errors() if e["loc"] and e["loc"][0] == "video_route_policy"]

@@ -19,6 +19,8 @@ from drama_plugin.providers.speech.fish_audio import FishAudioHttpClient
 from drama_plugin.providers.speech.role_dubbing import FishRoleDubbingProvider, UnavailableRoleDubbingProvider
 from drama_plugin.skills import SkillRegistry, SkillToolReferenceValidator
 from drama_plugin.tools import ToolRegistry, build_tool_registry
+from drama_plugin.providers.base.audio_semantic import AudioSemanticProvider
+from drama_plugin.providers.http.qwen_omni import BailianQwenOmniAudioSemanticProvider
 
 
 @dataclass
@@ -31,6 +33,7 @@ class ProviderBundle:
     context: ContextProvider
     voice: VoiceProvider | None = None
     role_dubbing: RoleDubbingProvider | None = None
+    audio_semantic: AudioSemanticProvider | None = None
 
 
 class DramaPlugin:
@@ -107,12 +110,17 @@ class DramaPlugin:
             )
         context: ContextProvider = LocalContextProvider(memory, asset, media) if selections.context.mode == "local" else RemoteContextProvider(client(services.context))
         context = RhythmContextProvider(context, config)
-        return ProviderBundle(memory, asset, research, production, media, context, voice, role_dubbing), clients
+        audio_semantic: AudioSemanticProvider | None = None
+        if selections.audio_semantic.mode == 'bailian_qwen_omni':
+            audio_semantic = BailianQwenOmniAudioSemanticProvider(services.qwen_omni)
+        return ProviderBundle(memory, asset, research, production, media, context, voice, role_dubbing, audio_semantic), clients
 
     def capabilities(self) -> dict[str, Any]:
         return {"plugin": self.manifest.model_dump(mode="json", by_alias=True), "skills": [skill.code for skill in self.skills.list()], "tools": [tool.describe() for tool in self.tools.list()]}
 
     async def aclose(self) -> None:
+        if self.providers.audio_semantic is not None:
+            await self.providers.audio_semantic.aclose()
         for client in self._http_clients: await client.aclose()
         if self._fish_client is not None:
             await self._fish_client.aclose()

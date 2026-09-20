@@ -32,8 +32,11 @@ historical workspace or reuse an old readiness decision.
 - DPD remains Scene/Beat/Line psychological authority; no new parallel psyche.
 - VisualBible remains the route look. FilmProductionDesign references it and adds
   whole-film color progression, environment, costume, prop and crowd coordination.
-- LocationDesignSpec is reused inside SceneProductionDesignPacket; typed layout
-  zones, paths and start/end positions make its prose usable for blocking.
+- Reusable LocationDesign originals are optionally indexed by FilmProductionDesign;
+  SceneProductionDesignPacket references them with bounded local overrides. Existing
+  inline LocationDesignSpec inputs keep their serialized form. See
+  [location and character design](location-character-design.md) for evidence,
+  multi-scene reuse, character coverage and migration-free reconciliation.
 - CostumeState extends existing transient CharacterState and references stable
   CostumeBible/CharacterVisualSpec. A new state is not a redesigned identity.
 - LightingScript is a scene-level cinematic-direction sidecar. CinematicShotSpec

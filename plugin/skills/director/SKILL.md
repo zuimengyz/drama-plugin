@@ -132,6 +132,17 @@ Full Production Books now require the reviewed FilmScorePlan through complete_pr
 
 ## Creative runtime and revision scope
 
+For targeted character or environment reconciliation, use the existing
+production-design owner and [location/character evidence facets](../../docs/location-character-design.md).
+Preserve approved narrative and unchanged Scene/Shot identities; evaluate named
+historical actors at the source's actual event scope, not by cast size. Read the
+shared place originals before judging Scene layout and blocking. A fictional
+proxy overload note asks whether some functions belong to evidenced historical
+actors; it never authorizes an unsupported insertion or mandatory rewrite.
+Render the reviewed Environment Bible once, followed by Scene references and local
+changes. Update affected source pins and dependent mappings; never label an old
+full-Book receipt current after a source revision. Stop at the requested review gate.
+
 Every new full Director Screenplay and Production Book must supply expected_runtime using the nested DirectorRuntimeEstimate facet. See [creative runtime accounting](../../docs/director-runtime.md). Derive target and range from actual scene obligations, never from provider clip limits or a fixed example length. Dialogue, action, silent performance and transition form one non-overlapping duration partition; music-bearing, intentional no-music and unresolved music form a separate overlay partition. Report Scene, Sequence and Act totals. A proposal estimate is not measured media or a mandate to fill time.
 
 Performance architecture validation is not screenplay artistic approval. A user-authorized upstream rewrite may change scenes, relationships, action and rhythm; preserve prior revisions and explicitly mark downstream mappings pending. Keep historical attestation, reconstruction and invention separate; source-based words spoken by a character are not automatically the author's historical conclusion. All work-specific choices and runtime values belong to the work's artifacts. Stop at the requested review boundary.

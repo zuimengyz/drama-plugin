@@ -40,9 +40,12 @@ Use only these four internal modes, selecting the ones the request needs:
   with rank/role differences in construction, materials, wear and silhouette.
   Repeated identical costumes with different faces require revision. Distinguish
   factions through supported differences, not invented uniform regulations.
-- **Location / Set Design:** LocationDesignSpec specifies usable space, paths,
-  anchors, material and story state plus foreground/midground/background. It
-  complements the VisualBible's look; an atmosphere adjective is not a set.
+- **Location / Set Design:** For reusable environments, author one LocationDesign
+  per independently usable place, then reference it from Scene layouts with
+  bounded local state changes. Follow [location and character evidence](../../docs/location-character-design.md).
+  The legacy LocationDesignSpec remains valid for existing inline briefs; it does
+  not replace a requested Environment Design Bible. A route may reference several
+  distinct places in order; atmosphere adjectives are not terrain or layout.
 - **Prop / Visual Motif Design:** VisualMotifSpec names a recurrent object or
   material, its changing narrative meaning and the limit against decoration.
 
@@ -51,6 +54,13 @@ CharacterState. Stable design must not absorb one shot's condition. Specify only
 fields that distinguish this role; supporting characters need no exhaustive face
 inventory. Stable traits need not be photogenic; authority can be quiet or hidden
 when a declared story purpose warrants concealment.
+
+When historical character reconciliation is requested, attach CharacterEvidence
+to CharacterVisualSpec: distinguish identity evidence from the evidence placing
+that person in each Scene, and delimit reconstructed behavior. Never infer an
+identity match from a name. Assess documented scene actors for clarity and dramatic
+usefulness without a character-count target; return FICTIONAL_PROXY_OVERLOAD as a
+Director review note, not a reason to erase invented people.
 
 Review actual evidence with PASS/PARTIAL/FAIL and reasons: identity, main-character
 first-glance importance, silhouette/body/face, posture, costume/blocking/camera

@@ -1,6 +1,8 @@
 """Source-pinned design handoff and human-evidence review; no generation access."""
 from __future__ import annotations
-from typing import Any, Literal
+from typing import Any, Literal, Mapping
+from drama_plugin.contracts.location_design import LocationDesign, LocationDesignRef, SceneLocationBinding
+from drama_plugin.contracts.character_evidence import CharacterCoverageReview
 from drama_plugin.contracts.base import dump_contract, sha256_canonical
 from drama_plugin.contracts.production_design import ProductionDesignContent, CharacterState, CharacterVisualSpec
 from drama_plugin.contracts.production_design import CastingBrief, CastingReconciliation, CastingTestConditions
@@ -16,7 +18,7 @@ def design_handoff(content: ProductionDesignContent, *, consumer: Literal['asset
         raise ValueError('Transient state belongs to a different identity')
     raw=dump_contract(content)
     return {'content':raw,'contentFingerprint':sha256_canonical(raw),
-            'historicalPolicyFingerprint':sha256_canonical(content.spec.historical_constraints),
+            'historicalPolicyFingerprint':sha256_canonical({k: raw['spec'][k] for k in ('historicalBasis', 'evidenceStatus', 'uncertainties', 'forbiddenAssumptions')} if isinstance(content.spec, LocationDesign) else content.spec.historical_constraints),
             'consumer':consumer,'characterState':dump_contract(state) if state else None,
             'productionEligible':content.usage_mode=='APPROVED_DESIGN'}
 
@@ -77,3 +79,55 @@ def picture_edit_handoff(plan: PictureEditPlan, *, current_sources: dict[str, st
     if any(current_sources.get(s.media_id)!=s.content_hash for s in plan.sources):raise ValueError('Edit source Media changed')
     return {'plan':dump_contract(plan),'fingerprint':sha256_canonical(plan),
             'assemblyReady':plan.status=='REVIEWED','sourceMutationAllowed':False}
+
+
+def resolve_location_design(binding: SceneLocationBinding, *, scene_id: str,
+                            current: Mapping[str, str], artifacts: Mapping[str, Any]) -> dict[str, Any]:
+    """Resolve one immutable place and return its bounded delta separately."""
+    binding = SceneLocationBinding.model_validate(dump_contract(binding))
+    ref = binding.location_ref.artifact_ref
+    raw = artifacts.get(ref.key)
+    if raw is None or current.get(ref.key) != ref.fingerprint or sha256_canonical(raw) != ref.fingerprint:
+        raise ValueError('Missing or stale location original: ' + ref.key)
+    location = LocationDesign.model_validate(raw)
+    if location.id != binding.location_ref.location_id:
+        raise ValueError('Location identity mismatch')
+    if scene_id not in location.scene_refs:
+        raise ValueError('Location is not designed for this scene')
+    return {'locationRef': dump_contract(binding.location_ref),
+            'base': dump_contract(location),
+            'localOverride': dump_contract(binding.local_override) if binding.local_override else None,
+            'productionAuthorized': False}
+
+
+def review_character_coverage(review: CharacterCoverageReview,
+                              characters: tuple[CharacterVisualSpec, ...]) -> dict[str, Any]:
+    """Review explicit identities and placements, never names or a headcount KPI."""
+    review = CharacterCoverageReview.model_validate(dump_contract(review))
+    characters = tuple(CharacterVisualSpec.model_validate(dump_contract(c)) for c in characters)
+    by_id = {c.character_identity: c for c in characters}
+    if len(by_id) != len(characters):
+        raise ValueError('Duplicate character identity')
+    missing: list[str] = []
+    notes: list[dict[str, Any]] = []
+    for c in characters:
+        if c.evidence is None:
+            missing.append('CHARACTER_EVIDENCE_REQUIRED:' + c.character_identity)
+        elif not set(c.evidence.scene_refs) <= set(review.scene_refs):
+            missing.append('CHARACTER_SCENE_OUTSIDE_REVIEW:' + c.character_identity)
+        elif c.evidence.historical_status == 'DRAMATIC_RECONSTRUCTION' and len(set(c.evidence.dramatic_function)) >= 5:
+            notes.append({'code': 'FICTIONAL_PROXY_OVERLOAD', 'severity': 'NOTE',
+                          'characterIdentity': c.character_identity,
+                          'functions': list(c.evidence.dramatic_function),
+                          'repairOwner': 'director'})
+    for d in review.decisions:
+        candidate = by_id.get(d.character_identity)
+        placement = next((p for p in candidate.evidence.scene_placements if p.scene_id == d.scene_id), None) if candidate and candidate.evidence else None
+        if d.decision == 'UNRESOLVED':
+            missing.append('CHARACTER_COVERAGE_UNRESOLVED:' + d.character_identity + ':' + d.scene_id)
+        elif d.decision == 'INCLUDE' and (candidate is None or candidate.evidence is None or candidate.evidence.historical_status != 'DOCUMENTED' or placement is None or placement.evidence_status != 'DOCUMENTED'):
+            missing.append('DOCUMENTED_ACTOR_PLACEMENT_REQUIRED:' + d.character_identity + ':' + d.scene_id)
+        elif d.decision == 'EXCLUDE_WITH_REASON' and placement is not None:
+            missing.append('CHARACTER_COVERAGE_DECISION_CONFLICT:' + d.character_identity + ':' + d.scene_id)
+    return {'status': 'CHARACTER_COVERAGE_NOT_READY' if missing else 'CHARACTER_COVERAGE_READY',
+            'missing': missing, 'notes': notes, 'productionAuthorized': False}

@@ -16,6 +16,14 @@ Turn one approved part of an Episode into a necessary, playable, state-changing 
 
 When a [shared Dramatic Bible](../cinematic-screenplay-incubation/references/bible.md) is supplied, check knowledge at each decision, character invariants, power changes and entry/exit continuity. Review dialogue voice and subtext separately from scene causality; a wording revision preserves unrelated scene bodies and stable spoken-item IDs. Control metadata stays outside the readable script body; canonical SpokenContent ownership below remains unchanged.
 
+When supplied, consume [CharacterEvidence and reusable LocationDesign](../../docs/location-character-design.md).
+An attested person's existence does not prove presence in this Scene. Keep original
+and composite identities explicit; never resolve them to historical people by name.
+Reference existing places and request local time, ground, light or population
+changes; altered geography returns to production-design rather than duplicating a
+new base environment inside every Scene. Preserve approved unrelated scenes in a
+targeted revision.
+
 For an authorized standalone candidate rewrite, use [whole-scene craft proof](../cinematic-screenplay-incubation/references/scene-craft-proof.md): retain formal sources and user locks, pin the candidate wording, and keep source mappings outside the readable body. Candidate approval never implicitly replaces formal `spokenContent`.
 
 ## Creative Lifecycle

@@ -45,7 +45,10 @@ warm/cool, saturation, value, contrast, character separation, dramatic function,
 continuity in/out for each scene. Scene color keys descend from this script;
 a list of filters is insufficient. Existing palette is input, not a finished arc.
 
-SceneProductionDesignPacket contains LocationDesignSpec plus geography/terrain,
+For reusable environment design, read [location and character evidence](../../../docs/location-character-design.md).
+FilmProductionDesign indexes LocationDesign originals; SceneProductionDesignPacket
+references the applicable places in order and carries only their local changes.
+Its legacy inline LocationDesignSpec remains supported. Scene packets add geography/terrain,
 architecture, entrances/exits, zones/power center, props in zones, foreground,
 midground/background, crowd, weather/atmosphere/time, materials, color key,
 practical sources, camera-accessible areas and sound zones. Use zone/path IDs and

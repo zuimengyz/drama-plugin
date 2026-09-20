@@ -1,8 +1,10 @@
 """Reusable design intent, separate from identity references and transient state."""
 from __future__ import annotations
-from typing import Annotated, Literal, Self
-from pydantic import Field, model_validator
+from typing import Annotated, Any, Literal, Self
+from pydantic import Field, model_validator, model_serializer, SerializerFunctionWrapHandler
 from drama_plugin.contracts.base import ContractModel
+from drama_plugin.contracts.character_evidence import CharacterEvidence
+from drama_plugin.contracts.location_design import LocationDesign
 from drama_plugin.contracts.creative_asset import Text, Hash, Provenance, PatternValidation
 
 
@@ -79,6 +81,15 @@ class FaceDesign(ContractModel):
 
 class CharacterVisualSpec(ContractModel):
     schema_version: Literal['character-visual-v1'] = 'character-visual-v1'
+    evidence: CharacterEvidence | None = None
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_wire(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data: dict[str, Any] = handler(self)
+        if self.evidence is None:
+            data.pop('evidence', None)
+        return data
+
     character_identity: Text
     revision: Text
     dramatic_role: Text
@@ -223,7 +234,7 @@ class VisualMotifSpec(ContractModel):
     historical_constraints: HistoricalCanonPolicy = Field(default_factory=HistoricalCanonPolicy)
 
 
-DesignSpec = CharacterVisualSpec | FactionVisualSystem | LocationDesignSpec | VisualMotifSpec
+DesignSpec = CharacterVisualSpec | FactionVisualSystem | LocationDesignSpec | LocationDesign | VisualMotifSpec
 
 
 class ProductionDesignContent(ContractModel):
@@ -239,7 +250,7 @@ class ProductionDesignContent(ContractModel):
 
     @model_validator(mode='after')
     def typed_candidate(self) -> Self:
-        expected={CharacterVisualSpec:'CHARACTER_VISUAL_SPEC',FactionVisualSystem:'FACTION_VISUAL_SYSTEM',LocationDesignSpec:'LOCATION_DESIGN',VisualMotifSpec:'VISUAL_MOTIF'}
+        expected={CharacterVisualSpec:'CHARACTER_VISUAL_SPEC',FactionVisualSystem:'FACTION_VISUAL_SYSTEM',LocationDesignSpec:'LOCATION_DESIGN',LocationDesign:'LOCATION_DESIGN',VisualMotifSpec:'VISUAL_MOTIF'}
         if expected[type(self.spec)]!=self.creative_kind:
             raise ValueError('Design kind differs from typed spec')
         if self.usage_mode=='APPROVED_DESIGN' and not self.approval_evidence:

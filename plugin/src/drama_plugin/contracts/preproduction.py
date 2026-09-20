@@ -4,13 +4,14 @@ Readiness belongs to incubation; film/scene design to production-design;
 lighting to cinematic-direction; the Director packet indexes, never copies them.
 """
 from __future__ import annotations
-from typing import Literal, Self
-from pydantic import Field, model_validator
+from typing import Any, Literal, Self
+from pydantic import Field, model_validator, model_serializer, SerializerFunctionWrapHandler
 from drama_plugin.contracts.base import ContractModel
 from drama_plugin.contracts.creative_asset import Text
 from drama_plugin.contracts.sequence import SourcePin
 from drama_plugin.contracts.production_design import HistoricalCanonPolicy, CharacterState, LocationDesignSpec
 from drama_plugin.contracts.visual_route import VisualRoute
+from drama_plugin.contracts.location_design import LocationDesignRef, SceneLocationBinding
 from drama_plugin.contracts.director import DirectorRuntimeEstimate
 
 READINESS_DIMENSIONS = frozenset({
@@ -103,6 +104,21 @@ class ColorKey(ContractModel):
 
 
 class FilmProductionDesign(ContractModel):
+    location_design_refs: tuple[LocationDesignRef, ...] | None = None
+    character_visual_refs: tuple[SourcePin, ...] | None = None
+    character_coverage_ref: SourcePin | None = None
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_wire(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data: dict[str, Any] = handler(self)
+        for field in ('location_design_refs', 'character_visual_refs', 'character_coverage_ref'):
+            if getattr(self, field) is None:
+                data.pop(field, None)
+                alias = type(self).model_fields[field].alias
+                if alias is not None:
+                    data.pop(alias, None)
+        return data
+
     scope_id: Text
     source_pins: tuple[SourcePin, ...] = Field(min_length=1)
     intent_ref: SourcePin
@@ -126,6 +142,13 @@ class FilmProductionDesign(ContractModel):
 
     @model_validator(mode='after')
     def coherent_route(self) -> Self:
+        if self.location_design_refs is not None:
+            if not self.location_design_refs or len({r.location_id for r in self.location_design_refs}) != len(self.location_design_refs) or len({r.artifact_ref.key for r in self.location_design_refs}) != len(self.location_design_refs):
+                raise ValueError('Film requires unique nonempty reusable location references')
+        if self.character_visual_refs is not None and (not self.character_visual_refs or len({r.key for r in self.character_visual_refs}) != len(self.character_visual_refs)):
+            raise ValueError('Film requires unique nonempty character references')
+        if (self.character_visual_refs is None) != (self.character_coverage_ref is None):
+            raise ValueError('Character evidence opt-in requires both character inventory and coverage review')
         if self.route != self.stylization.route:
             raise ValueError('Style review belongs to another route')
         if len({c.scene_id for c in self.color_script}) != len(self.color_script):
@@ -186,7 +209,8 @@ class SceneProductionDesignPacket(ContractModel):
     scene_id: Text
     source_pins: tuple[SourcePin, ...] = Field(min_length=1)
     film_design_ref: SourcePin
-    location: LocationDesignSpec
+    location: LocationDesignSpec | None = None
+    environment_refs: tuple[SceneLocationBinding, ...] | None = None
     geography_terrain: Text
     zones: dict[str, Text] = Field(min_length=1)
     paths: dict[str, tuple[Text, Text]] = Field(min_length=1)
@@ -207,8 +231,22 @@ class SceneProductionDesignPacket(ContractModel):
     costume_state_refs: tuple[SourcePin, ...] = Field(min_length=1)
     visual_development_brief: Text
 
+    @model_serializer(mode='wrap')
+    def preserve_legacy_wire(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data: dict[str, Any] = handler(self)
+        if self.environment_refs is None:
+            data.pop('environment_refs', None)
+            data.pop('environmentRefs', None)
+        if self.location is None:
+            data.pop('location', None)
+        return data
+
     @model_validator(mode='after')
     def usable_layout(self) -> Self:
+        if (self.location is None) == (self.environment_refs is None):
+            raise ValueError('Scene requires either legacy location or reusable environment references')
+        if self.environment_refs is not None and (not self.environment_refs or len({r.location_ref.location_id for r in self.environment_refs}) != len(self.environment_refs)):
+            raise ValueError('Scene requires unique nonempty environment references')
         referenced = set(self.entrances_exits) | set(self.camera_zones) | {self.power_center}
         referenced |= {z for path in self.paths.values() for z in path}
         referenced |= {z for pair in self.character_start_end.values() for z in pair}

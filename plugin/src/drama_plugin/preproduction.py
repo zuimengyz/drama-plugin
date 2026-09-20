@@ -153,6 +153,41 @@ def department_integration(packet: DirectorDepartmentPacket, review: ScreenplayR
             CharacterVisualSpec.model_validate(resolve(cb.visual_spec_ref))
         for ref in film.prop_design_refs:
             PropDesign.model_validate(resolve(ref))
+    # Optional design facets preserve the old pipeline; once opted in, every
+    # scene resolves the same film-owned place original instead of a local copy.
+    location_by_id = {}
+    location_uses: dict[str, set[str]] = {}
+    design_notes: list[dict[str, Any]] = []
+    characters_by_id = {}
+    if film and film.location_design_refs is not None:
+        from drama_plugin.contracts.location_design import LocationDesign
+        for location_ref in film.location_design_refs:
+            location = LocationDesign.model_validate(resolve(location_ref.artifact_ref))
+            if location.id != location_ref.location_id or not set(location.scene_refs) <= set(packet.scene_ids):
+                raise ValueError('Film location identity/scene scope mismatch')
+            location_by_id[location.id] = location
+            location_uses[location.id] = set()
+        for location in location_by_id.values():
+            parent = location.parent_location_id
+            seen = {location.id}
+            while parent is not None:
+                if parent not in location_by_id or parent in seen:
+                    raise ValueError('Missing or cyclic parent location')
+                seen.add(parent)
+                parent = location_by_id[parent].parent_location_id
+    if film and film.character_visual_refs is not None:
+        from drama_plugin.contracts.character_evidence import CharacterCoverageReview
+        from drama_plugin.production_design import review_character_coverage
+        characters = tuple(CharacterVisualSpec.model_validate(resolve(ref)) for ref in film.character_visual_refs)
+        if film.character_coverage_ref is None:
+            raise ValueError('Character evidence inventory requires a coverage review reference')
+        character_review = CharacterCoverageReview.model_validate(resolve(film.character_coverage_ref))
+        if set(character_review.scene_refs) != set(packet.scene_ids):
+            raise ValueError('Character coverage review scene scope mismatch')
+        character_result = review_character_coverage(character_review, characters)
+        missing.extend(character_result['missing'])
+        design_notes.extend(character_result['notes'])
+        characters_by_id = {c.character_identity: c for c in characters}
     coverage_by_scene: dict[str, EditorialRhythmPlan] = {}
     for sid in packet.scene_ids:
         design_entry = entries.get(('scene_design',sid)); light_entry = entries.get(('lighting',sid))
@@ -163,6 +198,25 @@ def department_integration(packet: DirectorDepartmentPacket, review: ScreenplayR
                 raise ValueError('Scene design film binding mismatch')
             if not all(p in packet.source_pins for p in scene.source_pins):
                 raise ValueError('Scene design source mismatch')
+            if film.location_design_refs is not None:
+                from drama_plugin.production_design import resolve_location_design
+                if scene.environment_refs is None:
+                    missing.append('SCENE_ENVIRONMENT_REFERENCE_REQUIRED:' + sid)
+                else:
+                    allowed = {r.location_id: r for r in film.location_design_refs}
+                    for binding in scene.environment_refs:
+                        environment_ref = binding.location_ref
+                        if allowed.get(environment_ref.location_id) != environment_ref:
+                            raise ValueError('Scene environment differs from film location reference')
+                        resolve_location_design(binding, scene_id=sid, current=current, artifacts=artifacts)
+                        location_uses[environment_ref.location_id].add(sid)
+            elif scene.environment_refs is not None:
+                raise ValueError('Scene environment requires film-owned location references')
+            if film.character_visual_refs is not None:
+                for identity in scene.character_start_end:
+                    character = characters_by_id.get(identity)
+                    if character is None or character.evidence is None or sid not in character.evidence.scene_refs:
+                        missing.append('CHARACTER_SCENE_EVIDENCE_REQUIRED:' + identity + ':' + sid)
             color = next((c for c in film.color_script if c.scene_id == sid), None)
             if color != scene.color_key:
                 conflict('COLOR_INTENT_CONFLICT',film_entry.artifact_ref,design_entry.artifact_ref, # type: ignore[union-attr]
@@ -210,6 +264,9 @@ def department_integration(packet: DirectorDepartmentPacket, review: ScreenplayR
         if sound_entry:
             from drama_plugin.contracts.cinematic import SourceSoundIntent
             SourceSoundIntent.model_validate(resolve(sound_entry.artifact_ref))
+    for identity, location in location_by_id.items():
+        if location_uses[identity] != set(location.scene_refs):
+            missing.append('LOCATION_SCENE_USAGE_MISMATCH:' + identity)
     sequence_edges: set[tuple[str, str]] = set()
     for ref in packet.sequence_transition_refs:
         sequence_plan = EditorialRhythmPlan.model_validate(resolve(ref))
@@ -241,7 +298,8 @@ def department_integration(packet: DirectorDepartmentPacket, review: ScreenplayR
     return {'status': 'DEPARTMENT_CONFLICT' if conflicts else
             'DIRECTOR_PRODUCTION_BOOK_NOT_READY' if missing else 'DEPARTMENT_REVIEW_READY',
             'missing': missing, 'conflicts': conflicts, 'userApproved': False,
-            'productionAuthorized': False, 'productionDesignFreeze': 'NOT_REACHED'}
+            'productionAuthorized': False, 'productionDesignFreeze': 'NOT_REACHED',
+            **({'notes': design_notes} if design_notes else {})}
 
 
 def complete_production_book(packet: DirectorDepartmentPacket, review: ScreenplayReadinessReview,
@@ -321,4 +379,5 @@ def complete_production_book(packet: DirectorDepartmentPacket, review: Screenpla
     except (ValueError,KeyError,TypeError) as exc:
         missing.append(str(exc))
     return {'status':'DIRECTOR_PRODUCTION_BOOK_NOT_READY' if missing else 'DIRECTOR_PRODUCTION_BOOK_READY_FOR_USER_REVIEW',
-            'missing':missing,'userApproved':False,'productionAuthorized':False,'productionDesignFreeze':'NOT_REACHED'}
+            'missing':missing,'userApproved':False,'productionAuthorized':False,'productionDesignFreeze':'NOT_REACHED',
+            **({'notes': departments['notes']} if departments.get('notes') else {})}

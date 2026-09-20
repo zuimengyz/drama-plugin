@@ -5,6 +5,14 @@ description: Design or revise shots for a historical-drama Scene. Use when choos
 
 # Shot Design
 
+When a scene supplies reusable environment refs, resolve the source-pinned
+[LocationDesign and local overrides](../../docs/location-character-design.md)
+before blocking and coverage. Keep landmarks, routes and sight lines consistent
+across scenes using the same place; a local time/damage delta cannot relocate a
+doorway or reverse a riverbank. Request a base-design revision from
+production-design for geometry changes. Camera affordances permit a view; they
+do not prescribe every shot or authorize media generation.
+
 ## Opt-in Director authority
 
 Shot / EditorialRhythmPlan retain coverage, blocking and editorial necessity. Consume the Director request and its source/intent pins; propose realization in those existing owners and return result/evidence/limitations. Director judges global usefulness, priority and rejection; it does not create DirectorShotPlan or replace canonical blocking. A constraint that cannot be realized returns to Director for an explicit disposition; locked event changes require upstream review.

@@ -1,0 +1,31 @@
+code: color-design
+name: Color Design
+description: Design the film’s narrative color development before final grading.
+context:
+  required:
+  - sourcePins
+  - departmentInputs
+  optional:
+  - directorPackageRef
+  - approvedBaseline
+  - continuityRef
+  - userFeedback
+  refresh_after: []
+tools:
+  preferred:
+  - work.get_work
+  - scene.get_scene
+  allowed:
+  - script.get_script
+  - episode.get_episode
+  - shot.get_shot
+  - asset.get_asset
+  - context.build_context
+completion:
+  conditions:
+  - The arc is perceptible without an arbitrary filter per scene; color serves hierarchy;
+    no unexplained costume or environment recoloring.
+  - Bible records retain source/dependency pins and ownership; unresolved requirements
+    remain explicit.
+  - Return department output references and validation status to the Host without
+    production.

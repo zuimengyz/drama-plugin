@@ -1,0 +1,4 @@
+interface:
+  display_name: "Hair Makeup and Injury"
+  short_description: "Source-bound Hair Makeup and Injury design"
+  default_prompt: "Use $look-continuity to complete its source-bound department output."

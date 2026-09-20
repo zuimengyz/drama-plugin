@@ -1,15 +1,41 @@
 code: scene-development
 name: Scene Development
-description: Develop a persistent, state-changing Scene from an Episode.
+description: Develop scene dramaturgy and causal beats from an Episode, then assemble
+  department references; dialogue, staging, art and execution retain their independent
+  owners.
 context:
-  required: [episode]
-  optional: [sceneId, neighboringScenes, researchContext, temporaryState]
-  refresh_after: [scene.create_scene, scene.save_scene]
+  required:
+  - episode
+  optional:
+  - sceneId
+  - neighboringScenes
+  - researchContext
+  - temporaryState
+  - directorPackageRef
+  - departmentInputs
+  - continuityRef
+  refresh_after:
+  - scene.create_scene
+  - scene.save_scene
 tools:
-  preferred: [episode.get_episode, scene.get_scene, scene.list_scenes, scene.search_scenes, scene.create_scene, scene.save_scene]
-  allowed: [research.search_locations, research.verify_claim, context.build_context, context.refresh_context]
+  preferred:
+  - episode.get_episode
+  - scene.get_scene
+  - scene.list_scenes
+  - scene.search_scenes
+  - scene.create_scene
+  - scene.save_scene
+  allowed:
+  - research.search_locations
+  - research.verify_claim
+  - context.build_context
+  - context.refresh_context
 completion:
   conditions:
-    - The Scene covers assigned historical beats with valid attribution and realizes an explicit Narrative Input State, Required Transition, and Narrative Output State.
-    - It passes necessity, Before/After, Scene State Continuity, and Causal Narrative Continuity gates and is ready for Shot design without silently creating downstream Shots.
-    - Persistence follows sufficient context, an internal plan, a complete draft, and a passing Scene review with no unresolved historical or continuity conflict.
+  - The Scene covers assigned historical beats with valid attribution and realizes
+    an explicit Narrative Input State, Required Transition, and Narrative Output State.
+  - It passes necessity, Before/After, Scene State Continuity, and Causal Narrative
+    Continuity gates and is ready for Shot design without silently creating downstream
+    Shots.
+  - Persistence follows sufficient context, an internal plan, a complete draft, and
+    a passing Scene review with no unresolved historical or continuity conflict.

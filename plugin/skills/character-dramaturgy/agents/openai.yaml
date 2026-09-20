@@ -1,0 +1,4 @@
+interface:
+  display_name: "Character Dramaturgy"
+  short_description: "Source-bound Character Dramaturgy design"
+  default_prompt: "Use $character-dramaturgy to complete its source-bound department output."

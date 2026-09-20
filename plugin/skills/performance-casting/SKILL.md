@@ -1,9 +1,11 @@
 ---
 name: performance-casting
-description: Search and test screen-role candidates through role-specific face, relative-scale and performance proofs, then present a source-pinned shortlist for user selection. Use when casting suitability or performance range is unresolved; production-design retains stable appearance authority.
+description: Search and test screen-role candidates through role-specific face, relative-scale and performance proofs, then present a source-pinned shortlist for user selection. Use when casting suitability or performance range is unresolved; character-art retains stable appearance authority.
 ---
 
 # Performance Casting
+
+Consume [Character Art](../character-art/SKILL.md) as the stable appearance authority. This skill searches/tests realizations of that design; it does not redesign face/body/costume to win a proof. Return appearance changes to Character Art and alignment to Production Design.
 
 ROLE SALIENCE > AESTHETIC OPTIMIZATION. Modern screen appeal should amplify the
 role's defining features. If prettier conflicts with more recognizably this role,

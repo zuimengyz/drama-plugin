@@ -1,17 +1,39 @@
 code: cinematic-direction
-name: Cinematic Direction & Performance
-description: Source-pinned look, camera, physical performance and temporal Shot execution before video selection.
+name: Cinematic Execution Projection
+description: Assemble approved professional direction into the existing CinematicShotSpec
+  before route selection; use for source-bound projection, not new art, camera or
+  acting design.
 context:
-  required: [work, script, episode, scene, shot]
-  optional: [dpdSnapshot, temporaryState, sceneDesignPacket, lightingScript, colorScript, costumeState]
-  refresh_after: [shot.save_shot]
+  required:
+  - work
+  - script
+  - episode
+  - scene
+  - shot
+  optional:
+  - dpdSnapshot
+  - temporaryState
+  - sceneDesignPacket
+  - lightingScript
+  - colorScript
+  - costumeState
+  - directorPackageRef
+  - departmentInputs
+  - continuityRef
+  refresh_after: []
 tools:
-  preferred: [asset.search_assets, asset.get_asset, shot.get_shot, scene.get_scene, episode.get_episode, script.get_script, work.get_work]
-  allowed: [context.build_context, shot.save_shot]
+  preferred:
+  - work.get_work
+  - scene.get_scene
+  allowed:
+  - script.get_script
+  - episode.get_episode
+  - shot.get_shot
+  - asset.get_asset
+  - context.build_context
 completion:
   conditions:
-    - One CinematicShotSpec realizes canon through observable behavior and consistent Opening-to-Ending beats.
-    - Work visual direction plus explicit Episode Scene Shot overrides resolve traceably.
-    - Frozen director source and visual fingerprints reach existing video selection without changing reference caps or production authority.
-    - Offline direction is not paid authorization or proof of actual visual quality.
-    - Scene lighting is motivated, readable and continuous before within-shot projection; route approval remains independent.
+  - Owned output references and source pins are current; missing specialist work returns
+    to its registered owner.
+  - No upstream creative decisions, approvals, Media or provider-specific requests
+    are authored here.

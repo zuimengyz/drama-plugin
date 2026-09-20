@@ -1,0 +1,4 @@
+interface:
+  display_name: "Blocking"
+  short_description: "Source-bound Blocking design"
+  default_prompt: "Use $blocking to complete its source-bound department output."

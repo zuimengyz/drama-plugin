@@ -1,0 +1,4 @@
+interface:
+  display_name: "Environment Art"
+  short_description: "Source-bound Environment Art design"
+  default_prompt: "Use $environment-art to complete its source-bound department output."

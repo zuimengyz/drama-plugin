@@ -1,0 +1,4 @@
+interface:
+  display_name: "Action Choreography"
+  short_description: "Source-bound Action Choreography design"
+  default_prompt: "Use $action-choreography to complete its source-bound department output."

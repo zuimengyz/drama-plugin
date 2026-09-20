@@ -1,18 +1,42 @@
 code: production-design
-name: Production Design & Casting
-description: Story-led casting, faction hierarchy, set construction and reusable visual motifs before asset resolution.
+name: Production Design Supervisor
+description: Align independently authored visual departments under Director Vision;
+  use for coherence review and visual conflict routing, not character, costume or
+  environment authorship.
 context:
-  required: [work]
-  optional: [script, episode, scene, shot, characterAsset, visualBible, researchContext, userFeedback, temporaryState, screenplayReadinessRef, filmProductionDesign, sceneDesignPacket, costumeContinuity]
-  refresh_after: [asset.create_asset, asset.save_asset]
+  required:
+  - work
+  optional:
+  - script
+  - episode
+  - scene
+  - shot
+  - characterAsset
+  - visualBible
+  - researchContext
+  - userFeedback
+  - temporaryState
+  - screenplayReadinessRef
+  - filmProductionDesign
+  - sceneDesignPacket
+  - costumeContinuity
+  - directorPackageRef
+  - departmentInputs
+  - continuityRef
+  refresh_after: []
 tools:
-  preferred: [work.get_work, asset.get_asset, asset.search_assets, media.get_media]
-  allowed: [script.get_script, episode.get_episode, scene.get_scene, shot.get_shot, asset.list_assets, asset.create_asset, asset.save_asset, research.search_sources, research.verify_claim, context.build_context]
+  preferred:
+  - work.get_work
+  - scene.get_scene
+  allowed:
+  - script.get_script
+  - episode.get_episode
+  - shot.get_shot
+  - asset.get_asset
+  - context.build_context
 completion:
   conditions:
-    - Stable design and transient state are separate, with inherited evidence constraints.
-    - Core character casting has visual authority and a story-specific first appearance.
-    - Design review distinguishes evidence, hypotheses and untested visual suitability.
-    - Reusable text-only candidate Assets preserve existing Character and Media references.
-    - Source-pinned handoff contains no provider selection, executable prompt or paid action.
-    - Film design, color script, scene layout and costume states share source and intent pins; changes preserve predecessor causes.
+  - Owned output references and source pins are current; missing specialist work returns
+    to its registered owner.
+  - No upstream creative decisions, approvals, Media or provider-specific requests
+    are authored here.

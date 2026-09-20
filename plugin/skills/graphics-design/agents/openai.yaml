@@ -1,0 +1,4 @@
+interface:
+  display_name: "Titles and Graphics"
+  short_description: "Source-bound Titles and Graphics design"
+  default_prompt: "Use $graphics-design to complete its source-bound department output."

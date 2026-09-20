@@ -1,0 +1,31 @@
+code: diegetic-vocal
+name: Diegetic and Historical Vocal
+description: Design source singing, chanting, ritual and historical verse performance.
+context:
+  required:
+  - sourcePins
+  - departmentInputs
+  optional:
+  - directorPackageRef
+  - approvedBaseline
+  - continuityRef
+  - userFeedback
+  refresh_after: []
+tools:
+  preferred:
+  - work.get_work
+  - scene.get_scene
+  allowed:
+  - script.get_script
+  - episode.get_episode
+  - shot.get_shot
+  - asset.get_asset
+  - context.build_context
+completion:
+  conditions:
+  - No invented historical melody, added duet words or automatic choir; vocal events
+    remain diegetic and source-bound; unresolved composition is not production-ready.
+  - Bible records retain source/dependency pins and ownership; unresolved requirements
+    remain explicit.
+  - Return department output references and validation status to the Host without
+    production.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Battle and Crowd Choreography"
+  short_description: "Source-bound Battle and Crowd Choreography design"
+  default_prompt: "Use $battle-crowd-choreography to complete its source-bound department output."

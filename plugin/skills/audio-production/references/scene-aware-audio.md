@@ -51,7 +51,7 @@ the completed projection. Legacy requests without a brief continue unchanged.
 
 ## Character Voice Profile
 
-Derive a stable provider-neutral Voice Profile only after Character Understanding. Keep the understanding attached as auditable source context, but include only supported vocal consequences in the profile. Use canonical neutral values where possible and `UNKNOWN` where unsupported:
+Consume voice-identity’s stable provider-neutral Voice Profile after the approved Character Understanding. Keep the understanding attached as auditable source context, but include only supported vocal consequences in the profile. Use canonical neutral values where possible and `UNKNOWN` where unsupported:
 
 - `vocalAge`, `vocalWeight`, `resonanceDepth`, `timbreBrightness`, `texture`;
 - `articulationFirmness`, `phraseAttack`, `baselinePace`, `baselineEnergy`, `breathSupport`;
@@ -72,7 +72,7 @@ If an approved provider binding already exists for the same stable profile, reus
 
 ## Performance Intent as baseline plus delta
 
-For each Dialogue, derive a separate line-level Performance Intent from the stable Voice Profile plus current Scene State. Make the relation inspectable:
+For each Dialogue, consume Voice Direction’s line-level delivery against the stable Voice Profile and current Scene State. Make the relation inspectable:
 
 - `baseline`: relevant stable pace, energy, containment, articulation, and sentence-finality values;
 - `sceneDelta`: `currentEmotion`, cause, internal activation, external expressiveness, urgency, stress, restraint, `paceAdjustment`, `volumeAdjustment`, pause plan, emphasis, breath adjustment, and sentence-finality adjustment;
@@ -88,7 +88,7 @@ Never merge that brief with legacy PerformanceIntent or manual speed/volume.
 
 ## Provider-neutral generation specification
 
-The `SpeechGenerationRequest` must carry stable speaker identity, Dialogue identity, exact canonical text, Character Understanding, Character Voice Profile, Scene State, Performance Intent, timing policy, and non-material Work/Script/Episode/Scene/Shot/character/listener references. The Skill decides what the person and this moment mean. The active Provider adapter only ranks compatible voices and translates the supplied semantics into provider syntax; it must not reinterpret the character.
+The `SpeechGenerationRequest` must carry stable speaker identity, Dialogue identity, exact canonical text, Character Understanding, Character Voice Profile, Scene State, Performance Intent, timing policy, and non-material Work/Script/Episode/Scene/Shot/character/listener references. Character Dramaturgy, Performance and Voice Direction decide what the person and this moment mean; this production skill compiles their reviewed originals. The active Provider adapter only ranks compatible voices and translates the supplied semantics into provider syntax; it must not reinterpret the character.
 
 `SpeechGenerationRequest.exactText` must equal
 `Scene.content.spokenContent[].text`. Pronunciation and delivery guidance stay

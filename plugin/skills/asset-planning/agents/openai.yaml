@@ -1,0 +1,4 @@
+interface:
+  display_name: "Asset Planning"
+  short_description: "Source-bound Asset Planning design"
+  default_prompt: "Use $asset-planning to complete its source-bound department output."

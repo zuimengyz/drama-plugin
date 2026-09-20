@@ -1,0 +1,4 @@
+interface:
+  display_name: "Costume Design"
+  short_description: "Source-bound Costume Design design"
+  default_prompt: "Use $costume-design to complete its source-bound department output."

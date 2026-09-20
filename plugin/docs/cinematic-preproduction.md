@@ -1,5 +1,7 @@
 # Cinematic preproduction: owners, gates and source-bound evidence
 
+> For current department authority and authoring, read [professional departments](professional-departments.md). The composite schemas below remain backward-compatible representations, not ownership grants for new packages.
+
 This is a planning system, not a renderer or a second screenplay. Use on complete
 film/episode direction and on explicitly requested preproduction reconciliation.
 Narrow legacy Shot work remains compatible; it cannot claim a complete Production
@@ -39,8 +41,8 @@ historical workspace or reuse an old readiness decision.
   multi-scene reuse, character coverage and migration-free reconciliation.
 - CostumeState extends existing transient CharacterState and references stable
   CostumeBible/CharacterVisualSpec. A new state is not a redesigned identity.
-- LightingScript is a scene-level cinematic-direction sidecar. CinematicShotSpec
-  still owns within-shot acting/camera execution; consume the lighting pin when
+- LightingScript is the legacy representation of Lighting Design. CinematicShotSpec
+  projects independently owned acting/camera originals; consume the lighting pin when
   translating the scene, without changing DPD or the stable design.
 - EditorialRhythmPlan now optionally includes `transitions`; old empty plans keep
   their serialized form. New full preproduction requires adjacent coverage edges,
@@ -74,8 +76,8 @@ light sources, scene/film color disagreement, uncaused costume resets and missin
 coverage edges. Semantic judgment remains a professional review, not an NLP claim.
 
 Return DEPARTMENT_CONFLICT with original subject refs and repair owner. Costume,
-color or doorway design → production-design; exposure/separation →
-cinematic-direction; staging/axis/transition → shot-design; intention/causality →
+color → color-design; doorway topology → environment-design; exposure/separation →
+lighting-design; movement → blocking; camera axis → cinematography; cuts → editorial-design; intention/causality →
 incubation. A conflict may involve two owners; retain linked findings rather than
 silently modifying either original. A resolution references fresh evidence and
 reruns affected neighbors. Major conflicts prevent the book from being ready.
@@ -94,7 +96,7 @@ main reading experience. At most two internal design repair cycles by default;
 unresolved major issues retain their owner and stop readiness, not an auto retry.
 
 No new agents, tools, Java endpoints or business tables are needed. Visual
-development remains production-design's text/layout/concept-brief mode; its owner,
+development belongs to the independent art departments; their owner,
 inputs, revisions and handoff are the same. Independent visual-development would
 only be justified by a distinct reusable authority and lifecycle, not another
 name for these outputs. Future Lookdev can consume these briefs only after its

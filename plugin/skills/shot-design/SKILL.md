@@ -1,26 +1,53 @@
 ---
 name: shot-design
-description: Design or revise shots for a historical-drama Scene. Use when choosing framing, camera position, composition, blocking, action, expression, camera movement, dialogue coverage, duration, or shot entry and exit state.
+description: Design actual shots, coverage purpose and start/end states from approved camera, blocking and action originals; use for coverage and thin Shot assembly, not camera or editorial re-authorship.
 ---
 
 # Shot Design
+
+Read [professional department architecture](../../docs/professional-departments.md).
+
+## Role and authority
+
+Own actual shot purpose, subjects, coverage and entry/exit relation.
+
+## Inputs and dependencies
+
+Camera, Blocking, Performance, Action, Lighting, Sound, Editorial and continuity refs under current Scene dramaturgy.
+
+## Outputs
+
+Shot Bible and thin ShotAssembly; generation clip refs stay distinct from canonical Shot identity.
+
+## Forbidden authority
+
+Do not re-author lens/camera grammar, paths, choreography, lighting, sound or cuts; do not copy full character/set/costume prose.
+
+## Quality gates
+
+Coverage preserves source action and exact spoken bindings; each receiver state is reachable from its predecessor.
+
+## Failure and escalation
+
+Return missing specialist decisions to the owner; route infeasibility cannot change creative content.
+
 
 When a scene supplies reusable environment refs, resolve the source-pinned
 [LocationDesign and local overrides](../../docs/location-character-design.md)
 before blocking and coverage. Keep landmarks, routes and sight lines consistent
 across scenes using the same place; a local time/damage delta cannot relocate a
 doorway or reverse a riverbank. Request a base-design revision from
-production-design for geometry changes. Camera affordances permit a view; they
+environment-design for geometry changes. Camera affordances permit a view; they
 do not prescribe every shot or authorize media generation.
 
 ## Opt-in Director authority
 
-Shot / EditorialRhythmPlan retain coverage, blocking and editorial necessity. Consume the Director request and its source/intent pins; propose realization in those existing owners and return result/evidence/limitations. Director judges global usefulness, priority and rejection; it does not create DirectorShotPlan or replace canonical blocking. A constraint that cannot be realized returns to Director for an explicit disposition; locked event changes require upstream review.
+Shot Design retains coverage; Blocking retains actor movement and Editorial Design retains cut/hold necessity and EditorialRhythmPlan. Consume the Director request and its source/intent pins; propose realization in those existing owners and return result/evidence/limitations. Director judges global usefulness, priority and rejection; it does not create DirectorShotPlan or replace canonical blocking. A constraint that cannot be realized returns to Director for an explicit disposition; locked event changes require upstream review.
 
 
 After the reviewed narrative Shot exists, hand its source-pinned action, opening,
 ending, duration, exact dialogue, rhythm and cinematic intent to cinematic-direction
-for physical acting and camera execution before video model selection. Follow the
+to assemble approved physical acting and camera originals before video model selection. Follow the
 [director IR boundary](../../docs/cinematic-direction-contract.md); do not choose
 a model or generate media from this Shot-authoring step.
 
@@ -46,11 +73,11 @@ Use `asset.get_asset` or `media.get_media` only when a selected stable reference
 
 For a supplied screenplay intent handoff, apply [Cinematic Intent translation and preservation](../cinematic-screenplay-incubation/references/cinematic-intent.md). Project relevant intent from the scene set to this coverage group, retaining source, priority, POV relation and boundary obligations. Translate meaning into concrete action/composition/continuity; MUST constrains meaning, SHOULD allows a justified alternative, FREE may be discarded. Keep the full assigned-intent list for group review even when individual shots receive smaller selections.
 
-Before drafting, read [Professional Shot Planning](references/planning.md) and the [Dialogue Layer content convention](../../docs/dialogue-layer-content-convention.md), then apply them. Create an internal coverage plan that inherits rather than repairs the Scene; define required historical/story observations, coverage strategy, Shot economy, and for each retained Shot its narrative purpose, `narrativeInputState`, `requiredTransition`, `narrativeOutputState`, subject/action/blocking, camera language, rhythm, positive integer `plannedDurationMs`, visual entry/exit state, continuity, references, and feasibility. When spoken content exists, decide which Shots bind each item and why as `ON_SCREEN_SPEAKER`, `REACTION`, `OFF_SCREEN`, or `VOICE_OVER`; do not copy or rewrite its text. Keep it in Agent Run Context or temporary working state. Do not call `shot.create_shot` or `shot.save_shot` to store it.
+Before drafting, read [Professional Shot Planning](references/planning.md) and the [Dialogue Layer content convention](../../docs/dialogue-layer-content-convention.md), then apply them. Create an internal coverage plan that inherits rather than repairs the Scene; define required historical/story observations, coverage strategy, Shot economy, and for each retained Shot its narrative purpose, `narrativeInputState`, `requiredTransition`, `narrativeOutputState`, subject/action with Blocking and Camera refs, reviewed editorial rhythm, positive integer `plannedDurationMs`, visual entry/exit state, continuity, references, and feasibility. When spoken content exists, decide which Shots bind each item and why as `ON_SCREEN_SPEAKER`, `REACTION`, `OFF_SCREEN`, or `VOICE_OVER`; do not copy or rewrite its text. Keep it in Agent Run Context or temporary working state. Do not call `shot.create_shot` or `shot.save_shot` to store it.
 
 ### 4. Execute Draft
 
-Execute the strategy as complete candidate formal Shot states that together cover the Scene turn with the fewest necessary Shots. Each Shot persists `plannedDurationMs`; a Shot carrying speech persists only `spokenContentBindings[]` objects with `spokenContentId` and `coverageIntent`. A Scene item may bind across speaker and reaction Shots without duplication and remains one future audio item. Make camera choices serve information, performance, spatial relation, emotion, action, or continuity; preserve screen direction, axis/eyeline, positions, action phase, performance energy, assets, props, costume, time, lighting, and ongoing motion. Simplify, split, or redesign an overloaded Shot until its action, space, movement, references, spoken load, and entry/exit states are executable downstream. The draft must not contain copied dialogue/narration text, audio timing, one-line-one-shot splitting, redundant coverage, camera labels without subject/action, test content, or scratchpad. Do not persist partial Shot drafts.
+Execute the strategy as complete candidate formal Shot states that together cover the Scene turn with the fewest necessary Shots. Each Shot persists `plannedDurationMs`; a Shot carrying speech persists only `spokenContentBindings[]` objects with `spokenContentId` and `coverageIntent`. A Scene item may bind across speaker and reaction Shots without duplication and remains one future audio item. Consume Camera choices that serve information, performance, spatial relation, emotion, action, or continuity; preserve screen direction, axis/eyeline, positions, action phase, performance energy, assets, props, costume, time, lighting, and ongoing motion. Simplify, split, or redesign an overloaded Shot until its action, space, movement, references, spoken load, and entry/exit states are executable downstream. The draft must not contain copied dialogue/narration text, audio timing, one-line-one-shot splitting, redundant coverage, camera labels without subject/action, test content, or scratchpad. Do not persist partial Shot drafts.
 
 ### 5. Review
 
@@ -62,7 +89,7 @@ Before any write, read [Shot Review and Revision](references/review.md) and appl
 
 If screenplay and intent are correct, an intent-loss finding belongs to SHOT_PLANNING. Declare affected shots and continuity neighbors, preserve unrelated shots and all upstream text, and review the complete group after a focused correction or Host replan; no permanent per-target creative revision limit. An upstream ambiguity goes to its actual owner. A standalone requested Shot Plan can remain a reviewed local artifact without Domain writes or media production.
 
-On Review FAIL, do not persist. Follow [Shot Review and Revision](references/review.md): Locally revise one framing, angle, movement, planned duration, binding, composition, or minor continuity defect. Resolve spoken-duration conflict through reviewed coverage changes, extending/splitting Shots, reaction coverage, or an upstream Scene revision of non-`mustKeep` content; never let this Skill or a Provider silently rewrite the Scene source. Re-plan the current Shot group when coverage strategy, economy, spatial/axis logic, Scene-turn coverage, or generation feasibility fails. If the Scene lacks playable conflict/action/state change, label an upstream Scene issue instead of hiding it with camera technique. After any revision or re-plan, review the complete coverage again. A fix never goes directly to persistence without Review Again and PASS.
+On Review FAIL, do not persist. Follow [Shot Review and Revision](references/review.md): Locally revise the owned coverage purpose, binding or start/end relation; route framing/angle/movement to Cinematography, actor paths to Blocking and cut timing to Editorial. Reconcile duration only against those current originals. Resolve spoken-duration conflict through reviewed coverage changes, extending/splitting Shots, reaction coverage, or an upstream Scene revision of non-`mustKeep` content; never let this Skill or a Provider silently rewrite the Scene source. Re-plan the current Shot group when coverage strategy, economy, spatial/axis logic, Scene-turn coverage, or generation feasibility fails. If the Scene lacks playable conflict/action/state change, label an upstream Scene issue instead of hiding it with camera technique. After any revision or re-plan, review the complete coverage again. A fix never goes directly to persistence without Review Again and PASS.
 
 ### 7. Persist
 
@@ -70,11 +97,11 @@ No Review PASS means no create or save. Persist only when required context is su
 
 Use `shot.create_shot` only for a genuinely new Shot after producing the complete initial formal state needed by this Skill. A successful create is the normal first write and returns the stable ID; do not call `shot.save_shot` immediately afterward unless a concrete revision has actually occurred. Use `shot.save_shot` only to revise an already persisted Shot because of a specific request, discovered error, upstream change, or necessary addition.
 
-Organize persistence as **Stable Envelope + Domain Content**. Keep the parent Scene ID, string-valued shot number, optional title, and optional shot type in the create envelope; use the stable Shot ID, shot number, title, and type for a revision. Put reviewed narrative purpose, Narrative Input State, Required Transition, Narrative Output State, subject/action/blocking, camera language, continuity dimensions, references, feasibility, positive integer `plannedDurationMs`, canonical `spokenContentBindings`, visual entry/exit state, and other formal Shot facts in the open `content` object. Bindings contain only `spokenContentId` and `coverageIntent`; never persist copied text, Shot-local `spokenContent`, `spokenContentRefs`, audio/subtitle timing, or aliases. These are creative content, not new persistence fields. Do not move the parent Scene ID or hide, duplicate, or rename envelope fields inside `content`. Treat the Tool catalog as the sole machine-schema source. Submit save as a full replacement formal state, never as a patch, scratchpad, stringified JSON, or routine follow-up to create. Use `context.refresh_context` only after a write makes current context stale. Read a stable Asset/Media only when continuity requires it; do not create or resolve assets, produce media, add provider workflow/model parameters, redesign the Scene, or automatically invoke another Skill.
+Organize persistence as **Stable Envelope + Domain Content**. Keep the parent Scene ID, string-valued shot number, optional title, and optional shot type in the create envelope; use the stable Shot ID, shot number, title, and type for a revision. Put reviewed narrative purpose, Narrative Input State, Required Transition, Narrative Output State, subject/action, department refs for blocking/camera/performance/action/lighting/sound/continuity, reference requirements, feasibility, positive integer `plannedDurationMs`, canonical `spokenContentBindings`, visual entry/exit state, and other formal Shot facts in the open `content` object. Bindings contain only `spokenContentId` and `coverageIntent`; never persist copied text, Shot-local `spokenContent`, `spokenContentRefs`, audio/subtitle timing, or aliases. These are creative content, not new persistence fields. Do not move the parent Scene ID or hide, duplicate, or rename envelope fields inside `content`. Treat the Tool catalog as the sole machine-schema source. Submit save as a full replacement formal state, never as a patch, scratchpad, stringified JSON, or routine follow-up to create. Use `context.refresh_context` only after a write makes current context stale. Read a stable Asset/Media only when continuity requires it; do not create or resolve assets, produce media, add provider workflow/model parameters, redesign the Scene, or automatically invoke another Skill.
 
 ## Visual authority and editorial rhythm
 
-Before coverage, read the [peak/editorial contract](../../docs/dramatic-peak-editorial-contract.md). Consume production-design's stable visual authority and the Scene's FirstAppearanceContract: frame the silhouette, costume/blocking/light hierarchy, first action and others' reactions so a caption does not carry all identity weight. Produce EditorialRhythmPlan when planning a Scene group, linking VisualInformationBeat, CutMotivation and ReactionChain to coverage. Judge SingleTakeFeasibility for10s+ multi-focus passages, with staging or an alternative; never derive duration from model capacity. Set pieces need setup/escalation/reaction/payoff/aftermath functions, not a fixed shot count. Include a hero function only when approved dramatic intent calls for it; a civilian or political set piece need not heroicize anyone. Give HeroShot an earned reason and every hold a purpose; compare scale/movement/light/space/subject/silence contrasts. Check missing reactions/details/navigation, overloaded takes, pointless cuts and prolonged visual sameness. Keep alternative re-splits offline until the requested revision scope permits formal changes.
+Before coverage, read the [peak/editorial contract](../../docs/dramatic-peak-editorial-contract.md). Consume production-design's stable visual authority and the Scene's FirstAppearanceContract: frame the silhouette, costume/blocking/light hierarchy, first action and others' reactions so a caption does not carry all identity weight. Consume Editorial Design’s EditorialRhythmPlan when planning a Scene group, binding its VisualInformationBeat, CutMotivation and ReactionChain to actual coverage. Judge SingleTakeFeasibility for10s+ multi-focus passages, with staging or an alternative; never derive duration from model capacity. Set pieces need setup/escalation/reaction/payoff/aftermath functions, not a fixed shot count. Include a hero function only when approved dramatic intent calls for it; a civilian or political set piece need not heroicize anyone. Give HeroShot an earned reason and every hold a purpose; compare scale/movement/light/space/subject/silence contrasts. Check missing reactions/details/navigation, overloaded takes, pointless cuts and prolonged visual sameness. Keep alternative re-splits offline until the requested revision scope permits formal changes.
 
 ## Sequence production handoff
 

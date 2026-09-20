@@ -1,5 +1,7 @@
 # Cinematic director IR v1
 
+> For current department authority and authoring, read [professional departments](professional-departments.md). The composite schemas below remain backward-compatible representations, not ownership grants for new packages.
+
 `contracts/cinematic.py` defines `VisualBible`, `CinematicShotSpec`,
 `PerformanceBeat`, `BehaviorAnchor`, secondary motion, environment interaction,
 stability rules, reference duties and execution demands. `visual/cinematic.py`

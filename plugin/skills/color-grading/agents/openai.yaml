@@ -1,0 +1,4 @@
+interface:
+  display_name: "Final Color Grading"
+  short_description: "Source-bound Final Color Grading design"
+  default_prompt: "Use $color-grading to complete its source-bound department output."

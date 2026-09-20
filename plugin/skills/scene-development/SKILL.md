@@ -1,13 +1,40 @@
 ---
 name: scene-development
-description: Develop or revise a historical-drama Scene from an Episode. Use when defining place, time, characters, entry state, objective, conflict, dialogue, action, turn, or exit state.
+description: Develop scene dramaturgy and causal beats from an Episode, then assemble department references; dialogue, staging, art and execution retain their independent owners.
 ---
 
 # Scene Development
 
+Read [professional department architecture](../../docs/professional-departments.md).
+
+## Role and authority
+
+Own scene purpose, conflict, beat, reversal, emotional/information change and causal input/output.
+
+## Inputs and dependencies
+
+Episode/Story/Character Bibles; historical boundary; current adjacent scene states; reviewed Dialogue refs.
+
+## Outputs
+
+Scene Beat Bible and thin SceneAssembly; preserve canonical Scene IDs and compatibility content when required.
+
+## Forbidden authority
+
+Do not design camera, lights, costumes, sound, music, choreography or edit details. Do not independently rewrite Dialogue Design output.
+
+## Quality gates
+
+Beat transitions preserve story locks and all required refs resolve; review design readiness separately from media.
+
+## Failure and escalation
+
+Return specialist gaps to registry owners; a missing department does not justify inflating Scene into its replacement.
+
+
 ## Opt-in Director authority
 
-Scene remains the canonical owner of scene event, purpose and spoken meaning. In an opt-in Director request, consume pinned intent, preservation constraints and evidence obligations; develop the existing Scene structure and return its source-bound result or conflict. Director selects audience emphasis and reviews global usefulness, not a second Scene purpose. If requested emphasis changes locked causality or dialogue meaning, return DIRECTOR_REQUESTS_SCRIPT_REVIEW before any source change.
+Scene dramaturgy remains the owner of scene event and purpose; Dialogue Design owns exact spoken meaning. Canonical Scene.spokenContent remains the compatibility storage location, not a second dialogue author. In an opt-in Director request, consume pinned intent, preservation constraints and evidence obligations; develop the existing Scene structure and return its source-bound result or conflict. Director selects audience emphasis and reviews global usefulness, not a second Scene purpose. If requested emphasis changes locked causality or dialogue meaning, return DIRECTOR_REQUESTS_SCRIPT_REVIEW before any source change.
 
 
 Consume the unified `creativeRhythm` from the actual creation context before planning, even when source text is already supplied. Follow [narrative rhythm](../../docs/narrative-rhythm.md); Skills never read env directly. Pin this profile to the creative revision; refresh/resume keeps it, while a new revision reads current configuration.
@@ -20,7 +47,7 @@ When supplied, consume [CharacterEvidence and reusable LocationDesign](../../doc
 An attested person's existence does not prove presence in this Scene. Keep original
 and composite identities explicit; never resolve them to historical people by name.
 Reference existing places and request local time, ground, light or population
-changes; altered geography returns to production-design rather than duplicating a
+changes; altered geography returns to environment-design rather than duplicating a
 new base environment inside every Scene. Preserve approved unrelated scenes in a
 targeted revision.
 
@@ -42,11 +69,11 @@ Use `context.build_context` only when required parent or existing Scene context 
 
 ### 3. Plan
 
-Before drafting, read [Professional Scene Planning](references/planning.md) and the [Dialogue Layer content convention](../../docs/dialogue-layer-content-convention.md), then apply them. Create an internal Scene plan that inherits the Episode; state assigned historical beats, a change-based purpose, `narrativeInputState`, `requiredTransition`, playable objective/opposition where appropriate, supported stakes, playable beats, meaningful turn, `narrativeOutputState`, necessity/coverage evidence, Shot-design contract, and unresolved questions. Decide whether exact spoken content is needed: environment, pure action, silence, reaction, battle, transition, or visually sufficient information may require none. When speech or narration is necessary, plan exact text, stable speaker identity, dramatic intent, provenance, performance intent, and numeric duration before Shot design. Keep the plan in Agent Run Context or temporary working state. Do not call `scene.create_scene` or `scene.save_scene` to store it.
+Before drafting, read [Professional Scene Planning](references/planning.md) and the [Dialogue Layer content convention](../../docs/dialogue-layer-content-convention.md), then apply them. Create an internal Scene plan that inherits the Episode; state assigned historical beats, a change-based purpose, `narrativeInputState`, `requiredTransition`, playable objective/opposition where appropriate, supported stakes, playable beats, meaningful turn, `narrativeOutputState`, necessity/coverage evidence, Shot-design contract, and unresolved questions. Decide whether exact spoken content is needed: environment, pure action, silence, reaction, battle, transition, or visually sufficient information may require none. When speech or narration is necessary, request reviewed exact text, stable speaker identity, dramatic intent, provenance and estimates from Dialogue Design before Shot design. Performance Direction separately supplies performance intent. Keep the plan in Agent Run Context or temporary working state. Do not call `scene.create_scene` or `scene.save_scene` to store it.
 
 ### 4. Execute Draft
 
-Execute the plan as a complete candidate formal Scene state in playable action and, only when required, reviewed exact spoken content. A silent Scene keeps `spokenContent` empty; never add dialogue merely because the unit is a Scene. When speech is required, persist each `DIALOGUE` or `NARRATION` item with `id`, `kind`, `speakerKey`, exact `text`, `intent`, `mustKeep`, `performanceIntent`, `provenance`, and positive integer `estimatedDurationMs`. Character dialogue resolves its Work-scoped key without requiring a visual Asset; narration uses a stable `narrator:` key. Let resistance force tactic changes; use beats when objective, tactic, information, or power changes; let important information alter behavior; express interior states through behavior, movement, interaction, object use, reaction, choice, silence, distance, or position. A dialogue-function summary such as `dialogueSubtextIntent` may supplement but never replace required exact text. The draft must let Shot design cover approved action without inventing the conflict or spoken words. It must not be characters plus location, talking heads, historical exposition, static conversation, interior summary, placeholder, test content, or scratchpad. Do not persist a partial draft.
+Execute the dramaturgy plan as a complete candidate formal Scene state with approved causal action and, only when required, Dialogue Design’s reviewed exact spoken content. The professional SceneAssembly references the independent departments; do not paste their art, lighting, performance or editorial Bibles into Scene. A silent Scene keeps `spokenContent` empty; never add dialogue merely because the unit is a Scene. When speech is required, persist each `DIALOGUE` or `NARRATION` item with `id`, `kind`, `speakerKey`, exact `text`, `intent`, `mustKeep`, `performanceIntent`, `provenance`, and positive integer `estimatedDurationMs`. Character dialogue resolves its Work-scoped key without requiring a visual Asset; narration uses a stable `narrator:` key. Let resistance force tactic changes; use beats when objective, tactic, information, or power changes; let important information alter behavior; express interior states through behavior, movement, interaction, object use, reaction, choice, silence, distance, or position. A dialogue-function summary such as `dialogueSubtextIntent` may supplement but never replace required exact text. The draft must let Shot design cover approved action without inventing the conflict or spoken words. It must not be characters plus location, talking heads, historical exposition, static conversation, interior summary, placeholder, test content, or scratchpad. Do not persist a partial draft.
 
 ### 5. Review
 

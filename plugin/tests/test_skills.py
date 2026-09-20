@@ -10,6 +10,16 @@ from drama_plugin.skills import SkillRegistry
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED = {"music-direction", "director", "authorial-voice", "performance-casting", "production-design", "cinematic-direction", "cinematic-finishing", "video-model-selection", "cinematic-screenplay-incubation", "historical-research", "work-creation", "script-adaptation", "episode-development", "scene-development", "dramatic-performance-direction", "shot-design", "asset-resolution", "shot-production", "audio-production"}
+# Independently discoverable creative departments; indexing/QA remain modules.
+EXPECTED |= {
+    "adaptation-boundary", "story-architecture", "character-dramaturgy", "dialogue-design",
+    "character-art", "costume-design", "look-continuity", "environment-design", "environment-art",
+    "set-decoration", "prop-design", "animal-design", "scene-layout", "blocking",
+    "action-choreography", "battle-crowd-choreography", "cinematography", "lighting-design",
+    "color-design", "voice-direction", "voice-identity", "diegetic-vocal", "sound-design",
+    "editorial-design", "vfx-planning", "color-grading", "graphics-design", "asset-planning",
+    "reference-strategy", "clip-decomposition",
+}
 CREATIVE = {
     "work-creation": ("work.create_work", "work.save_work", ("historical_spine_complete", "fact_attribution_valid", "protagonist_scope_alignment", "structure_covers_spine")),
     "script-adaptation": ("script.create_script", "script.save_script", ("historical spine", "fact attribution", "episode architecture", "climax")),

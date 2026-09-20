@@ -142,11 +142,15 @@ def test_existing_asset_no_music_rights_requirement(kind):
 
 def test_skill_tool_architecture():
     p=DramaPlugin.load(ROOT, mock_data=MockDramaData())
-    assert len(p.skills.list())==19 and len(p.tools.list())==50
+    assert len(p.skills.list())==49 and len(p.tools.list())==50
     for skill in ['cinematic-direction','cinematic-finishing']:
         text=(ROOT/'skills'/skill/'skill.yaml').read_text()
-        assert 'asset.search_assets' in text and 'asset.get_asset' in text
-    assert '1–3' in (ROOT/'skills/cinematic-direction/SKILL.md').read_text()
+        assert 'asset.get_asset' in text
+        if skill == 'cinematic-finishing':
+            assert 'asset.search_assets' in text
+        else:
+            assert 'shot.save_shot' not in text  # Projection consumes approved originals.
+    # Reference capacity remains enforced by route contracts, not projection prose.
     assert 'NO_BGM' in (ROOT/'skills/cinematic-finishing/SKILL.md').read_text()
 
 

@@ -31,12 +31,12 @@ Use `media.list_media` for scoped source material discovery. Source bytes, hash,
 duration, tracks, timeline and ownership must agree before editing. Preserve the
 original. A filename is not selection or recovery authority.
 
-## Scene Sound Plan
+## Consume the Sound Bible for measured finishing
 
-Plan the continuous dramatic passage first, independently of Shot file edges:
-Dialogue; Diegetic / Source Sound; Persistent Ambience; BGM; Transition; Silence.
-Give each meaningful cue a source, narrative function, passage range, entry/exit
-and changes in distance, direction, spectrum or attention. One cue can cross
+Read Sound Design’s continuous passage plan, independently of Shot file edges:
+Dialogue; Diegetic / Source Sound; Persistent Ambience; Transition; Silence.
+Music Direction separately supplies BGM decisions. Conform each approved cue’s
+source, function, passage range, entry/exit and perspective to observed Media. One cue can cross
 several Shots and adjacent Scenes. A cut does not restart or stop it. Use J/L
 cuts, crossfades and envelopes only where they serve space, action or attention.
 Do not mechanically loop a short vocal/music phrase to fill a longer passage.
@@ -50,8 +50,8 @@ An isolated wrong sound does not justify inventing a new battle or changing stor
 
 ## BGM decision
 
-Choose NO_BGM, SUBTLE or ACTIVE for the Scene/passage. If no concrete dramatic
-function is identifiable, choose NO_BGM: this is a complete artistic decision.
+Consume Music Direction’s reviewed NO_BGM, SUBTLE or ACTIVE decision for the
+Scene/passage. If no reviewed music decision exists, return to that owner.
 Distinguish it from unavailable music. For music, state whose situation it helps
 the audience understand, its entry/exit, cross-Shot scope, and how dialogue and
 important source sounds retain attention. An emotion label alone is insufficient.
@@ -70,7 +70,7 @@ never authorizes new picture, voice or music generation.
 The Host translates the plan into a local recipe: verified inputs, source trims,
 placements, envelopes, replacement windows, protected dialogue and remux. Use
 the packaged `scripts/finish.py` entry and [Host contract](../../docs/cinematic-finishing-host.md).
-The Core makes creative decisions; the Host handles extraction, trim, fades,
+Department originals own creative decisions; the Host handles extraction, trim, fades,
 crossfade, ducking, mixing, probe and video stream copy. Verify compressed video
 packets AND timestamps; a changed container hash is expected. Do not re-encode
 picture as a convenience. Preserve original audio outside approved edits.

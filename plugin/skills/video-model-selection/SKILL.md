@@ -5,6 +5,31 @@ description: Select a video model, input mode and execution path for an approved
 
 # Video Model Selection
 
+## Role and authority
+
+Qualify a production route against approved creative requirements. Fitness, verified capability, quality evidence and cost belong here; creative decisions remain upstream.
+
+## Inputs and dependencies
+
+Read the professional DirectorPackage, Asset Manifest, Reference Plan, Generation Clip Plan and current department/continuity refs. For actual execution consume the frozen CinematicShotSpec and existing approval/budget gates.
+
+## Outputs
+
+Return a Video Route Policy or source-pinned qualified route with explicit unresolved capabilities. A planning contract does not assert an implemented provider adapter.
+
+## Forbidden authority
+
+Do not change department content, canonical speech, action order or continuity to fit a route. Provider-specific controls stay in route, Prompt Compiler and adapter layers; no creative Bible changes merely because a provider changes.
+
+## Quality gates
+
+Verify required inputs and capabilities, then quality evidence and full incremental cost. Missing evidence remains UNKNOWN. Route eligibility, authorization, observed media quality and adoption remain separate.
+
+## Failure and escalation
+
+Return unsupported demands to Director with the originating department identified. The department can propose an authorized creative revision; this selector cannot silently supply one. No viable route means NO_EXECUTABLE_CANDIDATE, not a fabricated request.
+
+
 Model qualification and execution binding are separate facts. Retain all model
 fit, quality, reference, duration, native-audio and cost decisions. Bind the
 selected capability to an explicitly supported Host execution route; preserve

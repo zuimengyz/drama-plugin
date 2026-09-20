@@ -1,0 +1,4 @@
+interface:
+  display_name: "Set Decoration"
+  short_description: "Source-bound Set Decoration design"
+  default_prompt: "Use $set-decoration to complete its source-bound department output."

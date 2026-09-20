@@ -1,0 +1,4 @@
+interface:
+  display_name: "Adaptation Boundary"
+  short_description: "Source-bound Adaptation Boundary design"
+  default_prompt: "Use $adaptation-boundary to complete its source-bound department output."

@@ -1,0 +1,31 @@
+code: reference-strategy
+name: Reference Strategy
+description: Plan what visual and audio proofs production needs and why.
+context:
+  required:
+  - sourcePins
+  - departmentInputs
+  optional:
+  - directorPackageRef
+  - approvedBaseline
+  - continuityRef
+  - userFeedback
+  refresh_after: []
+tools:
+  preferred:
+  - work.get_work
+  - scene.get_scene
+  allowed:
+  - script.get_script
+  - episode.get_episode
+  - shot.get_shot
+  - asset.get_asset
+  - context.build_context
+completion:
+  conditions:
+  - Every required reference tests a concrete claim; no existing Media is asserted
+    without a verified identity; future preparation remains pending.
+  - Bible records retain source/dependency pins and ownership; unresolved requirements
+    remain explicit.
+  - Return department output references and validation status to the Host without
+    production.

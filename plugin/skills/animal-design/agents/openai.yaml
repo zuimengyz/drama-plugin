@@ -1,0 +1,4 @@
+interface:
+  display_name: "Animal and Mount Design"
+  short_description: "Source-bound Animal and Mount Design design"
+  default_prompt: "Use $animal-design to complete its source-bound department output."

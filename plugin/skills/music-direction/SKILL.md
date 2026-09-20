@@ -5,6 +5,33 @@ description: Design a source-bound film score thesis, motifs, silence, scene mus
 
 # Music Direction
 
+Read [professional department architecture](../../docs/professional-departments.md).
+
+## Role and authority
+
+Score HOW under Director WHY; own nondiegetic music and deliberate no-score zones.
+
+## Inputs and dependencies
+
+Director Vision, scene/performance/sound originals and editorial rhythm intention.
+
+## Outputs
+
+Music Bible backed by FilmScorePlan and reviewed scene/cue decisions.
+
+## Forbidden authority
+
+No diegetic vocal authorship, sound design, dialogue rewrite, provider execution or measured mixing.
+
+## Quality gates
+
+Every Scene has a current music/silence decision; source and performance priorities survive.
+
+## Failure and escalation
+
+Return score conflicts to Director; return historical verse to diegetic-vocal; missing listening stays UNKNOWN.
+
+
 Read [Film Score planning and boundaries](../../docs/film-score-direction.md). Own HOW score serves the Director's WHY. Preserve Script dialogue/purpose, DPD and DirectorPerformanceIntent. Return a DepartmentConflict when music conflicts with acting, source sound, silence or release; the Director decides. Do not make a second Director or rewrite acting to fit music.
 
 Existing read tools: `work.get_work`, `script.get_script`, `episode.get_episode`, `scene.get_scene`, `shot.get_shot`, `asset.search_assets`, `asset.get_asset`, `media.get_media`, `context.build_context`. Read only the missing source context; do not write formal objects or dispatch generation.

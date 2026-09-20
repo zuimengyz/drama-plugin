@@ -1,0 +1,4 @@
+interface:
+  display_name: "Story Architecture"
+  short_description: "Source-bound Story Architecture design"
+  default_prompt: "Use $story-architecture to complete its source-bound department output."

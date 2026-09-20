@@ -1,4 +1,4 @@
 interface:
   display_name: "Director"
-  short_description: "Coordinate intent, evidence and global creative decisions"
-  default_prompt: "Use $director to interpret this approved scope, select only needed capabilities, and review their source-bound results before adoption."
+  short_description: "Orchestrate creative departments under film intent"
+  default_prompt: "Use $director to set film priorities, request registered departments and review their source-bound results."

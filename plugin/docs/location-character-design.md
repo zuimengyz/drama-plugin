@@ -1,8 +1,11 @@
 # Reusable locations and character evidence
 
-Production-design owns stable place and character design under Director intent.
-Scene owns dramatic events; its layout and local state apply a place to those
-events. Shot design owns the actual view and blocking. These optional facets extend
+> For current department authority and authoring, read [professional departments](professional-departments.md). The composite schemas below remain backward-compatible representations, not ownership grants for new packages.
+
+Character Art owns stable appearance; Environment Functional Design owns spatial
+places, and Environment Art owns their screen appearance under Director intent.
+Scene owns dramatic events; Layout and Blocking own placement and movement.
+Camera owns the view; Shot Design owns coverage. These optional facets extend
 the existing preproduction path; they add no top-level Skill, entity matching,
 business table, media call or approval authority.
 

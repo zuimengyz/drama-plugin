@@ -1,0 +1,4 @@
+interface:
+  display_name: "Environment Functional Design"
+  short_description: "Source-bound Environment Functional Design design"
+  default_prompt: "Use $environment-design to complete its source-bound department output."

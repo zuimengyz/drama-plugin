@@ -5,6 +5,33 @@ description: Build a traceable historical research context for drama creation. U
 
 # Historical Research
 
+Read [professional department architecture](../../docs/professional-departments.md).
+
+## Role and authority
+
+Source facts, citations, confidence and historical uncertainty.
+
+## Inputs and dependencies
+
+Research question, supplied evidence and the relevant historical scope.
+
+## Outputs
+
+Historical Source Bible with traceable claims and uncertainty.
+
+## Forbidden authority
+
+No dramatic causality rewrite or upgrading reconstruction to attestation; departments cannot override facts.
+
+## Quality gates
+
+Distinguish identity, event placement and behavior evidence; preserve source actor granularity.
+
+## Failure and escalation
+
+Unresolved consequential claims remain UNRESOLVED and return a bounded research question; no invented certainty.
+
+
 Frame a focused question and retain source identity with each material claim. Distinguish documented fact, supported inference, unresolved dispute, and dramatic invention. Prefer primary evidence when available and never turn a plausible inference into certain history.
 
 Treat a claimed historical direct quotation as a stricter evidence case: retain a stable source reference, exact locator, and the matching source excerpt. A general citation or event evidence alone supports adaptation context, not verbatim attribution; without all three, downstream dialogue must not label generated wording as a direct quote.

@@ -1,0 +1,31 @@
+code: scene-layout
+name: Scene Layout
+description: Place people, formations and action objects within an approved environment.
+context:
+  required:
+  - sourcePins
+  - departmentInputs
+  optional:
+  - directorPackageRef
+  - approvedBaseline
+  - continuityRef
+  - userFeedback
+  refresh_after: []
+tools:
+  preferred:
+  - work.get_work
+  - scene.get_scene
+  allowed:
+  - script.get_script
+  - episode.get_episode
+  - shot.get_shot
+  - asset.get_asset
+  - context.build_context
+completion:
+  conditions:
+  - Every placement and lane resolves to topology; needed entrances/exits are reachable;
+    formations fit; no camera or art choice changes the map.
+  - Bible records retain source/dependency pins and ownership; unresolved requirements
+    remain explicit.
+  - Return department output references and validation status to the Host without
+    production.

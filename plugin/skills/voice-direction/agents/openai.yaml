@@ -1,0 +1,4 @@
+interface:
+  display_name: "Voice Direction"
+  short_description: "Source-bound Voice Direction design"
+  default_prompt: "Use $voice-direction to complete its source-bound department output."

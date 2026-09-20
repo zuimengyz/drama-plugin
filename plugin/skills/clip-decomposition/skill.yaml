@@ -1,0 +1,32 @@
+code: clip-decomposition
+name: Generation Clip Planning
+description: Plan executable clip boundaries while preserving canonical coverage and
+  action.
+context:
+  required:
+  - sourcePins
+  - departmentInputs
+  optional:
+  - directorPackageRef
+  - approvedBaseline
+  - continuityRef
+  - userFeedback
+  refresh_after: []
+tools:
+  preferred:
+  - work.get_work
+  - scene.get_scene
+  allowed:
+  - script.get_script
+  - episode.get_episode
+  - shot.get_shot
+  - asset.get_asset
+  - context.build_context
+completion:
+  conditions:
+  - Every clip begins/ends in a recoverable state; all protected events and exact
+    lines are covered; no formal Shot is invented by a production split.
+  - Bible records retain source/dependency pins and ownership; unresolved requirements
+    remain explicit.
+  - Return department output references and validation status to the Host without
+    production.

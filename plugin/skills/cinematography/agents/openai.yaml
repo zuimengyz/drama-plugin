@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cinematography"
+  short_description: "Source-bound Cinematography design"
+  default_prompt: "Use $cinematography to complete its source-bound department output."

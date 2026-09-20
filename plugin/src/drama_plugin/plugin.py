@@ -116,7 +116,15 @@ class DramaPlugin:
         return ProviderBundle(memory, asset, research, production, media, context, voice, role_dubbing, audio_semantic), clients
 
     def capabilities(self) -> dict[str, Any]:
-        return {"plugin": self.manifest.model_dump(mode="json", by_alias=True), "skills": [skill.code for skill in self.skills.list()], "tools": [tool.describe() for tool in self.tools.list()]}
+        from drama_plugin.professional import registry, dependency_order
+        from drama_plugin.contracts.base import dump_contract
+        return {"plugin": self.manifest.model_dump(mode="json", by_alias=True), "skills": [skill.code for skill in self.skills.list()], "tools": [tool.describe() for tool in self.tools.list()],
+                "professionalDepartments": [dump_contract(registry()[key]) for key in dependency_order()]}
+
+    def professional_host(self, artifact_root: Path | str) -> Any:
+        """Explicit design-only Host entry; never starts an agent or production loop."""
+        from drama_plugin.hosts.professional import ProfessionalDepartmentHost
+        return ProfessionalDepartmentHost(artifact_root, self.skills.get)
 
     async def aclose(self) -> None:
         if self.providers.audio_semantic is not None:

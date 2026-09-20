@@ -1,107 +1,42 @@
 ---
 name: production-design
-description: Design reusable character casting, faction costume hierarchy, sets and visual motifs from story intent. Use for visual suitability and screen authority before asset resolution; does not produce media or select providers.
+description: Align independently authored visual departments under Director Vision; use for coherence review and visual conflict routing, not character, costume or environment authorship.
 ---
 
-# Production Design & Casting
+# Production Design Supervisor
 
-Decide what the world and characters should look like, using dramatic role, age,
-experience, class, story phase and audience readability. Asset resolution owns
-finding, creating or reusing the identity references that realize that design.
-Identity continuity alone never proves casting suitability. For historical screen
-drama, combine historical plausibility, modern cinematic screen appeal, character
-personality and leading-character visual authority. History constrains facts and
-period semantics; it does not require museum-reenactment plainness. Reasonable face
-and body idealization is a design choice. Distinguish role-specific attractiveness
-from idol styling or cosmetic perfection; do not make every role beautiful, every
-antagonist ugly, or every hero muscular. Preserve explicitly intended ordinary or
-unconventional casting. Never copy a real star or use fantasy armor to supply the
-authority missing from the person.
+## Role and authority
 
-For staged face, relative-scale and performance proof searches, use
-[performance-casting](../performance-casting/SKILL.md); this skill retains stable
-visual design authority. A neutral one-person portrait cannot establish a relative
-stature claim.
+Own visual coherence review, alignment priorities and conflict recommendations. Character Art and Environment Art are peer originals; neither is an internal paragraph of this skill.
 
-Read the [design and handoff contract](references/design.md) when authoring a
-revision. Consume approved story, existing visual identity, actual media review
-and user feedback. When historical accuracy matters, inherit HistoricalCanonPolicy
-and resolve consequential gaps with historical-research; mark design choices and
-optional hypotheses separately from documented appearance. Do not convert sparse
-evidence into a claimed exact portrait or introduce consequential plot facts.
+Read [professional department architecture](../../docs/professional-departments.md) for owned Bible records, dependency gates and Host handoff.
 
-Use only these four internal modes, selecting the ones the request needs:
+## Inputs and dependencies
 
-- **Character / Casting Design:** CharacterVisualSpec and VisualAuthority; identify
-  silhouette, body/face suitability, posture, economical movement, costume and
-  spatial priority. A core first appearance needs readable action/attitude and a
-  FirstAppearanceContract. Captions label identity; they cannot supply authority.
-- **Costume / Faction Design:** FactionVisualSystem combines shared visual grammar
-  with rank/role differences in construction, materials, wear and silhouette.
-  Repeated identical costumes with different faces require revision. Distinguish
-  factions through supported differences, not invented uniform regulations.
-- **Location / Set Design:** For reusable environments, author one LocationDesign
-  per independently usable place, then reference it from Scene layouts with
-  bounded local state changes. Follow [location and character evidence](../../docs/location-character-design.md).
-  The legacy LocationDesignSpec remains valid for existing inline briefs; it does
-  not replace a requested Environment Design Bible. A route may reference several
-  distinct places in order; atmosphere adjectives are not terrain or layout.
-- **Prop / Visual Motif Design:** VisualMotifSpec names a recurrent object or
-  material, its changing narrative meaning and the limit against decoration.
+Director Vision; historical boundary; current Character Art, Costume, Look, Environment Art, Set Dressing, Prop, Animal and Color outputs. Functional Environment and Layout constrain feasibility.
 
-Keep transient damage, dirt, wetness, fatigue and held objects in Scene/Shot
-CharacterState. Stable design must not absorb one shot's condition. Specify only
-fields that distinguish this role; supporting characters need no exhaustive face
-inventory. Stable traits need not be photogenic; authority can be quiet or hidden
-when a declared story purpose warrants concealment.
+## Professional decisions
 
-When historical character reconciliation is requested, attach CharacterEvidence
-to CharacterVisualSpec: distinguish identity evidence from the evidence placing
-that person in each Scene, and delimit reconstructed behavior. Never infer an
-identity match from a name. Assess documented scene actors for clarity and dramatic
-usefulness without a character-count target; return FICTIONAL_PROXY_OVERLOAD as a
-Director review note, not a reason to erase invented people.
+Compare silhouette and scale hierarchy, material richness, era coherence, character/world contrast, wear, density and color intention across the same film. Judge whether a strong element steals another department’s intended attention. Protect deliberate ordinary or unconventional people rather than homogenizing them into attractive heroes. Route a mismatch with an observable requirement and a scoped revision request; compare the revised original on return. Preserve unresolved work rather than completing it yourself.
 
-Review actual evidence with PASS/PARTIAL/FAIL and reasons: identity, main-character
-first-glance importance, silhouette/body/face, posture, costume/blocking/camera
-and surrounding reaction privilege, faction hierarchy/contrast, place specificity,
-prop function, storytelling, modern styling, fantasy contamination and evidence
-fidelity. Keep unobserved image quality UNKNOWN. No beauty or hero numeric scores.
-Scene chooses how a person enters; this skill designs visual importance; shot-design
-chooses the concrete view. Do not author camera execution or provider prompts here.
+## Outputs
 
-For stable, reusable designs only, search existing Asset semantic keys before
-creating a text-only OTHER Creative Asset. Use existing create/get/search and
-`creative_assets.remember`; no dummy Media, new table or reference image is needed.
-Preserve candidate status and prior revisions. A new casting proposal cannot
-replace current Character referenceMediaIds or become approved without the user's
-casting decision. Keep shot-specific proposals as working artifacts.
+A Production Design Alignment / Production Design Bible containing department refs, alignment findings, reasoned dispositions and repair owners. Its content is review, never a copied set of visual originals.
 
-Handoff a fingerprinted design and its historical policy to asset-resolution,
-shot-design or cinematic-direction; they may apply state and coverage but may not
-rewrite stable traits. This skill neither selects models, generates media, writes
-provider parameters, revises screenplay peaks nor performs an edit. Complete with
-reviewed design, explicit unknowns, selected persistence scope and a downstream
-handoff; image validation remains a separately authorized production task.
+## Forbidden authority
 
-For missing supplied context, use `work.get_work`, `script.get_script`,
-`episode.get_episode`, `scene.get_scene` or `shot.get_shot` by known identity;
-use `context.build_context` only for unresolved context. Discover stable designs
-with `asset.list_assets` / `asset.search_assets` and inspect `asset.get_asset`
-and `media.get_media`. Verify consequential evidence with `research.search_sources`
-and `research.verify_claim`. After a complete reusable candidate exists,
-`asset.create_asset` is the first write; `asset.save_asset` is only for an explicit
-revision of an existing design, never a routine second write after creation.
+Do not author face anatomy, armor, tents, props, lighting positions, camera implementation or color palettes. Do not replace an approved design, create reference Media, select a provider or collapse all Bibles into this report.
 
-For a sequence, contribute source-pinned Bible entries and usable geography to the
-[sequence package](../../docs/sequence-production-contract.md). Keep each declared
-asset interaction test proportional to actual coverage needs; a motif description
-does not by itself establish a prop's grip, scale, contact or continuity state.
+## Quality gates
 
-For formal sequence production, freeze approved visual duties with typed ProductionDesignFreeze and CinematicStylizationPolicy in the [sequence contract](../../docs/sequence-production-contract.md#production-design-freeze-and-executable-closure). Candidate suitability never implies user casting approval; keep missing visual approvals separate from blocking-design readiness.
+All participating originals are current and attributed; findings distinguish text design coherence from unobserved image quality. Historical constraints, user approvals and continuity remain independent gates.
 
-For parallel live-action/CG design, read [visual routes](references/visual-routes.md). Keep route-specific proposals and references separate from existing approved design.
+## Failure and escalation
 
-## Film and scene preproduction
+Missing design returns to its named department. Cross-department conflict returns to Director with choices and consequences; approval never grants this supervisor authority to rewrite either original.
 
-For full preproduction, use [film design, color script, scene packets and costume continuity](references/preproduction.md). Visual development stays in this skill. Consume screenplay readiness before finalization; use route-aware Historical Cinematic Stylization without changing Canon or implying Lookdev approval.
+For legacy contracts read [compatibility and preproduction](references/preproduction.md). Existing ProductionDesignFreeze, asset identity and evidence constraints remain valid; old composite schemas are read-compatible inputs, not the new authoring ownership map.
+
+## Source reads
+
+Use supplied current originals first. For missing scoped context, read `work.get_work`, `scene.get_scene`, `script.get_script`, `episode.get_episode`, `shot.get_shot`, `asset.get_asset`, `context.build_context`. These reads do not authorize source writes or production.

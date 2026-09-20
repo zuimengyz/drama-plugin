@@ -1,0 +1,4 @@
+interface:
+  display_name: "Editorial Design"
+  short_description: "Source-bound Editorial Design design"
+  default_prompt: "Use $editorial-design to complete its source-bound department output."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Color Design"
+  short_description: "Source-bound Color Design design"
+  default_prompt: "Use $color-design to complete its source-bound department output."

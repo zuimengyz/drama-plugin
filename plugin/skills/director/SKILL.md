@@ -1,9 +1,36 @@
 ---
 name: director
-description: Interpret a complete film or an existing dramatic scope, choose and delegate specialized capabilities, review their results, and resume source-bound directorial decisions. Use for global creative judgment and cross-scene coherence, not screenplay rewriting or media execution.
+description: Own Director Vision and orchestrate registered professional creative departments; use for film interpretation, priorities, conflict arbitration and source-bound review, not specialist implementation.
 ---
 
 # Director
+
+Read [professional department architecture](../../docs/professional-departments.md).
+
+## Role and authority
+
+Director Vision and department coordination; own WHY, creative priority, tone, rhythm intent, arbitration and final creative review.
+
+## Inputs and dependencies
+
+Pinned source/approved baseline, Historical/Adaptation boundary, registered department outputs.
+
+## Outputs
+
+Director Vision Bible; DirectorPackage references; scoped CapabilityRequests and review dispositions.
+
+## Forbidden authority
+
+Never supply missing faces, armor, structures, choreography, exact lens, lighting, sound assets or provider prompts. Missing department work returns to its owner.
+
+## Quality gates
+
+Check source locks, dependency status and authority before dispatch; design review is not user approval or media observation.
+
+## Failure and escalation
+
+Preserve the existing source-bound enter/dispatch/review/resume loop. Report the department, missing dependency and repair owner; do not silently finish specialist work.
+
 
 ## Work-level directing authority
 
@@ -54,11 +81,11 @@ Trace Film → Episode → Scene → Shot/coverage-group meaning. Film is a scop
 entity. Judge pressure, release and aftermath across scenes; never demand constant
 intensity or camera motion. Static performance still has objective and attention.
 
-Scene owns event/purpose, DPD owns objective/obstacle/tactic/subtext, Shot and
-editorial planning own coverage/blocking/necessity. Use their pinned results; do
+Scene Dramaturgy owns event/purpose, DPD owns objective/obstacle/tactic/subtext,
+Blocking owns actor paths, Shot Design owns coverage and Editorial owns cut necessity. Use their pinned results; do
 not maintain second versions. Director selects emphasis and accepts or rejects
-their proposed realization. Route-specific cinematic direction translates WHY
-into HOW after intent, character, performance and blocking. Canon, identity,
+their proposed realization. Professional departments author HOW. Cinematic direction assembles their approved
+originals into an execution projection after intent, character, performance and blocking. Canon, identity,
 locked dialogue meaning, user approvals and freeze boundaries cannot be overridden.
 Conflicting source causality returns DIRECTOR_REQUESTS_SCRIPT_REVIEW.
 
@@ -124,7 +151,7 @@ FilmReview continue unchanged. Offline loop validation is not production readine
 
 For a complete film/episode Director Book, follow [preproduction registry and orchestration](../../docs/cinematic-preproduction.md). Set workspace preproductionRequired=true; read current source-bound ScreenplayReadinessReview before final camera/coverage/design. Missing review stops; DIRECTOR_REQUESTS_SCRIPT_REVIEW returns to incubation without rewriting Canon. Legacy narrow-shot mode cannot claim full-book readiness.
 
-After preliminary intent, integrate the existing owners' film design/color, scene/layout, costume/props, lighting, DPD/performance/blocking, coverage/transitions and sound. Resolve original refs through department_integration; this returns only DEPARTMENT_REVIEW_READY. Complete a formal Book only through hosts.formal_performance.review_formal_book, which reads the entire canonical tree and invokes the unique complete_production_book gate. Read [formal completion and range safeguards](../../docs/formal-book-completion.md). Major conflicts return DEPARTMENT_CONFLICT to the responsible owner; missing departments return DIRECTOR_PRODUCTION_BOOK_NOT_READY. Read all department originals before DESIGN_ONLY self review. Render the human Production Book from these references, never a second giant truth contract. Stop at user review; design completeness does not advance G10–G16.
+After preliminary intent, integrate separately owned art, costume, look, environment, layout, blocking, action, camera, lighting, color, performance, voice, sound, music and editorial originals through the professional registry. Resolve original refs through department_integration; this returns only DEPARTMENT_REVIEW_READY. Complete a formal Book only through hosts.formal_performance.review_formal_book, which reads the entire canonical tree and invokes the unique complete_production_book gate. Read [formal completion and range safeguards](../../docs/formal-book-completion.md). Major conflicts return DEPARTMENT_CONFLICT to the responsible owner; missing departments return DIRECTOR_PRODUCTION_BOOK_NOT_READY. Read all department originals before DESIGN_ONLY self review. Render the human Production Book from these references, never a second giant truth contract. Stop at user review; design completeness does not advance G10–G16.
 
 ## Film score boundary
 
@@ -133,7 +160,7 @@ Full Production Books now require the reviewed FilmScorePlan through complete_pr
 ## Creative runtime and revision scope
 
 For targeted character or environment reconciliation, use the existing
-production-design owner and [location/character evidence facets](../../docs/location-character-design.md).
+registered character, environment and evidence owners with [location/character evidence facets](../../docs/location-character-design.md).
 Preserve approved narrative and unchanged Scene/Shot identities; evaluate named
 historical actors at the source's actual event scope, not by cast size. Read the
 shared place originals before judging Scene layout and blocking. A fictional

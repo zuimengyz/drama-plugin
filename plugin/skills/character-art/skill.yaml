@@ -1,0 +1,33 @@
+code: character-art
+name: Character Art
+description: Design reusable face, body and screen identity under approved character
+  meaning.
+context:
+  required:
+  - sourcePins
+  - departmentInputs
+  optional:
+  - directorPackageRef
+  - approvedBaseline
+  - continuityRef
+  - userFeedback
+  refresh_after: []
+tools:
+  preferred:
+  - work.get_work
+  - scene.get_scene
+  allowed:
+  - script.get_script
+  - episode.get_episode
+  - shot.get_shot
+  - asset.get_asset
+  - context.build_context
+completion:
+  conditions:
+  - Character distinction and leading/supporting hierarchy work without costume spectacle;
+    no real-star copy or unsupported exact historical portrait; reference requirements
+    test identity rather than prettiness.
+  - Bible records retain source/dependency pins and ownership; unresolved requirements
+    remain explicit.
+  - Return department output references and validation status to the Host without
+    production.

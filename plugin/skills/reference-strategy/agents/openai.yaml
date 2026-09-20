@@ -1,0 +1,4 @@
+interface:
+  display_name: "Reference Strategy"
+  short_description: "Source-bound Reference Strategy design"
+  default_prompt: "Use $reference-strategy to complete its source-bound department output."

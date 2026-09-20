@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sound Design"
+  short_description: "Source-bound Sound Design design"
+  default_prompt: "Use $sound-design to complete its source-bound department output."

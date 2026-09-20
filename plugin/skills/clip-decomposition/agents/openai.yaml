@@ -1,0 +1,4 @@
+interface:
+  display_name: "Generation Clip Planning"
+  short_description: "Source-bound Generation Clip Planning design"
+  default_prompt: "Use $clip-decomposition to complete its source-bound department output."

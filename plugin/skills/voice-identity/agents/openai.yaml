@@ -1,0 +1,4 @@
+interface:
+  display_name: "Voice Identity"
+  short_description: "Source-bound Voice Identity design"
+  default_prompt: "Use $voice-identity to complete its source-bound department output."

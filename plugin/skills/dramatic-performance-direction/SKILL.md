@@ -5,6 +5,33 @@ description: Build a replayable, provider- and modality-neutral Scene/Beat/Line 
 
 # Dramatic Performance Direction
 
+Read [professional department architecture](../../docs/professional-departments.md).
+
+## Role and authority
+
+Performance direction: retain DPD psychological truth and author physical expression in a separate Performance Bible facet.
+
+## Inputs and dependencies
+
+Scene/Character/Dialogue, Director Performance Intent, Blocking and causal action constraints.
+
+## Outputs
+
+Performance Bible with DPD refs plus gesture, micro-action, listening, breathing and physical-state direction.
+
+## Forbidden authority
+
+Do not rewrite character identity, speech, spatial paths or detailed force/contact mechanics. Voice execution belongs to voice-direction.
+
+## Quality gates
+
+Check actor and listener task, restraint, physical load and continuity per beat; internal pressure is independent of outward amplitude.
+
+## Failure and escalation
+
+Return path defects to Blocking, impossible mechanics to Action and source conflicts to Screenplay. No generation follows from performance design.
+
+
 ## Partners and groups are source-owned too (R3)
 
 Read [full performance coverage and isolation](../../docs/full-performance-coverage.md). Every important listener needs its own sourced DPD task, obstacle and tactic, not a reaction label or a Director-invented psychology. Missing partner direction returns PARTNER_DPD_REQUIRED to this owner. Background listeners may use an existing BeatDPD group task; no Crowd Psychology. Candidate screenplay previews stay DESIGN_FIXTURE_ONLY, separately stored from formal DPD. Continuity summaries reference these DPDs without copying objective/subtext/knowledge/relationship truth.
@@ -34,13 +61,13 @@ Compose `Scene → Beat → Line` with the typed Core. Missing and null fields i
 
 Use action and relationship language, not moral labels or a single emotion label. Keep internal activation distinct from external control: high activation may remain highly controlled. `speakerKey` references identity; it does not duplicate age, rank, biography, personality, or Voice Profile.
 
-Do not add speech speed, pitch, loudness, pause milliseconds, breath, articulation, voice identity, provider prompt, model settings, camera, framing, gaze, posture, gesture, blocking, or physical motion. Those are projection concerns. Do not generate Audio/Visual Media, persist a new business entity, or invent a DPD-specific Tool.
+Do not add speech speed, pitch, loudness, pause milliseconds, articulation, voice identity, provider prompt, model settings, camera or framing to DPD. Keep the existing DPD schema unchanged. The separately owned Performance Bible may author gaze, posture, gesture, breath behavior and physical-state expression; Blocking owns paths/positions and Action owns physical mechanics. Voice Direction consumes that common performance truth for vocal delivery. Do not generate Audio/Visual Media, persist a new business entity, or invent a DPD-specific Tool.
 
 Finish when the three contracts validate, the effective direction is materially playable and distinct from character identity, and the canonical fingerprint is recorded. If essential objective, target, relationship, or historical/social constraint is unsupported or contradictory, report the missing input instead of filling it with stereotype or provider detail.
 
 For a text-only candidate, pin the selected screenplay artifact revision and line locators instead of pretending it is an adopted Scene. Extract only its dramatic action; do not copy or rewrite its speech. Keep the same Scene/Beat/Line ownership and clearly local identities. An unapproved visual design does not block this offline interpretation or authorize production. See [whole-scene craft proof](../cinematic-screenplay-incubation/references/scene-craft-proof.md).
 
-An explicit [visual route](../../docs/visual-route-contract.md) belongs to the downstream visual projection. Preserve this modality-neutral DPD and its fingerprint; cinematic-direction binds the route-specific physical realization separately.
+An explicit [visual route](../../docs/visual-route-contract.md) belongs to the downstream visual projection. Preserve this modality-neutral DPD and its fingerprint; the Performance Bible supplies physical realization while cinematic-direction projects its reviewed references without re-authoring it.
 
 ## Range and formal source safeguards
 

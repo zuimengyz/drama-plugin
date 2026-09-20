@@ -1,0 +1,4 @@
+interface:
+  display_name: "Diegetic and Historical Vocal"
+  short_description: "Source-bound Diegetic and Historical Vocal design"
+  default_prompt: "Use $diegetic-vocal to complete its source-bound department output."

@@ -26,19 +26,19 @@ Prefer the smallest coherent set. Do not split every sentence or dialogue line.
 
 Assign one or more concrete functions: establish space/power, reveal information, capture a decision or reaction, emphasize threat, create information disparity, preserve action continuity, or express relationship change. Delete or merge a Shot with no new visual, narrative, emotional, performance, or continuity function.
 
-## 4. Define subject, action, and blocking
+## 4. Bind subject, action, and blocking
 
-Specify who/what the audience observes, what visibly happens, and how spatial behavior expresses goals and relationships. Use approach, retreat, central occupation, blocked exit, avoided eyeline, or movement around another figure only when motivated; avoid excessive choreography.
+Specify who/what the audience observes and bind what visibly happens to approved Action and Blocking. Use approach, retreat, central occupation, blocked exit, avoided eyeline, or movement around another figure only when motivated; avoid excessive choreography.
 
-## 5. Motivate framing and camera
+## 5. Bind approved camera choices
 
-Choose wide/medium/close/detail or another appropriate size by required information, performance, spatial relation, emotion, and action. Do not mechanically cycle sizes.
+Consume Camera’s wide/medium/close/detail or another appropriate size by required information, performance, spatial relation, emotion, and action. Do not mechanically cycle sizes.
 
-Choose camera height/angle by context, blocking, editing, performance, spatial clarity, and subjective experience; reject simplistic “low equals powerful” formulas.
+Check Camera height/angle against context, blocking, editing, performance, spatial clarity, and subjective experience; reject simplistic “low equals powerful” formulas.
 
-Move the camera only to follow action, reveal information, change relationship, increase pressure, or shift attention. Prefer stillness when it completes the purpose.
+Bind only approved camera movement. Missing or conflicting motivation returns to Cinematography; do not invent a movement to fill coverage.
 
-Compose for subject priority, screen space, depth, relationship, negative space, visual obstacle, and environment information. Let composition serve the Scene rather than decorate it.
+Verify the Camera composition preserves subject priority, screen space, depth, relationship, negative space and environment information. Request revision from Cinematography if coverage loses required meaning.
 
 ## 6. Design dialogue coverage and rhythm
 
@@ -46,7 +46,7 @@ Do not alternate speaker close-ups automatically. Decide whose power, reaction, 
 
 Read exact text only from the parent Scene's canonical `spokenContent`. Bind a retained Shot through canonical `spokenContentBindings` with `spokenContentId` plus `ON_SCREEN_SPEAKER`, `REACTION`, `OFF_SCREEN`, or `VOICE_OVER`; never copy the body or add audio timing. The same item may span speaker and reaction coverage while remaining one source item.
 
-Let Shot duration and cutting serve Scene, performance, information, and action rhythm. Persist positive integer `plannedDurationMs`; prose rhythm may supplement but cannot replace it. For a standalone Shot, distinct bound item estimates must fit its planned duration. For continuous multi-Shot coverage, deduplicate shared item IDs and compare their estimates with the total group duration, then reserve playable room for action, reaction, and silence. Short form does not require every Shot to be short; hold on performance, reaction, silence, or tension only when narratively useful. Apply the [Dialogue Layer content convention](../../../docs/dialogue-layer-content-convention.md).
+Consume Editorial’s cut/hold intent so planned Shot duration serves Scene, performance, information and action rhythm. Persist positive integer `plannedDurationMs`; prose rhythm may supplement but cannot replace it. For a standalone Shot, distinct bound item estimates must fit its planned duration. For continuous multi-Shot coverage, deduplicate shared item IDs and compare their estimates with the total group duration, then reserve playable room for action, reaction, and silence. Short form does not require every Shot to be short; hold on performance, reaction, silence, or tension only when narratively useful. Apply the [Dialogue Layer content convention](../../../docs/dialogue-layer-content-convention.md).
 
 ## 7. Preserve spatial continuity
 
@@ -74,6 +74,6 @@ Remain provider-agnostic. Supply enough formal information for downstream produc
 
 ## 12. Complete the coverage draft contract
 
-The plan must support a minimal complete coverage group in which every Shot states narrative purpose, subject/action/blocking, motivated framing/angle/movement/composition, dialogue/reaction role, rhythm/duration, entry/exit state, continuity obligations, stable references where relevant, and feasibility.
+The plan must support a minimal complete coverage group in which every Shot states narrative purpose, subject/action and current Blocking/Camera refs, dialogue/reaction role, rhythm/duration, entry/exit state, continuity obligations, stable references where relevant, and feasibility.
 
 If production must invent the subject/action, spatial logic, transitions, or Scene-turn coverage, the Shot plan is incomplete.

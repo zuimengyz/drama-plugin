@@ -6,7 +6,7 @@ The host authors the interpretation from source passages, not from a name alone.
 RoleArchetypeProfile is an artifact, not another Character database. Its sources
 pin story, candidate interpretation, current visual/stylization policies and user
 direction, distinguishing their authority. Stable CharacterVisualSpec stays with
-production-design; screenplay owns meaning/dialogue; DPD extracts playable tasks.
+character-art; screenplay owns meaning/dialogue; DPD extracts playable tasks.
 
 Choose order by the least established, most consequential casting claim. A face-first
 lead may need FACE→SCALE→PERFORMANCE. A silhouette-dependent creature or unusually

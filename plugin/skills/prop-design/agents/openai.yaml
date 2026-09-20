@@ -1,0 +1,4 @@
+interface:
+  display_name: "Props and Weapons"
+  short_description: "Source-bound Props and Weapons design"
+  default_prompt: "Use $prop-design to complete its source-bound department output."

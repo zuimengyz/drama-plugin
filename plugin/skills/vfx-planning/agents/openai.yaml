@@ -1,0 +1,4 @@
+interface:
+  display_name: "VFX and Compositing Planning"
+  short_description: "Source-bound VFX and Compositing Planning design"
+  default_prompt: "Use $vfx-planning to complete its source-bound department output."

@@ -1,5 +1,7 @@
 # Authoring and handoff
 
+> Professional package authoring uses the [department registry](../../../docs/professional-departments.md). The composite formats below remain compatibility representations. Character/Environment Art, Costume, Look, Props, Layout, Camera, Lighting, Color, Performance, Voice, Sound and Editorial are independently owned originals; this document does not grant the old composite owner authority to author them.
+
 Use `contracts/production_design.py`: CharacterVisualSpec, VisualAuthority,
 FirstAppearanceContract, FactionVisualSystem, LocationDesignSpec and VisualMotifSpec.
 These are typed open-content values, not new entities. Body/face subfields are

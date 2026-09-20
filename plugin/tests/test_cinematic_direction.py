@@ -59,13 +59,15 @@ def frozen_example():
     return freeze_direction(spec, context=context, visual_resolution=visual, host_review='OFFLINE canon and physical causality reviewed')
 
 
-def test_registry_adds_exactly_one_skill_and_no_new_domain_tools():
+def test_registry_preserves_cinematic_skill_with_departments_and_no_new_domain_tools():
     from drama_plugin import DramaPlugin
     p=DramaPlugin.load(ROOT)
     expected={'asset-resolution','audio-production','cinematic-finishing','cinematic-screenplay-incubation',
         'dramatic-performance-direction','episode-development','historical-research','scene-development',
         'script-adaptation','shot-design','shot-production','video-model-selection','work-creation'}
-    assert {s.code for s in p.skills.list()} == expected | {'cinematic-direction', 'production-design', 'performance-casting', 'authorial-voice', 'director', 'music-direction'}
+    from drama_plugin.professional import registry
+    department_skills = {d.skill_code for d in registry().values() if d.skill_code}
+    assert {s.code for s in p.skills.list()} == expected | department_skills | {'cinematic-direction', 'production-design', 'performance-casting', 'authorial-voice', 'director', 'music-direction'}
     assert len(p.tools.list()) == 50
 
 

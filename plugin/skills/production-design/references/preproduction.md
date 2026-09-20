@@ -1,5 +1,7 @@
 # Film and scene production design
 
+> Professional package authoring uses the [department registry](../../../docs/professional-departments.md). The composite formats below remain compatibility representations. Character/Environment Art, Costume, Look, Props, Layout, Camera, Lighting, Color, Performance, Voice, Sound and Editorial are independently owned originals; this document does not grant the old composite owner authority to author them.
+
 Read [shared preproduction contract](../../../docs/cinematic-preproduction.md).
 Consume READY_FOR_DIRECTION/READY_WITH_NOTES, current Canon, Director preliminary
 intent, route and VisualBible. A failed readiness permits gap analysis only.
@@ -57,8 +59,8 @@ paths. No camera may pass through a wall because its virtual movement is easy.
 Keep historical claims separate from stage-layout choices. Functional scale and
 movement clearances matter; survey precision or renderer coordinates do not.
 
-Visual development stays in this owner: scene look proposals, staged spatial
-alternatives, text layout and future concept briefs. Declare what each future
+Visual development belongs to the independent art departments; staged spatial
+alternatives belong to Layout. Production Design reviews their alignment. Declare what each future
 image would test without generating it. Lookdev approval is downstream.
 
 ## Costume and props remember the story
@@ -74,7 +76,6 @@ requires a supported interval/action; preserve UNKNOWN instead of inventing one.
 PropDesign distinguishes hero, functional, environmental and historical props:
 function, relationship, material, scale, wear, handling and continuity.
 
-Handoff design refs to DPD/blocking/camera/light. Production-design owns WHAT;
-cinematic-direction owns lighting/camera HOW; shot-design owns coverage and paths
-in the shot. Stable design never becomes an asset approval just by appearing in a
+Handoff design refs to DPD/blocking/camera/light. Character/Environment Art, Costume and Props own their WHAT;
+Lighting and Camera own their HOW; Blocking owns paths; Shot Design owns coverage. Stable design never becomes an asset approval just by appearing in a
 book. Do not save these proposals into formal objects unless separately authorized.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Scene Layout"
+  short_description: "Source-bound Scene Layout design"
+  default_prompt: "Use $scene-layout to complete its source-bound department output."

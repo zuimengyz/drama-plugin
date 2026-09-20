@@ -1,0 +1,4 @@
+interface:
+  display_name: "Lighting Design"
+  short_description: "Source-bound Lighting Design design"
+  default_prompt: "Use $lighting-design to complete its source-bound department output."

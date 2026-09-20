@@ -23,6 +23,8 @@ Do not change department content, canonical speech, action order or continuity t
 
 ## Quality gates
 
+Before capability or cost comparison, read per-model `enabled` through the Host's model availability view (`video_provider.py models`). Only enabled models may enter selection. Skip `enabled=false` / `DISABLED` models in AUTO, PREFER, fallbacks and PIN; a disabled pinned model produces no executable candidate. Recheck before a new submission. Enabled does not override missing credentials, capabilities, continuity or budget. Do not switch a continuity-locked segment merely because its primary model was disabled; return for an authorized route revision. Existing submitted tasks may still be polled and retained.
+
 Verify required inputs and capabilities, then quality evidence and full incremental cost. Missing evidence remains UNKNOWN. Route eligibility, authorization, observed media quality and adoption remain separate.
 
 ## Failure and escalation
@@ -36,7 +38,7 @@ selected capability to an explicitly supported Host execution route; preserve
 its backend/model/transport identity through compilation, sealing and invocation.
 Missing capabilities block that route, never silently switch provider or transport.
 The packaged MCP integration is one qualified implementation described in the
-[Host adapter contract](../../docs/visual-provider-host-integration.md#mcp-first-execution).
+[Host adapter contract](../../docs/visual-provider-host-integration.md).
 This Skill neither requires a particular GUI nor grants an unimplemented transport.
 For new Shot authoring, freeze cinematic-direction's source-pinned
 `CinematicShotSpec` before selection. Consume its structured Execution Requirements,
@@ -50,9 +52,9 @@ Read `shot.get_shot`, `scene.get_scene`, `media.get_media` and `media.resolve_me
 
 Freeze Work/Scene/Shot and video target, narrative duration, entry/exit state, actor/action ownership, camera, canonical dialogue rendition and speakers, required sound controls, prop/costume state, adjacent-shot continuity and reviewed input versions. Never shorten required acting, remove dialogue, exchange actions or add external speech to fit a cheaper candidate. An unresolved rendition or required voice control blocks that path only.
 
-Use creative requirements as admission gates, task-specific quality thresholds, then complete incremental cost among eligible routes. Existing-image compatibility is a reuse benefit or a priced conversion/new-input choice, never the first veto for a new work. Missing endpoints or a different image ratio cannot reject an entire model when an inspected mode and bounded input preparation can meet the requirement. Translate “keyframes” into first-frame conditioning, independent start/end, subject/style references or actual timed image constraints. Multiple references do not prove endpoints or intermediate timing; independent capabilities do not prove their combination. Preserve the project contract: image preparation has at most three stable references; video accepts exactly one stable image, or one same-target start/end pair, without mixing. Do not enlarge this contract from a provider's higher limit.
+Use creative requirements as admission gates, task-specific quality thresholds, then complete incremental cost among eligible routes. Existing-image compatibility is a reuse benefit or a priced conversion/new-input choice, never the first veto for a new work. Missing endpoints or a different image ratio cannot reject an entire model when an inspected mode and bounded input preparation can meet the requirement. Translate “keyframes” into first-frame conditioning, independent start/end, subject/style references or actual timed image constraints. Multiple references do not prove endpoints or intermediate timing; independent capabilities do not prove their combination. Preserve the project contract: image preparation has at most three stable references; legacy Comfy video retains its inspected input limits. Official video uses the unified VideoRequest and the current registry combination limits, including qualified multimodal references. A larger vendor limit never permits omitting required canonical references.
 
-Inspect a small relevant candidate set through the Host. Separate official model claims, current node/interface support, actual template exposure, project adaptation and project quality samples. A missing current path is not executable even if documentation exists. Host details belong in the adapter, not this core. Unknown nodes, uninspected nested graphs, hidden paid enhancement and additional generation stages must fail closed. Do not switch paid platforms or install local models.
+Inspect a small relevant candidate set through the Host. Separate official model claims, current node/interface support, actual template exposure, project adaptation and project quality samples. A missing current path is not executable even if documentation exists. Host details belong in the adapter, not this core. Unknown nodes, uninspected nested graphs, hidden paid enhancement and additional generation stages must fail closed. Provider changes require the qualified route, continuity gate and existing budget authorization. Do not install local models.
 
 Record quality evidence for identity/props, action/narrative, sound/performance and continuity, with applicable task conditions and sample count. Unmeasured quality is UNKNOWN; resolution and audio-track presence are not quality evidence. A new candidate with verified hard capabilities may receive LIMITED_TRIAL eligibility in the authorized budget; this never grants expansion. One passing sample proves only that result and its conditions. Consider a stable scene path and switching costs without making continuity a permanent veto.
 
@@ -92,7 +94,7 @@ unneeded DEBUG/REJECTED files or invent an output that was never generated.
 For a new story, call `ProductionRoute` / `qualify_route` before any paid input.
 Each planned input has a stable target duty, purpose, role, consumer targets,
 preparation choice, specification, rationale and explicit cost key. It has no
-placeholder Media ID. Compare 2–3 relevant routes; preserve fixed reference caps.
+placeholder Media ID. Compare 2–3 relevant routes; preserve each qualified input contract.
 Include image preparation/conversion, each video, native or external audio,
 references, enabled extra nodes and correction reserve. Unknown fees block a
 complete cost claim. Report current cash separately from hypothetical series
@@ -120,9 +122,7 @@ limits; never count a multiple-generation workflow as one generation.
 For cinematic-shot-v1 consume frozen direction, reference duties and source sound.
 An unfulfilled REQUIRED reference is ineligible even for LIMITED_TRIAL. A route
 may plan future inputs; a materialized request cannot claim they already exist.
-Preparation remains capped at three references; video uses qualified zero-image
-text mode, single image/reference or a same-target endpoint pair. Extra exposed
-multimodal slots do not expand project authorization.
+Image preparation remains capped at three references. Legacy Comfy video keeps its inspected modes; official video may consume the unified multimodal bundle after capability and continuity gates. Extra slots do not expand project authorization.
 
 The Host's single semantic projection binds direction, canonical dialogue,
 reference package, qualification, schema/template, duration, resolution and audio
@@ -133,3 +133,16 @@ is not a complete zero cost. Offline seals cannot reserve/submit; real productio
 keeps the formal Work stage, budget and billing history. No second selector.
 
 See [the execution reconciliation contract](../../docs/video-execution-reconciliation.md) for current request sealing and reference/coverage checks.
+
+
+## Multi-provider video and continuity
+
+Use the data-backed Video Model Capability Registry through the Host and the existing `choose` / `qualify_route` pipeline. Skill authors specify input mode, duration, resolution, native sound, required reference semantics, motion/camera complexity and continuity; they never call vendor endpoints or keep vendor task identities. Read the [unified video contract](../../docs/video-provider-contract.md) when selecting or switching a video route.
+
+First require compatible input modes and combinations, the complete continuity bundle, reference counts, duration, resolution and native sound. Among eligible candidates compare creative fit, scoped continuity reliability, observed generation quality, measured cost per accepted shot, then the complete single-call cost. Unknown quality and unknown invoices remain unknown; do not invent rankings or exchange rates.
+
+Keep one Primary Provider and Model per Continuity Segment. Continuous close-ups, dialogue, armor/action and emotional performance default to identity-critical. A change requires a demonstrated primary-model capability gap and a Shot Boundary, except an explicitly authored edit/extension workflow. A cheaper price is never a gap.
+
+Consume the Work-owned Canonical Continuity Pack: pinned character/face/body/age/hair/costume/armor/weapon/prop definitions, place/time/weather/light, a separate CG or live-action RouteStyleContract, color/lens/camera language, required canonical Media and accepted previous shot/frame. No provider owns a separate character prompt. Transfer the accepted tail frame as first frame when compatible; otherwise bind it as a reviewed continuity reference with explicit semantics. If the necessary canonical bundle cannot coexist with that mode, the route is ineligible.
+
+Seedance Standard is a complex-interaction/hero candidate; Fast and Mini participate in cost-sensitive routing. MiniMax is an action/motion/camera candidate; Vidu is a routine/environment/iteration candidate; Wan is a long-take/multi-subject candidate; Kling is a consistency/Omni/motion specialist. These are routing hypotheses, not benchmark quality scores. Comfy remains image primary and video fallback/experimental. Image production keeps its existing path.

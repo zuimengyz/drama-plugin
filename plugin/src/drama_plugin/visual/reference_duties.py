@@ -26,7 +26,7 @@ class ReferenceDuty(Record):
 
 
 def validate_duties(spec: CinematicShotSpec, inputs: tuple[Any, ...],
-                    duties: tuple[ReferenceDuty, ...]) -> list[str]:
+                    duties: tuple[ReferenceDuty, ...], *, multimodal: bool = False) -> list[str]:
     requirements = {(r.role, r.subject): r for r in spec.reference_requirements}
     if len(requirements) != len(spec.reference_requirements):
         raise ValueError('DUPLICATE_REFERENCE_REQUIREMENT')
@@ -47,9 +47,10 @@ def validate_duties(spec: CinematicShotSpec, inputs: tuple[Any, ...],
                 raise ValueError('REFERENCE_MEDIA_IDENTITY_MISMATCH')
             if not duty.source_ref or not duty.content_hash or not duty.mime_type:
                 raise ValueError('REFERENCE_FORMAL_IDENTITY_REQUIRED')
-            if duty.provider_input_type != 'IMAGE' or not duty.mime_type.startswith('image/'):
+            if (not multimodal and duty.provider_input_type != 'IMAGE' or
+                    not duty.mime_type.startswith(duty.provider_input_type.lower() + '/')):
                 raise ValueError('PROJECT_IMAGE_INPUT_CONTRACT')
-            if duty.role in {'PERFORMANCE', 'CAMERA_MOTION'}:
+            if duty.role in {'PERFORMANCE', 'CAMERA_MOTION'} and duty.provider_input_type != 'VIDEO':
                 raise ValueError('STATIC_IMAGE_CANNOT_FULFILL_MOTION_REFERENCE')
             if req.establishes_opening_state and inp.role != 'FIRST_FRAME':
                 raise ValueError('CHARACTER_REFERENCE_IS_NOT_FIRST_FRAME')
@@ -63,7 +64,7 @@ def validate_duties(spec: CinematicShotSpec, inputs: tuple[Any, ...],
 def validate_media_snapshot(inp: Any, snapshot: dict[str, Any], *, work_id: str) -> None:
     if (snapshot.get('id') != inp.media_id or snapshot.get('work_id') != work_id
             or any(snapshot.get(k) != getattr(inp, k) for k in ('source_ref','content_hash','mime_type'))
-            or snapshot.get('media_type') != 'IMAGE'):
+            or snapshot.get('media_type') != (inp.mime_type or 'image/').split('/')[0].upper()):
         raise ValueError('FORMAL_REFERENCE_MEDIA_CHANGED')
 
 

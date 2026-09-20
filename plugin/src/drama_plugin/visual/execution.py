@@ -3,6 +3,7 @@ from typing import Any, Literal
 
 from drama_plugin.visual.frame_request import Record, Text
 from drama_plugin.contracts.base import sha256_canonical
+from pydantic import model_validator
 
 
 class ExecutionBackend(Record):
@@ -20,10 +21,16 @@ class MCPRequirement(Record):
 
 
 class ExecutionRoute(Record):
-    transport: Literal['MCP']
+    transport: Literal['MCP', 'HTTP']
     backend: ExecutionBackend
     capability: ExecutionCapability
-    mcp: MCPRequirement
+    mcp: MCPRequirement | None = None
+
+    @model_validator(mode='after')
+    def transport_binding(self) -> 'ExecutionRoute':
+        if (self.transport == 'MCP') != (self.mcp is not None):
+            raise ValueError('TRANSPORT_BINDING_MISMATCH')
+        return self
 
 
 def require_execution(raw: Any, model_key: str) -> ExecutionRoute:
@@ -39,6 +46,9 @@ def require_execution(raw: Any, model_key: str) -> ExecutionRoute:
 
 
 def validate_binding(decision: dict[str, Any], binding: dict[str, Any] | None) -> None:
+    if decision.get('execution', {}).get('transport') == 'HTTP':
+        validate_http_binding(decision, binding)
+        return
     if not binding:
         raise ValueError('MCP_CAPABILITY_UNAVAILABLE: discover before reservation')
     if (binding.get('execution') != decision.get('execution')
@@ -54,14 +64,26 @@ def validate_binding(decision: dict[str, Any], binding: dict[str, Any] | None) -
         raise ValueError('MCP_AUTHENTICATION_REQUIRED')
 
 
+def validate_http_binding(decision: dict[str, Any], binding: dict[str, Any] | None) -> None:
+    if (not binding or binding.get('execution') != decision.get('execution')
+            or binding.get('provider_schema_fingerprint') != decision['execution_contract']['schema_fingerprint']
+            or binding.get('operation') != 'video.create_task' or not binding.get('endpoint_fingerprint')
+            or binding.get('authenticated') is not True):
+        raise ValueError('HTTP_PROVIDER_BINDING_REQUIRED')
+    from drama_plugin.visual.video_selection import Evidence
+    from datetime import datetime, timezone
+    if not Evidence.model_validate(binding['evidence']).current(datetime.now(timezone.utc)):
+        raise ValueError('HTTP_BINDING_EXPIRED')
+
+
 def validate_result_identity(attempt: dict[str, Any], receipt: dict[str, Any] | None,
                              task_id: str | None) -> None:
     """Correlation comes from the bound MCP invocation and its owned task reply."""
     binding = attempt.get('execution_binding')
     if not binding or not receipt or not task_id:
         raise ValueError('EXECUTION_ROUTE_MISMATCH: missing MCP result identity')
-    if (any(receipt.get(key) != binding.get(key) for key in
-            ('execution', 'server_id', 'tool_name', 'provider_schema_fingerprint', 'operation'))
+    keys = ('execution', 'endpoint_fingerprint', 'provider_schema_fingerprint', 'operation') if binding.get('execution', {}).get('transport') == 'HTTP' else ('execution', 'server_id', 'tool_name', 'provider_schema_fingerprint', 'operation')
+    if (any(receipt.get(key) != binding.get(key) for key in keys)
             or receipt.get('task_id') != task_id
             or receipt.get('attempt_id') != attempt['attempt_id']
             or receipt.get('request_fingerprint') != sha256_canonical(attempt['request'])

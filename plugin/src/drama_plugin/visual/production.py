@@ -28,12 +28,16 @@ CATEGORIES = Literal["IDENTITY", "COSTUME", "BLOCKING", "PROP_STRUCTURE", "PROP_
 
 
 video_verifier: Callable[[dict[str, Any]], None] | None = None
+transport_verifiers: dict[str, Callable[[dict[str, Any]], None]] = {}
 
 
 def verify_visual(frame: dict[str, Any]) -> None:
     if frame.get('schema') == 'video-decision-v1':
         from drama_plugin.visual.video_selection import verify_decision
         verify_decision(frame)
+        if frame.get('execution', {}).get('transport') == 'HTTP':
+            transport_verifiers['HTTP'](frame)
+            return
         if video_verifier is None:
             raise ValueError('HOST_VIDEO_VERIFIER_REQUIRED')
         video_verifier(frame)
@@ -44,7 +48,9 @@ def verify_visual(frame: dict[str, Any]) -> None:
 def new_stage(*, stage_id: str, authorization_ref: str, budget_credits: float | None,
               frames: list[dict[str, Any]], protected_targets: list[str],
               production_route: dict[str, Any] | None = None,
-              no_monetary_cap: bool = False) -> dict[str, Any]:
+              no_monetary_cap: bool = False, budget_unit: str = 'credits') -> dict[str, Any]:
+    if budget_unit not in {'credits','CNY','USD'}:
+        raise ValueError('BUDGET_UNIT_UNSUPPORTED')
     unlimited = no_monetary_cap and budget_credits is None and production_route is not None
     if (not stage_id.strip() or not authorization_ref.strip() or
             (not unlimited and (budget_credits is None or not math.isfinite(budget_credits) or budget_credits <= 0)) or
@@ -57,6 +63,8 @@ def new_stage(*, stage_id: str, authorization_ref: str, budget_credits: float | 
         route = ProductionRoute.model_validate(production_route)
         if route.stage_id != stage_id or not qualify_route(route)['eligible']:
             raise ValueError('APPROVED_EXECUTABLE_ROUTE_REQUIRED')
+        if route.candidate.cost.unit != budget_unit:
+            raise ValueError('BUDGET_UNIT_MISMATCH')
         if budget_credits is not None and qualify_route(route)['incremental_credits'] > budget_credits:
             raise ValueError('COMPLETE_ROUTE_EXCEEDS_AUTHORIZATION')
     for f in frames:
@@ -87,6 +95,8 @@ def new_stage(*, stage_id: str, authorization_ref: str, budget_credits: float | 
             result['stage']['no_monetary_cap'] = True
         for f in frames:
             _route_frame_gate(result, f)
+    if budget_unit != 'credits':
+        result['stage']['budget_unit'] = budget_unit
     return result
 
 
@@ -122,6 +132,12 @@ def _route_frame_gate(state: dict[str, Any], frame: dict[str, Any]) -> None:
             raise ValueError('VIDEO_CREATIVE_OR_FORMAL_SHOT_CHANGED')
         if frame['candidate']['candidate_id'] != route.candidate.candidate_id:
             raise ValueError('MODEL_SWITCH_REQUIRES_ROUTE_REPLAN')
+        if route.execution and route.execution.transport == 'HTTP':
+            from drama_plugin.contracts.video import VideoRequest
+            expected = VideoRequest.model_validate(route.requirements['video_requests'][target])
+            actual = VideoRequest.model_validate(frame['requirements'].get('video_request'))
+            if expected != actual:
+                raise ValueError('CANONICAL_VIDEO_REQUEST_REQUIRES_ROUTE_REPLAN')
         directions = route.requirements.get('cinematic_directions', {})
         if directions and frame['requirements']['frozen_creative'].get('cinematic_direction') != directions.get(target):
             raise ValueError('DIRECTOR_CHANGE_REQUIRES_ROUTE_REPLAN')
@@ -199,7 +215,7 @@ def _stage_gate(state: dict[str, Any], frame: dict[str, Any], request: dict[str,
         raise ValueError('BALANCE_MUST_BE_REFRESHED_AFTER_SETTLEMENT')
     if quote['request_fingerprint'] != sha256_canonical(request) or quote.get('uncertainty'):
         raise ValueError('REQUEST_QUOTE_MISMATCH_OR_UNKNOWN_CHARGES')
-    if quote.get('unit') != 'credits' or balance.get('unit') != 'credits':
+    if quote.get('unit') != state['stage'].get('budget_unit', 'credits') or balance.get('unit') != quote.get('unit'):
         raise ValueError('BUDGET_UNIT_MISMATCH')
     amount = quote['conservative_credits']; available = balance['available_credits']; margin = balance['margin_credits']
     if any(not isinstance(x, (int, float)) or not math.isfinite(x) for x in [amount, margin]) or amount <= 0 or margin <= 0 or (available is not None and (not isinstance(available,(int,float)) or not math.isfinite(available) or available < 0)):
@@ -516,6 +532,8 @@ def record_review(state: dict[str, Any], review: Review) -> str:
         raise ValueError('VIDEO_TECHNICAL_REVIEW_REQUIRED')
     result = _review_status(review)
     attempt.update(review=review.model_dump(mode='json'), review_status=result)
+    if 'video_cost' in attempt:
+        attempt['video_cost'].update(accepted=result.startswith('PASS'), rejectedReason=review.evidence if result == 'FAIL' else None)
     if 'stage' in state:
         attempt['content_status'] = result
     previous_pause = state.get('pause')
@@ -548,6 +566,8 @@ def revise_review(state: dict[str, Any], *, review: dict[str, Any], reason: str,
     attempt.setdefault('original_review_status', attempt['review_status'])
     attempt.setdefault('review_revisions', []).append(event)
     attempt.update(current_review=event['review'], review_status=result, content_status=result)
+    if 'video_cost' in attempt:
+        attempt['video_cost'].update(accepted=result.startswith('PASS'), rejectedReason=revised.evidence if result == 'FAIL' else None)
     return result
 
 

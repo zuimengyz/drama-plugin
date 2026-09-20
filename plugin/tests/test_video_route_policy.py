@@ -18,7 +18,8 @@ def candidates(tmp_path):
  r,c,*_=fixture(tmp_path)
  return r,[c.model_copy(update={'candidate_id':key,'model':label,'variant':label}) for key,label in [('seedance-2.5','Seedance 2.5'),('minimax-h3','MiniMax H3'),('flux-3','FLUX 3')]]
 def test_identity():
- assert MODEL_KEYS=={canonical_model_key(n['model']) for n in NODES.values()}
+ from drama_plugin.providers.video.registry import registry
+ assert MODEL_KEYS=={canonical_model_key(n['model']) for n in NODES.values()} | set(registry()['models'])
 def test_auto(tmp_path):
  r,cs=candidates(tmp_path);p=load_config(environment={}).video_route_policy;a=choose(r,cs,policy=p)
  expected=[qualify(r,c) for c in cs]

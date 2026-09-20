@@ -24,14 +24,14 @@ The Plugin does not store OAuth tokens, API keys, signed URLs, or provider login
 
 This table maps names to semantics only. The runtime MCP server is the source of truth for every tool's executable input and output schema.
 
-## MCP-first execution
+## MCP execution (preserved alongside official HTTP)
 
 `ProductionRoute.execution` is a typed part of the existing route, independent of
-V2-06 model selection. Its fields are `transport: MCP`, `backend.provider`,
+V2-06 model selection. Its fields are `transport: MCP` or `HTTP`, `backend.provider`,
 `backend.backend_key`, `capability.kind: video_generation`,
-`capability.model_key` and `mcp.capability_key`. No runtime tool name or Host brand
+`capability.model_key` and, for MCP only, `mcp.capability_key`. No runtime tool name or Host brand
 belongs in these canonical fields. A local backend behind MCP is legal; a local
-GUI or direct API is not an alternative transport.
+GUI is not an execution transport. Official HTTP uses the [unified video contract](video-provider-contract.md); no image route is migrated.
 
 For the currently connected Comfy Cloud server, read server identity and current
 node/template metadata before binding. The observed server is `comfyui-cloud`,

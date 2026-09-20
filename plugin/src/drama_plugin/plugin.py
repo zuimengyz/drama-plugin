@@ -126,6 +126,11 @@ class DramaPlugin:
         from drama_plugin.hosts.professional import ProfessionalDepartmentHost
         return ProfessionalDepartmentHost(artifact_root, self.skills.get)
 
+    def video_provider_host(self, cache: Path | str) -> Any:
+        """Host-neutral official HTTP lifecycle; Comfy MCP/image production stays intact."""
+        from drama_plugin.hosts.http_video import VideoProviderHost
+        return VideoProviderHost(self.providers.memory, self.providers.media, self.providers.asset, Path(cache))
+
     async def aclose(self) -> None:
         if self.providers.audio_semantic is not None:
             await self.providers.audio_semantic.aclose()

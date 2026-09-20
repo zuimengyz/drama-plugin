@@ -6,7 +6,7 @@ Use these rules for visual production of one Shot or a continuous Shot sequence.
 
 Establish one Sequence Context for continuous Shots in the same Scene, and reuse it until authoritative context changes. Derive facts only from Work, Script, Episode, Scene, Shot, stable Asset, stable Media, and explicit business state. Treat generated output as review evidence, never as domain truth.
 
-Organize the context without persisting a new schema:
+Organize image preparation and legacy MCP context using the following facts. For official video, persist their source-pinned projection in the shared Work-owned Continuity Pack described by the [video contract](../../../docs/video-provider-contract.md); never create a provider-specific identity copy:
 
 - **Stable Facts**
   - Character: identity, age, face, hair, beard, and general physical appearance.
@@ -22,7 +22,7 @@ Do not classify an explicit state transition as drift. When one Shot shows a hel
 
 ## Reference planning
 
-Set `MAX_REFERENCE_COUNT = 3`. Build candidates only from stable Asset identity with suitable stable reference Media. Never use a temporary provider URL, prior provider filename, unexplained local file, web image, or unpersisted proof-of-concept output.
+For image preparation, set `MAX_REFERENCE_COUNT = 3`; the image selection rules below retain that limit. Official video uses the registry's actual per-mode reference limits and must consume every required continuity reference; it may not omit one to fit a cheaper model. Legacy MCP video retains its inspected compiler limits. Build candidates only from stable Asset identity with suitable stable reference Media. Never use a temporary provider URL, prior provider filename, unexplained local file, web image, or unpersisted proof-of-concept output.
 
 Discover candidates from:
 

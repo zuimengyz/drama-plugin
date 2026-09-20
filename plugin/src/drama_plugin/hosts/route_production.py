@@ -75,6 +75,8 @@ async def save_route(memory: MemoryProvider, work_id: str, raw: dict[str, Any], 
         raise ValueError('INCOMPLETE_OR_INELIGIBLE_PRODUCTION_ROUTE')
     if stage:
         old = ProductionRoute.model_validate(stage['production_route'])
+        if route.candidate.cost.unit != stage['stage'].get('budget_unit', 'credits'):
+            raise ValueError('BUDGET_UNIT_MISMATCH')
         if route.continuation:
             previous = [old] + [ProductionRoute.model_validate(r['previous_route'])
                 for r in stage.get('route_revisions', []) if r.get('previous_route')]
@@ -167,6 +169,41 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
             result = production.begin_submission(state, **payload)
         elif command == 'result':
             production.record_result(state, **payload); result = production.metrics(state)
+        elif command in {'video-task', 'video-delivery'}:
+            from drama_plugin.contracts.video import ProviderTask, VideoRequest, request_fingerprint
+            from drama_plugin.visual.execution import validate_result_identity
+            task = ProviderTask.model_validate(payload['task'])
+            attempt = next(a for a in state['attempts'] if a['attempt_id'] == payload['attempt_id'])
+            item = attempt['request']
+            if (attempt.get('execution_binding', {}).get('execution', {}).get('transport') != 'HTTP'
+                    or (task.provider, task.model) != (item['provider'], item['model'])
+                    or task.client_request_id != attempt['attempt_id']
+                    or task.request_fingerprint != request_fingerprint(VideoRequest.model_validate(item['videoRequest']))
+                    or task.output_url or attempt.get('job_id') not in (None, task.provider_task_id)):
+                raise ValueError('OFFICIAL_TASK_IDENTITY_MISMATCH')
+            if task.provider_task_id:
+                if command == 'video-task':
+                    validate_result_identity(attempt, payload['receipt'], task.provider_task_id)
+                attempt['job_id'] = task.provider_task_id
+            attempt['video_task'] = task.durable()
+            attempt['video_cost'] = dict(provider=task.provider, model=task.model, duration=task.duration,
+                resolution=task.resolution, estimatedCost=task.estimated_cost, actualCost=task.actual_cost,
+                currency=task.currency, attempt=attempt['ordinal'],
+                accepted=attempt.get('review_status','').startswith('PASS') if attempt.get('review_status') else None,
+                rejectedReason=attempt.get('current_review',attempt.get('review')) if attempt.get('review_status') == 'FAIL' else None)
+            if command == 'video-delivery':
+                if attempt['status'] != 'COMPLETED' or not task.output_media_id or media is None:
+                    raise ValueError('COMPLETED_PERSISTENCE_REQUIRED')
+                record = await media.get_media(task.output_media_id)
+                if record.work_id != work_id or record.content_hash != attempt['output_hash'] or payload['delivery'].get('mediaId') != record.id:
+                    raise ValueError('OFFICIAL_MEDIA_IDENTITY_MISMATCH')
+                attempt.update(delivery=payload['delivery'], persistence_status='VERIFIED',
+                    delivery_status=payload['delivery']['deliveryStatus'], technical_status='PASS' if all(v == 'PASS' for v in payload['checks'].values()) else 'FAIL',
+                    technical={'checks':payload['checks'], 'probe':payload['probe']})
+            elif task.status in {'FAILED', 'NOT_CREATED'} and attempt['status'] == 'UNKNOWN':
+                production.record_result(state, attempt_id=attempt['attempt_id'], status=task.status,
+                    job_id=task.provider_task_id, evidence=task.error_code or 'Provider confirmed failure')
+            result = {'task':task.durable()}
         elif command == 'billing':
             production.reconcile_billing(state, **payload); result = production.metrics(state)
         elif command == 'usage':

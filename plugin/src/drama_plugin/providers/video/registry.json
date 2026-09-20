@@ -1,0 +1,865 @@
+{
+  "schema": "video-model-registry-v1",
+  "checked_at": "2026-09-20",
+  "quality_status": "UNKNOWN",
+  "strengths_basis": "routing hypotheses; not controlled benchmark rankings",
+  "providers": {
+    "seedance": {
+      "transport": "http",
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "hosts": [
+        "ark.cn-beijing.volces.com"
+      ],
+      "create": "/contents/generations/tasks",
+      "poll": "/contents/generations/tasks/{id}",
+      "auth": "Bearer",
+      "docs": [
+        "https://docs.volcengine.com/docs/ark/create-video-generation-task-api?lang=zh",
+        "https://ark.volcengine.com/region:cn-beijing/docs/82379/1330310?lang=zh"
+      ]
+    },
+    "minimax": {
+      "transport": "http",
+      "base_url": "https://api.minimaxi.com",
+      "hosts": [
+        "api.minimaxi.com",
+        "api.minimax.io"
+      ],
+      "create": "/v2/video_generation",
+      "poll": "/v2/query/video_generation/{id}",
+      "auth": "Bearer",
+      "docs": [
+        "https://platform.minimax.io/docs/api-reference/video-generation-v2-create",
+        "https://platform.minimax.io/docs/api-reference/video-generation-v2-query"
+      ]
+    },
+    "vidu": {
+      "transport": "http",
+      "base_url": "https://api.vidu.com",
+      "hosts": [
+        "api.vidu.com"
+      ],
+      "create": {
+        "text_to_video": "/ent/v2/text2video",
+        "image_to_video": "/ent/v2/img2video",
+        "first_last_frame": "/ent/v2/start-end2video",
+        "reference": "/ent/v2/reference2video"
+      },
+      "poll": "/ent/v2/tasks/{id}/creations",
+      "auth": "Token",
+      "docs": [
+        "https://platform.vidu.com/docs/text-to-video",
+        "https://platform.vidu.com/docs/image-to-video",
+        "https://platform.vidu.com/docs/start-end-to-video",
+        "https://platform.vidu.com/docs/reference-to-video"
+      ]
+    },
+    "wan": {
+      "transport": "http",
+      "base_url": "",
+      "hosts": [],
+      "host_pattern": "[a-zA-Z0-9-]+\\.(ap-southeast-1|cn-beijing|us-east-1|ap-northeast-1|eu-central-1|cn-hongkong)\\.maas\\.aliyuncs\\.com",
+      "create": "/services/aigc/video-generation/video-synthesis",
+      "poll": "/tasks/{id}",
+      "auth": "Bearer",
+      "docs": [
+        "https://www.alibabacloud.com/help/en/model-studio/wan3-video-generation-api-reference"
+      ]
+    },
+    "kling": {
+      "transport": "http",
+      "base_url": "",
+      "hosts": [
+        "api-singapore.klingai.com"
+      ],
+      "create": {
+        "text_to_video": "/text-to-video/{model}",
+        "image_to_video": "/image-to-video/{model}",
+        "first_last_frame": "/image-to-video/{model}",
+        "reference": "/omni-video/{model}",
+        "edit": "/omni-video/{model}",
+        "motion_transfer": "/motion-control/{model}"
+      },
+      "poll": "/tasks",
+      "auth": "Bearer",
+      "recover_external": true,
+      "role": [
+        "specialist"
+      ],
+      "docs": [
+        "https://kling.ai/document-api/api/video/3-0-omni/text-to-video",
+        "https://kling.ai/document-api/api/video/3-0-omni/image-to-video",
+        "https://kling.ai/document-api/api/video/3-0-omni/video-omni",
+        "https://kling.ai/document-api/api/video/3-0-omni/motion-control",
+        "https://kling.ai/document-api/api/video/3-0-turbo/image-to-video"
+      ]
+    },
+    "comfy_cloud": {
+      "transport": "mcp",
+      "role": [
+        "image_primary",
+        "video_fallback",
+        "experimental_video"
+      ],
+      "capability_source": "hosts.comfy_video.NODES + live MCP discovery",
+      "docs": [
+        "https://docs.comfy.org/api-reference/cloud/overview"
+      ]
+    }
+  },
+  "models": {
+    "seedance-2-standard": {
+      "provider": "seedance",
+      "vendor_model": "doubao-seedance-2-0-260128",
+      "durations": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "resolutions": [
+        "480p",
+        "720p",
+        "1080p",
+        "4k"
+      ],
+      "reference_limits": [
+        9,
+        3,
+        3
+      ],
+      "strengths": [
+        "complex_interaction",
+        "hero_shot",
+        "multimodal_reference",
+        "prompt_adherence",
+        "physical_motion"
+      ],
+      "aspect_ratios": [
+        "16:9",
+        "9:16",
+        "1:1",
+        "4:3",
+        "3:4",
+        "21:9"
+      ],
+      "input_modes": [
+        "text_to_video",
+        "image_to_video",
+        "first_last_frame",
+        "reference"
+      ],
+      "native_audio": [
+        false,
+        true
+      ],
+      "endpoint_reference_mix": false,
+      "seed": true,
+      "prompt_limit": 5000,
+      "reference_video_total": 15,
+      "reference_audio_total": 15,
+      "reference_min_duration": 2,
+      "audio_requires_visual": true
+    },
+    "seedance-2-fast": {
+      "provider": "seedance",
+      "vendor_model": "doubao-seedance-2-0-fast-260128",
+      "durations": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "resolutions": [
+        "480p",
+        "720p"
+      ],
+      "reference_limits": [
+        9,
+        3,
+        3
+      ],
+      "strengths": [
+        "fast_iteration",
+        "cost_efficiency",
+        "routine_shots"
+      ],
+      "aspect_ratios": [
+        "16:9",
+        "9:16",
+        "1:1",
+        "4:3",
+        "3:4",
+        "21:9"
+      ],
+      "input_modes": [
+        "text_to_video",
+        "image_to_video",
+        "first_last_frame",
+        "reference"
+      ],
+      "native_audio": [
+        false,
+        true
+      ],
+      "endpoint_reference_mix": false,
+      "seed": true,
+      "prompt_limit": 5000,
+      "reference_video_total": 15,
+      "reference_audio_total": 15,
+      "reference_min_duration": 2,
+      "audio_requires_visual": true
+    },
+    "seedance-2-mini": {
+      "provider": "seedance",
+      "vendor_model": "doubao-seedance-2-0-mini-260615",
+      "durations": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "resolutions": [
+        "480p",
+        "720p"
+      ],
+      "reference_limits": [
+        9,
+        3,
+        3
+      ],
+      "strengths": [
+        "cost_efficiency",
+        "fast_iteration",
+        "environment"
+      ],
+      "aspect_ratios": [
+        "16:9",
+        "9:16",
+        "1:1",
+        "4:3",
+        "3:4",
+        "21:9"
+      ],
+      "input_modes": [
+        "text_to_video",
+        "image_to_video",
+        "first_last_frame",
+        "reference"
+      ],
+      "native_audio": [
+        false,
+        true
+      ],
+      "endpoint_reference_mix": false,
+      "seed": true,
+      "prompt_limit": 5000,
+      "reference_video_total": 15,
+      "reference_audio_total": 15,
+      "reference_min_duration": 2,
+      "audio_requires_visual": true
+    },
+    "minimax-h3": {
+      "provider": "minimax",
+      "vendor_model": "MiniMax-H3",
+      "durations": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "resolutions": [
+        "768p",
+        "2k"
+      ],
+      "reference_limits": [
+        9,
+        3,
+        3
+      ],
+      "strengths": [
+        "action",
+        "motion_transfer",
+        "multimodal_reference",
+        "native_audio",
+        "complex_camera"
+      ],
+      "aspect_ratios": [
+        "16:9",
+        "9:16",
+        "1:1",
+        "4:3",
+        "3:4",
+        "21:9"
+      ],
+      "input_modes": [
+        "text_to_video",
+        "image_to_video",
+        "first_last_frame",
+        "reference"
+      ],
+      "native_audio": [
+        true
+      ],
+      "endpoint_reference_mix": false,
+      "seed": false,
+      "prompt_limit": 7000,
+      "reference_video_total": 15,
+      "reference_audio_total": 15,
+      "reference_min_duration": 2,
+      "endpoint_ratio": "adaptive"
+    },
+    "vidu-q3-turbo": {
+      "provider": "vidu",
+      "vendor_model": "viduq3-turbo",
+      "durations": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "resolutions": [
+        "540p",
+        "720p",
+        "1080p"
+      ],
+      "reference_limits": [
+        7,
+        0,
+        0
+      ],
+      "strengths": [
+        "cost_efficiency",
+        "routine_shots",
+        "environment",
+        "fast_iteration"
+      ],
+      "aspect_ratios": [
+        "16:9",
+        "9:16",
+        "1:1",
+        "4:3",
+        "3:4"
+      ],
+      "input_modes": [
+        "text_to_video",
+        "image_to_video",
+        "first_last_frame",
+        "reference"
+      ],
+      "native_audio": [
+        false,
+        true
+      ],
+      "endpoint_reference_mix": false,
+      "seed": true,
+      "prompt_limit": 5000,
+      "reference_min_output_duration": 3,
+      "reference_model": "viduq3-turbo",
+      "endpoint_ratio": "inherited"
+    },
+    "vidu-q3-pro": {
+      "provider": "vidu",
+      "vendor_model": "viduq3-pro",
+      "durations": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "resolutions": [
+        "540p",
+        "720p",
+        "1080p"
+      ],
+      "reference_limits": [
+        7,
+        0,
+        0
+      ],
+      "strengths": [
+        "character_consistency",
+        "important_dialogue",
+        "multi_shot"
+      ],
+      "aspect_ratios": [
+        "16:9",
+        "9:16",
+        "1:1",
+        "4:3",
+        "3:4"
+      ],
+      "input_modes": [
+        "text_to_video",
+        "image_to_video",
+        "first_last_frame",
+        "reference"
+      ],
+      "native_audio": [
+        false,
+        true
+      ],
+      "endpoint_reference_mix": false,
+      "seed": true,
+      "prompt_limit": 5000,
+      "reference_min_output_duration": 3,
+      "reference_model": "viduq3",
+      "endpoint_ratio": "inherited"
+    },
+    "wan-3-video": {
+      "provider": "wan",
+      "vendor_model": "wan3.0-video",
+      "durations": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "resolutions": [
+        "480p",
+        "720p",
+        "1080p"
+      ],
+      "reference_limits": [
+        10,
+        5,
+        5
+      ],
+      "strengths": [
+        "long_take",
+        "battle_scene",
+        "multi_subject",
+        "multimodal_reference",
+        "extension"
+      ],
+      "aspect_ratios": [
+        "16:9",
+        "9:16",
+        "1:1",
+        "4:3",
+        "3:4",
+        "21:9"
+      ],
+      "input_modes": [
+        "text_to_video",
+        "image_to_video",
+        "first_last_frame",
+        "reference",
+        "edit",
+        "extend"
+      ],
+      "native_audio": [
+        false,
+        true
+      ],
+      "endpoint_reference_mix": false,
+      "seed": true,
+      "prompt_limit": 5000,
+      "reference_video_total": 15,
+      "reference_audio_total": 15,
+      "reference_min_duration": 1,
+      "input_output_video_total": 30,
+      "reference_total": 20
+    },
+    "wan-3-video-prime": {
+      "provider": "wan",
+      "vendor_model": "wan3.0-video-prime",
+      "durations": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "resolutions": [
+        "480p",
+        "720p",
+        "1080p"
+      ],
+      "reference_limits": [
+        10,
+        5,
+        5
+      ],
+      "strengths": [
+        "long_take",
+        "battle_scene",
+        "multi_subject",
+        "multimodal_reference",
+        "extension"
+      ],
+      "aspect_ratios": [
+        "16:9",
+        "9:16",
+        "1:1",
+        "4:3",
+        "3:4",
+        "21:9"
+      ],
+      "input_modes": [
+        "text_to_video",
+        "image_to_video",
+        "first_last_frame",
+        "reference",
+        "edit",
+        "extend"
+      ],
+      "native_audio": [
+        false,
+        true
+      ],
+      "endpoint_reference_mix": false,
+      "seed": true,
+      "prompt_limit": 5000,
+      "reference_video_total": 15,
+      "reference_audio_total": 15,
+      "reference_min_duration": 1,
+      "input_output_video_total": 30,
+      "reference_total": 20
+    },
+    "kling-3": {
+      "provider": "kling",
+      "vendor_model": "kling-3.0",
+      "durations": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "resolutions": [
+        "720p",
+        "1080p",
+        "4k"
+      ],
+      "reference_limits": [
+        0,
+        0,
+        0
+      ],
+      "strengths": [
+        "identity_consistency",
+        "photorealism",
+        "camera_control",
+        "complex_narrative"
+      ],
+      "aspect_ratios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "input_modes": [
+        "text_to_video",
+        "image_to_video",
+        "first_last_frame"
+      ],
+      "native_audio": [
+        false,
+        true
+      ],
+      "endpoint_reference_mix": false,
+      "seed": false,
+      "prompt_limit": 3072,
+      "endpoint_ratio": "inherited",
+      "provider_hints": [
+        "multi_shot"
+      ]
+    },
+    "kling-3-omni": {
+      "provider": "kling",
+      "vendor_model": "kling-3.0-omni",
+      "durations": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "resolutions": [
+        "720p",
+        "1080p",
+        "4k"
+      ],
+      "reference_limits": [
+        7,
+        1,
+        0
+      ],
+      "strengths": [
+        "identity_consistency",
+        "reference_video",
+        "complex_narrative",
+        "camera_control"
+      ],
+      "aspect_ratios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "input_modes": [
+        "text_to_video",
+        "image_to_video",
+        "first_last_frame",
+        "reference",
+        "edit"
+      ],
+      "native_audio": [
+        false,
+        true
+      ],
+      "endpoint_reference_mix": true,
+      "seed": false,
+      "prompt_limit": 3072,
+      "reference_video_total": 15.5,
+      "reference_min_duration": 3,
+      "reference_video_images": 4,
+      "feature_video_requires_multi_shot": true,
+      "reference_video_audio": [
+        false
+      ],
+      "provider_hints": [
+        "multi_shot"
+      ]
+    },
+    "kling-3-motion": {
+      "provider": "kling",
+      "vendor_model": "kling-3.0",
+      "durations": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "reference_limits": [
+        1,
+        1,
+        0
+      ],
+      "strengths": [
+        "motion_transfer",
+        "identity_consistency"
+      ],
+      "aspect_ratios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "input_modes": [
+        "motion_transfer"
+      ],
+      "native_audio": [
+        false
+      ],
+      "endpoint_reference_mix": false,
+      "seed": false,
+      "prompt_limit": 2500,
+      "reference_video_total": 30,
+      "reference_min_duration": 3,
+      "duration_from_video": true,
+      "provider_hints": [
+        "allow_duration_truncation"
+      ]
+    },
+    "kling-3-turbo": {
+      "provider": "kling",
+      "vendor_model": "kling-3.0-turbo",
+      "durations": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "reference_limits": [
+        0,
+        0,
+        0
+      ],
+      "strengths": [
+        "fast_iteration",
+        "identity_consistency"
+      ],
+      "aspect_ratios": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "input_modes": [
+        "image_to_video"
+      ],
+      "native_audio": [
+        false
+      ],
+      "endpoint_reference_mix": false,
+      "seed": false,
+      "prompt_limit": 2500,
+      "endpoint_ratio": "inherited"
+    }
+  },
+  "legacy_model_keys": [
+    "seedance-2.5",
+    "minimax-h3",
+    "flux-3"
+  ]
+}

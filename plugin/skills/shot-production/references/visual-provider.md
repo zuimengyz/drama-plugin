@@ -2,6 +2,8 @@
 
 Apply this contract when planning or executing an image or video output. Context reads, non-visual planning, research, and creative development remain independent of it.
 
+For official multi-provider video, the [unified video contract](../../../docs/video-provider-contract.md) supplies the lifecycle and multimodal capability gates. Image and legacy Comfy workflows retain the rules below.
+
 ## Preflight
 
 Confirm the required Drama capabilities for stable Asset/Media discovery, resolution, and import. Then confirm that the Host exposes the visual capabilities needed for the request:
@@ -37,7 +39,7 @@ Budgets are per independent operation, not shared across a Batch. Do not restart
 
 Technical retry is not Visual Revise. A completed generation increments `generationCount`; a concrete Visual Review FAIL may trigger a Host-chosen targeted revision and increments `generationCount` again. Transport retries, status polling retries, output fetch retries, and download retries do not.
 
-## Reference policy
+## Image reference policy
 
 Use the smallest sufficient reference set and enforce `referenceCount ∈ {0, 1, 2, 3}`. Reject more than three references; do not construct a dynamic workflow.
 
@@ -60,7 +62,7 @@ the template graph; a textual aspect-ratio request does not override linked size
 inputs. A rejected frame alone cannot replace missing character identity masters
 in a repair request. Preserve the reference plan in targeted corrections.
 
-## Video input and motion contract
+## Legacy video input and motion contract
 
 Use one qualified fixed input mode per video target. TEXT_TO_VIDEO (zero image inputs) is supported through the inspected Host route; the legacy general production tool below retains its existing image modes:
 

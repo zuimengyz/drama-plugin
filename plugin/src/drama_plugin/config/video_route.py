@@ -9,7 +9,11 @@ from enum import StrEnum
 from typing import Any, Self
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
-MODEL_KEYS = frozenset({'seedance-2.5', 'minimax-h3', 'flux-3'})
+from drama_plugin.providers.video.registry import model_keys
+
+# Existing MCP labels remain valid. New official IDs come from the same model
+# catalogue used by the adapters, never another list in Director or environment.
+MODEL_KEYS = model_keys()
 
 
 def canonical_model_key(model: str) -> str:

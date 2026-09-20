@@ -12,6 +12,7 @@ from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.visual.frame_request import Hash, Record, Text
 from drama_plugin.visual.reference_duties import ReferenceDuty, validate_duties, validate_endpoint
 from drama_plugin.visual.execution import ExecutionRoute, require_execution
+from drama_plugin.contracts.video import VideoRequest
 
 
 class Evidence(Record):
@@ -49,20 +50,33 @@ class Requirements(Record):
     target_id: Text
     shot_type: Text
     source_fingerprint: Hash
-    mode: Literal['SINGLE_IMAGE', 'START_END', 'TEXT_TO_VIDEO']
+    mode: Literal['SINGLE_IMAGE', 'START_END', 'TEXT_TO_VIDEO', 'MULTIMODAL']
     controls: tuple[Text, ...] = Field(min_length=1)
     duration_seconds: int = Field(gt=0)
     aspect_ratio: Text
     sound: Text
     language: Text | None = None
     frozen_creative: dict[str, Any] = Field(min_length=1)
-    inputs: tuple[VideoInput, ...] = Field(max_length=2)
+    inputs: tuple[VideoInput, ...]
+    video_request: VideoRequest | None = None
     reference_duties: tuple[ReferenceDuty, ...] = ()
     required: tuple[Text, ...] = Field(min_length=1)
     forbidden: tuple[Text, ...] = Field(min_length=1)
 
 
 def validate_requirements(r: Requirements) -> None:
+    if r.video_request is None and (len(r.inputs) > 2 or r.mode == 'MULTIMODAL'):
+        raise ValueError('LEGACY_VIDEO_REFERENCE_LIMIT')
+    if r.video_request:
+        v = r.video_request
+        expected_mode = {'text_to_video':'TEXT_TO_VIDEO', 'image_to_video':'SINGLE_IMAGE', 'first_last_frame':'START_END'}.get(v.input_mode, 'MULTIMODAL')
+        if v.first_frame and (v.reference_images or v.reference_videos or v.reference_audios):
+            expected_mode = 'MULTIMODAL'
+        if (v.duration != r.duration_seconds or v.aspect_ratio != r.aspect_ratio or v.native_audio != (r.sound != 'SILENT')
+                or r.mode != expected_mode
+                or v.continuity.work_id != r.work_id
+                or {x.media_id:x.content_hash for x in v.references()} != {x.media_id:x.content_hash for x in r.inputs}):
+            raise ValueError('UNIFIED_VIDEO_REQUIREMENTS_MISMATCH')
     from drama_plugin.visual.cinematic import validate_selection_handoff
     spec = validate_selection_handoff(r.frozen_creative, work_id=r.work_id, scene_id=r.scene_id,
                                shot_id=r.shot_id, duration=r.duration_seconds)
@@ -74,7 +88,7 @@ def validate_requirements(r: Requirements) -> None:
                 intent.native_audio_policy == 'DISABLED' and r.sound != 'SILENT' or
                 intent.canonical_dialogue_bindings and r.sound == 'SILENT'):
             raise ValueError('SOURCE_SOUND_ROUTE_CONFLICT')
-        validate_duties(spec, r.inputs, r.reference_duties)
+        validate_duties(spec, r.inputs, r.reference_duties, multimodal=r.video_request is not None)
         for inp in r.inputs:
             validate_endpoint(inp, spec)
     roles = [i.role for i in r.inputs]
@@ -88,7 +102,7 @@ def validate_requirements(r: Requirements) -> None:
         raise ValueError('CROSS_TARGET_INPUT')
     if len({i.media_id for i in r.inputs}) != len(r.inputs):
         raise ValueError('DUPLICATE_ENDPOINT_MEDIA')
-    needed = {'TEXT'} if not roles else {'FIRST_FRAME'} if roles == ['FIRST_FRAME'] else {'REFERENCE'} if roles == ['REFERENCE'] else {'FIRST_FRAME', 'LAST_FRAME'}
+    needed = set(roles) if r.mode == 'MULTIMODAL' else {'TEXT'} if not roles else {'FIRST_FRAME'} if roles == ['FIRST_FRAME'] else {'REFERENCE'} if roles == ['REFERENCE'] else {'FIRST_FRAME', 'LAST_FRAME'}
     if not needed <= set(r.controls):
         raise ValueError('INPUT_ROLE_CONTROL_MISMATCH')
 
@@ -114,7 +128,7 @@ def direction_quality(material: dict[str, Any], c: Candidate, shot_type: str) ->
 class Cost(Record):
     # Each component is incremental; reused assets are explicitly zero.
     components: dict[Text, float | None] = Field(min_length=1)
-    unit: Literal['credits'] = 'credits'
+    unit: Literal['credits', 'CNY', 'USD'] = 'credits'
     evidence: Evidence
     uncertainty: tuple[Text, ...] = ()
 
@@ -136,11 +150,24 @@ class Quality(Record):
     dimensions: dict[str, Literal['PASS', 'FAIL', 'UNKNOWN']] = Field(default_factory=dict)
 
 
+class AcceptedCostHistory(Record):
+    work_id: Text
+    shot_type: Text
+    style_fingerprint: Hash
+    provider: Text
+    model: Text
+    attempts: int = Field(gt=0)
+    accepted_shots: int = Field(gt=0)
+    total_actual_cost: float = Field(ge=0, allow_inf_nan=False)
+    unit: Literal['credits', 'CNY', 'USD']
+    evidence: Evidence
+
+
 class Candidate(Record):
     candidate_id: Text
     model: Text
     variant: Text
-    mode: Literal['SINGLE_IMAGE', 'START_END', 'TEXT_TO_VIDEO']
+    mode: Literal['SINGLE_IMAGE', 'START_END', 'TEXT_TO_VIDEO', 'MULTIMODAL']
     template: Text
     graph_hash: Hash
     adapter_fingerprint: Hash
@@ -158,10 +185,12 @@ class Candidate(Record):
     quality: Quality
     cost: Cost
     risks: tuple[Text, ...] = ()
+    accepted_cost_history: AcceptedCostHistory | None = None
 
 
 # One Host boundary, like production.video_verifier; no provider import in Core.
 execution_sealer: Callable[[Requirements, Candidate, dict[str, Any], dict[str, Any]], dict[str, Any]] | None = None
+transport_sealers: dict[str, Callable[..., dict[str, Any]]] = {}
 
 def qualify(r: Requirements, c: Candidate, *, now: datetime | None = None,
             trial: bool = True) -> dict[str, Any]:
@@ -169,7 +198,15 @@ def qualify(r: Requirements, c: Candidate, *, now: datetime | None = None,
     c = Candidate.model_validate(c.model_dump())
     validate_requirements(r)
     now = now or datetime.now(timezone.utc)
-    reasons = []
+    from drama_plugin.providers.video.registry import model_enabled
+    reasons = [] if model_enabled(c.model) else ['MODEL_DISABLED']
+    if r.video_request:
+        from drama_plugin.providers.video.registry import capability_errors, continuity_errors, fingerprint
+        provider = c.capability.get('provider')
+        if not provider or c.capability.get('registry_fingerprint') != fingerprint(c.model):
+            reasons.append('OFFICIAL_CAPABILITY_CHANGED')
+        reasons.extend(capability_errors(r.video_request, c.model))
+        reasons.extend(continuity_errors(r.video_request, provider or '', c.model))
     layers: tuple[Literal['official', 'interface', 'template', 'project'], ...] = ('official', 'interface', 'template', 'project')
     for layer in layers:
         e = c.layers.get(layer)
@@ -206,10 +243,20 @@ def qualify(r: Requirements, c: Candidate, *, now: datetime | None = None,
     if not c.cost.evidence.current(now) or c.cost.uncertainty or c.cost.total() is None:
         reasons.append('COST_UNRESOLVED_OR_EXPIRED')
     total = c.cost.total()
+    history = c.accepted_cost_history
+    accepted_cost = None
+    if (history and r.video_request and history.evidence.current(now) and history.attempts >= history.accepted_shots
+            and history.work_id == r.work_id and history.shot_type == r.shot_type and history.model == c.model
+            and history.provider == c.capability.get('provider') and history.unit == c.cost.unit
+            and history.style_fingerprint == sha256_canonical(r.video_request.continuity.style)):
+        accepted_cost = history.total_actual_cost / history.accepted_shots
     return {'candidate_id': c.candidate_id, 'eligible': not reasons, 'exclusions': reasons,
             'qualification': 'QUALIFIED' if scoped_pass else 'LIMITED_TRIAL',
+            'continuity_proven': r.shot_type in q.task_types and q.dimensions.get('continuity') == 'PASS' and bool(q.evidence) and bool(q.samples),
             'quality': q.model_dump(mode='json'), 'incremental_credits': total,
-            'fit_concerns': list(c.fit_concerns), **({'cinematic_direction': direction} if direction else {})}
+            'fit_concerns': list(c.fit_concerns),
+            **({'cost_per_accepted_shot':accepted_cost} if accepted_cost is not None else {}),
+            **({'cinematic_direction': direction} if direction else {})}
 
 
 def model_key(c: Candidate) -> str:
@@ -230,10 +277,15 @@ def _select_qualified(candidates: list[Candidate], results: list[dict[str, Any]]
     by_id = {c.candidate_id: c for c in candidates}
     if len(by_id) != len(candidates):
         raise ValueError('DUPLICATE_CANDIDATE')
+    if len({c.cost.unit for c in candidates}) > 1:
+        raise ValueError('COST_UNIT_NORMALIZATION_REQUIRED')
     def selectable(v: dict[str, Any]) -> bool:
         return bool(v['eligible'] or dry_run and set(v['exclusions']) <= {'COST_UNRESOLVED_OR_EXPIRED'})
     def rank(v: dict[str, Any]) -> tuple[Any, ...]:
-        return (not v['eligible'], v['qualification'] != 'QUALIFIED',
+        candidate = by_id[v['candidate_id']]
+        continuity_proven = v.get('continuity_proven', False)
+        return (not v['eligible'], len(candidate.fit_concerns) if candidate.capability.get('provider') else 0, not continuity_proven, v['qualification'] != 'QUALIFIED',
+                v.get('cost_per_accepted_shot', float('inf')),
                 v['incremental_credits'] if v['incremental_credits'] is not None else float('inf'), v['candidate_id'])
     selected = None
     attempts: list[dict[str, Any]] = []
@@ -353,9 +405,14 @@ def seal_decision(r: Requirements, c: Candidate, request: dict[str, Any], *, sta
     if r.frozen_creative.get('creative_schema') == 'cinematic-shot-v1':
         if host_adapter is None:
             raise ValueError('INSPECTED_HOST_ADAPTER_REQUIRED')
-        if execution_sealer is None:
+        if material.get('execution', {}).get('transport') == 'HTTP':
+            material['execution_contract'] = transport_sealers['HTTP'](r,c,request,host_adapter)
+        elif execution_sealer is None:
             raise ValueError('HOST_EXECUTION_SEALER_REQUIRED')
-        material['execution_contract'] = execution_sealer(r,c,request,host_adapter)
+        else:
+            material['execution_contract'] = execution_sealer(r,c,request,host_adapter)
+    elif material.get('execution', {}).get('transport') == 'HTTP':
+        material['execution_contract'] = transport_sealers['HTTP'](r,c,request,host_adapter or {})
     return {**material, 'fingerprint': sha256_canonical(material)}
 
 
@@ -460,7 +517,18 @@ def qualify_route(route: ProductionRoute, *, now: datetime | None = None) -> dic
     c = route.candidate
     r = route.requirements
     now = now or datetime.now(timezone.utc)
-    reasons: list[str] = []
+    from drama_plugin.providers.video.registry import model_enabled
+    reasons: list[str] = [] if model_enabled(c.model) else ['MODEL_DISABLED']
+    if route.execution and route.execution.transport == 'HTTP':
+        from drama_plugin.providers.video.registry import validate_request
+        requests = r.get('video_requests', {})
+        if set(requests) != set(route.video_targets):
+            reasons.append('COMPLETE_UNIFIED_REQUESTS_REQUIRED')
+        for raw in requests.values():
+            try:
+                validate_request(VideoRequest.model_validate(raw), route.execution.backend.provider, c.model)
+            except ValueError:
+                reasons.append('VIDEO_CAPABILITY_OR_CONTINUITY_GATE_FAILED')
     directions: dict[str, Any] = {}
     if route.continuation and (route.video_targets != (route.continuation.target_id,)
                               or r.get('creative_schema') != 'cinematic-shot-v1'):

@@ -131,3 +131,7 @@ legacy stage pass, scene, video or audio follows from this handoff.
 ## Route-owned expression
 
 Select DESIGN_NEUTRAL or CG-only HERO_CASTING explicitly. Use the route-owned expression template and formal Work bundle; do not reuse actor-audition conditions for heroic CG. A new candidate stays unapproved. Read [expression route contract](../../docs/expression-route-contract.md) when using character or action expression profiles.
+
+For HEROIC_CINEMATIC_CG full-body compilation, require the mode-specific visual intents and the final paragraph source map described in the expression route contract. Audit the exact provider prompt for real visual contrasts and conflicting positive directions before reserving a paid candidate. A recovered prior image is not an approved identity reference.
+
+Keep generic amplification, opt-in archetype traits and character-instance intent separate. For an approved amplitude reference, follow the ownership and non-copying rules in the expression route contract; verify storage recovery before any authorized paid regression.

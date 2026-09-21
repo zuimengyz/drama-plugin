@@ -44,15 +44,15 @@ def casting_expression(bundle: CharacterExpressionProfiles, route: str,
                    'no hero-proportion or exaggerated silhouette defaults. Neutral readable presentation.')
     elif mode == 'HERO_CASTING':
         opening = ('HEROIC_CINEMATIC_CG / HERO_CASTING. Original sculpted feature-film CG character design. '
-                   'Heroic proportion, strong silhouette, dominant physical presence and readable heroic composition. '
-                   'Amplify designed volumes and martial aura within this character envelope. '
+                   'Amplify the authored proportion, silhouette and character-specific screen presence. '
+                   'Keep all amplification within the authored role envelope. '
                    'Not an actor costume photo, studio audition, beauty portrait or generic game face.')
     else:
         opening = (profile.visual_language + ' / DESIGN_NEUTRAL. Designed three-dimensional character, '
                    'neutral presentation for proportion and costume inspection; retain authored shape design. '
                    'No automatic hero pose, low camera or flying cloth.')
     lines = [opening,
-        'FULL BODY: single person, entire head and both feet with margin; hands, armor joints and complete weapon visible. '
+        'FULL BODY: single person, entire head and both feet with margin; hands, clothing construction and any authored props visible. '
         'Vertical character selection image; no face close-up, cropped legs, collage, text or watermark.',
         f'Character identity: {core.identity}. Archetype: {core.archetype}.',
         'Shared personality: ' + '; '.join(core.personality_core),

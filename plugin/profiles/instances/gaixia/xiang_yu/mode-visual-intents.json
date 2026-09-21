@@ -1,0 +1,24 @@
+{
+  "DESIGN_NEUTRAL": {
+    "bodyProportion": "同一27–32岁项羽的大骨架、长肢、厚颈肩与肩腰关系，在无透视放大的全身检查视图中可读；不增加肌肉或装备尺寸。",
+    "facialIntensity": "同一青年CG-A长厚骨面，嘴唇与下巴清爽无成形胡须；舒展眉间和放松眼口，仅检查结构，不表演宿将阅历。",
+    "silhouette": "肩甲、甲裙、护腿和兵器彼此分离，披风落向身后以便检查轮廓连接；以对称清楚为优先。",
+    "pose": "正面站立，双脚平行分开、重心均分，双手和关节可见，不做躯干扭转蓄势。",
+    "camera": "Normal eye-level full-body inspection view, even light, entire head and both feet visible; no perspective dominance.",
+    "costumeIconicity": "同一墨黑层甲、深赤织物、窄腰革束和旧铜连接，平光检查固定方式与关节间隙，不强调装饰与层片明暗节奏。",
+    "environmentEnergy": "Simple neutral background and visible ground contact, still air, no smoke, dust, banners or embers.",
+    "kineticPotential": "静态结构展示，披风自然垂落、发束收稳，握持仅支撑兵器重量，不制造下一秒进入战斗的蓄势。",
+    "weapon": "同一实用木杆叶形矛头长兵，竖直置于身体旁，完整可见，检视握持比例与器物结构。"
+  },
+  "HERO_CASTING": {
+    "bodyProportion": "项羽，27–32岁壮盛青年。BODY FIRST, ARMOR SECOND。Visibly exceptional native physicality: unusually large natural skeleton, deep rib cage and powerful back, long load-bearing arms and legs, thick neck flowing into the shoulder girdle, strong shoulder-to-waist contrast, large capable hands and a rooted lower body. 骨架而非肌肉块堆积建立差异；即使拿掉披风和护肩也能读出肩胸、收腰和长肢的力量关系。不是给匀称名将身体增加20%肌肉；纵向大骨架和足髋支撑共同构成压迫。保持已批准R3的CG幅度上限、可活动的人体关节、可信重量，禁止怪物肌肉、超级英雄或幻想比例。",
+    "facialIntensity": "Xiang Yu-specific proud dangerous self-certainty / young vital martial force。同一CG-A高阔额、长而厚的面部骨架、宽厚中面、长下颌支和矩形下巴，连到强颈肩。27–32岁，clean-shaven upper lip and chin；至多几乎不可见的浅胡茬，无成形髭须、山羊胡或胡须轮廓，避免以中年纹路或老练沧桑增加威严。眼睛直、稳、有判断力，视线不寻求认可，像已经作出决定；眉间舒展，口角松而坚定，下颌略抬，骄傲桀骜但不邪恶。不是凝眉认真听军情的军官，也不咬牙、怒目、冷笑。项羽专属禁止漂移：veteran_general_drift、senior_commander_drift、mature_marshal_drift、generic_great_commander_drift。威慑来自年轻生命力、自信与身体存在，不来自资历或父辈权威。",
+    "silhouette": "项羽的识别重点是长肢大骨架与开放力量站姿组成的轮廓：厚颈—宽深胸背—收腰—稳髋长腿贯通，躯干与双臂之间保留可读空间。甲衣贴合该结构，不扩大肩甲。披风仅形成服从重力的次级斜线，不能成为主体宽度。长兵斜线与前臂、胸背、前后脚形成相连的承力结构；无装备也应能辨识这个人的天然体格。",
+    "pose": "OPEN DOMINANT STANCE, not a ceremonial commander portrait. 全身可读、躯干三分之二朝向镜头，两脚前后错开且有横向间距；后足斜向压地，前脚完整稳踏，髋落在两脚支撑范围内而身体有下一刻向前的趋势。胸背与骨盆轻微反向，膝髋不锁死。持兵手位于下胸至腰之间，肘弯曲并离开躯干，肩与背承担控制；非持兵手屈肘主动停在腰前，手指自然半收、前臂有支撑，禁止手臂完全松散垂落。不是进攻动作、挥兵或走步，只显示尚未释放的决断与力量。",
+    "camera": "维持已批准的低机位全身2:3构图与约82%画高，不增加极端仰视或广角。镜头可读厚胸背与前后脚的深度，头顶、双脚、双手和兵器两端均有明确留白。SPATIAL OWNERSHIP：通过人物的占地、目光与胸髋朝向建立空间主导，前景地面与远处纵深围绕其支撑点组织，而非靠披风面积或装饰架出中心人物。侧光明确颈肩、腕肘、胸腰和两腿受力，眼睛与嘴角不能藏在硬阴影里。",
+    "costumeIconicity": "保留既有楚汉题材墨黑层甲、深赤织物与少量旧铜连接的方向，不添兽头、黄金、巨肩或复杂纹样。甲胄只显露原有身体：肩层片贴随肩峰，胸甲有深度但不鼓造假胸，腰束显示躯干收束，甲裙分片使髋和前后腿关系可见；腋肘胯可动，绑缚可承重，可战可骑。披风有两点固定与适量势能，不能遮掉受力手和两脚。",
+    "environmentEnergy": "保持受控战地烟尘与远处模糊旗形的历史战争空间，不提高特效或风量，不扩成战斗海报。背景分层与近地支撑服务人物的空间主导，人物周围留出轮廓间隙；地面接触清楚，尘雾不过脸、不遮手脚，不添加新人物、战马、战斗事件或发光粒子。",
+    "kineticPotential": "项羽动作signature为POWER + MOMENTUM + DOMINANCE + DECISIVENESS；本张只投影到静止前的承力链，不展示打击。足—膝—髋—胸背—肩—前臂—手腕—兵杆连续：后足压地，髋承重，胸背与骨盆小幅反向，弯肘前臂控制兵杆而不是依靠手指挂着。静止不等于放松，年轻、急于决断而非鲁莽，准备随时向前却尚未移动。避免轻巧剑客、优雅击剑、装饰手法、舞枪花活；不增加任何剧情动作结果。",
+    "weapon": "保留一支正常尺寸、功能可信的直木杆叶形矛头长兵；兵器不是职位徽章，也不放大矛头。controlled vertical-to-diagonal line：杆尾点在后侧支撑脚外的地面，杆身向前外侧小幅倾斜；持兵手在腰胸之间实握，拇指与四指包握，手腕中立，前臂与弯肘明确承受杆的杠杆重量，肩胸背连接到髋和足。构图必须读到这条控制链，不能像松拿仪仗旗杆。两端完整留边，无巨刃、发光、奇幻尖刺、IP造型；不挥舞、不击打。"
+  }
+}

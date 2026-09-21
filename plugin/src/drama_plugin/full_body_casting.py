@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any, Literal
 import json
 from pydantic import model_serializer
-from drama_plugin.contracts.expression import CharacterExpressionProfiles
+from drama_plugin.contracts.expression import CharacterExpressionProfiles, CastingArchetypeProfile, ApprovedVisualTargetRange
 from drama_plugin.expression import casting_expression, select_expression
 
 from drama_plugin.contracts.base import ContractModel, dump_contract, sha256_canonical
@@ -36,10 +36,19 @@ class FullBodyCastingSpec(ContractModel):
     sources: dict[str, Hash]
     casting_mode: Literal['DESIGN_NEUTRAL', 'HERO_CASTING'] = 'DESIGN_NEUTRAL'
     expression_profiles: CharacterExpressionProfiles | None = None
+    mode_visual_intents: dict[str, dict[str, str]] | None = None
+    archetype_profile: CastingArchetypeProfile | None = None
+    approved_target_range: ApprovedVisualTargetRange | None = None
 
     @model_serializer(mode='wrap')
     def compatible_dump(self, handler: Any) -> dict[str, Any]:
         data: dict[str, Any] = handler(self)
+        for field, alias in (('archetype_profile','archetypeProfile'),('approved_target_range','approvedTargetRange')):
+            if getattr(self,field) is None:
+                data.pop(field,None); data.pop(alias,None)
+        if self.mode_visual_intents is None:
+            data.pop('modeVisualIntents', None)
+            data.pop('mode_visual_intents', None)
         if self.expression_profiles is None:
             data.pop('expressionProfiles', None)
             data.pop('expression_profiles', None)
@@ -80,13 +89,15 @@ def full_body_design(profile: RoleArchetypeProfile, plan: VisualCastingPlan,
         base = {'profileFingerprint': plan.profile_fingerprint, 'planFingerprint': meta['planFingerprint'], 'FaceDiscriminants': []}
     else:
         base = compile_visual_discriminants(profile, plan, spec.variant, 'FACE', route_context=context)
+    if (spec.approved_target_range is not None or spec.archetype_profile is not None) and (spec.expression_profiles is None or context.style.visual_language != 'HEROIC_CINEMATIC_CG'):
+        raise ValueError('APPROVED_RANGE_REQUIRES_EXPLICIT_HEROIC_COMPILATION')
     if spec.casting_mode == 'HERO_CASTING' and spec.expression_profiles is None:
         raise ValueError('HERO_CASTING_EXPRESSION_PROFILE_REQUIRED')
     faces = [x['text'] for x in base['FaceDiscriminants']]
     style = context.style
     prompt = '\n'.join([
         'Single original character design candidate for a historical cinematic CG film. FULL BODY, one person only.',
-        'Show the entire head and both feet with margin, both hands, main armor and the entire weapon. Vertical composition; no close-up, portrait crop, contact sheet, text or watermark.',
+        'Show the entire head and both feet with margin, both hands, clothing and any authored props. Vertical composition; no close-up, portrait crop, contact sheet, text or watermark.',
         style.rendering, style.shape_language, style.material_palette,
         'Apparent age: ' + profile.age_band,
         'Cultural design: ' + profile.cultural_world_fit,
@@ -96,6 +107,7 @@ def full_body_design(profile: RoleArchetypeProfile, plan: VisualCastingPlan,
         style.historical_boundary, *('Forbidden drift: ' + x for x in (*style.forbidden_drifts, *profile.drift_avoidance)),
         'Preserve role-defining structure before beauty. This is an unapproved whole-character candidate, not a scale proof or an adopted identity.',
     ])
+    compilation = None
     if spec.expression_profiles is not None:
         if spec.expression_profiles.character_core_profile.identity != spec.character:
             raise ValueError('CASTING_EXPRESSION_CHARACTER_MISMATCH')
@@ -107,9 +119,17 @@ def full_body_design(profile: RoleArchetypeProfile, plan: VisualCastingPlan,
         prompt = casting_expression(spec.expression_profiles, 'stylized_cinematic_cg', spec.casting_mode)
         prompt += '\n' + '\n'.join([style.rendering, style.material_palette, style.historical_boundary,
             *('Forbidden drift: ' + x for x in style.forbidden_drifts)])
+        if style.visual_language == 'HEROIC_CINEMATIC_CG':
+            from drama_plugin.casting_visual_compiler import compile_heroic_visual_intent
+            if spec.mode_visual_intents is None or set(spec.mode_visual_intents) != {'HERO_CASTING', 'DESIGN_NEUTRAL'}:
+                raise ValueError('EXPLICIT_MODE_VISUAL_INTENTS_REQUIRED')
+            compilation = compile_heroic_visual_intent(spec.expression_profiles, 'stylized_cinematic_cg',
+                spec.casting_mode, spec.mode_visual_intents[spec.casting_mode], dump_contract(style),
+                archetype=spec.archetype_profile, target_range=spec.approved_target_range)
+            prompt = compilation['prompt']
     inputs = {'profile': base['profileFingerprint'], 'plan': base['planFingerprint'],
               'context': sha256_canonical(context), 'spec': dump_contract(spec)}
-    return {'purpose': spec.purpose, 'character': spec.character, 'visualRoute': 'stylized_cinematic_cg',
+    return {**({'visualCompilation': compilation} if compilation is not None else {}), 'purpose': spec.purpose, 'character': spec.character, 'visualRoute': 'stylized_cinematic_cg',
             'inputsFingerprint': sha256_canonical(inputs), 'prompt': prompt,
             'promptFingerprint': sha256_canonical(prompt), 'sources': spec.sources,
             'status': 'DESIGN_ONLY', 'userAdoption': 'PENDING', 'maxOutputs': 1}
@@ -131,6 +151,12 @@ def executable_full_body(work: Work, profile: RoleArchetypeProfile, plan: Visual
         raise ValueError('CURRENT_APPROVED_WORK_ROUTE_BINDING_REQUIRED')
     if spec.expression_profiles is not None and work.content.get('characterExpressionProfiles', {}).get(spec.character) != dump_contract(spec.expression_profiles):
         raise ValueError('CURRENT_WORK_EXPRESSION_BINDING_REQUIRED')
+    if spec.approved_target_range is not None:
+        target = spec.approved_target_range
+        if (spec.archetype_profile is None
+                or work.content.get('approvedVisualTargetRanges', {}).get(target.range_id) != dump_contract(target)
+                or work.content.get('castingArchetypeProfiles', {}).get(spec.archetype_profile.key) != dump_contract(spec.archetype_profile)):
+            raise ValueError('CURRENT_WORK_APPROVED_RANGE_AND_ARCHETYPE_REQUIRED')
     raw = work.content.get('characterCastingAuthorizations', {}).get(authorization_id)
     if raw is None:
         raise ValueError('EXPLICIT_CASTING_AUTHORIZATION_REQUIRED')
@@ -165,7 +191,8 @@ async def reserve_full_body(memory: Any, work_id: str, profile: RoleArchetypePro
         brief = executable_full_body(work, profile, plan, context, spec, authorization_id)
         import hashlib
         auth = work.content['characterCastingAuthorizations'][authorization_id]
-        for path, digest in {**spec.sources, auth['directiveRef']: auth['directiveHash']}.items():
+        target_pins = {spec.approved_target_range.approval_ref: spec.approved_target_range.approval_hash} if spec.approved_target_range else {}
+        for path, digest in [*spec.sources.items(), *target_pins.items(), (auth['directiveRef'], auth['directiveHash'])]:
             if hashlib.sha256(Path(path).read_bytes()).hexdigest() != digest:
                 raise ValueError('CASTING_SOURCE_BYTES_CHANGED')
         # The caller's qualified Host adapter supplies an exact request, not a

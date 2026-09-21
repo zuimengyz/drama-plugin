@@ -1,0 +1,60 @@
+{
+  "characterCoreProfile": {
+    "identity": "xiang_yu",
+    "revision": "xiangyu-core-p1r2-source-pinned",
+    "archetype": "tragic_hero_warlord",
+    "personalityCore": [
+      "青年霸王，豪迈、桀骜、自信，习惯拥有最后决定权",
+      "亲自作战与决断的能力真实；杀伐是潜能，不以常态怒吼代替",
+      "悲剧来自力量仍在却不能挽回终局；保留可倾听、可慷慨、有生命力的一面"
+    ],
+    "historicalPosition": "秦末楚汉语境的西楚霸王，楚将门背景的军事统帅；帝王气质是银幕存在感，不冒称历史皇帝称号",
+    "storyFacts": [
+      "败军统帅仍有真实的局部作战能力",
+      "东城给出会点并打开局部道路",
+      "乌江在可行生路前作出拒绝，历史结局不变"
+    ],
+    "sourcePins": {
+      "/Users/zy/historical-plugin/artifacts/v3-03-final-e2e/phase-1-r4a-r/gaixia-r4a-r-cg-cinematic-bible.md": "cad02e3c2bbf3e5e3998807b839454ba4b8e447653fb87e307a5cef7092865ed",
+      "/Users/zy/historical-plugin/artifacts/v3-03-final-e2e/phase-1-r4a-r/gaixia-r4a-r-cg-expression-envelope.md": "85eaf6d33edcf9484db09cff6a2153503ddf07fb4a053f9248daa7032d0634d4",
+      "/Users/zy/historical-plugin/artifacts/v3-03-final-e2e/phase-1-r4a-r/gaixia-r4a-r-feature-screenplay-proposal.md": "1c0734bece9f33d96a6f38d1fb33bc61139a68ac4b27363426ae8cacf6436e2e",
+      "/Users/zy/historical-plugin/artifacts/v3-02/cg-route/xiangyu-role-profile.json": "693557aadabf61ae5425d3c947a3c3d0405c74c37383720bd176d09696d72d49",
+      "/Users/zy/historical-plugin/artifacts/v3-02/cg-route/xiangyu-visual-plan.json": "d60c35cdc59624e999a7de4e494a94b2f59f2212dbe2623630ec2b5488253f75",
+      "/Users/zy/historical-plugin/artifacts/phase2-p1r2-cg-expression/user-task.md": "410707d776c3c70e93a130baac53e08a7a0cf72c13909418ab652b7bcb03ef28",
+      "/Users/zy/historical-plugin/artifacts/phase2-p1r2-cg-expression/style-isolation-directive.md": "4b6776bcbf3bf042e15729c8a502912a8d69c2e152ef1e37aa11c9e38ce7a11e"
+    }
+  },
+  "liveActionExpressionProfile": null,
+  "cgExpressionProfile": {
+    "route": "stylized_cinematic_cg",
+    "character": "xiang_yu",
+    "coreFingerprint": "be47d313a763fc00989a34d0ecc187e030789f79c9f8e2645f6e718391f3cb4f",
+    "revision": "xiangyu-specific-dominance-p1r5",
+    "visualLanguage": "HEROIC_CINEMATIC_CG",
+    "heroicExaggeration": "heroic",
+    "silhouetteStrength": "high",
+    "physicalPresence": "dominant",
+    "facialIntensity": "high",
+    "costumeIconicity": "high",
+    "kineticPotential": "high",
+    "cinematicScale": "dominant",
+    "martialAura": "dominant",
+    "imperialPresence": "high",
+    "maxActionIntensity": "extreme_heroic",
+    "design": {
+      "face": "Xiang Yu-specific proud dangerous self-certainty / young vital martial force。同一CG-A高阔额、长而厚的面部骨架、宽厚中面、长下颌支和矩形下巴，连到强颈肩。27–32岁，clean-shaven upper lip and chin；至多几乎不可见的浅胡茬，无成形髭须、山羊胡或胡须轮廓，避免以中年纹路或老练沧桑增加威严。眼睛直、稳、有判断力，视线不寻求认可，像已经作出决定；眉间舒展，口角松而坚定，下颌略抬，骄傲桀骜但不邪恶。不是凝眉认真听军情的军官，也不咬牙、怒目、冷笑。项羽专属禁止漂移：veteran_general_drift、senior_commander_drift、mature_marshal_drift、generic_great_commander_drift。威慑来自年轻生命力、自信与身体存在，不来自资历或父辈权威。",
+      "body": "项羽，27–32岁壮盛青年。BODY FIRST, ARMOR SECOND。Visibly exceptional native physicality: unusually large natural skeleton, deep rib cage and powerful back, long load-bearing arms and legs, thick neck flowing into the shoulder girdle, strong shoulder-to-waist contrast, large capable hands and a rooted lower body. 骨架而非肌肉块堆积建立差异；即使拿掉披风和护肩也能读出肩胸、收腰和长肢的力量关系。不是给匀称名将身体增加20%肌肉；纵向大骨架和足髋支撑共同构成压迫。保持已批准R3的CG幅度上限、可活动的人体关节、可信重量，禁止怪物肌肉、超级英雄或幻想比例。",
+      "costume": "保留既有楚汉题材墨黑层甲、深赤织物与少量旧铜连接的方向，不添兽头、黄金、巨肩或复杂纹样。甲胄只显露原有身体：肩层片贴随肩峰，胸甲有深度但不鼓造假胸，腰束显示躯干收束，甲裙分片使髋和前后腿关系可见；腋肘胯可动，绑缚可承重，可战可骑。披风有两点固定与适量势能，不能遮掉受力手和两脚。",
+      "posture": "OPEN DOMINANT STANCE, not a ceremonial commander portrait. 全身可读、躯干三分之二朝向镜头，两脚前后错开且有横向间距；后足斜向压地，前脚完整稳踏，髋落在两脚支撑范围内而身体有下一刻向前的趋势。胸背与骨盆轻微反向，膝髋不锁死。持兵手位于下胸至腰之间，肘弯曲并离开躯干，肩与背承担控制；非持兵手屈肘主动停在腰前，手指自然半收、前臂有支撑，禁止手臂完全松散垂落。不是进攻动作、挥兵或走步，只显示尚未释放的决断与力量。",
+      "camera": "维持已批准的低机位全身2:3构图与约82%画高，不增加极端仰视或广角。镜头可读厚胸背与前后脚的深度，头顶、双脚、双手和兵器两端均有明确留白。SPATIAL OWNERSHIP：通过人物的占地、目光与胸髋朝向建立空间主导，前景地面与远处纵深围绕其支撑点组织，而非靠披风面积或装饰架出中心人物。侧光明确颈肩、腕肘、胸腰和两腿受力，眼睛与嘴角不能藏在硬阴影里。",
+      "actionSignature": "POWER + MOMENTUM + DOMINANCE + DECISIVENESS：起势少、决定快；足膝髋胸背肩腕整链发力，重心可控，长兵具有惯性与回收。避免decorative technique、light agility、fencing elegance、showy flourishes。静戏按导演降低动态，不把舞枪或持续发怒作为人物标签。本次选型仅展示静态承力，不授权任何战斗事件或视频。"
+    },
+    "realismBase": {
+      "anatomy": "grounded_articulating_human",
+      "materialPhysics": "grounded",
+      "gravity": "grounded",
+      "equipmentFunction": "grounded",
+      "supernaturalEffects": "NONE"
+    }
+  }
+}

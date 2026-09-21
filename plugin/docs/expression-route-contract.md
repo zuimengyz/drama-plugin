@@ -14,7 +14,7 @@ CG separates grounded articulation, material physics, gravity and equipment func
 
 ## Casting
 
-DESIGN_NEUTRAL displays proportion/clothing readably. HERO_CASTING is CG-only, requires HEROIC_CINEMATIC_CG and heroic/legendary. It uses sculpted volumes, character-specific silhouette and an authored heroic composition, never actor-audition prose plus a CG suffix. Keep full body/head/feet/hands/weapon readable; mild low view, turn, weight-bearing pose and motivated cloth may be authored. A complex battle poster is not a casting proof. Character distinction and presence precede conventional attractiveness; neutral dominance need not be an angry expression.
+DESIGN_NEUTRAL displays proportion/clothing readably. HERO_CASTING is CG-only, requires HEROIC_CINEMATIC_CG and heroic/legendary. It uses sculpted volumes, character-specific silhouette and an authored heroic composition, never actor-audition prose plus a CG suffix. Keep full body/head/feet/hands/weapon readable; For HEROIC_CINEMATIC_CG, use an explicit low-angle hero composition, three-quarter orientation and motivated depth while keeping the entire design visible. A complex battle poster is not a casting proof. Character distinction and presence precede conventional attractiveness; neutral dominance need not be an angry expression.
 
 `expression.casting_expression` has independent positive templates. `full_body_casting` binds the new bundle to formal Work and existing single-candidate authorization/ledger. New expression profiles replace legacy body/face and full-body spec styling prose; only source profile/plan fingerprints are reused. Author the visible decisions in profile.design. Route rendering/material/boundary remain explicit. Prefix forbidden drifts as prohibitions, never bare positive prompt fragments. Providers transport the compiled intent unchanged. No provider owns intensity policy.
 
@@ -29,3 +29,22 @@ Shot projects approved records, cannot escalate intensity or invent new choreogr
 ## Continuity and controlled validation
 
 Keep route-tagged candidates pending user review. Only user-approved representation can enter canonical character references; later image/video providers reuse it rather than redesigning the person. A one-image authorization does not authorize video, further candidates or another character. Stop after the first retained result, including a visually imperfect result.
+
+## Final visual compilation (R3)
+
+For HEROIC_CINEMATIC_CG, FullBodyCastingSpec.modeVisualIntents explicitly supplies DESIGN_NEUTRAL and HERO_CASTING descriptions for bodyProportion, facialIntensity, silhouette, pose, camera, costumeIconicity, environmentEnergy, kineticPotential and weapon. These are owner-authored realizations of the same character core, not new expression levels or automatic anatomy inferred from personality. Existing R2 profile design is source material to reconcile, not extra prose to concatenate after the mode decisions. Legacy spec costume/weapon/posture/lighting summaries remain source metadata on this path; modeVisualIntents is the executing source.
+
+casting_visual_compiler.compile_heroic_visual_intent turns all nine existing heroic fields into visible prose, combines the selected mode intent with the unchanged core, framing, rendering, materials and historical boundary, and returns character offsets plus source paths for every paragraph. Bare expression JSON is not the final prompt. Missing mode intent or known contradictory positive phrases fail before paid reservation. Contextual neutral gaze, normal joint articulation and restrained embers remain valid; the narrow text check is not a universal language validator.
+
+Before submission, retain final-compiled-hero-casting-prompt.txt and prompt-source-map.json, inspect the exact final prompt, and verify provider prompt equality. Test actual mode contrasts and field-to-prose changes, not only metadata presence. LIVE_ACTION_REALIST and REALISTIC_CG cannot enter this compiler. A prior download/storage failure must be recovered or the durable completion path verified before another paid candidate; recover an existing job without re-generation.
+
+
+### Approved amplitude range and ownership
+
+Generic HEROIC_CINEMATIC_CG controls amplify authored structures; they supply no default gender, age, body shape, martial identity, palette, clothing, weapon or camera angle. Explicit `CastingArchetypeProfile` traits describe dramatic relations, never one person's anatomy or equipment. `config/casting-archetypes.json` is an opt-in library, not a fallback. Character core, route expression and mode intents belong to the instance.
+
+An optional `ApprovedVisualTargetRange` pins the user's directive and reference Media hash, positive amplitude traits and negative drift traits. It is STYLE_AMPLITUDE_ONLY, with identityAdoption=false. No exact face, garment motif, equipment, pose, cloth direction, placement or color-layout copying. A range applies only to its named character and HEROIC_CINEMATIC_CG route; it cannot upgrade REALISTIC_CG or enter live action. Work must hold the exact range and archetype before execution. The target's approval source bytes are checked at reservation.
+
+Each compiled paragraph includes sourceLayer, sourceLayers, source paths, topic and text offsets. Generic expression rules selected by instance values name both layers. Camera/composition and anti-drift are topics, not untraceable ownership shortcuts. Inspect the final prompt contextually: ordinary/simple/plain may be correct for an authored role, but may not cancel its approved target. Never make role-specific prohibited wording global. Before a paid range regression, verify provider download and durable Media full-byte readback; generate only the expressly authorized count and stop. Approval of amplitude never adopts identity.
+
+Project-scoped range and mode intent snapshots may live in `profiles/instances/<project>/<character>/`. They are explicitly selected inputs, never auto-loaded route defaults. Execution still requires exact current Work range/archetype binding. Local profile persistence is not proof of successful Work binding or provider availability.

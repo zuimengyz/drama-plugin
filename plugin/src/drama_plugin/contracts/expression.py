@@ -142,3 +142,26 @@ class ActionExpressionBinding(ContractModel):
         if self.director.action_intensity == 'extreme_heroic' and self.director.scene_function != 'climax':
             raise ValueError('EXTREME_HEROIC_REQUIRES_SCOPED_CLIMAX')
         return self
+
+
+class CastingArchetypeProfile(ContractModel):
+    """Reusable dramatic type. Concrete appearance belongs to the instance."""
+    key: Text
+    revision: Text
+    traits: tuple[Text, ...] = Field(min_length=1)
+
+
+class ApprovedVisualTargetRange(ContractModel):
+    """A scoped amplitude approval; cannot grant identity/costume/pose adoption."""
+    range_id: Text
+    character: Text
+    visual_route: Literal['stylized_cinematic_cg']
+    visual_language: Literal['HEROIC_CINEMATIC_CG']
+    reference_media_id: Text
+    reference_content_hash: Hash
+    approval_ref: Text
+    approval_hash: Hash
+    reference_use: Literal['STYLE_AMPLITUDE_ONLY'] = 'STYLE_AMPLITUDE_ONLY'
+    identity_adoption: Literal[False] = False
+    positive_traits: tuple[Text, ...] = Field(min_length=1)
+    negative_traits: tuple[Text, ...] = Field(min_length=1)

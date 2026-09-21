@@ -1,0 +1,26 @@
+{
+  "rangeId": "approved_xiang_yu_heroic_cg_range",
+  "character": "xiang_yu",
+  "visualRoute": "stylized_cinematic_cg",
+  "visualLanguage": "HEROIC_CINEMATIC_CG",
+  "referenceMediaId": "media_ed30ff4cb6d94809b9ae225228d3093d",
+  "referenceContentHash": "def306a37a259bd69bf9c060f2331135ca89fed3ec292e4b9c4e89386a82b63b",
+  "approvalRef": "/Users/zy/historical-plugin/artifacts/phase2-p1r4-approved-range/user-task.md",
+  "approvalHash": "e39f1a032d2679af9bf58bdeb7cad3db928f8992cd3136ff3cf58dc17d694f93",
+  "referenceUse": "STYLE_AMPLITUDE_ONLY",
+  "identityAdoption": false,
+  "positiveTraits": [
+    "具有明确雕塑设计感的电影三维CG历史战争人物；英雄化幅度以已批准R3图的克制上限为界，保持楚汉人物与物质重量。",
+    "项羽青年壮盛、高大厚实，强胸背与稳下盘；不怒而威、判断危险、统帅压迫感与悲剧英雄底色并存。",
+    "清楚的低机位全身英雄构图；人物主导，脸、躯干、双脚、衣甲关节与手持兵器都可读。",
+    "甲胄有识别度并能作战骑乘；披风、头发、衣摆有受重力约束的势能，战地烟尘与纵深服务人物。",
+    "造型清晰度高于皮肤微纹理，英雄比例明确但不升级到超人躯体或巨型器物；身体力量不依赖怒吼。"
+  ],
+  "negativeTraits": [
+    "真人演员定妆照或古装海报感、普通偶像古装男主脸、过度美颜。",
+    "明显游戏IP化、游戏选人立绘模板、复制现有角色脸或装备。",
+    "幻想巨刃、发光特效、魔法玄幻、过大护肩与失去历史重量的动作。",
+    "过度复杂战场、背景抢戏、怒吼替代威势、夸张程度超过批准区间。",
+    "复制参考图精确五官、甲胄纹样、武器造型、pose、披风方向、场景摆位或颜色布局。"
+  ]
+}

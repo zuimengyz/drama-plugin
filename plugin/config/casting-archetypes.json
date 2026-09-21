@@ -1,0 +1,6 @@
+{
+  "tragic_hero_warlord": {"key":"tragic_hero_warlord","revision":"1","traits":["Military leadership under tragic dramatic pressure; do not depict the ending as a fixed expression.","Resolve between personal conviction and responsibility is authored per instance; no fixed age, gender, anatomy, palette or weapon."]},
+  "disciplined_commander": {"key":"disciplined_commander","revision":"1","traits":["Authority expressed through attention, decisions and responsibility for others.","Economy and precision are role interpretation, not a prescribed body or equipment template."]},
+  "ordinary_soldier": {"key":"ordinary_soldier","revision":"1","traits":["Membership and duties within a group, without automatic exceptional rank.","Individual background and visual design come from the instance."]},
+  "scholar_official": {"key":"scholar_official","revision":"1","traits":["Public responsibility and intellectual judgment negotiated through social relations.","Age, body, gender, gesture and clothing remain instance-authored."]}
+}

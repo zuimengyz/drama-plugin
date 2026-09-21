@@ -27,7 +27,7 @@ def binding(b,actions,level='heroic',route='stylized_cinematic_cg',function='act
 def test_independent_templates_and_no_fallback():
     b=bundle();before=dump(b)
     cg=casting_expression(b,'stylized_cinematic_cg','HERO_CASTING');live=casting_expression(b,'live_action_realist','DESIGN_NEUTRAL')
-    assert all(x in cg for x in ('FULL BODY','dominant physical presence','heroic composition'))
+    assert all(x in cg for x in ('FULL BODY','authored proportion','character-specific screen presence'))
     assert 'real human proportions' not in cg and 'long powerful limbs' not in live and 'heroicExaggeration' not in live
     assert dump(b)==before
     with pytest.raises(ValueError):casting_expression(b,'live_action_realist','HERO_CASTING')
@@ -50,6 +50,8 @@ def test_core_revision_and_realistic_cg():
 
 def test_full_body_current_work_binding(tmp_path):
     w,p,v,c,s=fixture(tmp_path);s.expression_profiles=bundle(p.identity);s.casting_mode='HERO_CASTING';c.style.visual_language='HEROIC_CINEMATIC_CG'
+    from test_casting_visual_compilation import intents
+    s.mode_visual_intents=intents()
     s.lighting_background='LEGACY STUDIO MUST NOT LEAK';s.costume='LEGACY COSTUME MUST NOT LEAK'
     d=full_body_design(p,v,c,s);assert 'LEGACY' not in d['prompt'] and 'HERO_CASTING' in d['prompt']
     w.content['visualRouteBinding']['styleFingerprint']=fp(c.style);w.content['characterCastingAuthorizations']['task']['inputsFingerprint']=d['inputsFingerprint']

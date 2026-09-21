@@ -3,16 +3,18 @@
 The Plugin Config loader parses `DRAMA_PLUGIN_VIDEO_ROUTE_MODE`,
 `DRAMA_PLUGIN_VIDEO_MODEL_PREFERRED`, `DRAMA_PLUGIN_VIDEO_MODEL_FALLBACKS` into
 `VideoRoutePolicy`. No settings means AUTO / DEFAULT_AUTO. YAML can use
-`video_route_policy` with the same fields. Environment overlays Plugin defaults;
-a Host-supplied typed `task_route_policy` overrides them, with TASK_OVERRIDE source.
+`video_route_policy` with the same fields. Environment overlays the external Plugin configuration (PLUGIN_CONFIG). Explicit
+runtime policy is authoritative: a conflicting Host `task_route_policy` fails.
+A task policy is accepted only when no external policy was supplied (DEFAULT_AUTO);
+matching redundant input retains the external source rather than claiming TASK_OVERRIDE.
+Empty ENV clears optional values; empty mode means explicit AUTO.
 
 AUTO retains V2-06 qualification, quality then cost ranking. PREFER evaluates only
 preferred_model followed by the explicit ordered fallback list. PIN considers only
 preferred_model; retained fallbacks are INACTIVE. Missing candidates have
 NO_CANDIDATE_EVIDENCE; none of these policies admits an ineligible candidate.
-Unknown keys fail at load/resolution, including inactive fallback keys. Keys are
-`seedance-2.5`, `minimax-h3`, `flux-3`: the current adapter registry's model labels
-normalized by its existing identity rule. This vocabulary adds no capability facts.
+Unknown keys fail at load/resolution, including inactive fallback keys. Keys come only from the current provider/model registry (including legacy MCP
+labels normalized by its existing identity rule). This vocabulary adds no capability facts.
 
 Host calls `choose(requirements, candidates, policy=config.video_route_policy,
 task_policy=...)`; planning uses `choose_routes` and the existing `qualify_route`.

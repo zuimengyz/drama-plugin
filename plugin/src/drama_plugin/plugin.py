@@ -103,6 +103,7 @@ class DramaPlugin:
                 raise ConfigurationError("Fish Role Dubbing requires an output directory")
             fish = FishAudioHttpClient(
                 role_config.api_key.get_secret_value(), base_url=role_config.base_url,
+                tts_model=role_config.tts_model,
                 timeout_seconds=role_config.timeout_seconds,
                 max_transient_retries=role_config.max_transient_retries,
             )

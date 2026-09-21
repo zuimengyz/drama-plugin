@@ -86,26 +86,38 @@ def _fish_mapping(voice: Voice) -> VoiceProviderMapping | None:
 def _native_performance(request: RoleDubbingRequest) -> tuple[float, float]:
     speech = request.speech_request
     parameters = speech.material_render_parameters
-    speed = parameters.get("speed", 1.0)
-    volume = parameters.get("volume", 0.0)
+    from drama_plugin.providers.speech.fish_audio import FISH_PACE, FISH_VOLUME
     delta = speech.performance_intent.get("sceneDelta", speech.performance_intent)
-    if isinstance(delta, dict):
-        pace = str(delta.get("paceAdjustment", "")).upper()
-        level = str(delta.get("volumeAdjustment", "")).upper()
-        if speed == 1.0:
-            speed = {"SLOWER": 0.92, "SLIGHTLY_SLOWER": 0.96, "FASTER": 1.08,
-                     "SLIGHTLY_FASTER": 1.04}.get(pace, 1.0)
-        if volume == 0.0:
-            volume = {"LOWER": -2.0, "SLIGHTLY_LOWER": -1.0, "HIGHER": 2.0,
-                      "SLIGHTLY_HIGHER": 1.0}.get(level, 0.0)
-    return float(speed), float(volume)
+    values = []
+    for parameter, semantic, mapping, fallback in (
+        ('speed', 'paceAdjustment', FISH_PACE, 1.0),
+        ('volume', 'volumeAdjustment', FISH_VOLUME, 0.0),
+    ):
+        intent = str(delta.get(semantic, '')).upper() if isinstance(delta, dict) else ''
+        if intent and intent not in mapping:
+            raise ValueError('UNSUPPORTED_LEGACY_VOICE_INTENT:' + semantic)
+        if intent:
+            value = mapping[intent]
+            if parameter in parameters and float(parameters[parameter]) != value:
+                raise ValueError('VOICE_INTENT_RENDER_CONFLICT:' + parameter)
+        else:
+            value = float(parameters.get(parameter, fallback))
+        values.append(value)
+    return values[0], values[1]
 
 
 def _projected_performance(
     request: RoleDubbingRequest,
 ) -> FishAudioPerformanceMapping | None:
     brief = request.speech_request.audio_performance_brief
-    return map_audio_performance_to_fish(brief) if brief is not None else None
+    if brief is None:
+        return None
+    projected = map_audio_performance_to_fish(brief)
+    for key in ('speed', 'volume'):
+        parameters = request.speech_request.material_render_parameters
+        if key in parameters and float(parameters[key]) != getattr(projected, key):
+            raise ValueError('VOICE_INTENT_RENDER_CONFLICT:' + key)
+    return projected
 
 
 class FishRoleDubbingProvider:
@@ -123,6 +135,9 @@ class FishRoleDubbingProvider:
 
     async def generate_role_dubbing(self, request: RoleDubbingRequest) -> RoleDubbingResult:
         speech = request.speech_request
+        # Validate authority before Voice design, model creation or synthesis can run.
+        if _projected_performance(request) is None:
+            _native_performance(request)
         work = await self.memory.get_work(speech.work_id)
         voice_id = _work_voice_id(work.content, speech.speaker_key)
         if speech.audio_performance_brief is not None:

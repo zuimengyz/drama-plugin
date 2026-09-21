@@ -28,23 +28,24 @@ def _environment_overrides(environment: Mapping[str, str]) -> dict[str, Any]:
         "mode": "DRAMA_PLUGIN_VIDEO_ROUTE_MODE",
         "preferred_model": "DRAMA_PLUGIN_VIDEO_MODEL_PREFERRED",
         "fallbacks": "DRAMA_PLUGIN_VIDEO_MODEL_FALLBACKS",
-    }.items() if key in environment and environment[key].strip()}
+    }.items() if key in environment}
     if route:
         overrides["video_route_policy"] = {**route, "source": "PLUGIN_ENV_DEFAULT"}
     providers: dict[str, dict[str, str]] = {}
     services: dict[str, dict[str, Any]] = {}
     for service in _SERVICE_NAMES:
-        if mode := environment.get(f"DRAMA_PLUGIN_PROVIDER_{service.upper()}_MODE"):
-            providers[service] = {"mode": mode.lower()}
+        mode_key = f"DRAMA_PLUGIN_PROVIDER_{service.upper()}_MODE"
+        if mode_key in environment:
+            providers[service] = {"mode": environment[mode_key].strip().lower()}
         prefix = f"DRAMA_PLUGIN_SERVICE_{service.upper()}_"
         values: dict[str, Any] = {}
-        if base_url := environment.get(prefix + "BASE_URL"):
-            values["base_url"] = base_url
-        if token := environment.get(prefix + "API_TOKEN"):
-            values["api_token"] = token
-        if timeout := environment.get(prefix + "TIMEOUT_SECONDS"):
+        if prefix + "BASE_URL" in environment:
+            values["base_url"] = environment[prefix + "BASE_URL"].strip()
+        if prefix + "API_TOKEN" in environment:
+            values["api_token"] = environment[prefix + "API_TOKEN"].strip() or None
+        if prefix + "TIMEOUT_SECONDS" in environment:
             try:
-                values["timeout_seconds"] = float(timeout)
+                values["timeout_seconds"] = float(environment[prefix + "TIMEOUT_SECONDS"])
             except ValueError as exc:
                 raise ConfigurationError(f"Invalid timeout for service {service}") from exc
         if values:
@@ -54,30 +55,32 @@ def _environment_overrides(environment: Mapping[str, str]) -> dict[str, Any]:
     if services:
         overrides["services"] = services
     role_values: dict[str, Any] = {}
-    if value := environment.get("FISH_AUDIO_API_KEY"):
-        role_values["api_key"] = value
-    if value := environment.get("FISH_AUDIO_BASE_URL"):
-        role_values["base_url"] = value
-    if value := environment.get("FISH_TTS_MODEL"):
-        role_values["tts_model"] = value
-    if value := environment.get("DRAMA_PLUGIN_ROLE_DUBBING_OUTPUT_DIRECTORY"):
-        role_values["output_directory"] = value
-    if value := environment.get("DRAMA_PLUGIN_ROLE_DUBBING_TIMEOUT_SECONDS"):
+    for key, field in {
+        "FISH_AUDIO_API_KEY": "api_key", "FISH_AUDIO_BASE_URL": "base_url",
+        "FISH_TTS_MODEL": "tts_model",
+        "DRAMA_PLUGIN_ROLE_DUBBING_OUTPUT_DIRECTORY": "output_directory",
+    }.items():
+        if key in environment:
+            role_values[field] = environment[key].strip()
+    if role_values.get('api_key') == '':
+        role_values['api_key'] = None
+    if "DRAMA_PLUGIN_ROLE_DUBBING_TIMEOUT_SECONDS" in environment:
         try:
-            role_values["timeout_seconds"] = float(value)
+            role_values["timeout_seconds"] = float(environment["DRAMA_PLUGIN_ROLE_DUBBING_TIMEOUT_SECONDS"])
         except ValueError as exc:
             raise ConfigurationError("Invalid Fish Role Dubbing timeout") from exc
     if role_values:
         overrides.setdefault("services", {})["role_dubbing"] = role_values
-    if mode := environment.get('DRAMA_PLUGIN_PROVIDER_AUDIO_SEMANTIC_MODE'):
-        overrides.setdefault('providers', {})['audio_semantic'] = {'mode': mode.strip().lower()}
+    if 'DRAMA_PLUGIN_PROVIDER_AUDIO_SEMANTIC_MODE' in environment:
+        overrides.setdefault('providers', {})['audio_semantic'] = {
+            'mode': environment['DRAMA_PLUGIN_PROVIDER_AUDIO_SEMANTIC_MODE'].strip().lower()}
     audio_values = {field: environment[key].strip() for field, key in {
         'api_key': 'DRAMA_PLUGIN_PROVIDER_QWEN_OMNI_API_KEY',
         'base_url': 'DRAMA_PLUGIN_PROVIDER_QWEN_OMNI_BASE_URL',
         'model': 'DRAMA_PLUGIN_PROVIDER_QWEN_OMNI_MODEL',
         'reasoning_effort': 'DRAMA_PLUGIN_PROVIDER_QWEN_OMNI_REASONING_EFFORT',
         'use_multichannel': 'DRAMA_PLUGIN_PROVIDER_QWEN_OMNI_USE_MULTICHANNEL',
-    }.items() if environment.get(key, '').strip()}
+    }.items() if key in environment}
     if audio_values:
         overrides.setdefault('services', {})['qwen_omni'] = audio_values
     return overrides
@@ -107,22 +110,24 @@ def load_config(
         if not isinstance(raw, dict):
             raise ConfigurationError("Configuration root must be a mapping")
         payload = raw
+        if isinstance(payload.get("video_route_policy"), dict):
+            payload["video_route_policy"] = {**payload["video_route_policy"], "source": "PLUGIN_CONFIG"}
     source_environment = environment if environment is not None else os.environ
     merged = _deep_merge(payload, _environment_overrides(source_environment))
-    if isinstance(merged.get("video_route_policy"), dict):
-        merged["video_route_policy"] = {**merged["video_route_policy"], "source": "PLUGIN_ENV_DEFAULT"}
     try:
         config = DramaPluginConfig.model_validate(merged)
         config._rhythm_source = ("environment:rhythm_speed" if "rhythm_speed" in source_environment else
                                 f"config:{path}:rhythm_speed" if "rhythm_speed" in payload else "default:work_defined")
         return config
     except ValidationError as exc:
-        if 'qwen_omni' in merged.get('services', {}) or 'audio_semantic' in merged.get('providers', {}):
+        errors = exc.errors()
+        if any(e['loc'][:2] in {('services', 'qwen_omni'), ('providers', 'audio_semantic')}
+               or not e['loc'] for e in errors):
             # Do not chain a Pydantic exception containing the original secret input.
             raise ConfigurationError('Invalid audio semantic configuration; enabled mode requires API_KEY + HTTPS BASE_URL and valid options') from None
-        if any(e["loc"] and e["loc"][0] == "rhythm_speed" for e in exc.errors()):
-            raise ConfigurationError(f"Invalid rhythm_speed in configuration {path}: expected work_defined, slow, medium or fast") from exc
-        route_errors = [e["msg"] for e in exc.errors() if e["loc"] and e["loc"][0] == "video_route_policy"]
+        if any(e["loc"] and e["loc"][0] == "rhythm_speed" for e in errors):
+            raise ConfigurationError(f"Invalid rhythm_speed in configuration {path}: expected work_defined, slow, medium or fast") from None
+        route_errors = [e["msg"] for e in errors if e["loc"] and e["loc"][0] == "video_route_policy"]
         if route_errors:
-            raise ConfigurationError("Invalid video route policy: " + "; ".join(route_errors)) from exc
-        raise ConfigurationError("Invalid Drama Plugin configuration") from exc
+            raise ConfigurationError("Invalid video route policy: " + "; ".join(route_errors)) from None
+        raise ConfigurationError("Invalid Drama Plugin configuration") from None

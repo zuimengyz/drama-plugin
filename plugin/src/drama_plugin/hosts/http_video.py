@@ -14,6 +14,7 @@ from drama_plugin.contracts.media import MediaType
 from drama_plugin.providers.video.registry import registry, fingerprint, settings, validate_request, ProviderSettings
 from drama_plugin.providers.video.adapters import ADAPTERS
 from drama_plugin.providers.video.base import SafeProviderError, HttpVideoProvider
+from drama_plugin.visual.video_prompt import prompt_compilation
 from drama_plugin.visual.video_selection import Requirements, Candidate, Evidence, validate_requirements, verify_decision
 from drama_plugin.visual.execution import validate_result_identity, validate_http_binding
 from drama_plugin.hosts.route_production import operate
@@ -41,11 +42,17 @@ def compile_request(r: Requirements, c: Candidate) -> dict[str, Any]:
     elif v.prompt != r.frozen_creative.get('motion_prompt'):
         raise ValueError('CANONICAL_PROMPT_CHANGED')
     return {'tool':'video.create_task', 'provider':provider, 'model':c.model,
-            'videoRequest':v.model_dump(mode='json', by_alias=True)}
+            'videoRequest':v.model_dump(mode='json', by_alias=True),
+            'promptCompilation':prompt_compilation(v)}
 
 
 def seal_execution(r: Requirements, c: Candidate, request: dict[str, Any], host: dict[str, Any]) -> dict[str, Any]:
-    if request != compile_request(r,c):
+    expected = compile_request(r,c)
+    if 'promptCompilation' not in request:
+        # Old seals used this exact prompt composition but had no receipt field.
+        # Replay the current compiler; never label the historical snapshot as run.
+        expected.pop('promptCompilation')
+    if request != expected:
         raise ValueError('REQUEST_DOES_NOT_MATCH_CANONICAL_PROJECTION')
     assert r.video_request is not None
     material = {'schema_fingerprint':fingerprint(c.model), 'request_fingerprint':sha256_canonical(request),
@@ -130,7 +137,7 @@ class VideoProviderHost:
                 'operation':'video.create_task', 'endpoint_fingerprint':sha256_canonical(config.base_url),
                 'evidence':Evidence(source='configured official adapter; offline schema contract', checked_at=now,
                                     expires_at=now+timedelta(hours=1), verified=True).model_dump(mode='json'),
-                'authenticated':True}
+                'authentication_status':'CONFIGURED_NOT_VERIFIED'}
 
     def _receipt(self, a: dict[str, Any], task: ProviderTask) -> dict[str, Any]:
         return {**a['execution_binding'], 'attempt_id':a['attempt_id'], 'task_id':task.provider_task_id,

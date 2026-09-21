@@ -22,7 +22,7 @@ Do not classify an explicit state transition as drift. When one Shot shows a hel
 
 ## Reference planning
 
-For image preparation, set `MAX_REFERENCE_COUNT = 3`; the image selection rules below retain that limit. Official video uses the registry's actual per-mode reference limits and must consume every required continuity reference; it may not omit one to fit a cheaper model. Legacy MCP video retains its inspected compiler limits. Build candidates only from stable Asset identity with suitable stable reference Media. Never use a temporary provider URL, prior provider filename, unexplained local file, web image, or unpersisted proof-of-concept output.
+Consume the source-pinned Reference Plan authored by reference-strategy. The currently inspected image adapter has `MAX_REFERENCE_COUNT = 3`; this is an execution limit, not authority to remove required proof. Official video uses the registry's actual per-mode reference limits and must consume every required continuity reference; it may not omit one to fit a cheaper model. Legacy MCP video retains its inspected compiler limits. Build candidates only from stable Asset identity with suitable stable reference Media. Never use a temporary provider URL, prior provider filename, unexplained local file, web image, or unpersisted proof-of-concept output.
 
 Discover candidates from:
 
@@ -34,7 +34,7 @@ Discover candidates from:
 
 Prefer a `MASTER_CHARACTER_CARD` or the current contract's equivalent for every clearly visible named principal. If a key visible character lacks suitable stable Asset-plus-Media identity, record `MISSING_STABLE_REFERENCE`, name the missing entity, mark the plan incomplete, and stop visual execution. Do not silently ignore the character or create an unreviewed substitute. Return the missing fact so the existing asset-resolution capability can address it without copying that capability here.
 
-When candidate count is three or fewer, select every suitable candidate. When it exceeds three, select exactly the most consequential three by the priority above plus Shot focality. Do not use a scoring framework or expand the limit. Record:
+Bind every REQUIRED reference duty from the Reference Plan. If the verified adapter cannot bind all required duties, return `REFERENCE_CAPABILITY_CONFLICT` and route back to reference-strategy and video-model-selection; do not silently truncate to three. PREFERRED candidates may be omitted only under the upstream plan’s priorities, with the reason recorded. Do not create a second priority list in Shot Production. Record:
 
 - selected references and stable IDs;
 - omitted candidates;

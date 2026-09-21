@@ -41,9 +41,9 @@ Technical retry is not Visual Revise. A completed generation increments `generat
 
 ## Image reference policy
 
-Use the smallest sufficient reference set and enforce `referenceCount ∈ {0, 1, 2, 3}`. Reject more than three references; do not construct a dynamic workflow.
+The currently inspected image adapter accepts `referenceCount ∈ {0, 1, 2, 3}`. Reject a binding that exceeds this capability; preserve all REQUIRED duties in the upstream Reference Plan and return `REFERENCE_CAPABILITY_CONFLICT` rather than silently omitting one. Do not construct a dynamic workflow.
 
-Select the most consequential visual facts for the production goal, commonly character identity, costume identity, and scene identity. Their ordering is contextual, not a fixed business rule. Formal references should originate from stable Drama Asset/Media identity rather than a prior provider session, an unexplained local file, or a PoC artifact.
+Consume the Reference Plan’s required and preferred duties and priorities; do not independently rank character, costume or scene identity. Formal references should originate from stable Drama Asset/Media identity rather than a prior provider session, an unexplained local file, or a PoC artifact.
 
 Route by both generation intent and reference count:
 

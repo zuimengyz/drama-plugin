@@ -65,10 +65,14 @@ def validate_binding(decision: dict[str, Any], binding: dict[str, Any] | None) -
 
 
 def validate_http_binding(decision: dict[str, Any], binding: dict[str, Any] | None) -> None:
+    # Old HTTP bindings used "authenticated" for credential presence. Translate
+    # only that legacy meaning; no offline binding proves provider authentication.
+    auth = (binding.get('authentication_status') if binding and 'authentication_status' in binding
+            else 'CONFIGURED_NOT_VERIFIED' if binding and binding.get('authenticated') is True else None)
     if (not binding or binding.get('execution') != decision.get('execution')
             or binding.get('provider_schema_fingerprint') != decision['execution_contract']['schema_fingerprint']
             or binding.get('operation') != 'video.create_task' or not binding.get('endpoint_fingerprint')
-            or binding.get('authenticated') is not True):
+            or auth != 'CONFIGURED_NOT_VERIFIED'):
         raise ValueError('HTTP_PROVIDER_BINDING_REQUIRED')
     from drama_plugin.visual.video_selection import Evidence
     from datetime import datetime, timezone

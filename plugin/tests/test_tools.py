@@ -88,47 +88,15 @@ def test_representative_output_contracts() -> None:
 
 
 @pytest.mark.asyncio
-async def test_video_generation_accepts_fixed_input_modes_and_untruncated_prompt(monkeypatch) -> None:
-    # This test isolates input shape. Actual completion is tested with real fixture
-    # bytes and object failures in test_media_delivery.py.
-    async def simulated_completion(*args, **kwargs):
-        return {'persistenceStatus':'OFFLINE_SIMULATION_ONLY'}
-    monkeypatch.setattr('drama_plugin.media_delivery.complete_retained_media', simulated_completion)
+@pytest.mark.parametrize('kind', ['image', 'video'])
+@pytest.mark.parametrize('parameters', [None, {}, {'workId':'work-new'}, {'creative_schema':'cinematic-shot-v1'}])
+async def test_raw_generation_is_retired_before_provider_call(kind, parameters, monkeypatch):
     plugin = DramaPlugin.load(ROOT, mock_data=MockDramaData())
-    tool = plugin.tools.get("production.generate_video")
-
-    single = await tool.handler(prompt="subtle motion", reference_media_ids=["media-start"])
-    assert single.media_type.value == "VIDEO"
-    assert single.content["reference_media_ids"] == ["media-start"]
-
-    pair = await tool.handler(
-        prompt="subtle transition",
-        start_frame_media_id="media-start",
-        end_frame_media_id="media-end",
-    )
-    assert pair.content["reference_media_ids"] == ["media-start", "media-end"]
-
-    invalid_inputs = (
-        {},
-        {"reference_media_ids": ["media-a", "media-b"]},
-        {"start_frame_media_id": "media-start"},
-        {
-            "start_frame_media_id": "media-start",
-            "end_frame_media_id": "media-end",
-            "reference_media_ids": ["media-extra"],
-        },
-    )
-    for arguments in invalid_inputs:
-        with pytest.raises(ContractValidationError):
-            await tool.handler(prompt="subtle motion", **arguments)
-
-    # V2-12 removes the obsolete cross-provider cap; mocked provider preserves all bytes.
-    long_prompt = "x" * 2001 + "END"
-    output = await tool.handler(prompt=long_prompt, reference_media_ids=["media-start"])
-    assert output.content["prompt"] == long_prompt
-    with pytest.raises(ContractValidationError, match="FORMAL_ROUTE_FOR_CINEMATIC"):
-        await tool.handler(prompt=long_prompt, reference_media_ids=["media-start"],
-                           parameters={"creative_schema":"cinematic-shot-v1"})
+    async def forbidden(*args, **kwargs):
+        raise AssertionError('raw generation must not reach any provider')
+    monkeypatch.setattr(plugin.providers.production, 'generate_' + kind, forbidden)
+    with pytest.raises(ContractValidationError, match='USE_FORMAL_ROUTE_RESERVATION'):
+        await plugin.tools.get('production.generate_' + kind).handler(prompt='uncompiled', parameters=parameters)
 
 
 def test_persistent_memory_and_production_contracts_are_minimal() -> None:

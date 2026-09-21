@@ -65,6 +65,13 @@ class FishAudioPerformanceMapping(ContractModel):
         return self
 
 
+# Capability mapping shared by typed projection and the legacy semantic adapter.
+FISH_PACE = {"SLOWER": 0.92, "SLIGHTLY_SLOWER": 0.96, "NEUTRAL": 1.0,
+             "FASTER": 1.08, "SLIGHTLY_FASTER": 1.04}
+FISH_VOLUME = {"LOWER": -2.0, "SLIGHTLY_LOWER": -1.0, "NEUTRAL": 0.0,
+               "HIGHER": 2.0, "SLIGHTLY_HIGHER": 1.0}
+
+
 def map_audio_performance_to_fish(
     brief: AudioPerformanceBrief,
 ) -> FishAudioPerformanceMapping:
@@ -73,16 +80,8 @@ def map_audio_performance_to_fish(
         require_vocal_capability(brief.director_performance.vocal_delivery, supported_modes={"SPOKEN"})
     if brief.director_performance is not None:
         raise ValueError("DIRECTOR_VOICE_ADAPTER_QUALIFICATION_REQUIRED: new semantic dimensions must not be silently dropped")
-    speed = {
-        PaceTendency.SLOWER: 0.92,
-        PaceTendency.NEUTRAL: 1.0,
-        PaceTendency.FASTER: 1.08,
-    }[brief.pace_tendency]
-    volume = {
-        VolumeTendency.LOWER: -2.0,
-        VolumeTendency.NEUTRAL: 0.0,
-        VolumeTendency.HIGHER: 2.0,
-    }[brief.volume_tendency]
+    speed = FISH_PACE[brief.pace_tendency.value]
+    volume = FISH_VOLUME[brief.volume_tendency.value]
     diagnostics: tuple[AudioCapabilityDiagnostic, ...] = (
         AudioCapabilityDiagnostic(
             dimension="pace",
@@ -388,6 +387,7 @@ class FishAudioHttpClient:
         api_key: str,
         *,
         base_url: str = FISH_AUDIO_BASE_URL,
+        tts_model: str = FISH_TTS_MODEL,
         timeout_seconds: float = 120.0,
         max_transient_retries: int = 1,
         client: httpx.AsyncClient | None = None,
@@ -396,6 +396,9 @@ class FishAudioHttpClient:
             raise SpeechProviderError("Fish Audio credential is missing")
         if base_url.rstrip("/") != FISH_AUDIO_BASE_URL:
             raise SpeechProviderError("Fish validation requires the official api.fish.audio endpoint")
+        if tts_model != FISH_TTS_MODEL:
+            raise SpeechProviderError("Unsupported Fish TTS model")
+        self.tts_model = tts_model
         self._authorization = f"Bearer {api_key}"
         self._owns_client = client is None
         self._max_transient_retries = max_transient_retries
@@ -553,7 +556,7 @@ class FishAudioHttpClient:
         response = await self._post(
             "v1/tts",
             json=payload,
-            headers={"Content-Type": "application/json", "model": FISH_TTS_MODEL},
+            headers={"Content-Type": "application/json", "model": self.tts_model},
         )
         if response.status_code != 200:
             raise _safe_error(response, (self._authorization, self._authorization[7:]))

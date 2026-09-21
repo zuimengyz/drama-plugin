@@ -11,6 +11,6 @@ tools:
 completion:
   conditions:
     - Requested image, video, or audio outputs pass the applicable per-Shot review and exist as stable mediaIds with clear Shot semantics.
-    - Visual requests use a recorded plan of no more than three stable Asset-plus-Media references and stop on a missing key visible character reference or required runtime capability.
+    - Visual requests consume the approved Reference Plan, bind every required duty within verified adapter capacity, and stop on a missing stable reference or reference capability conflict.
     - Continuous Review-PASS Shots preserve Locked Facts, allow justified deltas, and pass the applicable cross-Shot continuity review.
     - No storage, provider, workflow, filename, node, or other implementation detail leaks into Drama domain facts.

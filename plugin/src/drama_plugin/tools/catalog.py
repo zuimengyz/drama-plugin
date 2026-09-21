@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from pathlib import Path
-import tempfile
 from typing import Any
 
-from pydantic import PositiveInt
+from pydantic import PositiveInt, NonNegativeInt
 
 from drama_plugin.contracts.asset import Asset, AssetType
 from drama_plugin.contracts.audio import RoleDubbingRequest, RoleDubbingResult
@@ -27,57 +25,20 @@ def _domain_tool(code: str, description: str, handler: ToolHandler, output: Any,
 def build_tool_registry(memory: MemoryProvider, asset: AssetProvider, research: ResearchProvider, production: ProductionProvider, media: MediaProvider, context: ContextProvider, voice: VoiceProvider, role_dubbing: RoleDubbingProvider) -> ToolRegistry:
     registry = ToolRegistry()
 
-    async def finish_production(result: Media, parameters: dict[str, Any] | None) -> Media:
-        from drama_plugin.media_delivery import complete_retained_media, MediaIdentity
-        options = parameters or {}
-        for key, field in [('workId','work_id'),('shotId','shot_id'),('assetId','asset_id'),('sourceRef','source_ref')]:
-            if key in options and options[key] != getattr(result, field):
-                raise ContractValidationError('Production result does not match requested business scope/version')
-        # The returned Media is a recovery identity even if completion fails.
-        with tempfile.TemporaryDirectory(prefix="drama-production-readback-") as cache:
-            receipt = await complete_retained_media(media, memory, asset, MediaIdentity.from_media(result),
-                source=None, content=result.content, cache=Path(cache),
-                target_id=str(options.get('targetId') or result.source_ref))
-        return result.model_copy(update={'content': {**result.content, 'delivery': {
-            key: value for key, value in receipt.items() if key != 'cachePath'}}})
-
     async def generate_image(prompt: str, reference_asset_ids: list[str] | None = None,
                              reference_media_ids: list[str] | None = None,
                              parameters: dict[str, Any] | None = None) -> Media:
         from drama_plugin.hosts.route_production import guard_direct_generation
         await guard_direct_generation(memory, parameters)
-        result = await production.generate_image(prompt, reference_asset_ids, reference_media_ids, parameters)
-        return await finish_production(result, parameters)
+        raise AssertionError('legacy generation guard must reject')
 
-    async def generate_video(
-        prompt: str,
-        start_frame_media_id: str | None = None,
-        end_frame_media_id: str | None = None,
-        reference_media_ids: list[str] | None = None,
-        parameters: dict[str, Any] | None = None,
-    ) -> Media:
+    async def generate_video(prompt: str, start_frame_media_id: str | None = None,
+                             end_frame_media_id: str | None = None,
+                             reference_media_ids: list[str] | None = None,
+                             parameters: dict[str, Any] | None = None) -> Media:
         from drama_plugin.hosts.route_production import guard_direct_generation
         await guard_direct_generation(memory, parameters)
-        references = reference_media_ids or []
-        has_start = start_frame_media_id is not None
-        has_end = end_frame_media_id is not None
-        if has_start or has_end:
-            if not (has_start and has_end) or references:
-                raise ContractValidationError(
-                    "Start-end video requires exactly one start frame and one end frame, without arbitrary references"
-                )
-        elif len(references) != 1:
-            raise ContractValidationError(
-                "Single-image video requires exactly one reference media input"
-            )
-        result = await production.generate_video(
-            prompt,
-            start_frame_media_id,
-            end_frame_media_id,
-            references,
-            parameters,
-        )
-        return await finish_production(result, parameters)
+        raise AssertionError('legacy generation guard must reject')
 
     specs = [
         _domain_tool("work.create_work", "Create a complete initial work as persistent memory.", memory.create_work, Work, required={"title": str, "content": dict[str, Any]}, optional={"description": str | None}),
@@ -89,13 +50,13 @@ def build_tool_registry(memory: MemoryProvider, asset: AssetProvider, research: 
         _domain_tool("script.get_script", "Read a script by stable ID.", memory.get_script, Script, required={"script_id": str}),
         _domain_tool("script.save_script", "Replace the formal state of an existing script revision.", memory.save_script, Script, required={"script_id": str, "title": str, "content": dict[str, Any]}),
         _domain_tool("script.list_scripts", "List scripts under a work.", memory.list_scripts, list[Script], required={"work_id": str}),
-        _domain_tool("episode.create_episode", "Create a complete initial episode under a script.", memory.create_episode, Episode, required={"script_id": str, "episode_no": int, "title": str, "content": dict[str, Any]}),
+        _domain_tool("episode.create_episode", "Create a complete initial episode under a script.", memory.create_episode, Episode, required={"script_id": str, "episode_no": NonNegativeInt, "title": str, "content": dict[str, Any]}),
         _domain_tool("episode.get_episode", "Read an episode by stable ID.", memory.get_episode, Episode, required={"episode_id": str}),
-        _domain_tool("episode.save_episode", "Replace the formal state of an existing episode revision.", memory.save_episode, Episode, required={"episode_id": str, "episode_no": int, "title": str, "content": dict[str, Any]}),
+        _domain_tool("episode.save_episode", "Replace the formal state of an existing episode revision.", memory.save_episode, Episode, required={"episode_id": str, "episode_no": NonNegativeInt, "title": str, "content": dict[str, Any]}),
         _domain_tool("episode.list_episodes", "List episodes under a script with optional episode number or title filters.", memory.list_episodes, list[Episode], required={"script_id": str}, optional={"episode_no": int | None, "title": str | None}),
-        _domain_tool("scene.create_scene", "Create a complete initial scene under an episode.", memory.create_scene, Scene, required={"episode_id": str, "order": int, "title": str, "content": dict[str, Any]}, optional={"location": str | None}),
+        _domain_tool("scene.create_scene", "Create a complete initial scene under an episode.", memory.create_scene, Scene, required={"episode_id": str, "order": NonNegativeInt, "title": str, "content": dict[str, Any]}, optional={"location": str | None}),
         _domain_tool("scene.get_scene", "Read a scene by stable ID.", memory.get_scene, Scene, required={"scene_id": str}),
-        _domain_tool("scene.save_scene", "Replace the formal state of an existing scene revision.", memory.save_scene, Scene, required={"scene_id": str, "order": int, "title": str, "content": dict[str, Any]}, optional={"location": str | None}),
+        _domain_tool("scene.save_scene", "Replace the formal state of an existing scene revision.", memory.save_scene, Scene, required={"scene_id": str, "order": NonNegativeInt, "title": str, "content": dict[str, Any]}, optional={"location": str | None}),
         _domain_tool("scene.list_scenes", "List scenes under an episode with optional structural filters.", memory.list_scenes, list[Scene], required={"episode_id": str}, optional={"order": int | None, "location": str | None, "character": str | None}),
         _domain_tool("scene.search_scenes", "Discover scenes when the stable ID is unknown, optionally scoped to an episode.", memory.search_scenes, list[Scene], required={"query": str}, optional={"episode_id": str | None}),
         _domain_tool("shot.create_shot", "Create a complete initial shot under a scene.", memory.create_shot, Shot, required={"scene_id": str, "shot_no": str, "content": dict[str, Any]}, optional={"title": str | None, "shot_type": str | None}),
@@ -120,8 +81,8 @@ def build_tool_registry(memory: MemoryProvider, asset: AssetProvider, research: 
         _domain_tool("voice.search_voices", "Search durable Voices by name and lifecycle status.", voice.search_voices, list[Voice], optional={"query": str | None, "status": VoiceStatus | None}),
         _domain_tool("voice.save_voice", "Update provider mappings or lifecycle metadata with optimistic version safety.", voice.update_voice, Voice, required={"voice_id": str, "content": VoiceContent, "expected_version": PositiveInt}, optional={"name": str | None, "status": VoiceStatus | None}),
         _domain_tool("voice.resolve_voice", "Resolve the stable Voice master reference to a temporary Drama Service content URL.", voice.resolve_voice, VoiceResolveResult, required={"voice_id": str}),
-        _domain_tool("production.generate_image", "Generate an image from business-level prompt and stable references and verified durable completion.", generate_image, Media, required={"prompt": str}, optional={"reference_asset_ids": list[str] | None, "reference_media_ids": list[str] | None, "parameters": dict[str, Any] | None}),
-        _domain_tool("production.generate_video", "Generate a video from exactly one source image or one same-target start/end frame pair.", generate_video, Media, required={"prompt": str}, optional={"start_frame_media_id": str | None, "end_frame_media_id": str | None, "reference_media_ids": list[str] | None, "parameters": dict[str, Any] | None}),
+        _domain_tool("production.generate_image", "Retired raw-prompt API: rejects execution; use professional compilation and formal route reservation.", generate_image, Media, required={"prompt": str}, optional={"reference_asset_ids": list[str] | None, "reference_media_ids": list[str] | None, "parameters": dict[str, Any] | None}),
+        _domain_tool("production.generate_video", "Retired raw-prompt API: rejects execution; use compiled video decisions and formal route reservation.", generate_video, Media, required={"prompt": str}, optional={"start_frame_media_id": str | None, "end_frame_media_id": str | None, "reference_media_ids": list[str] | None, "parameters": dict[str, Any] | None}),
         _domain_tool("production.generate_role_dubbing", "Resolve or create a durable role Voice, synthesize exact Dialogue, run intelligibility QC, and persist Audio Media.", role_dubbing.generate_role_dubbing, RoleDubbingResult, required={"request": RoleDubbingRequest}),
         _domain_tool("research.search_sources", "Search external historical sources for the current run.", research.search_sources, list[ResearchSource], required={"query": str}),
         _domain_tool("research.search_events", "Search historical event evidence for the current run.", research.search_events, list[ResearchEvidence], required={"query": str}),

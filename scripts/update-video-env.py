@@ -21,14 +21,14 @@ PROVIDERS = {'SEEDANCE':('Seedance','https://ark.cn-beijing.volces.com/api/v3'),
  'MINIMAX':('MiniMax','https://api.minimaxi.com'),'VIDU':('Vidu','https://api.vidu.com'),
  'WAN':('Wan',''),'KLING':('Kling','')}
 COMMENTS = {
- 'rhythm_speed':'剧情节奏倍率，由 Plugin 上下文层在创作时读取；可选，省略使用默认节奏，不建议留空。',
- 'DRAMA_PLUGIN_PROVIDER_AUDIO_SEMANTIC_MODE':'音视频语义观察 Provider 开关，由 Plugin 初始化时读取；可选，off 禁用，留空不启用远程观察。',
+ 'rhythm_speed':'剧情节奏策略，由 Plugin 上下文层读取；work_defined / slow / medium / fast，省略使用 work_defined，勿留空。',
+ 'DRAMA_PLUGIN_PROVIDER_AUDIO_SEMANTIC_MODE':'音视频语义观察 Provider 开关，由 Plugin 初始化时读取；off 禁用，省略使用默认值，显式空值属于配置错误。',
  'DRAMA_PLUGIN_PROVIDER_QWEN_OMNI_API_KEY':'通义音视频观察 API 密钥，由观察适配器鉴权时使用；启用观察时必填，留空表示未配置。',
  'DRAMA_PLUGIN_PROVIDER_QWEN_OMNI_BASE_URL':'通义音视频观察官方服务地址，由观察适配器发送请求时使用；启用观察时必填，留空不能调用。',
  'DRAMA_PLUGIN_PROVIDER_QWEN_OMNI_MODEL':'通义观察模型名称，由已有音视频观察适配器使用；可选，省略使用内置默认值，非本轮视频生成模型。',
  'DRAMA_PLUGIN_PROVIDER_QWEN_OMNI_REASONING_EFFORT':'通义观察推理强度，由音视频观察请求使用；可选，none 表示不开启额外推理，省略使用默认值。',
  'DRAMA_PLUGIN_PROVIDER_QWEN_OMNI_USE_MULTICHANNEL':'多声道观察开关，由音视频语义观察使用；可选，false 关闭，省略使用默认值。',
- 'DRAMA_PLUGIN_MEDIA_IMPORT_ALLOWED_ROOTS':'媒体本地导入允许目录，由 Plugin 导入文件时检查；可选，留空使用服务默认限制，不代表任意目录放行。',
+ 'DRAMA_PLUGIN_MEDIA_IMPORT_ALLOWED_ROOTS':'媒体本地导入允许目录，由 Plugin 导入文件时检查；可选，留空禁止本地文件导入；远程 HTTPS 导入仍需独立安全校验。',
  'DRAMA_PLUGIN_ROLE_DUBBING_OUTPUT_DIRECTORY':'角色配音临时输出目录，由配音适配器保存合成音频时使用；启用配音时必填，留空无法落盘。',
  'DRAMA_PLUGIN_ROLE_DUBBING_TIMEOUT_SECONDS':'配音请求超时秒数，由配音适配器调用时使用；可选，省略使用内置默认值，留空不是零秒。',
  'FISH_AUDIO_API_KEY':'Fish Audio 配音密钥，由角色配音 Provider 鉴权使用；可选，留空禁用真实配音调用。',
@@ -43,6 +43,10 @@ for part, label in {'MEMORY':'剧情存储','ASSET':'资产','RESEARCH':'研究'
  COMMENTS[f'DRAMA_PLUGIN_SERVICE_{part}_BASE_URL']=f'{label}服务地址，由对应 HTTP Provider 调用现有 Drama Service；http 模式必填，留空表示未配置远程地址。'
  COMMENTS[f'DRAMA_PLUGIN_SERVICE_{part}_API_TOKEN']=f'{label}服务访问令牌，由对应 HTTP Provider 鉴权使用；http 模式必填，留空不能调用，禁止提交到 Git。'
  COMMENTS[f'DRAMA_PLUGIN_SERVICE_{part}_TIMEOUT_SECONDS']=f'{label}服务请求超时秒数，由对应 HTTP Provider 使用；可选，省略使用内置默认值，填写正数，勿留空。'
+# Retained only to annotate existing legacy files, never advertise executable raw production.
+for key in tuple(COMMENTS):
+ if key == 'DRAMA_PLUGIN_PROVIDER_PRODUCTION_MODE' or key.startswith('DRAMA_PLUGIN_SERVICE_PRODUCTION_'):
+  COMMENTS[key] = '已退役的裸 Prompt 生产配置；仅兼容旧配置读取，不授权执行。请使用正式编译、门禁和预留流程。'
 for p,(label,base) in PROVIDERS.items():
  COMMENTS[f'DRAMA_VIDEO_{p}_API_KEY']=f'{label} 官方视频 API 密钥，由视频 HTTP Provider 鉴权时使用；可选，留空仅禁用该 Provider，不影响 Plugin 启动。'
  COMMENTS[f'DRAMA_VIDEO_{p}_BASE_URL']=f'{label} 官方视频 API 基础地址，由视频 HTTP Provider 按账号区域调用；启用时必填，留空仅禁用该 Provider。'+('Wan 需包含正确 Workspace、Region 和 /api/v1。' if p=='WAN' else 'Kling 必须使用当前官方文档的服务地址。' if p=='KLING' else '省略变量时可使用内置默认地址。')

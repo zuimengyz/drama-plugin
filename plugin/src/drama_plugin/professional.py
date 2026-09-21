@@ -239,8 +239,8 @@ def validate_bible(bible: CreativeBible, artifacts: Mapping[str, Any], current: 
                 raise ValueError('ACTION_REQUIRES_DECIDED_BLOCKING')
         if bible.created_by_capability == 'reference-strategy':
             images = record.values.get('reference_images', [])
-            if not isinstance(images, list) or len(images) > 3:
-                raise ValueError('REFERENCE_IMAGES_LIMIT_THREE')
+            if not isinstance(images, list):
+                raise ValueError('REFERENCE_IMAGES_MUST_BE_LIST')
         if bible.created_by_capability == 'clip-decomposition':
             validate_clip_plan(record.values)
         if definition.capability_type == 'VALIDATOR':

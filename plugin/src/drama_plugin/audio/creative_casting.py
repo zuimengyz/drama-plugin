@@ -96,8 +96,10 @@ def project_creative_voice_casting_profile(
     stable = voice_profile.creative_profile
     for target, source in STABLE_VOICE_FIELD_MAP.items():
         value = getattr(stable, source)
-        if value in (None, "UNKNOWN") or target in dimensions:
+        if value in (None, "UNKNOWN"):
             continue
+        if target in dimensions and dimensions[target].value != str(value):
+            raise ValueError(f'STABLE_VOICE_AUTHORITY_CONFLICT:{target}')
         dimensions[target] = CreativeCastingDimension(
             value=str(value),
             basis_refs=[f"VoiceProfile.creativeProfile.{source}"],

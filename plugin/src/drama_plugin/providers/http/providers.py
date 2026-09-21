@@ -83,8 +83,10 @@ class HttpResearchProvider:
 
 class HttpProductionProvider:
     def __init__(self, http: HttpProviderClient) -> None: self.http = http
-    async def generate_image(self, prompt: str, reference_asset_ids: list[str] | None = None, reference_media_ids: list[str] | None = None, parameters: dict[str, Any] | None = None) -> Media: return _one(Media, await self.http.request("generate_image", method="POST", json={"prompt": prompt, "referenceAssetIds": reference_asset_ids or [], "referenceMediaIds": reference_media_ids or [], "parameters": parameters or {}}))
-    async def generate_video(self, prompt: str, start_frame_media_id: str | None = None, end_frame_media_id: str | None = None, reference_media_ids: list[str] | None = None, parameters: dict[str, Any] | None = None) -> Media: return _one(Media, await self.http.request("generate_video", method="POST", json={"prompt": prompt, "startFrameMediaId": start_frame_media_id, "endFrameMediaId": end_frame_media_id, "referenceMediaIds": reference_media_ids or [], "parameters": parameters or {}}))
+    async def generate_image(self, prompt: str, reference_asset_ids: list[str] | None = None, reference_media_ids: list[str] | None = None, parameters: dict[str, Any] | None = None) -> Media:
+        raise ContractValidationError('USE_FORMAL_ROUTE_RESERVATION_BEFORE_PAID_GENERATION: legacy HTTP production retired')
+    async def generate_video(self, prompt: str, start_frame_media_id: str | None = None, end_frame_media_id: str | None = None, reference_media_ids: list[str] | None = None, parameters: dict[str, Any] | None = None) -> Media:
+        raise ContractValidationError('USE_FORMAL_ROUTE_RESERVATION_BEFORE_PAID_GENERATION: legacy HTTP production retired')
 
 
 class HttpMediaProvider:

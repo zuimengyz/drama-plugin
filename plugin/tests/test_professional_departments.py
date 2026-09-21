@@ -284,11 +284,10 @@ def test_environment_lock_resolves_base_local_and_state_records_without_overwrit
         validate_environment_preservation(bible.model_copy(update={'content': (*bible.content, conflict)}), locked)
 
 
-def test_reference_budget_is_three_and_clip_unknown_limit_is_not_executable():
+def test_reference_duties_have_no_provider_slot_cap_and_clip_unknown_limit_is_not_executable():
     bibles, artifacts, current = baseline()
     bible = with_records(bibles['reference-strategy'], record({'reference_images': ['a', 'b', 'c', 'd']}))
-    with pytest.raises(ValueError, match='LIMIT_THREE'):
-        validate_bible(bible, artifacts, current)
+    validate_bible(bible, artifacts, current)
     assert decompose_clip_intervals(58, verified_max_seconds=None, candidate_cut_points=[14, 30, 44])['status'] == 'BLOCKED_UNVERIFIED_PROVIDER_LIMIT'
     assert decompose_clip_intervals(58, verified_max_seconds=16, candidate_cut_points=[14, 30, 44], protected_intervals=[(10, 20)])['status'] == 'BLOCKED_INDIVISIBLE_ACTION_OR_DIALOGUE'
     result = decompose_clip_intervals(58, verified_max_seconds=16, candidate_cut_points=[14, 30, 44])

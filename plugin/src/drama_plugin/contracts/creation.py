@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from pydantic import Field
+from pydantic import Field, NonNegativeInt
 
 from drama_plugin.contracts.base import ContractModel
 
@@ -25,7 +25,7 @@ class Script(ContractModel):
 class Episode(ContractModel):
     id: str
     script_id: str
-    episode_no: int
+    episode_no: NonNegativeInt
     title: str
     content: dict[str, Any] = Field(default_factory=dict)
 
@@ -33,7 +33,7 @@ class Episode(ContractModel):
 class Scene(ContractModel):
     id: str
     episode_id: str
-    order: int
+    order: NonNegativeInt
     title: str
     location: str | None = None
     content: dict[str, Any] = Field(default_factory=dict)

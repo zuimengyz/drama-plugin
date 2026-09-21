@@ -38,7 +38,7 @@ def test_required(mode):
 def test_unknown(key,value):
  with pytest.raises(ConfigurationError,match='UNKNOWN_MODEL_KEY'):load_config(environment={key:value})
 def test_env_normalization():
- assert load_config(environment={'DRAMA_PLUGIN_VIDEO_ROUTE_MODE':' '}).video_route_policy.source=='DEFAULT_AUTO'
+ assert load_config(environment={'DRAMA_PLUGIN_VIDEO_ROUTE_MODE':' '}).video_route_policy.source=='PLUGIN_ENV_DEFAULT'
  p=load_config(environment={'DRAMA_PLUGIN_VIDEO_ROUTE_MODE':' prefer ','DRAMA_PLUGIN_VIDEO_MODEL_PREFERRED':'seedance-2.5','DRAMA_PLUGIN_VIDEO_MODEL_FALLBACKS':' seedance-2.5, minimax-h3, ,flux-3,minimax-h3'}).video_route_policy
  assert p.source=='PLUGIN_ENV_DEFAULT' and p.sequence()==('seedance-2.5','minimax-h3','flux-3')
 def test_prefer_qualification(tmp_path):
@@ -118,6 +118,9 @@ def test_cli(tmp_path):
  assert result.returncode!=0 and 'NO_EXECUTABLE_CANDIDATE' in result.stderr
  data['task_route_policy']={'mode':'PIN','preferred_model':'flux-3'};inp.write_text(json.dumps(data))
  result=subprocess.run(cmd,env=env,capture_output=True,text=True)
+ assert result.returncode!=0 and 'EXTERNAL_ROUTE_POLICY_CONFLICT' in result.stderr
+ env.pop('DRAMA_PLUGIN_VIDEO_ROUTE_MODE');env.pop('DRAMA_PLUGIN_VIDEO_MODEL_PREFERRED')
+ result=subprocess.run(cmd,env=env,capture_output=True,text=True)
  assert result.returncode==0,result.stderr
  sealed=json.loads((out/'sealed-request.json').read_text())
  assert sealed['route_policy_resolution']['source']=='TASK_OVERRIDE' and sealed['dry_run_only'] and not sealed['submission_allowed']
@@ -147,7 +150,7 @@ def test_policy_is_not_stage_authorization(tmp_path,authorization,budget):
 
 def test_config_yaml_env_task(tmp_path):
  p=tmp_path/'config.yaml';p.write_text('video_route_policy:\n  mode: prefer\n  preferred_model: seedance-2.5\n')
- c=load_config(p,environment={});assert c.video_route_policy.source=='PLUGIN_ENV_DEFAULT'
+ c=load_config(p,environment={});assert c.video_route_policy.source=='PLUGIN_CONFIG'
  c=load_config(p,environment={'DRAMA_PLUGIN_VIDEO_ROUTE_MODE':'pin','DRAMA_PLUGIN_VIDEO_MODEL_PREFERRED':'minimax-h3'})
  assert c.video_route_policy.mode=='PIN' and c.video_route_policy.preferred_model=='minimax-h3'
 

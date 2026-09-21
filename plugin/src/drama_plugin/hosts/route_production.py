@@ -19,19 +19,9 @@ from drama_plugin.visual import production
 
 
 async def guard_direct_generation(memory: MemoryProvider, parameters: dict[str, Any] | None) -> None:
-    options = parameters or {}
-    if options.get('creative_schema') == 'cinematic-shot-v1' or options.get('cinematic_direction'):
-        raise ContractValidationError('USE_FORMAL_ROUTE_FOR_CINEMATIC_EXECUTION_CONTRACT')
-    wid = options.get('workId')
-    if not wid:
-        # Preserve legacy unscoped callers. New story orchestration always supplies
-        # its formal workId and cannot enter through this legacy path.
-        if options.get('routeId'):
-            raise ContractValidationError('FORMAL_WORK_CONTEXT_REQUIRED')
-        return
-    work = await memory.get_work(str(wid))
-    if work.content.get('productionPolicy', {}).get('routeRequired'):
-        raise ContractValidationError('USE_FORMAL_ROUTE_RESERVATION_BEFORE_PAID_GENERATION')
+    # A naked prompt has no replayable professional contract, gate or reservation.
+    # Keep the old API as an explicit migration error; absence of Work is not consent.
+    raise ContractValidationError('USE_FORMAL_ROUTE_RESERVATION_BEFORE_PAID_GENERATION: legacy raw prompt execution retired')
 
 
 async def validate_route_direction_sources(memory: MemoryProvider, work: Work, route: ProductionRoute) -> None:

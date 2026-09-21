@@ -8,7 +8,6 @@ from datetime import datetime, timezone, timedelta
 from typing import Any, Awaitable, Callable, Protocol
 from urllib.parse import quote
 import httpx
-from drama_plugin.contracts.base import canonical_json
 from drama_plugin.contracts.video import CostEstimate, ProviderTask, VideoRequest, VideoReference, request_fingerprint
 from .registry import ProviderSettings, registry, validate_request
 
@@ -45,18 +44,8 @@ def timestamp(value: Any, *, milliseconds: bool = False, china: bool = False) ->
         return None
 
 
-def prompt_text(r: VideoRequest) -> str:
-    """Lossless structural projection. No LLM rewrite, vendor-owned characters or style."""
-    p = r.continuity
-    facts = {k: v for k, v in p.model_dump(mode='json', by_alias=True).items() if k in {
-        'characters', 'locationIdentity', 'timeOfDay', 'weather', 'lighting', 'style', 'colorLanguage', 'lensLanguage'}}
-    labels = [{'slot': slot, 'semantics': list(x.semantics)} for slot, x in
-              [('first_frame', r.first_frame), ('last_frame', r.last_frame)] if x]
-    for kind, refs in [('image', r.reference_images), ('video', r.reference_videos), ('audio', r.reference_audios)]:
-        labels.extend({'slot': f'reference_{kind}_{i + 1}', 'semantics': list(x.semantics)} for i, x in enumerate(refs))
-    return (r.prompt + ('\nNegative constraints: ' + r.negative_prompt if r.negative_prompt else '')
-            + '\nCanonical continuity (preserve exactly): ' + canonical_json(facts)
-            + ('\nReference roles: ' + canonical_json(labels) if labels else ''))
+# Compatibility name; compilation belongs to Creative Core.
+from drama_plugin.visual.video_prompt import compile_video_prompt as prompt_text
 
 
 class HttpVideoProvider:

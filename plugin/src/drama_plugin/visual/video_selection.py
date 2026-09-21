@@ -347,7 +347,8 @@ def verify_policy_resolution(resolution: dict[str, Any], c: Candidate,
                              result: dict[str, Any], *, dry_run: bool) -> None:
     configured = VideoRoutePolicy.model_validate(resolution['configured_policy'])
     effective = VideoRoutePolicy.model_validate(resolution['effective_policy'])
-    if effective.source != 'TASK_OVERRIDE' and resolve_policy(configured) != effective:
+    task = effective if effective.source == 'TASK_OVERRIDE' else None
+    if resolve_policy(configured, task) != effective:
         raise ValueError('POLICY_SOURCE_MISMATCH')
     if (resolution['policy_fingerprint'] != sha256_canonical(effective.model_dump(mode='json'))
             or resolution['source'] != effective.source

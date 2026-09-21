@@ -31,6 +31,7 @@ class RouteMode(StrEnum):
 
 class PolicySource(StrEnum):
     DEFAULT_AUTO = 'DEFAULT_AUTO'
+    PLUGIN_CONFIG = 'PLUGIN_CONFIG'
     PLUGIN_ENV_DEFAULT = 'PLUGIN_ENV_DEFAULT'
     TASK_OVERRIDE = 'TASK_OVERRIDE'
 
@@ -82,6 +83,12 @@ class VideoRoutePolicy(BaseModel):
 
 def resolve_policy(configured: VideoRoutePolicy, task: VideoRoutePolicy | None = None) -> VideoRoutePolicy:
     # Revalidate copied models: model_copy(update=...) itself bypasses validation.
+    configured = VideoRoutePolicy.model_validate(configured.model_dump())
+    if task is not None and configured.source in {PolicySource.PLUGIN_CONFIG, PolicySource.PLUGIN_ENV_DEFAULT}:
+        task = VideoRoutePolicy.model_validate(task.model_dump())
+        if task.model_dump(exclude={'source'}) != configured.model_dump(exclude={'source'}):
+            raise ValueError('EXTERNAL_ROUTE_POLICY_CONFLICT: task cannot override runtime configuration')
+        return configured
     value = (task or configured).model_dump()
     if task is not None:
         value['source'] = PolicySource.TASK_OVERRIDE

@@ -141,26 +141,6 @@ async def test_actual_native_consumer_uses_empty_cache_without_source_or_process
     assert file_hash(Path(ready['path']))==r['contentHash'] and commands and x.store.imports==1
 
 
-@pytest.mark.asyncio
-@pytest.mark.parametrize('kind',['image','video'])
-async def test_public_generation_tools_execute_completion_gate(setup,kind):
-    from drama_plugin.tools.catalog import build_tool_registry
-    x=setup;r=await x.complete();m=x.store.values[0]
-    calls=[]
-    class Producer:
-        async def generate_image(self,*a,**k):calls.append('image');return m
-        async def generate_video(self,*a,**k):calls.append('video');return m
-    from drama_plugin import DramaPlugin
-    p=DramaPlugin.load(Path(__file__).resolve().parents[1]).providers
-    # Fill unused media operations so the real registry can discover its full schema.
-    for name in ['create_media','save_media','restore_media_object']:
-        setattr(x.store,name,getattr(p.media,name))
-    registry=build_tool_registry(x.memory,x.asset,p.research,Producer(),x.store,p.context,p.voice,p.role_dubbing)
-    # Output object missing even though generation returned an ID and valid local bytes.
-    del x.store.objects[m.id]
-    with pytest.raises(RemoteServiceError):
-        await registry.get('production.generate_'+kind).handler(prompt='frozen',reference_media_ids=['one'])
-    assert calls==[kind] and x.store.imports==1
 
 
 @pytest.mark.asyncio

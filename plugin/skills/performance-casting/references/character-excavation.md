@@ -57,3 +57,6 @@ Changing interpretation requires a new profile and an explicit rereview of retai
 images, never a rewritten old review. State what those older test conditions cannot
 show. A newly authorized narrowed search is a documented continuation, not a technical
 retry; preserve task IDs, spend to date and former decisions.
+
+## Package authority
+These questions audit and project the loaded versioned Character Package. They do not authorize Performance Casting to invent core meaning. Missing answers return to Character External Driver; no production-time reinvention.

@@ -89,6 +89,10 @@ def stage_brief(profile: RoleArchetypeProfile, stage: Stage, candidate_ids: Sequ
     context_gate = excavation_gate(profile)
     if execution != 'DRY_RUN' and context_gate['status'] != 'PASS':
         raise ValueError('CHARACTER_EXCAVATION_BLOCKED:' + ','.join(context_gate['reasons']))
+    if execution != 'DRY_RUN':
+        from drama_plugin.characters.consumption import require_character_context
+        require_character_context(dump_contract(profile.character_package) if profile.character_package else None,
+                                  consumer='performance-casting', purpose='CASTING')
     refs: dict[str, Any] = {}
     if index:
         # Every earlier selected proof must support this identity; a later pass cannot erase failure.

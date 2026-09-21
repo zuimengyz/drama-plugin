@@ -144,3 +144,9 @@ Never recreate an uncertain submission. Resume its existing attempt at polling o
 ## Route-owned expression
 
 Consume the frozen route-specific expression via the existing cinematic projection; never append actor realism to heroic CG or carry CG exaggeration into live action. Pending casting candidates cannot become approved references by production. Read [expression route contract](../../docs/expression-route-contract.md) when using character or action expression profiles.
+
+## Character Package ownership
+
+Consume locked package identity and the selected visual envelope read-only. Missing production-ready identity blocks dedicated-character production; provider prompts are task projections only.
+
+Use the unified read-only `CharacterRepository.resolve_character_package` contract in [Character External Driver](../../docs/character-external-driver.md). Pin characterPackageRef, characterPackageVersion and checksum. Never create or overwrite Character Core in this Skill. Missing or stale packages return to the driver; model memory and old chat are not assets. DESIGN_REVIEW access does not authorize casting or production.

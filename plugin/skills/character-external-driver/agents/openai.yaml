@@ -1,0 +1,4 @@
+interface:
+  display_name: "Character External Driver"
+  short_description: "Portable character design and repository"
+  default_prompt: "Use $character-external-driver to design source-bound character packages for review."

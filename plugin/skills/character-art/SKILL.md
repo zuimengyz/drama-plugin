@@ -44,3 +44,9 @@ Use supplied current originals first. For missing scoped context, read `work.get
 ## Route-owned expression
 
 Own the route-specific face/body/silhouette and neutral dominant presence. Share narrative core only; never copy a CG expression envelope into a live-action design. Read [expression route contract](../../docs/expression-route-contract.md) when using character or action expression profiles.
+
+## Character Package ownership
+
+Design visual realization from the selected package envelope. Do not invent personality, psychology, fundamental archetype or character distinction. Return missing identity to Character External Driver.
+
+Use the unified read-only `CharacterRepository.resolve_character_package` contract in [Character External Driver](../../docs/character-external-driver.md). Pin characterPackageRef, characterPackageVersion and checksum. Never create or overwrite Character Core in this Skill. Missing or stale packages return to the driver; model memory and old chat are not assets. DESIGN_REVIEW access does not authorize casting or production.

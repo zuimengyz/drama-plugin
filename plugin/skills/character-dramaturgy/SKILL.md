@@ -40,3 +40,9 @@ Return evidence conflicts to adaptation-boundary and causal changes to story-arc
 ## Source reads
 
 Use supplied current originals first. For missing scoped context, read `work.get_work`, `scene.get_scene`, `script.get_script`, `episode.get_episode`, `shot.get_shot`, `asset.get_asset`, `context.build_context`. These reads do not authorize source writes or production.
+
+## Character Package ownership
+
+Before screenplay approval, author Character Bible meaning. After approval, Character External Driver consolidates it into portable packages; revisions require explicit upstream authorization, never a production-time rewrite.
+
+Use the unified read-only `CharacterRepository.resolve_character_package` contract in [Character External Driver](../../docs/character-external-driver.md). Pin characterPackageRef, characterPackageVersion and checksum. Never create or overwrite Character Core in this Skill. Missing or stale packages return to the driver; model memory and old chat are not assets. DESIGN_REVIEW access does not authorize casting or production.

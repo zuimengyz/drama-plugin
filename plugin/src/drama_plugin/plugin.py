@@ -42,6 +42,8 @@ class DramaPlugin:
     def __init__(self, root: Path, config: DramaPluginConfig, manifest: PluginManifest, providers: ProviderBundle, skills: SkillRegistry, tools: ToolRegistry, http_clients: list[HttpProviderClient] | None = None) -> None:
         self.root = root
         self.config = config
+        from drama_plugin.characters import CharacterRepository
+        self.characters = CharacterRepository(config.character_repository_root, plugin_root=root)
         self.manifest = manifest
         self.providers = providers
         self.skills = skills

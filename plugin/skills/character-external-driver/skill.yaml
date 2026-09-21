@@ -1,0 +1,16 @@
+code: character-external-driver
+name: Character External Driver
+description: Source-bound character authorship and portable external Character Packages; no media generation.
+context:
+  required: []
+  optional: [work, script, characterPackageRef, characterPackageVersion, userFeedback]
+  refresh_after: []
+tools:
+  preferred: [work.get_work, script.get_script]
+  allowed: [episode.get_episode, scene.get_scene, asset.get_asset, media.get_media]
+completion:
+  conditions:
+    - Current approved screenplay bytes and roster decisions are recorded.
+    - Dedicated characters have validated external versioned packages and explicit provenance.
+    - Package authorship is separate from read-only downstream projections.
+    - Draft status, uncertainties and user review gate are reported without media generation.

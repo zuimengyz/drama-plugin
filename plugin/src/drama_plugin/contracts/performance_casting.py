@@ -121,7 +121,10 @@ class CastingStagePlan(ContractModel):
             raise ValueError('Duplicate review criteria')
         return self
 
+from drama_plugin.contracts.character_package import CharacterPackageRef
+
 class RoleArchetypeProfile(ContractModel):
+    character_package: CharacterPackageRef | None = None
     schema_version: Literal['role-archetype-v1'] = 'role-archetype-v1'
     identity: Text
     revision: Text
@@ -150,6 +153,9 @@ class RoleArchetypeProfile(ContractModel):
     @model_serializer(mode='wrap')
     def preserve_legacy_serialization(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
         data = handler(self)
+        if self.character_package is None:
+            data.pop('characterPackage', None)
+            data.pop('character_package', None)
         if not self.archetype_references:
             data.pop('archetypeReferences', None)
             data.pop('archetype_references', None)

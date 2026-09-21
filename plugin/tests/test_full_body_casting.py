@@ -26,9 +26,14 @@ def fixture(tmp_path):
         'workId':'w','workRevision':'r','character':p.identity,'purpose':s.purpose,
         'maxOutputs':1,'stopAfterFirstResult':True,'inputsFingerprint':d['inputsFingerprint'],'status':'AUTHORIZED'}
     w = Work(id='w',title='Synthetic',content={'revisionId':'r','approval':{'status':'APPROVED'},
-        'visualRoute':'stylized_cinematic_cg','visualRouteBinding':{'workRevision':'r',
+        'visualRoute':'stylized_cinematic_cg','visualLanguage':'HEROIC_CINEMATIC_CG','visualRouteBinding':{'workRevision':'r',
         'project':dump_contract(c.project),'styleFingerprint':sha256_canonical(c.style),'sourcePins':s.sources},
         'characterCastingAuthorizations':{'task':auth}})
+    from character_package_fixture import make_package
+    repo, package, ref, _, _ = make_package(tmp_path/'character-repository',status='VISUAL_TESTING',identity=p.identity)
+    import os
+    os.environ['DRAMA_CHARACTER_REPOSITORY_ROOT'] = str(repo.root)
+    w.content['characterPackageRoster'] = {'sourceRevision':'r','characters':[{'characterId':'actor','name':p.identity,'category':'PRIMARY_CHARACTER','dedicatedPackageRequired':True,'package':ref}]}
     return w,p,v,c,s
 
 
@@ -91,3 +96,8 @@ async def test_no_spend_on_changed_source_or_request(tmp_path,change):
     if change=='provider':req['providerRequest']['input_overrides']['3']['prompt']='changed'
     with pytest.raises(ValueError):await reserve_full_body(m,'w',p,v,c,s,'task',req,tmp_path/'ledger')
     assert m.w.content['characterCastingAuthorizations']['task']['status']=='AUTHORIZED'
+
+@pytest.fixture(autouse=True)
+def restore_character_environment(monkeypatch):
+    import os
+    monkeypatch.setenv('DRAMA_CHARACTER_REPOSITORY_ROOT',os.environ.get('DRAMA_CHARACTER_REPOSITORY_ROOT',''))

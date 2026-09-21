@@ -138,6 +138,12 @@ def full_body_design(profile: RoleArchetypeProfile, plan: VisualCastingPlan,
 def executable_full_body(work: Work, profile: RoleArchetypeProfile, plan: VisualCastingPlan,
                          context: RouteCastingContext, spec: FullBodyCastingSpec,
                          authorization_id: str) -> dict[str, Any]:
+    from drama_plugin.characters.consumption import require_work_character
+    package_route = context.style.visual_language or work.content.get('visualLanguage')
+    if package_route not in {'HEROIC_CINEMATIC_CG','REALISTIC_CG'}:
+        raise ValueError('EXPLICIT_CHARACTER_EXPRESSION_ROUTE_REQUIRED')
+    package_context = require_work_character(work, spec.character, consumer='performance-casting', purpose='CASTING',
+        route=package_route.lower())
     design = full_body_design(profile, plan, context, spec)
     binding = work.content.get('visualRouteBinding', {})
     route = resolved_context(RouteContext(project=context.project, sequence=context.sequence, style=context.style))
@@ -165,7 +171,7 @@ def executable_full_body(work: Work, profile: RoleArchetypeProfile, plan: Visual
             or auth.work_revision != work.content.get('revisionId') or auth.character != spec.character
             or auth.inputs_fingerprint != design['inputsFingerprint'] or auth.status != 'AUTHORIZED'):
         raise ValueError('CASTING_AUTHORIZATION_STALE_OR_CONSUMED')
-    return {**design, 'status': 'EXECUTABLE_SINGLE_CANDIDATE', 'workId': work.id,
+    return {**design, 'characterPackageContext': package_context, 'status': 'EXECUTABLE_SINGLE_CANDIDATE', 'workId': work.id,
             'workRevision': auth.work_revision, 'authorizationId': authorization_id,
             'authorizationFingerprint': sha256_canonical(auth), 'stopAfterFirstResult': True,
             'executionRoute': 'QUALIFIED_HOST_VISUAL_MCP', 'referenceMediaIds': []}

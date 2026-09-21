@@ -19,7 +19,7 @@ specification, stylization policy, user preferences, previous search and approva
 status. Preserve their fingerprints. Candidate scene interpretations can guide a
 new search without rewriting adopted story or references.
 
-Extract a RoleArchetypeProfile with the desired audience impression, its visible
+Project the loaded Character Package into a RoleArchetypeProfile with the desired audience impression, its visible
 carriers, body relationships, key scene tasks and failure modes. Presence dimensions
 are authored for the role: moral insistence, comic uncertainty, maternal calm,
 quiet threat and intellectual force need different faces and states. No gender,
@@ -27,7 +27,7 @@ age, ethnicity, beauty level, large body, aggression or tragedy is a global defa
 Appearance expresses a fictional interpretation, not a scientific personality
 inference. Static evidence can suggest range; it cannot establish acting ability.
 
-Before a new search, read [character excavation](references/character-excavation.md).
+Before a new search, read [character excavation](references/character-excavation.md) as a package-completeness audit. Missing answers return to Character External Driver; the following questions project existing package meaning and never authorize casting to invent it.
 Connect personality with identity, rank/occupation, social position, historical or
 cultural environment and other people's treatment. Derive watchability, the shared
 root of strength and limitation, fate contrast, counter-stereotype, performance range
@@ -38,7 +38,7 @@ Keep source-supported facts, project interpretation and casting implications sep
 occupation/status and situated values remain recognizable. Missing, failed or stale
 excavation blocks new media generation. Legacy profiles remain readable, not spend-ready.
 
-Casting does not impose charm. It discovers the character's watchability.
+Casting does not impose charm. It tests the package's authored watchability in candidates.
 DO NOT CAST THE ENDING INTO THE FACE: betrayal need not look deceitful, sacrifice
 saintly, or tragedy melancholy. Seek the capacity to travel the arc. Regal presence
 means learned authority, bodily confidence, spatial rights and others' response;
@@ -135,3 +135,9 @@ Select DESIGN_NEUTRAL or CG-only HERO_CASTING explicitly. Use the route-owned ex
 For HEROIC_CINEMATIC_CG full-body compilation, require the mode-specific visual intents and the final paragraph source map described in the expression route contract. Audit the exact provider prompt for real visual contrasts and conflicting positive directions before reserving a paid candidate. A recovered prior image is not an approved identity reference.
 
 Keep generic amplification, opt-in archetype traits and character-instance intent separate. For an approved amplitude reference, follow the ownership and non-copying rules in the expression route contract; verify storage recovery before any authorized paid regression.
+
+## Character Package ownership
+
+Given Character Package, produce/evaluate candidate appearance. characterPackageRef and characterPackageVersion are explicit inputs, with checksum. Extract casting implications from the package; do not discover fundamental identity. Missing package for a dedicated role blocks new execution.
+
+Use the unified read-only `CharacterRepository.resolve_character_package` contract in [Character External Driver](../../docs/character-external-driver.md). Pin characterPackageRef, characterPackageVersion and checksum. Never create or overwrite Character Core in this Skill. Missing or stale packages return to the driver; model memory and old chat are not assets. DESIGN_REVIEW access does not authorize casting or production.

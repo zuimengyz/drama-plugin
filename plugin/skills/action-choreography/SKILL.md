@@ -44,3 +44,9 @@ Use supplied current originals first. For missing scoped context, read `work.get
 ## Route-owned expression
 
 Within the Director-selected route envelope, author anticipation, acceleration, impact, follow-through and environmental reaction. Preserve support/contact/weight and canonical outcomes. A character action signature does not propagate to other actors. Read [expression route contract](../../docs/expression-route-contract.md) when using character or action expression profiles.
+
+## Character Package ownership
+
+Combine screenplay facts, Director intent and the packaged actionSignature. Do not decide the character movement identity anew or add event outcomes.
+
+Use the unified read-only `CharacterRepository.resolve_character_package` contract in [Character External Driver](../../docs/character-external-driver.md). Pin characterPackageRef, characterPackageVersion and checksum. Never create or overwrite Character Core in this Skill. Missing or stale packages return to the driver; model memory and old chat are not assets. DESIGN_REVIEW access does not authorize casting or production.

@@ -77,6 +77,8 @@ class ServicesConfig(BaseModel):
 class DramaPluginConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    character_repository_root: str = ""
+
     video_route_policy: VideoRoutePolicy = Field(default_factory=VideoRoutePolicy)
     rhythm_speed: Literal["work_defined", "slow", "medium", "fast"] = "work_defined"
     _rhythm_source: str = PrivateAttr(default="default:work_defined")

@@ -1,6 +1,5 @@
 """Provider-neutral, route-exclusive expression projection. Never authors events."""
 from copy import deepcopy
-import json
 from typing import Any, Literal
 from drama_plugin.contracts.base import dump_contract, sha256_canonical
 from drama_plugin.contracts.expression import (
@@ -29,42 +28,29 @@ def select_expression(bundle: CharacterExpressionProfiles, route: str) -> RouteE
     return profile
 
 
-def casting_expression(bundle: CharacterExpressionProfiles, route: str,
-                       mode: Literal['DESIGN_NEUTRAL', 'HERO_CASTING']) -> str:
+def compile_casting_expression(bundle: CharacterExpressionProfiles, route: str,
+                               mode: Literal['DESIGN_NEUTRAL', 'HERO_CASTING']) -> dict[str, Any]:
+    from .contracts.visual_medium import legacy_medium_intent
+    from .visual_medium import compile_character_art
     profile = select_expression(bundle, route)
     core = bundle.character_core_profile
-    if mode == 'HERO_CASTING' and (profile.route != 'stylized_cinematic_cg'
-            or profile.visual_language != 'HEROIC_CINEMATIC_CG'
-            or profile.heroic_exaggeration not in ('heroic', 'legendary')):
-        raise ValueError('HERO_CASTING_REQUIRES_EXPLICIT_CG_HEROIC_PROFILE')
-    # Independent positive templates, never a shared actor prompt with a medium suffix.
-    if profile.route == 'live_action_realist':
-        opening = ('LIVE_ACTION_REALIST costume casting. Real human proportions, achievable actor performance, '
-                   'wearable clothing and executable gestures. Restrained motivated camera; '
-                   'no hero-proportion or exaggerated silhouette defaults. Neutral readable presentation.')
-    elif mode == 'HERO_CASTING':
-        opening = ('HEROIC_CINEMATIC_CG / HERO_CASTING. Original sculpted feature-film CG character design. '
-                   'Amplify the authored proportion, silhouette and character-specific screen presence. '
-                   'Keep all amplification within the authored role envelope. '
-                   'Not an actor costume photo, studio audition, beauty portrait or generic game face.')
-    else:
-        opening = (profile.visual_language + ' / DESIGN_NEUTRAL. Designed three-dimensional character, '
-                   'neutral presentation for proportion and costume inspection; retain authored shape design. '
-                   'No automatic hero pose, low camera or flying cloth.')
-    lines = [opening,
-        'FULL BODY: single person, entire head and both feet with margin; hands, clothing construction and any authored props visible. '
-        'Vertical character selection image; no face close-up, cropped legs, collage, text or watermark.',
+    lines = [
+        'FULL BODY: single person, entire head and both feet with margin; hands, clothing construction and any authored props visible. Vertical character selection image; no face close-up, cropped legs, collage, text or watermark.',
         f'Character identity: {core.identity}. Archetype: {core.archetype}.',
         'Shared personality: ' + '; '.join(core.personality_core),
         'Historical position: ' + core.historical_position,
-        'Fixed narrative facts (not extra objects to illustrate): ' + '; '.join(core.story_facts)]
-    if profile.route == 'stylized_cinematic_cg':
-        lines.append('CG-only expression envelope: ' + json.dumps({
-            k: v for k, v in dump_contract(profile).items()
-            if k not in ('design', 'realismBase', 'character', 'coreFingerprint', 'revision')}, ensure_ascii=False))
-    lines += [key + ': ' + value for key, value in dump_contract(profile.design).items() if key != 'actionSignature']
-    lines += [PHYSICAL_BOUNDARY, 'Unapproved candidate; retain for user review, never auto-adopt as canonical identity.']
-    return '\n'.join(lines)
+        'Fixed narrative facts (not extra objects to illustrate): ' + '; '.join(core.story_facts),
+        *[key + ': ' + value for key, value in dump_contract(profile.design).items() if key != 'actionSignature'],
+        PHYSICAL_BOUNDARY, 'Unapproved candidate; retain for user review, never auto-adopt as canonical identity.',
+    ]
+    return compile_character_art(legacy_medium_intent(profile.visual_language, mode),
+        [dict(id='expression.'+str(i), text=text, sources=['expressionProfiles']) for i, text in enumerate(lines)],
+        legacy=True, source_intent='legacy:expressionProfiles.visualLanguage')
+
+
+def casting_expression(bundle: CharacterExpressionProfiles, route: str,
+                       mode: Literal['DESIGN_NEUTRAL', 'HERO_CASTING']) -> str:
+    return str(compile_casting_expression(bundle, route, mode)['prompt'])
 
 
 def project_action_expression(actions: list[dict[str, Any]], binding: ActionExpressionBinding) -> dict[str, Any]:

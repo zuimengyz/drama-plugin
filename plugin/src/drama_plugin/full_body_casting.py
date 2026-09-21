@@ -11,7 +11,9 @@ from typing import Any, Literal
 import json
 from pydantic import model_serializer
 from drama_plugin.contracts.expression import CharacterExpressionProfiles, CastingArchetypeProfile, ApprovedVisualTargetRange
-from drama_plugin.expression import casting_expression, select_expression
+from drama_plugin.expression import compile_casting_expression, select_expression
+from drama_plugin.contracts.visual_medium import legacy_medium_intent
+from drama_plugin.visual_medium import compile_character_art, VERSION
 
 from drama_plugin.contracts.base import ContractModel, dump_contract, sha256_canonical
 from drama_plugin.contracts.creative_asset import Text, Hash
@@ -91,8 +93,6 @@ def full_body_design(profile: RoleArchetypeProfile, plan: VisualCastingPlan,
         base = compile_visual_discriminants(profile, plan, spec.variant, 'FACE', route_context=context)
     if (spec.approved_target_range is not None or spec.archetype_profile is not None) and (spec.expression_profiles is None or context.style.visual_language != 'HEROIC_CINEMATIC_CG'):
         raise ValueError('APPROVED_RANGE_REQUIRES_EXPLICIT_HEROIC_COMPILATION')
-    if spec.casting_mode == 'HERO_CASTING' and spec.expression_profiles is None:
-        raise ValueError('HERO_CASTING_EXPRESSION_PROFILE_REQUIRED')
     faces = [x['text'] for x in base['FaceDiscriminants']]
     style = context.style
     prompt = '\n'.join([
@@ -116,9 +116,14 @@ def full_body_design(profile: RoleArchetypeProfile, plan: VisualCastingPlan,
             raise ValueError('CASTING_STYLE_EXPRESSION_LANGUAGE_MISMATCH')
         # New route-owned design replaces legacy anatomical/costume/pose prose.
         # Spec fields remain for replay of P1-R, never merged into a new envelope.
-        prompt = casting_expression(spec.expression_profiles, 'stylized_cinematic_cg', spec.casting_mode)
-        prompt += '\n' + '\n'.join([style.rendering, style.material_palette, style.historical_boundary,
-            *('Forbidden drift: ' + x for x in style.forbidden_drifts)])
+        if style.visual_language != 'HEROIC_CINEMATIC_CG':
+            base_compilation = compile_casting_expression(spec.expression_profiles, 'stylized_cinematic_cg', spec.casting_mode)
+            compilation = compile_character_art(legacy_medium_intent(selected.visual_language, spec.casting_mode),
+                [r for r in base_compilation['segments'] if not r['id'].startswith('compiled.')] +
+                [dict(id='legacy.style',text='\n'.join([style.rendering, style.material_palette, style.historical_boundary,
+                    *('Forbidden drift: '+x for x in style.forbidden_drifts)]),sources=['route.style'])],
+                legacy=True, source_intent='legacy:route.style.visualLanguage')
+            prompt=compilation['prompt']
         if style.visual_language == 'HEROIC_CINEMATIC_CG':
             from drama_plugin.casting_visual_compiler import compile_heroic_visual_intent
             if spec.mode_visual_intents is None or set(spec.mode_visual_intents) != {'HERO_CASTING', 'DESIGN_NEUTRAL'}:
@@ -127,9 +132,14 @@ def full_body_design(profile: RoleArchetypeProfile, plan: VisualCastingPlan,
                 spec.casting_mode, spec.mode_visual_intents[spec.casting_mode], dump_contract(style),
                 archetype=spec.archetype_profile, target_range=spec.approved_target_range)
             prompt = compilation['prompt']
-    inputs = {'profile': base['profileFingerprint'], 'plan': base['planFingerprint'],
+    if compilation is None:
+        compilation = compile_character_art(legacy_medium_intent(style.visual_language or 'REALISTIC_CG', spec.casting_mode),
+            [dict(id='legacy.fullBody',text=prompt,sources=['profile','plan','spec','route.style'])],
+            legacy=True, source_intent='legacy:route.style')
+        prompt=compilation['prompt']
+    inputs = {'compilerVersion':VERSION,'compiledPrompt':compilation['promptFingerprint'],'profile': base['profileFingerprint'], 'plan': base['planFingerprint'],
               'context': sha256_canonical(context), 'spec': dump_contract(spec)}
-    return {**({'visualCompilation': compilation} if compilation is not None else {}), 'purpose': spec.purpose, 'character': spec.character, 'visualRoute': 'stylized_cinematic_cg',
+    return {**compilation, 'visualCompilation': compilation, 'purpose': spec.purpose, 'character': spec.character, 'visualRoute': 'stylized_cinematic_cg',
             'inputsFingerprint': sha256_canonical(inputs), 'prompt': prompt,
             'promptFingerprint': sha256_canonical(prompt), 'sources': spec.sources,
             'status': 'DESIGN_ONLY', 'userAdoption': 'PENDING', 'maxOutputs': 1}

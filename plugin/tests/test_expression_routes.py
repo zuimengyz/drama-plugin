@@ -30,7 +30,9 @@ def test_independent_templates_and_no_fallback():
     assert all(x in cg for x in ('FULL BODY','authored proportion','character-specific screen presence'))
     assert 'real human proportions' not in cg and 'long powerful limbs' not in live and 'heroicExaggeration' not in live
     assert dump(b)==before
-    with pytest.raises(ValueError):casting_expression(b,'live_action_realist','HERO_CASTING')
+    live_hero=casting_expression(b,'live_action_realist','HERO_CASTING')
+    assert 'Real human actor' in live_hero and 'HERO_CASTING' in live_hero
+    assert 'Cinematic digital skin shading' not in live_hero
     b.live_action_expression_profile=None
     with pytest.raises(ValueError,match='NO_FALLBACK'):select_expression(b,'live_action_realist')
 

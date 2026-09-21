@@ -58,3 +58,7 @@ For the first external-package-only visual test, emit source-pinned PackageVisua
 Consume Character Core + Embodiment + the explicit Visual Route before choosing concrete appearance. Do not rediscover bodily personality from literary labels. A missing canonical image is valid for first design; missing embodiment returns to its author, missing character meaning to Driver.
 
 Read [Embodiment contract](../../docs/character-embodiment.md). Use the unified read-only `characters.embodiment.embodiment_handoff` with exact ref/version/checksum and route. Never create or overwrite embodiment in downstream execution. Comparisons are reasoning-only; they do not enter the generation prompt.
+
+## Visual Medium compilation
+
+Read [Visual Medium Contract](../../docs/visual-medium-contract.md). Keep `visualMedium`, `characterTreatment`, `realismLevel` and `castingMode` independent in `visualMediumIntent`; HEROIC and HERO_CASTING do not select CG. Author character facts and local artistic intent in source-pinned paragraphs. Do not manually choose CG, 3D, real-actor or studio-photography semantics in Host prose. The shared `visual_medium.compile_character_art` compiles both media and owns form, skin, groom, materials, shape and rendering translation. Preserve historical construction, natural stubble and authored anatomy. Retain its source receipt and medium gate; weak labels or Host prose never count as compiler execution.

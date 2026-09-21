@@ -130,7 +130,7 @@ legacy stage pass, scene, video or audio follows from this handoff.
 
 ## Route-owned expression
 
-Select DESIGN_NEUTRAL or CG-only HERO_CASTING explicitly. Use the route-owned expression template and formal Work bundle; do not reuse actor-audition conditions for heroic CG. A new candidate stays unapproved. Read [expression route contract](../../docs/expression-route-contract.md) when using character or action expression profiles.
+Select DESIGN_NEUTRAL, SUPPORTING_CASTING or HERO_CASTING independently of visual medium. HERO_CASTING is legal for live action and CG. Use the route-owned expression template and formal Work bundle; do not reuse actor-audition conditions for heroic CG. A new candidate stays unapproved. Read [expression route contract](../../docs/expression-route-contract.md) when using character or action expression profiles.
 
 For HEROIC_CINEMATIC_CG full-body compilation, require the mode-specific visual intents and the final paragraph source map described in the expression route contract. Audit the exact provider prompt for real visual contrasts and conflicting positive directions before reserving a paid candidate. A recovered prior image is not an approved identity reference.
 
@@ -149,3 +149,7 @@ For an external-package-only whole-body test, use `characters.casting.compile_pa
 Given Character Art + Embodiment, generate/evaluate only within separately authorized scope. Do not discover character soul or infer missing bodily meaning from archetype. Casting evaluates embodiment without revising it.
 
 Read [Embodiment contract](../../docs/character-embodiment.md). Use the unified read-only `characters.embodiment.embodiment_handoff` with exact ref/version/checksum and route. Never create or overwrite embodiment in downstream execution. Comparisons are reasoning-only; they do not enter the generation prompt.
+
+## Visual Medium compilation
+
+Read [Visual Medium Contract](../../docs/visual-medium-contract.md). New package projections carry `visualMediumIntent` with independent medium, treatment, realism and casting-mode fields. Host paragraphs provide source-pinned character facts, never their own positive CG/actor-photography declaration. Use the shared compiler and retain its emitted source map. Require `verify_medium_compilation` PASS on the exact final prompt before provider projection; a hand-written “Generic CG Grammar” label is not compilation proof. Legacy labels use the explicit adapter and conflict gate. Do not change provider prompt optimization or thinking to implement a medium.

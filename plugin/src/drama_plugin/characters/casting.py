@@ -7,7 +7,9 @@ import json
 from pydantic import Field
 from drama_plugin.contracts.base import ContractModel, dump_contract, sha256_canonical
 from drama_plugin.contracts.creative_asset import Text, Hash
-from drama_plugin.contracts.character_package import CharacterPackageRef
+from drama_plugin.contracts.character_package import CharacterPackageRef, Route
+from drama_plugin.contracts.visual_medium import VisualMediumIntent, CastingMode, legacy_medium_intent, medium_route
+from drama_plugin.visual_medium import compile_character_art, VERSION
 from drama_plugin.full_body_casting import CastingExecutionAuthorization
 from drama_plugin.hosts.artifact_io import native_io
 from drama_plugin.hosts.casting_projection import full_body_seedream_projection
@@ -21,15 +23,16 @@ class PackageVisualParagraph(ContractModel):
 
 class PackageCastingProjection(ContractModel):
     character_package: CharacterPackageRef
-    route: Literal['heroic_cinematic_cg']
-    casting_mode: Literal['HERO_CASTING']
+    route: Route
+    casting_mode: CastingMode
+    visual_medium_intent: VisualMediumIntent | None = None
     framing: Literal['FULL_BODY']
     paragraphs: tuple[PackageVisualParagraph,...] = Field(min_length=1)
     scope_text: Text
     directive_ref: Text
     directive_hash: Hash
 
-_ALLOWED = {'core','dramaticIdentity','visualExpression','actionSignature','antiDrift','performance','embodiment'}
+_ALLOWED = {'core','dramaticIdentity','visualExpression','actionSignature','antiDrift','performance','embodiment','historicalBasis'}
 _REQUIRED = {'core','dramaticIdentity','visualExpression','actionSignature','antiDrift'}
 
 def pointer_value(package: dict[str,Any], pointer: str) -> Any:
@@ -65,26 +68,39 @@ def compile_package_casting(repository: CharacterRepository, projection: Package
     if not _REQUIRED<=covered:raise ValueError('INCOMPLETE_PACKAGE_SOURCE_MAP')
     if package.get('embodiment') is not None and 'embodiment' not in covered:
         raise ValueError('EMBODIMENT_SOURCE_MAP_REQUIRED')
-    prompt='\n\n'.join([projection.scope_text,*[p.text for p in projection.paragraphs]])
+    legacy_intent = legacy_medium_intent(projection.route, projection.casting_mode)
+    intent = projection.visual_medium_intent or legacy_intent
+    if intent.visual_medium != legacy_intent.visual_medium or intent.casting_mode != projection.casting_mode:
+        raise ValueError('PACKAGE_MEDIUM_ROUTE_OR_CASTING_MODE_MISMATCH')
+    compiled = compile_character_art(intent, [
+        {'id':'scope','text':projection.scope_text,'sources':['directive:'+projection.directive_hash]},
+        *[{'id':'package.'+p.key,'text':p.text,'sources':list(p.package_pointers)} for p in projection.paragraphs],
+    ], legacy=projection.visual_medium_intent is None,
+       source_intent='projection.visualMediumIntent' if projection.visual_medium_intent else 'legacy:projection.route')
+    prompt=compiled['prompt']
     trace={'characterPackageRef':projection.character_package.character_package_ref,
            'characterPackageVersion':projection.character_package.character_package_version,
            'checksum':projection.character_package.checksum,'packageStatus':package['status'],
+           'visualMediumCompilation':compiled['visualMediumCompilation'],'mediumGate':compiled['mediumGate'],
            'route':projection.route,'castingMode':projection.casting_mode,'framing':projection.framing,
            'scopeSource':{'directiveRef':projection.directive_ref,'directiveHash':projection.directive_hash,'text':projection.scope_text},
            'paragraphs':sources,'legacyProfileInputs':[],'coreFingerprint':sha256_canonical(package['core'])}
-    return {'purpose':'CHARACTER_FULL_BODY_CASTING','character':package['characterId'],
-            'visualRoute':'stylized_cinematic_cg','visualLanguage':'HEROIC_CINEMATIC_CG','castingMode':'HERO_CASTING',
+    return {**compiled,'purpose':'CHARACTER_FULL_BODY_CASTING','character':package['characterId'],
+            'visualRoute':medium_route(intent),'visualLanguage':projection.route.upper(),
+            'visualMedium':intent.visual_medium,'castingMode':intent.casting_mode,
             'sourceTrace':trace,'prompt':prompt,'promptFingerprint':sha256_canonical(prompt),
-            'inputsFingerprint':sha256_canonical(dump_contract(projection)),
+            'inputsFingerprint':sha256_canonical({'projection':dump_contract(projection),'compilerVersion':VERSION,'compiledPrompt':compiled['promptFingerprint']}),
             'status':'DESIGN_ONLY','userAdoption':'PENDING','maxOutputs':1}
 
 def executable_package_casting(work: Any, repository: CharacterRepository, projection: PackageCastingProjection,
                                authorization_id: str) -> dict[str,Any]:
     brief=compile_package_casting(repository,projection)
     content=work.content;roster=content.get('characterPackageRoster',{})
-    if (content.get('approval',{}).get('status')!='APPROVED' or content.get('visualRoute')!='stylized_cinematic_cg'
-        or content.get('visualLanguage')!='HEROIC_CINEMATIC_CG' or roster.get('sourceRevision')!=content.get('revisionId')):
+    if (content.get('approval',{}).get('status')!='APPROVED' or content.get('visualRoute')!=brief['visualRoute']
+        or content.get('visualLanguage')!=brief['visualLanguage'] or roster.get('sourceRevision')!=content.get('revisionId')):
         raise ValueError('CURRENT_APPROVED_WORK_ROUTE_REQUIRED')
+    if content.get('visualMediumIntent') is not None and content['visualMediumIntent'] != brief['visualMediumIntent']:
+        raise ValueError('CURRENT_WORK_MEDIUM_INTENT_MISMATCH')
     rows=[r for r in roster.get('characters',[]) if r['characterId']==brief['character']]
     if len(rows)!=1 or rows[0].get('package')!=dump_contract(projection.character_package):
         raise ValueError('CURRENT_WORK_PACKAGE_PIN_MISMATCH')

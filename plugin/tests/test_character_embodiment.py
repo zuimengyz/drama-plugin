@@ -161,3 +161,22 @@ def test_casting_requires_embodiment_source_map_without_generating(tmp_path):
     brief=compile_package_casting(repo,PackageCastingProjection.model_validate(data))
     assert brief['status']=='DESIGN_ONLY'
     assert brief['sourceTrace']['paragraphs'][-1]['sources'][0]['sourceValue']['id']=='wait'
+
+
+def test_status_only_version_preserves_embodiment_and_rejects_edits(tmp_path):
+    repo,old,new,ref,auth,_=ready(tmp_path)
+    d=dump_contract(new);d['manifest'].update(version='v3',status='VISUAL_TESTING');d['provenance']['revision']='v3'
+    new_directive=b'Test this unchanged embodiment once.'
+    (repo.root/'visual-test-directive').write_bytes(new_directive)
+    d['provenance']['sourceFiles']['visual-test-directive']=digest(new_directive)
+    a=CharacterDesignAuthorization.model_validate({**dump_contract(auth),'directiveRef':'visual-test-directive','directiveHash':digest(new_directive)})
+    for section in ('core','embodiment','actionSignature'):
+        changed=copy.deepcopy(d)
+        if section=='core':changed[section]['desire']='changed'
+        elif section=='embodiment':changed[section]['rationale']='changed'
+        else:changed[section]['powerSource']='changed'
+        with pytest.raises(ValueError,match='STATUS_ONLY'):create_character_version(repo,changed,authorization=a,directive=new_directive,status_transition_from=ref)
+    promoted=create_character_version(repo,d,authorization=a,directive=new_directive,status_transition_from=ref)
+    assert dump_contract(promoted.embodiment)==dump_contract(new.embodiment)
+    assert promoted.manifest.status=='VISUAL_TESTING'
+    assert repo.load_character_package(ref.character_package_ref,ref.character_package_version).manifest.status=='DRAFT'

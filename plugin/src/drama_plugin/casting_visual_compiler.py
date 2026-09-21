@@ -2,11 +2,13 @@
 
 No new style levels, provider policy, identity inference or event authoring.
 """
-from typing import Any
+from typing import Any, Literal
 import re
 from drama_plugin.contracts.base import dump_contract, sha256_canonical
 from drama_plugin.contracts.expression import CharacterExpressionProfiles, CastingArchetypeProfile, ApprovedVisualTargetRange
 from drama_plugin.expression import PHYSICAL_BOUNDARY, select_expression
+from drama_plugin.contracts.visual_medium import legacy_medium_intent
+from drama_plugin.visual_medium import compile_character_art, positive_matches
 
 DIMENSIONS = ('bodyProportion', 'facialIntensity', 'silhouette', 'pose', 'camera',
               'costumeIconicity', 'environmentEnergy', 'kineticPotential', 'weapon')
@@ -32,9 +34,9 @@ FIELD_LANGUAGE = {
     'imperialPresence': ('self-possessed spacing without invented rank', 'clear authored composure and spatial relation', 'emphasize the authored social position through attention and spatial rights', 'strong authored decision-making presence and compositional hierarchy; invent no rank, title or symbol'),
 }
 EXAGGERATION_LANGUAGE = {
-    'restrained': 'Keep the authored CG structural relationships close to their specified baseline.',
+    'restrained': 'Keep the authored structural relationships close to their specified baseline.',
     'elevated': 'Clearly emphasize the authored structural relationships with cinematic design.',
-    'heroic': 'Make the instance-authored proportion and silhouette visibly designed beyond a photographed performer, retaining articulating anatomy, weight and individual character structure. Do not substitute a universal heroic body type.',
+    'heroic': 'Make the instance-authored proportion and silhouette visibly emphasize their specified contrasts, retaining articulating anatomy, weight and individual character structure. Do not substitute a universal heroic body type.',
     'legendary': 'Intensify only the instance-authored structural contrasts to their declared upper range while retaining articulating anatomy, weight and functional construction; never escalate beyond an approved target range.',
 }
 # Generic medium conflicts only. Role-specific attenuation belongs to authored review.
@@ -49,12 +51,12 @@ def audit_hero_prompt(segments: list[dict[str, Any]]) -> list[dict[str, str]]:
         if row.get('kind') in ('boundary', 'negative', 'core'):
             continue
         for pattern in CONFLICTS:
-            if re.search(pattern, row['text'], re.I):
+            if positive_matches(row['text'], re.compile(pattern, re.I)):
                 findings.append({'segment': row['id'], 'conflict': pattern})
     return findings
 
 
-def compile_heroic_visual_intent(bundle: CharacterExpressionProfiles, route: str, mode: str,
+def compile_heroic_visual_intent(bundle: CharacterExpressionProfiles, route: str, mode: Literal['DESIGN_NEUTRAL', 'HERO_CASTING'],
                                 intent: dict[str, str], style: dict[str, Any], *,
                                 archetype: CastingArchetypeProfile | None = None,
                                 target_range: ApprovedVisualTargetRange | None = None) -> dict[str, Any]:
@@ -63,8 +65,6 @@ def compile_heroic_visual_intent(bundle: CharacterExpressionProfiles, route: str
         raise ValueError('HEROIC_VISUAL_COMPILER_ROUTE_FORBIDDEN')
     if mode not in ('HERO_CASTING', 'DESIGN_NEUTRAL'):
         raise ValueError('CASTING_MODE_REQUIRED')
-    if mode == 'HERO_CASTING' and profile.heroic_exaggeration not in ('heroic', 'legendary'):
-        raise ValueError('HERO_CASTING_REQUIRES_EXPLICIT_CG_HEROIC_PROFILE')
     if set(intent) != set(DIMENSIONS) or any(not isinstance(v,str) or not v.strip() for v in intent.values()):
         raise ValueError('COMPLETE_MODE_VISUAL_INTENT_REQUIRED')
     if style['visualRoute'] != route or style['visualLanguage'] != profile.visual_language:
@@ -76,8 +76,8 @@ def compile_heroic_visual_intent(bundle: CharacterExpressionProfiles, route: str
         row['sourceLayers'] = list(dict.fromkeys([row['sourceLayer'], *(['instance'] if key.startswith('expression.') else [])]))
         row['topic'] = ('camera_composition' if key in ('framing','intent.camera') else 'anti_drift' if kind in ('negative','boundary') else 'character_expression')
     core=bundle.character_core_profile
-    emit('mode', ('HEROIC_CINEMATIC_CG / HERO_CASTING. Sculpted feature-film CG character design; heroic composition and character-specific screen presence.' if mode=='HERO_CASTING' else
-         'HEROIC_CINEMATIC_CG / DESIGN_NEUTRAL. Proportion and costume inspection plate with even visibility; baseline presentation without hero-staging amplification.'), ['spec.castingMode','route.style.visualLanguage'])
+    emit('mode', ('HERO_CASTING. Authored leading-role composition and character-specific screen presence.' if mode=='HERO_CASTING' else
+         'DESIGN_NEUTRAL. Proportion and costume inspection plate with even visibility; baseline presentation without hero-staging amplification.'), ['spec.castingMode','route.style.visualLanguage'])
     emit('framing','FULL BODY, single person: entire head, both feet, both hands, body and clothing design, plus any instance-authored props inside the frame with margin. One character selection image.', ['spec.framing'])
     emit('core',f'Identity: {core.identity}; {core.archetype}. Personality: '+ '; '.join(core.personality_core)+ '. Historical position: '+core.historical_position+'. Fixed narrative facts (not extra events to illustrate): '+'; '.join(core.story_facts),['expressionProfiles.characterCoreProfile'],'core')
     if archetype is not None:
@@ -109,12 +109,10 @@ def compile_heroic_visual_intent(bundle: CharacterExpressionProfiles, route: str
     conflicts=audit_hero_prompt(rows) if mode=='HERO_CASTING' else []
     if conflicts:
         raise ValueError('CONSERVATIVE_HERO_PROMPT_CONFLICT:'+str(conflicts))
-    prompt='\n\n'.join(row['text'] for row in rows)
-    offset=0
-    for row in rows:
-        row.update(start=offset,end=offset+len(row['text']),textFingerprint=sha256_canonical(row['text']))
-        offset=row['end']+2
-    return {**({'approvedTargetRangeFingerprint':sha256_canonical(target_range)} if target_range is not None else {}), **({'archetypeFingerprint':sha256_canonical(archetype)} if archetype is not None else {}), 'prompt':prompt,'promptFingerprint':sha256_canonical(prompt),'segments':rows,
+    compiled = compile_character_art(legacy_medium_intent(profile.visual_language, mode), rows,
+        legacy=True, source_intent='legacy:expressionProfiles.cgExpressionProfile.visualLanguage')
+    prompt=compiled['prompt']; rows=compiled['segments']
+    return {**compiled, **({'approvedTargetRangeFingerprint':sha256_canonical(target_range)} if target_range is not None else {}), **({'archetypeFingerprint':sha256_canonical(archetype)} if archetype is not None else {}), 'prompt':prompt,'promptFingerprint':sha256_canonical(prompt),'segments':rows,
         'heroicFieldProjection':{f:{'value':data[f],'segment':'expression.'+f,'visualDimensions':list(ds)} for f,ds in FIELD_DIMENSIONS.items()} if mode=='HERO_CASTING' else {},
         'mode':mode,'visualRoute':route,'coreFingerprint':sha256_canonical(core),'conflicts':conflicts,
         'sourceDisposition':{'expressionProfiles.cgExpressionProfile.design':'Reconciled into explicit modeVisualIntents by the art owner; not blindly concatenated with its old camera/posture prose.'}}

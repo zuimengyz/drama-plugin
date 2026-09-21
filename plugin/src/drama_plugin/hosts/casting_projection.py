@@ -2,7 +2,9 @@
 from __future__ import annotations
 from typing import Any
 from drama_plugin.contracts.base import dump_contract, sha256_canonical
-from drama_plugin.contracts.production_design import CastingBrief, CharacterVisualSpec
+from drama_plugin.contracts.production_design import CastingBrief
+from drama_plugin.character_art import compile_casting_brief
+from drama_plugin.visual_medium import verify_medium_compilation
 
 
 def full_body_seedream_projection(brief: dict[str, Any], evidence: dict[str, Any], *, seed: int) -> dict[str, Any]:
@@ -13,6 +15,7 @@ def full_body_seedream_projection(brief: dict[str, Any], evidence: dict[str, Any
             or brief.get('maxOutputs') != 1 or not brief.get('stopAfterFirstResult')
             or sha256_canonical(brief['prompt']) != brief['promptFingerprint']):
         raise ValueError('EXECUTABLE_FULL_BODY_BRIEF_REQUIRED')
+    verify_medium_compilation(brief)
     schema = evidence['schema']
     age = (datetime.now(timezone.utc) - datetime.fromisoformat(evidence['checkedAt'])).total_seconds()
     nodes = {n['id']: n for n in schema['nodes']}
@@ -30,39 +33,13 @@ def full_body_seedream_projection(brief: dict[str, Any], evidence: dict[str, Any
 
 def seedream_casting_projection(brief: CastingBrief, *, seed: int) -> dict[str, Any]:
     brief = CastingBrief.model_validate(dump_contract(brief))
-    if sha256_canonical(brief.source_content) != brief.source_fingerprint:
-        raise ValueError('Casting source changed')
-    spec = brief.source_content.spec
-    if not isinstance(spec, CharacterVisualSpec):
-        raise ValueError('Character source required')
     if not 0 <= seed <= 2147483647:
         raise ValueError('Provider seed out of range')
-    r, c = brief.reconciliation, brief.conditions
-    sections = [
-        '生成一张真实人物选角测试照片，仅一个人。不是插画、海报或多人拼图。',
-        '文化与人物方向：' + r.population_direction,
-        f'角色：{spec.character_identity}；{spec.dramatic_role}。目标：{spec.visual_objective}',
-        f'年龄印象：{r.apparent_age_min}–{r.apparent_age_max} 岁；具体年龄感与身份仅由当前角色规格决定。',
-        '原创虚构人物脸，不模仿任何现实演员、明星或影视作品人物。',
-        '统一发式：' + r.hair + '；统一胡须：' + r.beard,
-        '脸部共同硬约束：' + '；'.join(r.face),
-        '本候选独有的骨相路径：' + brief.variation,
-        '身体共同硬约束：' + '；'.join(r.body),
-        '源规格体态依据：' + '；'.join(str(v) for v in dump_contract(spec.body).values() if v),
-        '权威来自人：' + r.authority,
-        '统一测试服装：' + c.clothing + '。使用当前测试条件指定的衣物与道具；不额外添加身份装备。',
-        '统一背景：' + c.background + '。只有一个人，不出现辅助演员或身高参照人物。',
-        '统一灯光：' + c.lighting,
-        '统一摄影：' + c.camera + '；' + c.framing,
-        '统一身体朝向：' + c.orientation + '；统一姿态：' + c.posture,
-        '明确排除：' + '；'.join(r.avoid),
-        '源规格禁项：' + '；'.join(spec.avoid),
-        '历史边界：' + '；'.join(spec.historical_constraints.constraints),
-        '这是一张尚待用户选择的选角提案；比例和具体面孔是影视设计选择，不是历史人物真实肖像复原。无文字、标签、水印。',
-    ]
+    compiled = compile_casting_brief(brief)
+    verify_medium_compilation(compiled)
     return {'tool': 'run_template', 'name': 'api_bytedance_seedream_5_0_pro_t2i',
             'description': brief.candidate_id,
-            'input_overrides': {'3': {'prompt': '\n'.join(sections), 'model': 'seedream 5.0 pro',
+            'input_overrides': {'3': {'prompt': compiled['prompt'], 'model': 'seedream 5.0 pro',
                 'model.size_preset': 'Custom', 'model.width': 1664, 'model.height': 2496,
                 'model.prompt_optimization': 'standard', 'model.seed': seed,
                 'model.watermark': False, 'model.thinking': True}}}

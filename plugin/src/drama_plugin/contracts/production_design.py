@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Annotated, Any, Literal, Self
 from pydantic import Field, model_validator, model_serializer, SerializerFunctionWrapHandler
 from drama_plugin.contracts.base import ContractModel
+from drama_plugin.contracts.visual_medium import VisualMediumIntent
 from drama_plugin.contracts.character_evidence import CharacterEvidence
 from drama_plugin.contracts.location_design import LocationDesign
 from drama_plugin.contracts.creative_asset import Text, Hash, Provenance, PatternValidation
@@ -162,6 +163,7 @@ class CastingReconciliation(ContractModel):
 class CastingBrief(ContractModel):
     """Provider-neutral candidate proposal. Cannot authorize formal promotion."""
     candidate_id: Text
+    visual_medium_intent: VisualMediumIntent | None = None
     source_content: ProductionDesignContent
     source_fingerprint: Hash
     reconciliation: CastingReconciliation

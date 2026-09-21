@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Literal, Mapping
 from drama_plugin.contracts.location_design import LocationDesign, LocationDesignRef, SceneLocationBinding
 from drama_plugin.contracts.character_evidence import CharacterCoverageReview
+from drama_plugin.contracts.visual_medium import VisualMediumIntent
 from drama_plugin.contracts.base import dump_contract, sha256_canonical
 from drama_plugin.contracts.production_design import ProductionDesignContent, CharacterState, CharacterVisualSpec
 from drama_plugin.contracts.production_design import CastingBrief, CastingReconciliation, CastingTestConditions
@@ -32,7 +33,8 @@ def verify_design_handoff(raw: dict[str, Any], *, production: bool = False) -> P
 
 
 def casting_briefs(handoff: dict[str, Any], *, reconciliation: CastingReconciliation,
-                   conditions: CastingTestConditions, variations: dict[str, str]) -> list[CastingBrief]:
+                   conditions: CastingTestConditions, variations: dict[str, str],
+                   visual_medium_intent: VisualMediumIntent | None = None) -> list[CastingBrief]:
     """Compile an explicitly authorized candidate search without rewriting its source."""
     content = verify_design_handoff(handoff)
     if not isinstance(content.spec, CharacterVisualSpec) or handoff['consumer'] != 'asset-resolution':
@@ -45,6 +47,7 @@ def casting_briefs(handoff: dict[str, Any], *, reconciliation: CastingReconcilia
         raise ValueError('Casting needs distinct bounded directions')
     return [CastingBrief(candidate_id=key, source_content=content.model_copy(deep=True),
                          source_fingerprint=sha256_canonical(content), reconciliation=reconciliation,
+                         visual_medium_intent=visual_medium_intent,
                          conditions=conditions, variation=value) for key, value in variations.items()]
 
 

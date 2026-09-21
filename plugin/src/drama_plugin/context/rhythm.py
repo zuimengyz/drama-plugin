@@ -1,9 +1,10 @@
 """Project one parsed narrative setting; keep saved revision rhythm immutable."""
 from __future__ import annotations
+from typing import Any
 from drama_plugin.config.models import DramaPluginConfig
 from drama_plugin.contracts.base import dump_contract
 from drama_plugin.contracts.context import ContextBuildRequest, ContextChange, CreativeRhythm, DramaContextPatch, DramaRunContext
-from drama_plugin.exceptions import ContextBuildError
+from drama_plugin.exceptions import ContextBuildError, RhythmAuthorityConflict
 from drama_plugin.providers.base import ContextProvider
 
 SEMANTICS = {
@@ -14,6 +15,23 @@ SEMANTICS = {
 }
 COMMON = "各档均非播放或台词倍速，不统一乘时长系数，不设镜头时长/动作密度/切镜次数硬指标。保留观众导航、关键事实、核心动作与时间因果；普通瑕疵不阻断。节奏不选择媒体模型、分辨率、费用或声音服务。"
 
+def validate_rhythm_assertions(options: dict[str, Any], authority: CreativeRhythm) -> None:
+    """Task spellings assert one decision; none can create a second authority."""
+    assertions = [(f"options.{key}", options[key]) for key in ("rhythm_speed", "rhythmSpeed") if key in options]
+    for container in ("creativeRhythm", "creative_rhythm"):
+        if container not in options:
+            continue
+        payload = options[container]
+        if not isinstance(payload, dict):
+            raise RhythmAuthorityConflict(f"RHYTHM_AUTHORITY_CONFLICT: options.{container} must assert a rhythm value")
+        keys = [key for key in ("rhythm_speed", "rhythmSpeed") if key in payload]
+        if not keys:
+            raise RhythmAuthorityConflict(f"RHYTHM_AUTHORITY_CONFLICT: options.{container} is missing rhythm_speed")
+        assertions.extend((f"options.{container}.{key}", payload[key]) for key in keys)
+    for path, value in assertions:
+        if not isinstance(value, str) or value.strip() != authority.rhythm_speed:
+            raise RhythmAuthorityConflict(f"RHYTHM_AUTHORITY_CONFLICT: {path} disagrees with {authority.source}")
+
 class RhythmContextProvider:
     def __init__(self, provider: ContextProvider, config: DramaPluginConfig) -> None:
         self.provider = provider
@@ -21,6 +39,14 @@ class RhythmContextProvider:
                                      semantics=SEMANTICS[config.rhythm_speed] + COMMON)
 
     async def build_context(self, request: ContextBuildRequest) -> DramaRunContext:
+        return await self._build_context(request)
+
+    async def _build_context(self, request: ContextBuildRequest, preserved: CreativeRhythm | None = None) -> DramaRunContext:
+        # New contexts assert parsed runtime configuration. Resume/refresh assert
+        # their saved authority, whose immutability is part of this contract.
+        revision_id = request.options.get("creativeRevisionId")
+        if preserved is not None or not revision_id:
+            validate_rhythm_assertions(request.options, preserved or self.rhythm)
         # An explicit new-Work context precedes the first reviewed domain write.
         # Never probe an existing object or silently treat a missing ID as new.
         if request.options.get("newWork") is True:
@@ -34,7 +60,6 @@ class RhythmContextProvider:
             )
         else:
             context = await self.provider.build_context(request)
-        revision_id = request.options.get("creativeRevisionId")
         if revision_id:
             revisions = context.work.content.get("creativeRevisions", {}) if context.work else {}
             revision = revisions.get(revision_id)
@@ -43,13 +68,13 @@ class RhythmContextProvider:
             context.creative_rhythm = CreativeRhythm.model_validate(revision["rhythm"])
         else:
             context.creative_rhythm = self.rhythm.model_copy(deep=True)
+        if preserved is not None:
+            context.creative_rhythm = preserved.model_copy(deep=True)
+        validate_rhythm_assertions(request.options, context.creative_rhythm)
         return context
 
     async def refresh_context(self, request: ContextBuildRequest, current: DramaRunContext) -> DramaContextPatch:
-        rebuilt = await self.build_context(request)
-        # Refresh follows an existing revision. New configuration requires a new build.
-        if current.creative_rhythm is not None:
-            rebuilt.creative_rhythm = current.creative_rhythm.model_copy(deep=True)
+        rebuilt = await self._build_context(request, current.creative_rhythm)
         before = dump_contract(current, exclude={"version", "built_at"})
         after = dump_contract(rebuilt, exclude={"version", "built_at"})
         changes = [ContextChange(operation="replace" if k in before else "add", path="/"+k, value=v)

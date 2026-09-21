@@ -212,6 +212,41 @@ class TargetTimingPolicy(ContractModel):
     constraints: dict[str, Any] = Field(default_factory=dict)
 
 
+def validate_scene_performance_authority(intent: dict[str, Any]) -> None:
+    """Legacy delivery dictionaries cannot carry stable voice identity controls.
+
+    Bare articulation/restraint/energy/power also describe transient delivery;
+    keep those compatible. Their stable-profile containers remain forbidden.
+    Other stable fields come from the current identity contract, including its
+    legacy broad fields, so new identity dimensions inherit this boundary.
+    """
+    def key(value: str) -> str:
+        return "".join(char.lower() for char in value if char.isalnum())
+
+    transient = {"articulation", "restraint", "energy", "power"}
+    stable = {key(name) for name in CreativeVoiceProfile.model_fields if name not in transient}
+    stable.update(key(name) for name in VoiceProfile.model_fields if name != "non_material_metadata")
+    stable.update(key(name) for name in (
+        "voiceIdentity", "voiceIdentityRef", "voiceIdentityId", "voiceProfileId",
+        "voiceProfileRef", "voiceProfileFingerprint", "stableVoice", "stableIdentity",
+        "stableVoiceIdentity", "stableVoiceProfile", "stableProfile", "voiceId",
+        "voice", "voiceProfile", "creativeCastingProfile", "sourceProfileId", "voiceUseCase",
+        "register", "brightness", "vocalRange", "range", "roughness", "breathiness",
+    ))
+
+    def visit(value: Any, path: str) -> None:
+        if isinstance(value, dict):
+            for name, child in value.items():
+                if key(str(name)) in stable:
+                    raise ValueError(f"STABLE_VOICE_AUTHORITY_CONFLICT:{path}.{name}")
+                visit(child, f"{path}.{name}")
+        elif isinstance(value, (list, tuple)):
+            for index, child in enumerate(value):
+                visit(child, f"{path}[{index}]")
+
+    visit(intent, "performanceIntent")
+
+
 class SpeechGenerationRequest(ContractModel):
     schema_version: Literal["speech-generation-v1"] = "speech-generation-v1"
     work_id: str
@@ -234,6 +269,7 @@ class SpeechGenerationRequest(ContractModel):
 
     @model_validator(mode="after")
     def validate_voice_resolution(self) -> "SpeechGenerationRequest":
+        validate_scene_performance_authority(self.performance_intent)
         if self.performance_rendition is not None:
             rendition = self.performance_rendition
             if (rendition.get("sourceLineId") != self.spoken_content_id

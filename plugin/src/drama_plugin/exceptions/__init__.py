@@ -84,6 +84,10 @@ class ContextBuildError(DramaPluginError):
     """A domain context projection failed."""
 
 
+class RhythmAuthorityConflict(ContextBuildError):
+    """A task assertion disagrees with the authoritative context rhythm."""
+
+
 class ContractValidationError(DramaPluginError):
     """A payload does not satisfy a domain contract."""
 

@@ -30,6 +30,7 @@ from drama_plugin.contracts.audio import (
     ProviderVoiceMapping,
     RoleDubbingRequest,
     RoleDubbingResult,
+    validate_scene_performance_authority,
 )
 from drama_plugin.contracts.base import dump_contract
 from drama_plugin.contracts.media import Media, MediaType
@@ -85,6 +86,7 @@ def _fish_mapping(voice: Voice) -> VoiceProviderMapping | None:
 
 def _native_performance(request: RoleDubbingRequest) -> tuple[float, float]:
     speech = request.speech_request
+    validate_scene_performance_authority(speech.performance_intent)
     parameters = speech.material_render_parameters
     from drama_plugin.providers.speech.fish_audio import FISH_PACE, FISH_VOLUME
     delta = speech.performance_intent.get("sceneDelta", speech.performance_intent)
@@ -109,6 +111,7 @@ def _native_performance(request: RoleDubbingRequest) -> tuple[float, float]:
 def _projected_performance(
     request: RoleDubbingRequest,
 ) -> FishAudioPerformanceMapping | None:
+    validate_scene_performance_authority(request.speech_request.performance_intent)
     brief = request.speech_request.audio_performance_brief
     if brief is None:
         return None

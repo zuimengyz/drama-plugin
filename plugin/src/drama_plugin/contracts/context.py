@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any, Literal
 
-from pydantic import Field
+from pydantic import AliasChoices, Field
 
 from drama_plugin.contracts.asset import Asset
 from drama_plugin.contracts.base import ContractModel
@@ -42,7 +42,11 @@ class ContextBuildRequest(ContractModel):
 
 
 class CreativeRhythm(ContractModel):
-    rhythm_speed: Literal["work_defined", "slow", "medium", "fast"] = Field(serialization_alias="rhythm_speed")
+    # This dedicated public contract uses the documented runtime key. Read the
+    # previous schema's camel-case spelling, but emit only the canonical key.
+    rhythm_speed: Literal["work_defined", "slow", "medium", "fast"] = Field(
+        alias="rhythm_speed", validation_alias=AliasChoices("rhythm_speed", "rhythmSpeed")
+    )
     source: str
     semantics: str
 

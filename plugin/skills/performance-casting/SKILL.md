@@ -113,3 +113,21 @@ by `media.resolve_media` and full-byte readback. Do not use source/adoption writ
 to persist the local casting profile. The tool catalog remains unchanged.
 
 For an explicit visual-medium route, read [route-aware casting](references/visual-routes.md). The route is separate from the face-first/body-first proof order; an omitted route sidecar preserves a frozen legacy brief without asserting its medium. New route-specific design requires an explicit Work route.
+
+For an explicitly authorized first whole-character CG candidate, use
+`scripts/full_body.py brief` then `reserve`. This separate
+`CHARACTER_FULL_BODY_CASTING` purpose preserves FACE/SCALE semantics and does not
+require an already approved CG face. Read the current approved Work: its explicit
+visualRouteBinding and characterCastingAuthorizations must pin the same Work
+revision, source bytes, profile/plan/style/spec and user directive. The scope is
+exactly one output and stop-after-first-result. Design compilation alone never
+grants this scope. Reserve the exact qualified Host request before submitting it
+once through the existing official image template. An uncertain submit consumes
+the opportunity: recover the same job, never automatically submit another.
+Complete retained media with the existing media_delivery path, bound to the Work
+as a candidate with userAdoption=PENDING. No Character adoption, second image,
+legacy stage pass, scene, video or audio follows from this handoff.
+
+## Route-owned expression
+
+Select DESIGN_NEUTRAL or CG-only HERO_CASTING explicitly. Use the route-owned expression template and formal Work bundle; do not reuse actor-audition conditions for heroic CG. A new candidate stays unapproved. Read [expression route contract](../../docs/expression-route-contract.md) when using character or action expression profiles.

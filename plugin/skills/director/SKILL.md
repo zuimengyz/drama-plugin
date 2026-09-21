@@ -199,3 +199,7 @@ Reuse FilmReview and Director feedback; separate intended authority, observable
 facts and judgment. Resolve the production lineage before live review, preserve
 UNSPECIFIED and good material, and pass only a minimal source-bound execution delta
 to the existing owner. A dry-run never authorizes production or media adoption.
+
+## Route-owned expression
+
+Choose character-specific actionIntensity by scene function, dramatic phase and rhythm. Quiet/routine cannot inherit heroic action; selective extreme_heroic requires a justified climax. Do not treat historical credibility as a universal small-amplitude rule. Read [expression route contract](../../docs/expression-route-contract.md) when using character or action expression profiles.

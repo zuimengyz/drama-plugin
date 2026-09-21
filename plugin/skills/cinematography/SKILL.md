@@ -40,3 +40,7 @@ Return obstructed geography to Layout/Environment and insufficient coverage to S
 ## Source reads
 
 Use supplied current originals first. For missing scoped context, read `work.get_work`, `scene.get_scene`, `script.get_script`, `episode.get_episode`, `shot.get_shot`, `asset.get_asset`, `context.build_context`. These reads do not authorize source writes or production.
+
+## Route-owned expression
+
+Author camera energy in response to the selected character action and Director intensity. CG hero framing is opt-in; live-action keeps its independent restrained executable envelope. Camera never invents physical action. Read [expression route contract](../../docs/expression-route-contract.md) when using character or action expression profiles.

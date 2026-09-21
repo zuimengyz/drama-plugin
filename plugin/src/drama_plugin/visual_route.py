@@ -63,7 +63,9 @@ def project_casting_route(compiled: dict[str, Any], context: RouteCastingContext
         context.plan_fingerprint != compiled['planFingerprint']):
         raise ValueError('ROUTE_CASTING_SOURCE_MISMATCH')
     style = context.style
-    # Project declared visual obligations, never silently translate an old realist prompt.
+    if style.visual_language is not None:
+        raise ValueError('EXPLICIT_EXPRESSION_LANGUAGE_REQUIRES_ROUTE_OWNED_CASTING_TEMPLATE')
+    # Legacy dry-run only; explicit expression profiles use separate templates.
     lines = [style.rendering, style.shape_language, style.material_palette,
              style.historical_boundary, *style.forbidden_drifts]
     if compiled['stage'] == 'PERFORMANCE':

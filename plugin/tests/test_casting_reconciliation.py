@@ -89,14 +89,21 @@ def test_role_scoped_appeal_does_not_change_other_roles():
  assert dump_contract(bv.appeal)==before
  assert compile_visual_discriminants(a,av,'n','FACE')['appeal']!=compile_visual_discriminants(b,bv,'n','FACE')['appeal']
 
+def cg_context(p,v):
+ from test_visual_route import context
+ from drama_plugin.contracts.visual_route import RouteCastingContext
+ return RouteCastingContext(**dump_contract(context()),characterIdentity=p.identity,
+  profileFingerprint=v.profile_fingerprint,planFingerprint=sha256_canonical(v))
+
 def test_controlled_exaggeration_requires_preserved_anatomy_and_salience():
  p,v=reconciled()
  from drama_plugin.contracts.casting_discriminants import ControlledArchetypalExaggeration
  p.archetypal_exaggeration=ControlledArchetypalExaggeration(mode='HEROIC_STYLIZATION',definingDiscriminantIds=['outline'],
-  anatomicalLimit='live-action anatomy and coherent bone/skin',realismObservations=['articulated neck'],forbiddenDrifts=['cartoon'])
+  anatomicalLimit='grounded articulating anatomy and coherent bone/skin',realismObservations=['articulated neck'],forbiddenDrifts=['cartoon'])
  v.profile_fingerprint=profile_fingerprint(p)
- c=compile_visual_discriminants(p,v,'n','FACE')
- assert 'live-action anatomy' in c['prompt'] and 'cartoon' in c['ForbiddenDrifts']
+ with pytest.raises(ValueError,match='EXPLICIT_CG_ROUTE'):compile_visual_discriminants(p,v,'n','FACE')
+ c=compile_visual_discriminants(p,v,'n','FACE',route_context=cg_context(p,v))
+ assert 'grounded articulating anatomy' in c['prompt'] and 'cartoon' in c['ForbiddenDrifts']
  p.archetypal_exaggeration.defining_discriminant_ids=('unknown',);v.profile_fingerprint=profile_fingerprint(p)
  with pytest.raises(ValueError,match='Exaggeration'):compile_visual_discriminants(p,v,'n','FACE')
 
@@ -106,10 +113,10 @@ def test_calibration_consumes_exaggeration_and_reference_choices_without_candida
  from drama_plugin.contracts.casting_discriminants import ControlledArchetypalExaggeration
  p.archetype_references=(reference(p.identity),)
  p.archetypal_exaggeration=ControlledArchetypalExaggeration(mode='HEROIC_STYLIZATION',definingDiscriminantIds=['outline'],
-  anatomicalLimit='Exceptional structural scale with articulating live-action bone and skin.',
+  anatomicalLimit='Exceptional structural scale with articulating grounded bone and skin.',
   realismObservations=['plausible articulated anatomy'],forbiddenDrifts=['cartoon'])
  v.profile_fingerprint=profile_fingerprint(p)
- c=compile_visual_discriminants(p,v,'n','FACE',purpose='CALIBRATION',calibration_conditions={'frame':'fixed neutral framing'})
+ c=compile_visual_discriminants(p,v,'n','FACE',purpose='CALIBRATION',calibration_conditions={'frame':'fixed neutral framing'},route_context=cg_context(p,v))
  assert p.archetypal_exaggeration.anatomical_limit in c['prompt']
  assert 'aesthetic refinement must never reduce' in c['prompt']
  assert c['exaggerationProjection']['projectedChoices'][0]['line'] in c['prompt']
@@ -118,6 +125,6 @@ def test_calibration_consumes_exaggeration_and_reference_choices_without_candida
  # Changing authored exaggeration must change actual calibration text, not just metadata.
  p.archetypal_exaggeration.anatomical_limit='Changed bounded anatomy requirement.'
  v.profile_fingerprint=profile_fingerprint(p)
- changed=compile_visual_discriminants(p,v,'n','FACE',purpose='CALIBRATION',calibration_conditions={'frame':'fixed neutral framing'})
+ changed=compile_visual_discriminants(p,v,'n','FACE',purpose='CALIBRATION',calibration_conditions={'frame':'fixed neutral framing'},route_context=cg_context(p,v))
  assert changed['prompt']!=c['prompt']
  assert 'Lu Bu' not in changed['prompt']

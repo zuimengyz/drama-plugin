@@ -129,3 +129,7 @@ Keep Coverage IDs stable; resolve split/shared realization through the existing
 Shot, SequencePackage and Media owners. The opt-in Host runs realization_handoff,
 generation_handoff and media_handoff at their respective boundaries. Policy-ready
 is not formalized, and intended lineage is not observed evidence.
+
+## Route-owned expression
+
+Read approved route expression plus Director/Action/Camera originals. Thin Shot assembly may project their scope and source hashes; it cannot promote quiet beats or ordinary soldiers to the hero amplitude. Read [expression route contract](../../docs/expression-route-contract.md) when using character or action expression profiles.

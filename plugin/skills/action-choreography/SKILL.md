@@ -40,3 +40,7 @@ Missing Blocking or object scale returns dependency failure; proposed event chan
 ## Source reads
 
 Use supplied current originals first. For missing scoped context, read `work.get_work`, `scene.get_scene`, `script.get_script`, `episode.get_episode`, `shot.get_shot`, `asset.get_asset`, `context.build_context`. These reads do not authorize source writes or production.
+
+## Route-owned expression
+
+Within the Director-selected route envelope, author anticipation, acceleration, impact, follow-through and environmental reaction. Preserve support/contact/weight and canonical outcomes. A character action signature does not propagate to other actors. Read [expression route contract](../../docs/expression-route-contract.md) when using character or action expression profiles.

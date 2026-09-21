@@ -5,6 +5,29 @@ from drama_plugin.contracts.base import dump_contract, sha256_canonical
 from drama_plugin.contracts.production_design import CastingBrief, CharacterVisualSpec
 
 
+def full_body_seedream_projection(brief: dict[str, Any], evidence: dict[str, Any], *, seed: int) -> dict[str, Any]:
+    """Existing official T2I route, qualified for exactly one whole-body candidate."""
+    from datetime import datetime, timezone
+    if (brief.get('status') != 'EXECUTABLE_SINGLE_CANDIDATE'
+            or brief.get('purpose') != 'CHARACTER_FULL_BODY_CASTING'
+            or brief.get('maxOutputs') != 1 or not brief.get('stopAfterFirstResult')
+            or sha256_canonical(brief['prompt']) != brief['promptFingerprint']):
+        raise ValueError('EXECUTABLE_FULL_BODY_BRIEF_REQUIRED')
+    schema = evidence['schema']
+    age = (datetime.now(timezone.utc) - datetime.fromisoformat(evidence['checkedAt'])).total_seconds()
+    nodes = {n['id']: n for n in schema['nodes']}
+    if (not 0 <= age <= 900 or schema['id'] != 'api_bytedance_seedream_5_0_pro_t2i'
+            or nodes['3']['class_type'] != 'ByteDanceSeedreamNodeV3'
+            or nodes['2']['class_type'] != 'SaveImageAdvanced'
+            or not {'model.width', 'model.height', 'prompt'} <= nodes['3']['inputs'].keys()
+            or not 0 <= seed <= 2147483647):
+        raise ValueError('CURRENT_OFFICIAL_IMAGE_TEMPLATE_REQUIRED')
+    return {'name': schema['id'], 'input_overrides': {'3': {
+        'prompt': brief['prompt'], 'model': 'seedream 5.0 pro', 'model.size_preset': 'Custom',
+        'model.width': 1664, 'model.height': 2496, 'model.prompt_optimization': 'standard',
+        'model.seed': seed, 'model.watermark': False, 'model.thinking': True}}}
+
+
 def seedream_casting_projection(brief: CastingBrief, *, seed: int) -> dict[str, Any]:
     brief = CastingBrief.model_validate(dump_contract(brief))
     if sha256_canonical(brief.source_content) != brief.source_fingerprint:

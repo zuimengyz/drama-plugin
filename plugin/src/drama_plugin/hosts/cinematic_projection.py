@@ -61,6 +61,13 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
     for key in ('schemaVersion','workId','sceneId','shotId','creativeRevision','sourceFingerprint','visualBibleFingerprint','narrativeIntent',
                 'anchorOmissionReason','secondaryMotionOmissionReason'):
         mark(key, 'UPSTREAM_LOCK', 'frozen', '来源/创作推理由冻结合同约束', False)
+    if spec.expression_direction is not None:
+        from drama_plugin.expression import project_action_expression
+        expression = project_action_expression([dump_contract(x) for x in spec.performance.beats], spec.expression_direction)
+        sections.append('ROUTE-OWNED EXPRESSION / ONLY ' + spec.expression_direction.core.identity + ': ' + prose(expression))
+        mark('expressionDirection', 'UPSTREAM_LOCK', 'frozen', '冻结的角色路线与导演幅度约束；只投影该角色，不改变剧情事件')
+        mark('expressionDirection.director', 'PROMPT', prompt_field, '导演、动作和摄影原文投影；不生成新动作')
+        mark('expressionDirection.profile.design.actionSignature', 'PROMPT', prompt_field, '角色专属动作语言')
     emit('GLOBAL VISUAL / WORLD', 'visualBible', raw['visualBible'])
     emit('OPENING STATE', 'openingState', raw['openingState'])
     emit('BEHAVIOR ANCHOR', 'behaviorAnchor', raw['behaviorAnchor'])

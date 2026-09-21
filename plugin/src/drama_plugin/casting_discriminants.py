@@ -66,6 +66,15 @@ def compile_visual_discriminants(profile: RoleArchetypeProfile, plan: VisualCast
         calibration_conditions: dict[str, str] | None = None,
         route_context: RouteCastingContext | None = None) -> dict[str, Any]:
     meta = validate_visual_plan(profile, plan)
+    heroic = profile.archetypal_exaggeration is not None and profile.archetypal_exaggeration.mode in ('HEROIC_STYLIZATION', 'MYTHIC_STYLIZATION')
+    if heroic and route_context is None:
+        raise ValueError('CG_HEROIC_EXAGGERATION_REQUIRES_EXPLICIT_CG_ROUTE')
+    if route_context is not None:
+        from drama_plugin.visual_route import resolved_context
+        from drama_plugin.contracts.visual_route import RouteContext
+        route = resolved_context(RouteContext(project=route_context.project, sequence=route_context.sequence, style=route_context.style))
+        if heroic and route.visual_route != 'stylized_cinematic_cg':
+            raise ValueError('CG_HEROIC_EXAGGERATION_FORBIDDEN_ON_LIVE_ACTION_ROUTE')
     if purpose not in {'CANDIDATE', 'CALIBRATION'}:
         raise ValueError('Unknown compilation purpose')
     variant = next((v for v in plan.variants if v.key == variant_key), None)

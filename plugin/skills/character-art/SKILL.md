@@ -40,3 +40,7 @@ Return dramatic identity to character-dramaturgy; costume to costume-design; tra
 ## Source reads
 
 Use supplied current originals first. For missing scoped context, read `work.get_work`, `scene.get_scene`, `script.get_script`, `episode.get_episode`, `shot.get_shot`, `asset.get_asset`, `context.build_context`. These reads do not authorize source writes or production.
+
+## Route-owned expression
+
+Own the route-specific face/body/silhouette and neutral dominant presence. Share narrative core only; never copy a CG expression envelope into a live-action design. Read [expression route contract](../../docs/expression-route-contract.md) when using character or action expression profiles.

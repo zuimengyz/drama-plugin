@@ -4,7 +4,8 @@ from __future__ import annotations
 from typing import Annotated, Literal, Self, Any
 
 from pydantic import Field, StringConstraints, model_validator, model_serializer, SerializerFunctionWrapHandler
-from drama_plugin.contracts.base import ContractModel
+from drama_plugin.contracts.base import ContractModel, dump_contract, sha256_canonical
+from drama_plugin.contracts.expression import ActionExpressionBinding
 from drama_plugin.contracts.performance_direction import PerformanceProjection, VocalDelivery
 from drama_plugin.contracts.creative_asset import CinematicLanguageRef
 
@@ -203,6 +204,7 @@ class ExecutionRequirements(ContractModel):
 
 
 class CinematicShotSpec(ContractModel):
+    expression_direction: ActionExpressionBinding | None = None
     schema_version: Literal['cinematic-shot-v1'] = 'cinematic-shot-v1'
     work_id: Text
     scene_id: Text
@@ -230,11 +232,28 @@ class CinematicShotSpec(ContractModel):
     source_sound_intent: SourceSoundIntent | None = None
     cinematic_language_refs: tuple[CinematicLanguageRef, ...] = ()
 
+    @model_serializer(mode='wrap')
+    def compatible_expression_dump(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data: dict[str, Any] = handler(self)
+        if self.expression_direction is None:
+            data.pop('expressionDirection', None)
+            data.pop('expression_direction', None)
+        return data
+
     @model_validator(mode='after')
     def consistent_execution(self) -> Self:
         if len({r.asset_id for r in self.cinematic_language_refs}) != len(self.cinematic_language_refs):
             raise ValueError('Duplicate cinematic language reference')
         beats = self.performance.beats
+        if self.expression_direction is not None:
+            binding = self.expression_direction
+            direction = binding.director
+            if (direction.work_id, direction.scene_id, direction.shot_id) != (self.work_id, self.scene_id, self.shot_id):
+                raise ValueError('ACTION_DIRECTOR_SCOPE_MISMATCH')
+            if binding.source_action_fingerprint != sha256_canonical([dump_contract(b) for b in beats]):
+                raise ValueError('ACTION_EXPRESSION_SOURCE_EVENTS_CHANGED')
+            if not any(a.actor == binding.core.identity for b in beats for a in b.actions):
+                raise ValueError('EXPRESSION_CHARACTER_NOT_IN_SHOT')
         if beats[0].start != 0 or beats[-1].end != self.duration_seconds:
             raise ValueError('Timeline must cover Opening through Ending; holds are explicit beats')
         if beats[0].start_state != self.opening_state or beats[-1].end_state != self.ending_state:

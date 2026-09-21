@@ -60,6 +60,15 @@ def validate_canon(spec: CinematicShotSpec, context: dict[str, Any]) -> None:
         raise ValueError('STALE_CINEMATIC_NARRATIVE_SOURCE')
     if (spec.work_id, spec.scene_id, spec.shot_id) != (context['work']['id'], context['scene']['id'], context['shot']['id']):
         raise ValueError('Cinematic scope mismatch')
+    if spec.expression_direction is not None:
+        from drama_plugin.contracts.expression import CharacterExpressionProfiles
+        from drama_plugin.expression import select_expression
+        binding = spec.expression_direction
+        work = context['work']['content']
+        bundle = CharacterExpressionProfiles.model_validate(work.get('characterExpressionProfiles', {}).get(binding.core.identity))
+        current = select_expression(bundle, work.get('visualRoute', ''))
+        if dump_contract(current) != dump_contract(binding.profile) or dump_contract(bundle.character_core_profile) != dump_contract(binding.core):
+            raise ValueError('STALE_OR_CROSS_ROUTE_ACTION_EXPRESSION')
     shot = context['shot']['content']
     if spec.duration_seconds * 1000 != shot['plannedDurationMs']:
         raise ValueError('Director cannot silently change formal Shot duration')
@@ -154,6 +163,11 @@ def execution_brief(spec: CinematicShotSpec) -> str:
     lines += [f'二级运动：{m.cause}→{m.element}{m.response}；边界{m.limit}' for m in spec.secondary_motion]
     lines += [f'物理反馈：{m.source}{m.effect}→{m.affected}{m.response}；{m.occlusion_or_depth}' for m in spec.environment_interaction]
     lines += [f'稳定边界 {r.dimension}：允许{r.allowed}；不允许{r.forbidden}' for r in spec.stability_contract]
+    if spec.expression_direction is not None:
+        import json
+        from drama_plugin.expression import project_action_expression
+        projected = project_action_expression([dump_contract(x) for x in spec.performance.beats], spec.expression_direction)
+        lines.append('角色专属表现幅度（不扩散给同镜其他人物）：' + json.dumps(projected, ensure_ascii=False))
     lines.append('收尾：' + spec.ending_state)
     return '\n'.join(lines)
 

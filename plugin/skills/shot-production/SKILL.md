@@ -140,3 +140,7 @@ A [visual route](../../docs/visual-route-contract.md) is separate from provider/
 For a qualified official video route, use the [unified video contract](../../docs/video-provider-contract.md) and `scripts/video_provider.py` Host entry. It uses the same Work route, stage authorization, exact reservation and Media completion as existing production. Skills supply creative requirements and stable references; provider translation, credentials and asynchronous vendor identity stay below the Host boundary.
 
 Never recreate an uncertain submission. Resume its existing attempt at polling or persistence; expired media links never justify new generation. A retained candidate is not content approval or user adoption. Preserve the canonical continuity/style fingerprint in every attempt and result. Comfy image generation, OAuth, MCP and video fallback remain available through their existing Host path.
+
+## Route-owned expression
+
+Consume the frozen route-specific expression via the existing cinematic projection; never append actor realism to heroic CG or carry CG exaggeration into live action. Pending casting candidates cannot become approved references by production. Read [expression route contract](../../docs/expression-route-contract.md) when using character or action expression profiles.

@@ -52,3 +52,7 @@ Project-scoped range and mode intent snapshots may live in `profiles/instances/<
 ## External character authority
 
 Character-specific values now come from a locked Character Package through the unified read-only resolver in [Character External Driver](character-external-driver.md). Generic grammar owns vocabulary and route isolation only. Never embed character body/face/weapon/temperament in this compiler. Legacy instance profiles are experimental evidence, not approved identity. Core is shared; visual envelopes are independently authored. Missing package/route blocks new dedicated-character execution.
+
+## Embodiment boundary
+
+Character Embodiment supplies what to express and why; Expression supplies generic medium amplitude. Consume it read-only via [the embodiment contract](character-embodiment.md). No character-specific body, temperament or weapon defaults belong here. Do not infer a live-action amplitude from CG. No canonical image is required for embodiment authoring.

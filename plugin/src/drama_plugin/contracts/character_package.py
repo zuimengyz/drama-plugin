@@ -2,7 +2,8 @@
 from typing import Literal, Self, Any
 from datetime import datetime
 import re
-from pydantic import Field, model_validator
+from pydantic import Field, model_validator, model_serializer
+from .character_embodiment import CharacterEmbodiment
 from drama_plugin.contracts.base import ContractModel
 from drama_plugin.contracts.creative_asset import Text, Hash
 
@@ -24,7 +25,7 @@ class CharacterPackageRef(ContractModel):
         return self
 
 class PackageManifest(ContractModel):
-    schema_version: Literal['character-package-v1'] = 'character-package-v1'
+    schema_version: Literal['character-package-v1','character-package-v2'] = 'character-package-v1'
     package_id: Text
     character_id: Text
     project_id: Text
@@ -190,10 +191,19 @@ class CharacterPackage(ContractModel):
     relationships: Relationships
     historical_basis: HistoricalBasis
     provenance: Provenance
+    embodiment: CharacterEmbodiment | None = None
+
+    @model_serializer(mode='wrap')
+    def legacy_shape(self, handler):
+        payload=handler(self)
+        if self.embodiment is None: payload.pop('embodiment',None)
+        return payload
 
     @model_validator(mode='after')
     def consistent(self) -> Self:
         m=self.manifest
+        if (m.schema_version=='character-package-v2') != (self.embodiment is not None):
+            raise ValueError('EMBODIMENT_SCHEMA_VERSION_MISMATCH')
         CharacterPackageRef(character_package_ref=f'characters/{m.project_id}/{m.character_id}',character_package_version=m.version,checksum=m.checksum)
         if set(m.supported_routes)!=set(self.visual_expression.routes):raise ValueError('SUPPORTED_ROUTES_MISMATCH')
         if m.source_work!=self.provenance.source_work or m.version!=self.provenance.revision:raise ValueError('PACKAGE_PROVENANCE_MISMATCH')

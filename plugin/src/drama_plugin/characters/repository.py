@@ -11,9 +11,11 @@ from drama_plugin.contracts.base import dump_contract, sha256_canonical
 from drama_plugin.contracts.character_package import CharacterPackage, CharacterPackageRef
 
 FILES = {key: key.replace('_', '-') + ('.json' if key == 'provenance' else '.yaml')
-         for key in CharacterPackage.model_fields}
+         for key in CharacterPackage.model_fields if key != 'embodiment'}
+OPTIONAL_FILES = {'embodiment':'embodiment.yaml'}
 CONSUMERS = frozenset({'character-art','performance-casting','expression','director','action-choreography',
-                      'dialogue-design','voice-direction','shot-production','character-external-driver'})
+                      'dialogue-design','voice-direction','shot-production','character-external-driver',
+                      'character-embodiment','dramatic-performance-direction'})
 
 class CharacterPackageError(ValueError):
     pass
@@ -87,10 +89,11 @@ class CharacterRepository:
         return path
 
     def load_character_package(self, character_package_ref: str, character_package_version: str,
-                               *, checksum: str | None = None) -> CharacterPackage:
+                               *, checksum: str | None = None, _ancestry: tuple[str, ...] = ()) -> CharacterPackage:
         CharacterPackageRef(character_package_ref=character_package_ref,
                             character_package_version=character_package_version, checksum=checksum or '0'*64)
         relative = f'{character_package_ref}/{character_package_version}'
+        if relative in _ancestry or len(_ancestry)>16: raise CharacterPackageError('CYCLIC_EMBODIMENT_SOURCE')
         folder = self._safe_file(relative)
         if not folder.is_dir(): raise CharacterPackageError('CHARACTER_PACKAGE_MISSING')
         data = {}
@@ -100,6 +103,10 @@ class CharacterRepository:
                 if path.stat().st_size > 2_000_000: raise CharacterPackageError('PACKAGE_DOCUMENT_TOO_LARGE')
                 # YAML loader also parses JSON, with duplicate detection in both.
                 data[field] = yaml.load(path.read_text(encoding='utf-8'), Loader=UniqueLoader)
+            if data['manifest'].get('schemaVersion') == 'character-package-v2':
+                path=self._safe_file(f'{relative}/embodiment.yaml')
+                if path.stat().st_size>2_000_000: raise CharacterPackageError('PACKAGE_DOCUMENT_TOO_LARGE')
+                data['embodiment']=yaml.load(path.read_text(encoding='utf-8'),Loader=UniqueLoader)
             safe_content(data)
             package = CharacterPackage.model_validate(data)
         except CharacterPackageError: raise
@@ -109,8 +116,10 @@ class CharacterRepository:
         if f'characters/{m.project_id}/{m.character_id}' != character_package_ref or m.version != character_package_version:
             raise CharacterPackageError('CHARACTER_PACKAGE_IDENTITY_MISMATCH')
         expected = set(FILES.values()) - {'manifest.yaml'}
+        if package.embodiment is not None: expected.add('embodiment.yaml')
+        elif 'embodiment.yaml' in m.file_checksums: raise CharacterPackageError('EMBODIMENT_SCHEMA_VERSION_MISMATCH')
         if not expected.issubset(m.file_checksums): raise CharacterPackageError('INCOMPLETE_PACKAGE_CHECKSUMS')
-        actual = {str(p.relative_to(folder)) for p in folder.rglob('*') if p.is_file() and p.name != 'manifest.yaml'}
+        actual = {str(p.relative_to(folder)) for p in folder.rglob('*') if p.is_file() and p != folder/'manifest.yaml'}
         if actual != set(m.file_checksums): raise CharacterPackageError('UNMANIFESTED_PACKAGE_FILE')
         for name, sha in m.file_checksums.items():
             path = self._safe_file(f'{relative}/{name}')
@@ -122,7 +131,18 @@ class CharacterRepository:
             path = self._safe_file(name)
             if not path.is_file() or digest(path.read_bytes()) != sha:
                 raise CharacterPackageError('PACKAGE_SOURCE_MISSING_OR_CHANGED')
+        if package.embodiment is not None:
+            from .embodiment import verify_embodiment_sources
+            p=package.embodiment.provenance
+            source=self.load_character_package(p.source_character_package,p.source_version,checksum=p.source_checksum,_ancestry=(*_ancestry,relative))
+            verify_embodiment_sources(package,source)
         return package
+
+    def verify_downstream_embodiment(self, reference: CharacterPackageRef, proposed: dict | None) -> None:
+        package=self.load_character_package(reference.character_package_ref,reference.character_package_version,checksum=reference.checksum)
+        original=dump_contract(package.embodiment) if package.embodiment else None
+        if sha256_canonical(original)!=sha256_canonical(proposed):
+            raise CharacterPackageError('DOWNSTREAM_EMBODIMENT_REDEFINITION')
 
     def resolve_character_package(self, reference: CharacterPackageRef, *, consumer: str,
                                   purpose: str = 'DESIGN_REVIEW', route: str | None = None) -> dict:

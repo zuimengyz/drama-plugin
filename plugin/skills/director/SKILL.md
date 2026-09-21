@@ -209,3 +209,9 @@ Choose character-specific actionIntensity by scene function, dramatic phase and 
 Decide which side of the packaged character this scene reveals. Do not redefine the character core.
 
 Use the unified read-only `CharacterRepository.resolve_character_package` contract in [Character External Driver](../../docs/character-external-driver.md). Pin characterPackageRef, characterPackageVersion and checksum. Never create or overwrite Character Core in this Skill. Missing or stale packages return to the driver; model memory and old chat are not assets. DESIGN_REVIEW access does not authorize casting or production.
+
+## Character Embodiment ownership
+
+Select which existing embodied tendency this scene exposes; do not redefine bodily character. Scene intent cannot silently change stable embodiment.
+
+Read [Embodiment contract](../../docs/character-embodiment.md). Use the unified read-only `characters.embodiment.embodiment_handoff` with exact ref/version/checksum and route. Never create or overwrite embodiment in downstream execution. Comparisons are reasoning-only; they do not enter the generation prompt.

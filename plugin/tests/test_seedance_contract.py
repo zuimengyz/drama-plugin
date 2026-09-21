@@ -162,7 +162,7 @@ def test_shared_dialogue_reaction_covers_only_own_interval():
 
 def test_architecture_does_not_add_skills_or_provider_core_dialects():
  root=Path(__file__).resolve().parents[1]
- assert len(list((root/'skills').glob('*/skill.yaml')))==50
+ assert len(list((root/'skills').glob('*/skill.yaml')))==51
  for file in ['contracts/cinematic.py','visual/cinematic.py','visual/dialogue_coverage.py','visual/reference_duties.py']:
   text=(root/'src/drama_plugin'/file).read_text().lower()
   assert all(s not in text for s in ['bytedance','seedance','minimax','comfy_video','hosts.'])

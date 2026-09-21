@@ -9,7 +9,7 @@ from drama_plugin.exceptions import SkillLoadError
 from drama_plugin.skills import SkillRegistry
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED = {"character-external-driver", "music-direction", "director", "authorial-voice", "performance-casting", "production-design", "cinematic-direction", "cinematic-finishing", "video-model-selection", "cinematic-screenplay-incubation", "historical-research", "work-creation", "script-adaptation", "episode-development", "scene-development", "dramatic-performance-direction", "shot-design", "asset-resolution", "shot-production", "audio-production"}
+EXPECTED = {"character-embodiment", "character-external-driver", "music-direction", "director", "authorial-voice", "performance-casting", "production-design", "cinematic-direction", "cinematic-finishing", "video-model-selection", "cinematic-screenplay-incubation", "historical-research", "work-creation", "script-adaptation", "episode-development", "scene-development", "dramatic-performance-direction", "shot-design", "asset-resolution", "shot-production", "audio-production"}
 # Independently discoverable creative departments; indexing/QA remain modules.
 EXPECTED |= {
     "adaptation-boundary", "story-architecture", "character-dramaturgy", "dialogue-design",

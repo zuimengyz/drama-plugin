@@ -29,9 +29,9 @@ inference. Static evidence can suggest range; it cannot establish acting ability
 
 Before a new search, read [character excavation](references/character-excavation.md) as a package-completeness audit. Missing answers return to Character External Driver; the following questions project existing package meaning and never authorize casting to invent it.
 Connect personality with identity, rank/occupation, social position, historical or
-cultural environment and other people's treatment. Derive watchability, the shared
+cultural environment and other people's treatment. Read authored watchability, the shared
 root of strength and limitation, fate contrast, counter-stereotype, performance range
-and concrete visual choices. All ten questions must change a casting decision; short
+and Character Art visual choices. Missing embodiment returns to its author. All ten questions must change a casting decision; short
 answers or a reason why a contrast is inapplicable are preferable to generic essays.
 Keep source-supported facts, project interpretation and casting implications separate.
 `IDENTITY_LOST` and `ERA_CONTEXT_LOST` must both PASS: remove the name and check whether
@@ -141,3 +141,11 @@ Keep generic amplification, opt-in archetype traits and character-instance inten
 Given Character Package, produce/evaluate candidate appearance. characterPackageRef and characterPackageVersion are explicit inputs, with checksum. Extract casting implications from the package; do not discover fundamental identity. Missing package for a dedicated role blocks new execution.
 
 Use the unified read-only `CharacterRepository.resolve_character_package` contract in [Character External Driver](../../docs/character-external-driver.md). Pin characterPackageRef, characterPackageVersion and checksum. Never create or overwrite Character Core in this Skill. Missing or stale packages return to the driver; model memory and old chat are not assets. DESIGN_REVIEW access does not authorize casting or production.
+
+For an external-package-only whole-body test, use `characters.casting.compile_package_casting`, `executable_package_casting` and `reserve_package_casting`. Author a PackageCastingProjection from the loaded package: each visual paragraph pins exact package pointers and source fingerprints. It is a task-specific visual interpretation, never a new Character Core. This entry accepts no legacy instance profile or Work expression bundle. Keep the existing qualified image projection, single-use reservation and durable media completion. A legacy-profile read during this package-only task blocks execution; record the Host file-access audit. Old full_body entry points remain for archival replay and their separately authorized scopes, never a fallback for this entry.
+
+## Character Embodiment ownership
+
+Given Character Art + Embodiment, generate/evaluate only within separately authorized scope. Do not discover character soul or infer missing bodily meaning from archetype. Casting evaluates embodiment without revising it.
+
+Read [Embodiment contract](../../docs/character-embodiment.md). Use the unified read-only `characters.embodiment.embodiment_handoff` with exact ref/version/checksum and route. Never create or overwrite embodiment in downstream execution. Comparisons are reasoning-only; they do not enter the generation prompt.

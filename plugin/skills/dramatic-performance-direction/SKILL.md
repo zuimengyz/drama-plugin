@@ -83,3 +83,9 @@ Reuse FilmReview and Director feedback; separate intended authority, observable
 facts and judgment. Resolve the production lineage before live review, preserve
 UNSPECIFIED and good material, and pass only a minimal source-bound execution delta
 to the existing owner. A dry-run never authorizes production or media adoption.
+
+## Character Embodiment ownership
+
+Use embodiment for stable physical tendencies and pressure/social transformations; author only scene/beat realization. Do not replace packaged character meaning with new psychology.
+
+Read [Embodiment contract](../../docs/character-embodiment.md). Use the unified read-only `characters.embodiment.embodiment_handoff` with exact ref/version/checksum and route. Never create or overwrite embodiment in downstream execution. Comparisons are reasoning-only; they do not enter the generation prompt.

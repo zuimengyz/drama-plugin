@@ -1,0 +1,4 @@
+interface:
+  display_name: "Character Embodiment"
+  short_description: "Turn character meaning into observable evidence"
+  default_prompt: "Use $character-embodiment to derive source-traced physical character evidence for review."

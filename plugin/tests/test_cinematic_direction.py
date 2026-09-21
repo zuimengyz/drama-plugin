@@ -67,7 +67,7 @@ def test_registry_preserves_cinematic_skill_with_departments_and_no_new_domain_t
         'script-adaptation','shot-design','shot-production','video-model-selection','work-creation'}
     from drama_plugin.professional import registry
     department_skills = {d.skill_code for d in registry().values() if d.skill_code}
-    assert {s.code for s in p.skills.list()} == expected | department_skills | {'character-external-driver', 'cinematic-direction', 'production-design', 'performance-casting', 'authorial-voice', 'director', 'music-direction'}
+    assert {s.code for s in p.skills.list()} == expected | department_skills | {'character-embodiment', 'character-external-driver', 'cinematic-direction', 'production-design', 'performance-casting', 'authorial-voice', 'director', 'music-direction'}
     assert len(p.tools.list()) == 50
 
 

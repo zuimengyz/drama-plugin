@@ -52,3 +52,7 @@ DESIGN_REVIEW may read drafts; CASTING requires VISUAL_TESTING or later; PRODUCT
 | TTS / image / video provider | Render authorized request | Own character truth |
 
 Before screenplay approval, Character Dramaturgy still owns Character Bible authoring. After approval, the driver consolidates that source into portable packages. Contradictions go back to the source owner; a package does not supersede screenplay facts. Instance experiments and failed images are evidence only, never inherited canonical identity. Any current package's missing approval must be visible at the gate.
+
+## Observable character layer
+
+See [Character Embodiment](character-embodiment.md): source-bound physical reasoning is a versioned external asset between identity and Art, not a prompt or image requirement. Existing package versions remain readable and locked.

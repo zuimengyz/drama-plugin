@@ -1,0 +1,16 @@
+code: character-embodiment
+name: Character Embodiment
+description: Source-traced observable character existence before visual assets; text authoring and review only.
+context:
+  required: []
+  optional: [work, script, characterPackageRef, characterPackageVersion]
+  refresh_after: []
+tools:
+  preferred: [work.get_work, script.get_script]
+  allowed: []
+completion:
+  conditions:
+    - Current screenplay and external package versions are verified.
+    - Observable evidence is source-traced and versioned externally without core changes.
+    - Distinctiveness and body independence have explicit textual review findings.
+    - Downstream handoff is read-only and no media is generated.

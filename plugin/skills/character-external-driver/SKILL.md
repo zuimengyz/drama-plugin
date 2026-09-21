@@ -36,3 +36,9 @@ Only authorized package authors revise character meaning. Character Art designs 
 Read back every package through CharacterRepository, verify exact ref/version/checksum and source files. Present roster, dedication rationale, literary identity, route scope, uncertainties and draft status. A package load is not approval. Prompts are disposable task projections, not character truth. Memory != Character Repository: prove recovery from screenplay plus repository in a fresh process. Stop at the requested design review gate. This Skill never generates images, casting media, video or audio.
 
 For scoped read-only corroboration use `episode.get_episode`, `scene.get_scene`, `asset.get_asset` and `media.get_media`. These reads do not authorize media generation or adoption.
+
+## Character Embodiment ownership
+
+Own WHO and WHY DISTINCT. Delegate source-derived observable existence logic to Character Embodiment. Its authoring uses this authorized create-version entry and cannot rewrite the core. Existing eleven-file packages remain readable; an embodied schema version adds embodiment.yaml in a new package version.
+
+Read [Embodiment contract](../../docs/character-embodiment.md). Use the unified read-only `characters.embodiment.embodiment_handoff` with exact ref/version/checksum and route. Never create or overwrite embodiment in downstream execution. Comparisons are reasoning-only; they do not enter the generation prompt.

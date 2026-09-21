@@ -87,7 +87,7 @@ def test_removing_one_medium_domain_invalidates_completeness():
 def test_new_host_cannot_declare_even_matching_medium(medium,text):
     with pytest.raises(ValueError,match='HOST_MEDIUM_DECLARATION_FORBIDDEN'):
         compile_character_art(intent(medium),[dict(id='facts',text=text)])
-    assert compile_character_art(intent(medium),[dict(id='facts',text=text)],legacy=True)['segments'][0]['mediumAuthority']=='LEGACY_CONFLICT_INPUT'
+    assert next(r for r in compile_character_art(intent(medium),[dict(id='facts',text=text)],legacy=True)['segments'] if r['id']=='facts')['mediumAuthority']=='LEGACY_CONFLICT_INPUT'
 
 
 @pytest.mark.parametrize('tamper',['missing','source_intent','compiler','version','constraints','generated','prompt','span','intent','gate','label','route','language','fake_fingerprint'])
@@ -147,7 +147,7 @@ def test_modes_have_materially_different_prompts_with_identical_facts(tmp_path):
     for medium in ('CINEMATIC_CG','LIVE_ACTION_PHOTOREAL'):
         repo,_,p=medium_case(tmp_path/medium,medium);outputs.append(compile_package_casting(repo,p))
     cg,live=outputs
-    assert [r['text'] for r in cg['segments'] if r['id'].startswith('package.')]==[r['text'] for r in live['segments'] if r['id'].startswith('package.')]
+    assert cg['visualMediumCompilation']['inputSections']==live['visualMediumCompilation']['inputSections']
     for domain in ('form','skin','groom','materials','shape','rendering'):
         c=cg['visualMediumCompilation']['compiledMediumConstraints'][domain]
         l=live['visualMediumCompilation']['compiledMediumConstraints'][domain]
@@ -197,7 +197,7 @@ def test_production_design_briefs_use_same_control_and_compiler(medium):
 def test_host_source_label_cannot_impersonate_compiler():
     output=compile_character_art(intent(),[dict(id='Generic CG Grammar',text='Adult with natural stubble',
         compiledBy='visual-medium-compiler',compilerVersion='1.0.0',sourceLayer='compiled_control_plane')])
-    host=output['segments'][0]
+    host=next(r for r in output['segments'] if r['id']=='Generic CG Grammar')
     assert 'compiledBy' not in host and 'compilerVersion' not in host
     assert host['sourceLayer']=='host_authored'
     assert host not in output['visualMediumCompilation']['generatedSections']

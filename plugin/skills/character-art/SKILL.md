@@ -19,7 +19,7 @@ Character Package with authored Embodiment; Director Vision; Adaptation Boundary
 
 ## Professional decisions
 
-Specify apparent age, height impression, body proportion/mass and shoulder-to-waist relation only to useful discriminating precision. Describe face structure, jaw, eyes, brows, nose, skin, hair and facial hair as a coherent person; avoid a checklist of unrelated ideal features. Separate dominant and secondary traits and screen presence. State realistic and CG translations of the same identity, camera-readable anchors, forbidden appearance and future reference proof duties. Stable hair identity belongs here; scene grooming and injury belong to Look.
+Specify apparent age, height impression, body proportion/mass and shoulder-to-waist relation only to useful discriminating precision. Describe face structure, jaw, eyes, brows, nose, skin, hair and facial hair as a coherent person; avoid a checklist of unrelated ideal features. Separate dominant and secondary traits and screen presence. State medium-neutral observable identity facts, camera-readable anchors, forbidden appearance and future reference proof duties; leave provider-facing medium translation to the shared compiler. Stable hair identity belongs here; scene grooming and injury belong to Look.
 
 ## Outputs
 
@@ -62,3 +62,22 @@ Read [Embodiment contract](../../docs/character-embodiment.md). Use the unified 
 ## Visual Medium compilation
 
 Read [Visual Medium Contract](../../docs/visual-medium-contract.md). Keep `visualMedium`, `characterTreatment`, `realismLevel` and `castingMode` independent in `visualMediumIntent`; HEROIC and HERO_CASTING do not select CG. Author character facts and local artistic intent in source-pinned paragraphs. Do not manually choose CG, 3D, real-actor or studio-photography semantics in Host prose. The shared `visual_medium.compile_character_art` compiles both media and owns form, skin, groom, materials, shape and rendering translation. Preserve historical construction, natural stubble and authored anatomy. Retain its source receipt and medium gate; weak labels or Host prose never count as compiler execution.
+
+## Medium-first fact handoff
+
+Author structured, source-pinned facts and artistic intent, not provider prompt prose.
+Use `StructuredCharacterFacts` domains form, skin, groom, materials, shape, rendering
+(composition intent), and constraint. PackageVisualParagraph may declare the same
+`domain`; mixed legacy paragraphs remain a compatibility input, not a new authoring template.
+Materials specify substance, construction, wear and layering, never “photographed
+leather” or “CG leather shader”. Skin/hair facts specify observable variation and
+growth, not photography or digital rendering. Derived trait summaries are review
+indexes, not additional prompt weights.
+
+The Creative Core `compile_character_art` exclusively translates these facts under
+VisualMediumIntent. Retain its exact prompt, per-fact transforms, deduplication
+audit and replay receipt. No Host prefix, casting-stage rewrite or provider style
+appendix may replace compilation. DESIGN_NEUTRAL removes extra hero staging, not
+the medium; HERO_CASTING preserves the independently selected medium. Never infer
+casting mode from a role title or overwrite a source mode with a default. Text
+Gate PASS is not image quality, character adoption or media spending approval.

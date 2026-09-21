@@ -48,7 +48,8 @@ def test_contrast_is_not_just_different_labels():
 def test_calibration_omits_appeal_and_never_selects():
  p=profile();v=plan(p);control={'subject':'neutral population','view':'same frontal light'}
  c=compile_visual_discriminants(p,v,'n','FACE',purpose='CALIBRATION',calibration_conditions=control)
- assert c['prompt'].splitlines()==list(control.values())+['narrow midface']
+ assert [r['text'] for r in c['visualMediumCompilation']['inputSections']]==list(control.values())+['narrow midface']
+ assert c['prompt'].startswith('Live-action human performer.')
  assert visual_selection_gate(p,v,[],purpose='CALIBRATION')['finalists']==[]
  with pytest.raises(ValueError,match='cannot silently replace'):compile_visual_discriminants(p,v,'n','FACE',calibration_conditions=control)
 

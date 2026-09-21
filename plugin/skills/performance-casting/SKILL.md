@@ -153,3 +153,22 @@ Read [Embodiment contract](../../docs/character-embodiment.md). Use the unified 
 ## Visual Medium compilation
 
 Read [Visual Medium Contract](../../docs/visual-medium-contract.md). New package projections carry `visualMediumIntent` with independent medium, treatment, realism and casting-mode fields. Host paragraphs provide source-pinned character facts, never their own positive CG/actor-photography declaration. Use the shared compiler and retain its emitted source map. Require `verify_medium_compilation` PASS on the exact final prompt before provider projection; a hand-written “Generic CG Grammar” label is not compilation proof. Legacy labels use the explicit adapter and conflict gate. Do not change provider prompt optimization or thinking to implement a medium.
+
+## Medium-first fact handoff
+
+Consume structured, source-pinned Character Art facts and casting intent; do not author a second appearance or medium authority.
+Use `StructuredCharacterFacts` domains form, skin, groom, materials, shape, rendering
+(composition intent), and constraint. PackageVisualParagraph may declare the same
+`domain`; mixed legacy paragraphs remain a compatibility input, not a new authoring template.
+Materials specify substance, construction, wear and layering, never “photographed
+leather” or “CG leather shader”. Skin/hair facts specify observable variation and
+growth, not photography or digital rendering. Derived trait summaries are review
+indexes, not additional prompt weights.
+
+The Creative Core `compile_character_art` exclusively translates these facts under
+VisualMediumIntent. Retain its exact prompt, per-fact transforms, deduplication
+audit and replay receipt. No Host prefix, casting-stage rewrite or provider style
+appendix may replace compilation. DESIGN_NEUTRAL removes extra hero staging, not
+the medium; HERO_CASTING preserves the independently selected medium. Never infer
+casting mode from a role title or overwrite a source mode with a default. Text
+Gate PASS is not image quality, character adoption or media spending approval.

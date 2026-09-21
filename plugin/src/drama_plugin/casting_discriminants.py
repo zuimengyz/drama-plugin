@@ -146,10 +146,21 @@ def compile_visual_discriminants(profile: RoleArchetypeProfile, plan: VisualCast
         result = project_casting_route(result, route_context, character_identity=profile.identity)
         if any(name.casefold() in result['prompt'].casefold() for ref in profile.archetype_references for name in ref.proper_names):
             raise ValueError('REFERENCE_PROPER_NAME_IN_PROVIDER_PROMPT')
+    else:
+        # Explicit archival live-action adapter. The provider-facing output still
+        # passes the same medium-first compiler; no second prompt composer.
+        from drama_plugin.visual_medium import compile_character_art
+        from drama_plugin.contracts.visual_medium import legacy_medium_intent
+        result.update(compile_character_art(legacy_medium_intent('LIVE_ACTION_REALIST'),
+            [dict(id='discriminant.'+str(i), text=line, sources=['visualCastingPlan'])
+             for i, line in enumerate(sections)], legacy=True,
+            source_intent='legacy:castingStage.liveAction'))
     return result
 
 
 def verify_submitted_projection(compiled: dict[str, Any], submitted_prompt: str) -> dict[str, Any]:
+    from drama_plugin.visual_medium import verify_medium_compilation
+    verify_medium_compilation(compiled)
     if sha256_canonical(compiled['prompt']) != compiled['promptFingerprint'] or submitted_prompt != compiled['prompt']:
         raise ValueError('SUBMITTED_PROMPT_DIFFERS_FROM_COMPILED_DISCRIMINANTS')
     if any(row['line'] not in submitted_prompt for row in compiled['trace']):

@@ -72,8 +72,13 @@ def project_casting_route(compiled: dict[str, Any], context: RouteCastingContext
         lines.extend([style.camera_grammar, style.performance_grammar])
     out = deepcopy(compiled)
     out['basePromptFingerprint'] = compiled['promptFingerprint']
-    out['prompt'] = '\n'.join(lines + [compiled['prompt']])
-    out['promptFingerprint'] = sha256_canonical(out['prompt'])
+    from drama_plugin.visual_medium import compile_character_art
+    from drama_plugin.contracts.visual_medium import legacy_medium_intent
+    language = 'REALISTIC_CG' if route.visual_route == 'stylized_cinematic_cg' else 'LIVE_ACTION_REALIST'
+    out.update(compile_character_art(legacy_medium_intent(language),
+        [dict(id='legacy.route.'+str(i), text=line, sources=['route.style']) for i, line in enumerate(lines)] +
+        [dict(id='legacy.discriminants', text=compiled['prompt'], sources=['visualCastingPlan'])],
+        legacy=True, source_intent='legacy:route.style'))
     out['visualRoute'] = route.visual_route
     out['route'] = dump_contract(route)
     out['routeStyleFingerprint'] = sha256_canonical(style)

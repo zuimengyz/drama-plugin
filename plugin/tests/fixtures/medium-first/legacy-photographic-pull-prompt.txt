@@ -1,0 +1,67 @@
+三十岁上下
+
+胸廓深而髋部稳，肩宽腰收但腹部保持能承压的体块
+
+依上述骨架保留能承重的肉量，不按性格自动加肌肉。
+
+以上述具体体块关系辨识，不指定无来源测量数值。
+
+偏长方脸，颧面转折宽，颊部不削成尖锐骨片
+
+下颌宽而下巴不前突
+
+眼裂略深、眼尾平；静止时可清楚看见观察目标转换
+
+眉量足、走势近直，内段略不齐
+
+鼻梁坚实而鼻头略宽
+
+户外肤色不均；保留鼻侧和颧部自然纹理
+
+发向后收束，发际两侧略不齐
+
+上唇短须与颌缘较密短须连贯，非飘逸长髯
+
+主躯干压住空间，头部转动仍先于全身
+
+偏长方脸，颧面转折宽，颊部不削成尖锐骨片；胸廓深而髋部稳，肩宽腰收但腹部保持能承压的体块
+
+发向后收束，发际两侧略不齐；上唇短须与颌缘较密短须连贯，非飘逸长髯
+
+偏长方脸，颧面转折宽，颊部不削成尖锐骨片；下颌宽而下巴不前突；主躯干压住空间，头部转动仍先于全身
+
+不复制明星或既有影像角色；不把设计当作历史写真；不以永久怒目、完美对称面孔代替观察和反应；不加入超自然肌体或眼部发光
+
+楚军领兵者旧甲
+
+项羽通过服装整体较完整、腰部组织清楚且个人体量可辨，非巨大金冠与飘带。
+
+交领与裹束关系服从本轮时代边界；袖口不过手掌，衣摆分量允许跨步与屈髋。绳带末端短收，不飘入手与缰。
+
+胸腹小片叠接，肩肘保留活动区；腰下甲裙分片随腿移动。没有后世巨大护肩、机械关节或无缝金属紧身衣。
+
+麻织底层；较密织外层；皮革系带；哑暗铁质小片甲，构造为受约束设计提案，非精确考古复原
+
+贴身层→工作承力衣→外衣→短甲片层；手掌与手指保持可接触缰/剑。
+
+高频接触的袖口、腰缘、膝部先磨；磨痕并非全身均匀噪声。
+
+仅一个人物，三分之四朝向，头顶至大腿中段构图；脸、双肩、胸廓、腰髋和手清晰可读。简洁无叙事背景，无其他人物、无马、无场景图、无字。稳定站立，注意在画外具体方向；停顿是判路而非摆威吓姿态。基础旧甲无新增伤血。不得用王冠、永久怒目、肥胖圆脸、少年纤弱比例或额外道具代替身体与面部辨识。
+
+Digital sculptural form: sculpted facial planes organize the authored face, jaw and brow; shoulder and torso planes articulate the specified anatomy. Preserve ordinary adult proportions when authored; refine volume transitions without imposing a universal heroic body.
+
+Cinematic digital skin shading: controlled subsurface response, authored skin roughness and sculpted pore detail; deliberate highlight response follows facial planes. Keep skin supple and varied; avoid plastic, wax or figurine surfaces.
+
+Digitally groomed hair and beard, including natural stubble when specified: controlled strand grouping and authored groom silhouette preserve the authored hair length and beard density. Do not add hair or beard absent from character facts.
+
+Authored CG material treatment: controlled surface roughness, sculpted fold hierarchy, designed edge wear and deliberate material separation. Cloth, leather and metal retain their physical responses wherever present; preserve historically credible construction and functional joints.
+
+Shape design: silhouette hierarchy, facial plane emphasis, proportion refinement and mass distribution make the authored geometry readable. Controlled anatomical exaggeration stays within the selected realism and character treatment; do not invent larger shoulders, armor or weapons.
+
+Feature-film CG character presentation: cinematic digital character rendering with physically grounded CG lighting; a digital production character whose authored surfaces, groom and sculptural volumes remain visible under the specified composition.
+
+HEROIC treatment: emphasize authored proportion, silhouette and character-specific screen presence through deliberate heroic massing and readable face-to-body hierarchy. Stay within the medium and realism limits; invent no rank, weapon, fixed expression or body type.
+
+GROUNDED_STYLIZED realism: retain human anatomy, weight and historically credible equipment while refining authored forms, silhouette and material hierarchy. Permit controlled emphasis within plausible joint mechanics; non-cartoon, non-anime, without exaggerated game-cutscene anatomy.
+
+DESIGN_NEUTRAL: inspect proportion and costume with even visibility; no automatic hero staging.

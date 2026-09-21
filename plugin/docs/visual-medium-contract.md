@@ -26,8 +26,9 @@ facts with source pointers. They cannot positively declare **even the matching**
 CG/3D/actor-photography medium. Move these decisions into the structured intent.
 Negated exclusions are permitted. Conflicting text fails instead of being erased.
 
-`visual_medium.compile_character_art` validates source prose and composes separately
-compiled medium, treatment, realism and casting-mode sections. CG compilation
+`visual_medium.compile_character_art` v2 validates neutral source facts, establishes the
+medium anchor first, and translates each fact in its domain before treatment, realism
+and casting-mode constraints. Raw facts never precede an appended medium grammar. CG compilation
 provides form, skin/subsurface/roughness, grooming, costume materials, shape design
 and digital rendering. Live-action compilation supplies human performance,
 photographed skin, practical hair/costume and photographic optics. The compiler
@@ -41,13 +42,18 @@ Its deterministic bilingual heuristic scopes negation to clauses and resets it o
 affirmative transitions. A `negative`/`core` label alone grants no exemption. An explicit rejection of the selected medium (such as `No CG` on the CG route) also fails.
 CG completeness requires positive evidence across six domains after stripping
 CG/3D/digital/render labels; weak labels yield WARN. The compiler emits complete
-sections; the gate never adds prose. Submission requires PASS.
+sections; the gate never adds prose. CG also requires a leading medium anchor and
+medium-native positive semantics in each fact paragraph. Six-domain boilerplate
+at the end, or a Host CG prefix before naked facts, is blocking WARN. Explicit
+photographic skin, wardrobe-test and casting-photo affordances fail. Submission
+requires PASS. These deterministic checks do not predict image quality.
 
 `visualMediumCompilation` records compiler/version, intent, control-plane origin,
 compiled constraints, emitted sections/offsets/hashes, prompt hash and gate status.
 Host prose is marked `CHARACTER_FACTS_ONLY` or `LEGACY_CONFLICT_INPUT`; it is never
-compiler evidence. `verify_medium_compilation` replays generated sections, checks
-source-map reconstruction and re-runs the gate against the final prompt before
+compiler evidence. `verify_medium_compilation` recompiles the retained original inputs, including
+domain transforms, deduplication, every emitted source span and the entire receipt,
+and re-runs the gate against the final prompt before
 provider projection. This is deterministic provenance verification, not a digital
 signature or a guarantee that arbitrary natural language or generated imagery is correct.
 
@@ -90,3 +96,49 @@ negation, label-stripped completeness, source-proof tampering and provider equal
 package resolution, compilation, execution validation and request projection with
 network blocked. It submits nothing and generates no media. Provider A/B testing
 requires a separately authorized next phase.
+
+## Medium-first fact contract (compiler 2.0.0)
+
+`contracts.character_prompt.StructuredCharacterFacts` separates authored facts from
+rendered prose. Each fact has id, domain, text and source pointers. Domains are form,
+skin, groom, materials, shape, rendering (composition intent), and constraint.
+PackageVisualParagraph supports an explicit domain. New authors should use this
+structured path; legacy section dictionaries use a deterministic topic/text adapter.
+No named-character rules or new anatomy defaults exist. Mixed legacy paragraphs are
+compatible inputs, not a recommended authoring format.
+
+Compilation order is anchor → form → skin → groom → materials → shape → presentation
+→ treatment → realism → casting mode → source exclusions. Each domain policy leads
+its translated facts; compact native labels avoid repeating full grammar per fact.
+CG skin wording replaces natural-texture/photo-detail vocabulary while retaining
+tone and texture variation. Costume substance/construction and physical framing
+remain unchanged; the compiler selects CG material/look-development or live-action
+practical-material/photographic semantics. Grounded anatomy does not select photography.
+
+DESIGN_NEUTRAL controls staging emphasis only. It explicitly retains CG look
+development or live-action presentation. HERO_CASTING is legal in both media.
+A contradictory explicit mode in source prose fails instead of silently overriding
+VisualMediumIntent. Treatment does not invent mass, rank, equipment or expression.
+
+Exact normalized clause deduplication prioritizes base facts over derived summaries.
+Unique summary clauses survive; removed copies retain source aliases and the retained
+section id in `deduplicatedFacts`. This is conservative lexical deduplication, not
+a claim to resolve arbitrary paraphrases.
+
+The receipt adds all four axes, inputSections, legacy adapter flag, mediumAnchor,
+translatedFactSections, generatedMediumSections, deduplicatedFacts, negativeGuards
+and mediumBalanceStatus. A transformed fact records sourceFactText, source pointers,
+mediumTransform, transformedBy/transformVersion, span and text fingerprint. This is
+replay provenance, not a signature or confirmation of upstream source approval.
+
+Package casting, production-design casting briefs, expression/full-body compatibility
+paths, visual discriminants and legacy route projections use the same compiler.
+When composing intermediate compilations, reuse receipt inputSections rather than
+feeding provider prose back as facts. Provider adapters remain parameter mappings.
+Old v1 receipts fail v2 replay. Do not overwrite evidence or carry forward spending
+authorization after a changed prompt fingerprint.
+
+Offline regression runners: `integration/validate_medium_first.py` accepts explicit
+current art, retained failed compilation and output paths;
+`integration/test_medium_first_offline.py --output <json>` runs every related test
+file with socket connections blocked. Neither runner executes production tools.

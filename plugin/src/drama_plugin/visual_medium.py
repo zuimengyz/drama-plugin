@@ -7,10 +7,11 @@ from copy import deepcopy
 import re
 from typing import Any
 from .contracts.base import dump_contract, sha256_canonical
+from .contracts.character_prompt import StructuredCharacterFacts, CharacterPromptFact
 from .contracts.visual_medium import VisualMediumIntent, legacy_medium_intent, medium_route
 
 COMPILER = 'visual-medium-compiler'
-VERSION = '1.0.0'
+VERSION = '2.0.0'
 
 
 def compile_visual_medium(intent: VisualMediumIntent) -> dict[str, str]:
@@ -20,7 +21,7 @@ def compile_visual_medium(intent: VisualMediumIntent) -> dict[str, str]:
             'skin': 'Cinematic digital skin shading: controlled subsurface response, authored skin roughness and sculpted pore detail; deliberate highlight response follows facial planes. Keep skin supple and varied; avoid plastic, wax or figurine surfaces.',
             'groom': 'Digitally groomed hair and beard, including natural stubble when specified: controlled strand grouping and authored groom silhouette preserve the authored hair length and beard density. Do not add hair or beard absent from character facts.',
             'materials': 'Authored CG material treatment: controlled surface roughness, sculpted fold hierarchy, designed edge wear and deliberate material separation. Cloth, leather and metal retain their physical responses wherever present; preserve historically credible construction and functional joints.',
-            'shape': 'Shape design: silhouette hierarchy, facial plane emphasis, proportion refinement and mass distribution make the authored geometry readable. Controlled anatomical exaggeration stays within the selected realism and character treatment; do not invent larger shoulders, armor or weapons.',
+            'shape': 'Shape design: silhouette hierarchy, facial plane emphasis, proportion refinement and mass distribution make the authored geometry readable. Preserve exact authored anatomical relationships; do not invent larger shoulders, armor or weapons.',
             'rendering': 'Feature-film CG character presentation: cinematic digital character rendering with physically grounded CG lighting; a digital production character whose authored surfaces, groom and sculptural volumes remain visible under the specified composition.',
         }
     return {
@@ -36,7 +37,7 @@ def compile_visual_medium(intent: VisualMediumIntent) -> dict[str, str]:
 def compile_character_treatment(intent: VisualMediumIntent) -> str:
     return {
         'NATURAL': 'NATURAL treatment: retain individual asymmetry and ordinary authored proportions; no automatic enlargement or heroic massing.',
-        'HEROIC': 'HEROIC treatment: emphasize authored proportion, silhouette and character-specific screen presence through deliberate heroic massing and readable face-to-body hierarchy. Stay within the medium and realism limits; invent no rank, weapon, fixed expression or body type.',
+        'HEROIC': 'HEROIC treatment: emphasize authored proportion, silhouette and character-specific screen presence through readable face-to-body hierarchy, without changing authored mass. Stay within the medium and realism limits; invent no rank, weapon, fixed expression or body type.',
         'MYTHIC': 'MYTHIC treatment: heighten the authored silhouette and symbolic presence within the medium and realism limits; add no supernatural effects, new equipment or narrative facts.',
     }[intent.character_treatment]
 
@@ -53,7 +54,7 @@ def compile_casting_mode(intent: VisualMediumIntent) -> str:
     return {
         'HERO_CASTING': 'HERO_CASTING: test leading-role presence, specific identity and expressive readability; no automatic medium, pose, lens or costume change.',
         'SUPPORTING_CASTING': 'SUPPORTING_CASTING: test distinctive supporting-role identity and readable reactions within the authored composition.',
-        'DESIGN_NEUTRAL': 'DESIGN_NEUTRAL: inspect proportion and costume with even visibility; no automatic hero staging.',
+        'DESIGN_NEUTRAL': ('DESIGN_NEUTRAL: neutral treatment within feature-film CG look-development presentation; authored digital volumes remain legible without extra hero staging.' if intent.visual_medium == 'CINEMATIC_CG' else 'DESIGN_NEUTRAL: neutral treatment of the live-action human performer; photographic optics show practical costume and real anatomy without extra hero staging.'),
     }[intent.casting_mode]
 
 
@@ -126,89 +127,220 @@ def medium_consistency_gate(intent: VisualMediumIntent, prompt: str) -> dict[str
         stripped = re.sub(r'\b(?:CG|3D|digitally|digital|render\w*)\b', '', prompt, flags=re.I)
         evidence = {key: bool(positive_matches(stripped, re.compile(pattern, re.I))) for key, pattern in EVIDENCE.items()}
         missing = [key for key, present in evidence.items() if not present]
-    status = 'FAIL' if conflicts else 'WARN' if missing else 'PASS'
+    # Positive evidence must govern the facts, not occur only in an appendix.
+    # Inspect paragraph boundaries as well as vocabulary. This intentionally
+    # blocks legacy naked facts even when all six generic paragraphs are present.
+    unbound = []
+    photographic_pull = []
+    anchor = True
+    if intent.visual_medium == 'CINEMATIC_CG':
+        anchor = bool(re.match(r'Feature-film CG character\.', prompt, re.I))
+        bound = re.compile(r'authored digital production character|sculpted facial planes|authored facial plane organization|controlled subsurface response|authored skin-tone variation|controlled strand grouping|authored strand grouping|sculpted fold hierarchy|authored material separation|silhouette hierarchy|controlled proportion refinement|physically grounded (?:CG|digital) lighting|neutral treatment within feature-film CG look-development|CG production character boundary|authored digital sculptural anatomy|authored CG surface variation|authored digital groom structure|authored CG material construction|designed CG silhouette structure|CG look-development composition|NATURAL treatment|HEROIC treatment|MYTHIC treatment|NATURALISTIC realism|GROUNDED_STYLIZED realism|HEIGHTENED realism|HERO_CASTING|SUPPORTING_CASTING', re.I)
+        for index, paragraph in enumerate(re.split(r'\n\s*\n', prompt.strip())):
+            if paragraph.strip() and not positive_matches(paragraph, bound) and not NEGATION.match(paragraph.strip()):
+                unbound.append(index)
+        if not anchor: missing.append('mediumAnchor')
+        if unbound: missing.append('mediumBoundFactSections')
+        # Skin/wardrobe wording cannot be redeemed by a CG label on the same row.
+        pull = re.compile(r'natural skin texture|realistic pores|photographic skin detail|studio-like presentation|wardrobe[- ]test|casting (?:still|photo)|棚拍|定妆照', re.I)
+        photographic_pull = positive_matches(prompt, pull)
+    status = 'FAIL' if conflicts or photographic_pull else 'WARN' if missing else 'PASS'
     return dict(status=status, visualMedium=intent.visual_medium, conflicts=conflicts,
                 missingEvidence=missing, labelStrippedEvidence=evidence,
                 actorPhotoExplainability='WEAK_MEDIUM' if missing else 'MEDIUM_SPECIFIC' if evidence else 'NOT_APPLICABLE',
-                heuristicVersion=VERSION)
+                heuristicVersion=VERSION, mediumAnchor=anchor, unboundFactParagraphs=unbound,
+                mediumBalanceStatus=status, photographicAffordances=photographic_pull, blocking=status != 'PASS')
 
 
-def compile_character_art(intent: VisualMediumIntent, sections: list[dict[str, Any]], *,
+# Domain transforms apply to each source fact, including composition. No character
+# identity, provider or inferred role can select a transform.
+ANCHORS = {
+    'CINEMATIC_CG': 'Feature-film CG character. Non-photographic digital character render; an authored digital production character. All following identity, surface and presentation choices belong to this medium.',
+    'LIVE_ACTION_PHOTOREAL': 'Live-action human performer. Photographic cinematography with real skin and hair, practical costume and physical materials. All following identity, surface and presentation choices belong to this medium.',
+}
+TRANSLATIONS = {
+    'CINEMATIC_CG': {
+        'form': 'Digital sculptural construction with authored facial plane organization; preserve the specified anatomy and age exactly',
+        'skin': 'CG skin: authored skin-tone variation and digitally sculpted surface detail, controlled CG skin roughness and designed subsurface response; preserve the specified irregularity',
+        'groom': 'Digital groom: authored strand grouping and controlled groom silhouette; preserve the specified growth, length and density',
+        'materials': 'CG materials: authored material separation, controlled roughness hierarchy, digitally sculpted cloth folds, designed leather response and CG metal surface treatment wherever those materials are specified; preserve historical construction',
+        'shape': 'CG shape design: designed silhouette and controlled proportion refinement express the specified contour without changing body dimensions',
+        'rendering': 'Feature-film CG look-development presentation with physically grounded digital lighting; implement this composition and performance intent as a digital character design presentation',
+        'constraint': 'CG production character boundary; retain this source constraint',
+    },
+    'LIVE_ACTION_PHOTOREAL': {
+        'form': 'Live-action human performer with individually observed face and performable anatomy; preserve the specified anatomy and age exactly',
+        'skin': 'Photographic skin: real skin texture, natural pore variation and photographed skin-tone variation under physical light; preserve the specified irregularity',
+        'groom': 'Live-action practical grooming: real hair strands and natural growth irregularity; preserve the specified growth, length and density',
+        'materials': 'Live-action practical costume: real textile, leather and lamellar armor wherever specified, photographed material response under live-action lighting; preserve historical construction',
+        'shape': 'Live-action silhouette: physical body proportions and practical costume fit express the specified contour without changing body dimensions',
+        'rendering': 'Live-action character presentation with photographic optics and physical lighting; implement this composition and performance intent using a human performer',
+        'constraint': 'Live-action production boundary; retain this source constraint',
+    },
+}
+DERIVED = {'dominant_visual_traits', 'secondary_traits', 'camera_readable_features'}
+SHORT_TRANSLATIONS = {
+    'CINEMATIC_CG': dict(form='Authored digital sculptural anatomy', skin='Authored CG surface variation',
+        groom='Authored digital groom structure', materials='Authored CG material construction',
+        shape='Designed CG silhouette structure', rendering='CG look-development composition',
+        constraint='CG production character boundary'),
+    'LIVE_ACTION_PHOTOREAL': dict(form='Live-action performer anatomy', skin='Photographed real skin variation',
+        groom='Practical real hair grooming', materials='Photographed practical costume construction',
+        shape='Physical performer silhouette', rendering='Photographic live-action composition',
+        constraint='Live-action production boundary'),
+}
+
+
+def fact_domain(row: dict[str, Any]) -> str:
+    """Explicit domains win; old paragraph APIs use a documented lexical adapter."""
+    if 'domain' in row:
+        return CharacterPromptFact.model_validate({k: row[k] for k in ('id', 'domain', 'text')}).domain
+    key = (row.get('topic', '') + ' ' + row['id']).lower()
+    if row.get('kind') in ('negative', 'boundary') or re.search(r'anti.drift|forbidden|negative|boundary|avoid', key):
+        return 'constraint'
+    for domain, pattern in (
+        ('skin', r'skin|肤'), ('groom', r'hair|beard|groom|发|须'),
+        ('materials', r'cost[.-]|costume|cloth|armor|material|wardrobe|layer|wear|甲|服'),
+        ('rendering', r'framing|composition|camera|scope|presence|pose|posture|lighting|rendering|background|mode|review'),
+        ('shape', r'silhouette|shape'),
+    ):
+        if re.search(pattern, key): return domain
+    # Untyped legacy prose is not the authoring contract. Classify its observable
+    # content while retaining every source byte in the replay receipt.
+    for domain, pattern in (
+        ('skin', r'肤|skin'), ('groom', r'发式|胡须|hair|beard'),
+        ('materials', r'服装|甲|衣物|costume|leather|cloth'),
+        ('rendering', r'构图|背景|摄影|朝向|full body|framing|camera|lighting'),
+    ):
+        if re.search(pattern, row['text'], re.I): return domain
+    return 'form'
+
+
+def _neutral_wording(text: str, domain: str, medium: str) -> str:
+    # Lexical rendering changes no anatomical facts. Original text stays in receipt.
+    if medium == 'CINEMATIC_CG':
+        substitutions = {
+            r'natural skin texture': 'authored skin surface variation',
+            r'realistic pores': 'sculpted surface microstructure',
+            r'photographic skin detail': 'authored skin surface detail',
+            r'自然纹理': '表面纹理起伏',
+            r'统一摄影': '统一构图意图',
+            r'inspection plate': 'look-development presentation',
+        }
+        for pattern, replacement in substitutions.items():
+            text = re.sub(pattern, replacement, text, flags=re.I)
+    return text
+
+
+def _key(text: str) -> str:
+    return re.sub(r'[\s。.!！;；]+', '', text).casefold()
+
+
+def compile_character_art(intent: VisualMediumIntent, sections: list[dict[str, Any]] | StructuredCharacterFacts, *,
                           legacy: bool = False, source_intent: str = 'control-plane') -> dict[str, Any]:
     intent = VisualMediumIntent.model_validate(dump_contract(intent))
-    rows = deepcopy(sections)
-    if len({r['id'] for r in rows}) != len(rows) or any(r['id'].startswith('compiled.') for r in rows):
+    if isinstance(sections, StructuredCharacterFacts):
+        sections = [dump_contract(f) for f in sections.facts]
+    originals = deepcopy(sections)
+    if not source_intent.strip(): raise ValueError('MEDIUM_SOURCE_INTENT_REQUIRED')
+    if len({r['id'] for r in originals}) != len(originals) or any(r['id'].startswith('compiled.') for r in originals):
         raise ValueError('DUPLICATE_OR_RESERVED_PROMPT_SECTION')
-    for row in rows:
-        # A source row can never attest that the generic compiler ran.
+    prepared = []
+    for source in originals:
+        row = deepcopy(source)
+        if not isinstance(row.get('text'), str) or not row['text'].strip():
+            raise ValueError('CHARACTER_FACT_TEXT_REQUIRED')
         row.pop('compiledBy', None); row.pop('compilerVersion', None)
-        if row.get('sourceLayer') == 'compiled_control_plane':
-            row['sourceLayer'] = 'host_authored'
-        row['mediumAuthority'] = 'LEGACY_CONFLICT_INPUT' if legacy else 'CHARACTER_FACTS_ONLY'
+        if row.get('sourceLayer') == 'compiled_control_plane': row['sourceLayer'] = 'host_authored'
         check = medium_consistency_gate(intent, row['text'])
-        if check['status'] == 'FAIL':
+        if check['conflicts']:
             raise ValueError('MEDIUM_CONSISTENCY_FAIL:' + str(check['conflicts']))
-        if not legacy and (positive_matches(row['text'], DECLARATION) or positive_matches(row['text'], LIVE) or positive_matches(row['text'], CG)):
+        modes = positive_matches(row['text'], re.compile(r'\b(?:HERO_CASTING|DESIGN_NEUTRAL|SUPPORTING_CASTING)\b'))
+        if any(mode != intent.casting_mode for mode in modes):
+            raise ValueError('MEDIUM_CASTING_MODE_AUTHORITY_CONFLICT')
+        if not legacy and any(positive_matches(row['text'], pattern) for pattern in (DECLARATION, LIVE, CG)):
             raise ValueError('HOST_MEDIUM_DECLARATION_FORBIDDEN: use visualMediumIntent')
+        row['domain'] = fact_domain(row)
+        row['mediumAuthority'] = 'LEGACY_CONFLICT_INPUT' if legacy else 'CHARACTER_FACTS_ONLY'
+        prepared.append(row)
+    # Base facts own weight. Derived summaries may retain only previously unspoken
+    # clauses; duplicate source references remain in the audit, not provider text.
+    prepared.sort(key=lambda r: bool(r.get('derivedSummary') or r.get('topic') in DERIVED or r['id'].split('.')[-1] in DERIVED))
+    seen: dict[str, str] = {}
+    dedup = []
+    transformed = []
+    translated_domains: set[str] = set()
+    for row in prepared:
+        unique = []
+        for atom in re.split(r'[；;\n]+', row['text']):
+            key = _key(atom)
+            if not key: continue
+            if key in seen:
+                dedup.append(dict(sourceSection=row['id'], fact=atom, retainedBy=seen[key], reason='EXACT_NORMALIZED_FACT'))
+            else:
+                seen[key] = row['id']; unique.append(atom.strip())
+        if not unique: continue
+        fact_text = '；'.join(unique)
+        domain = row['domain']
+        row.update(sourceFactText=fact_text, mediumTransform=intent.visual_medium + '_' + domain.upper() + '_TRANSFORM',
+                   transformedBy=COMPILER, transformVersion=VERSION)
+        # Explain the operation once per domain; subsequent facts retain a native
+        # semantic label without repeating a full shader/anatomy policy each time.
+        grammar = SHORT_TRANSLATIONS if domain in translated_domains or row.get('sourceLayer') == 'generic_capability' else TRANSLATIONS
+        row['text'] = grammar[intent.visual_medium][domain] + ': ' + _neutral_wording(fact_text, domain, intent.visual_medium)
+        translated_domains.add(domain)
+        transformed.append(row)
     emitted = generated_sections(intent)
-    rows += emitted
-    prompt = '\n\n'.join(row['text'] for row in rows)
+    anchor = dict(id='compiled.medium.anchor', kind='visual', text=ANCHORS[intent.visual_medium],
+                  sources=['control-plane.visualMediumIntent'], sourceLayer='compiled_control_plane',
+                  sourceLayers=['compiled_control_plane'], topic='visual_medium', compiledBy=COMPILER, compilerVersion=VERSION)
+    rows = [anchor]
+    # Six domain policies lead their translated facts. Never append a medium
+    # paragraph to a naked character description. Empty domains invent no facts.
+    for domain in ('form', 'skin', 'groom', 'materials', 'shape', 'rendering'):
+        rows.append(next(r for r in emitted if r['id'] == 'compiled.medium.' + domain))
+        rows.extend(r for r in transformed if r['domain'] == domain)
+    rows.extend(r for r in emitted if not r['id'].startswith('compiled.medium.'))
+    rows.extend(r for r in transformed if r['domain'] == 'constraint')
     offset = 0
     for row in rows:
         row.update(start=offset, end=offset + len(row['text']), textFingerprint=sha256_canonical(row['text']))
         offset = row['end'] + 2
+    prompt = '\n\n'.join(row['text'] for row in rows)
     gate = medium_consistency_gate(intent, prompt)
-    if gate['status'] != 'PASS':
-        raise ValueError('MEDIUM_CONSISTENCY_' + gate['status'])
-    receipt = dict(visualMedium=intent.visual_medium, compiler=COMPILER, compiledBy=COMPILER,
-                   compilerVersion=VERSION, source='control-plane', sourceIntent=source_intent,
-                   intent=dump_contract(intent), compiledMediumConstraints=compile_visual_medium(intent),
-                   generatedSections=[deepcopy(row) for row in emitted], gateStatus=gate['status'],
-                   promptFingerprint=sha256_canonical(prompt))
+    if gate['status'] != 'PASS': raise ValueError('MEDIUM_CONSISTENCY_' + gate['status'] + ':' + str(gate))
+    receipt = dict(visualMedium=intent.visual_medium, characterTreatment=intent.character_treatment,
+                   realismLevel=intent.realism_level, castingMode=intent.casting_mode,
+                   compiler=COMPILER, compiledBy=COMPILER, compilerVersion=VERSION,
+                   source='control-plane', sourceIntent=source_intent, intent=dump_contract(intent),
+                   inputSections=originals, legacy=legacy,
+                   compiledMediumConstraints=compile_visual_medium(intent),
+                   generatedSections=[deepcopy(r) for r in rows if r['id'].startswith('compiled.')],
+                   mediumAnchor=deepcopy(anchor), translatedFactSections=deepcopy(transformed),
+                   generatedMediumSections=[r['id'] for r in rows if r['id'].startswith('compiled.medium.')],
+                   deduplicatedFacts=dedup, negativeGuards=[r['id'] for r in transformed if r['domain']=='constraint'],
+                   mediumBalanceStatus=gate['status'], gateStatus=gate['status'], promptFingerprint=sha256_canonical(prompt))
     return dict(prompt=prompt, promptFingerprint=sha256_canonical(prompt), segments=rows,
                 visualMediumIntent=dump_contract(intent), visualMediumCompilation=receipt, mediumGate=gate)
 
 
 def verify_medium_compilation(brief: dict[str, Any]) -> None:
-    """Replay generated sections and recheck the exact final prompt before projection.
+    """Replay facts, transforms, deduplication and every source span, not just boilerplate.
 
-    A receipt is reproducibility evidence, not a signature from a trusted server.
-    Reservation separately binds source intent and prompt to the authorized Work.
+    Reproducibility is not a signature or permission to spend. Old receipts fail
+    closed and require explicit recompilation and fresh authorization downstream.
     """
     try:
         intent = VisualMediumIntent.model_validate(brief['visualMediumIntent'])
         receipt = brief['visualMediumCompilation']
-        rows = brief['segments']
-        prompt = brief['prompt']
-        generated = [r for r in rows if r['id'].startswith('compiled.')]
-        expected = generated_sections(intent)
-        if (receipt['compiler'] != COMPILER or receipt['compiledBy'] != COMPILER or receipt['compilerVersion'] != VERSION
-                or receipt['source'] != 'control-plane' or receipt['intent'] != dump_contract(intent)
-                or not isinstance(receipt['sourceIntent'], str) or not receipt['sourceIntent'].strip()
-                or receipt['visualMedium'] != intent.visual_medium
-                or receipt['compiledMediumConstraints'] != compile_visual_medium(intent)
-                or receipt['generatedSections'] != generated
-                or [{k: r[k] for k in e} for r, e in zip(generated, expected)] != expected
-                or len(generated) != len(expected)
-                or len({r['id'] for r in rows}) != len(rows)
-                or '\n\n'.join(r['text'] for r in rows) != prompt
-                or receipt['promptFingerprint'] != sha256_canonical(prompt)
-                or brief['promptFingerprint'] != sha256_canonical(prompt)):
-            raise ValueError('MEDIUM_COMPILATION_PROOF_MISMATCH')
-        offset = 0
-        for row in rows:
-            if row['start'] != offset or row['end'] != offset + len(row['text']) or row['textFingerprint'] != sha256_canonical(row['text']):
-                raise ValueError('MEDIUM_SOURCE_MAP_MISMATCH')
-            offset = row['end'] + 2
-        gate = medium_consistency_gate(intent, prompt)
-        if gate['status'] != 'PASS' or brief['mediumGate'] != gate or receipt['gateStatus'] != gate['status']:
-            raise ValueError('MEDIUM_CONSISTENCY_FAIL')
+        expected = compile_character_art(intent, receipt['inputSections'], legacy=receipt['legacy'], source_intent=receipt['sourceIntent'])
+        for key in expected:
+            if brief[key] != expected[key]: raise ValueError('MEDIUM_COMPILATION_PROOF_MISMATCH:' + key)
         if 'visualRoute' in brief and brief['visualRoute'] != medium_route(intent):
             raise ValueError('MEDIUM_CONTROL_PLANE_MISMATCH')
         if 'visualLanguage' in brief and legacy_medium_intent(brief['visualLanguage']).visual_medium != intent.visual_medium:
             raise ValueError('MEDIUM_CONTROL_PLANE_MISMATCH')
         for key in ('visualMedium', 'castingMode'):
-            if key in brief and brief[key] != dump_contract(intent)[key]:
-                raise ValueError('MEDIUM_CONTROL_PLANE_MISMATCH')
+            if key in brief and brief[key] != dump_contract(intent)[key]: raise ValueError('MEDIUM_CONTROL_PLANE_MISMATCH')
     except (KeyError, TypeError) as exc:
         raise ValueError('MEDIUM_COMPILATION_PROOF_REQUIRED') from exc

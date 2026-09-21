@@ -1,16 +1,12 @@
-单个人物，全身构图，头顶及双脚完整留边，视角克制，背景简洁。
-
-角色：韩信；历史人物姓名仅作通用编译样例。以下外观属于测试设计，不是史实复原。成年男性，中等身高，普通成年人体比例。
-
-神情克制，目光专注；不使用极端表情。人物注意力指向画外听者。
-
-脸型瘦长，下颌转折清楚，眉弓适度，自然胡茬；肩背与腰腹比例克制。衣物采用历史语境中的布衣与朴素皮革束带，不添加魔幻盔甲或武器。
-
-双脚支撑稳定，双手可见，身体轻微转向听者；不新增剧情动作。
-
-保持衣物功能与重力关系；装备不抢人物。避免动漫、卡通、手办和夸张游戏过场人物。
+Live-action human performer. Photographic cinematography with real skin and hair, practical costume and physical materials. All following identity, surface and presentation choices belong to this medium.
 
 Real human actor with achievable anatomy and individually observed face, jaw, brow, shoulders and torso; preserve the authored proportions and performable posture.
+
+Live-action human performer with individually observed face and performable anatomy; preserve the specified anatomy and age exactly: 角色：韩信；历史人物姓名仅作通用编译样例。以下外观属于测试设计，不是史实复原。成年男性，中等身高，普通成年人体比例。
+
+Live-action performer anatomy: 神情克制，目光专注；不使用极端表情。人物注意力指向画外听者。
+
+Live-action performer anatomy: 双脚支撑稳定，双手可见，身体轻微转向听者；不新增剧情动作。
 
 Photographed skin with real facial microdetail, natural pore variation and living skin response under practical light; retain minor irregularities without cosmetic smoothing.
 
@@ -18,11 +14,17 @@ Practical hair and beard, including natural stubble when specified: individual r
 
 Practical costume and historically credible wearable equipment: photographed cloth weave, leather creases and metal reflections arise from actual construction, wear and lighting.
 
+Live-action practical costume: real textile, leather and lamellar armor wherever specified, photographed material response under live-action lighting; preserve historical construction: 脸型瘦长，下颌转折清楚，眉弓适度，自然胡茬；肩背与腰腹比例克制。衣物采用历史语境中的布衣与朴素皮革束带，不添加魔幻盔甲或武器。
+
+Photographed practical costume construction: 保持衣物功能与重力关系；装备不抢人物。避免动漫、卡通、手办和夸张游戏过场人物。
+
 Human silhouette and mass distribution come from the specified actor anatomy, achievable stance and practical costume fit; role emphasis preserves performable proportions.
 
 Live-action cinematography: photographic optics, motivated camera perspective and real light falloff present a photographed human performer in the authored environment.
 
-HEROIC treatment: emphasize authored proportion, silhouette and character-specific screen presence through deliberate heroic massing and readable face-to-body hierarchy. Stay within the medium and realism limits; invent no rank, weapon, fixed expression or body type.
+Live-action character presentation with photographic optics and physical lighting; implement this composition and performance intent using a human performer: 单个人物，全身构图，头顶及双脚完整留边，视角克制，背景简洁。
+
+HEROIC treatment: emphasize authored proportion, silhouette and character-specific screen presence through readable face-to-body hierarchy, without changing authored mass. Stay within the medium and realism limits; invent no rank, weapon, fixed expression or body type.
 
 GROUNDED_STYLIZED realism: retain human anatomy, weight and historically credible equipment while refining authored forms, silhouette and material hierarchy. Permit controlled emphasis within plausible joint mechanics; non-cartoon, non-anime, without exaggerated game-cutscene anatomy.
 

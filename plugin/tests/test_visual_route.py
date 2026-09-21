@@ -63,7 +63,10 @@ def test_compiler_projects_opt_in_style_without_changing_legacy_output():
  rc=RouteCastingContext(**dump_contract(c),characterIdentity=p.identity,profileFingerprint=old['profileFingerprint'],planFingerprint=old['planFingerprint'])
  new=compile_visual_discriminants(p,v,'n','FACE',route_context=rc)
  assert new['visualRoute']==CG and 'Designed volumetric surfaces' in new['prompt']
- assert old['prompt'] in new['prompt'] and old['trace']==new['trace']
+ assert old['trace']==new['trace']
+ assert all(r['line'] in new['prompt'] for r in old['trace'])
+ assert old['prompt'].startswith('Live-action human performer.')
+ assert new['prompt'].startswith('Feature-film CG character.')
  assert new['promptFingerprint']!=old['promptFingerprint'] and not new['approvalEligible']
  verify_submitted_projection(new,new['prompt'])
  assert compile_visual_discriminants(p,v,'n','FACE')==old and 'visualRoute' not in old

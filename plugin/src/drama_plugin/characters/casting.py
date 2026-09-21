@@ -8,6 +8,7 @@ from pydantic import Field
 from drama_plugin.contracts.base import ContractModel, dump_contract, sha256_canonical
 from drama_plugin.contracts.creative_asset import Text, Hash
 from drama_plugin.contracts.character_package import CharacterPackageRef, Route
+from drama_plugin.contracts.character_prompt import FactDomain
 from drama_plugin.contracts.visual_medium import VisualMediumIntent, CastingMode, legacy_medium_intent, medium_route
 from drama_plugin.visual_medium import compile_character_art, VERSION
 from drama_plugin.full_body_casting import CastingExecutionAuthorization
@@ -18,6 +19,7 @@ from .repository import CharacterRepository, digest
 class PackageVisualParagraph(ContractModel):
     key: Text
     text: Text
+    domain: FactDomain | None = None
     package_pointers: tuple[Text,...] = Field(min_length=1)
     interpretation: Literal['VISUAL_INTERPRETATION_NOT_NEW_CORE']
 
@@ -73,8 +75,8 @@ def compile_package_casting(repository: CharacterRepository, projection: Package
     if intent.visual_medium != legacy_intent.visual_medium or intent.casting_mode != projection.casting_mode:
         raise ValueError('PACKAGE_MEDIUM_ROUTE_OR_CASTING_MODE_MISMATCH')
     compiled = compile_character_art(intent, [
-        {'id':'scope','text':projection.scope_text,'sources':['directive:'+projection.directive_hash]},
-        *[{'id':'package.'+p.key,'text':p.text,'sources':list(p.package_pointers)} for p in projection.paragraphs],
+        {'id':'scope','domain':'rendering','text':projection.scope_text,'sources':['directive:'+projection.directive_hash]},
+        *[{'id':'package.'+p.key,'text':p.text,'sources':list(p.package_pointers), **({'domain':p.domain} if p.domain else {})} for p in projection.paragraphs],
     ], legacy=projection.visual_medium_intent is None,
        source_intent='projection.visualMediumIntent' if projection.visual_medium_intent else 'legacy:projection.route')
     prompt=compiled['prompt']

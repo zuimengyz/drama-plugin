@@ -119,7 +119,7 @@ def full_body_design(profile: RoleArchetypeProfile, plan: VisualCastingPlan,
         if style.visual_language != 'HEROIC_CINEMATIC_CG':
             base_compilation = compile_casting_expression(spec.expression_profiles, 'stylized_cinematic_cg', spec.casting_mode)
             compilation = compile_character_art(legacy_medium_intent(selected.visual_language, spec.casting_mode),
-                [r for r in base_compilation['segments'] if not r['id'].startswith('compiled.')] +
+                base_compilation['visualMediumCompilation']['inputSections'] +
                 [dict(id='legacy.style',text='\n'.join([style.rendering, style.material_palette, style.historical_boundary,
                     *('Forbidden drift: '+x for x in style.forbidden_drifts)]),sources=['route.style'])],
                 legacy=True, source_intent='legacy:route.style.visualLanguage')

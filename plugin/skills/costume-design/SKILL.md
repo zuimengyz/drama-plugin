@@ -40,3 +40,22 @@ Route injury physiology to Look, physical feasibility to Action, new outfit even
 ## Source reads
 
 Use supplied current originals first. For missing scoped context, read `work.get_work`, `scene.get_scene`, `script.get_script`, `episode.get_episode`, `shot.get_shot`, `asset.get_asset`, `context.build_context`. These reads do not authorize source writes or production.
+
+## Medium-first fact handoff
+
+Author structured, source-pinned facts and artistic intent, not provider prompt prose.
+Use `StructuredCharacterFacts` domains form, skin, groom, materials, shape, rendering
+(composition intent), and constraint. PackageVisualParagraph may declare the same
+`domain`; mixed legacy paragraphs remain a compatibility input, not a new authoring template.
+Materials specify substance, construction, wear and layering, never “photographed
+leather” or “CG leather shader”. Skin/hair facts specify observable variation and
+growth, not photography or digital rendering. Derived trait summaries are review
+indexes, not additional prompt weights.
+
+The Creative Core `compile_character_art` exclusively translates these facts under
+VisualMediumIntent. Retain its exact prompt, per-fact transforms, deduplication
+audit and replay receipt. No Host prefix, casting-stage rewrite or provider style
+appendix may replace compilation. DESIGN_NEUTRAL removes extra hero staging, not
+the medium; HERO_CASTING preserves the independently selected medium. Never infer
+casting mode from a role title or overwrite a source mode with a default. Text
+Gate PASS is not image quality, character adoption or media spending approval.

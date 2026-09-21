@@ -61,7 +61,7 @@ Read [Embodiment contract](../../docs/character-embodiment.md). Use the unified 
 
 ## Visual Medium compilation
 
-Read [Visual Medium Contract](../../docs/visual-medium-contract.md). Keep `visualMedium`, `characterTreatment`, `realismLevel` and `castingMode` independent in `visualMediumIntent`; HEROIC and HERO_CASTING do not select CG. Author character facts and local artistic intent in source-pinned paragraphs. Do not manually choose CG, 3D, real-actor or studio-photography semantics in Host prose. The shared `visual_medium.compile_character_art` compiles both media and owns form, skin, groom, materials, shape and rendering translation. Preserve historical construction, natural stubble and authored anatomy. Retain its source receipt and medium gate; weak labels or Host prose never count as compiler execution.
+Read [Visual Medium Contract](../../docs/visual-medium-contract.md). Keep `visualMedium`, `renderStylization`, `characterTreatment`, `realismLevel`, `castingMode` and `presentationMode` independent in `visualMediumIntent`; HEROIC and HERO_CASTING do not select CG. Author character facts and local artistic intent in source-pinned paragraphs. Do not manually choose CG, 3D, real-actor or studio-photography semantics in Host prose. The shared `visual_medium.compile_character_art` compiles both media and owns form, skin, groom, materials, shape and rendering translation. Preserve historical construction, natural stubble and authored anatomy. Retain its source receipt and medium gate; weak labels or Host prose never count as compiler execution.
 
 ## Medium-first fact handoff
 
@@ -77,7 +77,36 @@ indexes, not additional prompt weights.
 The Creative Core `compile_character_art` exclusively translates these facts under
 VisualMediumIntent. Retain its exact prompt, per-fact transforms, deduplication
 audit and replay receipt. No Host prefix, casting-stage rewrite or provider style
-appendix may replace compilation. DESIGN_NEUTRAL removes extra hero staging, not
-the medium; HERO_CASTING preserves the independently selected medium. Never infer
+appendix may replace compilation. DESIGN_NEUTRAL specifies baseline casting assessment, not the composition.
+LOOKDEV_NEUTRAL owns neutral presentation; HERO_CASTING is legal with it in either medium. Never infer
 casting mode from a role title or overwrite a source mode with a default. Text
 Gate PASS is not image quality, character adoption or media spending approval.
+
+## Visible filmic CG contract
+
+Director supplies overall visual philosophy and reviews coherence. Character Art
+owns the character realization contract under that direction: source-pin one
+`renderStylization` decision and its `renderStylizationSource` in VisualMediumIntent.
+Production Design reviews alignment; Casting and Provider adapters consume that
+same decision. Never create a provider-specific second style authority.
+
+For CG select PHOTOREAL_DIGITAL_HUMAN, VISIBLE_FILMIC_CG, or HEIGHTENED_FILMIC_CG
+explicitly. None is inferred from HEROIC, casting importance or GROUNDED_STYLIZED.
+Realism controls anatomy, gravity, joints and historical physical credibility.
+Visible filmic CG prioritizes large forms, visibly organized facial planes, groom
+masses, material groups and subordinate microdetail. Heightened increases only
+source-authored contrast; it does not invent anatomy, rank or equipment.
+
+Continue to author identity/body/face/silhouette facts and historical boundaries.
+Do not author shader, groom-render, CG lighting or provider prompt wording. The
+compiler translates facts into one compact policy-led section per visual domain;
+retained fact spans trace to their source. Independent presentationMode selects
+LOOKDEV_NEUTRAL, HERO_PRESENTATION or PERFORMANCE_PRESENTATION. A neutral test
+image never downgrades a HERO_CASTING role. Missing fields on legacy records remain
+LEGACY_UNSPECIFIED. Use an explicit pinned project/Character Art revision before
+claiming VISIBLE_FILMIC_CG; never silently migrate all CG projects.
+
+Require Medium and RenderStylization gates plus full receipt replay. Text PASS
+cannot approve a generated image. A near-photographic CG result may satisfy its
+medium while failing a visible-filmic target; preserve old evidence and append
+the new interpretation without adopting the image or generating again.

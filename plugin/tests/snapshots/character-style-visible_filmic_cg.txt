@@ -1,0 +1,26 @@
+Feature-film CG character. VISIBLE_FILMIC_CG: visibly authored digital form reads immediately as a designed cinematic character. Large forms, material groups and groom masses take priority over photographic micro-randomness.
+
+Large facial forms dominate first reading. Visibly authored facial planes organize cheek, jaw, brow and nose as digital sculpture; simplify incidental asymmetry while retaining authored identity and asymmetry.
+adult；long rectangular face；broad lower jaw
+
+Designed mass hierarchy and a readable torso-to-head relationship preserve the specified body dimensions; no automatic enlargement.
+deep chest；stable hips
+
+Macro-to-micro hierarchy: controlled skin-tone blocks and authored roughness grouping. Microtexture stays subordinate to sculptural planes; reduce photographic randomness while keeping living variation, not plastic skin.
+uneven skin tone；authored skin surface variation
+
+Groom silhouette first: controlled hair masses and designed strand clumps; selective strand detail stays subordinate to the groom masses. Preserve authored growth and length.
+tied-back hair；short beard
+
+Material blocks read clearly: designed cloth fold hierarchy, leather grouped into readable planes, metal roughness in authored zones, intentionally clustered edge wear. Reduce micro-noise; retain historical construction and weight.
+dark iron lamellar armor
+
+Controlled shape abstraction, clear silhouette rhythm and slightly heightened facial plane organization preserve character-specific proportions. No universal jaw, enlarged shoulders or extra muscle.
+specified shoulder-to-waist contour
+
+Look-development lighting reveals sculptural planes through controlled key-to-fill hierarchy and volume/material grouping; edge separation only when useful. Use a non-photographic neutral presentation field with subtle tonal depth, not conventional studio portrait lighting. LOOKDEV_NEUTRAL: controlled digital look-development stage; readable proportions and materials, without added dramatic posing.
+one person；three-quarter orientation；simple background；inspect proportions
+
+NATURAL treatment: retain individual asymmetry and ordinary authored proportions; no automatic enlargement or heroic massing. DESIGN_NEUTRAL: assess identity and proportions without added leading-role emphasis; presentation and medium remain independently specified.
+
+GROUNDED_STYLIZED realism: retain credible human anatomy, weight, gravity, joint mechanics and historically functional construction. Rendering visibility is controlled independently; non-anime, non-cartoon, no impossible anatomy.

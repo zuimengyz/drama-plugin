@@ -11,10 +11,13 @@ from .contracts.character_prompt import StructuredCharacterFacts, CharacterPromp
 from .contracts.visual_medium import VisualMediumIntent, legacy_medium_intent, medium_route
 
 COMPILER = 'visual-medium-compiler'
-VERSION = '2.0.0'
+VERSION = '3.0.0'
 
 
 def compile_visual_medium(intent: VisualMediumIntent) -> dict[str, str]:
+    if intent.render_stylization is not None or intent.presentation_mode is not None:
+        from .render_stylization import compile_render_stylization
+        return compile_render_stylization(intent)
     if intent.visual_medium == 'CINEMATIC_CG':
         return {
             'form': 'Digital sculptural form: sculpted facial planes organize the authored face, jaw and brow; shoulder and torso planes articulate the specified anatomy. Preserve ordinary adult proportions when authored; refine volume transitions without imposing a universal heroic body.',
@@ -45,7 +48,7 @@ def compile_character_treatment(intent: VisualMediumIntent) -> str:
 def compile_realism_level(intent: VisualMediumIntent) -> str:
     return {
         'NATURALISTIC': 'NATURALISTIC realism: retain real human proportions, articulating anatomy, gravity and physical material behavior; no anatomical exaggeration.',
-        'GROUNDED_STYLIZED': 'GROUNDED_STYLIZED realism: retain human anatomy, weight and historically credible equipment while refining authored forms, silhouette and material hierarchy. Permit controlled emphasis within plausible joint mechanics; non-cartoon, non-anime, without exaggerated game-cutscene anatomy.',
+        'GROUNDED_STYLIZED': 'GROUNDED_STYLIZED realism: retain credible human anatomy, weight, gravity, joint mechanics and historically functional construction. Rendering visibility is controlled independently; non-anime, non-cartoon, no impossible anatomy.',
         'HEIGHTENED': 'HEIGHTENED realism: accentuate only authored structural contrasts while preserving support, articulating joints and functional historical equipment; do not invent fantasy armor or impossible anatomy.',
     }[intent.realism_level]
 
@@ -54,7 +57,7 @@ def compile_casting_mode(intent: VisualMediumIntent) -> str:
     return {
         'HERO_CASTING': 'HERO_CASTING: test leading-role presence, specific identity and expressive readability; no automatic medium, pose, lens or costume change.',
         'SUPPORTING_CASTING': 'SUPPORTING_CASTING: test distinctive supporting-role identity and readable reactions within the authored composition.',
-        'DESIGN_NEUTRAL': ('DESIGN_NEUTRAL: neutral treatment within feature-film CG look-development presentation; authored digital volumes remain legible without extra hero staging.' if intent.visual_medium == 'CINEMATIC_CG' else 'DESIGN_NEUTRAL: neutral treatment of the live-action human performer; photographic optics show practical costume and real anatomy without extra hero staging.'),
+        'DESIGN_NEUTRAL': 'DESIGN_NEUTRAL: assess identity and proportions without added leading-role emphasis; presentation and medium remain independently specified.',
     }[intent.casting_mode]
 
 
@@ -74,7 +77,7 @@ LIVE = re.compile(r'\b(?:real(?:istic)? (?:human )?actor|live[- ]action(?: actor
 CG = re.compile(r'\b(?:digital(?:ly)? (?:sculpt\w*|skin|character|production character|groom\w*)|CG skin shader|3D groom|feature[- ]film (?:digital|CG) character|cinematic (?:digital|CG)|CG character|3D character|CG material)\b|数字(?:雕刻|角色|皮肤|毛发)|CG(?:角色|人物|材质|渲染)|三维角色', re.I)
 # Matching declarations are forbidden in *new* Host prose too; legacy matching
 # declarations survive as explicitly labelled conflict input, never compiler proof.
-DECLARATION = re.compile(r'\b(?:CG|3D|live[- ]action|photoreal(?:istic)?|studio portrait)\b|真人摄影|三维角色', re.I)
+DECLARATION = re.compile(r'\b(?:VISIBLE_FILMIC_CG|PHOTOREAL_DIGITAL_HUMAN|HEIGHTENED_FILMIC_CG|LOOKDEV_NEUTRAL|HERO_PRESENTATION|PERFORMANCE_PRESENTATION|CG|3D|live[- ]action|photoreal(?:istic)?|studio portrait)\b|真人摄影|三维角色', re.I)
 NEGATION = re.compile(r'\b(?:avoid(?:ing)?|not|never|no|without|exclude|forbidden|do not|rather than|instead of)\b|避免|不要|禁止|禁项|不得|排除|并非|不是|非真人', re.I)
 REASSERTION = re.compile(r'\b(?:but|however|yet|instead use|use|show|depict|render as)\b|但是|但要|改用|呈现为|使用', re.I)
 
@@ -102,12 +105,12 @@ def positive_matches(text: str, pattern: re.Pattern[str]) -> list[str]:
 # Surface-label removal leaves these executable cues. Evidence must be positive,
 # span distinct domains and survive removal of CG/3D/digital/render labels.
 EVIDENCE = {
-    'form': r'sculpted facial planes|雕刻面部平面',
-    'skin': r'controlled subsurface response|authored skin roughness|受控次表面',
-    'groom': r'controlled strand grouping|authored groom silhouette|受控发束',
-    'materials': r'sculpted fold hierarchy|designed edge wear|雕刻褶皱层级',
-    'shape': r'silhouette hierarchy|proportion refinement|轮廓层级',
-    'rendering': r'feature[- ]film\s+character presentation|physically grounded\s+lighting|电影级角色呈现',
+    'form': r'sculpted facial planes|large facial forms|雕刻面部平面',
+    'skin': r'controlled subsurface response|authored skin roughness|macro-to-micro hierarchy|受控次表面',
+    'groom': r'controlled strand grouping|authored groom silhouette|groom silhouette first|受控发束',
+    'materials': r'sculpted fold hierarchy|designed edge wear|material blocks|雕刻褶皱层级',
+    'shape': r'silhouette hierarchy|proportion refinement|controlled shape abstraction|轮廓层级',
+    'rendering': r'feature[- ]film\s+character presentation|physically grounded\s+lighting|lighting reveals sculptural planes|电影级角色呈现',
 }
 
 
@@ -135,7 +138,7 @@ def medium_consistency_gate(intent: VisualMediumIntent, prompt: str) -> dict[str
     anchor = True
     if intent.visual_medium == 'CINEMATIC_CG':
         anchor = bool(re.match(r'Feature-film CG character\.', prompt, re.I))
-        bound = re.compile(r'authored digital production character|sculpted facial planes|authored facial plane organization|controlled subsurface response|authored skin-tone variation|controlled strand grouping|authored strand grouping|sculpted fold hierarchy|authored material separation|silhouette hierarchy|controlled proportion refinement|physically grounded (?:CG|digital) lighting|neutral treatment within feature-film CG look-development|CG production character boundary|authored digital sculptural anatomy|authored CG surface variation|authored digital groom structure|authored CG material construction|designed CG silhouette structure|CG look-development composition|NATURAL treatment|HEROIC treatment|MYTHIC treatment|NATURALISTIC realism|GROUNDED_STYLIZED realism|HEIGHTENED realism|HERO_CASTING|SUPPORTING_CASTING', re.I)
+        bound = re.compile(r'authored digital production character|sculpted facial planes|authored facial plane organization|controlled subsurface response|authored skin-tone variation|controlled strand grouping|authored strand grouping|sculpted fold hierarchy|authored material separation|silhouette hierarchy|controlled proportion refinement|physically grounded (?:CG|digital) lighting|neutral treatment within feature-film CG look-development|CG production character boundary|authored digital sculptural anatomy|authored CG surface variation|authored digital groom structure|authored CG material construction|designed CG silhouette structure|CG look-development composition|NATURAL treatment|HEROIC treatment|MYTHIC treatment|NATURALISTIC realism|GROUNDED_STYLIZED realism|HEIGHTENED realism|HERO_CASTING|SUPPORTING_CASTING|DESIGN_NEUTRAL|visibly authored|digitally constructed human|digital human anatomy|designed mass hierarchy|digital human proportions|near-photographic digital skin|individual-strand hair realism|physically simulated cloth|lifelike digital silhouette|look-development lighting|large facial forms|macro-to-micro hierarchy|groom silhouette first|material blocks|controlled shape abstraction', re.I)
         for index, paragraph in enumerate(re.split(r'\n\s*\n', prompt.strip())):
             if paragraph.strip() and not positive_matches(paragraph, bound) and not NEGATION.match(paragraph.strip()):
                 unbound.append(index)
@@ -143,7 +146,7 @@ def medium_consistency_gate(intent: VisualMediumIntent, prompt: str) -> dict[str
         if unbound: missing.append('mediumBoundFactSections')
         # Skin/wardrobe wording cannot be redeemed by a CG label on the same row.
         pull = re.compile(r'natural skin texture|realistic pores|photographic skin detail|studio-like presentation|wardrobe[- ]test|casting (?:still|photo)|棚拍|定妆照', re.I)
-        photographic_pull = positive_matches(prompt, pull)
+        photographic_pull = positive_matches(prompt, pull) if intent.render_stylization != 'PHOTOREAL_DIGITAL_HUMAN' else []
     status = 'FAIL' if conflicts or photographic_pull else 'WARN' if missing else 'PASS'
     return dict(status=status, visualMedium=intent.visual_medium, conflicts=conflicts,
                 missingEvidence=missing, labelStrippedEvidence=evidence,
@@ -289,6 +292,10 @@ def compile_character_art(intent: VisualMediumIntent, sections: list[dict[str, A
         grammar = SHORT_TRANSLATIONS if domain in translated_domains or row.get('sourceLayer') == 'generic_capability' else TRANSLATIONS
         row['text'] = grammar[intent.visual_medium][domain] + ': ' + _neutral_wording(fact_text, domain, intent.visual_medium)
         translated_domains.add(domain)
+        if intent.render_stylization is not None or intent.presentation_mode is not None:
+            row['text'] = _neutral_wording(fact_text, domain, intent.visual_medium)
+            row.update(renderStylization=intent.render_stylization, renderStylizationSource=intent.render_stylization_source,
+                       renderStylizationCompiler='render-stylization-compiler',renderStylizationVersion='1.0.0')
         transformed.append(row)
     emitted = generated_sections(intent)
     anchor = dict(id='compiled.medium.anchor', kind='visual', text=ANCHORS[intent.visual_medium],
@@ -302,14 +309,33 @@ def compile_character_art(intent: VisualMediumIntent, sections: list[dict[str, A
         rows.extend(r for r in transformed if r['domain'] == domain)
     rows.extend(r for r in emitted if not r['id'].startswith('compiled.medium.'))
     rows.extend(r for r in transformed if r['domain'] == 'constraint')
+    compact = intent.render_stylization is not None or intent.presentation_mode is not None
+    if compact:
+        from .render_stylization import compose_domains
+        rows = compose_domains(intent, transformed, compiler=COMPILER, version=VERSION,
+            treatment=compile_character_treatment(intent), realism=compile_realism_level(intent), casting=compile_casting_mode(intent))
+        anchor = rows[0]
     offset = 0
     for row in rows:
         row.update(start=offset, end=offset + len(row['text']), textFingerprint=sha256_canonical(row['text']))
         offset = row['end'] + 2
+    if compact:
+        section_starts = {r['id']: r['start'] for r in rows}
+        for fact in transformed:
+            fact['start'] = section_starts[fact['outputSection']] + fact['sectionRelativeStart']
+            fact['end'] = section_starts[fact['outputSection']] + fact['sectionRelativeEnd']
+            fact['textFingerprint'] = sha256_canonical(fact['text'])
     prompt = '\n\n'.join(row['text'] for row in rows)
     gate = medium_consistency_gate(intent, prompt)
     if gate['status'] != 'PASS': raise ValueError('MEDIUM_CONSISTENCY_' + gate['status'] + ':' + str(gate))
-    receipt = dict(visualMedium=intent.visual_medium, characterTreatment=intent.character_treatment,
+    from .render_stylization import render_stylization_gate
+    style_gate = render_stylization_gate(intent, prompt, medium_status=gate['status'])
+    if style_gate['blocking']: raise ValueError('FAIL_RENDER_STYLIZATION:' + str(style_gate))
+    receipt = dict(renderStylization=intent.render_stylization, renderStylizationSource=intent.render_stylization_source,
+                   renderStylizationCompiler='render-stylization-compiler', renderStylizationVersion='1.0.0',
+                   renderStylizationEvidence=style_gate, presentationMode=intent.presentation_mode,
+                   migrationStatus='EXPLICIT_STYLE_REVISION' if intent.render_stylization else 'LIVE_ACTION' if intent.visual_medium=='LIVE_ACTION_PHOTOREAL' else 'LEGACY_GENERIC_CG_UNSPECIFIED',
+                   visualMedium=intent.visual_medium, characterTreatment=intent.character_treatment,
                    realismLevel=intent.realism_level, castingMode=intent.casting_mode,
                    compiler=COMPILER, compiledBy=COMPILER, compilerVersion=VERSION,
                    source='control-plane', sourceIntent=source_intent, intent=dump_contract(intent),
@@ -321,7 +347,7 @@ def compile_character_art(intent: VisualMediumIntent, sections: list[dict[str, A
                    deduplicatedFacts=dedup, negativeGuards=[r['id'] for r in transformed if r['domain']=='constraint'],
                    mediumBalanceStatus=gate['status'], gateStatus=gate['status'], promptFingerprint=sha256_canonical(prompt))
     return dict(prompt=prompt, promptFingerprint=sha256_canonical(prompt), segments=rows,
-                visualMediumIntent=dump_contract(intent), visualMediumCompilation=receipt, mediumGate=gate)
+                visualMediumIntent=dump_contract(intent), visualMediumCompilation=receipt, mediumGate=gate, renderStylizationGate=style_gate)
 
 
 def verify_medium_compilation(brief: dict[str, Any]) -> None:
@@ -340,7 +366,7 @@ def verify_medium_compilation(brief: dict[str, Any]) -> None:
             raise ValueError('MEDIUM_CONTROL_PLANE_MISMATCH')
         if 'visualLanguage' in brief and legacy_medium_intent(brief['visualLanguage']).visual_medium != intent.visual_medium:
             raise ValueError('MEDIUM_CONTROL_PLANE_MISMATCH')
-        for key in ('visualMedium', 'castingMode'):
+        for key in ('visualMedium', 'castingMode', 'renderStylization', 'presentationMode'):
             if key in brief and brief[key] != dump_contract(intent)[key]: raise ValueError('MEDIUM_CONTROL_PLANE_MISMATCH')
     except (KeyError, TypeError) as exc:
         raise ValueError('MEDIUM_COMPILATION_PROOF_REQUIRED') from exc

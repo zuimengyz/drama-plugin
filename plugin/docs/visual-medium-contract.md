@@ -1,10 +1,17 @@
 # Character Art Visual Medium Contract
 
+Current normative behavior is v3 (render visibility and presentation section below).
+The v1/v2 descriptions document the legacy medium-only compatibility path; they
+do not establish visible-filmic readiness for unspecified CG records.
+
 `contracts.visual_medium.VisualMediumIntent` is the provider-neutral authority:
 
 ```json
 {
   "visualMedium": "CINEMATIC_CG",
+  "renderStylization": "VISIBLE_FILMIC_CG",
+  "renderStylizationSource": "current-character-art/revision-3",
+  "presentationMode": "LOOKDEV_NEUTRAL",
   "characterTreatment": "HEROIC",
   "realismLevel": "GROUNDED_STYLIZED",
   "castingMode": "HERO_CASTING"
@@ -115,8 +122,8 @@ tone and texture variation. Costume substance/construction and physical framing
 remain unchanged; the compiler selects CG material/look-development or live-action
 practical-material/photographic semantics. Grounded anatomy does not select photography.
 
-DESIGN_NEUTRAL controls staging emphasis only. It explicitly retains CG look
-development or live-action presentation. HERO_CASTING is legal in both media.
+In v3, DESIGN_NEUTRAL controls baseline casting assessment only. Independent
+presentationMode controls the image presentation under the selected medium. HERO_CASTING is legal in both media.
 A contradictory explicit mode in source prose fails instead of silently overriding
 VisualMediumIntent. Treatment does not invent mass, rank, equipment or expression.
 
@@ -142,3 +149,57 @@ Offline regression runners: `integration/validate_medium_first.py` accepts expli
 current art, retained failed compilation and output paths;
 `integration/test_medium_first_offline.py --output <json>` runs every related test
 file with socket connections blocked. Neither runner executes production tools.
+
+## v3: render visibility and presentation are independent axes
+
+`VisualMediumIntent` adds nullable `renderStylization`, `renderStylizationSource`
+and `presentationMode`. CG styles are PHOTOREAL_DIGITAL_HUMAN, VISIBLE_FILMIC_CG
+and HEIGHTENED_FILMIC_CG. Non-CG media reject CG style values. An explicit style
+requires a nonempty owner source and an explicit presentation mode. Legacy missing
+style stays null with LEGACY_GENERIC_CG_UNSPECIFIED receipt status; it never inherits
+a global visible-CG default. `revise_render_intent` creates an explicit owner revision
+without changing the original. Environment consumers can reuse the vocabulary;
+this implementation composes character prompts only.
+
+Character Art owns style realization under Director philosophy. Casting consumes
+that pinned contract; Production Design reviews it; Provider adapters map the
+compiled text unchanged. The current project can opt in through an explicit
+Character Art revision, not a compiler branch naming a Work or character.
+
+`realismLevel` controls anatomy/weight/joints/historical physical plausibility.
+`renderStylization` controls visible digital design versus near-photographic CG.
+`castingMode` controls role assessment/importance. `presentationMode` independently
+controls LOOKDEV_NEUTRAL, HERO_PRESENTATION or PERFORMANCE_PRESENTATION. A hero
+may use neutral look development without becoming DESIGN_NEUTRAL.
+
+Explicit revised contracts use `render_stylization.compose_domains`: one section
+for identity/face, body, skin, groom, material, shape, lighting/presentation,
+treatment/casting, realism and exclusions. Policies appear once per domain, with
+all concrete facts underneath; no per-fact CG boilerplate. Fact spans in
+translatedFactSections point into these composite sections. Compact compilation
+adds no muscles, jaw, armor or unapproved pose. Photoreal CG retains fine pores,
+individual strand realism, material micro-noise and near-photographic illumination.
+Visible CG has six positive evidence domains: FORM_HIERARCHY, MICRODETAIL_CONTROL,
+GROOM_MASSING, MATERIAL_GROUPING, SHAPE_ABSTRACTION, LIGHTING_PRESENTATION.
+Heightened CG strengthens only authored structural contrasts.
+
+`render_stylization_gate` is a separate deterministic bilingual evidence test.
+It returns mediumStatus, renderStylizationStatus, target, positiveEvidence,
+photorealPullEvidence, missingDomains, conflicts and blocking. Complementary
+evidence per domain is required; a visible-CG label alone is insufficient.
+Negated evidence grants no PASS, and positive reassertion after a prohibition
+is still inspected. Missing visible evidence or competing photographic priority
+produces FAIL_RENDER_STYLIZATION even when mediumStatus is PASS. Legacy style
+returns LEGACY_UNSPECIFIED; live action returns NOT_APPLICABLE. Neither is a
+claim of visible-filmic readiness.
+
+Receipts record renderStylization/source/compiler/version/evidence, presentationMode
+and the full original intent; verification recompiles every section, fact span
+and gate. A changed style, source, presentation or casting mode changes the receipt
+and authorization fingerprint. Old receipts cannot pass v3 verification.
+
+Text gates prove bounded contract consistency, not image quality or provider
+causality. The two retained photographic-looking images can be reinterpreted as
+ambiguous CG medium / photoreal-digital-human appearance / visible-filmic target
+failure, while retaining the original FAIL_MEDIUM reports unchanged. New production
+requires separately authorized visual validation.

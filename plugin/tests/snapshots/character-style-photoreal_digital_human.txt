@@ -1,0 +1,26 @@
+Feature-film CG character. PHOTOREAL_DIGITAL_HUMAN: a digitally constructed human targeting near-photographic appearance.
+
+Digital human anatomy with sculpted facial planes resolved toward a near-photographic likeness; observed facial irregularity remains legible.
+adult；long rectangular face；broad lower jaw
+
+Individual digital human proportions preserve the specified torso-to-head relation and physical support.
+deep chest；stable hips
+
+Near-photographic digital skin: fine pores, random micro-variation and high-frequency skin realism with controlled subsurface response.
+uneven skin tone；authored skin surface variation
+
+Individual-strand hair realism in a digital groom: fine flyaway detail and controlled strand grouping follow the authored growth.
+tied-back hair；short beard
+
+Physically simulated cloth, leather and metal wherever specified; photographic material noise and small wear variations reproduce credible material response and sculpted fold hierarchy.
+dark iron lamellar armor
+
+Lifelike digital silhouette hierarchy follows individually specified anatomy without visible abstraction or generic body enhancement.
+specified shoulder-to-waist contour
+
+Near-photographic digital illumination uses physically grounded CG lighting and camera-like light falloff to match human appearance within the authored composition. LOOKDEV_NEUTRAL: controlled digital look-development stage; readable proportions and materials, without added dramatic posing.
+one person；three-quarter orientation；simple background；inspect proportions
+
+NATURAL treatment: retain individual asymmetry and ordinary authored proportions; no automatic enlargement or heroic massing. DESIGN_NEUTRAL: assess identity and proportions without added leading-role emphasis; presentation and medium remain independently specified.
+
+GROUNDED_STYLIZED realism: retain credible human anatomy, weight, gravity, joint mechanics and historically functional construction. Rendering visibility is controlled independently; non-anime, non-cartoon, no impossible anatomy.

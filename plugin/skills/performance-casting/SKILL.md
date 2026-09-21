@@ -168,7 +168,18 @@ indexes, not additional prompt weights.
 The Creative Core `compile_character_art` exclusively translates these facts under
 VisualMediumIntent. Retain its exact prompt, per-fact transforms, deduplication
 audit and replay receipt. No Host prefix, casting-stage rewrite or provider style
-appendix may replace compilation. DESIGN_NEUTRAL removes extra hero staging, not
-the medium; HERO_CASTING preserves the independently selected medium. Never infer
+appendix may replace compilation. DESIGN_NEUTRAL controls baseline casting assessment. LOOKDEV_NEUTRAL controls
+neutral presentation independently; HERO_CASTING may use it without losing role weight. Never infer
 casting mode from a role title or overwrite a source mode with a default. Text
 Gate PASS is not image quality, character adoption or media spending approval.
+
+## Render style and presentation handoff
+
+Consume the Character Art-owned renderStylization and its pinned source. Never
+infer visible CG from HEROIC or GROUNDED_STYLIZED, and never select style to match
+a provider. Keep castingMode separate from presentationMode: HERO_CASTING plus
+LOOKDEV_NEUTRAL is valid. Require both `mediumGate` and `renderStylizationGate`
+and full receipt replay before projection. Legacy CG with unspecified style is
+not evidence for visible CG readiness. PHOTOREAL_DIGITAL_HUMAN is valid CG, but
+fails a VISIBLE_FILMIC_CG image review when macro form/material/groom hierarchy
+does not read clearly. Retain failure evidence; no retry or adoption is implied.

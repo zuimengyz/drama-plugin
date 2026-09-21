@@ -26,6 +26,6 @@ Live-action character presentation with photographic optics and physical lightin
 
 HEROIC treatment: emphasize authored proportion, silhouette and character-specific screen presence through readable face-to-body hierarchy, without changing authored mass. Stay within the medium and realism limits; invent no rank, weapon, fixed expression or body type.
 
-GROUNDED_STYLIZED realism: retain human anatomy, weight and historically credible equipment while refining authored forms, silhouette and material hierarchy. Permit controlled emphasis within plausible joint mechanics; non-cartoon, non-anime, without exaggerated game-cutscene anatomy.
+GROUNDED_STYLIZED realism: retain credible human anatomy, weight, gravity, joint mechanics and historically functional construction. Rendering visibility is controlled independently; non-anime, non-cartoon, no impossible anatomy.
 
 HERO_CASTING: test leading-role presence, specific identity and expressive readability; no automatic medium, pose, lens or costume change.

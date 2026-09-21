@@ -13,7 +13,7 @@ def main():
     sys.path.insert(0,str(root/'src'));sys.path.insert(0,str(root/'tests'))
     def blocked(*a,**k): raise RuntimeError('NETWORK_FORBIDDEN_TEXT_REGRESSION')
     socket.socket.connect=blocked;socket.create_connection=blocked
-    paths=sorted(str(p) for p in (root/'tests').glob('test_*.py') if any(x in p.name for x in ('character','casting','visual','expression','production','prompt','provider','medium')))
+    paths=sorted(str(p) for p in (root/'tests').glob('test_*.py') if any(x in p.name for x in ('character','casting','visual','expression','production','prompt','provider','medium','professional','stylization')))
     reports=[];collection_errors=[]
     class Report:
         def pytest_runtest_logreport(self,report):

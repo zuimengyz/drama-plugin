@@ -1,0 +1,41 @@
+{
+  "id": "api_seedance2_5_r2v",
+  "slots": [],
+  "note": "This template does not expose its inputs through a subgraph, so it has no slot_overrides addresses — `slots` is empty for that reason, not because the template is uneditable. Override it with run_template's `input_overrides` instead, keyed by the node ids in `nodes` below: {\"<id>\": {\"<input_name>\": value}}. `nodes` is the executed graph run_template submits, so these ids and input names are exactly the ones input_overrides resolves against. Inputs wired from another node are omitted — setting one would replace the link with a constant; use get_template + submit_workflow for that kind of structural edit.",
+  "nodes": [
+    {
+      "id": "12",
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "medusa_poster.png"
+      }
+    },
+    {
+      "id": "16",
+      "class_type": "SaveVideo",
+      "inputs": {
+        "filename_prefix": "video/Seedance2.5_r2v",
+        "format": "auto",
+        "format.codec": "auto"
+      }
+    },
+    {
+      "id": "24",
+      "class_type": "ByteDance2ReferenceNodeV2",
+      "inputs": {
+        "model": "Seedance 2.5",
+        "model.prompt": "The crimson marble Medusa statue comes alive, opening her eyes and looking at the camera while the red typography in the background simultaneously dissolves away letter by letter into drifting red particles. The snakes in her hair rise and sway. Both the statue and the background text animate together, poster layout otherwise unchanged, cinematic, no black frames.",
+        "model.resolution": "720p",
+        "model.ratio": "adaptive",
+        "model.duration": 5,
+        "model.generate_audio": true,
+        "model.task_type": "reference",
+        "model.output_format": "mp4",
+        "model.auto_downscale": true,
+        "model.auto_upscale": false,
+        "seed": 0,
+        "watermark": false
+      }
+    }
+  ]
+}

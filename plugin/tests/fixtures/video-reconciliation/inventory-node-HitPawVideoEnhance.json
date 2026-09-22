@@ -1,0 +1,70 @@
+{
+  "data": [
+    {
+      "name": "HitPawVideoEnhance",
+      "display_name": "HitPaw Video Enhance",
+      "description": "Upscale low-resolution videos to high resolution, eliminate artifacts and noise. Prices shown are per second of video.",
+      "category": "partner/video/HitPaw",
+      "pack": "core",
+      "inputs": {
+        "required": [
+          "COMFY_DYNAMICCOMBO_V3",
+          "COMBO",
+          "VIDEO"
+        ]
+      },
+      "input_details": [
+        {
+          "name": "model",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "required": true,
+          "dynamic_combo": true,
+          "options": [
+            "Portrait Restore Model (1x)",
+            "Portrait Restore Model (2x)",
+            "General Restore Model (1x)",
+            "General Restore Model (2x)",
+            "General Restore Model (4x)",
+            "Ultra HD Model (2x)",
+            "Generative Model (1x)"
+          ],
+          "hint": "Dynamic combo: pick one `options` value for `model`, then send each conditional sub-field below using its full dotted name (prefixed with `model.`, e.g. `model.<sub_field>`). Auto-grow list slots nest one level deeper (e.g. `model.<list>.<slot_1>`). Sending these fields flat (without the prefix) fails with required_input_missing."
+        },
+        {
+          "name": "model.resolution",
+          "type": "COMBO",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "Portrait Restore Model (1x)",
+            "Portrait Restore Model (2x)",
+            "General Restore Model (1x)",
+            "General Restore Model (2x)",
+            "General Restore Model (4x)",
+            "Ultra HD Model (2x)",
+            "Generative Model (1x)"
+          ],
+          "options": [
+            "original",
+            "720p",
+            "1080p",
+            "2K/QHD",
+            "4K/UHD",
+            "8K"
+          ]
+        },
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "required": true
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ],
+      "api_node": true,
+      "output_node": false,
+      "deprecated": false
+    }
+  ]
+}

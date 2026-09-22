@@ -1,0 +1,202 @@
+{
+  "data": [
+    {
+      "name": "TopazVideoEnhanceV2",
+      "display_name": "Topaz Video Enhance",
+      "description": "Breathe new life into video with powerful upscaling and recovery technology.",
+      "category": "partner/video/Topaz",
+      "pack": "core",
+      "inputs": {
+        "required": [
+          "VIDEO",
+          "COMFY_DYNAMICCOMBO_V3",
+          "COMBO",
+          "FLOAT",
+          "STRING",
+          "FLOAT",
+          "FLOAT",
+          "COMFY_DYNAMICCOMBO_V3",
+          "INT",
+          "INT",
+          "BOOLEAN",
+          "FLOAT"
+        ],
+        "optional": [
+          "COMBO"
+        ]
+      },
+      "input_details": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "required": true
+        },
+        {
+          "name": "upscaler_model",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "required": true,
+          "dynamic_combo": true,
+          "options": [
+            "Astra 2",
+            "Starlight (Astra) Fast",
+            "Starlight (Astra) Creative",
+            "Starlight Precise 2.5",
+            "Disabled"
+          ],
+          "hint": "Dynamic combo: pick one `options` value for `upscaler_model`, then send each conditional sub-field below using its full dotted name (prefixed with `upscaler_model.`, e.g. `upscaler_model.<sub_field>`). Auto-grow list slots nest one level deeper (e.g. `upscaler_model.<list>.<slot_1>`). Sending these fields flat (without the prefix) fails with required_input_missing."
+        },
+        {
+          "name": "upscaler_model.upscaler_resolution",
+          "type": "COMBO",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "Astra 2",
+            "Starlight (Astra) Fast",
+            "Starlight (Astra) Creative",
+            "Starlight Precise 2.5"
+          ],
+          "options": [
+            "FullHD (1080p)",
+            "4K (2160p)"
+          ]
+        },
+        {
+          "name": "upscaler_model.creativity",
+          "type": "FLOAT",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "Astra 2",
+            "Starlight (Astra) Creative"
+          ],
+          "default": 0.5,
+          "min": 0,
+          "max": 1,
+          "tooltip": "Creative strength of the upscale.",
+          "options": [
+            "low",
+            "middle",
+            "high"
+          ]
+        },
+        {
+          "name": "upscaler_model.prompt",
+          "type": "STRING",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "Astra 2"
+          ],
+          "default": "",
+          "tooltip": "Optional descriptive (not instructive) scene prompt.Capping input at 450 frames (~15s @ 30fps) when set."
+        },
+        {
+          "name": "upscaler_model.sharp",
+          "type": "FLOAT",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "Astra 2"
+          ],
+          "default": 0.5,
+          "min": 0,
+          "max": 1,
+          "tooltip": "Pre-enhance sharpness: 0.0=Gaussian blur, 0.5=passthrough (default), 1.0=USM sharpening."
+        },
+        {
+          "name": "upscaler_model.realism",
+          "type": "FLOAT",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "Astra 2"
+          ],
+          "default": 0,
+          "min": 0,
+          "max": 1,
+          "tooltip": "Pulls output toward photographic realism.Leave at 0 for the model default."
+        },
+        {
+          "name": "interpolation_model",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "required": true,
+          "dynamic_combo": true,
+          "options": [
+            "Disabled",
+            "apo-8"
+          ],
+          "hint": "Dynamic combo: pick one `options` value for `interpolation_model`, then send each conditional sub-field below using its full dotted name (prefixed with `interpolation_model.`, e.g. `interpolation_model.<sub_field>`). Auto-grow list slots nest one level deeper (e.g. `interpolation_model.<list>.<slot_1>`). Sending these fields flat (without the prefix) fails with required_input_missing."
+        },
+        {
+          "name": "interpolation_model.interpolation_frame_rate",
+          "type": "INT",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "apo-8"
+          ],
+          "default": 60,
+          "min": 15,
+          "max": 240,
+          "tooltip": "Output frame rate."
+        },
+        {
+          "name": "interpolation_model.interpolation_slowmo",
+          "type": "INT",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "apo-8"
+          ],
+          "default": 1,
+          "min": 1,
+          "max": 16,
+          "tooltip": "Slow-motion factor applied to the input video. For example, 2 makes the output twice as slow and doubles the duration."
+        },
+        {
+          "name": "interpolation_model.interpolation_duplicate",
+          "type": "BOOLEAN",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "apo-8"
+          ],
+          "default": false,
+          "tooltip": "Analyze the input for duplicate frames and remove them."
+        },
+        {
+          "name": "interpolation_model.interpolation_duplicate_threshold",
+          "type": "FLOAT",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "apo-8"
+          ],
+          "default": 0.01,
+          "min": 0.001,
+          "max": 0.1,
+          "tooltip": "Detection sensitivity for duplicate frames."
+        },
+        {
+          "name": "dynamic_compression_level",
+          "type": "COMBO",
+          "required": false,
+          "default": "Low",
+          "options": [
+            "Low",
+            "Mid",
+            "High"
+          ],
+          "tooltip": "CQP level."
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ],
+      "api_node": true,
+      "output_node": false,
+      "deprecated": false
+    }
+  ]
+}

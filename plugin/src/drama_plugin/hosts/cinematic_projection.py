@@ -45,8 +45,10 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
     spec = verify_frozen(r.frozen_creative['cinematic_direction'])
     raw = dump_contract(spec); all_fields = leaves(raw)
     manifest: dict[str, Any] = {}; sections: list[str] = []
-    prompt_field = 'prompt' if inspected['class_type'].startswith('Flux') else 'model.prompt'
-    duration_field = 'duration' if inspected['class_type'].startswith('Flux') else 'model.duration'
+    from drama_plugin.hosts.comfy_video import NODES
+    semantics = NODES[inspected['class_type']]
+    prompt_field = semantics['prompt']
+    duration_field = semantics['duration']
     def mark(path: str, destination: str, field: str, reason: str, critical: bool = True) -> None:
         matched = {k:v for k,v in all_fields.items() if k == path or k.startswith(path+'.') or k.startswith(path+'[')}
         for key,value in matched.items():
@@ -102,7 +104,7 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
     for i,_ in enumerate(spec.stability_contract):
         mark(f'stabilityContract[{i}].reason','UPSTREAM_LOCK','frozen','约束依据；允许/禁止行为已投影',False)
     audio = source_audio(spec,r.sound)
-    audio_field = 'generate_audio' if inspected['class_type'].startswith('Flux') else 'model.generate_audio'
+    audio_field = semantics.get('audio', 'generate_audio' if inspected['class_type'].startswith('Flux') else 'model.generate_audio')
     mark('sourceSoundIntent.nativeAudioPolicy','PARAMETER' if audio_field in c.parameters else 'UPSTREAM_LOCK',
          audio_field if audio_field in c.parameters else 'native AV node contract', '源声音意图与路线声音共同决定；固定原生AV节点只能启用')
     mark('sourceSoundIntent.canonicalDialogueBindings','UPSTREAM_LOCK','canonicalDialogue','对白绑定锁；实际台词见 AUDIO / DIALOGUE')

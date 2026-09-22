@@ -1,0 +1,42 @@
+{
+  "id": "api_minimax_h3_flf2v",
+  "slots": [],
+  "note": "This template does not expose its inputs through a subgraph, so it has no slot_overrides addresses — `slots` is empty for that reason, not because the template is uneditable. Override it with run_template's `input_overrides` instead, keyed by the node ids in `nodes` below: {\"<id>\": {\"<input_name>\": value}}. `nodes` is the executed graph run_template submits, so these ids and input names are exactly the ones input_overrides resolves against. Inputs wired from another node are omitted — setting one would replace the link with a constant; use get_template + submit_workflow for that kind of structural edit.",
+  "nodes": [
+    {
+      "id": "15",
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "angel-warrior-demon-battle-start.png"
+      }
+    },
+    {
+      "id": "16",
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "angel-warrior-demon-battle-end.png"
+      }
+    },
+    {
+      "id": "26",
+      "class_type": "SaveVideo",
+      "inputs": {
+        "filename_prefix": "video/MiniMax_H3_flf2v",
+        "format": "auto",
+        "format.codec": "auto"
+      }
+    },
+    {
+      "id": "28",
+      "class_type": "MinimaxHailuo03FirstLastFrameNode",
+      "inputs": {
+        "model": "MiniMax H3",
+        "model.prompt": "Use Image 1 as the first frame and Image 2 as the last frame.One continuous cinematic fantasy shot. The angel warrior finishes fighting demons in the smoke, then turns and points her spear at the remaining enemies below. End in a triumphant low-angle hero pose. Same character, same style, smooth motion, no cuts, no text.",
+        "model.resolution": "768P",
+        "model.duration": 5,
+        "seed": 42,
+        "watermark": false
+      }
+    }
+  ]
+}

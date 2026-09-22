@@ -1,0 +1,53 @@
+{
+  "template_id": "api_heygen_avatar_video",
+  "source_url": "https://cloud.comfy.org/templates/api_heygen_avatar_video.json",
+  "node_count": 9,
+  "nodes": [
+    {
+      "id": 16,
+      "type": "HeyGenCreateAvatarNode",
+      "title": "HeyGenCreateAvatarNode"
+    },
+    {
+      "id": 17,
+      "type": "HeyGenAvatarVideoNode",
+      "title": "HeyGenAvatarVideoNode"
+    },
+    {
+      "id": 18,
+      "type": "SaveText",
+      "title": "SaveText"
+    },
+    {
+      "id": 19,
+      "type": "StringConcatenate",
+      "title": "StringConcatenate"
+    },
+    {
+      "id": 20,
+      "type": "PreviewAny",
+      "title": "PreviewAny"
+    },
+    {
+      "id": 21,
+      "type": "SaveVideo",
+      "title": "SaveVideo"
+    },
+    {
+      "id": 23,
+      "type": "MarkdownNote",
+      "title": "Create Avatar"
+    },
+    {
+      "id": 24,
+      "type": "ColorToRGBInt",
+      "title": "ColorToRGBInt"
+    },
+    {
+      "id": 25,
+      "type": "PreviewAny",
+      "title": "PreviewAny"
+    }
+  ],
+  "guidance": "Summary view (summary_only). The node summary above shows the graph structure. To RUN this template use run_template; to see the overridable inputs/slots use get_template_schema. Call get_template without summary_only for the full workflow JSON — it is returned only when it fits the client token cap."
+}

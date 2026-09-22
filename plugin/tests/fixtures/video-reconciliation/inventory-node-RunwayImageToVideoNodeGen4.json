@@ -1,0 +1,72 @@
+{
+  "data": [
+    {
+      "name": "RunwayImageToVideoNodeGen4",
+      "display_name": "Runway Image to Video (Gen4 Turbo)",
+      "description": "Generate a video from a single starting frame using Gen4 Turbo model. Before diving in, review these best practices to ensure that your input selections will set your generation up for success: https://help.runwayml.com/hc/en-us/articles/37327109429011-Creating-with-Gen-4-Video.",
+      "category": "partner/video/Runway",
+      "pack": "core",
+      "inputs": {
+        "required": [
+          "STRING",
+          "IMAGE",
+          "COMBO",
+          "COMBO",
+          "INT"
+        ]
+      },
+      "input_details": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "required": true,
+          "default": "",
+          "tooltip": "Text prompt for the generation"
+        },
+        {
+          "name": "start_frame",
+          "type": "IMAGE",
+          "required": true,
+          "tooltip": "Start frame to be used for the video"
+        },
+        {
+          "name": "duration",
+          "type": "COMBO",
+          "required": true,
+          "options": [
+            5,
+            10
+          ]
+        },
+        {
+          "name": "ratio",
+          "type": "COMBO",
+          "required": true,
+          "options": [
+            "1280:720",
+            "720:1280",
+            "1104:832",
+            "832:1104",
+            "960:960",
+            "1584:672"
+          ]
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "required": true,
+          "default": 0,
+          "min": 0,
+          "max": 4294967295,
+          "tooltip": "Random seed for generation"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ],
+      "api_node": true,
+      "output_node": false,
+      "deprecated": false
+    }
+  ]
+}

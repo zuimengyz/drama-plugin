@@ -105,7 +105,7 @@ def test_cinematic_canon_and_provider_projection():
     frozen=freeze_direction(spec,context=ctx,visual_resolution=visual,host_review='offline mechanics checked')
     from drama_plugin.hosts.cinematic_projection import project
     r=SimpleNamespace(frozen_creative={'cinematic_direction':frozen},sound='NATIVE_AV',reference_duties=[])
-    result=project(r,SimpleNamespace(parameters={'model.generate_audio':True}),{'class_type':'Seedance2'})
+    result=project(r,SimpleNamespace(parameters={'model.generate_audio':True}),{'class_type':'ByteDance2TextToVideoNode'})
     assert 'ONLY A' in result['prompt'] and 'POWER MOMENTUM DOMINANCE' in result['prompt']
     assert any(x['canonical_field'].startswith('expressionDirection') for x in result['manifest'])
     ctx['work']['content']['visualRoute']='live_action_realist';spec.source_fingerprint=fp(narrative_source(ctx))

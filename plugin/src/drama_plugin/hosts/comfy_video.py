@@ -14,7 +14,13 @@ from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.visual.video_selection import Candidate, Requirements, validate_requirements
 
 # Provider-specific semantics stay here, never in Skill Core.
-NODES = {
+NODES: dict[str, dict[str, Any]] = {
+    'Vidu3ImageToVideoNode': {'model': 'Vidu Q3 Pro', 'variants': {'viduq3-pro': 'Vidu Q3 Pro', 'viduq3-turbo': 'Vidu Q3 Turbo'},
+        'prompt': 'prompt', 'duration': 'model.duration', 'resolution': 'model.resolution',
+        'audio': 'model.audio', 'prompt_limit': 2000, 'ports': ['image'], 'mode': 'SINGLE_IMAGE'},
+    'Vidu3TextToVideoNode': {'model': 'Vidu Q3 Pro', 'variants': {'viduq3-pro': 'Vidu Q3 Pro', 'viduq3-turbo': 'Vidu Q3 Turbo'},
+        'prompt': 'prompt', 'duration': 'model.duration', 'resolution': 'model.resolution',
+        'audio': 'model.audio', 'aspect': 'model.aspect_ratio', 'prompt_limit': 2000, 'ports': [], 'mode': 'TEXT_TO_VIDEO'},
     'Flux3ImageToVideoNode': {'model': 'FLUX 3', 'prompt': 'prompt', 'duration': 'duration',
         'resolution': 'resolution', 'ports': ['keyframes.image_0'], 'mode': 'SINGLE_IMAGE'},
     'MinimaxHailuo03FirstLastFrameNode': {'model': 'MiniMax H3', 'prompt': 'model.prompt',
@@ -34,6 +40,23 @@ NODES = {
 }
 
 
+def validate_node_contract(node: dict[str, Any]) -> None:
+    """Reviewed runtime structural schema; new fields/ranges require reconciliation.
+
+    Defaults and presentation text are not execution semantics. Prompt limits
+    stated only in tooltips are recorded explicitly in the node registry.
+    """
+    contracts = json.loads(Path(__file__).with_name('comfy_video_contracts.json').read_text())
+    expected = contracts.get(node['name'])
+    if expected is None:
+        return  # Existing adapters retain their original admission contract.
+    keys = ('name', 'type', 'required', 'conditional', 'applies_when', 'options', 'min', 'max', 'auto_grow_slots')
+    actual = {'api_node': node.get('api_node'), 'outputs': node.get('outputs'),
+              'fields': [{k: f[k] for k in keys if k in f} for f in node.get('input_details', [])]}
+    if actual != expected or any(f.get('options_truncated') for f in node.get('input_details', [])):
+        raise ValueError('SCHEMA_DRIFT_REQUALIFY')
+
+
 def inspect_graph(graph: dict[str, Any], schema: dict[str, Any]) -> dict[str, Any]:
     if graph.get('definitions') or graph.get('subgraphs'):
         raise ValueError('UNINSPECTED_SUBGRAPH')
@@ -47,6 +70,8 @@ def inspect_graph(graph: dict[str, Any], schema: dict[str, Any]) -> dict[str, An
         raise ValueError('UNVERIFIED_BYPASS_MODE')
     model = models[0]; mid = str(model['id']); semantics = NODES[model['type']]
     links = {link[0]: link for link in graph['links']}
+    if len(links) != len(graph['links']):
+        raise ValueError('DUPLICATE_GRAPH_LINK')
     schemas = {str(n['id']): n for n in schema['nodes']}
     if set(schemas) != {nid for nid, n in nodes.items() if n['type'] != 'MarkdownNote'}:
         raise ValueError('SCHEMA_GRAPH_NODE_MISMATCH')
@@ -108,8 +133,11 @@ def compile_request(r: Requirements, c: Candidate, graph: dict[str, Any], schema
     if len(bindings) != len(r.inputs) or len(bindings) != len(inspected['image_slots']):
         raise ValueError('INPUT_COUNT_MISMATCH')
     mid = inspected['model_node']; kind = inspected['class_type']; semantics = NODES[kind]
-    if c.model != semantics['model']:
+    expected_model = semantics.get('variants', {}).get(c.variant, semantics['model'])
+    if c.model != expected_model:
         raise ValueError('MODEL_MISMATCH')
+    if 'variants' in semantics and (c.variant not in semantics['variants'] or c.parameters.get('model') != c.variant):
+        raise ValueError('REQUEST_VARIANT_MISMATCH')
     if kind.startswith('Minimax') and c.variant != 'MiniMax H3':
         raise ValueError('VARIANT_REQUIRES_SEPARATE_ADAPTER')
     if kind.startswith('Flux') and c.variant != 'FLUX 3':
@@ -181,6 +209,9 @@ def validate_capability(c: Candidate, r: Requirements, inspected: dict[str, Any]
     from drama_plugin.visual.video_selection import Evidence
     cap = c.capability
     is_seed = inspected['class_type'].startswith('ByteDance2')
+    semantics = NODES[inspected['class_type']]
+    if 'variants' in semantics and not cap:
+        raise ValueError('CURRENT_CAPABILITY_REQUIRED')
     if is_seed and (c.variant != 'Seedance 2.5' or c.parameters.get('model') != c.variant or not cap):
         raise ValueError('SEEDANCE_VARIANT_AND_CURRENT_CAPABILITY_REQUIRED')
     if cap:
@@ -189,20 +220,37 @@ def validate_capability(c: Candidate, r: Requirements, inspected: dict[str, Any]
         if not Evidence.model_validate(cap['evidence']).current(datetime.now(timezone.utc)):
             raise ValueError('CAPABILITY_EXPIRED_REQUALIFY')
         node = cap['node_schema']
+        validate_node_contract(node)
         if node['name'] != inspected['class_type'] or cap['schema_hash'] != inspected['schema_hash'] or cap['graph_hash'] != inspected['graph_hash']:
             raise ValueError('SCHEMA_DRIFT_REQUALIFY')
-        fields = {f['name']:f for f in node['input_details'] if not f.get('applies_when') or c.variant in f['applies_when']}
+        fields = {f['name']:f for f in node['input_details'] if not f.get('applies_when')
+                  or c.parameters.get(f['name'].split('.')[0], c.variant) in f['applies_when']}
+        for field in list(fields.values()):
+            for slot in field.get('auto_grow_slots', []):
+                fields[slot] = field
+        if any(port not in fields or fields[port]['type'] != 'IMAGE' for port in inspected['input_ports']):
+            raise ValueError('SCHEMA_INPUT_SEMANTICS_CHANGED')
+        required = {name for name, field in fields.items() if field.get('required')
+                    and field['type'] not in {'IMAGE', 'VIDEO', 'AUDIO'} and not field.get('auto_grow_slots')}
+        if not required <= set(c.parameters) | {str(semantics['prompt'])}:
+            raise ValueError('REQUIRED_NODE_PARAMETER_MISSING')
         for key,value in c.parameters.items():
             field = fields.get(key)
             if field is None:
                 raise ValueError('PARAMETER_NOT_IN_CURRENT_NODE_SCHEMA:' + key)
+            if field['type'] in {'IMAGE', 'VIDEO', 'AUDIO'}:
+                raise ValueError('MEDIA_PARAMETER_MUST_BE_VERIFIED_LINK:' + key)
             if 'options' in field and value not in field['options']:
                 raise ValueError('PARAMETER_OPTION_UNSUPPORTED:' + key)
             if field['type'] == 'INT' and (type(value) is not int or value < field.get('min',value) or value > field.get('max',value)):
                 raise ValueError('PARAMETER_RANGE_UNSUPPORTED:' + key)
             if field['type'] == 'BOOLEAN' and type(value) is not bool:
                 raise ValueError('BOOLEAN_PARAMETER_REQUIRED:' + key)
+            if field['type'] == 'STRING' and not isinstance(value, str):
+                raise ValueError('STRING_PARAMETER_REQUIRED:' + key)
         limit = fields[str(NODES[inspected['class_type']]['prompt'])].get('max_length')
+        if semantics.get('prompt_limit') is not None:
+            limit = min(limit, semantics['prompt_limit']) if limit is not None else semantics['prompt_limit']
         if limit is not None and len(prompt) > limit:
             raise ValueError('VERIFIED_PROVIDER_PROMPT_LIMIT_EXCEEDED')
     if is_seed:
@@ -222,6 +270,17 @@ def validate_capability(c: Candidate, r: Requirements, inspected: dict[str, Any]
         expected = projection['generate_audio'] if projection else r.sound != 'SILENT'
         if params.get('model.generate_audio') is not expected:
             raise ValueError('SOURCE_SOUND_PARAMETER_MISMATCH')
+    elif 'variants' in semantics:
+        expected = projection['generate_audio'] if projection else r.sound != 'SILENT'
+        if c.parameters.get(semantics['audio']) is not expected:
+            raise ValueError('SOURCE_SOUND_PARAMETER_MISMATCH')
+        if 'aspect' in semantics:
+            if c.parameters.get(semantics['aspect']) != r.aspect_ratio:
+                raise ValueError('ASPECT_RATIO_CHANGED')
+        else:
+            ratio = r.aspect_ratio.split(':')
+            if len(ratio) != 2 or any(not i.width or not i.height or abs(i.width/i.height-float(ratio[0])/float(ratio[1])) > .01 for i in r.inputs):
+                raise ValueError('INPUT_DERIVED_ASPECT_UNVERIFIED')
     elif projection:
         key = 'generate_audio' if inspected['class_type'].startswith('Flux') else 'model.generate_audio'
         if key in c.parameters and c.parameters[key] is not projection['generate_audio']:
@@ -258,12 +317,17 @@ def seal_material(r: Requirements, c: Candidate, graph: dict[str, Any], schema: 
 
 
 def bind_capability(node_schema: dict[str, Any], graph: dict[str, Any], schema: dict[str, Any],
-                    evidence: dict[str, Any]) -> dict[str, Any]:
+                    evidence: dict[str, Any], *, variant: str | None = None) -> dict[str, Any]:
     """Freeze current read-only L1/L2 facts. Evidence is Host-owned, not a price."""
     inspected = inspect_graph(graph,schema)
     if node_schema['name'] != inspected['class_type']:
         raise ValueError('NODE_SCHEMA_MISMATCH')
-    material = {'node_schema':node_schema,'node_id':inspected['model_node'],'model_key':str(NODES[inspected['class_type']]['model']).lower().replace(' ','-'),
+    validate_node_contract(node_schema)
+    semantics = NODES[inspected['class_type']]
+    if 'variants' in semantics and variant not in semantics['variants']:
+        raise ValueError('EXPLICIT_MODEL_VARIANT_REQUIRED')
+    model = semantics.get('variants', {}).get(variant, semantics['model'])
+    material = {'node_schema':node_schema,'node_id':inspected['model_node'],'model_key':str(model).lower().replace(' ','-'),
                 'schema_hash':inspected['schema_hash'],'graph_hash':inspected['graph_hash'],
                 'evidence':evidence,'project_input_ports':inspected['input_ports']}
     return {**material,'fingerprint':sha256_canonical(material)}

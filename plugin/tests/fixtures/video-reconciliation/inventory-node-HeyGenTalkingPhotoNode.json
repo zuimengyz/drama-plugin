@@ -1,0 +1,198 @@
+{
+  "data": [
+    {
+      "name": "HeyGenTalkingPhotoNode",
+      "display_name": "HeyGen Talking Photo",
+      "description": "Animate any image of a person into a lip-synced talking video (HeyGen Avatar IV). Drive it with a text script or your own audio.",
+      "category": "partner/video/HeyGen",
+      "pack": "core",
+      "inputs": {
+        "required": [
+          "IMAGE",
+          "COMFY_DYNAMICCOMBO_V3",
+          "STRING",
+          "COMBO",
+          "STRING",
+          "FLOAT",
+          "AUDIO"
+        ],
+        "optional": [
+          "COMBO",
+          "COMBO",
+          "COMBO",
+          "INT"
+        ]
+      },
+      "input_details": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "required": true,
+          "tooltip": "Image of a person to animate. Downscaled automatically if larger than 2K."
+        },
+        {
+          "name": "speech",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "required": true,
+          "dynamic_combo": true,
+          "options": [
+            "script",
+            "audio"
+          ],
+          "tooltip": "Drive the avatar with a text script (HeyGen text-to-speech) or your own audio.",
+          "hint": "Dynamic combo: pick one `options` value for `speech`, then send each conditional sub-field below using its full dotted name (prefixed with `speech.`, e.g. `speech.<sub_field>`). Auto-grow list slots nest one level deeper (e.g. `speech.<list>.<slot_1>`). Sending these fields flat (without the prefix) fails with required_input_missing."
+        },
+        {
+          "name": "speech.text",
+          "type": "STRING",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "script"
+          ],
+          "default": "",
+          "tooltip": "Text for the avatar to speak (up to 5000 characters). The generated speech must be at least 1 second long."
+        },
+        {
+          "name": "speech.voice",
+          "type": "COMBO",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "script"
+          ],
+          "options": [
+            "Cassidy (English, female)",
+            "Hope (English, female)",
+            "Archer (English, male)",
+            "Brittney (English, female)",
+            "Mark (English, male)",
+            "Andrew (English, male)",
+            "Spuds Oxley (English, male)",
+            "Patrick (English, male)",
+            "David Castlemore (English, male)",
+            "Michael C (English, male)",
+            "Adam Stone (English, male)",
+            "Alex (English, male)",
+            "Monika Sogam (English, female)",
+            "Jessica Anne Bogart (English, female)",
+            "John Doe (English, male)",
+            "Ivy (English, female)",
+            "Chill Brian (English, male)",
+            "Allison (English, female)",
+            "Mia Starset (Norwegian, female)",
+            "William Shanks (Spanish, male)",
+            "Zain (English, female)",
+            "Jora Slobod (Romanian, male)",
+            "Narrator Mateo - Excited 🤩 (Spanish, male)",
+            "Aria (English, female)",
+            "Caryns (English, female)",
+            "Klara (English, female)",
+            "Son Tran (Vietnamese, male)",
+            "Bold Kasia - Excited 🤩 (Polish, female)",
+            "Marc Aurèle (French, male)",
+            "Shaun (English, male)",
+            "Senthil (English, male)",
+            "Cody (English, male)",
+            "Saffron (English, female)",
+            "Blanka - Lifelike (English, female)",
+            "Rami (English, male)",
+            "Rhodes (English, female)",
+            "Michelle - Voice 1 (English, female)",
+            "Tuba (, female)",
+            "Autumn - UGC 3 (English, female)",
+            "Reassuring Rupert (English, male)"
+          ],
+          "tooltip": "Voice for the script (HeyGen's most popular voices)."
+        },
+        {
+          "name": "speech.custom_voice_id",
+          "type": "STRING",
+          "required": false,
+          "conditional": true,
+          "applies_when": [
+            "script"
+          ],
+          "default": "",
+          "tooltip": "Optional HeyGen voice ID. When set, overrides the voice selected above. Any voice from HeyGen's library (2000+) can be used."
+        },
+        {
+          "name": "speech.voice_speed",
+          "type": "FLOAT",
+          "required": false,
+          "conditional": true,
+          "applies_when": [
+            "script"
+          ],
+          "default": 1,
+          "min": 0.5,
+          "max": 1.5,
+          "tooltip": "Speech speed multiplier."
+        },
+        {
+          "name": "speech.audio",
+          "type": "AUDIO",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "audio"
+          ],
+          "tooltip": "Audio for the avatar to lip-sync, up to 10 minutes."
+        },
+        {
+          "name": "resolution",
+          "type": "COMBO",
+          "required": false,
+          "default": "1080p",
+          "options": [
+            "720p",
+            "1080p"
+          ],
+          "tooltip": "Output video resolution."
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "required": false,
+          "default": "auto",
+          "options": [
+            "auto",
+            "16:9",
+            "9:16",
+            "1:1",
+            "4:5",
+            "5:4"
+          ],
+          "tooltip": "Output aspect ratio. 'auto' follows the input image."
+        },
+        {
+          "name": "expressiveness",
+          "type": "COMBO",
+          "required": false,
+          "default": "low",
+          "options": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "tooltip": "How expressive the animated face and gestures are."
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "required": false,
+          "default": 42,
+          "min": 0,
+          "max": 2147483647,
+          "tooltip": "Not sent to HeyGen; change it to force a re-run."
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ],
+      "api_node": true,
+      "output_node": false,
+      "deprecated": false
+    }
+  ]
+}

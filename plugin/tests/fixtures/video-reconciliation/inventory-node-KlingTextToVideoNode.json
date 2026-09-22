@@ -1,0 +1,72 @@
+{
+  "data": [
+    {
+      "name": "KlingTextToVideoNode",
+      "display_name": "Kling Text to Video",
+      "description": "Kling Text to Video Node",
+      "category": "partner/video/Kling",
+      "pack": "core",
+      "inputs": {
+        "required": [
+          "STRING",
+          "STRING",
+          "FLOAT",
+          "COMBO",
+          "COMBO"
+        ]
+      },
+      "input_details": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "required": true,
+          "tooltip": "Positive text prompt"
+        },
+        {
+          "name": "negative_prompt",
+          "type": "STRING",
+          "required": true,
+          "tooltip": "Negative text prompt"
+        },
+        {
+          "name": "cfg_scale",
+          "type": "FLOAT",
+          "required": true,
+          "default": 1,
+          "min": 0,
+          "max": 1
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "required": true,
+          "default": "16:9",
+          "options": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ]
+        },
+        {
+          "name": "mode",
+          "type": "COMBO",
+          "required": true,
+          "default": "pro mode / 5s duration / kling-v2-5-turbo",
+          "options": [
+            "pro mode / 5s duration / kling-v2-5-turbo",
+            "pro mode / 10s duration / kling-v2-5-turbo"
+          ],
+          "tooltip": "The configuration to use for the video generation following the format: mode / duration / model_name."
+        }
+      ],
+      "outputs": [
+        "VIDEO",
+        "STRING",
+        "STRING"
+      ],
+      "api_node": true,
+      "output_node": false,
+      "deprecated": false
+    }
+  ]
+}

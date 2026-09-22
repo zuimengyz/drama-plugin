@@ -1,0 +1,38 @@
+{
+  "template_id": "api_luma_t2v",
+  "source_url": "https://cloud.comfy.org/templates/api_luma_t2v.json",
+  "node_count": 6,
+  "nodes": [
+    {
+      "id": 27,
+      "type": "LumaConceptsNode",
+      "title": "LumaConceptsNode"
+    },
+    {
+      "id": 24,
+      "type": "LumaConceptsNode",
+      "title": "LumaConceptsNode"
+    },
+    {
+      "id": 8,
+      "type": "SaveVideo",
+      "title": "SaveVideo"
+    },
+    {
+      "id": 29,
+      "type": "LumaVideoNode",
+      "title": "LumaVideoNode"
+    },
+    {
+      "id": 26,
+      "type": "MarkdownNote",
+      "title": "About Luma Image to Video"
+    },
+    {
+      "id": 25,
+      "type": "MarkdownNote",
+      "title": "About API Node"
+    }
+  ],
+  "guidance": "Summary view (summary_only). The node summary above shows the graph structure. To RUN this template use run_template; to see the overridable inputs/slots use get_template_schema. Call get_template without summary_only for the full workflow JSON — it is returned only when it fits the client token cap."
+}

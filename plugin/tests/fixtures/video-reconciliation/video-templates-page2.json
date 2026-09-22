@@ -1,0 +1,548 @@
+{
+  "data": [
+    {
+      "name": "api_pixverse_i2v",
+      "title": "PixVerse: Image to Video",
+      "mediaType": "image",
+      "description": "Generate dynamic videos from static images with motion and effects using PixVerse.",
+      "tags": [
+        "Image to Video",
+        "Video",
+        "API"
+      ],
+      "models": [
+        "PixVerse"
+      ],
+      "usage": 6
+    },
+    {
+      "name": "api_pixverse_template_i2v",
+      "title": "PixVerse Templates: Image to Video",
+      "mediaType": "image",
+      "description": "Generate dynamic videos from static images with motion and effects using PixVerse.",
+      "tags": [
+        "Image to Video",
+        "Video",
+        "API"
+      ],
+      "models": [
+        "PixVerse"
+      ],
+      "usage": 6
+    },
+    {
+      "name": "video_wan2.1_fun_camera_v1.1_14B",
+      "title": "Wan 2.1 Fun Camera 14B",
+      "mediaType": "image",
+      "description": "Generate high-quality videos with advanced camera control using the full 14B model",
+      "tags": [
+        "Video",
+        "Image to Video"
+      ],
+      "models": [
+        "Wan2.1",
+        "Wan"
+      ],
+      "usage": 10
+    },
+    {
+      "name": "video_wan_vace_14B_t2v",
+      "title": "Wan2.1 VACE Text to Video",
+      "mediaType": "image",
+      "description": "Transform text descriptions into high-quality videos. Supports both 480p and 720p with VACE-14B model.",
+      "tags": [
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "Wan2.1",
+        "Wan"
+      ],
+      "usage": 10
+    },
+    {
+      "name": "video_wan2.1_fun_camera_v1.1_1.3B",
+      "title": "Wan 2.1 Fun Camera 1.3B",
+      "mediaType": "image",
+      "description": "Generate dynamic videos with cinematic camera movements using Wan 2.1 Fun Camera 1.3B model.",
+      "tags": [
+        "Video",
+        "Image to Video"
+      ],
+      "models": [
+        "Wan2.1",
+        "Wan"
+      ],
+      "usage": 15
+    },
+    {
+      "name": "wan2.1_fun_inp",
+      "title": "Wan 2.1 Inpainting",
+      "mediaType": "image",
+      "description": "Generate videos from start and end frames using Wan 2.1 inpainting.",
+      "tags": [
+        "Inpainting",
+        "Video"
+      ],
+      "models": [
+        "Wan2.1",
+        "Wan"
+      ],
+      "usage": 7
+    },
+    {
+      "name": "hunyuan_video_text_to_video",
+      "title": "Hunyuan Video Text to Video",
+      "mediaType": "image",
+      "description": "Generate videos from text prompts using Hunyuan model.",
+      "tags": [
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "Hunyuan Video",
+        "Tencent"
+      ],
+      "usage": 8
+    },
+    {
+      "name": "template_ltx2_3_style_transition",
+      "title": "LTX-2.3 Style Transition ",
+      "mediaType": "image",
+      "description": "Apply the ltx2.3-transition LoRA to create smooth style and scene transitions. This workflow uses a specialized model to blend visual elements.",
+      "tags": [
+        "FLF2V",
+        "LoRA",
+        "Video"
+      ],
+      "models": [
+        "LTX-2.3"
+      ],
+      "usage": 27
+    },
+    {
+      "name": "templates_ohneis_i2v",
+      "title": "Image to Video",
+      "mediaType": "image",
+      "description": "This is the base workflow behind my viral Wes Anderson-style reel on Instagram.  It shows how to go from a simple prompt to a Wes Anderson-style image using a cinematic image model, then enhance it wi…",
+      "tags": [
+        "API",
+        "Image to Video",
+        "Text to Image",
+        "Video"
+      ],
+      "models": [
+        "Kling 2.6",
+        "Nano Banana Pro",
+        "Z-Image-Turbo"
+      ],
+      "usage": 6
+    },
+    {
+      "name": "templates_ingi_infl8",
+      "title": "Inflation Lora Character Expansion Effect Video",
+      "mediaType": "image",
+      "description": "Upload a character image and input your prompt. Generate an animated video where the character expands with an inflation effect.",
+      "tags": [
+        "Video",
+        "Image to Video"
+      ],
+      "models": [
+        "wan2.2 Animate"
+      ],
+      "usage": 9
+    },
+    {
+      "name": "template_sirolim_image_script_video",
+      "title": "Image to Script to Kling Video Generation",
+      "mediaType": "image",
+      "description": "Upload an image to automatically generate a descriptive script. This script is then used to create a video with the Kling 3.0 Omni model.",
+      "tags": [
+        "API",
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "Google Gemini",
+        "Kling O3",
+        "Nano Banana 2"
+      ],
+      "usage": 12
+    },
+    {
+      "name": "templates_purz_animatediff_simple_weighted_ipadapters_looping_animation",
+      "title": "AnimateDiff -  IPAdapters Looping Animation",
+      "mediaType": "image",
+      "description": "Drag and drop then dream through a stack of images",
+      "tags": [
+        "Video",
+        "Image to Video"
+      ],
+      "models": [
+        "SD1.5"
+      ],
+      "usage": 23
+    },
+    {
+      "name": "templates_shane_video_restyle",
+      "title": "Video Restyle",
+      "mediaType": "image",
+      "description": "Use a base video + a stylized reference image to create the stylized video using WAN 2.1 VACE",
+      "tags": [
+        "Video",
+        "Video to Video"
+      ],
+      "models": [
+        "Wan2.1 VACE"
+      ],
+      "usage": 32
+    },
+    {
+      "name": "templates_mjm_airt_machine_api",
+      "title": "AIrt MAchIne (API version)",
+      "mediaType": "image",
+      "description": "Upload an image to generate a unique, looping AI video. The workflow uses an LLM to create prompts, employs Kling3.0 for video generation, and stitches the clips into a seamless final loop.",
+      "tags": [
+        "API",
+        "FLF2V",
+        "Video"
+      ],
+      "models": [
+        "Google Gemini",
+        "Kling 3.0",
+        "Z-Image-Turbo"
+      ],
+      "usage": 10
+    },
+    {
+      "name": "templates_mjm_looped_restyler",
+      "title": "Looped Restyler",
+      "mediaType": "image",
+      "description": "Upload a starting image and its prompt to generate a looping video from the first to the last frame.",
+      "tags": [
+        "API",
+        "FLF2V",
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "Google Gemini",
+        "Nano Banana",
+        "Wan2.2"
+      ],
+      "usage": 6
+    },
+    {
+      "name": "templates_mjm_Injected",
+      "title": "Noise Injected VideoGen",
+      "mediaType": "image",
+      "description": "Upload a starting image and a mask video to define the injection area. Generate a dynamic video by injecting noise patterns from a dedicated noise video, with AI auto-generated prompts.",
+      "tags": [
+        "Video",
+        "Image to Video"
+      ],
+      "models": [
+        "SD1.5"
+      ],
+      "usage": 12
+    },
+    {
+      "name": "api_grok_video_extend",
+      "title": "Video Extend: Grok",
+      "mediaType": "image",
+      "description": "Upload a short video and a text prompt describing the next scene. Generate a seamless video extension using Grok extend.",
+      "tags": [
+        "API",
+        "Video",
+        "Video Extend"
+      ],
+      "models": [
+        "Grok"
+      ],
+      "usage": 21
+    },
+    {
+      "name": "template_horizontal_vertical_extension",
+      "title": "Aspect Ratio Extend: Kling O3",
+      "mediaType": "image",
+      "description": "Extend any video to a custom aspect ratio. Convert vertical videos to horizontal format and vice versa. Includes an application mode for easy use.",
+      "tags": [
+        "API",
+        "Video",
+        "Video Edit",
+        "Outpainting"
+      ],
+      "models": [
+        "Kling O3"
+      ],
+      "usage": 68
+    },
+    {
+      "name": "api_vidu_video_extension",
+      "title": "Video Extend: Vidu Q2",
+      "mediaType": "image",
+      "description": "Upload a video and use the Vidu Q2 model to extend it up to 7 seconds and enhance the resolution to 1080p.",
+      "tags": [
+        "Video",
+        "Video Extend",
+        "API"
+      ],
+      "models": [
+        "Vidu Q2",
+        "Vidu"
+      ],
+      "usage": 13
+    },
+    {
+      "name": "utility_gimm_frame_interpolation",
+      "title": "Frame Interpolation: GIMM-VFI",
+      "mediaType": "image",
+      "description": "Generate intermediate frames between existing video frames to create smoother motion. Input a video and receive a fluid, higher-frame-rate output without changing the total duration.",
+      "tags": [
+        "Frame Interpolation",
+        "Video"
+      ],
+      "models": [
+        "none"
+      ],
+      "usage": 9
+    },
+    {
+      "name": "templates_purz_crossfade",
+      "title": "Video Edit: Crossfade Merge",
+      "mediaType": "image",
+      "description": "Smoothly blend two video sequences using a crossfade effect. Input two image sequences and define the transition length and blend mode. Outputs a single, merged video sequence.",
+      "tags": [
+        "Video",
+        "Video Edit"
+      ],
+      "models": [
+        "None"
+      ],
+      "usage": 6
+    },
+    {
+      "name": "template_ltx2_3_remove_watermark_from_video",
+      "title": "Remove Watermark from Video - LTX 2.3 LoRA",
+      "mediaType": "image",
+      "description": "Upload an input video with watermarks and remove them with one click",
+      "tags": [
+        "Video",
+        "LoRA",
+        "Video Edit"
+      ],
+      "models": [
+        "LTX-2.3"
+      ],
+      "usage": 69
+    },
+    {
+      "name": "templates_shane_change_any_objects",
+      "title": "Change Any Objects",
+      "mediaType": "image",
+      "description": "Use simple prompt to mask out certain objects within a video, and replace the object using prompt, or optional reference image. Model used: SAM3 + WAN 2.1 VACE inpainting",
+      "tags": [
+        "Inpainting",
+        "Video"
+      ],
+      "models": [
+        "SAM3",
+        "Wan2.1 VACE"
+      ],
+      "usage": 40
+    },
+    {
+      "name": "template_product_placement",
+      "title": "Product Placement",
+      "mediaType": "image",
+      "description": "Swap products into a reference scene while preserving composition and lighting. Generates a final product image and an automatic video prompt for creating polished product videos.",
+      "tags": [
+        "API",
+        "Image Edit",
+        "Video"
+      ],
+      "models": [
+        "Gemini-3.1-Pro",
+        "Kling 3.0",
+        "Nano Banana 2"
+      ],
+      "usage": 11
+    },
+    {
+      "name": "templates_rob_kling3_0_multishot_llm_product",
+      "title": "Kling 3.0: 1 Click Multishot",
+      "mediaType": "image",
+      "description": "Upload a start frame and references of your product. Select total duration and number of shots and automatically generate prompts for each shot.",
+      "tags": [
+        "API",
+        "Video",
+        "Text to Video"
+      ],
+      "models": [
+        "Kling 3.0"
+      ],
+      "usage": 55
+    },
+    {
+      "name": "template_eric_exploded_view",
+      "title": "Exploded View Animation",
+      "mediaType": "image",
+      "description": "Upload an image of a device or object to generate start and end frames. The workflow animates the transition to an exploded view and back, outputting a seamless video loop.",
+      "tags": [
+        "API",
+        "FLF2V",
+        "Video"
+      ],
+      "models": [
+        "Nano Banana 2",
+        "Seedance 1.5 Pro"
+      ],
+      "usage": 31
+    },
+    {
+      "name": "templates_product_scene_transformation",
+      "title": "Product Scene Transformation",
+      "mediaType": "image",
+      "description": "Upload a product video and generate a dynamic product scene transformation using Nano Banana Pro & Wan VACE 2.1",
+      "tags": [
+        "API",
+        "Style Transfer",
+        "Video"
+      ],
+      "models": [
+        "Kling",
+        "Nano Banana Pro",
+        "Wan"
+      ],
+      "usage": 17
+    },
+    {
+      "name": "template_purz_wan22_animate_auto_character_replace",
+      "title": "Wan2.2 Animate: Automatic Character Replacement",
+      "mediaType": "image",
+      "description": "Upload a video and a character image. Automatically replace the character in the video using the Wan2.2 Animate model.",
+      "tags": [
+        "Video",
+        "Character Replacement",
+        "Video Edit"
+      ],
+      "models": [
+        "wan2.2 Animate"
+      ],
+      "usage": 490
+    },
+    {
+      "name": "templates-wan2_1_infinitetalk_music",
+      "title": "Audio-Driven Character Lip Sync Video",
+      "mediaType": "image",
+      "description": "Upload a character image and an audio file. Generate a lip-sync video where the character's mouth movements match the provided audio track.",
+      "tags": [
+        "Audio to Video",
+        "Lip Sync",
+        "Video"
+      ],
+      "models": [
+        "Wan2.1 InfiniteTalk"
+      ],
+      "usage": 237
+    },
+    {
+      "name": "templates_purz_wan22_animate_auto_full_scene",
+      "title": "Wan Animate 2.2 Character Replacement Workflow",
+      "mediaType": "image",
+      "description": "Wan Animate 2.2 — Character & Scene Replacement - Uses Nano Banana 2 to generate a reference image from the first frame, then swaps the full scene. Optimized for human subjects.",
+      "tags": [
+        "API",
+        "Character Replacement",
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "wan2.2 Animate"
+      ],
+      "usage": 45
+    },
+    {
+      "name": "template_contact_sheet-step_2.app",
+      "title": "Step 2: Contact Sheet Workflow",
+      "mediaType": "image",
+      "description": "Upload the fashion editorial and product image. Generate 8 distinct angle variations with product consistency from only 2 Nano Banana generations.",
+      "tags": [
+        "API",
+        "Video",
+        "Image Edit"
+      ],
+      "models": [
+        "Nano Banana Pro"
+      ],
+      "usage": 8
+    },
+    {
+      "name": "template_contact_sheet-step_3.app",
+      "title": "Step 3: Contact Sheet Workflow",
+      "mediaType": "image",
+      "description": "Upload 8 images (in order) to be used as keyframes for 7 Kling 3.0 FL2V videos.",
+      "tags": [
+        "API",
+        "FLF2V",
+        "Video"
+      ],
+      "models": [
+        "Gemini-3.1-flash-lite",
+        "Kling 3.0"
+      ],
+      "usage": 11
+    },
+    {
+      "name": "template_rob_split_stack_qwen_multi_wan22",
+      "title": "1 image input Split Stack - Qwen Multiangle + Wan 2.2",
+      "mediaType": "image",
+      "description": "Upload 1 input image and generate 5 alternate angles to be used as start frames with Wan2.2. Each video is stacked horizontally in a final 9x16 video.",
+      "tags": [
+        "Video",
+        "Image to Video"
+      ],
+      "models": [
+        "Qwen-Image-Edit",
+        "Wan2.2"
+      ],
+      "usage": 18
+    },
+    {
+      "name": "templates_liveportrait.app",
+      "title": "LivePortrait for Facial Expression",
+      "mediaType": "image",
+      "description": "Upload a portrait image and a reference expression video. Generate a video of the portrait with the facial expressions from the reference.",
+      "tags": [
+        "Video",
+        "Lip Sync"
+      ],
+      "models": [
+        "LivePortrait"
+      ],
+      "usage": 27
+    },
+    {
+      "name": "templates-sprite_sheet",
+      "title": "Sprite Sheet Generator",
+      "mediaType": "image",
+      "description": "Upload an image of your sprite and receive individual frames of idle, attack, walk and jump animations. ",
+      "tags": [
+        "API",
+        "Video",
+        "Image Edit"
+      ],
+      "models": [
+        "Google",
+        "Nano Banana Pro"
+      ],
+      "usage": 14
+    }
+  ],
+  "metadata": {
+    "total": 135,
+    "limit": 100,
+    "offset": 100
+  },
+  "note": "detail:'full' returns more fields; get_template_schema returns one item uncapped."
+}

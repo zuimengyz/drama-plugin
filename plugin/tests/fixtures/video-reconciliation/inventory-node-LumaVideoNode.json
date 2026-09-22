@@ -1,0 +1,107 @@
+{
+  "data": [
+    {
+      "name": "LumaVideoNode",
+      "display_name": "Luma Text to Video",
+      "description": "Generates videos synchronously based on prompt and output_size.",
+      "category": "partner/video/Luma",
+      "pack": "core",
+      "inputs": {
+        "required": [
+          "STRING",
+          "COMBO",
+          "COMBO",
+          "COMBO",
+          "COMBO",
+          "BOOLEAN",
+          "INT"
+        ],
+        "optional": [
+          "LUMA_CONCEPTS"
+        ]
+      },
+      "input_details": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "required": true,
+          "default": "",
+          "tooltip": "Prompt for the video generation"
+        },
+        {
+          "name": "model",
+          "type": "COMBO",
+          "required": true,
+          "options": [
+            "ray-2",
+            "ray-flash-2",
+            "ray-1-6"
+          ]
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "required": true,
+          "default": "16:9",
+          "options": [
+            "1:1",
+            "16:9",
+            "9:16",
+            "4:3",
+            "3:4",
+            "21:9",
+            "9:21"
+          ]
+        },
+        {
+          "name": "resolution",
+          "type": "COMBO",
+          "required": true,
+          "default": "540p",
+          "options": [
+            "540p",
+            "720p",
+            "1080p",
+            "4k"
+          ]
+        },
+        {
+          "name": "duration",
+          "type": "COMBO",
+          "required": true,
+          "options": [
+            "5s",
+            "9s"
+          ]
+        },
+        {
+          "name": "loop",
+          "type": "BOOLEAN",
+          "required": true,
+          "default": false
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "required": true,
+          "default": 0,
+          "min": 0,
+          "max": 18446744073709552000,
+          "tooltip": "Seed to determine if node should re-run; actual results are nondeterministic regardless of seed."
+        },
+        {
+          "name": "luma_concepts",
+          "type": "LUMA_CONCEPTS",
+          "required": false,
+          "tooltip": "Optional Camera Concepts to dictate camera motion via the Luma Concepts node."
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ],
+      "api_node": true,
+      "output_node": false,
+      "deprecated": false
+    }
+  ]
+}

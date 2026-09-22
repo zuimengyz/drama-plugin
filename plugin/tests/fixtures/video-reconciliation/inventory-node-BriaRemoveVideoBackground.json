@@ -1,0 +1,58 @@
+{
+  "data": [
+    {
+      "name": "BriaRemoveVideoBackground",
+      "display_name": "Bria Remove Video Background",
+      "description": "Remove the background from a video using Bria. ",
+      "category": "partner/video/Bria",
+      "pack": "core",
+      "inputs": {
+        "required": [
+          "VIDEO",
+          "COMBO",
+          "INT"
+        ]
+      },
+      "input_details": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "required": true
+        },
+        {
+          "name": "background_color",
+          "type": "COMBO",
+          "required": true,
+          "options": [
+            "Black",
+            "White",
+            "Gray",
+            "Red",
+            "Green",
+            "Blue",
+            "Yellow",
+            "Cyan",
+            "Magenta",
+            "Orange"
+          ],
+          "tooltip": "Background color for the output video."
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "required": true,
+          "default": 0,
+          "min": 0,
+          "max": 2147483647,
+          "tooltip": "Seed controls whether the node should re-run; results are non-deterministic regardless of seed."
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ],
+      "api_node": true,
+      "output_node": false,
+      "deprecated": false
+    }
+  ]
+}

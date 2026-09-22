@@ -1,0 +1,18 @@
+{
+  "template_id": "api_seedance2_0_t2v",
+  "source_url": "https://cloud.comfy.org/templates/api_seedance2_0_t2v.json",
+  "node_count": 2,
+  "nodes": [
+    {
+      "id": 343,
+      "type": "ByteDance2TextToVideoNode",
+      "title": "ByteDance2TextToVideoNode"
+    },
+    {
+      "id": 344,
+      "type": "SaveVideo",
+      "title": "SaveVideo"
+    }
+  ],
+  "guidance": "Summary view (summary_only). The node summary above shows the graph structure. To RUN this template use run_template; to see the overridable inputs/slots use get_template_schema. Call get_template without summary_only for the full workflow JSON — it is returned only when it fits the client token cap."
+}

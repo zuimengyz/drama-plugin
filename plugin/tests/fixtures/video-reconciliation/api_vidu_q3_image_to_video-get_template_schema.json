@@ -1,0 +1,35 @@
+{
+  "id": "api_vidu_q3_image_to_video",
+  "slots": [],
+  "note": "This template does not expose its inputs through a subgraph, so it has no slot_overrides addresses — `slots` is empty for that reason, not because the template is uneditable. Override it with run_template's `input_overrides` instead, keyed by the node ids in `nodes` below: {\"<id>\": {\"<input_name>\": value}}. `nodes` is the executed graph run_template submits, so these ids and input names are exactly the ones input_overrides resolves against. Inputs wired from another node are omitted — setting one would replace the link with a constant; use get_template + submit_workflow for that kind of structural edit.",
+  "nodes": [
+    {
+      "id": "14",
+      "class_type": "Vidu3ImageToVideoNode",
+      "inputs": {
+        "model": "viduq3-pro",
+        "model.resolution": "720p",
+        "model.duration": 6,
+        "model.audio": true,
+        "prompt": "Shot 1 (0-2s): Boy turns alarmed, shouts: \"Run! NOW!\" They break pose, start running right, exit frame. Snow kicks up.\nShot 2 (2-4s): Side tracking. Running through forest hand-in-hand, hair streaming, trees blur past. Look back fearfully.\nShot 3 (4-6s): Low angle. Leap over log, airborne slow-mo, land and run into mist. Dark shapes pursue behind.\nSound: shout, rapid footsteps, breathing, branches, pursuit sounds. Color: increased contrast, dark shadows behind.",
+        "seed": 861064363
+      }
+    },
+    {
+      "id": "15",
+      "class_type": "SaveVideo",
+      "inputs": {
+        "filename_prefix": "video/vidu_q3_i2v",
+        "format": "auto",
+        "format.codec": "auto"
+      }
+    },
+    {
+      "id": "16",
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "two_characters.png"
+      }
+    }
+  ]
+}

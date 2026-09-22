@@ -1,0 +1,108 @@
+{
+  "data": [
+    {
+      "name": "Vidu3StartEndToVideoNode",
+      "display_name": "Vidu Q3 Start/End Frame-to-Video Generation",
+      "description": "Generate a video from a start frame, an end frame, and a prompt.",
+      "category": "partner/video/Vidu",
+      "pack": "core",
+      "inputs": {
+        "required": [
+          "COMFY_DYNAMICCOMBO_V3",
+          "COMBO",
+          "INT",
+          "BOOLEAN",
+          "IMAGE",
+          "IMAGE",
+          "STRING",
+          "INT"
+        ]
+      },
+      "input_details": [
+        {
+          "name": "model",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "required": true,
+          "dynamic_combo": true,
+          "options": [
+            "viduq3-pro",
+            "viduq3-turbo"
+          ],
+          "tooltip": "Model to use for video generation.",
+          "hint": "Dynamic combo: pick one `options` value for `model`, then send each conditional sub-field below using its full dotted name (prefixed with `model.`, e.g. `model.<sub_field>`). Auto-grow list slots nest one level deeper (e.g. `model.<list>.<slot_1>`). Sending these fields flat (without the prefix) fails with required_input_missing."
+        },
+        {
+          "name": "model.resolution",
+          "type": "COMBO",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "viduq3-pro",
+            "viduq3-turbo"
+          ],
+          "options": [
+            "720p",
+            "1080p"
+          ],
+          "tooltip": "Resolution of the output video."
+        },
+        {
+          "name": "model.duration",
+          "type": "INT",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "viduq3-pro",
+            "viduq3-turbo"
+          ],
+          "default": 5,
+          "min": 1,
+          "max": 16,
+          "tooltip": "Duration of the output video in seconds."
+        },
+        {
+          "name": "model.audio",
+          "type": "BOOLEAN",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "viduq3-pro",
+            "viduq3-turbo"
+          ],
+          "default": false,
+          "tooltip": "When enabled, outputs video with sound (including dialogue and sound effects)."
+        },
+        {
+          "name": "first_frame",
+          "type": "IMAGE",
+          "required": true
+        },
+        {
+          "name": "end_frame",
+          "type": "IMAGE",
+          "required": true
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "required": true,
+          "tooltip": "Prompt description (max 2000 characters)."
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "required": true,
+          "default": 1,
+          "min": 0,
+          "max": 2147483647
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ],
+      "api_node": true,
+      "output_node": false,
+      "deprecated": false
+    }
+  ]
+}

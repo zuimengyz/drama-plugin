@@ -1,0 +1,97 @@
+{
+  "data": [
+    {
+      "name": "ViduTextToVideoNode",
+      "display_name": "Vidu Text To Video Generation",
+      "description": "Generate video from a text prompt",
+      "category": "partner/video/Vidu",
+      "pack": "core",
+      "inputs": {
+        "required": [
+          "COMBO",
+          "STRING"
+        ],
+        "optional": [
+          "INT",
+          "INT",
+          "COMBO",
+          "COMBO",
+          "COMBO"
+        ]
+      },
+      "input_details": [
+        {
+          "name": "model",
+          "type": "COMBO",
+          "required": true,
+          "options": [
+            "viduq1"
+          ],
+          "tooltip": "Model name"
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "required": true,
+          "tooltip": "A textual description for video generation"
+        },
+        {
+          "name": "duration",
+          "type": "INT",
+          "required": false,
+          "default": 5,
+          "min": 5,
+          "max": 5,
+          "tooltip": "Duration of the output video in seconds"
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "required": false,
+          "default": 0,
+          "min": 0,
+          "max": 2147483647,
+          "tooltip": "Seed for video generation (0 for random)"
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "required": false,
+          "options": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ],
+          "tooltip": "The aspect ratio of the output video"
+        },
+        {
+          "name": "resolution",
+          "type": "COMBO",
+          "required": false,
+          "options": [
+            "1080p"
+          ],
+          "tooltip": "Supported values may vary by model & duration"
+        },
+        {
+          "name": "movement_amplitude",
+          "type": "COMBO",
+          "required": false,
+          "options": [
+            "auto",
+            "small",
+            "medium",
+            "large"
+          ],
+          "tooltip": "The movement amplitude of objects in the frame"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ],
+      "api_node": true,
+      "output_node": false,
+      "deprecated": false
+    }
+  ]
+}

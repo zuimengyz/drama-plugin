@@ -1,0 +1,1519 @@
+{
+  "data": [
+    {
+      "name": "video_minimax_h3_i2v",
+      "title": "MiniMax H3: Image to Video",
+      "mediaType": "image",
+      "description": "Turn a starting image into a short, high-quality video clip with MiniMax H3, a unified multimodal model that generates visuals and synchronized audio in a single pass. The workflow takes 1 input image…",
+      "tags": [
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "MiniMax H3"
+      ],
+      "usage": 21851
+    },
+    {
+      "name": "video_minimax_h3_r2v",
+      "title": "MiniMax H3: Reference to Video",
+      "mediaType": "image",
+      "description": "Generate a new video by feeding MiniMax H3 a reference image, up to nine images, three videos, and three audio clips alongside a text prompt, letting the model match character identity, motion, camera…",
+      "tags": [
+        "Reference to Video",
+        "Video"
+      ],
+      "models": [
+        "MiniMax H3"
+      ],
+      "usage": 11135
+    },
+    {
+      "name": "video_minimax_h3_t2v",
+      "title": "MiniMax H3: Text to Video",
+      "mediaType": "image",
+      "description": "Generate video with native stereo audio directly from a text prompt using MiniMax H3, an omni-modal model that synthesizes voice, sound effects, and music in a single pass. Output is up to 2K resoluti…",
+      "tags": [
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "MiniMax H3"
+      ],
+      "usage": 5877
+    },
+    {
+      "name": "video_ltx2_5_i2v",
+      "title": "LTX-2.5: Image to Video",
+      "mediaType": "image",
+      "description": "Generate video from a single image using LTX-2.5, producing a high-fidelity clip with industry-leading pixel quality and native multishot capability that holds character, environment, and lighting acr…",
+      "tags": [
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "LTX-2.5"
+      ],
+      "usage": 5188
+    },
+    {
+      "name": "video_ltx2_3_i2v",
+      "title": "LTX-2.3: Image to Video",
+      "mediaType": "image",
+      "description": "Upload an image to generate a video with improved motion consistency and fine details, including enhanced support for portrait formats and audio quality.",
+      "tags": [
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "LTX-2.3",
+        "Lightricks"
+      ],
+      "usage": 17654
+    },
+    {
+      "name": "api_seedance2_0_r2v",
+      "title": "Seedance 2.0: Reference to Video",
+      "mediaType": "image",
+      "description": "Generate cinematic videos from reference images and text prompts. Preserve subject identity and composition while adding expressive motion with synchronized audio. Control camera movement and lighting…",
+      "tags": [
+        "API",
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "Seedance 2.0"
+      ],
+      "usage": 814
+    },
+    {
+      "name": "video_ltx2_5_t2v",
+      "title": "LTX-2.5: Text to Video",
+      "mediaType": "image",
+      "description": "Generate cinematic video from a text prompt using LTX-2.5, a production-ready diffusion model that outputs a single video file with optional spatial upscaling for enhanced resolution. Ideal for film p…",
+      "tags": [
+        "Video",
+        "Text to Video"
+      ],
+      "models": [
+        "LTX-2.5"
+      ],
+      "usage": 1387
+    },
+    {
+      "name": "video_ltx2_3_ia2v",
+      "title": "LTX-2.3: Image Audio to Video",
+      "mediaType": "image",
+      "description": "Upload an image and an audio file to generate a high-quality video with synchronized lip movements using LTX-2.3.",
+      "tags": [
+        "Image to Video",
+        "Lip Sync",
+        "Video"
+      ],
+      "models": [
+        "LTX-2.3"
+      ],
+      "usage": 1466
+    },
+    {
+      "name": "video_ltx2_5_flf2v",
+      "title": "LTX-2.5: FLF2V",
+      "mediaType": "image",
+      "description": "Generate a video from first and last frame reference images using LTX-2.5, blending both frames into a single animated sequence. Ideal for creating transition shots, morphing between two subjects or s…",
+      "tags": [
+        "FLF2V",
+        "Video"
+      ],
+      "models": [
+        "LTX-2.5"
+      ],
+      "usage": 807
+    },
+    {
+      "name": "video_wan2_2_14B_i2v",
+      "title": "Wan 2.2 14B Image to Video",
+      "mediaType": "image",
+      "description": "Transform static images into dynamic videos with precise motion control and style preservation using Wan 2.2.",
+      "tags": [
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "Wan",
+        "Wan2.2"
+      ],
+      "usage": 7960
+    },
+    {
+      "name": "api_seedance2_0_flf2v",
+      "title": "Seedance2.0: First-Last-Frame to Video",
+      "mediaType": "image",
+      "description": "Upload the first and last frames of your video. Generate a high-quality video sequence using the Seedance2.0 model.",
+      "tags": [
+        "API",
+        "FLF2V",
+        "Video"
+      ],
+      "models": [
+        "Seedance 2.0"
+      ],
+      "usage": 312
+    },
+    {
+      "name": "api_grok_video",
+      "title": "Grok: Video generation",
+      "mediaType": "image",
+      "description": "Input text prompts or an initial image frame to generate up to 15-second videos with synchronized audio using the Grok model.",
+      "tags": [
+        "Video",
+        "Image to Video",
+        "Text to Video",
+        "API"
+      ],
+      "models": [
+        "Grok"
+      ],
+      "usage": 610
+    },
+    {
+      "name": "api_minimax_h3_t2v",
+      "title": "MiniMax H3: Text to Video",
+      "mediaType": "image",
+      "description": "Generate video directly from text using the MiniMax H3 model, producing a 5-15 second clip with native stereo audio. Ideal for rapid concept visualization, short-form social media content, and pre-vis…",
+      "tags": [
+        "Text to Video",
+        "API",
+        "Video"
+      ],
+      "models": [
+        "MiniMax H3"
+      ],
+      "usage": 21
+    },
+    {
+      "name": "api_minimax_h3_flf2v",
+      "title": "MiniMax H3: FLF2V",
+      "mediaType": "image",
+      "description": "Generate a video from a first and last frame using MiniMax H3, producing a smooth animation between the two images. You provide 2 images, and the workflow outputs a single video clip. Ideal for creati…",
+      "tags": [
+        "API",
+        "FLF2V",
+        "Video"
+      ],
+      "models": [
+        "MiniMax H3"
+      ],
+      "usage": 66
+    },
+    {
+      "name": "video_ltx2_3_t2v",
+      "title": "LTX-2.3: Text to Video",
+      "mediaType": "image",
+      "description": "Generate a video from a text prompt, optionally using an image for reference. Receive a high-quality video with improved motion, audio, and detail, optimized for portrait or landscape formats.",
+      "tags": [
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "LTX-2.3",
+        "Lightricks"
+      ],
+      "usage": 546
+    },
+    {
+      "name": "video_ltx2_3_id_lora",
+      "title": "LTX-2.3: ID LoRA",
+      "mediaType": "image",
+      "description": "Generate personalized videos with synchronized audio from a text prompt, reference image, and short audio clip. Use ID-LoRA to adapt a person's appearance and voice in a single generative model.",
+      "tags": [
+        "Lip Sync",
+        "Video",
+        "Voice Cloning"
+      ],
+      "models": [
+        "LTX-2.3"
+      ],
+      "usage": 239
+    },
+    {
+      "name": "api_kling_v3_video",
+      "title": "Kling 3.0: Video Generation",
+      "mediaType": "image",
+      "description": "Input text or image prompts to generate 15-second video sequences with multi-shot compositions, complex camera movements, and consistent subjects.",
+      "tags": [
+        "API",
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "Kling 3.0"
+      ],
+      "usage": 466
+    },
+    {
+      "name": "api_seedance2_0_t2v",
+      "title": "Seedance 2.0: Text to Video ",
+      "mediaType": "image",
+      "description": "Generate cinematic videos from text prompts with synchronized audio, controlled camera motion, and stable visuals. Input text descriptions to output high-quality video sequences.",
+      "tags": [
+        "API",
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "Seedance 2.0"
+      ],
+      "usage": 68
+    },
+    {
+      "name": "video_ltx2_3_flf2v",
+      "title": "LTX-2.3: FLF2V",
+      "mediaType": "image",
+      "description": "Upload a starting image to generate a video sequence. The workflow creates a short video with consistent style and motion, beginning with your provided frame.",
+      "tags": [
+        "FLF2V",
+        "Video"
+      ],
+      "models": [
+        "LTX-2.3"
+      ],
+      "usage": 290
+    },
+    {
+      "name": "api_bytedance_image_to_video",
+      "title": "Seedance 1.0 Pro: Image to Video",
+      "mediaType": "image",
+      "description": "Transform static images into dynamic videos using ByteDance's Seedance model. Analyzes image structure and generates natural motion with consistent visual style and coherent video sequences.",
+      "tags": [
+        "API",
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "Seedance1.0 Pro",
+        "ByteDance"
+      ],
+      "usage": 323
+    },
+    {
+      "name": "video_ltx2_3_ic_lora",
+      "title": "LTX 2.3 IC-LoRA Union Control",
+      "mediaType": "image",
+      "description": "Generate LTX 2.3 videos with IC-LoRA using aligned control inputs like depth, pose, or edges.",
+      "tags": [
+        "ControlNet",
+        "Video"
+      ],
+      "models": [
+        "LTX-2.3"
+      ],
+      "usage": 73
+    },
+    {
+      "name": "api_grok_reference_to_video",
+      "title": "Grok: Reference to Video",
+      "mediaType": "image",
+      "description": "Upload a reference image and generate a video using the Grok API, supporting up to 6 reference images for enhanced consistency.",
+      "tags": [
+        "API",
+        "Character Reference",
+        "Video"
+      ],
+      "models": [
+        "Grok"
+      ],
+      "usage": 83
+    },
+    {
+      "name": "video_wan2_2_14B_t2v",
+      "title": "Wan 2.2 14B Text to Video",
+      "mediaType": "image",
+      "description": "Generate high-quality videos from text prompts with cinematic aesthetic control and dynamic motion generation using Wan 2.2.",
+      "tags": [
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "Wan2.2",
+        "Wan"
+      ],
+      "usage": 272
+    },
+    {
+      "name": "api_heygen_avatar_video",
+      "title": "HeyGen: Avatar Video",
+      "mediaType": "image",
+      "description": "Create an AI avatar video from a text prompt or uploaded image using HeyGen's avatar generation technology, outputting a single talking-head video. You can save the avatar ID for reuse in future video…",
+      "tags": [
+        "API",
+        "Lip Sync",
+        "Video"
+      ],
+      "models": [
+        "HeyGen"
+      ],
+      "usage": 11
+    },
+    {
+      "name": "video_ltx2_i2v",
+      "title": "LTX-2: Image to Video",
+      "mediaType": "image",
+      "description": "Transform static images into dynamic videos with synchronized audio-video generation using LTX-2. Features expressive lip sync, natural motion, and efficient performance.",
+      "tags": [
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "LTX-2",
+        "Lightricks"
+      ],
+      "usage": 117
+    },
+    {
+      "name": "api_wan2_7_i2v",
+      "title": "Wan2.7: Image to Video",
+      "mediaType": "image",
+      "description": "Upload an image and audio file to generate a video with synchronized sound, using the first and last frames for control.",
+      "tags": [
+        "API",
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "Wan2.7"
+      ],
+      "usage": 71
+    },
+    {
+      "name": "api_kling_v3_flf2v",
+      "title": "Kling 3.0: First Last Frame to Video",
+      "mediaType": "image",
+      "description": "Input a first and last frame image to generate a continuous video sequence with multi-shot generation, precise element control, and support for multilingual prompts.",
+      "tags": [
+        "API",
+        "Video",
+        "FLF2V"
+      ],
+      "models": [
+        "Kling 3.0"
+      ],
+      "usage": 233
+    },
+    {
+      "name": "api_kling_o3_video_edit",
+      "title": "Kling O3: Video Edit",
+      "mediaType": "image",
+      "description": "Upload a video and a reference image to edit with Kling O3. Generate a professionally edited video with precise subject editing, scene composition, and native audio-visual synchronization.",
+      "tags": [
+        "Video Edit",
+        "API",
+        "Video"
+      ],
+      "models": [
+        "Kling O3"
+      ],
+      "usage": 215
+    },
+    {
+      "name": "api_wan2_7_video_edit",
+      "title": "Wan2.7: Video Edit",
+      "mediaType": "image",
+      "description": "Upload a video and corresponding images to edit and replace characters or scenes using the Wan2.7 model.",
+      "tags": [
+        "API",
+        "Video",
+        "Video Edit"
+      ],
+      "models": [
+        "Wan2.7"
+      ],
+      "usage": 77
+    },
+    {
+      "name": "video_ltx2_t2v",
+      "title": "LTX-2 Text to Video",
+      "mediaType": "image",
+      "description": "Generate high-quality videos from text prompts with synchronized audio-video generation using LTX-2. Features expressive lip sync, dynamic motion generation, and efficient performance.",
+      "tags": [
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "LTX-2",
+        "Lightricks"
+      ],
+      "usage": 64
+    },
+    {
+      "name": "api_wan2_7_t2v",
+      "title": "Wan2.7: Text to Video",
+      "mediaType": "image",
+      "description": "Generate videos from text prompts using Wan 2.7. Supports audio reference to create lip-synced video",
+      "tags": [
+        "API",
+        "Lip Sync",
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "Wan2.7"
+      ],
+      "usage": 10
+    },
+    {
+      "name": "api_wan2_7_r2v",
+      "title": "Wan2.7: Reference to Video",
+      "mediaType": "image",
+      "description": "Upload a reference video and character image to generate a video with consistent character features.",
+      "tags": [
+        "API",
+        "Video",
+        "Reference to Video"
+      ],
+      "models": [
+        "Wan2.7"
+      ],
+      "usage": 9
+    },
+    {
+      "name": "video_wan_vace_14B_v2v",
+      "title": "Wan2.1 VACE Control Video",
+      "mediaType": "image",
+      "description": "Generate videos by controlling input videos and reference images using Wan VACE.",
+      "tags": [
+        "Video to Video",
+        "Video"
+      ],
+      "models": [
+        "Wan2.1",
+        "Wan"
+      ],
+      "usage": 118
+    },
+    {
+      "name": "video_ltx_2_audio_to_video",
+      "title": "LTX-2: Audio to Video",
+      "mediaType": "image",
+      "description": "Upload an audio file and a starting image frame. Generate a video synchronized to the audio using the LTX-2 model.",
+      "tags": [
+        "Audio to Video",
+        "Video"
+      ],
+      "models": [
+        "LTX-2"
+      ],
+      "usage": 95
+    },
+    {
+      "name": "api_kling_omni_v2v",
+      "title": "Kling O1: Video to Video",
+      "mediaType": "image",
+      "description": "Transform videos with Kling O1. Edit video content, change styles, or replace characters using text prompts and reference images.",
+      "tags": [
+        "API",
+        "Character Reference",
+        "Video"
+      ],
+      "models": [
+        "Kling O1"
+      ],
+      "usage": 40
+    },
+    {
+      "name": "video_wan2_2_14B_animate",
+      "title": "Wan2.2 Animate, Character Animation and Replacement",
+      "mediaType": "image",
+      "description": "Unified character animation and replacement framework with precise motion and expression replication.",
+      "tags": [
+        "Video",
+        "Image to Video"
+      ],
+      "models": [
+        "Wan",
+        "wan2.2 Animate"
+      ],
+      "usage": 120
+    },
+    {
+      "name": "video_wan2_2_14B_flf2v",
+      "title": "Wan 2.2 14B First-Last Frame to Video",
+      "mediaType": "image",
+      "description": "Generate smooth video transitions by defining start and end frames.",
+      "tags": [
+        "FLF2V",
+        "Video"
+      ],
+      "models": [
+        "Wan2.2",
+        "Wan"
+      ],
+      "usage": 305
+    },
+    {
+      "name": "video_wan2_2_14B_fun_control",
+      "title": "Wan 2.2 14B Fun Control",
+      "mediaType": "image",
+      "description": "Generate videos guided by pose, depth, and edge controls using Wan 2.2 Fun Control.",
+      "tags": [
+        "Video to Video",
+        "Video",
+        "ControlNet"
+      ],
+      "models": [
+        "Wan2.2",
+        "Wan"
+      ],
+      "usage": 104
+    },
+    {
+      "name": "api_vidu_q3_text_to_video",
+      "title": "Vidu Q3 Audio-Visual Video Generation",
+      "mediaType": "image",
+      "description": "Input a text prompt or upload an image to generate a 1-16 second video with synchronized audio and automatic scene transitions.",
+      "tags": [
+        "API",
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "Vidu",
+        "Vidu Q3"
+      ],
+      "usage": 22
+    },
+    {
+      "name": "api_vidu_q3_image_to_video",
+      "title": "Vidu Q3 Image-to-Video with Audio",
+      "mediaType": "image",
+      "description": "Upload an image and provide a text prompt to generate a 1-16 second video with synchronized audio and intelligent scene transitions.",
+      "tags": [
+        "API",
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "Vidu",
+        "Vidu Q3"
+      ],
+      "usage": 8
+    },
+    {
+      "name": "api_wan2_6_i2v",
+      "title": "Wan2.6: Image to Video",
+      "mediaType": "image",
+      "description": "Transform images into high-quality videos with enhanced image quality, smoother motion, 1080P resolution support, and natural movement generation for professional results.",
+      "tags": [
+        "Image to Video",
+        "Video",
+        "API"
+      ],
+      "models": [
+        "Wan2.6",
+        "Wan"
+      ],
+      "usage": 8
+    },
+    {
+      "name": "api_kling_motion_control",
+      "title": "Kling2.6: Motion Control",
+      "mediaType": "image",
+      "description": "Apply precise character actions and expressions from a reference video to your character image with synchronized motion control.",
+      "tags": [
+        "Video",
+        "Motion Control",
+        "API"
+      ],
+      "models": [
+        "Kling 2.6",
+        "Kling"
+      ],
+      "usage": 28
+    },
+    {
+      "name": "api_kling2_6_i2v",
+      "title": "Kling2.6: Animate Images with Audio",
+      "mediaType": "image",
+      "description": "Transform static images into dynamic videos with synchronized dialogue, singing, sound effects, and ambient audio.",
+      "tags": [
+        "Image to Video",
+        "Video",
+        "API",
+        "Audio"
+      ],
+      "models": [
+        "Kling 2.6",
+        "Kling"
+      ],
+      "usage": 22
+    },
+    {
+      "name": "video_ltx2_i2v_distilled",
+      "title": "LTX-2 Image to Video (Distilled)",
+      "mediaType": "image",
+      "description": "Transform static images into dynamic videos with synchronized audio-video generation using LTX-2 distilled model. Optimized for faster generation while maintaining quality. Features expressive lip syn…",
+      "tags": [
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "LTX-2",
+        "Lightricks"
+      ],
+      "usage": 36
+    },
+    {
+      "name": "video_ltx2_pose_to_video",
+      "title": "LTX-2 Pose to Video",
+      "mediaType": "image",
+      "description": "Generate high-quality videos from pose guidance with synchronized audio-video generation using LTX-2. Features precise pose control, expressive motion, and efficient performance.",
+      "tags": [
+        "ControlNet",
+        "Video"
+      ],
+      "models": [
+        "LTX-2",
+        "Lightricks"
+      ],
+      "usage": 27
+    },
+    {
+      "name": "video_ltx2_t2v_distilled",
+      "title": "LTX-2 Text to Video (Distilled)",
+      "mediaType": "image",
+      "description": "Generate high-quality videos from text prompts with synchronized audio-video generation using LTX-2 distilled model. Optimized for faster generation while maintaining quality. Features expressive lip …",
+      "tags": [
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "LTX-2",
+        "Lightricks"
+      ],
+      "usage": 11
+    },
+    {
+      "name": "video_ltx2_canny_to_video",
+      "title": "LTX-2 Canny to Video",
+      "mediaType": "image",
+      "description": "Generate high-quality videos from edge detection (Canny) guidance with synchronized audio-video generation using LTX-2. Features precise edge control, structural consistency, and efficient performance…",
+      "tags": [
+        "ControlNet",
+        "Video"
+      ],
+      "models": [
+        "LTX-2",
+        "Lightricks"
+      ],
+      "usage": 14
+    },
+    {
+      "name": "video_ltx2_depth_to_video",
+      "title": "LTX-2 Depth to Video",
+      "mediaType": "image",
+      "description": "Generate high-quality videos from depth maps with synchronized audio-video generation using LTX-2. Features precise depth control, spatial awareness, and efficient performance.",
+      "tags": [
+        "ControlNet",
+        "Video"
+      ],
+      "models": [
+        "LTX-2",
+        "Lightricks"
+      ],
+      "usage": 17
+    },
+    {
+      "name": "video-wan21_scail",
+      "title": "Wan2.1 SCAIL",
+      "mediaType": "image",
+      "description": "One-Touch SCAIL Pose Control based on the composition of the Reference Image",
+      "tags": [
+        "Motion Control",
+        "Video"
+      ],
+      "models": [
+        "Wan2.1 SCAIL"
+      ],
+      "usage": 81
+    },
+    {
+      "name": "video_hunyuan_video_1.5_720p_i2v",
+      "title": "Hunyuan Video 1.5 Image to Video",
+      "mediaType": "image",
+      "description": "Animate still images into dynamic videos with precise motion and camera control. Maintains visual consistency while bringing photos and illustrations to life with smooth, natural movements.",
+      "tags": [
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "Hunyuan Video"
+      ],
+      "usage": 72
+    },
+    {
+      "name": "api_kling_omni_edit_video",
+      "title": "Kling O1: Video Edit",
+      "mediaType": "image",
+      "description": "Edit videos with natural language commands, featuring video reference mode for quick generation of high-quality style transfers, element additions, and background modifications.",
+      "tags": [
+        "Video",
+        "API",
+        "Video Edit",
+        "Text to Video",
+        "Image to Video"
+      ],
+      "models": [
+        "Kling"
+      ],
+      "usage": 41
+    },
+    {
+      "name": "api_kling_omni_i2v",
+      "title": "Kling O1: Image to Video ",
+      "mediaType": "image",
+      "description": "Transform static images into dynamic videos with Kling O1. Add motion, camera movements, and life to your images using text prompts.",
+      "tags": [
+        "API",
+        "Video",
+        "Character Reference"
+      ],
+      "models": [
+        "Kling O1"
+      ],
+      "usage": 53
+    },
+    {
+      "name": "api_wan_image_to_video",
+      "title": "Wan2.5: Image to Video",
+      "mediaType": "image",
+      "description": "Transform images into videos with synchronized audio, enhanced motion, and superior quality.",
+      "tags": [
+        "Image to Video",
+        "Video",
+        "API"
+      ],
+      "models": [
+        "Wan2.5",
+        "Wan"
+      ],
+      "usage": 19
+    },
+    {
+      "name": "api_seedance2_0_flf2v_real_human",
+      "title": "Seedance2.0 Real Human: FLF2V",
+      "mediaType": "image",
+      "description": "Upload a reference image of a real person for identity verification and generate a personalized video with first and last frame control using Seedance2.0 FLF2V.",
+      "tags": [
+        "API",
+        "Video",
+        "FLF2V"
+      ],
+      "models": [
+        "Seedance 2.0"
+      ],
+      "usage": 6
+    },
+    {
+      "name": "api_seedance2_0_r2v_real_human",
+      "title": "Seedance2.0 Real Human: Reference to Video",
+      "mediaType": "image",
+      "description": "Upload a reference video of a real person for identity verification. Use your own photo to validate and generate a personalized video output.",
+      "tags": [
+        "API",
+        "Video",
+        "Reference to Video"
+      ],
+      "models": [
+        "Seedance 2.0"
+      ],
+      "usage": 12
+    },
+    {
+      "name": "api_vidu_q2_flf2v",
+      "title": "Vidu Q2: FLF2V",
+      "mediaType": "image",
+      "description": "Create smooth video transitions between start and end frames with cinematic camera movements, multi-subject consistency.",
+      "tags": [
+        "FLF2V",
+        "Video",
+        "API"
+      ],
+      "models": [
+        "Vidu Q2"
+      ],
+      "usage": 180
+    },
+    {
+      "name": "video_wan2_2_5B_ti2v",
+      "title": "Wan 2.2 5B Video Generation",
+      "mediaType": "image",
+      "description": "Fast text-to-video and image-to-video generation with 5B parameters. Optimized for rapid prototyping and creative exploration.",
+      "tags": [
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "Wan2.2",
+        "Wan"
+      ],
+      "usage": 203
+    },
+    {
+      "name": "video_wan2_2_14B_s2v",
+      "title": "Wan2.2-S2V Audio-Driven Video Generation",
+      "mediaType": "image",
+      "description": "Transform static images and audio into dynamic videos with perfect synchronization and minute-level generation.",
+      "tags": [
+        "Video",
+        "Audio to Video"
+      ],
+      "models": [
+        "Wan2.2",
+        "Wan"
+      ],
+      "usage": 75
+    },
+    {
+      "name": "video_wan_vace_inpainting",
+      "title": "Wan2.1 VACE Inpainting",
+      "mediaType": "image",
+      "description": "Edit specific regions in videos while preserving surrounding content. Great for object removal or replacement.",
+      "tags": [
+        "Inpainting",
+        "Video"
+      ],
+      "models": [
+        "Wan2.1",
+        "Wan"
+      ],
+      "usage": 130
+    },
+    {
+      "name": "api_bytedance_flf2v",
+      "title": "Seedance1.0 Pro: Start End to Video",
+      "mediaType": "image",
+      "description": "Generate cinematic video transitions between start and end frames with fluid motion, scene consistency, and professional polish using ByteDance's Seedance model.",
+      "tags": [
+        "API",
+        "FLF2V",
+        "Video"
+      ],
+      "models": [
+        "Seedance1.0 Pro",
+        "ByteDance"
+      ],
+      "usage": 15
+    },
+    {
+      "name": "api_kling_omni_t2v",
+      "title": "Kling O1: Text to Video",
+      "mediaType": "image",
+      "description": "Generate videos from text descriptions using Kling O1. Create dynamic video content with natural language prompts.",
+      "tags": [
+        "API",
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "Kling O1"
+      ],
+      "usage": 6
+    },
+    {
+      "name": "video_wan2_2_14B_fun_inpaint",
+      "title": "Wan 2.2 14B Fun Inp",
+      "mediaType": "image",
+      "description": "Generate videos from start and end frames using Wan 2.2 Fun Inp.",
+      "tags": [
+        "FLF2V",
+        "Video"
+      ],
+      "models": [
+        "Wan2.2",
+        "Wan"
+      ],
+      "usage": 13
+    },
+    {
+      "name": "api_runway_gen4_turo_image_to_video",
+      "title": "Runway: Gen4 Turbo Image to Video",
+      "mediaType": "image",
+      "description": "Generate dynamic videos from images using Runway Gen4 Turbo.",
+      "tags": [
+        "Image to Video",
+        "Video",
+        "API"
+      ],
+      "models": [
+        "Runway"
+      ],
+      "usage": 18
+    },
+    {
+      "name": "ltxv_image_to_video",
+      "title": "LTXV Image to Video",
+      "mediaType": "image",
+      "description": "Generate videos from still images.",
+      "tags": [
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "LTX-0.9.5"
+      ],
+      "usage": 44
+    },
+    {
+      "name": "api_wan2_6_t2v",
+      "title": "Wan2.6: Text to Video",
+      "mediaType": "image",
+      "description": "Generate high-quality videos from text prompts with enhanced image quality, smoother motion, 1080P resolution support, and improved prompt understanding for natural, professional results.",
+      "tags": [
+        "Text to Video",
+        "Video",
+        "API"
+      ],
+      "models": [
+        "Wan2.6",
+        "Wan"
+      ],
+      "usage": 8
+    },
+    {
+      "name": "video_hunyuan_video_1.5_720p_t2v",
+      "title": "Hunyuan Video 1.5 Text to Video",
+      "mediaType": "image",
+      "description": "Generate high-quality 720p videos from text prompts with cinematic camera control, emotional expressions, and physics simulation. Supports multiple styles including realistic, anime, and 3D with text …",
+      "tags": [
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "Hunyuan Video"
+      ],
+      "usage": 20
+    },
+    {
+      "name": "wan2.1_fun_control",
+      "title": "Wan 2.1 ControlNet",
+      "mediaType": "image",
+      "description": "Generate videos guided by pose, depth, and edge controls using Wan 2.1 ControlNet.",
+      "tags": [
+        "Video to Video",
+        "Video"
+      ],
+      "models": [
+        "Wan2.1",
+        "Wan"
+      ],
+      "usage": 39
+    },
+    {
+      "name": "video_wan_vace_14B_ref2v",
+      "title": "Wan2.1 VACE Reference to Video",
+      "mediaType": "image",
+      "description": "Create videos that match the style and content of a reference image. Perfect for style-consistent video generation.",
+      "tags": [
+        "Video",
+        "Image to Video"
+      ],
+      "models": [
+        "Wan2.1",
+        "Wan"
+      ],
+      "usage": 39
+    },
+    {
+      "name": "video_wan2_1_infinitetalk",
+      "title": "InfiniteTalk: Audio-Driven Full-Body Video Dubbing",
+      "mediaType": "image",
+      "description": "Upload a source Image and target audio. Generate a full-body dubbed video with synchronized motion while preserving the original identity, background, and camera movement.",
+      "tags": [
+        "Audio to Video",
+        "Lip Sync",
+        "Video"
+      ],
+      "models": [
+        "Wan2.1 InfiniteTalk"
+      ],
+      "usage": 117
+    },
+    {
+      "name": "video_wanmove_480p",
+      "title": "Wan-Move Motion-Control Image to Video",
+      "mediaType": "image",
+      "description": "Generate videos from a single image using Wan-Move, with fine-grained point-level motion control via trajectory guidance.",
+      "tags": [
+        "Image to Video",
+        "Motion Control",
+        "Video"
+      ],
+      "models": [
+        "Wan",
+        "Wan2.1"
+      ],
+      "usage": 22
+    },
+    {
+      "name": "video_wanmove_480p_hallucination",
+      "title": "WanMove: Daydream Illusion",
+      "mediaType": "image",
+      "description": "Use WanMove to generate dynamic images from trajectories and create video dynamic effects with daydream illusion",
+      "tags": [
+        "Image to Video",
+        "Motion Control",
+        "Video"
+      ],
+      "models": [
+        "Wan2.1",
+        "Wan"
+      ],
+      "usage": 11
+    },
+    {
+      "name": "api_wan_r2v",
+      "title": "WAN2.6: Reference to Video",
+      "mediaType": "image",
+      "description": "Creating identity-preserved videos with natural movement and cinematic quality.",
+      "tags": [
+        "API",
+        "Character Reference",
+        "Video"
+      ],
+      "models": [
+        "Wan2.6",
+        "Wan"
+      ],
+      "usage": 10
+    },
+    {
+      "name": "video_wan_vace_outpainting",
+      "title": "Wan2.1 VACE Outpainting",
+      "mediaType": "image",
+      "description": "Generate extended videos by expanding video size using Wan VACE outpainting.",
+      "tags": [
+        "Outpainting",
+        "Video"
+      ],
+      "models": [
+        "Wan2.1",
+        "Wan"
+      ],
+      "usage": 47
+    },
+    {
+      "name": "video_wan2_2_5B_fun_control",
+      "title": "Wan 2.2 5B Fun Control",
+      "mediaType": "image",
+      "description": "Multi-condition video control with pose, depth, and edge guidance. Compact 5B size for experimental development.",
+      "tags": [
+        "Text to Video",
+        "Video",
+        "ControlNet"
+      ],
+      "models": [
+        "Wan2.2",
+        "Wan"
+      ],
+      "usage": 26
+    },
+    {
+      "name": "video_humo",
+      "title": "HuMo Video Generation",
+      "mediaType": "image",
+      "description": "Generate videos basic on audio, image, and text, keep the character's lip sync.",
+      "tags": [
+        "Video",
+        "Text to Video"
+      ],
+      "models": [
+        "HuMo"
+      ],
+      "usage": 18
+    },
+    {
+      "name": "text_to_video_wan",
+      "title": "Wan 2.1 Text to Video",
+      "mediaType": "image",
+      "description": "Generate videos from text prompts using Wan 2.1.",
+      "tags": [
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "Wan2.1",
+        "Wan"
+      ],
+      "usage": 81
+    },
+    {
+      "name": "video_wan2_2_14B_fun_camera",
+      "title": "Wan 2.2 14B Fun Camera Control",
+      "mediaType": "image",
+      "description": "Generate videos with camera motion controls including pan, zoom, and rotation using Wan 2.2 Fun Camera Control.",
+      "tags": [
+        "Video to Video",
+        "Video"
+      ],
+      "models": [
+        "Wan2.2",
+        "Wan"
+      ],
+      "usage": 27
+    },
+    {
+      "name": "api_vidu_reference_to_video",
+      "title": "Vidu Q1: Reference to Video",
+      "mediaType": "image",
+      "description": "Generate videos with consistent subjects using multiple reference images (up to 7) for character and style continuity across the video sequence.",
+      "tags": [
+        "Video",
+        "Image to Video",
+        "API"
+      ],
+      "models": [
+        "Vidu Q1",
+        "Vidu"
+      ],
+      "usage": 17
+    },
+    {
+      "name": "wan2.1_flf2v_720_f16",
+      "title": "Wan 2.1 FLF2V 720p F16",
+      "mediaType": "image",
+      "description": "Generate videos by controlling first and last frames using Wan 2.1 FLF2V.",
+      "tags": [
+        "FLF2V",
+        "Video"
+      ],
+      "models": [
+        "Wan2.1",
+        "Wan"
+      ],
+      "usage": 20
+    },
+    {
+      "name": "image_to_video_wan",
+      "title": "Wan 2.1 Image to Video",
+      "mediaType": "image",
+      "description": "Generate videos from images using Wan 2.1.",
+      "tags": [
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "Wan2.1",
+        "Wan"
+      ],
+      "usage": 118
+    },
+    {
+      "name": "video_wan_vace_flf2v",
+      "title": "Wan2.1 VACE First-Last Frame",
+      "mediaType": "image",
+      "description": "Generate smooth video transitions by defining start and end frames. Supports custom keyframe sequences.",
+      "tags": [
+        "FLF2V",
+        "Video"
+      ],
+      "models": [
+        "Wan2.1",
+        "Wan"
+      ],
+      "usage": 42
+    },
+    {
+      "name": "video_minimax_h3_i2v_continuation",
+      "title": "Image to Video ",
+      "mediaType": "image",
+      "description": "Start with an image and an empty prompt, then describe the motion, shots, and audio you want MiniMax H3 to generate. The workflow produces one video with synchronized audio and remains fully editable …",
+      "tags": [
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "MiniMax H3"
+      ],
+      "usage": 914
+    },
+    {
+      "name": "api_kling2_6_t2v",
+      "title": "Kling2.6: Storytelling Videos with Audio",
+      "mediaType": "image",
+      "description": "Bring your stories to life with videos featuring synchronized dialogue, music, sound effects, and ambient audio from text prompts.",
+      "tags": [
+        "API",
+        "Audio",
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "Kling",
+        "Kling 2.6"
+      ],
+      "usage": 27
+    },
+    {
+      "name": "video_kandinsky5_i2v",
+      "title": "Kandinsky 5.0 Video Lite Image to Video",
+      "mediaType": "image",
+      "description": "A lightweight 2B model that generates videos from English and Russian prompts with high visual quality.",
+      "tags": [
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "Kandinsky"
+      ],
+      "usage": 45
+    },
+    {
+      "name": "api_vidu_q2_t2v",
+      "title": "Vidu Q2: Text to Video",
+      "mediaType": "image",
+      "description": "Generate high-quality 1080p videos from text prompts with Vidu Q2 model",
+      "tags": [
+        "API",
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "Vidu Q2",
+        "Vidu"
+      ],
+      "usage": 15
+    },
+    {
+      "name": "api_wan_text_to_video",
+      "title": "Wan2.5: Text to Video",
+      "mediaType": "image",
+      "description": "Generate videos with synchronized audio, enhanced motion, and superior quality.",
+      "tags": [
+        "Image to Video",
+        "Video",
+        "API"
+      ],
+      "models": [
+        "Wan2.5",
+        "Wan"
+      ],
+      "usage": 16
+    },
+    {
+      "name": "video_kandinsky5_t2v",
+      "title": "Kandinsky 5.0 Video Lite Text to Video",
+      "mediaType": "image",
+      "description": "A lightweight 2B model that generates videos from English and Russian prompts with high visual quality.",
+      "tags": [
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "Kandinsky"
+      ],
+      "usage": 122
+    },
+    {
+      "name": "api_vidu_start_end_to_video",
+      "title": "Vidu Q1: Start End to Video",
+      "mediaType": "image",
+      "description": "Create smooth video transitions between defined start and end frames with natural motion interpolation and consistent visual quality.",
+      "tags": [
+        "Video",
+        "API",
+        "FLF2V"
+      ],
+      "models": [
+        "Vidu Q1",
+        "Vidu"
+      ],
+      "usage": 9
+    },
+    {
+      "name": "api_pixverse_t2v",
+      "title": "PixVerse: Text to Video",
+      "mediaType": "image",
+      "description": "Generate videos with accurate prompt interpretation and stunning video dynamics.",
+      "tags": [
+        "Text to Video",
+        "Video",
+        "API"
+      ],
+      "models": [
+        "PixVerse"
+      ],
+      "usage": 8
+    },
+    {
+      "name": "video_wan2.1_alpha_t2v_14B",
+      "title": "Wan2.1 Alpha T2V",
+      "mediaType": "image",
+      "description": "Generate text-to-video with alpha channel support for transparent backgrounds and semi-transparent objects.",
+      "tags": [
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "Wan2.1",
+        "Wan"
+      ],
+      "usage": 9
+    },
+    {
+      "name": "video_capybara_v0_1_image_to_video",
+      "title": "Capybara: Image to Video",
+      "mediaType": "image",
+      "description": "Upload an image and provide a text instruction. Generate a new video where the input is edited according to your instruction, preserving structure and temporal coherence.",
+      "tags": [
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "Capybara"
+      ],
+      "usage": 20
+    },
+    {
+      "name": "txt_to_image_to_video",
+      "title": "SVD Text to Image to Video",
+      "mediaType": "image",
+      "description": "Generate videos by first creating images from text prompts.",
+      "tags": [
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "SVD",
+        "Stability"
+      ],
+      "usage": 9
+    },
+    {
+      "name": "api_luma_i2v",
+      "title": "Luma: Image to Video",
+      "mediaType": "image",
+      "description": "Take static images and instantly create magical high quality animations.",
+      "tags": [
+        "Image to Video",
+        "Video",
+        "API"
+      ],
+      "models": [
+        "Luma"
+      ],
+      "usage": 11
+    },
+    {
+      "name": "video_wan_ati",
+      "title": "Wan2.1 ATI",
+      "mediaType": "image",
+      "description": "Trajectory-controlled Video Generation.",
+      "tags": [
+        "Video",
+        "Motion Control"
+      ],
+      "models": [
+        "Wan2.1",
+        "Wan"
+      ],
+      "usage": 8
+    },
+    {
+      "name": "api_vidu_text_to_video",
+      "title": "Vidu Q1: Text to Video",
+      "mediaType": "image",
+      "description": "Generate high-quality 1080p videos from text prompts with adjustable movement amplitude and duration control using Vidu's advanced AI model.",
+      "tags": [
+        "Text to Video",
+        "Video",
+        "API"
+      ],
+      "models": [
+        "Vidu Q1",
+        "Vidu"
+      ],
+      "usage": 19
+    },
+    {
+      "name": "api_bytedance_text_to_video",
+      "title": "Seedance1.0 Pro: Text to Video",
+      "mediaType": "image",
+      "description": "Generate high-quality videos directly from text prompts using ByteDance's Seedance model. Supports multiple resolutions and aspect ratios with natural motion and cinematic quality.",
+      "tags": [
+        "Video",
+        "API",
+        "Text to Video"
+      ],
+      "models": [
+        "Seedance1.0 Pro",
+        "ByteDance"
+      ],
+      "usage": 9
+    },
+    {
+      "name": "api_vidu_image_to_video",
+      "title": "Vidu Q1: Image to Video",
+      "mediaType": "image",
+      "description": "Transform static images into dynamic 1080p videos with precise motion control and customizable movement amplitude using Vidu.",
+      "tags": [
+        "Image to Video",
+        "Video",
+        "API"
+      ],
+      "models": [
+        "Vidu Q1",
+        "Vidu"
+      ],
+      "usage": 14
+    },
+    {
+      "name": "video_wan2_2_5B_fun_inpaint",
+      "title": "Wan 2.2 5B Fun Inpaint",
+      "mediaType": "image",
+      "description": "Efficient video inpainting from start and end frames. 5B model delivers quick iterations for testing workflows.",
+      "tags": [
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "Wan2.2",
+        "Wan"
+      ],
+      "usage": 7
+    },
+    {
+      "name": "ltxv_text_to_video",
+      "title": "LTXV Text to Video",
+      "mediaType": "image",
+      "description": "Generate videos from text prompts.",
+      "tags": [
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "LTX-0.9.5"
+      ],
+      "usage": 15
+    },
+    {
+      "name": "api_luma_t2v",
+      "title": "Luma: Text to Video",
+      "mediaType": "image",
+      "description": "High-quality videos can be generated using simple prompts.",
+      "tags": [
+        "Text to Video",
+        "Video",
+        "API"
+      ],
+      "models": [
+        "Luma"
+      ],
+      "usage": 2
+    }
+  ],
+  "metadata": {
+    "total": 135,
+    "limit": 100,
+    "offset": 0
+  },
+  "note": "detail:'full' returns more fields; get_template_schema returns one item uncapped."
+}

@@ -1,0 +1,333 @@
+{
+  "data": [
+    {
+      "name": "video_minimax_h3_i2v",
+      "title": "MiniMax H3: Image to Video",
+      "mediaType": "image",
+      "description": "Turn a starting image into a short, high-quality video clip with MiniMax H3, a unified multimodal model that generates visuals and synchronized audio in a single pass. The workflow takes 1 input image…",
+      "tags": [
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "MiniMax H3"
+      ],
+      "usage": 21851
+    },
+    {
+      "name": "video_minimax_h3_r2v",
+      "title": "MiniMax H3: Reference to Video",
+      "mediaType": "image",
+      "description": "Generate a new video by feeding MiniMax H3 a reference image, up to nine images, three videos, and three audio clips alongside a text prompt, letting the model match character identity, motion, camera…",
+      "tags": [
+        "Reference to Video",
+        "Video"
+      ],
+      "models": [
+        "MiniMax H3"
+      ],
+      "usage": 11135
+    },
+    {
+      "name": "video_minimax_h3_t2v",
+      "title": "MiniMax H3: Text to Video",
+      "mediaType": "image",
+      "description": "Generate video with native stereo audio directly from a text prompt using MiniMax H3, an omni-modal model that synthesizes voice, sound effects, and music in a single pass. Output is up to 2K resoluti…",
+      "tags": [
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "MiniMax H3"
+      ],
+      "usage": 5877
+    },
+    {
+      "name": "video_minimax_h3_multiframe_reference",
+      "title": "MiniMax H3: Multiframe Reference",
+      "mediaType": "image",
+      "description": "Generate video from multiple still images with MiniMax H3, anchoring up to four reference frames anywhere along the timeline to control motion and composition. Ideal for creating video continuations f…",
+      "tags": [
+        "Reference to Video"
+      ],
+      "models": [
+        "MiniMax H3"
+      ],
+      "usage": 686
+    },
+    {
+      "name": "api_minimax_h3_max_r2v",
+      "title": "MiniMax H3 Max: Reference to Video",
+      "mediaType": "image",
+      "description": "Generate video from an image reference using MiniMax H3 Max, which animates your still frame while preserving its composition, visual identity, and aspect ratio. The model generates faster than real t…",
+      "tags": [
+        "API",
+        "Reference to Video"
+      ],
+      "models": [
+        "MiniMax H3"
+      ],
+      "usage": 753
+    },
+    {
+      "name": "api_minimax_h3_max_i2v",
+      "title": "MiniMax H3 Max: Image to Video",
+      "mediaType": "image",
+      "description": "Generate video from a source image using MiniMax H3 Max, animating your still frame while preserving its composition, visual identity, and aspect ratio. The model delivers faster-than-real-time genera…",
+      "tags": [
+        "API",
+        "Image to Video"
+      ],
+      "models": [
+        "MiniMax H3"
+      ],
+      "usage": 457
+    },
+    {
+      "name": "video_minimax_h3_fun_controlnet_union",
+      "title": "MiniMax H3 Fun ControlNet Union",
+      "mediaType": "image",
+      "description": "Generate videos from a pose reference video using MiniMax-H3 with a ControlNet-Union checkpoint, preserving the input's motion and structure while applying your prompt. Ideal for character animation, …",
+      "tags": [
+        "ControlNet"
+      ],
+      "models": [
+        "MiniMax H3"
+      ],
+      "usage": 386
+    },
+    {
+      "name": "api_minimax_h3_max_turbo_i2v",
+      "title": "MiniMax H3 Max Turbo: Image to Video",
+      "mediaType": "image",
+      "description": "Generate video sequences from a starting image using MiniMax H3 Max Turbo, producing two video outputs from a single input frame. This rapid image-to-video workflow generates short clips in seconds, w…",
+      "tags": [
+        "API",
+        "Reference to Video"
+      ],
+      "models": [
+        "MiniMax H3"
+      ],
+      "usage": 445
+    },
+    {
+      "name": "api_minimax_h3_r2v",
+      "title": "MiniMax H3: Reference to Video",
+      "mediaType": "image",
+      "description": "Generate video from a reference image or set of multimodal inputs using MiniMax H3, which interprets text, images, video, and audio together to produce coherent 5–15 second clips with native stereo au…",
+      "tags": [
+        "API",
+        "Reference to Video",
+        "Image to Video"
+      ],
+      "models": [
+        "MiniMax H3"
+      ],
+      "usage": 237
+    },
+    {
+      "name": "api_minimax_h3_max_turbo_t2v",
+      "title": "MiniMax H3 Turbo: Text to Video",
+      "mediaType": "image",
+      "description": "Generate 5–15 second videos from text prompts using MiniMax H3 Max Turbo, a high-speed text-to-video model optimized for rapid inference. This workflow takes no file inputs and outputs a single video …",
+      "tags": [
+        "API"
+      ],
+      "models": [
+        "MiniMax H3"
+      ],
+      "usage": 282
+    },
+    {
+      "name": "api_minimax_h3_max_t2v",
+      "title": "MiniMax H3 Max: Text to Video",
+      "mediaType": "image",
+      "description": "Generate polished, prompt-faithful video from text using Minimax H3 Max, producing a single finished video clip with no input files required. Ideal for rapid concept exploration, cinematic text-to-vid…",
+      "tags": [
+        "API",
+        "Text to Video"
+      ],
+      "models": [
+        "MiniMax H3"
+      ],
+      "usage": 156
+    },
+    {
+      "name": "video_minimax_h3_i2v_continuation",
+      "title": "Image to Video ",
+      "mediaType": "image",
+      "description": "Start with an image and an empty prompt, then describe the motion, shots, and audio you want MiniMax H3 to generate. The workflow produces one video with synchronized audio and remains fully editable …",
+      "tags": [
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "MiniMax H3"
+      ],
+      "usage": 914
+    },
+    {
+      "name": "api_minimax_h3_max_flf2v",
+      "title": "MiniMax H3 Max: FLF2V",
+      "mediaType": "image",
+      "description": "Generate polished, prompt-faithful videos faster than real time with MiniMax H3 Max, a post-trained model tuned for stronger prompt adherence and vivid cinematic aesthetics. This workflow supports tex…",
+      "tags": [
+        "API",
+        "FLF2V"
+      ],
+      "models": [
+        "MiniMax H3"
+      ],
+      "usage": 90
+    },
+    {
+      "name": "api_minimax_h3_flf2v",
+      "title": "MiniMax H3: FLF2V",
+      "mediaType": "image",
+      "description": "Generate a video from a first and last frame using MiniMax H3, producing a smooth animation between the two images. You provide 2 images, and the workflow outputs a single video clip. Ideal for creati…",
+      "tags": [
+        "API",
+        "FLF2V",
+        "Video"
+      ],
+      "models": [
+        "MiniMax H3"
+      ],
+      "usage": 66
+    },
+    {
+      "name": "api_minimax_h3_t2v",
+      "title": "MiniMax H3: Text to Video",
+      "mediaType": "image",
+      "description": "Generate video directly from text using the MiniMax H3 model, producing a 5-15 second clip with native stereo audio. Ideal for rapid concept visualization, short-form social media content, and pre-vis…",
+      "tags": [
+        "Text to Video",
+        "API",
+        "Video"
+      ],
+      "models": [
+        "MiniMax H3"
+      ],
+      "usage": 21
+    },
+    {
+      "name": "video_fastvideo_fasth3_i2v",
+      "title": "FastVideo FastH3: Image to Video",
+      "mediaType": "image",
+      "description": "Generate video with synchronized native audio from a single still image using MiniMax H3 and the FastH3 8-step checkpoint. One image produces one video output with matching voice, sound effects, and m…",
+      "tags": [
+        "Image to Video"
+      ],
+      "models": [
+        "MiniMax H3"
+      ],
+      "usage": 2298
+    },
+    {
+      "name": "audio_minimax_music_3",
+      "title": "MiniMax Music 3: Text to Music",
+      "mediaType": "image",
+      "description": "Create full-length songs from text prompts with MiniMax Music 3, generating complete 5-minute tracks with stable structure and high-fidelity audio. Input a structured caption describing lyrics, style,…",
+      "tags": [
+        "Audio",
+        "Text to Music"
+      ],
+      "models": [
+        "MiniMax Music 3"
+      ],
+      "usage": 747
+    },
+    {
+      "name": "video_fastvideo_fasth3_t2v",
+      "title": "FastVideo FastH3: Text to Video",
+      "mediaType": "image",
+      "description": "Generate synchronized video and audio directly from text using a distilled eight-step model, producing one video output with no file inputs required. Ideal for rapid text-to-video prototyping, audio-v…",
+      "tags": [
+        "Text to Video"
+      ],
+      "models": [
+        "MiniMax H3"
+      ],
+      "usage": 185
+    },
+    {
+      "name": "api_tripo3_1_image_to_model",
+      "title": "Tripo H3.1: Image to Model",
+      "mediaType": "image",
+      "description": "Upload a reference image of your object. Generate a high-detail 3D model with dense geometry and PBR-ready materials.",
+      "tags": [
+        "3D",
+        "API",
+        "Image to 3D"
+      ],
+      "models": [
+        "Tripo"
+      ],
+      "usage": 258
+    },
+    {
+      "name": "api_tripo3_1_multiview_to_model",
+      "title": "Tripo H3.1: Multiview to Model",
+      "mediaType": "image",
+      "description": "Upload multiview images of your object. Generate a high-detail 3D model with dense geometry and PBR-ready materials.",
+      "tags": [
+        "API",
+        "3D",
+        "Image to 3D"
+      ],
+      "models": [
+        "Tripo"
+      ],
+      "usage": 32
+    },
+    {
+      "name": "api_tripo3_1_text_to_model",
+      "title": "Tripo H3.1: Text to Model",
+      "mediaType": "image",
+      "description": "Generate production-ready 3D hero assets with high-density geometry and PBR materials. Takes text prompts or reference images as input and outputs detailed 3D meshes suitable for close-up renders and …",
+      "tags": [
+        "3D",
+        "API",
+        "Text to Model"
+      ],
+      "models": [
+        "Tripo"
+      ],
+      "usage": 7
+    },
+    {
+      "name": "templates-photo_to_product_vid",
+      "title": "Phone Image to Product Video: Shoe",
+      "mediaType": "image",
+      "description": "Take a picture with your phone, upload it and generate a studio grade product video.",
+      "tags": [
+        "Image to Video",
+        "API"
+      ],
+      "models": [
+        "Seedream",
+        "MiniMax"
+      ],
+      "usage": 8
+    },
+    {
+      "name": "utility_interpolation_image_upscale",
+      "title": "Image Upscale: Traditional Interpolation",
+      "mediaType": "image",
+      "description": "Upload an image and select an interpolation method. Upscale the image using traditional algorithms for faster processing with minimal detail changes.",
+      "tags": [
+        "Image Upscale"
+      ],
+      "models": [
+        "None"
+      ],
+      "usage": 22
+    }
+  ],
+  "metadata": {
+    "total": 23,
+    "limit": 30,
+    "offset": 0
+  },
+  "note": "detail:'full' returns more fields; get_template_schema returns one item uncapped."
+}

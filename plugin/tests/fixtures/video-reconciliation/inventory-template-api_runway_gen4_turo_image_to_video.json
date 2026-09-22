@@ -1,0 +1,28 @@
+{
+  "template_id": "api_runway_gen4_turo_image_to_video",
+  "source_url": "https://cloud.comfy.org/templates/api_runway_gen4_turo_image_to_video.json",
+  "node_count": 4,
+  "nodes": [
+    {
+      "id": 6,
+      "type": "SaveVideo",
+      "title": "SaveVideo"
+    },
+    {
+      "id": 8,
+      "type": "RunwayImageToVideoNodeGen4",
+      "title": "RunwayImageToVideoNodeGen4"
+    },
+    {
+      "id": 1,
+      "type": "MarkdownNote",
+      "title": "About API Node"
+    },
+    {
+      "id": 4,
+      "type": "LoadImage",
+      "title": "LoadImage"
+    }
+  ],
+  "guidance": "Summary view (summary_only). The node summary above shows the graph structure. To RUN this template use run_template; to see the overridable inputs/slots use get_template_schema. Call get_template without summary_only for the full workflow JSON — it is returned only when it fits the client token cap."
+}

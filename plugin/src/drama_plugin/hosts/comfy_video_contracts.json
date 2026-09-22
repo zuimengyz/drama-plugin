@@ -1,0 +1,709 @@
+{
+  "Vidu3ImageToVideoNode": {
+    "api_node": true,
+    "outputs": [
+      "VIDEO"
+    ],
+    "fields": [
+      {
+        "name": "model",
+        "type": "COMFY_DYNAMICCOMBO_V3",
+        "required": true,
+        "options": [
+          "viduq3-pro",
+          "viduq3-turbo"
+        ]
+      },
+      {
+        "name": "model.resolution",
+        "type": "COMBO",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "viduq3-pro",
+          "viduq3-turbo"
+        ],
+        "options": [
+          "720p",
+          "1080p",
+          "2K"
+        ]
+      },
+      {
+        "name": "model.duration",
+        "type": "INT",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "viduq3-pro",
+          "viduq3-turbo"
+        ],
+        "min": 1,
+        "max": 16
+      },
+      {
+        "name": "model.audio",
+        "type": "BOOLEAN",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "viduq3-pro",
+          "viduq3-turbo"
+        ]
+      },
+      {
+        "name": "image",
+        "type": "IMAGE",
+        "required": true
+      },
+      {
+        "name": "prompt",
+        "type": "STRING",
+        "required": true
+      },
+      {
+        "name": "seed",
+        "type": "INT",
+        "required": true,
+        "min": 0,
+        "max": 2147483647
+      }
+    ]
+  },
+  "Vidu3TextToVideoNode": {
+    "api_node": true,
+    "outputs": [
+      "VIDEO"
+    ],
+    "fields": [
+      {
+        "name": "model",
+        "type": "COMFY_DYNAMICCOMBO_V3",
+        "required": true,
+        "options": [
+          "viduq3-pro",
+          "viduq3-turbo"
+        ]
+      },
+      {
+        "name": "model.aspect_ratio",
+        "type": "COMBO",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "viduq3-pro",
+          "viduq3-turbo"
+        ],
+        "options": [
+          "16:9",
+          "9:16",
+          "3:4",
+          "4:3",
+          "1:1"
+        ]
+      },
+      {
+        "name": "model.resolution",
+        "type": "COMBO",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "viduq3-pro",
+          "viduq3-turbo"
+        ],
+        "options": [
+          "720p",
+          "1080p"
+        ]
+      },
+      {
+        "name": "model.duration",
+        "type": "INT",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "viduq3-pro",
+          "viduq3-turbo"
+        ],
+        "min": 1,
+        "max": 16
+      },
+      {
+        "name": "model.audio",
+        "type": "BOOLEAN",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "viduq3-pro",
+          "viduq3-turbo"
+        ]
+      },
+      {
+        "name": "prompt",
+        "type": "STRING",
+        "required": true
+      },
+      {
+        "name": "seed",
+        "type": "INT",
+        "required": true,
+        "min": 0,
+        "max": 2147483647
+      }
+    ]
+  },
+  "ByteDance2TextToVideoNode": {
+    "api_node": true,
+    "outputs": [
+      "VIDEO"
+    ],
+    "fields": [
+      {
+        "name": "model",
+        "type": "COMFY_DYNAMICCOMBO_V3",
+        "required": true,
+        "options": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ]
+      },
+      {
+        "name": "model.prompt",
+        "type": "STRING",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ]
+      },
+      {
+        "name": "model.resolution",
+        "type": "COMBO",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "options": [
+          "480p",
+          "720p",
+          "1080p",
+          "4k"
+        ]
+      },
+      {
+        "name": "model.ratio",
+        "type": "COMBO",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "options": [
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16",
+          "21:9",
+          "adaptive"
+        ]
+      },
+      {
+        "name": "model.duration",
+        "type": "INT",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "min": 4,
+        "max": 30
+      },
+      {
+        "name": "model.generate_audio",
+        "type": "BOOLEAN",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ]
+      },
+      {
+        "name": "model.output_format",
+        "type": "COMBO",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5"
+        ],
+        "options": [
+          "mp4"
+        ]
+      },
+      {
+        "name": "seed",
+        "type": "INT",
+        "required": true,
+        "min": 0,
+        "max": 2147483647
+      },
+      {
+        "name": "watermark",
+        "type": "BOOLEAN",
+        "required": true
+      }
+    ]
+  },
+  "ByteDance2FirstLastFrameNode": {
+    "api_node": true,
+    "outputs": [
+      "VIDEO"
+    ],
+    "fields": [
+      {
+        "name": "model",
+        "type": "COMFY_DYNAMICCOMBO_V3",
+        "required": true,
+        "options": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ]
+      },
+      {
+        "name": "model.prompt",
+        "type": "STRING",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ]
+      },
+      {
+        "name": "model.resolution",
+        "type": "COMBO",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "options": [
+          "480p",
+          "720p",
+          "1080p",
+          "4k"
+        ]
+      },
+      {
+        "name": "model.duration",
+        "type": "INT",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "min": 4,
+        "max": 30
+      },
+      {
+        "name": "model.generate_audio",
+        "type": "BOOLEAN",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ]
+      },
+      {
+        "name": "model.output_format",
+        "type": "COMBO",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5"
+        ],
+        "options": [
+          "mp4"
+        ]
+      },
+      {
+        "name": "model.ratio",
+        "type": "COMBO",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "options": [
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16",
+          "21:9",
+          "adaptive"
+        ]
+      },
+      {
+        "name": "seed",
+        "type": "INT",
+        "required": true,
+        "min": 0,
+        "max": 2147483647
+      },
+      {
+        "name": "watermark",
+        "type": "BOOLEAN",
+        "required": true
+      },
+      {
+        "name": "first_frame",
+        "type": "IMAGE",
+        "required": false
+      },
+      {
+        "name": "last_frame",
+        "type": "IMAGE",
+        "required": false
+      },
+      {
+        "name": "first_frame_asset_id",
+        "type": "STRING",
+        "required": false
+      },
+      {
+        "name": "last_frame_asset_id",
+        "type": "STRING",
+        "required": false
+      }
+    ]
+  },
+  "ByteDance2ReferenceNodeV2": {
+    "api_node": true,
+    "outputs": [
+      "VIDEO"
+    ],
+    "fields": [
+      {
+        "name": "model",
+        "type": "COMFY_DYNAMICCOMBO_V3",
+        "required": true,
+        "options": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ]
+      },
+      {
+        "name": "model.prompt",
+        "type": "STRING",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ]
+      },
+      {
+        "name": "model.resolution",
+        "type": "COMBO",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "options": [
+          "480p",
+          "720p",
+          "1080p",
+          "4k"
+        ]
+      },
+      {
+        "name": "model.ratio",
+        "type": "COMBO",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "options": [
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16",
+          "21:9",
+          "adaptive"
+        ]
+      },
+      {
+        "name": "model.duration",
+        "type": "INT",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "min": 4,
+        "max": 30
+      },
+      {
+        "name": "model.generate_audio",
+        "type": "BOOLEAN",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ]
+      },
+      {
+        "name": "model.task_type",
+        "type": "COMBO",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5"
+        ],
+        "options": [
+          "auto",
+          "reference",
+          "edit",
+          "extend"
+        ]
+      },
+      {
+        "name": "model.output_format",
+        "type": "COMBO",
+        "required": true,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5"
+        ],
+        "options": [
+          "mp4"
+        ]
+      },
+      {
+        "name": "model.reference_images.image_1",
+        "type": "IMAGE",
+        "required": false,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "auto_grow_slots": [
+          "model.reference_images.image_1",
+          "model.reference_images.image_2",
+          "model.reference_images.image_3",
+          "model.reference_images.image_4",
+          "model.reference_images.image_5",
+          "model.reference_images.image_6",
+          "model.reference_images.image_7",
+          "model.reference_images.image_8",
+          "model.reference_images.image_9",
+          "model.reference_images.image_10",
+          "model.reference_images.image_11",
+          "model.reference_images.image_12",
+          "model.reference_images.image_13",
+          "model.reference_images.image_14",
+          "model.reference_images.image_15",
+          "model.reference_images.image_16",
+          "model.reference_images.image_17",
+          "model.reference_images.image_18",
+          "model.reference_images.image_19",
+          "model.reference_images.image_20",
+          "model.reference_images.image_21",
+          "model.reference_images.image_22",
+          "model.reference_images.image_23",
+          "model.reference_images.image_24",
+          "model.reference_images.image_25",
+          "model.reference_images.image_26",
+          "model.reference_images.image_27",
+          "model.reference_images.image_28",
+          "model.reference_images.image_29",
+          "model.reference_images.image_30"
+        ]
+      },
+      {
+        "name": "model.reference_videos.video_1",
+        "type": "VIDEO",
+        "required": false,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "auto_grow_slots": [
+          "model.reference_videos.video_1",
+          "model.reference_videos.video_2",
+          "model.reference_videos.video_3",
+          "model.reference_videos.video_4",
+          "model.reference_videos.video_5",
+          "model.reference_videos.video_6",
+          "model.reference_videos.video_7",
+          "model.reference_videos.video_8",
+          "model.reference_videos.video_9",
+          "model.reference_videos.video_10"
+        ]
+      },
+      {
+        "name": "model.reference_audios.audio_1",
+        "type": "AUDIO",
+        "required": false,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "auto_grow_slots": [
+          "model.reference_audios.audio_1",
+          "model.reference_audios.audio_2",
+          "model.reference_audios.audio_3",
+          "model.reference_audios.audio_4",
+          "model.reference_audios.audio_5",
+          "model.reference_audios.audio_6",
+          "model.reference_audios.audio_7",
+          "model.reference_audios.audio_8",
+          "model.reference_audios.audio_9",
+          "model.reference_audios.audio_10"
+        ]
+      },
+      {
+        "name": "model.reference_assets.asset_1",
+        "type": "STRING",
+        "required": false,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ],
+        "auto_grow_slots": [
+          "model.reference_assets.asset_1",
+          "model.reference_assets.asset_2",
+          "model.reference_assets.asset_3",
+          "model.reference_assets.asset_4",
+          "model.reference_assets.asset_5",
+          "model.reference_assets.asset_6",
+          "model.reference_assets.asset_7",
+          "model.reference_assets.asset_8",
+          "model.reference_assets.asset_9",
+          "model.reference_assets.asset_10",
+          "model.reference_assets.asset_11",
+          "model.reference_assets.asset_12",
+          "model.reference_assets.asset_13",
+          "model.reference_assets.asset_14",
+          "model.reference_assets.asset_15",
+          "model.reference_assets.asset_16",
+          "model.reference_assets.asset_17",
+          "model.reference_assets.asset_18",
+          "model.reference_assets.asset_19",
+          "model.reference_assets.asset_20",
+          "model.reference_assets.asset_21",
+          "model.reference_assets.asset_22",
+          "model.reference_assets.asset_23",
+          "model.reference_assets.asset_24",
+          "model.reference_assets.asset_25",
+          "model.reference_assets.asset_26",
+          "model.reference_assets.asset_27",
+          "model.reference_assets.asset_28",
+          "model.reference_assets.asset_29",
+          "model.reference_assets.asset_30"
+        ]
+      },
+      {
+        "name": "model.auto_downscale",
+        "type": "BOOLEAN",
+        "required": false,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ]
+      },
+      {
+        "name": "model.auto_upscale",
+        "type": "BOOLEAN",
+        "required": false,
+        "conditional": true,
+        "applies_when": [
+          "Seedance 2.5",
+          "Seedance 2.0",
+          "Seedance 2.0 Fast",
+          "Seedance 2.0 Mini"
+        ]
+      },
+      {
+        "name": "seed",
+        "type": "INT",
+        "required": true,
+        "min": 0,
+        "max": 2147483647
+      },
+      {
+        "name": "watermark",
+        "type": "BOOLEAN",
+        "required": true
+      }
+    ]
+  }
+}

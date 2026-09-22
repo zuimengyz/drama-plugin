@@ -1,0 +1,196 @@
+{
+  "data": [
+    {
+      "name": "PrunaTextToVideoNode",
+      "display_name": "Pruna P-Video-2 Text to Video",
+      "description": "Generates a video from a text prompt using Pruna video models, with optional generated sound or an audio track to drive it.",
+      "category": "partner/video/Pruna",
+      "pack": "core",
+      "inputs": {
+        "required": [
+          "COMFY_DYNAMICCOMBO_V3",
+          "STRING",
+          "COMBO",
+          "COMBO",
+          "COMBO",
+          "COMBO",
+          "BOOLEAN",
+          "BOOLEAN",
+          "BOOLEAN",
+          "INT",
+          "AUDIO"
+        ]
+      },
+      "input_details": [
+        {
+          "name": "model",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "required": true,
+          "dynamic_combo": true,
+          "options": [
+            "p-video-2"
+          ],
+          "tooltip": "Model to use.",
+          "hint": "Dynamic combo: pick one `options` value for `model`, then send each conditional sub-field below using its full dotted name (prefixed with `model.`, e.g. `model.<sub_field>`). Auto-grow list slots nest one level deeper (e.g. `model.<list>.<slot_1>`). Sending these fields flat (without the prefix) fails with required_input_missing."
+        },
+        {
+          "name": "model.prompt",
+          "type": "STRING",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "p-video-2"
+          ],
+          "default": "",
+          "tooltip": "Describes the video, its motion and its sound. Up to 5000 characters."
+        },
+        {
+          "name": "model.aspect_ratio",
+          "type": "COMBO",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "p-video-2"
+          ],
+          "default": "16:9",
+          "options": [
+            "16:9",
+            "9:16",
+            "4:3",
+            "3:4",
+            "3:2",
+            "2:3",
+            "1:1"
+          ],
+          "tooltip": "Aspect ratio of the output video."
+        },
+        {
+          "name": "model.duration",
+          "type": "COMBO",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "p-video-2"
+          ],
+          "default": "5",
+          "options": [
+            "auto",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "tooltip": "Length of the video in seconds. 'auto' lets the model choose the length from the prompt. Ignored when audio is connected: the video then follows the audio length, rounded up to a whole second, up to 20 seconds."
+        },
+        {
+          "name": "model.resolution",
+          "type": "COMBO",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "p-video-2"
+          ],
+          "default": "720p",
+          "options": [
+            "720p",
+            "1080p"
+          ],
+          "tooltip": "Output resolution. 720p renders about 0.9 megapixels (1280x704 at 16:9), 1080p about 2 megapixels (1920x1088 at 16:9)."
+        },
+        {
+          "name": "model.fps",
+          "type": "COMBO",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "p-video-2"
+          ],
+          "default": "24",
+          "options": [
+            "24",
+            "48"
+          ],
+          "tooltip": "Frames per second. 48 fps is not available with draft at 1080p."
+        },
+        {
+          "name": "model.draft",
+          "type": "BOOLEAN",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "p-video-2"
+          ],
+          "default": false,
+          "tooltip": "Faster, less detailed render, billed at 60% of the standard rate."
+        },
+        {
+          "name": "model.generate_audio",
+          "type": "BOOLEAN",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "p-video-2"
+          ],
+          "default": true,
+          "tooltip": "Generate a soundtrack for the video. Ignored when audio is connected, which becomes the soundtrack instead."
+        },
+        {
+          "name": "model.enhance_prompt",
+          "type": "BOOLEAN",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "p-video-2"
+          ],
+          "default": true,
+          "tooltip": "Rewrite the prompt with more detail before generation; short prompts need it. Turn it off to reproduce a result exactly with the same seed."
+        },
+        {
+          "name": "model.seed",
+          "type": "INT",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "p-video-2"
+          ],
+          "default": 42,
+          "min": 0,
+          "max": 2147483647,
+          "tooltip": "Seed for the generation. The same seed reproduces a result exactly only when enhance_prompt is off."
+        },
+        {
+          "name": "model.audio",
+          "type": "AUDIO",
+          "required": false,
+          "conditional": true,
+          "applies_when": [
+            "p-video-2"
+          ],
+          "tooltip": "Audio that drives the motion and becomes the soundtrack. At least 1 second long; audio longer than 20 seconds is truncated. Sets the video length instead of duration."
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ],
+      "api_node": true,
+      "output_node": false,
+      "deprecated": false
+    }
+  ]
+}

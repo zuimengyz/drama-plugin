@@ -1,0 +1,1477 @@
+{
+  "scope": "105 paid API nodes with VIDEO output. Not an exhaustive OSS node inventory. Empty template_observed means NOT_VERIFIED, not absence. PARTIAL describes deliberate subset of node variants/inputs. Runtime DISABLED is separate from code support.",
+  "rows": [
+    {
+      "node": "BeebleSwitchXVideoEdit",
+      "family": "partner/video/Beeble",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": "inventory-node-BeebleSwitchXVideoEdit.json",
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "Flux3TextToVideoNode",
+      "family": "partner/video/BFL",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "Flux3ImageToVideoNode",
+      "family": "partner/video/BFL",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [
+        "api_bfl_flux3_i2v"
+      ],
+      "full_node_schema_evidence": "Flux3ImageToVideoNode.json",
+      "projection": "PARTIAL",
+      "verified_graph": true,
+      "scope": "single first image",
+      "runtime_status": "DISABLED"
+    },
+    {
+      "node": "Flux3VideoContinuationNode",
+      "family": "partner/video/BFL",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "FluxVideoUpscaleNode",
+      "family": "partner/video/BFL",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "FluxVideoEditNode",
+      "family": "partner/video/BFL",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "BriaRemoveVideoBackground",
+      "family": "partner/video/Bria",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": "inventory-node-BriaRemoveVideoBackground.json",
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "BriaVideoGreenScreen",
+      "family": "partner/video/Bria",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "BriaVideoReplaceBackground",
+      "family": "partner/video/Bria",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "BriaVideoEraser",
+      "family": "partner/video/Bria",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "ByteDanceTextToVideoNode",
+      "family": "partner/video/ByteDance",
+      "mcp_discoverable": true,
+      "model_options": [
+        "seedance-1-5-pro-251215",
+        "seedance-1-0-pro-250528",
+        "seedance-1-0-pro-fast-251015"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "ByteDanceImageToVideoNode",
+      "family": "partner/video/ByteDance",
+      "mcp_discoverable": true,
+      "model_options": [
+        "seedance-1-5-pro-251215",
+        "seedance-1-0-pro-250528",
+        "seedance-1-0-pro-fast-251015"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "ByteDanceFirstLastFrameNode",
+      "family": "partner/video/ByteDance",
+      "mcp_discoverable": true,
+      "model_options": [
+        "seedance-1-5-pro-251215",
+        "seedance-1-0-pro-250528"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "ByteDance2TextToVideoNode",
+      "family": "partner/video/ByteDance",
+      "mcp_discoverable": true,
+      "model_options": [
+        "Seedance 2.5",
+        "Seedance 2.0",
+        "Seedance 2.0 Fast",
+        "Seedance 2.0 Mini"
+      ],
+      "template_observed": [
+        "api_seedance2_0_t2v",
+        "api_seedance2_5_t2v"
+      ],
+      "full_node_schema_evidence": "node-schemas.json",
+      "projection": "PARTIAL",
+      "verified_graph": true,
+      "scope": "Seedance 2.5 only",
+      "runtime_status": "DISABLED"
+    },
+    {
+      "node": "ByteDance2FirstLastFrameNode",
+      "family": "partner/video/ByteDance",
+      "mcp_discoverable": true,
+      "model_options": [
+        "Seedance 2.5",
+        "Seedance 2.0",
+        "Seedance 2.0 Fast",
+        "Seedance 2.0 Mini"
+      ],
+      "template_observed": [
+        "api_seedance2_5_flf2v"
+      ],
+      "full_node_schema_evidence": "node-schemas.json",
+      "projection": "PARTIAL",
+      "verified_graph": true,
+      "scope": "Seedance 2.5 endpoints only",
+      "runtime_status": "DISABLED"
+    },
+    {
+      "node": "ByteDance2ReferenceNodeV2",
+      "family": "partner/video/ByteDance",
+      "mcp_discoverable": true,
+      "model_options": [
+        "Seedance 2.5",
+        "Seedance 2.0",
+        "Seedance 2.0 Fast",
+        "Seedance 2.0 Mini"
+      ],
+      "template_observed": [
+        "api_seedance2_5_r2v"
+      ],
+      "full_node_schema_evidence": "node-schemas.json",
+      "projection": "PARTIAL",
+      "verified_graph": true,
+      "scope": "Seedance 2.5 single reference, task=reference only",
+      "runtime_status": "DISABLED"
+    },
+    {
+      "node": "ByteDanceVideoEnhanceNode",
+      "family": "partner/video/ByteDance",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "GeminiVideoOmniV2",
+      "family": "partner/video/Gemini",
+      "mcp_discoverable": true,
+      "model_options": [
+        "Omni Flash 1.1",
+        "Omni Flash"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": "inventory-node-GeminiVideoOmniV2.json",
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "GrokVideoNode",
+      "family": "partner/video/Grok",
+      "mcp_discoverable": true,
+      "model_options": [
+        "grok-imagine-video",
+        "grok-imagine-video-1.5"
+      ],
+      "template_observed": [
+        "api_grok_video"
+      ],
+      "full_node_schema_evidence": "inventory-node-GrokVideoNode.json",
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "GrokVideoReferenceNode",
+      "family": "partner/video/Grok",
+      "mcp_discoverable": true,
+      "model_options": [
+        "grok-imagine-video-1.5",
+        "grok-imagine-video"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "GrokVideoEditNode",
+      "family": "partner/video/Grok",
+      "mcp_discoverable": true,
+      "model_options": [
+        "grok-imagine-video"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "GrokVideoExtendNode",
+      "family": "partner/video/Grok",
+      "mcp_discoverable": true,
+      "model_options": [
+        "grok-imagine-video"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "HeyGenTalkingPhotoNode",
+      "family": "partner/video/HeyGen",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": "inventory-node-HeyGenTalkingPhotoNode.json",
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "HeyGenAvatarVideoNode",
+      "family": "partner/video/HeyGen",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [
+        "api_heygen_avatar_video"
+      ],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "HeyGenVideoTranslateNode",
+      "family": "partner/video/HeyGen",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "HitPawVideoEnhance",
+      "family": "partner/video/HitPaw",
+      "mcp_discoverable": true,
+      "model_options": [
+        "Portrait Restore Model (1x)",
+        "Portrait Restore Model (2x)",
+        "General Restore Model (1x)",
+        "General Restore Model (2x)",
+        "General Restore Model (4x)",
+        "Ultra HD Model (2x)",
+        "Generative Model (1x)"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": "inventory-node-HitPawVideoEnhance.json",
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "KlingTextToVideoNode",
+      "family": "partner/video/Kling",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": "inventory-node-KlingTextToVideoNode.json",
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "KlingImage2VideoNode",
+      "family": "partner/video/Kling",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "KlingStartEndFrameNode",
+      "family": "partner/video/Kling",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "KlingLipSyncAudioToVideoNode",
+      "family": "partner/video/Kling",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "KlingLipSyncTextToVideoNode",
+      "family": "partner/video/Kling",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "KlingOmniProTextToVideoNode",
+      "family": "partner/video/Kling",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "KlingOmniProFirstLastFrameNode",
+      "family": "partner/video/Kling",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "KlingOmniProImageToVideoNode",
+      "family": "partner/video/Kling",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "KlingOmniProVideoToVideoNode",
+      "family": "partner/video/Kling",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "KlingOmniProEditVideoNode",
+      "family": "partner/video/Kling",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "KlingTextToVideoWithAudio",
+      "family": "partner/video/Kling",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "KlingImageToVideoWithAudio",
+      "family": "partner/video/Kling",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "KlingMotionControl",
+      "family": "partner/video/Kling",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "KlingVideoNode",
+      "family": "partner/video/Kling",
+      "mcp_discoverable": true,
+      "model_options": [
+        "kling-v3",
+        "kling-3.0-turbo"
+      ],
+      "template_observed": [
+        "api_kling_v3_video"
+      ],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "KlingFirstLastFrameNode",
+      "family": "partner/video/Kling",
+      "mcp_discoverable": true,
+      "model_options": [
+        "kling-v3"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "KlingAvatarNode",
+      "family": "partner/video/Kling",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "LtxApi25TextToVideo",
+      "family": "partner/video/LTXV",
+      "mcp_discoverable": true,
+      "model_options": [
+        "LTX-2.5 (Fast)",
+        "LTX-2.5 (Pro)"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": "inventory-node-LtxApi25TextToVideo.json",
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "LtxApi25ImageToVideo",
+      "family": "partner/video/LTXV",
+      "mcp_discoverable": true,
+      "model_options": [
+        "LTX-2.5 (Fast)",
+        "LTX-2.5 (Pro)"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "LtxApi25AudioToVideo",
+      "family": "partner/video/LTXV",
+      "mcp_discoverable": true,
+      "model_options": [
+        "LTX-2.5 (Fast)",
+        "LTX-2.5 (Pro)"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "LumaVideoNode",
+      "family": "partner/video/Luma",
+      "mcp_discoverable": true,
+      "model_options": [
+        "ray-2",
+        "ray-flash-2",
+        "ray-1-6"
+      ],
+      "template_observed": [
+        "api_luma_t2v"
+      ],
+      "full_node_schema_evidence": "inventory-node-LumaVideoNode.json",
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "LumaImageToVideoNode",
+      "family": "partner/video/Luma",
+      "mcp_discoverable": true,
+      "model_options": [
+        "ray-2",
+        "ray-flash-2",
+        "ray-1-6"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "LumaRay32TextToVideoNode",
+      "family": "partner/video/Luma",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "LumaRay32ImageToVideoNode",
+      "family": "partner/video/Luma",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "LumaRay32KeyframesToVideoNode",
+      "family": "partner/video/Luma",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "LumaRay32VideoEditNode",
+      "family": "partner/video/Luma",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "LumaRay32VideoReframeNode",
+      "family": "partner/video/Luma",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "LumaRay32ExtendVideoNode",
+      "family": "partner/video/Luma",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "MinimaxTextToVideoNode",
+      "family": "partner/video/MiniMax",
+      "mcp_discoverable": true,
+      "model_options": [
+        "T2V-01",
+        "T2V-01-Director"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": "inventory-node-MinimaxTextToVideoNode.json",
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "MinimaxImageToVideoNode",
+      "family": "partner/video/MiniMax",
+      "mcp_discoverable": true,
+      "model_options": [
+        "I2V-01-Director",
+        "I2V-01",
+        "I2V-01-live"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "MinimaxHailuoVideoNode",
+      "family": "partner/video/MiniMax",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "MinimaxHailuo03TextToVideoNode",
+      "family": "partner/video/MiniMax",
+      "mcp_discoverable": true,
+      "model_options": [
+        "MiniMax H3",
+        "MiniMax H3 Max",
+        "MiniMax H3 Max Turbo"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "MinimaxHailuo03FirstLastFrameNode",
+      "family": "partner/video/MiniMax",
+      "mcp_discoverable": true,
+      "model_options": [
+        "MiniMax H3",
+        "MiniMax H3 Max",
+        "MiniMax H3 Max Turbo"
+      ],
+      "template_observed": [
+        "api_minimax_h3_flf2v"
+      ],
+      "full_node_schema_evidence": "MinimaxHailuo03FirstLastFrameNode.json",
+      "projection": "PARTIAL",
+      "verified_graph": true,
+      "scope": "MiniMax H3 endpoints",
+      "runtime_status": "DISABLED"
+    },
+    {
+      "node": "MinimaxHailuo03ReferenceNode",
+      "family": "partner/video/MiniMax",
+      "mcp_discoverable": true,
+      "model_options": [
+        "MiniMax H3",
+        "MiniMax H3 Max"
+      ],
+      "template_observed": [
+        "api_minimax_h3_r2v"
+      ],
+      "full_node_schema_evidence": "MinimaxHailuo03ReferenceNode.json",
+      "projection": "PARTIAL",
+      "verified_graph": true,
+      "scope": "MiniMax H3 single reference",
+      "runtime_status": "DISABLED"
+    },
+    {
+      "node": "MinimaxHailuo03RegenerateNode",
+      "family": "partner/video/MiniMax",
+      "mcp_discoverable": true,
+      "model_options": [
+        "MiniMax H3"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "PixverseTextToVideoNode",
+      "family": "partner/video/PixVerse",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [
+        "api_pixverse_t2v"
+      ],
+      "full_node_schema_evidence": "inventory-node-PixverseTextToVideoNode.json",
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "PixverseImageToVideoNode",
+      "family": "partner/video/PixVerse",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "PixverseTransitionVideoNode",
+      "family": "partner/video/PixVerse",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "PixverseV6TextToVideoNode",
+      "family": "partner/video/PixVerse",
+      "mcp_discoverable": true,
+      "model_options": [
+        "PixVerse V6"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "PixverseV6ImageToVideoNode",
+      "family": "partner/video/PixVerse",
+      "mcp_discoverable": true,
+      "model_options": [
+        "PixVerse V6"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "PixverseV6FirstLastFrameNode",
+      "family": "partner/video/PixVerse",
+      "mcp_discoverable": true,
+      "model_options": [
+        "PixVerse V6"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "PixverseV6ExtendVideoNode",
+      "family": "partner/video/PixVerse",
+      "mcp_discoverable": true,
+      "model_options": [
+        "PixVerse V6"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "PixverseV6FusionVideoNode",
+      "family": "partner/video/PixVerse",
+      "mcp_discoverable": true,
+      "model_options": [
+        "PixVerse V6"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "PrunaTextToVideoNode",
+      "family": "partner/video/Pruna",
+      "mcp_discoverable": true,
+      "model_options": [
+        "p-video-2"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": "inventory-node-PrunaTextToVideoNode.json",
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "PrunaImageToVideoNode",
+      "family": "partner/video/Pruna",
+      "mcp_discoverable": true,
+      "model_options": [
+        "p-video-2"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "RunwayImageToVideoNodeGen4",
+      "family": "partner/video/Runway",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [
+        "api_runway_gen4_turo_image_to_video"
+      ],
+      "full_node_schema_evidence": "inventory-node-RunwayImageToVideoNodeGen4.json",
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "RunwayAleph2VideoToVideoNode",
+      "family": "partner/video/Runway",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "SyncLipSyncNode",
+      "family": "partner/video/sync.so",
+      "mcp_discoverable": true,
+      "model_options": [
+        "sync-3"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": "inventory-node-SyncLipSyncNode.json",
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "SyncTalkingImageNode",
+      "family": "partner/video/sync.so",
+      "mcp_discoverable": true,
+      "model_options": [
+        "sync-3"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "TopazVideoEnhanceV2",
+      "family": "partner/video/Topaz",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": "inventory-node-TopazVideoEnhanceV2.json",
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "Veo3VideoGenerationNode",
+      "family": "partner/video/Veo",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": "inventory-node-Veo3VideoGenerationNode.json",
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "Veo3FirstLastFrameNode",
+      "family": "partner/video/Veo",
+      "mcp_discoverable": true,
+      "model_options": [
+        "veo-3.1-generate",
+        "veo-3.1-fast-generate",
+        "veo-3.1-lite"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "ViduTextToVideoNode",
+      "family": "partner/video/Vidu",
+      "mcp_discoverable": true,
+      "model_options": [
+        "viduq1"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": "inventory-node-ViduTextToVideoNode.json",
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "ViduImageToVideoNode",
+      "family": "partner/video/Vidu",
+      "mcp_discoverable": true,
+      "model_options": [
+        "viduq1"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "ViduReferenceVideoNode",
+      "family": "partner/video/Vidu",
+      "mcp_discoverable": true,
+      "model_options": [
+        "viduq1"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "ViduStartEndToVideoNode",
+      "family": "partner/video/Vidu",
+      "mcp_discoverable": true,
+      "model_options": [
+        "viduq1"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "Vidu2TextToVideoNode",
+      "family": "partner/video/Vidu",
+      "mcp_discoverable": true,
+      "model_options": [
+        "viduq2"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "Vidu2ImageToVideoNode",
+      "family": "partner/video/Vidu",
+      "mcp_discoverable": true,
+      "model_options": [
+        "viduq2-pro-fast",
+        "viduq2-pro",
+        "viduq2-turbo"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "Vidu2ReferenceVideoNode",
+      "family": "partner/video/Vidu",
+      "mcp_discoverable": true,
+      "model_options": [
+        "viduq2"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "Vidu2StartEndToVideoNode",
+      "family": "partner/video/Vidu",
+      "mcp_discoverable": true,
+      "model_options": [
+        "viduq2-pro-fast",
+        "viduq2-pro",
+        "viduq2-turbo"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "ViduExtendVideoNode",
+      "family": "partner/video/Vidu",
+      "mcp_discoverable": true,
+      "model_options": [
+        "viduq2-pro",
+        "viduq2-turbo"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "ViduMultiFrameVideoNode",
+      "family": "partner/video/Vidu",
+      "mcp_discoverable": true,
+      "model_options": [
+        "viduq2-pro",
+        "viduq2-turbo"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "Vidu3TextToVideoNode",
+      "family": "partner/video/Vidu",
+      "mcp_discoverable": true,
+      "model_options": [
+        "viduq3-pro",
+        "viduq3-turbo"
+      ],
+      "template_observed": [
+        "api_vidu_q3_text_to_video"
+      ],
+      "full_node_schema_evidence": "node-schemas.json",
+      "projection": "SUPPORTED",
+      "verified_graph": true,
+      "scope": "viduq3-pro / viduq3-turbo text",
+      "runtime_status": "SUPPORTED"
+    },
+    {
+      "node": "Vidu3ImageToVideoNode",
+      "family": "partner/video/Vidu",
+      "mcp_discoverable": true,
+      "model_options": [
+        "viduq3-pro",
+        "viduq3-turbo"
+      ],
+      "template_observed": [
+        "api_vidu_q3_image_to_video"
+      ],
+      "full_node_schema_evidence": "node-schemas.json",
+      "projection": "SUPPORTED",
+      "verified_graph": true,
+      "scope": "viduq3-pro / viduq3-turbo single first frame",
+      "runtime_status": "SUPPORTED"
+    },
+    {
+      "node": "Vidu3StartEndToVideoNode",
+      "family": "partner/video/Vidu",
+      "mcp_discoverable": true,
+      "model_options": [
+        "viduq3-pro",
+        "viduq3-turbo"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": "Vidu3StartEndToVideoNode.json",
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "WanTextToVideoApi",
+      "family": "partner/video/Wan",
+      "mcp_discoverable": true,
+      "model_options": [
+        "wan2.5-t2v-preview",
+        "wan2.6-t2v"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": "inventory-node-WanTextToVideoApi.json",
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "WanImageToVideoApi",
+      "family": "partner/video/Wan",
+      "mcp_discoverable": true,
+      "model_options": [
+        "wan2.5-i2v-preview",
+        "wan2.6-i2v"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "WanReferenceVideoApi",
+      "family": "partner/video/Wan",
+      "mcp_discoverable": true,
+      "model_options": [
+        "wan2.6-r2v"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "Wan2TextToVideoApi",
+      "family": "partner/video/Wan",
+      "mcp_discoverable": true,
+      "model_options": [
+        "wan2.7-t2v"
+      ],
+      "template_observed": [
+        "api_wan2_7_t2v"
+      ],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "Wan2ImageToVideoApi",
+      "family": "partner/video/Wan",
+      "mcp_discoverable": true,
+      "model_options": [
+        "wan2.7-i2v"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "Wan2VideoContinuationApi",
+      "family": "partner/video/Wan",
+      "mcp_discoverable": true,
+      "model_options": [
+        "wan2.7-i2v"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "Wan2VideoEditApi",
+      "family": "partner/video/Wan",
+      "mcp_discoverable": true,
+      "model_options": [
+        "wan2.7-videoedit"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "Wan2ReferenceVideoApi",
+      "family": "partner/video/Wan",
+      "mcp_discoverable": true,
+      "model_options": [
+        "wan2.7-r2v"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "Wan3ReferenceToVideoApi",
+      "family": "partner/video/Wan",
+      "mcp_discoverable": true,
+      "model_options": [
+        "wan3.0-video",
+        "wan3.0-video-prime"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "Wan3ImageToVideoApi",
+      "family": "partner/video/Wan",
+      "mcp_discoverable": true,
+      "model_options": [
+        "wan3.0-video",
+        "wan3.0-video-prime"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "HappyHorseTextToVideoApi",
+      "family": "partner/video/Wan",
+      "mcp_discoverable": true,
+      "model_options": [
+        "happyhorse-1.1-t2v",
+        "happyhorse-1.0-t2v"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "HappyHorseImageToVideoApi",
+      "family": "partner/video/Wan",
+      "mcp_discoverable": true,
+      "model_options": [
+        "happyhorse-1.1-i2v",
+        "happyhorse-1.0-i2v"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "HappyHorseVideoEditApi",
+      "family": "partner/video/Wan",
+      "mcp_discoverable": true,
+      "model_options": [
+        "happyhorse-1.0-video-edit"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "HappyHorseReferenceVideoApi",
+      "family": "partner/video/Wan",
+      "mcp_discoverable": true,
+      "model_options": [
+        "happyhorse-1.1-r2v",
+        "happyhorse-1.0-r2v"
+      ],
+      "template_observed": [],
+      "full_node_schema_evidence": null,
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    },
+    {
+      "node": "WavespeedFlashVSRNode",
+      "family": "partner/video/WaveSpeed",
+      "mcp_discoverable": true,
+      "model_options": [],
+      "template_observed": [],
+      "full_node_schema_evidence": "inventory-node-WavespeedFlashVSRNode.json",
+      "projection": "UNSUPPORTED",
+      "verified_graph": false,
+      "scope": "no formal Comfy adapter",
+      "runtime_status": "UNSUPPORTED"
+    }
+  ]
+}

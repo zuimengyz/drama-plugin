@@ -1,0 +1,33 @@
+{
+  "data": [
+    {
+      "model_name": "byteplus/seedance-2.0-t2v",
+      "display_name": "byteplus/seedance-2.0-t2v",
+      "type": "video",
+      "directory": "partner",
+      "source": "partner",
+      "tags": [
+        "byteplus",
+        "bytedance",
+        "seedance",
+        "video",
+        "text-to-video"
+      ],
+      "tiers": [
+        "Seedance 2.0",
+        "Seedance 2.0 Fast",
+        "Seedance 2.0 Mini",
+        "Seedance 2.5"
+      ],
+      "description": "Generates video from text using ByteDance Seedance via a real Comfy Cloud workflow run. Output is saved to the asset library with a reopenable graph. Pass `prompt` and optional `resolution` / `ratio` / `duration` / `seed`. For a cheaper, faster draft pass, set `model` to `Seedance 2.0 Mini` (~half the price of standard, ~2× faster than fast; 480p/720p only, 4–15s); `Seedance 2.0 Fast` (720p) and the default `Seedance 2.0` (up to 1080p) are the other tiers. For clips longer than 15s set `model` to `Seedance 2.5` (newest model, up to 30s, up to 1080p)."
+    }
+  ],
+  "metadata": {
+    "total": 1,
+    "limit": 100,
+    "offset": 0,
+    "match": "substring",
+    "returned": 1,
+    "catalog_total": 2306
+  }
+}

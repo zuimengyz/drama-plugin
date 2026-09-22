@@ -1,0 +1,39 @@
+{
+  "id": "api_minimax_h3_r2v",
+  "slots": [],
+  "note": "This template does not expose its inputs through a subgraph, so it has no slot_overrides addresses — `slots` is empty for that reason, not because the template is uneditable. Override it with run_template's `input_overrides` instead, keyed by the node ids in `nodes` below: {\"<id>\": {\"<input_name>\": value}}. `nodes` is the executed graph run_template submits, so these ids and input names are exactly the ones input_overrides resolves against. Inputs wired from another node are omitted — setting one would replace the link with a constant; use get_template + submit_workflow for that kind of structural edit. Some values below are not shown verbatim: an entry with `values_truncated` lists the input names whose string value is a clipped prefix, and `inputs_truncated` means inputs were left out entirely (too many, or a value too large to render). Do not echo a clipped value back as an override — read the full value from get_template.",
+  "nodes": [
+    {
+      "id": "2",
+      "class_type": "LoadImage",
+      "inputs": {
+        "image": "9panel_storyboard_golden_hour_clay_court.png"
+      }
+    },
+    {
+      "id": "3",
+      "class_type": "SaveVideo",
+      "inputs": {
+        "filename_prefix": "video/MiniMax_H3",
+        "format": "auto",
+        "format.codec": "auto"
+      }
+    },
+    {
+      "id": "4",
+      "class_type": "MinimaxHailuo03ReferenceNode",
+      "inputs": {
+        "model": "MiniMax H3",
+        "model.prompt": "Use the uploaded 9-panel storyboard image as the exact visual reference.Create a single continuous cinematic shot of a golden-hour tennis match on a red clay court. Follow the storyboard from left to right, top to bottom, as one smooth unbroken sequence.A Black male player in a yellow polo, yellow shorts, and sporty sunglasses plays against a female player with braided hair, a beige tank top, and a light blue tennis skirt. Preserve their faces, outfits, court, lighting, and color palette exactly as shown.T…",
+        "model.resolution": "768P",
+        "model.ratio": "adaptive",
+        "model.duration": 5,
+        "seed": 42,
+        "watermark": false
+      },
+      "values_truncated": [
+        "model.prompt"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,451 @@
+{
+  "data": [
+    {
+      "name": "api_seedance2_0_r2v",
+      "title": "Seedance 2.0: Reference to Video",
+      "mediaType": "image",
+      "description": "Generate cinematic videos from reference images and text prompts. Preserve subject identity and composition while adding expressive motion with synchronized audio. Control camera movement and lighting…",
+      "tags": [
+        "API",
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "Seedance 2.0"
+      ],
+      "usage": 814
+    },
+    {
+      "name": "api_seedance2_5_r2v",
+      "title": "Seedance 2.5: Reference to Video",
+      "mediaType": "image",
+      "description": "Generate reference-driven videos with Seedance 2.5 by supplying up to 20 images, 6 video clips, and 6 audio clips to control character consistency, visual style, and motion rhythm in a single 4–30 sec…",
+      "tags": [
+        "API",
+        "Reference to Video"
+      ],
+      "models": [
+        "Seedance 2.5"
+      ],
+      "usage": 2927
+    },
+    {
+      "name": "api_seedance2_5_t2v",
+      "title": "Seedance 2.5: Text to Video",
+      "mediaType": "image",
+      "description": "Generate 30-second cinematic videos from text prompts with Seedance 2.5, producing synchronized sound and music alongside the footage. Input a single text prompt to create one video with precise camer…",
+      "tags": [
+        "API",
+        "Text to Video"
+      ],
+      "models": [
+        "Seedance 2.5"
+      ],
+      "usage": 442
+    },
+    {
+      "name": "api_seedance2_5_i2v_1080p",
+      "title": "Seedance2.5 1080P: Image to Video",
+      "mediaType": "image",
+      "description": "Generate cinematic 1080P video clips from a single image using Seedance 2.5, animating the still into a moving scene with synchronized sound, music, and dialogue for clips up to 30 seconds across any …",
+      "tags": [
+        "API",
+        "Image to Video"
+      ],
+      "models": [
+        "Seedance 2.5"
+      ],
+      "usage": 1505
+    },
+    {
+      "name": "api_seedance2_5_flf2v",
+      "title": "Seedance 2.5: FLF2V",
+      "mediaType": "image",
+      "description": "Generate a smooth video transition between a user-provided start frame and end frame with Seedance 2.5, which automatically interpolates the motion, camera movement, and visual evolution while locking…",
+      "tags": [
+        "API",
+        "FLF2V"
+      ],
+      "models": [
+        "Seedance 2.5"
+      ],
+      "usage": 190
+    },
+    {
+      "name": "api_seedance2_0_t2v",
+      "title": "Seedance 2.0: Text to Video ",
+      "mediaType": "image",
+      "description": "Generate cinematic videos from text prompts with synchronized audio, controlled camera motion, and stable visuals. Input text descriptions to output high-quality video sequences.",
+      "tags": [
+        "API",
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "Seedance 2.0"
+      ],
+      "usage": 68
+    },
+    {
+      "name": "api_seedance2_5_video_editing",
+      "title": "Seedance2.5: Video Editing",
+      "mediaType": "image",
+      "description": "Edit existing video clips with Seedance 2.5 by describing changes in natural language, enabling local object removal, background swaps, scene replacements, and style transfers while preserving the ori…",
+      "tags": [
+        "API",
+        "Video Edit"
+      ],
+      "models": [
+        "Seedance 2.5"
+      ],
+      "usage": 699
+    },
+    {
+      "name": "api_seedance2_0_mini_r2v",
+      "title": "Seedance 2.0 Mini: Reference to Video",
+      "mediaType": "image",
+      "description": "Generate cinematic video from two reference images using Seedance 2.0 Mini, producing a single video output with AI-driven camera motion and consistent character generation. Ideal for storytelling, br…",
+      "tags": [
+        "API",
+        "Image to Video",
+        "Reference to Video"
+      ],
+      "models": [
+        "Seedance 2.0"
+      ],
+      "usage": 295
+    },
+    {
+      "name": "api_seedance2_0_flf2v",
+      "title": "Seedance2.0: First-Last-Frame to Video",
+      "mediaType": "image",
+      "description": "Upload the first and last frames of your video. Generate a high-quality video sequence using the Seedance2.0 model.",
+      "tags": [
+        "API",
+        "FLF2V",
+        "Video"
+      ],
+      "models": [
+        "Seedance 2.0"
+      ],
+      "usage": 312
+    },
+    {
+      "name": "api_seedance2_5_video_extend",
+      "title": "Video Extend: Seedance 2.5",
+      "mediaType": "image",
+      "description": "Extend an existing video forward or backward by generating new segments that seamlessly preserve the original characters, scenes, and aspect ratio. The source video must be 1.9–30 seconds long, and yo…",
+      "tags": [
+        "Video Extend"
+      ],
+      "models": [
+        "Seedance 2.5"
+      ],
+      "usage": 109
+    },
+    {
+      "name": "api_seedance2_0_mini_t2v",
+      "title": "Seedance 2.0 Mini: Text to Video",
+      "mediaType": "image",
+      "description": "Generate cinematic videos from text prompts with Dreamina’s Seedance 2.0 Mini, supporting AI camera controls and consistent character generation across scenes. This workflow takes only prompt input an…",
+      "tags": [
+        "API",
+        "Text to Video"
+      ],
+      "models": [
+        "Seedance 2.0"
+      ],
+      "usage": 68
+    },
+    {
+      "name": "template_seedance2_storyboard_to_video",
+      "title": "Storyboard To Video - Seedance 2.0",
+      "mediaType": "image",
+      "description": "Generate an 8-panel storyboard from a simple text prompt, then use that storyboard as the foundation for Seedance 2.0. The storyboard provides a visual blueprint for the sequence, allowing you to guid…",
+      "tags": [
+        "API",
+        "Image to Video"
+      ],
+      "models": [
+        "Seedance 2.0"
+      ],
+      "usage": 69
+    },
+    {
+      "name": "api_seedance2_0_r2v_4k",
+      "title": "Seedance2.0 4K: Reference to Video",
+      "mediaType": "image",
+      "description": "Generate a reference-based video from a single input image using Seedance 2.0, producing native 4K output with 10-bit color depth and clean fine detail retention. The workflow takes 1 image and output…",
+      "tags": [
+        "API",
+        "Image to Video",
+        "Reference to Video"
+      ],
+      "models": [
+        "Seedance 2.0"
+      ],
+      "usage": 188
+    },
+    {
+      "name": "api_seedance2_5_t2v_1080p",
+      "title": "Seedance2.5 1080P: Text to Video",
+      "mediaType": "image",
+      "description": "Generate cinematic 1080P video clips from text descriptions using Seedance 2.5, supporting clips up to 30 seconds with synchronized sound, music, and dialogue across any aspect ratio. Ideal for short …",
+      "tags": [
+        "API",
+        "Text to Video"
+      ],
+      "models": [
+        "Seedance 2.5"
+      ],
+      "usage": 52
+    },
+    {
+      "name": "template_seedance_2_0_plus_llm_prompt_helper",
+      "title": "Seedance 2.0 + LLM Prompt Helper",
+      "mediaType": "image",
+      "description": "Upload two reference images and input a short text description. Generate a detailed Seedance 2.0-style prompt automatically with an LLM helper.",
+      "tags": [
+        "API",
+        "Reference to Video"
+      ],
+      "models": [
+        "Gemini-3.1-Pro",
+        "Seedance 2.0"
+      ],
+      "usage": 10
+    },
+    {
+      "name": "api_bytedance_seedance1_5_flf2v",
+      "title": "Seedance 1.5 Pro: FLF2V",
+      "mediaType": "image",
+      "description": "Upload a start frame and end frame, and Seedance 1.5 Pro automatically generates a smooth video transition with synchronized audio between them.",
+      "tags": [
+        "FLF2V",
+        "Image to Video",
+        "API"
+      ],
+      "models": [
+        "ByteDance",
+        "Seedance"
+      ],
+      "usage": 69
+    },
+    {
+      "name": "template_seedance2_0_viral_videos_character_swap",
+      "title": "Seedance 2.0: Viral Videos Character Swap",
+      "mediaType": "image",
+      "description": "A one click workflow to recreate an input video with your character. All you need to do is upload the video and your character. This workflow uses Google Gemini LLM to analyze the input video and reve…",
+      "tags": [
+        "API",
+        "Character Replacement",
+        "Image to Video"
+      ],
+      "models": [
+        "GPT Image 2",
+        "Google Gemini",
+        "Seedance 2.0"
+      ],
+      "usage": 11
+    },
+    {
+      "name": "api_bytedance_seedance1_5_image_to_video",
+      "title": "Seedance 1.5 Pro: Image to Video",
+      "mediaType": "image",
+      "description": "Transform images into living characters with speech, motion, and synchronized sound effects.",
+      "tags": [
+        "API",
+        "Image to Video"
+      ],
+      "models": [
+        "Seedance"
+      ],
+      "usage": 115
+    },
+    {
+      "name": "template_eric_seedance_5_subject_and_outfit_combine",
+      "title": "Outfit Application for Character Portraits",
+      "mediaType": "image",
+      "description": "Upload your character portrait and outfit reference. Generate a new portrait with the specific outfit applied for consistent wardrobe control. Affordable alternative to Nano Banana Pro and Nano Banana…",
+      "tags": [
+        "API",
+        "Virtual Try-On"
+      ],
+      "models": [
+        "Seedream 4.5"
+      ],
+      "usage": 39
+    },
+    {
+      "name": "api_seedance2_0_r2v_real_human",
+      "title": "Seedance2.0 Real Human: Reference to Video",
+      "mediaType": "image",
+      "description": "Upload a reference video of a real person for identity verification. Use your own photo to validate and generate a personalized video output.",
+      "tags": [
+        "API",
+        "Video",
+        "Reference to Video"
+      ],
+      "models": [
+        "Seedance 2.0"
+      ],
+      "usage": 12
+    },
+    {
+      "name": "api_seedance2_0_flf2v_real_human",
+      "title": "Seedance2.0 Real Human: FLF2V",
+      "mediaType": "image",
+      "description": "Upload a reference image of a real person for identity verification and generate a personalized video with first and last frame control using Seedance2.0 FLF2V.",
+      "tags": [
+        "API",
+        "Video",
+        "FLF2V"
+      ],
+      "models": [
+        "Seedance 2.0"
+      ],
+      "usage": 6
+    },
+    {
+      "name": "api_bytedance_seedance1_5_text_to_video",
+      "title": "Seedance1.5 Pro: Text to Video",
+      "mediaType": "image",
+      "description": "Create complete audio-visual stories from text with synchronized voices, music, and sound effects.",
+      "tags": [
+        "API",
+        "Text to Video"
+      ],
+      "models": [
+        "Seedance"
+      ],
+      "usage": 8
+    },
+    {
+      "name": "api_bytedance_image_to_video",
+      "title": "Seedance 1.0 Pro: Image to Video",
+      "mediaType": "image",
+      "description": "Transform static images into dynamic videos using ByteDance's Seedance model. Analyzes image structure and generates natural motion with consistent visual style and coherent video sequences.",
+      "tags": [
+        "API",
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "Seedance1.0 Pro",
+        "ByteDance"
+      ],
+      "usage": 323
+    },
+    {
+      "name": "template_eric_exploded_view",
+      "title": "Exploded View Animation",
+      "mediaType": "image",
+      "description": "Upload an image of a device or object to generate start and end frames. The workflow animates the transition to an exploded view and back, outputting a seamless video loop.",
+      "tags": [
+        "API",
+        "FLF2V",
+        "Video"
+      ],
+      "models": [
+        "Nano Banana 2",
+        "Seedance 1.5 Pro"
+      ],
+      "usage": 31
+    },
+    {
+      "name": "api_bytedance_flf2v",
+      "title": "Seedance1.0 Pro: Start End to Video",
+      "mediaType": "image",
+      "description": "Generate cinematic video transitions between start and end frames with fluid motion, scene consistency, and professional polish using ByteDance's Seedance model.",
+      "tags": [
+        "API",
+        "FLF2V",
+        "Video"
+      ],
+      "models": [
+        "Seedance1.0 Pro",
+        "ByteDance"
+      ],
+      "usage": 15
+    },
+    {
+      "name": "api_bytedance_text_to_video",
+      "title": "Seedance1.0 Pro: Text to Video",
+      "mediaType": "image",
+      "description": "Generate high-quality videos directly from text prompts using ByteDance's Seedance model. Supports multiple resolutions and aspect ratios with natural motion and cinematic quality.",
+      "tags": [
+        "Video",
+        "API",
+        "Text to Video"
+      ],
+      "models": [
+        "Seedance1.0 Pro",
+        "ByteDance"
+      ],
+      "usage": 9
+    },
+    {
+      "name": "templates-product_ad-v2.0",
+      "title": "Swap Product Into a Reference AD",
+      "mediaType": "image",
+      "description": "Create static ads for your product in the style of a reference advertisement",
+      "tags": [
+        "API",
+        "Style Reference"
+      ],
+      "models": [
+        "Gemini3 Pro Image Preview",
+        "Nano Banana Pro",
+        "Google",
+        "ByteDance",
+        "Seedance"
+      ],
+      "usage": 20
+    },
+    {
+      "name": "templates-textured_logotype-v2.1",
+      "title": "Apply Texture to Logo",
+      "mediaType": "image",
+      "description": "Upload your logotype and apply a texture + elements for on brand asset",
+      "tags": [
+        "API",
+        "Brand Design",
+        "Image to Video",
+        "FLF2V"
+      ],
+      "models": [
+        "Gemini3 Pro Image Preview",
+        "Nano Banana Pro",
+        "Google",
+        "ByteDance",
+        "Seedance"
+      ],
+      "usage": 12
+    },
+    {
+      "name": "templates-textured_logo_elements",
+      "title": "Apply Texture + Elements to Logo",
+      "mediaType": "image",
+      "description": "Upload your logo, texture and elements. Generate a video of the textured logo for an on brand asset.",
+      "tags": [
+        "API",
+        "Brand Design",
+        "Image to Video"
+      ],
+      "models": [
+        "Gemini3 Pro Image Preview",
+        "Nano Banana Pro",
+        "Google",
+        "ByteDance",
+        "Seedance"
+      ],
+      "usage": 6
+    }
+  ],
+  "metadata": {
+    "total": 29,
+    "limit": 100,
+    "offset": 0
+  },
+  "note": "detail:'full' returns more fields; get_template_schema returns one item uncapped."
+}

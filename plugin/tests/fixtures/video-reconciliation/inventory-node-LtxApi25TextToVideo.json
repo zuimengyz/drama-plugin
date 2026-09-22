@@ -1,0 +1,132 @@
+{
+  "data": [
+    {
+      "name": "LtxApi25TextToVideo",
+      "display_name": "LTX 2.5 Text To Video",
+      "description": "Professional-quality videos with customizable duration and resolution.",
+      "category": "partner/video/LTXV",
+      "pack": "core",
+      "inputs": {
+        "required": [
+          "COMFY_DYNAMICCOMBO_V3",
+          "COMBO",
+          "COMBO",
+          "COMBO",
+          "BOOLEAN",
+          "STRING",
+          "INT"
+        ]
+      },
+      "input_details": [
+        {
+          "name": "model",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "required": true,
+          "dynamic_combo": true,
+          "options": [
+            "LTX-2.5 (Fast)",
+            "LTX-2.5 (Pro)"
+          ],
+          "hint": "Dynamic combo: pick one `options` value for `model`, then send each conditional sub-field below using its full dotted name (prefixed with `model.`, e.g. `model.<sub_field>`). Auto-grow list slots nest one level deeper (e.g. `model.<list>.<slot_1>`). Sending these fields flat (without the prefix) fails with required_input_missing."
+        },
+        {
+          "name": "model.duration",
+          "type": "COMBO",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "LTX-2.5 (Fast)",
+            "LTX-2.5 (Pro)"
+          ],
+          "default": "8",
+          "options": [
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "8",
+            "10",
+            "12",
+            "14",
+            "16",
+            "18",
+            "20"
+          ],
+          "tooltip": "Video duration in seconds. Durations over 10s require a 720p/1080p resolution and 24/25 FPS."
+        },
+        {
+          "name": "model.resolution",
+          "type": "COMBO",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "LTX-2.5 (Fast)",
+            "LTX-2.5 (Pro)"
+          ],
+          "default": "1920x1080",
+          "options": [
+            "1280x720",
+            "720x1280",
+            "1920x1080",
+            "1080x1920",
+            "2560x1440",
+            "1440x2560",
+            "3840x2160",
+            "2160x3840"
+          ]
+        },
+        {
+          "name": "model.fps",
+          "type": "COMBO",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "LTX-2.5 (Fast)",
+            "LTX-2.5 (Pro)"
+          ],
+          "default": "25",
+          "options": [
+            "24",
+            "25",
+            "48",
+            "50"
+          ]
+        },
+        {
+          "name": "model.generate_audio",
+          "type": "BOOLEAN",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "LTX-2.5 (Fast)",
+            "LTX-2.5 (Pro)"
+          ],
+          "default": true,
+          "tooltip": "When true, the generated video will include AI-generated audio matching the scene."
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "required": true,
+          "default": ""
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "required": true,
+          "default": 42,
+          "min": 0,
+          "max": 4294967295,
+          "tooltip": "Seed to determine if node should re-run; actual results are nondeterministic regardless of seed."
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ],
+      "api_node": true,
+      "output_node": false,
+      "deprecated": false
+    }
+  ]
+}

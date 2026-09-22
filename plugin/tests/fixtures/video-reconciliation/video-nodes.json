@@ -1,0 +1,2994 @@
+{
+  "data": [
+    {
+      "name": "BeebleSwitchXVideoEdit",
+      "display_name": "Beeble SwitchX Video Edit",
+      "description": "Edit a video with Beeble SwitchX. Switches anything in the scene (background, lighting, costume) while preserving the original subject's pixels and motion. Provide a reference image and/or text prompt to describe the new look. Max 240 frames, max ~2.77MP per frame.",
+      "category": "partner/video/Beeble",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO"
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "alpha_mode",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "options": [
+            "auto",
+            "fill",
+            "select",
+            "custom"
+          ]
+        },
+        {
+          "name": "alpha_mode.alpha_keyframe",
+          "type": "MASK"
+        },
+        {
+          "name": "alpha_mode.alpha_mask",
+          "type": "MASK"
+        },
+        {
+          "name": "max_resolution",
+          "type": "COMBO",
+          "options": [
+            "1080p",
+            "720p"
+          ]
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO",
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "Flux3TextToVideoNode",
+      "display_name": "Flux 3 Text to Video",
+      "description": "Generates a video with synchronized audio from a text prompt via FLUX 3.",
+      "category": "partner/video/BFL",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "options": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ]
+        },
+        {
+          "name": "duration",
+          "type": "COMBO",
+          "options": [
+            "auto",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13"
+          ],
+          "option_count": 17,
+          "options_truncated": true
+        },
+        {
+          "name": "resolution",
+          "type": "COMBO",
+          "options": [
+            "720p",
+            "1080p"
+          ]
+        },
+        {
+          "name": "generate_audio",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "safety_tolerance",
+          "type": "INT"
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "Flux3ImageToVideoNode",
+      "display_name": "Flux 3 Image to Video",
+      "description": "Animates 1 to 10 images with FLUX 3. Each image becomes a frame of the clip: one image opens it, two morph from the first to the second, and more are spread across it or pinned to times you choose.",
+      "category": "partner/video/BFL",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "keyframes",
+          "type": "IMAGE",
+          "auto_grow": true
+        },
+        {
+          "name": "placement",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "options": [
+            "spread across the clip",
+            "at times"
+          ]
+        },
+        {
+          "name": "placement.times",
+          "type": "STRING"
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "options": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ]
+        },
+        {
+          "name": "duration",
+          "type": "COMBO",
+          "options": [
+            "auto",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13"
+          ],
+          "option_count": 17,
+          "options_truncated": true
+        },
+        {
+          "name": "resolution",
+          "type": "COMBO",
+          "options": [
+            "720p",
+            "1080p"
+          ]
+        },
+        {
+          "name": "generate_audio",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "safety_tolerance",
+          "type": "INT"
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "Flux3VideoContinuationNode",
+      "display_name": "Flux 3 Video Continuation",
+      "description": "Continues a video with FLUX 3: the new clip carries on from the final frames of the one you provide.",
+      "category": "partner/video/BFL",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO"
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "options": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ]
+        },
+        {
+          "name": "duration",
+          "type": "COMBO",
+          "options": [
+            "auto",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13"
+          ],
+          "option_count": 17,
+          "options_truncated": true
+        },
+        {
+          "name": "resolution",
+          "type": "COMBO",
+          "options": [
+            "720p",
+            "1080p"
+          ]
+        },
+        {
+          "name": "generate_audio",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "safety_tolerance",
+          "type": "INT"
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "FluxVideoUpscaleNode",
+      "display_name": "Flux Video Upscale",
+      "description": "Upscales a video 1.5 to 3 times with FLUX super-resolution, either preserving the source precisely or creatively enhancing its detail.",
+      "category": "partner/video/BFL",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO"
+        },
+        {
+          "name": "upscale_factor",
+          "type": "FLOAT"
+        },
+        {
+          "name": "mode",
+          "type": "COMBO",
+          "options": [
+            "creative",
+            "precise"
+          ]
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "auto_downscale",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "safety_tolerance",
+          "type": "INT"
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "FluxVideoEditNode",
+      "display_name": "Flux Video Edit",
+      "description": "Edits a clip from a written instruction: remove, add or replace objects, change the setting, restyle the footage, change on-screen text, or replace the spoken dialogue. Length, framing, camera motion and audio come from the source clip.",
+      "category": "partner/video/BFL",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO"
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "auto_downscale",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "safety_tolerance",
+          "type": "INT"
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "BriaRemoveVideoBackground",
+      "display_name": "Bria Remove Video Background",
+      "description": "Remove the background from a video using Bria. ",
+      "category": "partner/video/Bria",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO"
+        },
+        {
+          "name": "background_color",
+          "type": "COMBO",
+          "options": [
+            "Black",
+            "White",
+            "Gray",
+            "Red",
+            "Green",
+            "Blue",
+            "Yellow",
+            "Cyan",
+            "Magenta",
+            "Orange"
+          ]
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "BriaVideoGreenScreen",
+      "display_name": "Bria Video Green Screen",
+      "description": "Replace a video's background with a solid chroma-key screen using Bria.",
+      "category": "partner/video/Bria",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO"
+        },
+        {
+          "name": "green_shade",
+          "type": "COMBO",
+          "options": [
+            "broadcast_green",
+            "chroma_green",
+            "blue_screen"
+          ]
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "BriaVideoReplaceBackground",
+      "display_name": "Bria Video Replace Background",
+      "description": "Replace a video's background with a supplied image or video using Bria. The output keeps the foreground's resolution and frame rate; a background with a different aspect ratio is stretched to fit, so match it for undistorted results.",
+      "category": "partner/video/Bria",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO"
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "BriaVideoEraser",
+      "display_name": "Bria Video Eraser",
+      "description": "Erase whatever a per-frame mask covers from a video with Bria and fill the gap in. The mask must be white on what should go and black elsewhere. Bria accepts clips of at most 5.1 seconds at 20 to 30 frames per second with even pixel dimensions; audio is kept by default. The returned clip can be a few frames shorter than the input.",
+      "category": "partner/video/Bria",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO"
+        },
+        {
+          "name": "preserve_audio",
+          "type": "BOOLEAN"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "ByteDanceTextToVideoNode",
+      "display_name": "ByteDance Text to Video",
+      "description": "Generate video using ByteDance models via api based on prompt",
+      "category": "partner/video/ByteDance",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "COMBO",
+          "options": [
+            "seedance-1-5-pro-251215",
+            "seedance-1-0-pro-250528",
+            "seedance-1-0-pro-fast-251015"
+          ]
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "resolution",
+          "type": "COMBO",
+          "options": [
+            "480p",
+            "720p",
+            "1080p"
+          ]
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "options": [
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16",
+            "21:9"
+          ]
+        },
+        {
+          "name": "duration",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "ByteDanceImageToVideoNode",
+      "display_name": "ByteDance Image to Video",
+      "description": "Generate video using ByteDance models via api based on image and prompt",
+      "category": "partner/video/ByteDance",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "COMBO",
+          "options": [
+            "seedance-1-5-pro-251215",
+            "seedance-1-0-pro-250528",
+            "seedance-1-0-pro-fast-251015"
+          ]
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "image",
+          "type": "IMAGE"
+        },
+        {
+          "name": "resolution",
+          "type": "COMBO",
+          "options": [
+            "480p",
+            "720p",
+            "1080p"
+          ]
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "options": [
+            "adaptive",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16",
+            "21:9"
+          ]
+        },
+        {
+          "name": "duration",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "ByteDanceFirstLastFrameNode",
+      "display_name": "ByteDance First-Last-Frame to Video",
+      "description": "Generate video using prompt and first and last frames.",
+      "category": "partner/video/ByteDance",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "COMBO",
+          "options": [
+            "seedance-1-5-pro-251215",
+            "seedance-1-0-pro-250528"
+          ]
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "first_frame",
+          "type": "IMAGE"
+        },
+        {
+          "name": "last_frame",
+          "type": "IMAGE"
+        },
+        {
+          "name": "resolution",
+          "type": "COMBO",
+          "options": [
+            "480p",
+            "720p",
+            "1080p"
+          ]
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "options": [
+            "adaptive",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16",
+            "21:9"
+          ]
+        },
+        {
+          "name": "duration",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "ByteDance2TextToVideoNode",
+      "display_name": "ByteDance Seedance 2.5 Text to Video",
+      "description": "Generate video using Seedance 2.5 or 2.0 models based on a text prompt.",
+      "category": "partner/video/ByteDance",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "options": [
+            "Seedance 2.5",
+            "Seedance 2.0",
+            "Seedance 2.0 Fast",
+            "Seedance 2.0 Mini"
+          ]
+        },
+        {
+          "name": "model.prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "model.resolution",
+          "type": "COMBO",
+          "options": [
+            "480p",
+            "720p",
+            "1080p",
+            "4k"
+          ]
+        },
+        {
+          "name": "model.ratio",
+          "type": "COMBO",
+          "options": [
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16",
+            "21:9",
+            "adaptive"
+          ]
+        },
+        {
+          "name": "model.duration",
+          "type": "INT"
+        },
+        {
+          "name": "model.generate_audio",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "model.output_format",
+          "type": "COMBO",
+          "options": [
+            "mp4"
+          ]
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        },
+        {
+          "name": "watermark",
+          "type": "BOOLEAN"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "ByteDance2FirstLastFrameNode",
+      "display_name": "ByteDance Seedance 2.5 First-Last-Frame to Video",
+      "description": "Generate video using Seedance 2.5 or 2.0 from a first frame image and optional last frame image.",
+      "category": "partner/video/ByteDance",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "options": [
+            "Seedance 2.5",
+            "Seedance 2.0",
+            "Seedance 2.0 Fast",
+            "Seedance 2.0 Mini"
+          ]
+        },
+        {
+          "name": "model.prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "model.resolution",
+          "type": "COMBO",
+          "options": [
+            "480p",
+            "720p",
+            "1080p",
+            "4k"
+          ]
+        },
+        {
+          "name": "model.duration",
+          "type": "INT"
+        },
+        {
+          "name": "model.generate_audio",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "model.output_format",
+          "type": "COMBO",
+          "options": [
+            "mp4"
+          ]
+        },
+        {
+          "name": "model.ratio",
+          "type": "COMBO",
+          "options": [
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16",
+            "21:9",
+            "adaptive"
+          ]
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        },
+        {
+          "name": "watermark",
+          "type": "BOOLEAN"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "ByteDance2ReferenceNodeV2",
+      "display_name": "ByteDance Seedance 2.5 Reference to Video",
+      "description": "Generate, edit, or extend video using Seedance 2.5 or 2.0 with reference images, videos, and audio. Supports multimodal reference, video editing, and video extension.",
+      "category": "partner/video/ByteDance",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "options": [
+            "Seedance 2.5",
+            "Seedance 2.0",
+            "Seedance 2.0 Fast",
+            "Seedance 2.0 Mini"
+          ]
+        },
+        {
+          "name": "model.prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "model.resolution",
+          "type": "COMBO",
+          "options": [
+            "480p",
+            "720p",
+            "1080p",
+            "4k"
+          ]
+        },
+        {
+          "name": "model.ratio",
+          "type": "COMBO",
+          "options": [
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16",
+            "21:9",
+            "adaptive"
+          ]
+        },
+        {
+          "name": "model.duration",
+          "type": "INT"
+        },
+        {
+          "name": "model.generate_audio",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "model.task_type",
+          "type": "COMBO",
+          "options": [
+            "auto",
+            "reference",
+            "edit",
+            "extend"
+          ]
+        },
+        {
+          "name": "model.output_format",
+          "type": "COMBO",
+          "options": [
+            "mp4"
+          ]
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        },
+        {
+          "name": "watermark",
+          "type": "BOOLEAN"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "ByteDanceVideoEnhanceNode",
+      "display_name": "ByteDance vCube Video Enhance",
+      "description": "Upscales and restores a video with ByteDance vCube: super-resolution up to 8K, compression artifact and noise removal, colour and sharpness enhancement, optional frame interpolation.",
+      "category": "partner/video/ByteDance",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO"
+        },
+        {
+          "name": "tool_version",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "options": [
+            "standard",
+            "professional"
+          ]
+        },
+        {
+          "name": "tool_version.scene",
+          "type": "COMBO",
+          "options": [
+            "aigc",
+            "common",
+            "ugc",
+            "short_series",
+            "old_film"
+          ]
+        },
+        {
+          "name": "tool_version.enhance_style",
+          "type": "COMBO",
+          "options": [
+            "hd",
+            "natural"
+          ]
+        },
+        {
+          "name": "resolution",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "options": [
+            "1080p",
+            "720p",
+            "2k",
+            "4k",
+            "8k",
+            "source",
+            "custom"
+          ]
+        },
+        {
+          "name": "resolution.short_side",
+          "type": "INT"
+        },
+        {
+          "name": "fps",
+          "type": "COMBO",
+          "options": [
+            "source",
+            "24",
+            "25",
+            "30",
+            "48",
+            "50",
+            "60",
+            "120"
+          ]
+        },
+        {
+          "name": "bitrate_level",
+          "type": "COMBO",
+          "options": [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "GeminiVideoOmniV2",
+      "display_name": "Google Gemini Omni (Video)",
+      "description": "Generate a video with audio from a text prompt using Google's Gemini Omni Flash models. Optionally provide reference images and/or videos to guide or edit the result. Describe the desired length (3-10s) directly in the prompt.",
+      "category": "partner/video/Gemini",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "options": [
+            "Omni Flash 1.1",
+            "Omni Flash"
+          ]
+        },
+        {
+          "name": "model.prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "model.resolution",
+          "type": "COMBO",
+          "options": [
+            "360p",
+            "720p",
+            "1080p",
+            "4k"
+          ]
+        },
+        {
+          "name": "model.aspect_ratio",
+          "type": "COMBO",
+          "options": [
+            "16:9",
+            "9:16"
+          ]
+        },
+        {
+          "name": "model.task_type",
+          "type": "COMBO",
+          "options": [
+            "auto",
+            "text_to_video",
+            "image_to_video",
+            "reference_to_video",
+            "edit",
+            "extend"
+          ]
+        },
+        {
+          "name": "model.seed",
+          "type": "INT"
+        },
+        {
+          "name": "model.temperature",
+          "type": "FLOAT"
+        },
+        {
+          "name": "model.top_p",
+          "type": "FLOAT"
+        }
+      ],
+      "outputs": [
+        "VIDEO",
+        "STRING"
+      ]
+    },
+    {
+      "name": "GrokVideoNode",
+      "display_name": "Grok Video",
+      "description": "Generate video from a prompt or an image",
+      "category": "partner/video/Grok",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "COMBO",
+          "options": [
+            "grok-imagine-video",
+            "grok-imagine-video-1.5"
+          ]
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "resolution",
+          "type": "COMBO",
+          "options": [
+            "480p",
+            "720p",
+            "1080p"
+          ]
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "options": [
+            "auto",
+            "16:9",
+            "4:3",
+            "3:2",
+            "1:1",
+            "2:3",
+            "3:4",
+            "9:16"
+          ]
+        },
+        {
+          "name": "duration",
+          "type": "INT"
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "GrokVideoReferenceNode",
+      "display_name": "Grok Reference-to-Video",
+      "description": "Generate video guided by reference images, with optional preset voice references.",
+      "category": "partner/video/Grok",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "model",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "options": [
+            "grok-imagine-video-1.5",
+            "grok-imagine-video"
+          ]
+        },
+        {
+          "name": "model.reference_images.reference_1",
+          "type": "IMAGE",
+          "auto_grow": true
+        },
+        {
+          "name": "model.voice_1",
+          "type": "COMBO",
+          "options": [
+            "none",
+            "ara",
+            "eve",
+            "leo",
+            "rex",
+            "sal",
+            "carina",
+            "zagan",
+            "helix",
+            "orion"
+          ],
+          "option_count": 27,
+          "options_truncated": true
+        },
+        {
+          "name": "model.voice_2",
+          "type": "COMBO",
+          "options": [
+            "none",
+            "ara",
+            "eve",
+            "leo",
+            "rex",
+            "sal",
+            "carina",
+            "zagan",
+            "helix",
+            "orion"
+          ],
+          "option_count": 27,
+          "options_truncated": true
+        },
+        {
+          "name": "model.voice_3",
+          "type": "COMBO",
+          "options": [
+            "none",
+            "ara",
+            "eve",
+            "leo",
+            "rex",
+            "sal",
+            "carina",
+            "zagan",
+            "helix",
+            "orion"
+          ],
+          "option_count": 27,
+          "options_truncated": true
+        },
+        {
+          "name": "model.resolution",
+          "type": "COMBO",
+          "options": [
+            "480p",
+            "720p"
+          ]
+        },
+        {
+          "name": "model.aspect_ratio",
+          "type": "COMBO",
+          "options": [
+            "16:9",
+            "4:3",
+            "3:2",
+            "1:1",
+            "2:3",
+            "3:4",
+            "9:16"
+          ]
+        },
+        {
+          "name": "model.duration",
+          "type": "INT"
+        },
+        {
+          "name": "model.reference_images.item_1",
+          "type": "IMAGE",
+          "auto_grow": true
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "GrokVideoEditNode",
+      "display_name": "Grok Video Edit",
+      "description": "Edit an existing video based on a text prompt.",
+      "category": "partner/video/Grok",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "COMBO",
+          "options": [
+            "grok-imagine-video"
+          ]
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "video",
+          "type": "VIDEO"
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "GrokVideoExtendNode",
+      "display_name": "Grok Video Extend",
+      "description": "Extend an existing video with a seamless continuation based on a text prompt.",
+      "category": "partner/video/Grok",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "video",
+          "type": "VIDEO"
+        },
+        {
+          "name": "model",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "options": [
+            "grok-imagine-video"
+          ]
+        },
+        {
+          "name": "model.duration",
+          "type": "INT"
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "HeyGenTalkingPhotoNode",
+      "display_name": "HeyGen Talking Photo",
+      "description": "Animate any image of a person into a lip-synced talking video (HeyGen Avatar IV). Drive it with a text script or your own audio.",
+      "category": "partner/video/HeyGen",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE"
+        },
+        {
+          "name": "speech",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "options": [
+            "script",
+            "audio"
+          ]
+        },
+        {
+          "name": "speech.text",
+          "type": "STRING"
+        },
+        {
+          "name": "speech.voice",
+          "type": "COMBO",
+          "options": [
+            "Cassidy (English, female)",
+            "Hope (English, female)",
+            "Archer (English, male)",
+            "Brittney (English, female)",
+            "Mark (English, male)",
+            "Andrew (English, male)",
+            "Spuds Oxley (English, male)",
+            "Patrick (English, male)",
+            "David Castlemore (English, male)",
+            "Michael C (English, male)"
+          ],
+          "option_count": 40,
+          "options_truncated": true
+        },
+        {
+          "name": "speech.audio",
+          "type": "AUDIO"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "HeyGenAvatarVideoNode",
+      "display_name": "HeyGen Avatar Video",
+      "description": "Generate a talking-presenter video from a HeyGen avatar. Includes HeyGen's most popular public avatars; any look ID can be supplied as an override.",
+      "category": "partner/video/HeyGen",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "engine",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "options": [
+            "auto",
+            "avatar_iv",
+            "avatar_iii",
+            "avatar_v"
+          ]
+        },
+        {
+          "name": "engine.avatar",
+          "type": "COMBO",
+          "options": [
+            "Annie Lounge Standing Side",
+            "Yara Modern Lecture Hall",
+            "Brandon Business Sitting Front",
+            "Caroline Business Sitting Side",
+            "Ursula Lawyer Angle 4",
+            "Sofia Corporate Presenter 01 Angle 3",
+            "Seoyeon Health Nutrition Coach Angle 3",
+            "Sanne Fitness Coach Angle 4",
+            "Sander",
+            "Rupert Personal Development Coach Angle 4"
+          ],
+          "option_count": 45,
+          "options_truncated": true
+        },
+        {
+          "name": "speech",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "options": [
+            "script",
+            "audio"
+          ]
+        },
+        {
+          "name": "speech.text",
+          "type": "STRING"
+        },
+        {
+          "name": "speech.voice",
+          "type": "COMBO",
+          "options": [
+            "(avatar's default voice)",
+            "Cassidy (English, female)",
+            "Hope (English, female)",
+            "Archer (English, male)",
+            "Brittney (English, female)",
+            "Mark (English, male)",
+            "Andrew (English, male)",
+            "Spuds Oxley (English, male)",
+            "Patrick (English, male)",
+            "David Castlemore (English, male)"
+          ],
+          "option_count": 41,
+          "options_truncated": true
+        },
+        {
+          "name": "speech.audio",
+          "type": "AUDIO"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "HeyGenVideoTranslateNode",
+      "display_name": "HeyGen Video Translate",
+      "description": "Translate a spoken video into another language. Clones the original speaker's voice and re-animates the mouth to match the translated speech.",
+      "category": "partner/video/HeyGen",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO"
+        },
+        {
+          "name": "output_language",
+          "type": "COMBO",
+          "options": [
+            "English",
+            "Spanish",
+            "Spanish (Spain)",
+            "Spanish (Mexico)",
+            "French",
+            "French (France)",
+            "German",
+            "German (Germany)",
+            "Portuguese",
+            "Portuguese (Brazil)"
+          ],
+          "option_count": 190,
+          "options_truncated": true
+        },
+        {
+          "name": "mode",
+          "type": "COMBO",
+          "options": [
+            "speed",
+            "precision"
+          ]
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "HitPawVideoEnhance",
+      "display_name": "HitPaw Video Enhance",
+      "description": "Upscale low-resolution videos to high resolution, eliminate artifacts and noise. Prices shown are per second of video.",
+      "category": "partner/video/HitPaw",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "options": [
+            "Portrait Restore Model (1x)",
+            "Portrait Restore Model (2x)",
+            "General Restore Model (1x)",
+            "General Restore Model (2x)",
+            "General Restore Model (4x)",
+            "Ultra HD Model (2x)",
+            "Generative Model (1x)"
+          ]
+        },
+        {
+          "name": "model.resolution",
+          "type": "COMBO",
+          "options": [
+            "original",
+            "720p",
+            "1080p",
+            "2K/QHD",
+            "4K/UHD",
+            "8K"
+          ]
+        },
+        {
+          "name": "video",
+          "type": "VIDEO"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "KlingTextToVideoNode",
+      "display_name": "Kling Text to Video",
+      "description": "Kling Text to Video Node",
+      "category": "partner/video/Kling",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "negative_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "cfg_scale",
+          "type": "FLOAT"
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "options": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ]
+        },
+        {
+          "name": "mode",
+          "type": "COMBO",
+          "options": [
+            "pro mode / 5s duration / kling-v2-5-turbo",
+            "pro mode / 10s duration / kling-v2-5-turbo"
+          ]
+        }
+      ],
+      "outputs": [
+        "VIDEO",
+        "STRING",
+        "STRING"
+      ]
+    },
+    {
+      "name": "KlingImage2VideoNode",
+      "display_name": "Kling Image(First Frame) to Video",
+      "description": "",
+      "category": "partner/video/Kling",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "start_frame",
+          "type": "IMAGE"
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "negative_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "model_name",
+          "type": "COMBO",
+          "options": [
+            "kling-v2-5-turbo"
+          ]
+        },
+        {
+          "name": "cfg_scale",
+          "type": "FLOAT"
+        },
+        {
+          "name": "mode",
+          "type": "COMBO",
+          "options": [
+            "pro"
+          ]
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "options": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ]
+        },
+        {
+          "name": "duration",
+          "type": "COMBO",
+          "options": [
+            "5",
+            "10"
+          ]
+        }
+      ],
+      "outputs": [
+        "VIDEO",
+        "STRING",
+        "STRING"
+      ]
+    },
+    {
+      "name": "KlingStartEndFrameNode",
+      "display_name": "Kling Start-End Frame to Video",
+      "description": "Generate a video sequence that transitions between your provided start and end images. The node creates all frames in between, producing a smooth transformation from the first frame to the last.",
+      "category": "partner/video/Kling",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "start_frame",
+          "type": "IMAGE"
+        },
+        {
+          "name": "end_frame",
+          "type": "IMAGE"
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "negative_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "cfg_scale",
+          "type": "FLOAT"
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "options": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ]
+        },
+        {
+          "name": "mode",
+          "type": "COMBO",
+          "options": [
+            "pro mode / 5s duration / kling-v2-5-turbo",
+            "pro mode / 10s duration / kling-v2-5-turbo"
+          ]
+        }
+      ],
+      "outputs": [
+        "VIDEO",
+        "STRING",
+        "STRING"
+      ]
+    },
+    {
+      "name": "KlingLipSyncAudioToVideoNode",
+      "display_name": "Kling Lip Sync Video with Audio",
+      "description": "Kling Lip Sync Audio to Video Node. Syncs mouth movements in a video file to the audio content of an audio file. When using, ensure that the audio contains clearly distinguishable vocals and that the video contains a distinct face. The audio file should not be larger than 5MB. The video file should not be larger than 100MB, should have height/width between 720px and 1920px, and should be between 2s and 10s in length.",
+      "category": "partner/video/Kling",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO"
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO"
+        },
+        {
+          "name": "voice_language",
+          "type": "COMBO",
+          "options": [
+            "zh",
+            "en"
+          ]
+        }
+      ],
+      "outputs": [
+        "VIDEO",
+        "STRING",
+        "STRING"
+      ]
+    },
+    {
+      "name": "KlingLipSyncTextToVideoNode",
+      "display_name": "Kling Lip Sync Video with Text",
+      "description": "Kling Lip Sync Text to Video Node. Syncs mouth movements in a video file to a text prompt. The video file should not be larger than 100MB, should have height/width between 720px and 1920px, and should be between 2s and 10s in length.",
+      "category": "partner/video/Kling",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO"
+        },
+        {
+          "name": "text",
+          "type": "STRING"
+        },
+        {
+          "name": "voice",
+          "type": "COMBO",
+          "options": [
+            "Melody",
+            "Sunny",
+            "Sage",
+            "Ace",
+            "Blossom",
+            "Peppy",
+            "Dove",
+            "Shine",
+            "Anchor",
+            "Lyric"
+          ],
+          "option_count": 61,
+          "options_truncated": true
+        },
+        {
+          "name": "voice_speed",
+          "type": "FLOAT"
+        }
+      ],
+      "outputs": [
+        "VIDEO",
+        "STRING",
+        "STRING"
+      ]
+    },
+    {
+      "name": "KlingOmniProTextToVideoNode",
+      "display_name": "Kling 3.0 Omni Text to Video",
+      "description": "Use text prompts to generate videos with the latest Kling model.",
+      "category": "partner/video/Kling",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "model_name",
+          "type": "COMBO",
+          "options": [
+            "kling-v3-omni",
+            "kling-video-o1"
+          ]
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "options": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ]
+        },
+        {
+          "name": "duration",
+          "type": "INT"
+        },
+        {
+          "name": "storyboards.storyboard_1_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "storyboards.storyboard_1_duration",
+          "type": "INT"
+        },
+        {
+          "name": "storyboards.storyboard_2_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "storyboards.storyboard_2_duration",
+          "type": "INT"
+        },
+        {
+          "name": "storyboards.storyboard_3_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "storyboards.storyboard_3_duration",
+          "type": "INT"
+        },
+        {
+          "name": "storyboards.storyboard_4_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "storyboards.storyboard_4_duration",
+          "type": "INT"
+        },
+        {
+          "name": "storyboards.storyboard_5_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "storyboards.storyboard_5_duration",
+          "type": "INT"
+        },
+        {
+          "name": "storyboards.storyboard_6_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "storyboards.storyboard_6_duration",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "KlingOmniProFirstLastFrameNode",
+      "display_name": "Kling 3.0 Omni First-Last-Frame to Video",
+      "description": "Use a start frame, an optional end frame, or reference images with the latest Kling model.",
+      "category": "partner/video/Kling",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "model_name",
+          "type": "COMBO",
+          "options": [
+            "kling-v3-omni",
+            "kling-video-o1"
+          ]
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "duration",
+          "type": "INT"
+        },
+        {
+          "name": "first_frame",
+          "type": "IMAGE"
+        },
+        {
+          "name": "storyboards.storyboard_1_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "storyboards.storyboard_1_duration",
+          "type": "INT"
+        },
+        {
+          "name": "storyboards.storyboard_2_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "storyboards.storyboard_2_duration",
+          "type": "INT"
+        },
+        {
+          "name": "storyboards.storyboard_3_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "storyboards.storyboard_3_duration",
+          "type": "INT"
+        },
+        {
+          "name": "storyboards.storyboard_4_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "storyboards.storyboard_4_duration",
+          "type": "INT"
+        },
+        {
+          "name": "storyboards.storyboard_5_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "storyboards.storyboard_5_duration",
+          "type": "INT"
+        },
+        {
+          "name": "storyboards.storyboard_6_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "storyboards.storyboard_6_duration",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "KlingOmniProImageToVideoNode",
+      "display_name": "Kling 3.0 Omni Image to Video",
+      "description": "Use up to 7 reference images to generate a video with the latest Kling model.",
+      "category": "partner/video/Kling",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "model_name",
+          "type": "COMBO",
+          "options": [
+            "kling-v3-omni",
+            "kling-video-o1"
+          ]
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "options": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ]
+        },
+        {
+          "name": "duration",
+          "type": "INT"
+        },
+        {
+          "name": "reference_images",
+          "type": "IMAGE"
+        },
+        {
+          "name": "storyboards.storyboard_1_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "storyboards.storyboard_1_duration",
+          "type": "INT"
+        },
+        {
+          "name": "storyboards.storyboard_2_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "storyboards.storyboard_2_duration",
+          "type": "INT"
+        },
+        {
+          "name": "storyboards.storyboard_3_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "storyboards.storyboard_3_duration",
+          "type": "INT"
+        },
+        {
+          "name": "storyboards.storyboard_4_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "storyboards.storyboard_4_duration",
+          "type": "INT"
+        },
+        {
+          "name": "storyboards.storyboard_5_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "storyboards.storyboard_5_duration",
+          "type": "INT"
+        },
+        {
+          "name": "storyboards.storyboard_6_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "storyboards.storyboard_6_duration",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "KlingOmniProVideoToVideoNode",
+      "display_name": "Kling 3.0 Omni Video to Video",
+      "description": "Use a video and up to 4 reference images to generate a video with the latest Kling model.",
+      "category": "partner/video/Kling",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "model_name",
+          "type": "COMBO",
+          "options": [
+            "kling-v3-omni",
+            "kling-video-o1"
+          ]
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "options": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ]
+        },
+        {
+          "name": "duration",
+          "type": "INT"
+        },
+        {
+          "name": "reference_video",
+          "type": "VIDEO"
+        },
+        {
+          "name": "keep_original_sound",
+          "type": "BOOLEAN"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "KlingOmniProEditVideoNode",
+      "display_name": "Kling 3.0 Omni Edit Video",
+      "description": "Edit an existing video with the latest model from Kling.",
+      "category": "partner/video/Kling",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "model_name",
+          "type": "COMBO",
+          "options": [
+            "kling-v3-omni",
+            "kling-video-o1"
+          ]
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "video",
+          "type": "VIDEO"
+        },
+        {
+          "name": "keep_original_sound",
+          "type": "BOOLEAN"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "KlingTextToVideoWithAudio",
+      "display_name": "Kling 2.6 Text to Video with Audio",
+      "description": "",
+      "category": "partner/video/Kling",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "model_name",
+          "type": "COMBO",
+          "options": [
+            "kling-v2-6"
+          ]
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "mode",
+          "type": "COMBO",
+          "options": [
+            "pro"
+          ]
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "options": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ]
+        },
+        {
+          "name": "duration",
+          "type": "COMBO",
+          "options": [
+            5,
+            10
+          ]
+        },
+        {
+          "name": "generate_audio",
+          "type": "BOOLEAN"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "KlingImageToVideoWithAudio",
+      "display_name": "Kling 2.6 Image(First Frame) to Video with Audio",
+      "description": "",
+      "category": "partner/video/Kling",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "model_name",
+          "type": "COMBO",
+          "options": [
+            "kling-v2-6"
+          ]
+        },
+        {
+          "name": "start_frame",
+          "type": "IMAGE"
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "mode",
+          "type": "COMBO",
+          "options": [
+            "pro"
+          ]
+        },
+        {
+          "name": "duration",
+          "type": "COMBO",
+          "options": [
+            5,
+            10
+          ]
+        },
+        {
+          "name": "generate_audio",
+          "type": "BOOLEAN"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "KlingMotionControl",
+      "display_name": "Kling Motion Control",
+      "description": "",
+      "category": "partner/video/Kling",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "reference_image",
+          "type": "IMAGE"
+        },
+        {
+          "name": "reference_video",
+          "type": "VIDEO"
+        },
+        {
+          "name": "keep_original_sound",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "character_orientation",
+          "type": "COMBO",
+          "options": [
+            "video",
+            "image"
+          ]
+        },
+        {
+          "name": "mode",
+          "type": "COMBO",
+          "options": [
+            "pro",
+            "std"
+          ]
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "KlingVideoNode",
+      "display_name": "Kling 3.0 Video",
+      "description": "Generate videos with Kling V3. Supports text-to-video and image-to-video with optional storyboard multi-prompt and audio generation.",
+      "category": "partner/video/Kling",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "multi_shot",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "options": [
+            "disabled",
+            "1 storyboard",
+            "2 storyboards",
+            "3 storyboards",
+            "4 storyboards",
+            "5 storyboards",
+            "6 storyboards"
+          ]
+        },
+        {
+          "name": "multi_shot.prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "multi_shot.negative_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "multi_shot.duration",
+          "type": "INT"
+        },
+        {
+          "name": "multi_shot.storyboard_1_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "multi_shot.storyboard_1_duration",
+          "type": "INT"
+        },
+        {
+          "name": "multi_shot.storyboard_2_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "multi_shot.storyboard_2_duration",
+          "type": "INT"
+        },
+        {
+          "name": "multi_shot.storyboard_3_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "multi_shot.storyboard_3_duration",
+          "type": "INT"
+        },
+        {
+          "name": "multi_shot.storyboard_4_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "multi_shot.storyboard_4_duration",
+          "type": "INT"
+        },
+        {
+          "name": "multi_shot.storyboard_5_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "multi_shot.storyboard_5_duration",
+          "type": "INT"
+        },
+        {
+          "name": "multi_shot.storyboard_6_prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "multi_shot.storyboard_6_duration",
+          "type": "INT"
+        },
+        {
+          "name": "generate_audio",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "model",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "options": [
+            "kling-v3",
+            "kling-3.0-turbo"
+          ]
+        },
+        {
+          "name": "model.resolution",
+          "type": "COMBO",
+          "options": [
+            "4k",
+            "1080p",
+            "720p"
+          ]
+        },
+        {
+          "name": "model.aspect_ratio",
+          "type": "COMBO",
+          "options": [
+            "16:9",
+            "9:16",
+            "1:1"
+          ]
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "KlingFirstLastFrameNode",
+      "display_name": "Kling 3.0 First-Last-Frame to Video",
+      "description": "Generate videos with Kling V3 using first and last frames.",
+      "category": "partner/video/Kling",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "duration",
+          "type": "INT"
+        },
+        {
+          "name": "first_frame",
+          "type": "IMAGE"
+        },
+        {
+          "name": "end_frame",
+          "type": "IMAGE"
+        },
+        {
+          "name": "generate_audio",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "model",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "options": [
+            "kling-v3"
+          ]
+        },
+        {
+          "name": "model.resolution",
+          "type": "COMBO",
+          "options": [
+            "4k",
+            "1080p",
+            "720p"
+          ]
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "KlingAvatarNode",
+      "display_name": "Kling Avatar 2.0",
+      "description": "Generate broadcast-style digital human videos from a single photo and an audio file.",
+      "category": "partner/video/Kling",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE"
+        },
+        {
+          "name": "sound_file",
+          "type": "AUDIO"
+        },
+        {
+          "name": "mode",
+          "type": "COMBO",
+          "options": [
+            "std",
+            "pro"
+          ]
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "LtxApi25TextToVideo",
+      "display_name": "LTX 2.5 Text To Video",
+      "description": "Professional-quality videos with customizable duration and resolution.",
+      "category": "partner/video/LTXV",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "options": [
+            "LTX-2.5 (Fast)",
+            "LTX-2.5 (Pro)"
+          ]
+        },
+        {
+          "name": "model.duration",
+          "type": "COMBO",
+          "options": [
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "8",
+            "10",
+            "12",
+            "14",
+            "16"
+          ],
+          "option_count": 12,
+          "options_truncated": true
+        },
+        {
+          "name": "model.resolution",
+          "type": "COMBO",
+          "options": [
+            "1280x720",
+            "720x1280",
+            "1920x1080",
+            "1080x1920",
+            "2560x1440",
+            "1440x2560",
+            "3840x2160",
+            "2160x3840"
+          ]
+        },
+        {
+          "name": "model.fps",
+          "type": "COMBO",
+          "options": [
+            "24",
+            "25",
+            "48",
+            "50"
+          ]
+        },
+        {
+          "name": "model.generate_audio",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "LtxApi25ImageToVideo",
+      "display_name": "LTX 2.5 Image To Video",
+      "description": "Professional-quality videos with customizable duration and resolution based on start image.",
+      "category": "partner/video/LTXV",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE"
+        },
+        {
+          "name": "model",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "options": [
+            "LTX-2.5 (Fast)",
+            "LTX-2.5 (Pro)"
+          ]
+        },
+        {
+          "name": "model.duration",
+          "type": "COMBO",
+          "options": [
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "8",
+            "10",
+            "12",
+            "14",
+            "16"
+          ],
+          "option_count": 12,
+          "options_truncated": true
+        },
+        {
+          "name": "model.resolution",
+          "type": "COMBO",
+          "options": [
+            "1280x720",
+            "720x1280",
+            "1920x1080",
+            "1080x1920",
+            "2560x1440",
+            "1440x2560",
+            "3840x2160",
+            "2160x3840"
+          ]
+        },
+        {
+          "name": "model.fps",
+          "type": "COMBO",
+          "options": [
+            "24",
+            "25",
+            "48",
+            "50"
+          ]
+        },
+        {
+          "name": "model.generate_audio",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "LtxApi25AudioToVideo",
+      "display_name": "LTX 2.5 Audio To Video",
+      "description": "Generate a video driven by an audio track, with an optional first frame image.",
+      "category": "partner/video/LTXV",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO"
+        },
+        {
+          "name": "model",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "options": [
+            "LTX-2.5 (Fast)",
+            "LTX-2.5 (Pro)"
+          ]
+        },
+        {
+          "name": "model.resolution",
+          "type": "COMBO",
+          "options": [
+            "1920x1080",
+            "1080x1920"
+          ]
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "LumaVideoNode",
+      "display_name": "Luma Text to Video",
+      "description": "Generates videos synchronously based on prompt and output_size.",
+      "category": "partner/video/Luma",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "model",
+          "type": "COMBO",
+          "options": [
+            "ray-2",
+            "ray-flash-2",
+            "ray-1-6"
+          ]
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "options": [
+            "1:1",
+            "16:9",
+            "9:16",
+            "4:3",
+            "3:4",
+            "21:9",
+            "9:21"
+          ]
+        },
+        {
+          "name": "resolution",
+          "type": "COMBO",
+          "options": [
+            "540p",
+            "720p",
+            "1080p",
+            "4k"
+          ]
+        },
+        {
+          "name": "duration",
+          "type": "COMBO",
+          "options": [
+            "5s",
+            "9s"
+          ]
+        },
+        {
+          "name": "loop",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "LumaImageToVideoNode",
+      "display_name": "Luma Image to Video",
+      "description": "Generates videos synchronously based on prompt, input images, and output_size.",
+      "category": "partner/video/Luma",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "model",
+          "type": "COMBO",
+          "options": [
+            "ray-2",
+            "ray-flash-2",
+            "ray-1-6"
+          ]
+        },
+        {
+          "name": "resolution",
+          "type": "COMBO",
+          "options": [
+            "540p",
+            "720p",
+            "1080p",
+            "4k"
+          ]
+        },
+        {
+          "name": "duration",
+          "type": "COMBO",
+          "options": [
+            "5s",
+            "9s"
+          ]
+        },
+        {
+          "name": "loop",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ]
+    },
+    {
+      "name": "LumaRay32TextToVideoNode",
+      "display_name": "Luma Ray 3.2 Text to Video",
+      "description": "Generate a video from a text prompt using Luma's Ray 3.2 model.",
+      "category": "partner/video/Luma",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "options": [
+            "16:9",
+            "9:16",
+            "1:1",
+            "4:3",
+            "3:4",
+            "21:9"
+          ]
+        },
+        {
+          "name": "resolution",
+          "type": "COMBO",
+          "options": [
+            "360p",
+            "540p",
+            "720p",
+            "1080p"
+          ]
+        },
+        {
+          "name": "duration",
+          "type": "COMBO",
+          "options": [
+            "5s",
+            "10s"
+          ]
+        },
+        {
+          "name": "loop",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO",
+        "STRING"
+      ]
+    },
+    {
+      "name": "LumaRay32ImageToVideoNode",
+      "display_name": "Luma Ray 3.2 Image to Video",
+      "description": "Generate a video from a start and/or end frame using Luma's Ray 3.2 model. Image-anchored generations are always 5 seconds.",
+      "category": "partner/video/Luma",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "resolution",
+          "type": "COMBO",
+          "options": [
+            "360p",
+            "540p",
+            "720p",
+            "1080p"
+          ]
+        },
+        {
+          "name": "loop",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO",
+        "STRING"
+      ]
+    },
+    {
+      "name": "LumaRay32KeyframesToVideoNode",
+      "display_name": "Luma Ray 3.2 Keyframes to Video",
+      "description": "Generate a video that interpolates through a sequence of guide images, each anchored to a position on the timeline, using Luma Ray 3.2. Build the sequence with Luma Ray 3.2 Keyframe nodes (at least 2).",
+      "category": "partner/video/Luma",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "resolution",
+          "type": "COMBO",
+          "options": [
+            "360p",
+            "540p",
+            "720p",
+            "1080p"
+          ]
+        },
+        {
+          "name": "duration",
+          "type": "COMBO",
+          "options": [
+            "5s",
+            "10s"
+          ]
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        },
+        {
+          "name": "keyframes",
+          "type": "LUMA_RAY32_KEYFRAME"
+        }
+      ],
+      "outputs": [
+        "VIDEO",
+        "STRING"
+      ]
+    },
+    {
+      "name": "LumaRay32VideoEditNode",
+      "display_name": "Luma Ray 3.2 Video Edit",
+      "description": "Re-render an existing video under a new prompt using Luma Ray 3.2 (restyle, relight, add or remove elements) while keeping the original motion. Source video up to 18 seconds; the edited video keeps the source's length.",
+      "category": "partner/video/Luma",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO"
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "resolution",
+          "type": "COMBO",
+          "options": [
+            "360p",
+            "540p",
+            "720p",
+            "1080p"
+          ]
+        },
+        {
+          "name": "strength",
+          "type": "COMBO",
+          "options": [
+            "auto",
+            "adhere_1",
+            "adhere_2",
+            "adhere_3",
+            "flex_1",
+            "flex_2",
+            "flex_3",
+            "reimagine_1",
+            "reimagine_2",
+            "reimagine_3"
+          ]
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO",
+        "STRING"
+      ]
+    },
+    {
+      "name": "LumaRay32VideoReframeNode",
+      "display_name": "Luma Ray 3.2 Video Reframe",
+      "description": "Change the aspect ratio of an existing video, using Luma Ray 3.2 to fill the newly exposed canvas areas. Source video up to 30 seconds. Billed per second of output.",
+      "category": "partner/video/Luma",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "video",
+          "type": "VIDEO"
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "options": [
+            "16:9",
+            "9:16",
+            "1:1",
+            "4:3",
+            "3:4",
+            "21:9"
+          ]
+        },
+        {
+          "name": "resolution",
+          "type": "COMBO",
+          "options": [
+            "360p",
+            "540p",
+            "720p",
+            "1080p"
+          ]
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO",
+        "STRING"
+      ]
+    },
+    {
+      "name": "LumaRay32ExtendVideoNode",
+      "display_name": "Luma Ray 3.2 Extend Video",
+      "description": "Extend a previous Ray 3.2 generation forward (continue after it) or backward (lead-in before it). Connect the generation_id output of a prior Luma Ray 3.2 node. Extensions are always 5 seconds.",
+      "category": "partner/video/Luma",
+      "pack": "core",
+      "api_node": true,
+      "inputs": [
+        {
+          "name": "source_generation_id",
+          "type": "STRING"
+        },
+        {
+          "name": "direction",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "options": [
+            "Forward (continue after)",
+            "Backward (lead-in before)"
+          ]
+        },
+        {
+          "name": "direction.loop",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "prompt",
+          "type": "STRING"
+        },
+        {
+          "name": "resolution",
+          "type": "COMBO",
+          "options": [
+            "540p",
+            "720p",
+            "1080p"
+          ]
+        },
+        {
+          "name": "seed",
+          "type": "INT"
+        }
+      ],
+      "outputs": [
+        "VIDEO",
+        "STRING"
+      ]
+    }
+  ],
+  "metadata": {
+    "total": 105,
+    "limit": 100,
+    "offset": 0,
+    "returned": 53,
+    "dropped": 47
+  },
+  "note": "Some COMBO option lists and/or long descriptions were truncated (options_truncated / description_truncated; option_count and description_length are the full sizes). Call get_node with the node name(s) for the complete spec. 6 deprecated match(es) hidden: \"ByteDance2ReferenceNode\", \"GeminiVideoOmni\", \"RunwayFirstLastFrameNode\", \"RunwayImageToVideoNodeGen3a\", \"OpenAIVideoSora2\", \"TopazVideoEnhance\". Deprecated means superseded, so build new workflows with a current node from the results. If an existing workflow references a hidden node, pass its class name to get_node for the full spec. Response truncated to fit the size limit: 47 node(s) from this page omitted (returned 53 of 105 total matches). Narrow the query with the category/input_type/output_type/pack filters, or page the rest with offset=53. detail:'full' returns more fields; get_node returns one item uncapped."
+}

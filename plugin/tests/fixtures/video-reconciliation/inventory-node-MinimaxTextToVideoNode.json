@@ -1,0 +1,55 @@
+{
+  "data": [
+    {
+      "name": "MinimaxTextToVideoNode",
+      "display_name": "MiniMax Text to Video",
+      "description": "Generates videos synchronously based on a prompt, and optional parameters.",
+      "category": "partner/video/MiniMax",
+      "pack": "core",
+      "inputs": {
+        "required": [
+          "STRING",
+          "COMBO"
+        ],
+        "optional": [
+          "INT"
+        ]
+      },
+      "input_details": [
+        {
+          "name": "prompt_text",
+          "type": "STRING",
+          "required": true,
+          "default": "",
+          "tooltip": "Text prompt to guide the video generation"
+        },
+        {
+          "name": "model",
+          "type": "COMBO",
+          "required": true,
+          "default": "T2V-01",
+          "options": [
+            "T2V-01",
+            "T2V-01-Director"
+          ],
+          "tooltip": "Model to use for video generation"
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "required": false,
+          "default": 0,
+          "min": 0,
+          "max": 18446744073709552000,
+          "tooltip": "The random seed used for creating the noise."
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ],
+      "api_node": true,
+      "output_node": false,
+      "deprecated": false
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "data": [
+    {
+      "name": "GrokVideoNode",
+      "display_name": "Grok Video",
+      "description": "Generate video from a prompt or an image",
+      "category": "partner/video/Grok",
+      "pack": "core",
+      "inputs": {
+        "required": [
+          "COMBO",
+          "STRING",
+          "COMBO",
+          "COMBO",
+          "INT",
+          "INT"
+        ],
+        "optional": [
+          "IMAGE"
+        ]
+      },
+      "input_details": [
+        {
+          "name": "model",
+          "type": "COMBO",
+          "required": true,
+          "options": [
+            "grok-imagine-video",
+            "grok-imagine-video-1.5"
+          ],
+          "tooltip": "The model to use for video generation."
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "required": true,
+          "tooltip": "Text description of the desired video. Optional for grok-imagine-video-1.5 when an input image is provided."
+        },
+        {
+          "name": "resolution",
+          "type": "COMBO",
+          "required": true,
+          "options": [
+            "480p",
+            "720p",
+            "1080p"
+          ],
+          "tooltip": "The resolution of the output video. 1080p is only available for grok-imagine-video-1.5."
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "required": true,
+          "options": [
+            "auto",
+            "16:9",
+            "4:3",
+            "3:2",
+            "1:1",
+            "2:3",
+            "3:4",
+            "9:16"
+          ],
+          "tooltip": "The aspect ratio of the output video."
+        },
+        {
+          "name": "duration",
+          "type": "INT",
+          "required": true,
+          "default": 6,
+          "min": 1,
+          "max": 15,
+          "tooltip": "The duration of the output video in seconds."
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "required": true,
+          "default": 0,
+          "min": 0,
+          "max": 2147483647,
+          "tooltip": "Seed to determine if node should re-run; actual results are nondeterministic regardless of seed."
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "required": false,
+          "tooltip": "Optional starting image. If omitted, the video is generated from the text prompt alone."
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ],
+      "api_node": true,
+      "output_node": false,
+      "deprecated": false
+    }
+  ]
+}

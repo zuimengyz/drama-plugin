@@ -1,0 +1,133 @@
+{
+  "data": [
+    {
+      "name": "Veo3VideoGenerationNode",
+      "display_name": "Google Veo 3 Video Generation",
+      "description": "Generates videos from text prompts using Google's Veo 3 API",
+      "category": "partner/video/Veo",
+      "pack": "core",
+      "inputs": {
+        "required": [
+          "STRING",
+          "COMBO"
+        ],
+        "optional": [
+          "COMBO",
+          "STRING",
+          "INT",
+          "BOOLEAN",
+          "COMBO",
+          "INT",
+          "IMAGE",
+          "COMBO",
+          "BOOLEAN"
+        ]
+      },
+      "input_details": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "required": true,
+          "default": "",
+          "tooltip": "Text description of the video"
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "required": true,
+          "default": "16:9",
+          "options": [
+            "16:9",
+            "9:16"
+          ],
+          "tooltip": "Aspect ratio of the output video"
+        },
+        {
+          "name": "resolution",
+          "type": "COMBO",
+          "required": false,
+          "default": "720p",
+          "options": [
+            "720p",
+            "1080p",
+            "4k"
+          ],
+          "tooltip": "Output video resolution. 4K is not available for the veo-3.1-lite model."
+        },
+        {
+          "name": "negative_prompt",
+          "type": "STRING",
+          "required": false,
+          "default": "",
+          "tooltip": "Negative text prompt to guide what to avoid in the video"
+        },
+        {
+          "name": "duration_seconds",
+          "type": "INT",
+          "required": false,
+          "default": 8,
+          "min": 4,
+          "max": 8,
+          "tooltip": "Duration of the output video in seconds"
+        },
+        {
+          "name": "enhance_prompt",
+          "type": "BOOLEAN",
+          "required": false,
+          "default": true,
+          "tooltip": "This parameter is deprecated and ignored."
+        },
+        {
+          "name": "person_generation",
+          "type": "COMBO",
+          "required": false,
+          "default": "ALLOW",
+          "options": [
+            "ALLOW",
+            "BLOCK"
+          ],
+          "tooltip": "Whether to allow generating people in the video"
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "required": false,
+          "default": 0,
+          "min": 0,
+          "max": 4294967295,
+          "tooltip": "Seed for video generation (0 for random)"
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "required": false,
+          "tooltip": "Optional reference image to guide video generation"
+        },
+        {
+          "name": "model",
+          "type": "COMBO",
+          "required": false,
+          "options": [
+            "veo-3.1-generate",
+            "veo-3.1-fast-generate",
+            "veo-3.1-lite"
+          ],
+          "tooltip": "Veo 3 model to use for video generation"
+        },
+        {
+          "name": "generate_audio",
+          "type": "BOOLEAN",
+          "required": false,
+          "default": false,
+          "tooltip": "Generate audio for the video. Supported by all Veo 3 models."
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ],
+      "api_node": true,
+      "output_node": false,
+      "deprecated": false
+    }
+  ]
+}

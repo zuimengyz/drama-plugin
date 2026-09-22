@@ -1,0 +1,137 @@
+{
+  "data": [
+    {
+      "name": "SyncLipSyncNode",
+      "display_name": "sync.so Lip Sync",
+      "description": "Re-sync mouth movement in a video to new speech audio using sync.so. Handles close-ups, profiles and obstructions automatically while preserving the speaker's expression. Cost scales with output duration.",
+      "category": "partner/video/sync.so",
+      "pack": "core",
+      "inputs": {
+        "required": [
+          "VIDEO",
+          "AUDIO",
+          "INT",
+          "COMFY_DYNAMICCOMBO_V3",
+          "COMBO",
+          "COMBO",
+          "INT",
+          "INT",
+          "INT"
+        ]
+      },
+      "input_details": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "required": true,
+          "tooltip": "Footage of the speaker to re-sync. Up to 4K (4096x2160); a constant frame rate of 24/25/30 fps works best."
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "required": true,
+          "tooltip": "Speech audio to sync the mouth to."
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "required": true,
+          "default": 42,
+          "min": 0,
+          "max": 2147483647,
+          "tooltip": "Seed controls whether the node should re-run; results are non-deterministic regardless of seed."
+        },
+        {
+          "name": "model",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "required": true,
+          "dynamic_combo": true,
+          "options": [
+            "sync-3"
+          ],
+          "tooltip": "sync.so generation model.",
+          "hint": "Dynamic combo: pick one `options` value for `model`, then send each conditional sub-field below using its full dotted name (prefixed with `model.`, e.g. `model.<sub_field>`). Auto-grow list slots nest one level deeper (e.g. `model.<list>.<slot_1>`). Sending these fields flat (without the prefix) fails with required_input_missing."
+        },
+        {
+          "name": "model.sync_mode",
+          "type": "COMBO",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "sync-3"
+          ],
+          "default": "bounce",
+          "options": [
+            "bounce",
+            "cut_off",
+            "loop",
+            "silence",
+            "remap"
+          ],
+          "tooltip": "How to handle a duration mismatch between video and audio; this also sets the output length. bounce: video plays forward then backward until the audio ends (output = audio length). loop: video restarts until the audio ends (output = audio length). remap: video is time-stretched to match the audio (output = audio length). cut_off: the longer track is trimmed (output = shorter length). silence: nothing is trimmed; the shorter track is padded (output = longer length)."
+        },
+        {
+          "name": "model.speaker_selection",
+          "type": "COMBO",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "sync-3"
+          ],
+          "default": "default",
+          "options": [
+            "default",
+            "auto-detect",
+            "coordinates"
+          ],
+          "tooltip": "Which face to lipsync when several people are visible. default: let the model decide. auto-detect: detect and follow the active speaker. coordinates: target the face at pixel (speaker_x, speaker_y) in the frame chosen by speaker_frame."
+        },
+        {
+          "name": "model.speaker_frame",
+          "type": "INT",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "sync-3"
+          ],
+          "default": 0,
+          "min": 0,
+          "max": 1000000,
+          "tooltip": "Video frame used to locate the speaker. Only used when speaker_selection is 'coordinates'."
+        },
+        {
+          "name": "model.speaker_x",
+          "type": "INT",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "sync-3"
+          ],
+          "default": 0,
+          "min": 0,
+          "max": 4096,
+          "tooltip": "X pixel coordinate of the speaker's face. Only used when speaker_selection is 'coordinates'."
+        },
+        {
+          "name": "model.speaker_y",
+          "type": "INT",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "sync-3"
+          ],
+          "default": 0,
+          "min": 0,
+          "max": 4096,
+          "tooltip": "Y pixel coordinate of the speaker's face. Only used when speaker_selection is 'coordinates'."
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ],
+      "api_node": true,
+      "output_node": false,
+      "deprecated": false
+    }
+  ]
+}

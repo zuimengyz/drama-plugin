@@ -1,0 +1,219 @@
+{
+  "data": [
+    {
+      "name": "api_vidu_q2_flf2v",
+      "title": "Vidu Q2: FLF2V",
+      "mediaType": "image",
+      "description": "Create smooth video transitions between start and end frames with cinematic camera movements, multi-subject consistency.",
+      "tags": [
+        "FLF2V",
+        "Video",
+        "API"
+      ],
+      "models": [
+        "Vidu Q2"
+      ],
+      "usage": 180
+    },
+    {
+      "name": "api_vidu_video_extension",
+      "title": "Video Extend: Vidu Q2",
+      "mediaType": "image",
+      "description": "Upload a video and use the Vidu Q2 model to extend it up to 7 seconds and enhance the resolution to 1080p.",
+      "tags": [
+        "Video",
+        "Video Extend",
+        "API"
+      ],
+      "models": [
+        "Vidu Q2",
+        "Vidu"
+      ],
+      "usage": 13
+    },
+    {
+      "name": "api_vidu_q2_t2v",
+      "title": "Vidu Q2: Text to Video",
+      "mediaType": "image",
+      "description": "Generate high-quality 1080p videos from text prompts with Vidu Q2 model",
+      "tags": [
+        "API",
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "Vidu Q2",
+        "Vidu"
+      ],
+      "usage": 15
+    },
+    {
+      "name": "api_vidu_q3_text_to_video",
+      "title": "Vidu Q3 Audio-Visual Video Generation",
+      "mediaType": "image",
+      "description": "Input a text prompt or upload an image to generate a 1-16 second video with synchronized audio and automatic scene transitions.",
+      "tags": [
+        "API",
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "Vidu",
+        "Vidu Q3"
+      ],
+      "usage": 22
+    },
+    {
+      "name": "api_vidu_q2_i2v",
+      "title": "Vidu Q2: Image to Video",
+      "mediaType": "image",
+      "description": "Transform static images into dynamic 1080p videos with cinematic camera control, multi-subject consistency",
+      "tags": [
+        "Image to Video",
+        "API"
+      ],
+      "models": [
+        "Vidu Q2",
+        "Vidu"
+      ],
+      "usage": 17
+    },
+    {
+      "name": "api_vidu_q2_r2v",
+      "title": "Vidu Q2: Reference to Video",
+      "mediaType": "image",
+      "description": "Generate videos with reference-based consistency for up to 3 subjects, maintaining character and style continuity across the video sequence with cinematic camera movements.",
+      "tags": [
+        "Character Reference",
+        "Image to Video",
+        "API"
+      ],
+      "models": [
+        "Vidu Q2",
+        "Vidu"
+      ],
+      "usage": 10
+    },
+    {
+      "name": "api_vidu_q3_image_to_video",
+      "title": "Vidu Q3 Image-to-Video with Audio",
+      "mediaType": "image",
+      "description": "Upload an image and provide a text prompt to generate a 1-16 second video with synchronized audio and intelligent scene transitions.",
+      "tags": [
+        "API",
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "Vidu",
+        "Vidu Q3"
+      ],
+      "usage": 8
+    },
+    {
+      "name": "api_vidu_text_to_video",
+      "title": "Vidu Q1: Text to Video",
+      "mediaType": "image",
+      "description": "Generate high-quality 1080p videos from text prompts with adjustable movement amplitude and duration control using Vidu's advanced AI model.",
+      "tags": [
+        "Text to Video",
+        "Video",
+        "API"
+      ],
+      "models": [
+        "Vidu Q1",
+        "Vidu"
+      ],
+      "usage": 19
+    },
+    {
+      "name": "api_vidu_image_to_video",
+      "title": "Vidu Q1: Image to Video",
+      "mediaType": "image",
+      "description": "Transform static images into dynamic 1080p videos with precise motion control and customizable movement amplitude using Vidu.",
+      "tags": [
+        "Image to Video",
+        "Video",
+        "API"
+      ],
+      "models": [
+        "Vidu Q1",
+        "Vidu"
+      ],
+      "usage": 14
+    },
+    {
+      "name": "api_vidu_reference_to_video",
+      "title": "Vidu Q1: Reference to Video",
+      "mediaType": "image",
+      "description": "Generate videos with consistent subjects using multiple reference images (up to 7) for character and style continuity across the video sequence.",
+      "tags": [
+        "Video",
+        "Image to Video",
+        "API"
+      ],
+      "models": [
+        "Vidu Q1",
+        "Vidu"
+      ],
+      "usage": 17
+    },
+    {
+      "name": "api_vidu_start_end_to_video",
+      "title": "Vidu Q1: Start End to Video",
+      "mediaType": "image",
+      "description": "Create smooth video transitions between defined start and end frames with natural motion interpolation and consistent visual quality.",
+      "tags": [
+        "Video",
+        "API",
+        "FLF2V"
+      ],
+      "models": [
+        "Vidu Q1",
+        "Vidu"
+      ],
+      "usage": 9
+    },
+    {
+      "name": "templates-photo_to_product_vid",
+      "title": "Phone Image to Product Video: Shoe",
+      "mediaType": "image",
+      "description": "Take a picture with your phone, upload it and generate a studio grade product video.",
+      "tags": [
+        "Image to Video",
+        "API"
+      ],
+      "models": [
+        "Seedream",
+        "MiniMax"
+      ],
+      "usage": 8
+    },
+    {
+      "name": "templates-stitched_vid_contact_sheet",
+      "title": "Character & Outfit to Fashion Video",
+      "mediaType": "image",
+      "description": "Upload your character and clothing items or accessories. Generate a fashion photograph base and use as a reference to 8x grid images, together with multi-KeyFrame Video Stitching ",
+      "tags": [
+        "Image to Video",
+        "FLF2V",
+        "API"
+      ],
+      "models": [
+        "Google Gemini Image",
+        "Nano Banana Pro",
+        "Google",
+        "Kling",
+        "Kling O1",
+        "OpenAI"
+      ],
+      "usage": 3
+    }
+  ],
+  "metadata": {
+    "total": 13,
+    "limit": 100,
+    "offset": 0
+  },
+  "note": "detail:'full' returns more fields; get_template_schema returns one item uncapped."
+}

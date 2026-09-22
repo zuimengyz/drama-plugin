@@ -1,0 +1,23 @@
+{
+  "template_id": "api_kling_v3_video",
+  "source_url": "https://cloud.comfy.org/templates/api_kling_v3_video.json",
+  "node_count": 3,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "LoadImage",
+      "title": "LoadImage"
+    },
+    {
+      "id": 2,
+      "type": "SaveVideo",
+      "title": "SaveVideo"
+    },
+    {
+      "id": 3,
+      "type": "KlingVideoNode",
+      "title": "KlingVideoNode"
+    }
+  ],
+  "guidance": "Summary view (summary_only). The node summary above shows the graph structure. To RUN this template use run_template; to see the overridable inputs/slots use get_template_schema. Call get_template without summary_only for the full workflow JSON — it is returned only when it fits the client token cap."
+}

@@ -1,0 +1,164 @@
+{
+  "data": [
+    {
+      "name": "Flux3ImageToVideoNode",
+      "display_name": "Flux 3 Image to Video",
+      "description": "Animates 1 to 10 images with FLUX 3. Each image becomes a frame of the clip: one image opens it, two morph from the first to the second, and more are spread across it or pinned to times you choose.",
+      "category": "partner/video/BFL",
+      "pack": "core",
+      "inputs": {
+        "required": [
+          "STRING",
+          "COMFY_AUTOGROW_V3",
+          "IMAGE",
+          "COMFY_DYNAMICCOMBO_V3",
+          "STRING",
+          "COMBO",
+          "COMBO",
+          "COMBO",
+          "BOOLEAN",
+          "INT",
+          "INT"
+        ]
+      },
+      "input_details": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "required": true,
+          "default": "",
+          "tooltip": "How the scene should move and sound; the prompt is interpreted and expanded before generation."
+        },
+        {
+          "name": "keyframes",
+          "type": "IMAGE",
+          "required": true,
+          "min_slots": 1,
+          "max_slots": 10,
+          "auto_grow_slots": [
+            "keyframes.image_0",
+            "keyframes.image_1",
+            "keyframes.image_2",
+            "keyframes.image_3",
+            "keyframes.image_4",
+            "keyframes.image_5",
+            "keyframes.image_6",
+            "keyframes.image_7",
+            "keyframes.image_8",
+            "keyframes.image_9"
+          ],
+          "tooltip": "1 to 10 images, in playback order. Minimum 256x256 pixels each.",
+          "hint": "Auto-grow list: wire 1-10 IMAGE inputs as SEPARATE top-level entries named `keyframes.<slot>` (e.g. `keyframes.image_0`), never as an array under `keyframes`. Only `keyframes.image_0` is required; the rest are optional."
+        },
+        {
+          "name": "placement",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "required": true,
+          "dynamic_combo": true,
+          "options": [
+            "spread across the clip",
+            "at times"
+          ],
+          "tooltip": "'spread across the clip' lets FLUX 3 place the images (one opens the clip, two become its start and end); 'at times' pins every image to a second you choose.",
+          "hint": "Dynamic combo: pick one `options` value for `placement`, then send each conditional sub-field below using its full dotted name (prefixed with `placement.`, e.g. `placement.<sub_field>`). Auto-grow list slots nest one level deeper (e.g. `placement.<list>.<slot_1>`). Sending these fields flat (without the prefix) fails with required_input_missing."
+        },
+        {
+          "name": "placement.times",
+          "type": "STRING",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "at times"
+          ],
+          "default": "0",
+          "tooltip": "One time in seconds per image, comma-separated and increasing, e.g. '0, 2.5, 5'."
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "required": true,
+          "default": "auto",
+          "options": [
+            "auto",
+            "21:9",
+            "2:1",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "tooltip": "Output aspect ratio. 'auto' picks one from the prompt and inputs."
+        },
+        {
+          "name": "duration",
+          "type": "COMBO",
+          "required": true,
+          "default": "auto",
+          "options": [
+            "auto",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "tooltip": "Clip length in seconds. 'auto' fits the length to the content."
+        },
+        {
+          "name": "resolution",
+          "type": "COMBO",
+          "required": true,
+          "default": "720p",
+          "options": [
+            "720p",
+            "1080p"
+          ],
+          "tooltip": "Output resolution."
+        },
+        {
+          "name": "generate_audio",
+          "type": "BOOLEAN",
+          "required": true,
+          "default": true,
+          "tooltip": "Generate synchronized audio (ambient, speech, effects). Off produces a video with no audio track."
+        },
+        {
+          "name": "safety_tolerance",
+          "type": "INT",
+          "required": true,
+          "default": 2,
+          "min": 0,
+          "max": 4,
+          "tooltip": "Moderation tolerance, 0 is the strictest. Requests that send images or video are capped at 2 whatever you set here."
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "required": true,
+          "default": 42,
+          "min": 0,
+          "max": 4294967295,
+          "tooltip": "Seed to determine if node should re-run; FLUX 3 picks its own seed, so actual results are nondeterministic regardless of this value."
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ],
+      "api_node": true,
+      "output_node": false,
+      "deprecated": false
+    }
+  ]
+}

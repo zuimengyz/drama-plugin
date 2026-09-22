@@ -1,0 +1,133 @@
+{
+  "data": [
+    {
+      "model_name": "bfl/flux-3-video",
+      "display_name": "bfl/flux-3-video",
+      "type": "video",
+      "directory": "partner",
+      "source": "partner",
+      "tags": [
+        "bfl",
+        "flux",
+        "flux-3",
+        "video",
+        "text-to-video"
+      ],
+      "description": "Generates video (with synchronized audio) from text using BFL FLUX 3 Video via a real Comfy Cloud workflow run. Output is saved to the asset library with a reopenable graph. Pass `prompt` and optional `aspect_ratio`/`duration`/`resolution`/`generate_audio`/`seed`. `duration` is a STRING of seconds (\"5\"..\"20\") or \"auto\"."
+    },
+    {
+      "model_name": "minimax/hailuo-03-t2v",
+      "display_name": "minimax/hailuo-03-t2v",
+      "type": "video",
+      "directory": "partner",
+      "source": "partner",
+      "tags": [
+        "minimax",
+        "hailuo",
+        "minimax-h3",
+        "video",
+        "text-to-video"
+      ],
+      "description": "Generates video from text using MiniMax Hailuo 03 (MiniMax H3) via a real Comfy Cloud workflow run. Output is saved to the asset library with a reopenable graph. Pass `prompt` and optional `resolution` (768P/2K)/`aspect_ratio`/`duration` (4–15s)/`seed`/`watermark`."
+    },
+    {
+      "model_name": "byteplus/seedance-2.0-t2v",
+      "display_name": "byteplus/seedance-2.0-t2v",
+      "type": "video",
+      "directory": "partner",
+      "source": "partner",
+      "tags": [
+        "byteplus",
+        "bytedance",
+        "seedance",
+        "video",
+        "text-to-video"
+      ],
+      "tiers": [
+        "Seedance 2.0",
+        "Seedance 2.0 Fast",
+        "Seedance 2.0 Mini",
+        "Seedance 2.5"
+      ],
+      "description": "Generates video from text using ByteDance Seedance via a real Comfy Cloud workflow run. Output is saved to the asset library with a reopenable graph. Pass `prompt` and optional `resolution` / `ratio` / `duration` / `seed`. For a cheaper, faster draft pass, set `model` to `Seedance 2.0 Mini` (~half the price of standard, ~2× faster than fast; 480p/720p only, 4–15s); `Seedance 2.0 Fast` (720p) and the default `Seedance 2.0` (up to 1080p) are the other tiers. For clips longer than 15s set `model` to `Seedance 2.5` (newest model, up to 30s, up to 1080p)."
+    },
+    {
+      "model_name": "kling/kling-v3-t2v",
+      "display_name": "kling/kling-v3-t2v",
+      "type": "video",
+      "directory": "partner",
+      "source": "partner",
+      "tags": [
+        "kling",
+        "kuaishou",
+        "video",
+        "text-to-video"
+      ],
+      "description": "Generates video from text using Kling V3 via a real Comfy Cloud workflow run. Output is saved to the asset library with a reopenable graph. Pass `prompt` and optional `negative_prompt`/`resolution`/`aspect_ratio`/`duration`/`generate_audio`/`seed`. `duration` is an integer number of seconds (3–15), not a string."
+    },
+    {
+      "model_name": "kling/kling-3.0-turbo-t2v",
+      "display_name": "kling/kling-3.0-turbo-t2v",
+      "type": "video",
+      "directory": "partner",
+      "source": "partner",
+      "tags": [
+        "kling",
+        "kuaishou",
+        "video",
+        "text-to-video",
+        "turbo"
+      ],
+      "description": "Generates video from text using Kling 3.0 Turbo (speed-optimized, native audio) via a real Comfy Cloud workflow run. Output saved to the asset library with a reopenable graph. `duration` is an integer number of seconds (3–15), not a string."
+    },
+    {
+      "model_name": "ltx/ltx-2-5-t2v",
+      "display_name": "ltx/ltx-2-5-t2v",
+      "type": "video",
+      "directory": "partner",
+      "source": "partner",
+      "tags": [
+        "ltx",
+        "ltxv",
+        "lightricks",
+        "ltx-2.5",
+        "video",
+        "text-to-video"
+      ],
+      "tiers": [
+        "LTX-2.5 (Fast)",
+        "LTX-2.5 (Pro)"
+      ],
+      "description": "Generates video (with AI audio) from text using LTX-2.5 via a real Comfy Cloud workflow run. Output is saved to the asset library with a reopenable graph. Pass `prompt`; the tier goes in `params.model` (default `LTX-2.5 (Fast)`, clips up to 20s and up to 3840x2160; `LTX-2.5 (Pro)` is 2/3/4/5/6/8/10s at up to 1920x1080). Optional `duration`/`resolution`/`fps` are STRINGS (\"8\", \"1920x1080\", \"25\"), plus `generate_audio`/`seed`. A Fast clip over 10s needs a 720p/1080p resolution at 24/25 fps. No `aspect_ratio` knob — `resolution` sets the orientation (e.g. `\"1080x1920\"` for portrait)."
+    },
+    {
+      "model_name": "veo/veo-3-t2v",
+      "display_name": "veo/veo-3-t2v",
+      "type": "video",
+      "directory": "partner",
+      "source": "partner",
+      "tags": [
+        "veo",
+        "google",
+        "vertexai",
+        "video",
+        "text-to-video"
+      ],
+      "tiers": [
+        "veo-3.1-generate",
+        "veo-3.1-fast-generate",
+        "veo-3.1-lite",
+        "veo-3.0-generate-001",
+        "veo-3.0-fast-generate-001"
+      ],
+      "description": "Generates video from text using Google Veo 3 via a real Comfy Cloud workflow run. Output is saved to the asset library with a reopenable graph. Pass `prompt`; the tier goes in `params.model` (default `veo-3.1-generate`, the flagship). Optional `negative_prompt`/`aspect_ratio`/`resolution`/`duration_seconds` (4, 6 or 8)/`generate_audio`/`seed`. 4k renders on the `veo-3.1-generate` and `veo-3.1-fast-generate` tiers only."
+    }
+  ],
+  "metadata": {
+    "total": 7,
+    "limit": 100,
+    "offset": 0,
+    "returned": 7,
+    "catalog_total": 2306
+  }
+}

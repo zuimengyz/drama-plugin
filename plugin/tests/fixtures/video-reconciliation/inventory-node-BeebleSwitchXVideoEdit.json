@@ -1,0 +1,106 @@
+{
+  "data": [
+    {
+      "name": "BeebleSwitchXVideoEdit",
+      "display_name": "Beeble SwitchX Video Edit",
+      "description": "Edit a video with Beeble SwitchX. Switches anything in the scene (background, lighting, costume) while preserving the original subject's pixels and motion. Provide a reference image and/or text prompt to describe the new look. Max 240 frames, max ~2.77MP per frame.",
+      "category": "partner/video/Beeble",
+      "pack": "core",
+      "inputs": {
+        "required": [
+          "VIDEO",
+          "STRING",
+          "COMFY_DYNAMICCOMBO_V3",
+          "MASK",
+          "MASK",
+          "COMBO",
+          "INT"
+        ],
+        "optional": [
+          "IMAGE"
+        ]
+      },
+      "input_details": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "required": true
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "required": true,
+          "default": "",
+          "tooltip": "Text description of the desired output (max 2000 chars). At least one of 'prompt' or 'reference_image' is required."
+        },
+        {
+          "name": "alpha_mode",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "required": true,
+          "dynamic_combo": true,
+          "options": [
+            "auto",
+            "fill",
+            "select",
+            "custom"
+          ],
+          "tooltip": "Controls how SwitchX decides what to keep vs. regenerate. 'auto' isolates the main subject automatically. 'fill' regenerates the entire frame while preserving geometry. 'select' propagates a first-frame keyframe across the clip. 'custom' uses a per-frame alpha matte you provide.",
+          "hint": "Dynamic combo: pick one `options` value for `alpha_mode`, then send each conditional sub-field below using its full dotted name (prefixed with `alpha_mode.`, e.g. `alpha_mode.<sub_field>`). Auto-grow list slots nest one level deeper (e.g. `alpha_mode.<list>.<slot_1>`). Sending these fields flat (without the prefix) fails with required_input_missing."
+        },
+        {
+          "name": "alpha_mode.alpha_keyframe",
+          "type": "MASK",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "select"
+          ],
+          "tooltip": "First-frame keyframe mask. Beeble propagates this across the video."
+        },
+        {
+          "name": "alpha_mode.alpha_mask",
+          "type": "MASK",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "custom"
+          ],
+          "tooltip": "Per-frame grayscale mask covering the entire video. Must have the same frame count as the source. Connect a MASK output from SAM3_TrackToMask or similar."
+        },
+        {
+          "name": "max_resolution",
+          "type": "COMBO",
+          "required": true,
+          "default": "1080p",
+          "options": [
+            "1080p",
+            "720p"
+          ],
+          "tooltip": "Maximum output resolution."
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "required": true,
+          "default": 0,
+          "min": 0,
+          "max": 2147483647,
+          "tooltip": "Seed controls whether the node should re-run; results are non-deterministic regardless of seed."
+        },
+        {
+          "name": "reference_image",
+          "type": "IMAGE",
+          "required": false,
+          "tooltip": "Reference image whose look (background, lighting, costume) the result should adopt. At least one of 'reference_image' or 'prompt' is required."
+        }
+      ],
+      "outputs": [
+        "VIDEO",
+        "VIDEO"
+      ],
+      "api_node": true,
+      "output_node": false,
+      "deprecated": false
+    }
+  ]
+}

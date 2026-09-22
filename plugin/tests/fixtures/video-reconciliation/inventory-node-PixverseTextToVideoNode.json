@@ -1,0 +1,104 @@
+{
+  "data": [
+    {
+      "name": "PixverseTextToVideoNode",
+      "display_name": "PixVerse Text to Video",
+      "description": "Generates videos based on prompt and output_size.",
+      "category": "partner/video/PixVerse",
+      "pack": "core",
+      "inputs": {
+        "required": [
+          "STRING",
+          "COMBO",
+          "COMBO",
+          "COMBO",
+          "COMBO",
+          "INT"
+        ],
+        "optional": [
+          "STRING",
+          "PIXVERSE_TEMPLATE"
+        ]
+      },
+      "input_details": [
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "required": true,
+          "default": "",
+          "tooltip": "Prompt for the video generation"
+        },
+        {
+          "name": "aspect_ratio",
+          "type": "COMBO",
+          "required": true,
+          "options": [
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ]
+        },
+        {
+          "name": "quality",
+          "type": "COMBO",
+          "required": true,
+          "default": "540p",
+          "options": [
+            "360p",
+            "540p",
+            "720p",
+            "1080p"
+          ]
+        },
+        {
+          "name": "duration_seconds",
+          "type": "COMBO",
+          "required": true,
+          "options": [
+            5,
+            8
+          ]
+        },
+        {
+          "name": "motion_mode",
+          "type": "COMBO",
+          "required": true,
+          "options": [
+            "normal",
+            "fast"
+          ]
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "required": true,
+          "default": 0,
+          "min": 0,
+          "max": 2147483647,
+          "tooltip": "Seed for video generation."
+        },
+        {
+          "name": "negative_prompt",
+          "type": "STRING",
+          "required": false,
+          "default": "",
+          "tooltip": "An optional text description of undesired elements on an image."
+        },
+        {
+          "name": "pixverse_template",
+          "type": "PIXVERSE_TEMPLATE",
+          "required": false,
+          "tooltip": "An optional template to influence style of generation, created by the PixVerse Template node."
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ],
+      "api_node": true,
+      "output_node": false,
+      "deprecated": false
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "id": "api_vidu_q3_text_to_video",
+  "slots": [],
+  "note": "This template does not expose its inputs through a subgraph, so it has no slot_overrides addresses — `slots` is empty for that reason, not because the template is uneditable. Override it with run_template's `input_overrides` instead, keyed by the node ids in `nodes` below: {\"<id>\": {\"<input_name>\": value}}. `nodes` is the executed graph run_template submits, so these ids and input names are exactly the ones input_overrides resolves against. Inputs wired from another node are omitted — setting one would replace the link with a constant; use get_template + submit_workflow for that kind of structural edit. Some values below are not shown verbatim: an entry with `values_truncated` lists the input names whose string value is a clipped prefix, and `inputs_truncated` means inputs were left out entirely (too many, or a value too large to render). Do not echo a clipped value back as an override — read the full value from get_template.",
+  "nodes": [
+    {
+      "id": "8",
+      "class_type": "SaveVideo",
+      "inputs": {
+        "filename_prefix": "video/vidu_q3_t2v",
+        "format": "auto",
+        "format.codec": "auto"
+      }
+    },
+    {
+      "id": "9",
+      "class_type": "Vidu3TextToVideoNode",
+      "inputs": {
+        "model": "viduq3-pro",
+        "model.aspect_ratio": "16:9",
+        "model.resolution": "720p",
+        "model.duration": 6,
+        "model.audio": true,
+        "prompt": "Urban street chase, night, neon reflections. High-octane action aesthetic with dynamic camera movement, vibrant neon colors against dark streets, motion blur. Photorealistic cinematic quality, RED camera high frame rate for slow-motion capability, anamorphic lens flares from streetlights.\n\nDirector: Justin Lin\nCinematographer: Stephen F. Windon (Fast & Furious franchise)\n\nShot 1 (0-3s): Low-angle tracking shot mounted on car hood. Driver's intense face through windshield, knuckles white gripping steering w…",
+        "seed": 1426179949
+      },
+      "values_truncated": [
+        "prompt"
+      ]
+    }
+  ]
+}

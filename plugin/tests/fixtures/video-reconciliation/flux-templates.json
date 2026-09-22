@@ -1,0 +1,433 @@
+{
+  "data": [
+    {
+      "name": "api_bfl_flux_video_upscale",
+      "title": "Video Upscale: Flux 3",
+      "mediaType": "image",
+      "description": "Upscale video clips to 1080p, 2K, or 4K using FLUX 3 super-resolution, with a precise mode that preserves source fidelity and a creative mode that enhances fine detail. It accepts 1 video input, up to…",
+      "tags": [
+        "API",
+        "Video Upscale"
+      ],
+      "models": [
+        "Flux"
+      ],
+      "usage": 94
+    },
+    {
+      "name": "api_bfl_flux3_i2v",
+      "title": "FLUX 3 Video: Image to Video",
+      "mediaType": "image",
+      "description": "Generate full videos from a single text prompt using FLUX 3, which automatically expands your description into a cohesive scene with synchronized audio, motion, and physics. Outputs one 720p, 24fps MP…",
+      "tags": [
+        "API",
+        "Image to Video"
+      ],
+      "models": [
+        "Flux.3 Video"
+      ],
+      "usage": 45
+    },
+    {
+      "name": "api_bfl_flux3_t2v",
+      "title": "FLUX 3 Video: Text to Video",
+      "mediaType": "image",
+      "description": "Generate full videos from a single text prompt with Flux.3, which expands natural language into complete scenes with synchronized audio, no reference images or complex settings needed. Outputs 1 video…",
+      "tags": [
+        "API",
+        "Text to Video"
+      ],
+      "models": [
+        "Flux.3 Video"
+      ],
+      "usage": 17
+    },
+    {
+      "name": "template_ltx2_3_lora_video_outpainting",
+      "title": "LTX2.3 LoRA: Video Outpainting",
+      "mediaType": "image",
+      "description": "Video Outpainting using the LTX 2.3 Video Outpainting IC LoRA. Expand your video in any direction!",
+      "tags": [
+        "LoRA",
+        "Outpainting"
+      ],
+      "models": [
+        "LTX-2.3"
+      ],
+      "usage": 138
+    },
+    {
+      "name": "audio_minimax_music_3",
+      "title": "MiniMax Music 3: Text to Music",
+      "mediaType": "image",
+      "description": "Create full-length songs from text prompts with MiniMax Music 3, generating complete 5-minute tracks with stable structure and high-fidelity audio. Input a structured caption describing lyrics, style,…",
+      "tags": [
+        "Audio",
+        "Text to Music"
+      ],
+      "models": [
+        "MiniMax Music 3"
+      ],
+      "usage": 747
+    },
+    {
+      "name": "api_flux_video_edit",
+      "title": "Flux Video Edit",
+      "mediaType": "image",
+      "description": "Edit and transform images with FLUX using simple text prompts. Change characters, objects, backgrounds, styles, or entire scenes while preserving the key details and overall consistency of the origina…",
+      "tags": [
+        "API",
+        "Video Edit"
+      ],
+      "models": [
+        "Flux"
+      ],
+      "usage": 123
+    },
+    {
+      "name": "template_ltx2_3_obscura_remova_lora_remove_object_from_video",
+      "title": "Remove Object from Video - LTX 2.3 Obscura Remova LoRA",
+      "mediaType": "image",
+      "description": "Upload an input video and prompt for the object to get removed from the video's foreground. ",
+      "tags": [
+        "LoRA",
+        "Video Edit"
+      ],
+      "models": [
+        "LTX-2.3"
+      ],
+      "usage": 82
+    },
+    {
+      "name": "template_ltx2_3_lora_remove_subtitles_from_video",
+      "title": "Remove Subtitles from Video - LTX 2.3 LoRA",
+      "mediaType": "image",
+      "description": "Upload an input video with subtitles or text occlusions and remove the text elements with one click.",
+      "tags": [
+        "Video Edit",
+        "LoRA"
+      ],
+      "models": [
+        "LTX-2.3"
+      ],
+      "usage": 40
+    },
+    {
+      "name": "video_ltx2_3_i2v",
+      "title": "LTX-2.3: Image to Video",
+      "mediaType": "image",
+      "description": "Upload an image to generate a video with improved motion consistency and fine details, including enhanced support for portrait formats and audio quality.",
+      "tags": [
+        "Image to Video",
+        "Video"
+      ],
+      "models": [
+        "LTX-2.3",
+        "Lightricks"
+      ],
+      "usage": 17654
+    },
+    {
+      "name": "video_ltx2_3_ia2v",
+      "title": "LTX-2.3: Image Audio to Video",
+      "mediaType": "image",
+      "description": "Upload an image and an audio file to generate a high-quality video with synchronized lip movements using LTX-2.3.",
+      "tags": [
+        "Image to Video",
+        "Lip Sync",
+        "Video"
+      ],
+      "models": [
+        "LTX-2.3"
+      ],
+      "usage": 1466
+    },
+    {
+      "name": "template_ltx2_3_ic_lora_ingredients",
+      "title": "LTX-2.3 IC-LoRA: Reference Sheet Control",
+      "mediaType": "image",
+      "description": "Generate short video clips that stay visually consistent with a reference sheet inventorying characters, props, and locations. Input a composite reference image and a split prompt describing the actio…",
+      "tags": [
+        "Reference to Video"
+      ],
+      "models": [
+        "LTX-2.3"
+      ],
+      "usage": 110
+    },
+    {
+      "name": "api_flux_vto",
+      "title": "Virtual Try-On: Flux",
+      "mediaType": "image",
+      "description": "Upload a person photo and a garment image. Generate a virtual try-on result with the garment applied to the person while preserving face and pose.",
+      "tags": [
+        "API",
+        "Virtual Try-On"
+      ],
+      "models": [
+        "Flux"
+      ],
+      "usage": 65
+    },
+    {
+      "name": "audio_stable_audio_3_medium_base",
+      "title": "Stable Audio 3.0 Medium Base",
+      "mediaType": "image",
+      "description": "Input a short text description of a sound, music, or effect. The workflow expands your prompt with Qwen and generates a stereo audio clip from Stable Audio 3.",
+      "tags": [
+        "Text to Audio"
+      ],
+      "models": [
+        "Stable Audio"
+      ],
+      "usage": 176
+    },
+    {
+      "name": "audio_stable_audio_3_medium",
+      "title": "Stable Audio 3.0 Medium",
+      "mediaType": "image",
+      "description": "Input a short text idea, optional duration, seed, and category. Generate stereo audio (music, SFX, or instruments) using Stable Audio 3 with optional AI-driven text expansion.",
+      "tags": [
+        "Text to Audio"
+      ],
+      "models": [
+        "Stable Audio"
+      ],
+      "usage": 118
+    },
+    {
+      "name": "video_ltx2_3_ic_lora",
+      "title": "LTX 2.3 IC-LoRA Union Control",
+      "mediaType": "image",
+      "description": "Generate LTX 2.3 videos with IC-LoRA using aligned control inputs like depth, pose, or edges.",
+      "tags": [
+        "ControlNet",
+        "Video"
+      ],
+      "models": [
+        "LTX-2.3"
+      ],
+      "usage": 73
+    },
+    {
+      "name": "video_ltx2_3_flf2v",
+      "title": "LTX-2.3: FLF2V",
+      "mediaType": "image",
+      "description": "Upload a starting image to generate a video sequence. The workflow creates a short video with consistent style and motion, beginning with your provided frame.",
+      "tags": [
+        "FLF2V",
+        "Video"
+      ],
+      "models": [
+        "LTX-2.3"
+      ],
+      "usage": 290
+    },
+    {
+      "name": "video_ltx2_3_t2v",
+      "title": "LTX-2.3: Text to Video",
+      "mediaType": "image",
+      "description": "Generate a video from a text prompt, optionally using an image for reference. Receive a high-quality video with improved motion, audio, and detail, optimized for portrait or landscape formats.",
+      "tags": [
+        "Text to Video",
+        "Video"
+      ],
+      "models": [
+        "LTX-2.3",
+        "Lightricks"
+      ],
+      "usage": 546
+    },
+    {
+      "name": "video_ltx2_3_id_lora",
+      "title": "LTX-2.3: ID LoRA",
+      "mediaType": "image",
+      "description": "Generate personalized videos with synchronized audio from a text prompt, reference image, and short audio clip. Use ID-LoRA to adapt a person's appearance and voice in a single generative model.",
+      "tags": [
+        "Lip Sync",
+        "Video",
+        "Voice Cloning"
+      ],
+      "models": [
+        "LTX-2.3"
+      ],
+      "usage": 239
+    },
+    {
+      "name": "api_flux_erase_image",
+      "title": "Object Removal: Flux",
+      "mediaType": "image",
+      "description": "Upload an image and paint a mask over the object to remove. The workflow erases the masked area and reconstructs the background.",
+      "tags": [
+        "API",
+        "Inpainting"
+      ],
+      "models": [
+        "Flux"
+      ],
+      "usage": 27
+    },
+    {
+      "name": "api_qwen3_image_edit",
+      "title": "Qwen Image 3.0 Pro: Image Edit",
+      "mediaType": "image",
+      "description": "Qwen Image 3.0 Pro performs advanced image editing with rich multi-image input, generating complex layouts like newspapers, storyboards, menus, and exam papers in a single pass while preserving fine d…",
+      "tags": [
+        "API",
+        "Image Edit"
+      ],
+      "models": [
+        "Qwen Image 3.0 Pro"
+      ],
+      "usage": 352
+    },
+    {
+      "name": "template_ltx2_3_remove_watermark_from_video",
+      "title": "Remove Watermark from Video - LTX 2.3 LoRA",
+      "mediaType": "image",
+      "description": "Upload an input video with watermarks and remove them with one click",
+      "tags": [
+        "Video",
+        "LoRA",
+        "Video Edit"
+      ],
+      "models": [
+        "LTX-2.3"
+      ],
+      "usage": 69
+    },
+    {
+      "name": "api_qwen3_t2i",
+      "title": "Qwen Image 3.0 Pro: Text to Image",
+      "mediaType": "image",
+      "description": "Generate detailed, production-ready images from text prompts using the Qwen Image 3.0 Pro model, supporting up to 4.5k tokens for complex layouts like posters, infographics, and storyboards. It render…",
+      "tags": [
+        "API",
+        "Text to Image"
+      ],
+      "models": [
+        "Qwen Image 3.0 Pro"
+      ],
+      "usage": 212
+    },
+    {
+      "name": "3d_pixal3d_multi_views",
+      "title": "Pixal3D: Multi Views to 3D",
+      "mediaType": "image",
+      "description": "Upload your own separate view images, or use one mixed multi-view turnaround sheet. The workflow prepares front, back, left and right views, then reconstructs a textured 3D model with Pixal3D Multi-Vi…",
+      "tags": [
+        "3D",
+        "Image to 3D"
+      ],
+      "models": [
+        "Pixal3D"
+      ],
+      "usage": 389
+    },
+    {
+      "name": "utility_seedvr2_3b_int8_upscale_video",
+      "title": "Video Upscale: SeedVR2 3B Int8",
+      "mediaType": "image",
+      "description": "Upscale and restore video footage using SeedVR2 3B Int8, a one-step diffusion model that enhances resolution while maintaining temporal consistency across frames. This workflow takes one degraded vide…",
+      "tags": [
+        "Int8",
+        "Video Upscale"
+      ],
+      "models": [
+        "SeedVR2"
+      ],
+      "usage": 662
+    },
+    {
+      "name": "template_ltx2_3_style_transition",
+      "title": "LTX-2.3 Style Transition ",
+      "mediaType": "image",
+      "description": "Apply the ltx2.3-transition LoRA to create smooth style and scene transitions. This workflow uses a specialized model to blend visual elements.",
+      "tags": [
+        "FLF2V",
+        "LoRA",
+        "Video"
+      ],
+      "models": [
+        "LTX-2.3"
+      ],
+      "usage": 27
+    },
+    {
+      "name": "api_sync_so_lip_sync_video",
+      "title": "Sync 3: Video Lip-Sync",
+      "mediaType": "image",
+      "description": "Synchronize a video's lip movements with a new audio track using the Sync Labs sync-3 model, which automatically adjusts the speaker’s mouth to match your uploaded audio. This workflow takes 1 video a…",
+      "tags": [
+        "API",
+        "Lip Sync"
+      ],
+      "models": [
+        "Sync 3"
+      ],
+      "usage": 62
+    },
+    {
+      "name": "utility_sam3d_body",
+      "title": "SAM 3D Body:  3D Human Mesh Extraction From Video",
+      "mediaType": "image",
+      "description": "Extract a full-body 3D human mesh from a single video frame using SAM 3D Body, guided by a text prompt to refine pose and shape estimation. The workflow loads one video and one text prompt, then outpu…",
+      "tags": [
+        "3D"
+      ],
+      "models": [
+        "SAM 3D Body"
+      ],
+      "usage": 300
+    },
+    {
+      "name": "utility_seedvr2_3b_int8_upscale_image",
+      "title": "Image Upscale: SeedVR2 3B Int8",
+      "mediaType": "image",
+      "description": "Upscale images using SeedVR2 3B Int8, a one-step diffusion-based video restoration model that produces high-quality results with improved temporal consistency. Ideal for restoring degraded footage, up…",
+      "tags": [
+        "Image Upscale",
+        "Int8"
+      ],
+      "models": [
+        "SeedVR2"
+      ],
+      "usage": 200
+    },
+    {
+      "name": "template_3x3_contact_sheet",
+      "title": "3x3 Contact Sheet",
+      "mediaType": "image",
+      "description": "Generate a 3x3 grid of image variations from a simple prompt and reference image using Nano Banana. \n\nPick your favorite frame from the grid, then recreate it as a standalone high-quality image while …",
+      "tags": [
+        "API",
+        "Image",
+        "Image Edit"
+      ],
+      "models": [
+        "Nano Banana 2"
+      ],
+      "usage": 10
+    },
+    {
+      "name": "template_ltx2_3_lora_googly_eyes",
+      "title": "Googly Eyes",
+      "mediaType": "image",
+      "description": "LTX 2.3 LoRA that makes anyone in the input video have Googly Eyes. This workflow utilizes the Googlyeyes LTX 2.3 LoRA by TheBurgstall",
+      "tags": [
+        "LoRA",
+        "Video Edit"
+      ],
+      "models": [
+        "LTX-2.3"
+      ],
+      "usage": 18
+    }
+  ],
+  "metadata": {
+    "total": 167,
+    "limit": 30,
+    "offset": 0
+  },
+  "note": "This page shows 30 of 167 matches (page 1 of 6 at this page size) — it is NOT the full result set. If you are looking for a specific template and don't see it, search its exact name (run_template and get_template take that name too), or page the rest with offset=30. detail:'full' returns more fields; get_template_schema returns one item uncapped."
+}

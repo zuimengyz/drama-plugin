@@ -1,0 +1,136 @@
+{
+  "data": [
+    {
+      "name": "MinimaxHailuo03FirstLastFrameNode",
+      "display_name": "MiniMax H3 First-Last-Frame to Video",
+      "description": "Generate video from a first frame image and an optional last frame image using the MiniMax H3 models. The aspect ratio of the video follows the supplied images.",
+      "category": "partner/video/MiniMax",
+      "pack": "core",
+      "inputs": {
+        "required": [
+          "COMFY_DYNAMICCOMBO_V3",
+          "STRING",
+          "COMBO",
+          "INT",
+          "COMBO",
+          "IMAGE",
+          "INT",
+          "BOOLEAN"
+        ],
+        "optional": [
+          "IMAGE"
+        ]
+      },
+      "input_details": [
+        {
+          "name": "model",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "required": true,
+          "dynamic_combo": true,
+          "options": [
+            "MiniMax H3",
+            "MiniMax H3 Max",
+            "MiniMax H3 Max Turbo"
+          ],
+          "tooltip": "Model to use for video generation.",
+          "hint": "Dynamic combo: pick one `options` value for `model`, then send each conditional sub-field below using its full dotted name (prefixed with `model.`, e.g. `model.<sub_field>`). Auto-grow list slots nest one level deeper (e.g. `model.<list>.<slot_1>`). Sending these fields flat (without the prefix) fails with required_input_missing."
+        },
+        {
+          "name": "model.prompt",
+          "type": "STRING",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "MiniMax H3",
+            "MiniMax H3 Max",
+            "MiniMax H3 Max Turbo"
+          ],
+          "default": "",
+          "tooltip": "Text prompt for video generation."
+        },
+        {
+          "name": "model.resolution",
+          "type": "COMBO",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "MiniMax H3",
+            "MiniMax H3 Max",
+            "MiniMax H3 Max Turbo"
+          ],
+          "options": [
+            "768P",
+            "2K",
+            "480P"
+          ],
+          "tooltip": "Resolution of the output video."
+        },
+        {
+          "name": "model.duration",
+          "type": "INT",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "MiniMax H3",
+            "MiniMax H3 Max",
+            "MiniMax H3 Max Turbo"
+          ],
+          "default": 5,
+          "min": 4,
+          "max": 15,
+          "tooltip": "Duration of the output video in seconds (4-15)."
+        },
+        {
+          "name": "model.prompt_expansion_mode",
+          "type": "COMBO",
+          "required": true,
+          "conditional": true,
+          "applies_when": [
+            "MiniMax H3 Max",
+            "MiniMax H3 Max Turbo"
+          ],
+          "default": "balanced",
+          "options": [
+            "balanced",
+            "quality"
+          ],
+          "tooltip": "How much effort is spent rewriting the prompt before generation."
+        },
+        {
+          "name": "first_frame",
+          "type": "IMAGE",
+          "required": true,
+          "tooltip": "First frame image for the video."
+        },
+        {
+          "name": "seed",
+          "type": "INT",
+          "required": true,
+          "default": 42,
+          "min": 0,
+          "max": 4294967295,
+          "tooltip": "Random seed. The same request with the same seed gives similar, but not guaranteed identical, results."
+        },
+        {
+          "name": "watermark",
+          "type": "BOOLEAN",
+          "required": true,
+          "default": false,
+          "tooltip": "Whether to add an AIGC watermark to the video."
+        },
+        {
+          "name": "last_frame",
+          "type": "IMAGE",
+          "required": false,
+          "tooltip": "Optional last frame image for the video."
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ],
+      "api_node": true,
+      "output_node": false,
+      "deprecated": false
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "data": [
+    {
+      "name": "WavespeedFlashVSRNode",
+      "display_name": "FlashVSR Video Upscale",
+      "description": "Fast, high-quality video upscaler that boosts resolution and restores clarity for low-resolution or blurry footage.",
+      "category": "partner/video/WaveSpeed",
+      "pack": "core",
+      "inputs": {
+        "required": [
+          "VIDEO",
+          "COMBO"
+        ]
+      },
+      "input_details": [
+        {
+          "name": "video",
+          "type": "VIDEO",
+          "required": true
+        },
+        {
+          "name": "target_resolution",
+          "type": "COMBO",
+          "required": true,
+          "options": [
+            "720p",
+            "1080p",
+            "2K",
+            "4K"
+          ]
+        }
+      ],
+      "outputs": [
+        "VIDEO"
+      ],
+      "api_node": true,
+      "output_node": false,
+      "deprecated": false
+    }
+  ]
+}

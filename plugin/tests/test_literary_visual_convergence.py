@@ -40,7 +40,7 @@ def test_p0_root_to_specialized_assets_and_existing_department_consumers(tmp_pat
     assets=SpecializedAssetBible(work_id='literary-work',runtime_ref=runtime,style_ref=style,assets=(
         CharacterAsset(id='char',character_id='c',arc_stage=states[0]['arcStage'],dramaturgy=char,decisions={'face':decision('An ordinary asymmetric adult face.',char)},**common),
         CostumeAsset(id='coat',character_id='c',arc_stage=states[0]['arcStage'],dramaturgy=char,decisions={'material':decision('Plain worn cotton.',char)},**common),
-        SceneAsset(id='room',scene_id='s',dramaturgy=scene,decisions={'architecture':decision('A small room.',scene)},**common)))
+        SceneAsset(id='room',scene_id='s',dramaturgy=scene,decisions={'architecture':decision('A small room.',scene),'interior_structure':decision('Door connects the room to the corridor.',scene),'spatial_hierarchy':decision('Room and corridor.',scene),'period_visible_details':decision('The source specifies a wooden door.',scene)},**common)))
     ref=host.submit(assets,current=current);current[ref.key]=ref.fingerprint
     for asset in assets.assets:
         output=host.compile(ref,asset.id,current=current)
@@ -53,6 +53,17 @@ def test_p0_root_to_specialized_assets_and_existing_department_consumers(tmp_pat
     assert records[0].values['arc_continuity_boundaries']==[{'arcStage':s['arcStage'],'visualContinuityBoundary':s['visualContinuityBoundary']} for s in states]
     changed=view.model_copy(deep=True);changed.content[0].values['arc_continuity_boundaries']=[]
     with pytest.raises(ValueError,match='CONSUME_ARC_BOUNDARIES|VIEW_CHANGED'):professional.submit('character-art',changed,current=current)
+    for department in ('environment-design', 'environment-art'):
+        records=host.department_records(ref,('room',),department,current=current)
+        view=CreativeBible(source_type='LITERARY',id=department,type=registry('LITERARY')[department].output_contract,work_ref='literary-work',source_refs=(source,),depends_on=tuple(bible_pin(bibles[d]) for d in registry('LITERARY')[department].depends_on),content=records,created_by_capability=department,status='READY_FOR_REVIEW',created_at=now,updated_at=now)
+        assert professional.submit(department,view,current=current)['validationStatus']=='PASS'
+        bibles[department]=view;pin=bible_pin(view);current[pin.key]=pin.fingerprint
+    assert records[0].values['source_visual_basis']=='The source specifies a wooden door.'
+    assert 'historical_visual_basis' not in records[0].values
+    altered=view.model_copy(deep=True)
+    altered.content[0].values['source_visual_basis']='Unrelated invented visual basis.'
+    with pytest.raises(ValueError,match='VIEW_CHANGED'):
+        professional.submit('environment-art',altered,current=current)
 
 
 def test_cross_source_inputs_cannot_hide_behind_same_movie(tmp_path):

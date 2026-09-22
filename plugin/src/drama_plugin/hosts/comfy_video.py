@@ -248,11 +248,11 @@ def validate_capability(c: Candidate, r: Requirements, inspected: dict[str, Any]
                 raise ValueError('BOOLEAN_PARAMETER_REQUIRED:' + key)
             if field['type'] == 'STRING' and not isinstance(value, str):
                 raise ValueError('STRING_PARAMETER_REQUIRED:' + key)
-        limit = fields[str(NODES[inspected['class_type']]['prompt'])].get('max_length')
-        if semantics.get('prompt_limit') is not None:
-            limit = min(limit, semantics['prompt_limit']) if limit is not None else semantics['prompt_limit']
-        if limit is not None and len(prompt) > limit:
-            raise ValueError('VERIFIED_PROVIDER_PROMPT_LIMIT_EXCEEDED')
+        from drama_plugin.hosts.prompt_budget import prompt_limit, budget_prompt
+        limit, source = prompt_limit(cap, semantics, c.variant)
+        # Final complete prompt check; opaque legacy prompts cannot be safely
+        # structurally rewritten, so they fail explicitly if still over budget.
+        budget_prompt(prompt, prompt, model=c.model, limit=limit, source=source)
     if is_seed:
         params = c.parameters
         if inspected['class_type'] == 'ByteDance2ReferenceNodeV2' and params.get('model.task_type') != 'reference':
@@ -330,6 +330,9 @@ def bind_capability(node_schema: dict[str, Any], graph: dict[str, Any], schema: 
     material = {'node_schema':node_schema,'node_id':inspected['model_node'],'model_key':str(model).lower().replace(' ','-'),
                 'schema_hash':inspected['schema_hash'],'graph_hash':inspected['graph_hash'],
                 'evidence':evidence,'project_input_ports':inspected['input_ports']}
+    from drama_plugin.hosts.prompt_budget import prompt_limit
+    limit, source = prompt_limit(material, semantics, variant or str(model))
+    material.update(maxPromptCharacters=limit, promptLimitSource=source)
     return {**material,'fingerprint':sha256_canonical(material)}
 
 

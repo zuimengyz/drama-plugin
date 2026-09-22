@@ -1,0 +1,559 @@
+{
+  "state": "CINEMATIC_DIRECTION_FROZEN",
+  "spec": {
+    "schemaVersion": "cinematic-shot-v1",
+    "workId": "work_b845f54e03954997b7a97942b046240d",
+    "sceneId": "scene_ca50f12997254a6ba8691113e7015b71",
+    "shotId": "shot_269ef1fae36d473b8bc0ee8ffcf25c85",
+    "creativeRevision": "F01-S02-USER-TRIAL-R1",
+    "sourceFingerprint": "d8bc7a7252b39ffb2db346b2244164f4d137a1ffb131c7261b5c142249da7b43",
+    "visualBibleFingerprint": "046749eab0d662101d01c0c6efa2a0420b6e35921ebfc7ca6c0ebb9d44305c1b",
+    "narrativeIntent": "女孩提出真实行动方向",
+    "visualBible": {
+      "realism": "自然人物和实际空间",
+      "palette": {
+        "dominant": [
+          "暗棕灰",
+          "土褐",
+          "旧灰墙"
+        ],
+        "accent": []
+      },
+      "lighting": {
+        "philosophy": "既有街灯照明",
+        "fill": "低量天空环境",
+        "faceShadowAllowed": true
+      },
+      "imageCharacter": {
+        "saturation": "保留物色",
+        "contrast": "夜间仍读脸手",
+        "highlight": "湿地不抢注意",
+        "blackLevel": "暗部有空间"
+      },
+      "materials": {
+        "skin": "自然肤质",
+        "costume": "旧羊毛受湿",
+        "metal": "门把铁件",
+        "environment": "湿石与旧抹灰"
+      },
+      "atmosphere": "雨停后的夜街",
+      "cameraPhilosophy": "关系可读，普通人眼高度",
+      "forbidden": [
+        "英雄仰拍",
+        "善恶滤镜"
+      ]
+    },
+    "durationSeconds": 14.0,
+    "openingState": "J静止，女孩接近",
+    "behaviorAnchor": null,
+    "anchorOmissionReason": "抓住并牵引就是持续任务，不再添加活动。",
+    "performance": {
+      "objective": "使男人跟自己去找母亲",
+      "interactionTarget": "C_MAN",
+      "intendedBelief": null,
+      "concealed": null,
+      "emotionalArc": [],
+      "beats": [
+        {
+          "start": 0.0,
+          "end": 14.0,
+          "kind": "CONTINUOUS",
+          "startState": "J静止，女孩接近",
+          "actions": [
+            {
+              "actor": "C_GIRL",
+              "behavior": "左手抓男人右肘袖料，牵向支街；迈步时湿鞋裂口开合，吸气试着说完整。",
+              "target": "C_MAN",
+              "trigger": null,
+              "prop": null
+            },
+            {
+              "actor": "C_MAN",
+              "behavior": "脚仍沿回家路，肩受牵引后转身看女孩，听见请求。",
+              "target": "C_GIRL",
+              "trigger": null,
+              "prop": null
+            }
+          ],
+          "endState": "初抓仍在，男人面向女孩",
+          "overlapReason": null
+        }
+      ],
+      "directorPerformance": {
+        "directorIntentFingerprint": "d604f9c372ec415a23463442ea65557b52068b4ff7ae6c68df572d14a35c4c73",
+        "beatId": "S02-B02",
+        "spokenContentId": "S02-L01",
+        "channel": "VISUAL",
+        "interactionTarget": "C_MAN",
+        "spatialProjection": "近处对男人说",
+        "externalExpression": "MEDIUM",
+        "externalControl": "MEDIUM",
+        "bodyLoad": "LOW",
+        "breath": "赶来后的短促吸气",
+        "release": [
+          "request"
+        ],
+        "continuityIn": "女孩由支街接近，男人停在交口。",
+        "continuityOut": "初抓仍在，男人已经转身听她。",
+        "coordination": [],
+        "instructions": {
+          "body_state": "急于把他带走",
+          "posture": "上身朝支街",
+          "weight": "迈步仍有脚支撑",
+          "movement": "抓肘后牵引",
+          "eyes": "看他是否回应",
+          "head": "脸转向男人",
+          "hands": "左手攥右肘袖料",
+          "visible_breath": "吸气后试着说完整",
+          "prop": "不新增手持物",
+          "partner": "男人先转头再转身",
+          "distance": "手臂可触及",
+          "timing": "先抓住再请求",
+          "release": "请求使男人收到信号",
+          "continuity": "抓握仍在",
+          "do_not": "不哭演，不推搡"
+        },
+        "behaviors": [],
+        "route": "live_action_realist",
+        "grammarFingerprint": "4e9882b86335b737ded6252fe88ed663f3a546e93ec89cbf8401af434653f775"
+      }
+    },
+    "dialogue": [
+      {
+        "spokenContentId": "S02-L01",
+        "speakerKey": "C_GIRL",
+        "text": "妈妈……先生，妈妈……",
+        "start": 2.0,
+        "end": 6.2,
+        "target": "C_MAN",
+        "delivery": "着急断句，面向男人请求",
+        "afterLine": "女孩仍牵向支街，男人转身听见。",
+        "coverageIntent": "ON_SCREEN_SPEAKER",
+        "voicePerformance": {
+          "directorIntentFingerprint": "d604f9c372ec415a23463442ea65557b52068b4ff7ae6c68df572d14a35c4c73",
+          "beatId": "S02-B02",
+          "spokenContentId": "S02-L01",
+          "channel": "VOICE",
+          "interactionTarget": "C_MAN",
+          "spatialProjection": "近处对男人说",
+          "externalExpression": "MEDIUM",
+          "externalControl": "MEDIUM",
+          "bodyLoad": "LOW",
+          "breath": "赶来后的短促吸气",
+          "release": [
+            "request"
+          ],
+          "continuityIn": "女孩由支街接近，男人停在交口。",
+          "continuityOut": "初抓仍在，男人已经转身听她。",
+          "coordination": [],
+          "instructions": {
+            "voice_core": "儿童自然音色",
+            "interaction": "对眼前男人求助",
+            "spatial_projection": "近距离可听",
+            "pace": "急但字可辨",
+            "rhythm": "说不完整仍想继续",
+            "intensity": "急切不尖叫",
+            "breath_support": "跑来后短吸气",
+            "phrase_attack": "先叫妈妈",
+            "articulation": "保持原词",
+            "emphasis": "称呼朝向男人",
+            "pause_function": "找不到完整说法",
+            "sentence_closure": "请求未解决",
+            "coloration": "无故作可怜鼻音",
+            "release": "把求助送到对方",
+            "continuity": "说完仍牵向支街",
+            "do_not": "不唱、不旁白"
+          },
+          "behaviors": [],
+          "route": null,
+          "grammarFingerprint": null
+        },
+        "canonicalInterval": null,
+        "textRange": null
+      }
+    ],
+    "cinematography": {
+      "shotSize": "全身双人",
+      "composition": "男左女右，含两人脚下",
+      "placement": "交口街屋侧",
+      "height": "普通人眼高度",
+      "subjectOrientation": "女孩朝支街，男人转向她",
+      "lensIntent": "自然空间比例",
+      "focusTarget": "两人和抓肘关系",
+      "focusTransition": "不拉焦",
+      "movementClass": "LOCKED",
+      "movement": "固定",
+      "amplitude": "无",
+      "trigger": null,
+      "motivation": null,
+      "openingComposition": "男人在交口，女孩接近右侧",
+      "endingComposition": "初抓仍在，男人转向女孩"
+    },
+    "lighting": "街屋侧既有街灯，脸、右肘和湿鞋可辨；远处仍可通行。",
+    "secondaryMotion": [],
+    "secondaryMotionOmissionReason": "衣料牵引已经包含于主动作。",
+    "environmentInteraction": [],
+    "stabilityContract": [
+      {
+        "dimension": "接触与身份",
+        "allowed": "袖布随牵引起折",
+        "forbidden": "抓错手臂、突然换脸换衣、女孩变道具",
+        "reason": "保留求助关系"
+      }
+    ],
+    "referenceRequirements": [
+      {
+        "role": "CHARACTER",
+        "necessity": "REQUIRED",
+        "subject": "C_MAN+C_GIRL",
+        "purpose": "两人本片身份与身量",
+        "establishesOpeningState": false
+      },
+      {
+        "role": "COMPOSITION",
+        "necessity": "REQUIRED",
+        "subject": "S02-K02 opening",
+        "purpose": "交口位置与初始无接触",
+        "establishesOpeningState": true
+      }
+    ],
+    "executionRequirements": {
+      "durationSeconds": 14.0,
+      "performance": {
+        "receive_request": "HIGH"
+      },
+      "motion": {
+        "cloth_grip": "HIGH"
+      },
+      "continuity": {
+        "two_identities": "HIGH"
+      },
+      "referenceRoles": [
+        "CHARACTER",
+        "COMPOSITION"
+      ],
+      "timingIntent": "自然请求，14秒为规划窗口，不机械定时动作。"
+    },
+    "endingState": "初抓仍在，男人面向女孩",
+    "sourceSoundIntent": {
+      "nativeAudioPolicy": "REQUIRED",
+      "canonicalDialogueBindings": [
+        "S02-L01"
+      ],
+      "diegetic": [
+        "衣料牵引",
+        "湿鞋脚步",
+        "短促吸气"
+      ],
+      "ambience": [
+        "雨后檐滴与远脚步"
+      ],
+      "intentionalSilence": [
+        "无旁白"
+      ],
+      "generatedMusic": "FORBIDDEN",
+      "continuity": [
+        "接入同一夜街底声"
+      ]
+    },
+    "cinematicLanguageRefs": []
+  },
+  "visualResolution": {
+    "base": {
+      "realism": "自然人物和实际空间",
+      "palette": {
+        "dominant": [
+          "暗棕灰",
+          "土褐",
+          "旧灰墙"
+        ],
+        "accent": []
+      },
+      "lighting": {
+        "philosophy": "既有街灯照明",
+        "fill": "低量天空环境",
+        "faceShadowAllowed": true
+      },
+      "imageCharacter": {
+        "saturation": "保留物色",
+        "contrast": "夜间仍读脸手",
+        "highlight": "湿地不抢注意",
+        "blackLevel": "暗部有空间"
+      },
+      "materials": {
+        "skin": "自然肤质",
+        "costume": "旧羊毛受湿",
+        "metal": "门把铁件",
+        "environment": "湿石与旧抹灰"
+      },
+      "atmosphere": "雨停后的夜街",
+      "cameraPhilosophy": "关系可读，普通人眼高度",
+      "forbidden": [
+        "英雄仰拍",
+        "善恶滤镜"
+      ]
+    },
+    "overrides": {},
+    "effective": {
+      "realism": "自然人物和实际空间",
+      "palette": {
+        "dominant": [
+          "暗棕灰",
+          "土褐",
+          "旧灰墙"
+        ],
+        "accent": []
+      },
+      "lighting": {
+        "philosophy": "既有街灯照明",
+        "fill": "低量天空环境",
+        "faceShadowAllowed": true
+      },
+      "imageCharacter": {
+        "saturation": "保留物色",
+        "contrast": "夜间仍读脸手",
+        "highlight": "湿地不抢注意",
+        "blackLevel": "暗部有空间"
+      },
+      "materials": {
+        "skin": "自然肤质",
+        "costume": "旧羊毛受湿",
+        "metal": "门把铁件",
+        "environment": "湿石与旧抹灰"
+      },
+      "atmosphere": "雨停后的夜街",
+      "cameraPhilosophy": "关系可读，普通人眼高度",
+      "forbidden": [
+        "英雄仰拍",
+        "善恶滤镜"
+      ]
+    },
+    "fingerprint": "046749eab0d662101d01c0c6efa2a0420b6e35921ebfc7ca6c0ebb9d44305c1b"
+  },
+  "review": {
+    "status": "PASS",
+    "findings": [],
+    "scope": "OFFLINE_EXECUTABILITY_ONLY; historical meaning and performance choices require Host review"
+  },
+  "hostReview": "S02用户批准工作设计的装配复核：四条对白之一逐字绑定；女孩主动抓肘与牵引，男人接收；未提前拒绝或安慰。无媒体质量或最终采纳声明。",
+  "canonicalDialogue": [
+    {
+      "id": "S02-L01",
+      "kind": "DIALOGUE",
+      "speakerKey": "C_GIRL",
+      "text": "妈妈……先生，妈妈……",
+      "intent": "要求眼前成人回应母亲的需要",
+      "mustKeep": true,
+      "performanceIntent": "急于让他听懂，话未组织好。",
+      "provenance": {
+        "relation": "ADAPTED",
+        "sourceRefs": [
+          "D02",
+          "creative/04-screenplay-r1.md#S02"
+        ],
+        "adaptationNote": "逐字迁入用户批准的中文改编对白；不是英文原作直接引文。"
+      },
+      "estimatedDurationMs": 4200
+    },
+    {
+      "id": "S02-L02",
+      "kind": "DIALOGUE",
+      "speakerKey": "C_GIRL",
+      "text": "您来。来……",
+      "intent": "把已经转身的成人带向母亲",
+      "mustKeep": true,
+      "performanceIntent": "认为他开始答应，继续请求行动。",
+      "provenance": {
+        "relation": "ADAPTED",
+        "sourceRefs": [
+          "D02",
+          "creative/04-screenplay-r1.md#S02"
+        ],
+        "adaptationNote": "逐字迁入用户批准的中文改编对白；不是英文原作直接引文。"
+      },
+      "estimatedDurationMs": 2500
+    },
+    {
+      "id": "S02-L03",
+      "kind": "DIALOGUE",
+      "speakerKey": "C_MAN",
+      "text": "找警察去。",
+      "intent": "把责任转给另一位成人",
+      "mustKeep": true,
+      "performanceIntent": "确实听懂后推辞，不冷笑。",
+      "provenance": {
+        "relation": "ADAPTED",
+        "sourceRefs": [
+          "D02",
+          "creative/04-screenplay-r1.md#S02"
+        ],
+        "adaptationNote": "逐字迁入用户批准的中文改编对白；不是英文原作直接引文。"
+      },
+      "estimatedDurationMs": 2000
+    },
+    {
+      "id": "S02-L04",
+      "kind": "DIALOGUE",
+      "speakerKey": "C_MAN",
+      "text": "走开！",
+      "intent": "终止她再次请求自己的可能",
+      "mustKeep": true,
+      "performanceIntent": "在拉扯未能结束后主动吓退；并非持续高声。",
+      "provenance": {
+        "relation": "ADAPTED",
+        "sourceRefs": [
+          "D02",
+          "creative/04-screenplay-r1.md#S02"
+        ],
+        "adaptationNote": "逐字迁入用户批准的中文改编对白；不是英文原作直接引文。"
+      },
+      "estimatedDurationMs": 1000
+    }
+  ],
+  "upstreamPerformance": {
+    "schemaVersion": "dpd-snapshot-v1",
+    "scene": {
+      "schemaVersion": "dpd-v1",
+      "scope": "SCENE",
+      "sceneId": "scene_ca50f12997254a6ba8691113e7015b71",
+      "sourceFingerprint": "6a22de302a0b502e7eb9e4f705e08582114467a85d36379db7461a941f90cac0",
+      "dramaticPurpose": "观众看见拒绝是一项费力选择。",
+      "conflictCondition": "女孩需要男人随她改变路线；男人要把这项请求从自己身上移走。",
+      "powerStructure": "成年男人可离开且能吓退儿童；女孩能持续请求，并有权换求助对象。",
+      "emotionalClimate": null,
+      "urgencyContext": "女孩急于为母亲找帮助；母亲状况不在男人知识范围。",
+      "informationAsymmetry": "女孩知道要去的方向；男人只听到母亲和请求，观众不能被告知确诊或结果。",
+      "socialConstraints": [
+        "街道上仍有其他行人；不是为两位主角暂停的空间。"
+      ],
+      "direction": {
+        "objective": null,
+        "interactionTarget": null,
+        "tactic": null,
+        "authorityPosition": null,
+        "relationshipStance": null,
+        "internalActivation": null,
+        "externalControl": null,
+        "publicPrivateContext": "陌生人在公共街道上的求助，无围观审判。",
+        "subtext": null,
+        "performanceBoundaries": null
+      }
+    },
+    "beat": {
+      "schemaVersion": "dpd-v1",
+      "scope": "BEAT",
+      "sceneId": "scene_ca50f12997254a6ba8691113e7015b71",
+      "beatId": "S02-B02",
+      "actor": "C_GIRL",
+      "obstacle": "他尚未响应",
+      "transitionTrigger": "男人转身听见",
+      "direction": {
+        "objective": "使男人跟自己去找母亲",
+        "interactionTarget": "C_MAN",
+        "tactic": "接触并请求、指出行动方向",
+        "authorityPosition": "需要成人帮助但能选择对象",
+        "relationshipStance": "把对方当成可求助的人",
+        "internalActivation": "HIGH",
+        "externalControl": "MEDIUM",
+        "publicPrivateContext": null,
+        "subtext": null,
+        "performanceBoundaries": [
+          "无解释性旁白。",
+          "不新增安慰、追赶、母亲结果或旁人评价。"
+        ]
+      }
+    },
+    "line": {
+      "schemaVersion": "dpd-v1",
+      "scope": "LINE",
+      "sceneId": "scene_ca50f12997254a6ba8691113e7015b71",
+      "beatId": "S02-B02",
+      "spokenContentId": "S02-L01",
+      "speaker": "C_GIRL",
+      "dramaticAction": "要求眼前成人回应母亲的需要",
+      "observableIntent": "急于让他听懂，话未组织好。",
+      "continuity": "接收对方刚才的动作后发话，保留此刻的关系。",
+      "changeFromPrevious": "男人转身听见",
+      "direction": null
+    },
+    "effective": {
+      "schemaVersion": "dpd-effective-v1",
+      "sceneId": "scene_ca50f12997254a6ba8691113e7015b71",
+      "beatId": "S02-B02",
+      "spokenContentId": "S02-L01",
+      "actor": "C_GIRL",
+      "speaker": "C_GIRL",
+      "dramaticPurpose": "观众看见拒绝是一项费力选择。",
+      "conflictCondition": "女孩需要男人随她改变路线；男人要把这项请求从自己身上移走。",
+      "powerStructure": "成年男人可离开且能吓退儿童；女孩能持续请求，并有权换求助对象。",
+      "emotionalClimate": null,
+      "urgencyContext": "女孩急于为母亲找帮助；母亲状况不在男人知识范围。",
+      "informationAsymmetry": "女孩知道要去的方向；男人只听到母亲和请求，观众不能被告知确诊或结果。",
+      "socialConstraints": [
+        "街道上仍有其他行人；不是为两位主角暂停的空间。"
+      ],
+      "objective": "使男人跟自己去找母亲",
+      "interactionTarget": "C_MAN",
+      "tactic": "接触并请求、指出行动方向",
+      "authorityPosition": "需要成人帮助但能选择对象",
+      "relationshipStance": "把对方当成可求助的人",
+      "internalActivation": "HIGH",
+      "externalControl": "MEDIUM",
+      "publicPrivateContext": "陌生人在公共街道上的求助，无围观审判。",
+      "subtext": null,
+      "performanceBoundaries": [
+        "无解释性旁白。",
+        "不新增安慰、追赶、母亲结果或旁人评价。"
+      ],
+      "obstacle": "他尚未响应",
+      "transitionTrigger": "男人转身听见",
+      "dramaticAction": "要求眼前成人回应母亲的需要",
+      "observableIntent": "急于让他听懂，话未组织好。",
+      "continuity": "接收对方刚才的动作后发话，保留此刻的关系。",
+      "changeFromPrevious": "男人转身听见"
+    },
+    "fingerprint": "b7a7b60827259e0dcc346b26af8bc3258f0cd1f1e0840f6a03cd93d3e024cf51"
+  },
+  "directorPerformanceIntent": {
+    "schemaVersion": "director-performance-intent-v1",
+    "sceneId": "scene_ca50f12997254a6ba8691113e7015b71",
+    "sourceFingerprints": {
+      "scene:S02": "6a22de302a0b502e7eb9e4f705e08582114467a85d36379db7461a941f90cac0"
+    },
+    "dpdFingerprints": [
+      "b7a7b60827259e0dcc346b26af8bc3258f0cd1f1e0840f6a03cd93d3e024cf51"
+    ],
+    "beatIds": [
+      "S02-B02"
+    ],
+    "performanceCore": "女孩要求这一个成人随她去；男人确实收到请求。",
+    "audienceExperience": "孩子有行动目标，成人尚未作出最终拒绝。",
+    "primaryFocus": "牵引和接收",
+    "containment": "着急不变成哭戏；疏离不变成冷笑。",
+    "externalExpressionCeiling": "HIGH",
+    "permittedRelease": [
+      "request",
+      "turn_to_listen"
+    ],
+    "releasePoint": "男人转身听见",
+    "partnerFocus": "女孩看男人是否跟来；男人转头看她。",
+    "performanceRhythm": "先接触，再请求，听到不等于答应。",
+    "continuityIn": "女孩由支街接近，男人停在交口。",
+    "continuityOut": "初抓仍在，男人已经转身听她。",
+    "doNot": [
+      "无解释性旁白。",
+      "不新增母亲结果、安慰、推搡。"
+    ],
+    "forbiddenBehaviors": [
+      "sobbing",
+      "theatrical_trembling"
+    ],
+    "coordination": [],
+    "reviewBasis": "SOURCE_BOUND_DESIGN"
+  },
+  "performanceSourcePins": {
+    "scene:S02": "6a22de302a0b502e7eb9e4f705e08582114467a85d36379db7461a941f90cac0",
+    "grammar:live_action_realist": "4e9882b86335b737ded6252fe88ed663f3a546e93ec89cbf8401af434653f775"
+  },
+  "fingerprint": "2034dc6706e280be5633ad14f28fd0d1dc8b8e4aa0c47f98a4a2a1e9ca71c5cb"
+}

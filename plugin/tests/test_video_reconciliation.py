@@ -134,7 +134,7 @@ def test_vidu_identity_and_prompt_limit(tmp_path):
         compile_all(r, c, g, s, host)
     r, c, g, s, host = current_fixture(tmp_path)
     r = r.model_copy(update={'frozen_creative': {'motion_prompt': 'x' * 2001}})
-    with pytest.raises(ValueError, match='PROMPT_LIMIT'):
+    with pytest.raises(ValueError, match='PROVIDER_PROMPT_BUDGET_EXCEEDED'):
         compile_all(r, c, g, s, host)
     r = r.model_copy(update={'frozen_creative': {'motion_prompt': 'x' * 2000}})
     assert compile_all(r, c, g, s, host)

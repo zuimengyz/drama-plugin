@@ -79,7 +79,7 @@ def test_long_prompt_no_truncation_and_verified_limit(tmp_path):
  assert len(text)>2000 and 'END_SENTINEL' in text
  cap=deepcopy(c.capability);next(x for x in cap['node_schema']['input_details'] if x['name']=='model.prompt')['max_length']=100
  cap['fingerprint']=fp({k:v for k,v in cap.items() if k!='fingerprint'});c=c.model_copy(update={'capability':cap})
- with pytest.raises(ValueError,match='VERIFIED_PROVIDER_PROMPT_LIMIT'):compile_all(r,c,g,s,a)
+ with pytest.raises(ValueError,match='PROVIDER_PROMPT_BUDGET_EXCEEDED'):compile_all(r,c,g,s,a)
 
 
 def test_source_sound_optional_enable_disable_and_conflict(tmp_path):

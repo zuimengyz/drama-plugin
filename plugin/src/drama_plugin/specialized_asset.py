@@ -45,6 +45,10 @@ def department_values(bible: SpecializedAssetBible, asset_id: str, department: s
         raise ValueError('UPSTREAM_INFORMATION_REQUIRED: asset lacks fields for this view')
     values['environment_ref' if isinstance(asset, SceneAsset) else 'character_ref'] = (
         asset.scene_id if isinstance(asset, SceneAsset) else asset.character_id)
+    if department == 'environment-art' and originals is not None and current is not None:
+        world = resolve(asset.world.bible_ref, originals, current)
+        if world.get('sourceType') == 'LITERARY' and 'historical_visual_basis' in values:
+            values['source_visual_basis'] = values.pop('historical_visual_basis')
     if department == 'character-art' and originals is not None and current is not None:
         original = resolve(asset.dramaturgy.bible_ref, originals, current)
         if original.get('sourceType') == 'LITERARY':

@@ -467,9 +467,24 @@ class PlannedInput(Record):
 
 def same_execution_candidate(planned: Candidate, actual: Candidate) -> bool:
     # Planning prices the whole stage; a materialized decision prices this call.
-    return all(getattr(planned, key) == getattr(actual, key) for key in (
+    return same_route_parameters(planned, actual) and all(getattr(planned, key) == getattr(actual, key) for key in (
         'candidate_id', 'model', 'variant', 'mode', 'template', 'graph_hash',
-        'adapter_fingerprint', 'parameters', 'capability'))
+        'adapter_fingerprint', 'capability'))
+
+
+def same_route_parameters(planned: Candidate, actual: Candidate) -> bool:
+    # Existing adapters expose duration under these two keys. Keep exact clip
+    # values in requests/quotes; only the route comparison permits variation.
+    if planned.parameters.keys() != actual.parameters.keys():
+        return False
+    for key, value in actual.parameters.items():
+        if key in {'duration', 'model.duration'}:
+            if not all(not isinstance(v, bool) and any(v == d or v == str(d) for d in planned.durations)
+                       for v in (value, planned.parameters[key])):
+                return False
+        elif value != planned.parameters[key]:
+            return False
+    return True
 
 
 class ContinuationAuthorization(Record):
@@ -543,9 +558,10 @@ def qualify_route(route: ProductionRoute, *, now: datetime | None = None) -> dic
             raise ValueError('COMPLETE_FROZEN_CINEMATIC_DIRECTIONS_REQUIRED')
         for target, raw in raw_directions.items():
             spec = verify_frozen(raw)
-            if (spec.work_id != route.work_id or spec.shot_id != r.get('shots', {}).get(target)
-                    or spec.duration_seconds != r['duration_seconds']):
+            if spec.work_id != route.work_id or spec.shot_id != r.get('shots', {}).get(target):
                 raise ValueError('ROUTE_CINEMATIC_SCOPE_OR_DURATION_CHANGED')
+            if spec.duration_seconds not in c.durations:
+                raise ValueError('CLIP_DURATION_OUT_OF_ROUTE_CAPABILITY')
             directions[target] = direction_quality(raw, c, r['shot_type'])
             reasons.extend('DIRECTOR_REQUIREMENT_FAILED:' + key for key in directions[target]['failed'])
     if route.generations_per_video_request != 1 or not route.generation_count_evidence.current(now):

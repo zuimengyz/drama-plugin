@@ -141,9 +141,14 @@ def _route_frame_gate(state: dict[str, Any], frame: dict[str, Any]) -> None:
         directions = route.requirements.get('cinematic_directions', {})
         if directions and frame['requirements']['frozen_creative'].get('cinematic_direction') != directions.get(target):
             raise ValueError('DIRECTOR_CHANGE_REQUIRES_ROUTE_REPLAN')
-        for key in ('model', 'variant', 'mode', 'template', 'graph_hash', 'adapter_fingerprint', 'parameters', 'capability'):
+        for key in ('model', 'variant', 'mode', 'template', 'graph_hash', 'adapter_fingerprint', 'capability'):
             if frame['candidate'].get(key, {}) != route.candidate.model_dump(mode='json').get(key, {}):
                 raise ValueError('VIDEO_REQUEST_DIFFERS_FROM_ROUTE:' + key)
+        from drama_plugin.visual.video_selection import Candidate, same_route_parameters
+        if frame['requirements']['duration_seconds'] not in route.candidate.durations:
+            raise ValueError('CLIP_DURATION_OUT_OF_ROUTE_CAPABILITY')
+        if not same_route_parameters(route.candidate, Candidate.model_validate(frame['candidate'])):
+            raise ValueError('VIDEO_REQUEST_DIFFERS_FROM_ROUTE:parameters')
         if target != route.video_targets[0] and not any(
                 a.get('media_kind') == 'VIDEO' and a['shot_id'] == route.video_targets[0]
                 and a.get('review_status', '').startswith('PASS') for a in state['attempts']):

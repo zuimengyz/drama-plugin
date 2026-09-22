@@ -85,7 +85,7 @@ def package_fixture(bibles, artifacts, current):
 
 def test_registry_is_complete_owned_and_acyclic():
     definitions = registry()
-    assert len(definitions) == 46
+    assert len(definitions) == 49
     order = dependency_order()
     for department, definition in definitions.items():
         assert all(order.index(parent) < order.index(department) for parent in definition.depends_on)
@@ -321,7 +321,7 @@ def test_host_roundtrip_department_dashboard_and_package(tmp_path: Path):
     result = host.retain_package(package, current=current)
     assert result['productionAuthorized'] is False
     assert result['sceneCount'] == result['shotCount'] == 1
-    assert len(host.dashboard(package, current=current)) == 46
+    assert len(host.dashboard(package, current=current)) == 49
     assert all(x['validationStatus'] == 'PASS' for x in host.dashboard(package, current=current))
     assert host.task('environment-art', task='design', available={}, current=current)['status'] == 'BLOCKED'
     with pytest.raises(ValueError, match='AUTHORITY'):

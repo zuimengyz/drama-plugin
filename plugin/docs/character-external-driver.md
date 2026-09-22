@@ -43,7 +43,7 @@ DESIGN_REVIEW may read drafts; CASTING requires VISUAL_TESTING or later; PRODUCT
 | Consumer | May decide | Must not decide |
 | --- | --- | --- |
 | Character External Driver | Source-bound core, distinctiveness, relationships, signatures; authorized new version | New screenplay facts or user approval |
-| Character Art | Face/body/visual design within package route and core | Invent core psychology or identity distinction |
+| Specialized Asset Design | Face/body/costume/environment under runtime medium and approved dramaturgy; Character Art is a read-only projection | Invent core psychology or identity distinction |
 | Performance Casting | Candidate realizations and evidence | Discover fundamental identity or edit package |
 | Expression/compiler | Generic route vocabulary and task projections | Own a named character's anatomy, temperament or weapon |
 | Director | Which existing facet this scene reveals | Redefine who the person is |

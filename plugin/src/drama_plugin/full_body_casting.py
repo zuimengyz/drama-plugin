@@ -204,6 +204,8 @@ async def reserve_full_body(memory: Any, work_id: str, profile: RoleArchetypePro
         if ledger.exists():
             raise ValueError('CASTING_ATTEMPT_ALREADY_RESERVED_RECOVER_ONLY')
         work = await memory.get_work(work_id)
+        from drama_plugin.hosts.specialized_asset import validate_visual_submission
+        validate_visual_submission(work, request)
         brief = executable_full_body(work, profile, plan, context, spec, authorization_id)
         import hashlib
         auth = work.content['characterCastingAuthorizations'][authorization_id]

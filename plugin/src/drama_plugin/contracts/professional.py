@@ -16,6 +16,8 @@ ArtifactStatus = Literal['DRAFT', 'READY_FOR_REVIEW', 'APPROVED', 'NOT_REQUIRED'
 
 
 class DepartmentDefinition(ContractModel):
+    authority_owner: Text | None = None
+    deprecated_forward_to: Text | None = None
     department_id: Text
     name: Text
     capability_type: Literal['SKILL', 'MODULE', 'VALIDATOR', 'AGGREGATOR']
@@ -37,7 +39,7 @@ class CreativeRecord(ContractModel):
     id: Text
     scope_refs: tuple[Text, ...] = Field(min_length=1)
     values: dict[str, Any]
-    provenance: Literal['MIGRATED_FROM_R1', 'NEW_PROFESSIONAL_ELABORATION']
+    provenance: Literal['MIGRATED_FROM_R1', 'NEW_PROFESSIONAL_ELABORATION', 'SPECIALIZED_ASSET_PROJECTION']
     source_refs: tuple[SourcePin, ...] = Field(min_length=1)
     status: Literal['DECIDED', 'UNRESOLVED', 'NOT_REQUIRED'] = 'DECIDED'
     limitations: tuple[Text, ...] = ()

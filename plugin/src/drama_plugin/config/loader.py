@@ -17,6 +17,14 @@ _SERVICE_NAMES = ("memory", "asset", "research", "production", "media", "context
 
 def _environment_overrides(environment: Mapping[str, str]) -> dict[str, Any]:
     overrides: dict[str, Any] = {}
+    if "DRAMA_PLUGIN_VISUAL_MEDIUM" in environment:
+        medium = environment["DRAMA_PLUGIN_VISUAL_MEDIUM"].strip()
+        if medium not in {"live_action", "cg"}:
+            raise ConfigurationError("Invalid DRAMA_PLUGIN_VISUAL_MEDIUM: expected live_action or cg")
+        overrides["visual_medium"] = medium
+    if "DRAMA_PLUGIN_VISUAL_AUTHORITY_ROOT" in environment:
+        overrides["visual_authority_root"] = environment["DRAMA_PLUGIN_VISUAL_AUTHORITY_ROOT"].strip()
+
     if "DRAMA_CHARACTER_REPOSITORY_ROOT" in environment:
         overrides["character_repository_root"] = environment["DRAMA_CHARACTER_REPOSITORY_ROOT"].strip()
     if "rhythm_speed" in environment:
@@ -116,6 +124,9 @@ def load_config(
     merged = _deep_merge(payload, _environment_overrides(source_environment))
     try:
         config = DramaPluginConfig.model_validate(merged)
+        config._visual_medium_source = ("environment:DRAMA_PLUGIN_VISUAL_MEDIUM"
+            if "DRAMA_PLUGIN_VISUAL_MEDIUM" in source_environment else
+            f"config:{path}:visual_medium" if "visual_medium" in payload else "UNCONFIGURED")
         config._rhythm_source = ("environment:rhythm_speed" if "rhythm_speed" in source_environment else
                                 f"config:{path}:rhythm_speed" if "rhythm_speed" in payload else "default:work_defined")
         return config

@@ -126,6 +126,8 @@ async def reserve_package_casting(memory: Any, work_id: str, repository: Charact
     with io.guard(ledger_root/(key+'.lock')):
         if ledger.exists():raise ValueError('CASTING_ATTEMPT_ALREADY_RESERVED_RECOVER_ONLY')
         work=await memory.get_work(work_id)
+        from drama_plugin.hosts.specialized_asset import validate_visual_submission
+        validate_visual_submission(work, request)
         brief=executable_package_casting(work,repository,projection,authorization_id)
         if (request.get('transport')!='MCP' or request.get('mock') is not False or request.get('modality')!='IMAGE'
             or request.get('outputCount')!=1 or request.get('prompt')!=brief['prompt'] or not request.get('durableCompletionAvailable')):

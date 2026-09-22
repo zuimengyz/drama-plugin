@@ -1,6 +1,7 @@
 code: environment-design
 name: Environment Functional Design
-description: Design reusable physical places, routes and spatial constraints.
+description: Deprecated environment-design view; forward concrete visual design to
+  specialized-asset-design.
 context:
   required:
   - sourcePins
@@ -23,9 +24,5 @@ tools:
   - context.build_context
 completion:
   conditions:
-  - Every route ends in known zones; water crossings have a physical means; parent
-    places and scene references resolve; constraints permit the required action.
-  - Bible records retain source/dependency pins and ownership; unresolved requirements
-    remain explicit.
-  - Return department output references and validation status to the Host without
-    production.
+  - Return the specialized asset reference, or UPSTREAM_INFORMATION_REQUIRED; never
+    author a competing concrete asset.

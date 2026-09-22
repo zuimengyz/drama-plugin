@@ -1,0 +1,30 @@
+code: specialized-asset-design
+name: Specialized Asset Design
+description: Own concrete CharacterAsset, CostumeAsset and SceneAsset designs under
+  pinned dramaturgy and runtime medium.
+context:
+  required:
+  - sourcePins
+  - departmentInputs
+  optional:
+  - directorPackageRef
+  - approvedBaseline
+  - continuityRef
+  - userFeedback
+  refresh_after: []
+tools:
+  preferred:
+  - work.get_work
+  - scene.get_scene
+  allowed:
+  - script.get_script
+  - episode.get_episode
+  - shot.get_shot
+  - asset.get_asset
+  - context.build_context
+completion:
+  conditions:
+  - Validated SpecializedAssetBible with current dramaturgy, Director, world, style
+    and runtime pins.
+  - Compiler source map distinguishes dramaturgy, global style, asset design, Director
+    intent and runtime medium.

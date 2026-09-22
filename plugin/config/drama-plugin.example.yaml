@@ -56,3 +56,9 @@ services:
     base_url: ""
     timeout_seconds: 30
     operations: {}
+
+# Movie-level medium: configure explicitly before first visual design.
+# Explicit DRAMA_PLUGIN_VISUAL_MEDIUM overrides this deployment setting.
+# visual_medium: live_action  # only live_action or cg
+# visual_authority_root: /absolute/project/visual-authority
+# All production Hosts share DRAMA_PLUGIN_VISUAL_AUTHORITY_ROOT.

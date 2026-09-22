@@ -183,3 +183,14 @@ and full receipt replay before projection. Legacy CG with unspecified style is
 not evidence for visible CG readiness. PHOTOREAL_DIGITAL_HUMAN is valid CG, but
 fails a VISIBLE_FILMIC_CG image review when macro form/material/groom hierarchy
 does not read clearly. Retain failure evidence; no retry or adoption is implied.
+
+## Core Creative R1 boundary
+
+Read [Core Creative R1](../../docs/core-creative-r1.md). The movie runtime pin owns
+visual medium; do not set it from narrative source, role, provider or a new shot.
+Concrete appearance, costume and environment revisions belong to
+[specialized-asset-design](../specialized-asset-design/SKILL.md). Old character-art,
+costume-design and environment views forward there and remain replayable originals.
+Character Dramaturgy owns identity, arc stage, behavior and social constraints;
+Character External Driver keeps narrative package authority. Proposed look never
+revises character meaning. Director owns intent and arbitration, not asset authorship.

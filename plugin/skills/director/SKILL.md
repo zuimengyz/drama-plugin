@@ -215,3 +215,14 @@ Use the unified read-only `CharacterRepository.resolve_character_package` contra
 Select which existing embodied tendency this scene exposes; do not redefine bodily character. Scene intent cannot silently change stable embodiment.
 
 Read [Embodiment contract](../../docs/character-embodiment.md). Use the unified read-only `characters.embodiment.embodiment_handoff` with exact ref/version/checksum and route. Never create or overwrite embodiment in downstream execution. Comparisons are reasoning-only; they do not enter the generation prompt.
+
+## Core Creative R1 boundary
+
+Read [Core Creative R1](../../docs/core-creative-r1.md). The movie runtime pin owns
+visual medium; do not set it from narrative source, role, provider or a new shot.
+Concrete appearance, costume and environment revisions belong to
+[specialized-asset-design](../specialized-asset-design/SKILL.md). Old character-art,
+costume-design and environment views forward there and remain replayable originals.
+Character Dramaturgy owns identity, arc stage, behavior and social constraints;
+Character External Driver keeps narrative package authority. Proposed look never
+revises character meaning. Director owns intent and arbitration, not asset authorship.

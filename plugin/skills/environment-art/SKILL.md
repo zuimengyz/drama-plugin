@@ -1,42 +1,21 @@
 ---
 name: environment-art
-description: Design how an approved functional place appears on screen. Use for Environment Art Bible authoring and review; no media generation.
+description: Resolve the deprecated environment-art design view through Specialized Asset Design; inspect retained originals without independently authoring concrete assets.
 ---
 
-# Environment Art
+# environment-art: compatibility view
 
-## Role and authority
+New concrete appearance, costume and environment decisions belong to
+[specialized-asset-design](../specialized-asset-design/SKILL.md).
+Forward authoring and revision there. `ProfessionalDepartmentHost.submit` rejects
+new active writes to this legacy department. Director cannot fill it in.
 
-Design how an approved functional place appears on screen.
+Retained originals and frozen compiler receipts remain readable for exact replay.
+Replay is not authorization for new production. Do not optimize frozen prompts.
+Use [Core Creative R1](../../docs/core-creative-r1.md) for the runtime movie pin,
+source dependencies and formal Host entry. Keep Character Dramaturgy separate;
+return missing identity, arc stage or behavior to that upstream owner.
 
-Own: Architectural/structural language, shape, silhouette, mass distribution, material palette, surfaces and visual identity.
-
-Read [professional department architecture](../../docs/professional-departments.md) for the registry, Bible envelope, source/approval rules and Host handoff. Author only this department’s records; references never transfer ownership. Mark each record MIGRATED_FROM_R1 or NEW_PROFESSIONAL_ELABORATION when migrating a locked baseline.
-
-## Inputs and dependencies
-
-Environment Bible with usable topology; Director Vision; historical boundary; approved visual route.
-
-## Professional decisions
-
-Derive visual thesis and historical visual basis separately. Specify architecture and structural language without changing functional geometry; organize hero set features, secondary features, density, age, wear and weathering. Relate human scale and character silhouettes to the environment. Give realistic and CG expression of the same world, continuity anchors, forbidden visuals and future reference requirements. If topology is incomplete, label design provisional and list assumptions for the functional owner.
-
-## Outputs
-
-Produce a versioned `Environment Art Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.
-
-## Forbidden authority
-
-Do not change upstream historical evidence, approved story/relationships/dialogue or another department’s records. Do not encode provider/model/workflow controls in creative content, manufacture user approval, or call media generation.
-
-## Quality gates
-
-Place identity survives different shots; materials share one world; art does not widen a small boat or turn a field tent into a palace; Character Art is a peer original.
-
-## Failure and escalation
-
-Return geometry conflicts to environment-design; prop identities to prop-design; lighting and camera choices to their owners. Do not silently complete missing topology.
-
-## Source reads
-
-Use supplied current originals first. For missing scoped context, read `work.get_work`, `scene.get_scene`, `script.get_script`, `episode.get_episode`, `shot.get_shot`, `asset.get_asset`, `context.build_context`. These reads do not authorize source writes or production.
+Read current originals with `work.get_work`, `scene.get_scene`, `script.get_script`,
+`episode.get_episode`, `shot.get_shot`, `asset.get_asset`, `context.build_context`.
+Never create or overwrite Character Core.

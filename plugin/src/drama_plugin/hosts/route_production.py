@@ -112,6 +112,11 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
         raise ValueError('ROUTE_WORK_MISMATCH')
     if command in {'check-input', 'init-stage', 'add-frame', 'reserve', 'begin-submission', 'replan', 'retry-not-created'}:
         await validate_route_direction_sources(memory, work, route)
+    if command == 'begin-submission':
+        from drama_plugin.hosts.specialized_asset import validate_visual_submission
+        attempt = next(a for a in work.content.get('productionStage', {}).get('attempts', [])
+                       if a['attempt_id'] == payload['attempt_id'])
+        validate_visual_submission(work, attempt['request'])
     if command == 'check-input':
         duty = route_input_gate(route, payload['target_id'], payload['purpose'])
         if not work.content.get('productionStage'):

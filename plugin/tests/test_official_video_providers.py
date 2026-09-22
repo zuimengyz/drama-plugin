@@ -177,7 +177,17 @@ def test_registry_all_requested_models_and_specialist_roles():
 
 
 async def formal_setup(x,client):
+    from test_specialized_asset import fixture as visual_fixture
+    from drama_plugin.contracts.base import dump_contract
+    from drama_plugin.hosts.specialized_asset import bind_video_request
+    host,bible,ref,current=visual_fixture(x.tmp/'visual-authority','cg',work_id=x.data.work.id)
+    compiled=host.compile(ref,'room',current=current)
+    x.data.work.content.update(movieVisualMediumRef=dump_contract(bible.runtime_ref),
+        specializedAssetCompilationRefs=[compiled['compilationRef']],visualSourceCurrent=current)
+    import os
+    os.environ['DRAMA_PLUGIN_VISUAL_AUTHORITY_ROOT']=str(x.tmp/'visual-authority')
     r=request('seedance');r.continuity.work_id=x.data.work.id
+    r=bind_video_request(x.data.work,r)
     x.data.work.content['continuityPacks']={'C1':r.continuity.model_dump(mode='json',by_alias=True)}
     req=Requirements(work_id=x.data.work.id,scene_id=x.data.scene.id,shot_id=x.data.shot.id,target_id='clip1',shot_type='ENVIRONMENT',
         source_fingerprint='a'*64,mode='TEXT_TO_VIDEO',controls=['TEXT'],duration_seconds=5,aspect_ratio='16:9',sound='NATIVE',

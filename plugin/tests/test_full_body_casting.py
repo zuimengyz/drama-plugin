@@ -76,7 +76,33 @@ class Memory:
 
 
 @pytest.mark.asyncio
-async def test_reservation_survives_restart_and_no_second_submission(tmp_path):
+async def test_legacy_reservation_cannot_bypass_new_visual_authority(tmp_path,monkeypatch):
+    w,p,v,c,s=fixture(tmp_path);m=Memory(w);req=request_for(executable_full_body(w,p,v,c,s,'task'))
+    monkeypatch.delenv('DRAMA_PLUGIN_VISUAL_AUTHORITY_ROOT',raising=False)
+    with pytest.raises(ValueError,match='VISUAL_AUTHORITY_ROOT_REQUIRED'):
+        await reserve_full_body(m,'w',p,v,c,s,'task',req,tmp_path/'ledger')
+    assert m.w.content['characterCastingAuthorizations']['task']['status']=='AUTHORIZED'
+    assert not list((tmp_path/'ledger').glob('*.json'))
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('change',['mock','prompt','source','provider'])
+async def test_no_spend_on_changed_source_or_request(tmp_path,change,monkeypatch):
+    # Keep exercising original source/request checks after the new outer gate.
+    monkeypatch.setattr('drama_plugin.hosts.specialized_asset.validate_visual_submission',lambda *args: None)
+    w,p,v,c,s=fixture(tmp_path);m=Memory(w);req=request_for(executable_full_body(w,p,v,c,s,'task'))
+    if change=='mock':req['mock']=True
+    if change=='prompt':req['prompt']='changed'
+    if change=='source':(tmp_path/'source.txt').write_text('changed')
+    if change=='provider':req['providerRequest']['input_overrides']['3']['prompt']='changed'
+    with pytest.raises(ValueError):await reserve_full_body(m,'w',p,v,c,s,'task',req,tmp_path/'ledger')
+    assert m.w.content['characterCastingAuthorizations']['task']['status']=='AUTHORIZED'
+
+@pytest.mark.asyncio
+async def test_reservation_survives_restart_and_no_second_submission(tmp_path,monkeypatch):
+    # Unit regression for the legacy single-attempt ledger. The new outer gate
+    # is exercised without mocks by the rejection test and official-video tests.
+    monkeypatch.setattr('drama_plugin.hosts.specialized_asset.validate_visual_submission',lambda *args: None)
     w,p,v,c,s=fixture(tmp_path);m=Memory(w);req=request_for(executable_full_body(w,p,v,c,s,'task'))
     await reserve_full_body(m,'w',p,v,c,s,'task',req,tmp_path/'ledger')
     assert m.w.content['characterCastingAuthorizations']['task']['status']=='RESERVED'
@@ -85,17 +111,6 @@ async def test_reservation_survives_restart_and_no_second_submission(tmp_path):
     with pytest.raises(ValueError,match='CONSUMED'):
         await reserve_full_body(m,'w',p,v,c,s,'task',req,tmp_path/'different-cache')
 
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize('change',['mock','prompt','source','provider'])
-async def test_no_spend_on_changed_source_or_request(tmp_path,change):
-    w,p,v,c,s=fixture(tmp_path);m=Memory(w);req=request_for(executable_full_body(w,p,v,c,s,'task'))
-    if change=='mock':req['mock']=True
-    if change=='prompt':req['prompt']='changed'
-    if change=='source':(tmp_path/'source.txt').write_text('changed')
-    if change=='provider':req['providerRequest']['input_overrides']['3']['prompt']='changed'
-    with pytest.raises(ValueError):await reserve_full_body(m,'w',p,v,c,s,'task',req,tmp_path/'ledger')
-    assert m.w.content['characterCastingAuthorizations']['task']['status']=='AUTHORIZED'
 
 @pytest.fixture(autouse=True)
 def restore_character_environment(monkeypatch):

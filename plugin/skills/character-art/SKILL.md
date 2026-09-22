@@ -1,112 +1,24 @@
 ---
 name: character-art
-description: Design reusable face, body and screen identity under approved character meaning. Use for Character Art Bible authoring and review; no media generation.
+description: Resolve the deprecated character-art design view through Specialized Asset Design; inspect retained originals without independently authoring concrete assets.
 ---
 
-# Character Art
+# character-art: compatibility view
 
-## Role and authority
+New concrete appearance, costume and environment decisions belong to
+[specialized-asset-design](../specialized-asset-design/SKILL.md).
+Forward authoring and revision there. `ProfessionalDepartmentHost.submit` rejects
+new active writes to this legacy department. Director cannot fill it in.
 
-Design reusable face, body and screen identity under approved character meaning.
+Retained originals and frozen compiler receipts remain readable for exact replay.
+Replay is not authorization for new production. Do not optimize frozen prompts.
+Use [Core Creative R1](../../docs/core-creative-r1.md) for the runtime movie pin,
+source dependencies and formal Host entry. Keep Character Dramaturgy separate;
+return missing identity, arc stage or behavior to that upstream owner.
 
-Own: Stable visual archetype, apparent age, proportions, face structure, silhouette and readable identity anchors.
+Read current originals with `work.get_work`, `scene.get_scene`, `script.get_script`,
+`episode.get_episode`, `shot.get_shot`, `asset.get_asset`, `context.build_context`.
+Never create or overwrite Character Core.
 
-Read [professional department architecture](../../docs/professional-departments.md) for the registry, Bible envelope, source/approval rules and Host handoff. Author only this department’s records; references never transfer ownership. Mark each record MIGRATED_FROM_R1 or NEW_PROFESSIONAL_ELABORATION when migrating a locked baseline.
-
-## Inputs and dependencies
-
-Character Package with authored Embodiment; Director Vision; Adaptation Boundary; explicit route. Existing approved appearance is optional for first design.
-
-## Professional decisions
-
-Specify apparent age, height impression, body proportion/mass and shoulder-to-waist relation only to useful discriminating precision. Describe face structure, jaw, eyes, brows, nose, skin, hair and facial hair as a coherent person; avoid a checklist of unrelated ideal features. Separate dominant and secondary traits and screen presence. State medium-neutral observable identity facts, camera-readable anchors, forbidden appearance and future reference proof duties; leave provider-facing medium translation to the shared compiler. Stable hair identity belongs here; scene grooming and injury belong to Look.
-
-## Outputs
-
-Produce a versioned `Character Art Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.
-
-## Forbidden authority
-
-Do not change upstream historical evidence, approved story/relationships/dialogue or another department’s records. Do not encode provider/model/workflow controls in creative content, manufacture user approval, or call media generation.
-
-## Quality gates
-
-Character distinction and leading/supporting hierarchy work without costume spectacle; no real-star copy or unsupported exact historical portrait; reference requirements test identity rather than prettiness.
-
-## Failure and escalation
-
-Return dramatic identity to character-dramaturgy; costume to costume-design; transient wear to look-continuity. Missing evidence remains a design choice with its boundary, not an asserted fact.
-
-## Source reads
-
-Use supplied current originals first. For missing scoped context, read `work.get_work`, `scene.get_scene`, `script.get_script`, `episode.get_episode`, `shot.get_shot`, `asset.get_asset`, `context.build_context`. These reads do not authorize source writes or production.
-
-## Route-owned expression
-
-Own the route-specific face/body/silhouette and neutral dominant presence. Share narrative core only; never copy a CG expression envelope into a live-action design. Read [expression route contract](../../docs/expression-route-contract.md) when using character or action expression profiles.
-
-## Character Package ownership
-
-Design visual realization from the selected package envelope. Do not invent personality, psychology, fundamental archetype or character distinction. Return missing identity to Character External Driver.
-
-Use the unified read-only `CharacterRepository.resolve_character_package` contract in [Character External Driver](../../docs/character-external-driver.md). Pin characterPackageRef, characterPackageVersion and checksum. Never create or overwrite Character Core in this Skill. Missing or stale packages return to the driver; model memory and old chat are not assets. DESIGN_REVIEW access does not authorize casting or production.
-
-For the first external-package-only visual test, emit source-pinned PackageVisualParagraph records for `characters.casting`. Mark concrete face/body/wardrobe/pose choices as VISUAL_INTERPRETATION_NOT_NEW_CORE; unresolved appearance is a candidate proposal, not a new fact or approved identity. Every paragraph points back to the selected package. Do not read an archived instance to fill it.
-
-## Character Embodiment ownership
-
-Consume Character Core + Embodiment + the explicit Visual Route before choosing concrete appearance. Do not rediscover bodily personality from literary labels. A missing canonical image is valid for first design; missing embodiment returns to its author, missing character meaning to Driver.
-
-Read [Embodiment contract](../../docs/character-embodiment.md). Use the unified read-only `characters.embodiment.embodiment_handoff` with exact ref/version/checksum and route. Never create or overwrite embodiment in downstream execution. Comparisons are reasoning-only; they do not enter the generation prompt.
-
-## Visual Medium compilation
-
-Read [Visual Medium Contract](../../docs/visual-medium-contract.md). Keep `visualMedium`, `renderStylization`, `characterTreatment`, `realismLevel`, `castingMode` and `presentationMode` independent in `visualMediumIntent`; HEROIC and HERO_CASTING do not select CG. Author character facts and local artistic intent in source-pinned paragraphs. Do not manually choose CG, 3D, real-actor or studio-photography semantics in Host prose. The shared `visual_medium.compile_character_art` compiles both media and owns form, skin, groom, materials, shape and rendering translation. Preserve historical construction, natural stubble and authored anatomy. Retain its source receipt and medium gate; weak labels or Host prose never count as compiler execution.
-
-## Medium-first fact handoff
-
-Author structured, source-pinned facts and artistic intent, not provider prompt prose.
-Use `StructuredCharacterFacts` domains form, skin, groom, materials, shape, rendering
-(composition intent), and constraint. PackageVisualParagraph may declare the same
-`domain`; mixed legacy paragraphs remain a compatibility input, not a new authoring template.
-Materials specify substance, construction, wear and layering, never “photographed
-leather” or “CG leather shader”. Skin/hair facts specify observable variation and
-growth, not photography or digital rendering. Derived trait summaries are review
-indexes, not additional prompt weights.
-
-The Creative Core `compile_character_art` exclusively translates these facts under
-VisualMediumIntent. Retain its exact prompt, per-fact transforms, deduplication
-audit and replay receipt. No Host prefix, casting-stage rewrite or provider style
-appendix may replace compilation. DESIGN_NEUTRAL specifies baseline casting assessment, not the composition.
-LOOKDEV_NEUTRAL owns neutral presentation; HERO_CASTING is legal with it in either medium. Never infer
-casting mode from a role title or overwrite a source mode with a default. Text
-Gate PASS is not image quality, character adoption or media spending approval.
-
-## Visible filmic CG contract
-
-Director supplies overall visual philosophy and reviews coherence. Character Art
-owns the character realization contract under that direction: source-pin one
-`renderStylization` decision and its `renderStylizationSource` in VisualMediumIntent.
-Production Design reviews alignment; Casting and Provider adapters consume that
-same decision. Never create a provider-specific second style authority.
-
-For CG select PHOTOREAL_DIGITAL_HUMAN, VISIBLE_FILMIC_CG, or HEIGHTENED_FILMIC_CG
-explicitly. None is inferred from HEROIC, casting importance or GROUNDED_STYLIZED.
-Realism controls anatomy, gravity, joints and historical physical credibility.
-Visible filmic CG prioritizes large forms, visibly organized facial planes, groom
-masses, material groups and subordinate microdetail. Heightened increases only
-source-authored contrast; it does not invent anatomy, rank or equipment.
-
-Continue to author identity/body/face/silhouette facts and historical boundaries.
-Do not author shader, groom-render, CG lighting or provider prompt wording. The
-compiler translates facts into one compact policy-led section per visual domain;
-retained fact spans trace to their source. Independent presentationMode selects
-LOOKDEV_NEUTRAL, HERO_PRESENTATION or PERFORMANCE_PRESENTATION. A neutral test
-image never downgrades a HERO_CASTING role. Missing fields on legacy records remain
-LEGACY_UNSPECIFIED. Use an explicit pinned project/Character Art revision before
-claiming VISIBLE_FILMIC_CG; never silently migrate all CG projects.
-
-Require Medium and RenderStylization gates plus full receipt replay. Text PASS
-cannot approve a generated image. A near-photographic CG result may satisfy its
-medium while failing a visible-filmic target; preserve old evidence and append
-the new interpretation without adopting the image or generating again.
+Resolve retained character packages through `resolve_character_package`; forward new
+appearance decisions to the specialized owner after dramaturgy review.

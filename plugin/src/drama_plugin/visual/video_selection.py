@@ -126,21 +126,53 @@ def direction_quality(material: dict[str, Any], c: Candidate, shot_type: str) ->
             'proven': all(observed[key] == 'PASS' for key, level in demands.items() if level == 'HIGH')}
 
 
+class CostResolution(Record):
+    authority: Literal['PROVIDER_QUOTE', 'INTERNAL_FIXED', 'INTERNAL_UNMETERED', 'EXTERNAL_METERED_UNKNOWN']
+    # Reuse the existing verified, expiring evidence contract for quote or policy.
+    evidence: Evidence
+
+
 class Cost(Record):
     # Each component is incremental; reused assets are explicitly zero.
     components: dict[Text, float | None] = Field(min_length=1)
     unit: Literal['credits', 'CNY', 'USD'] = 'credits'
     evidence: Evidence
     uncertainty: tuple[Text, ...] = ()
+    resolutions: dict[Text, CostResolution] = Field(default_factory=dict)
 
-    def total(self) -> float | None:
+    def total(self, now: datetime | None = None) -> float | None:
         import math
-        if any(v is None for v in self.components.values()):
+        now = now or datetime.now(timezone.utc)
+        values = []
+        if self.resolutions and (self.resolutions.keys() != self.components.keys()
+                                 or not {'runtime', 'storage'} <= self.resolutions.keys()):
             return None
-        values = [v for v in self.components.values() if v is not None]
+        for key, value in self.components.items():
+            resolution = self.resolutions.get(key)
+            if resolution:
+                if not resolution.evidence.current(now) or resolution.authority == 'EXTERNAL_METERED_UNKNOWN':
+                    return None
+                if resolution.authority == 'INTERNAL_UNMETERED':
+                    # No per-task amount, not a fabricated provider quote of zero.
+                    if value is not None:
+                        raise ValueError('UNMETERED_COST_MUST_NOT_HAVE_AMOUNT')
+                    continue
+            if value is None:
+                return None
+            values.append(value)
         if any(not math.isfinite(v) or v < 0 for v in values):
             raise ValueError('INVALID_COST')
         return sum(values)
+
+    def breakdown(self, now: datetime | None = None) -> dict[str, Any]:
+        now = now or datetime.now(timezone.utc)
+        return {'resolved': not self.uncertainty and self.evidence.current(now) and self.total(now) is not None,
+                'unit': self.unit,
+                'provider_quoted_components': {k: self.components.get(k) for k, r in self.resolutions.items()
+                                               if r.authority == 'PROVIDER_QUOTE'},
+                'internal_fixed_components': {k: self.components.get(k) for k, r in self.resolutions.items()
+                                              if r.authority == 'INTERNAL_FIXED'},
+                'unmetered_components': [k for k, r in self.resolutions.items() if r.authority == 'INTERNAL_UNMETERED']}
 
 
 class Quality(Record):
@@ -241,9 +273,9 @@ def qualify(r: Requirements, c: Candidate, *, now: datetime | None = None,
         reasons.append('PROJECT_QUALITY_FAILED')
     if not trial and not scoped_pass:
         reasons.append('LIMITED_TRIAL_ONLY')
-    if not c.cost.evidence.current(now) or c.cost.uncertainty or c.cost.total() is None:
+    if not c.cost.evidence.current(now) or c.cost.uncertainty or c.cost.total(now) is None:
         reasons.append('COST_UNRESOLVED_OR_EXPIRED')
-    total = c.cost.total()
+    total = c.cost.total(now)
     history = c.accepted_cost_history
     accepted_cost = None
     if (history and r.video_request and history.evidence.current(now) and history.attempts >= history.accepted_shots
@@ -603,7 +635,7 @@ def qualify_route(route: ProductionRoute, *, now: datetime | None = None) -> dic
     calls = 1 if route.continuation else max(2, len(route.video_targets))
     if (c.cost.components.get('video') or 0) < calls * route.video_request_credits:
         reasons.append('SHARED_TWO_REQUEST_VIDEO_ENVELOPE_MISSING')
-    if not required_costs <= set(c.cost.components) or c.cost.uncertainty or not c.cost.evidence.current(now) or c.cost.total() is None:
+    if not required_costs <= set(c.cost.components) or c.cost.uncertainty or not c.cost.evidence.current(now) or c.cost.total(now) is None:
         reasons.append('COMPLETE_ROUTE_COST_UNRESOLVED')
     if any(i.preparation == 'REUSE' and c.cost.components.get(i.cost_key) != 0 for i in route.inputs):
         reasons.append('REUSE_INCREMENTAL_COST_MUST_BE_ZERO')
@@ -620,7 +652,8 @@ def qualify_route(route: ProductionRoute, *, now: datetime | None = None) -> dic
         passed = passed and all(d['proven'] for d in directions.values())
     return {'route_id': route.route_id, 'eligible': not reasons, 'exclusions': reasons,
             'qualification': 'QUALIFIED' if passed else 'LIMITED_TRIAL',
-            'incremental_credits': c.cost.total(), 'quality_thresholds': route.quality_thresholds,
+            'incremental_credits': c.cost.total(now), 'quality_thresholds': route.quality_thresholds,
+            **({'cost_resolution': c.cost.breakdown(now)} if c.cost.resolutions else {}),
             'input_compatibility': 'accounted in preparation, costs and risks',
             **({'cinematic_directions': directions} if directions else {})}
 

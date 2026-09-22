@@ -256,11 +256,18 @@ def _stage_gate(state: dict[str, Any], frame: dict[str, Any], request: dict[str,
     if video:
         # Quote may include margin, but cannot undercut the recorded paid path.
         costs = frame['candidate']['cost']['components']
-        if any(v is None for v in costs.values()):
+        from drama_plugin.visual.video_selection import Cost
+        cost = Cost.model_validate(frame['candidate']['cost'])
+        resolved = cost.total()
+        if cost.resolutions and (resolved is None or cost.uncertainty or not cost.evidence.current(datetime.now().astimezone())):
+            raise ValueError('COMPLETE_ROUTE_COST_UNRESOLVED')
+        if cost.resolutions and (cost.unit != quote['unit'] or amount < resolved):
+            raise ValueError('RESERVATION_MUST_COVER_RESOLVED_COST')
+        if not cost.resolutions and any(v is None for v in costs.values()):
             raise ValueError('COMPLETE_COST_REQUIRED_BEFORE_RESERVATION')
         minimum = (state['production_route']['video_request_credits']
                    if 'production_route' in state else
-                   sum(v for k, v in costs.items() if k not in {'correction', 'new_inputs', 'existing_input'}))
+                   sum(v for k, v in costs.items() if v is not None and k not in {'correction', 'new_inputs', 'existing_input'}))
         if amount < minimum:
             raise ValueError('QUOTE_BELOW_SELECTED_PATH_COST')
     if video and frame['stage_id'] != state['stage']['id']:

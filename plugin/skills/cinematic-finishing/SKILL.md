@@ -168,3 +168,15 @@ Reuse FilmReview and Director feedback; separate intended authority, observable
 facts and judgment. Resolve the production lineage before live review, preserve
 UNSPECIFIED and good material, and pass only a minimal source-bound execution delta
 to the existing owner. A dry-run never authorizes production or media adoption.
+
+## Subtitle localization and delivery
+
+Subtitle localization is a separate downstream `SubtitleTrack` / `SubtitleCue`, owned here;
+`subtitle-localization` names this contract authority, not a competing Dialogue authority.
+Read approved production speech text and semantic intent with source provenance. Do not copy
+modern translations or automatically reuse creative review text. Preserve register while allowing
+reviewed semantic compression, line breaking and honorific/name policy. Use Work-bound target
+languages only. Compile via `compile_subtitle_track`; before audio/edit timing, retain `UNTIMED`.
+No final SRT/VTT export until an approved timing contract exists. Never insert subtitle requests
+into image/video prompts or use subtitles to revise dialogue.
+See [production language](../../docs/production-language.md).

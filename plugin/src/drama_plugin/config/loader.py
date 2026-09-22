@@ -12,11 +12,28 @@ from drama_plugin.config.models import DramaPluginConfig
 from drama_plugin.exceptions import ConfigurationError
 
 
+LANGUAGE_ENV = {
+    'spoken_language_policy': 'DRAMA_PLUGIN_SPOKEN_LANGUAGE_POLICY',
+    'spoken_language': 'DRAMA_PLUGIN_SPOKEN_LANGUAGE',
+    'creative_review_language': 'DRAMA_PLUGIN_CREATIVE_REVIEW_LANGUAGE',
+    'subtitles_enabled': 'DRAMA_PLUGIN_SUBTITLES_ENABLED',
+    'subtitle_languages': 'DRAMA_PLUGIN_SUBTITLE_LANGUAGES',
+}
+
 _SERVICE_NAMES = ("memory", "asset", "research", "production", "media", "context", "voice")
 
 
 def _environment_overrides(environment: Mapping[str, str]) -> dict[str, Any]:
     overrides: dict[str, Any] = {}
+    for field, key in LANGUAGE_ENV.items():
+        if key in environment:
+            value = environment[key].strip()
+            if field == "subtitles_enabled":
+                if value not in {"true", "false"}:
+                    raise ConfigurationError("Invalid DRAMA_PLUGIN_SUBTITLES_ENABLED: expected true or false")
+                overrides[field] = value == "true"
+            else:
+                overrides[field] = value
     if "DRAMA_PLUGIN_VISUAL_MEDIUM" in environment:
         medium = environment["DRAMA_PLUGIN_VISUAL_MEDIUM"].strip()
         if medium not in {"live_action", "cg"}:
@@ -124,6 +141,7 @@ def load_config(
     merged = _deep_merge(payload, _environment_overrides(source_environment))
     try:
         config = DramaPluginConfig.model_validate(merged)
+        config._language_sources = {field: ("environment:"+key if key in source_environment else f"config:{path}:{field}" if field in payload else "default:"+field) for field,key in LANGUAGE_ENV.items()}
         config._visual_medium_source = ("environment:DRAMA_PLUGIN_VISUAL_MEDIUM"
             if "DRAMA_PLUGIN_VISUAL_MEDIUM" in source_environment else
             f"config:{path}:visual_medium" if "visual_medium" in payload else "UNCONFIGURED")
@@ -132,6 +150,8 @@ def load_config(
         return config
     except ValidationError as exc:
         errors = exc.errors()
+        if any(e["loc"] and e["loc"][0] in LANGUAGE_ENV for e in errors) or any("EXPLICIT_SPOKEN_LANGUAGE_REQUIRED" in e["msg"] or "SUBTITLE_LANGUAGES_REQUIRED" in e["msg"] for e in errors):
+            raise ConfigurationError("Invalid production language configuration: " + "; ".join(e["msg"] for e in errors)) from None
         if any(e['loc'][:2] in {('services', 'qwen_omni'), ('providers', 'audio_semantic')}
                or not e['loc'] for e in errors):
             # Do not chain a Pydantic exception containing the original secret input.

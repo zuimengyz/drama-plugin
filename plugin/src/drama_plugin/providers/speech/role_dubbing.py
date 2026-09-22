@@ -142,6 +142,10 @@ class FishRoleDubbingProvider:
         if _projected_performance(request) is None:
             _native_performance(request)
         work = await self.memory.get_work(speech.work_id)
+        from drama_plugin.production_language import require_work_speech_language
+        require_work_speech_language(work, speech)
+        if speech.production_language_authorization is not None and speech.production_language_authorization.profile.resolved_production_language not in {"zh", "zh-CN", "zh-Hans"}:
+            raise RoleDubbingError("FISH_LANGUAGE_CAPABILITY_REVIEW_REQUIRED", "Existing Voice design/ASR path is Chinese-specific; never silently change production language")
         voice_id = _work_voice_id(work.content, speech.speaker_key)
         if speech.audio_performance_brief is not None:
             if voice_id is None:

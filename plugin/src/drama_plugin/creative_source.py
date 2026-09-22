@@ -283,6 +283,8 @@ def verify_screenplay_input(source: Any, compiled: Any) -> ScreenplayInput:
 
 
 def validate_work_content(content: dict[str, Any], previous: dict[str, Any] | None = None) -> None:
+    from drama_plugin.production_language import validate_work_language
+    validate_work_language(content, previous)
     kind = content.get('creativeSourceType', 'HISTORICAL')
     route(kind)
     if previous and previous.get('creativeSourceType', 'HISTORICAL') != kind:

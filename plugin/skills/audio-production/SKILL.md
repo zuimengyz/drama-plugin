@@ -147,3 +147,11 @@ continues through `prepare_bound_media` and never enters the replacement path.
 ## Film score boundary
 
 Historical verse may use source-bound DECLAMED_VERSE without melody claims, not a modern song or AI score. Apply current user amendments and retain unresolved shared responses without invented lyrics. Music execution remains a future qualified adapter; no voice or score generation is implied by a Composer Brief. See [Film Score Direction](../../docs/film-score-direction.md).
+
+## Language-bound Literary Work
+
+Speech requires approved `ProductionDialogueLine`, the immutable Work language profile and
+the current Work dialogue approval hash. Never send creative review text directly to speech.
+The existing request and role-dubbing entry validate language, exact text and performance rendition.
+Technical localization fixtures cannot authorize speech. An unqualified provider language path
+blocks; it cannot substitute Chinese. See [production language](../../docs/production-language.md).

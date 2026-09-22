@@ -67,6 +67,8 @@ def build_tool_registry(memory: MemoryProvider, asset: AssetProvider, research: 
 
     async def generate_role_dubbing(request: RoleDubbingRequest) -> RoleDubbingResult:
         work = await memory.get_work(request.speech_request.work_id)
+        from drama_plugin.production_language import require_work_speech_language
+        require_work_speech_language(work, request.speech_request)
         production_gate(work.content, work.content.get('productionJurisdiction'))
         return await role_dubbing.generate_role_dubbing(request)
 

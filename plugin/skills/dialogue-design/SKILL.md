@@ -46,3 +46,14 @@ Use supplied current originals first. For missing scoped context, read `work.get
 Consume dialogueVoice as language personality; author exact words only under screenplay authorization. Do not redefine personality or bind a TTS voice.
 
 Use the unified read-only `CharacterRepository.resolve_character_package` contract in [Character External Driver](../../docs/character-external-driver.md). Pin characterPackageRef, characterPackageVersion and checksum. Never create or overwrite Character Core in this Skill. Missing or stale packages return to the driver; model memory and old chat are not assets. DESIGN_REVIEW access does not authorize casting or production.
+
+## Production language adaptation
+
+For a language-bound Literary Work, use `ProductionLanguageProfile` and the existing
+performance rendition mechanism; see [production language](../../docs/production-language.md).
+Consume approved screenplay meaning, original-language source dialogue, Character Dramaturgy,
+relationship state and period/register in `SemanticDialogueIntent`. Produce a separately reviewed
+`ProductionDialogueLine`; preserve honorifics, hesitation, repetition and self-correction.
+Prefer original source dialogue over back-translation of review text. Meaning conflicts emit
+`UPSTREAM_LOCALIZATION_CONFLICT`; do not rewrite upstream intent. Compile with
+`compile_localization` against the pinned upstream context before requesting review.

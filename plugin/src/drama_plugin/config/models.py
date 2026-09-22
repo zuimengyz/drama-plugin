@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field, SecretStr, PrivateAttr, field
 from drama_plugin.config.audio_semantic import AudioSemanticProviderConfig, QwenOmniConfig
 
 from drama_plugin.config.video_route import VideoRoutePolicy
+from drama_plugin.config.language import ProductionLanguageSettings
 
 
 class ServiceConfig(BaseModel):
@@ -74,8 +75,14 @@ class ServicesConfig(BaseModel):
     qwen_omni: QwenOmniConfig = QwenOmniConfig()
 
 
-class DramaPluginConfig(BaseModel):
+class DramaPluginConfig(ProductionLanguageSettings):
     model_config = ConfigDict(extra="forbid")
+
+    _language_sources: dict[str, str] = PrivateAttr(default_factory=dict)
+
+    @property
+    def language_sources(self) -> dict[str, str]:
+        return dict(self._language_sources)
 
     character_repository_root: str = ""
     visual_medium: Literal["live_action", "cg"] | None = None

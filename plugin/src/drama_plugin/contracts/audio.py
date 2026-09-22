@@ -5,7 +5,7 @@ import re
 from enum import StrEnum
 from typing import Any, Literal
 
-from pydantic import Field, model_validator
+from pydantic import Field, model_validator, model_serializer, SerializerFunctionWrapHandler
 
 from drama_plugin.contracts.base import ContractModel, dump_contract, sha256_canonical
 from drama_plugin.contracts.audio_projection import AudioPerformanceBrief
@@ -247,7 +247,20 @@ def validate_scene_performance_authority(intent: dict[str, Any]) -> None:
     visit(intent, "performanceIntent")
 
 
+from drama_plugin.contracts.production_language import SpeechLanguageAuthorization
+
+
 class SpeechGenerationRequest(ContractModel):
+    production_language_authorization: SpeechLanguageAuthorization | None = None
+
+    @model_serializer(mode="wrap")
+    def preserve_legacy_serialization(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        value: dict[str, Any] = handler(self)
+        if self.production_language_authorization is None:
+            value.pop("productionLanguageAuthorization", None)
+            value.pop("production_language_authorization", None)
+        return value
+
     schema_version: Literal["speech-generation-v1"] = "speech-generation-v1"
     work_id: str
     scene_id: str
@@ -269,6 +282,11 @@ class SpeechGenerationRequest(ContractModel):
 
     @model_validator(mode="after")
     def validate_voice_resolution(self) -> "SpeechGenerationRequest":
+        if self.production_language_authorization is not None:
+            from drama_plugin.production_language import validate_speech_authorization, speech_rendition
+            validate_speech_authorization(self.production_language_authorization, work_id=self.work_id, scene_id=self.scene_id, line_id=self.spoken_content_id, speaker=self.speaker_key, exact_text=self.exact_text, voice_language=self.voice_profile.creative_profile.language)
+            if self.performance_rendition != speech_rendition(self.production_language_authorization):
+                raise ValueError("CURRENT_PRODUCTION_LANGUAGE_RENDITION_REQUIRED")
         validate_scene_performance_authority(self.performance_intent)
         if self.performance_rendition is not None:
             rendition = self.performance_rendition

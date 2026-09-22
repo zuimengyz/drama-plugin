@@ -82,6 +82,8 @@ def audio_input_material(request: SpeechGenerationRequest) -> dict[str, Any]:
         "materialRenderParameters": request.material_render_parameters,
         "targetTimingPolicy": dump_contract(request.target_timing_policy),
     }
+    if request.production_language_authorization is not None:
+        material["productionLanguageAuthorization"] = sha256_canonical(request.production_language_authorization)
     if request.performance_rendition is not None:
         # Presentation/reviewer notes are not material; the active version is.
         material["performanceRendition"] = {

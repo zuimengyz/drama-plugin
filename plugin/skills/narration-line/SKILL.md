@@ -62,3 +62,10 @@ Read supplied originals first. Missing scoped originals may be read with
 `work.get_work` or `script.get_script`. `source.prepare_screenplay` is the upstream
 compiler entry only after an authorized upstream revision; a locked P1 study does
 not authorize that revision or a new business write.
+
+## Spoken language
+
+Consume the Work `ProductionLanguageProfile`; all adopted narration types use its resolved
+production language. Review language never selects speech language. `NONE` creates zero
+narration localization tasks. Language configuration cannot adopt a cue or change Narration Bible.
+See [production language](../../docs/production-language.md).

@@ -1,42 +1,21 @@
 ---
 name: environment-design
-description: Design reusable physical places, routes and spatial constraints. Use for Environment Bible authoring and review; no media generation.
+description: Resolve the deprecated environment-design design view through Specialized Asset Design; inspect retained originals without independently authoring concrete assets.
 ---
 
-# Environment Functional Design
+# environment-design: compatibility view
 
-## Role and authority
+New concrete appearance, costume and environment decisions belong to
+[specialized-asset-design](../specialized-asset-design/SKILL.md).
+Forward authoring and revision there. `ProfessionalDepartmentHost.submit` rejects
+new active writes to this legacy department. Director cannot fill it in.
 
-Design reusable physical places, routes and spatial constraints.
+Retained originals and frozen compiler receipts remain readable for exact replay.
+Replay is not authorization for new production. Do not optimize frozen prompts.
+Use [Core Creative R1](../../docs/core-creative-r1.md) for the runtime movie pin,
+source dependencies and formal Host entry. Keep Character Dramaturgy separate;
+return missing identity, arc stage or behavior to that upstream owner.
 
-Own: Location identity, macro geography, terrain, topology, entrances/exits, zones, routes, sightlines, scale and spatial continuity.
-
-Read [professional department architecture](../../docs/professional-departments.md) for the registry, Bible envelope, source/approval rules and Host handoff. Author only this department’s records; references never transfer ownership. Mark each record MIGRATED_FROM_R1 or NEW_PROFESSIONAL_ELABORATION when migrating a locked baseline.
-
-## Inputs and dependencies
-
-Historical geography and boundary; approved scene events; existing LocationDesign originals.
-
-## Professional decisions
-
-Build a connected zone graph with distinct land, water and passable movement routes. Separate macro geography from staging choices and unsupported survey precision. Record visibility, ground slope/support, bottlenecks and clearances that constrain armies, actors, horses and objects. Shared places retain the same graph across scenes; time, weather or damage may affect use but cannot silently relocate an exit.
-
-## Outputs
-
-Produce a versioned `Environment Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.
-
-## Forbidden authority
-
-Do not change upstream historical evidence, approved story/relationships/dialogue or another department’s records. Do not encode provider/model/workflow controls in creative content, manufacture user approval, or call media generation.
-
-## Quality gates
-
-Every route ends in known zones; water crossings have a physical means; parent places and scene references resolve; constraints permit the required action.
-
-## Failure and escalation
-
-Return topology revision to this owner; ask history for consequential geography uncertainty. Do not fill environment fields with camera, lighting, sound, costume or art direction; reference those Bibles.
-
-## Source reads
-
-Use supplied current originals first. For missing scoped context, read `work.get_work`, `scene.get_scene`, `script.get_script`, `episode.get_episode`, `shot.get_shot`, `asset.get_asset`, `context.build_context`. These reads do not authorize source writes or production.
+Read current originals with `work.get_work`, `scene.get_scene`, `script.get_script`,
+`episode.get_episode`, `shot.get_shot`, `asset.get_asset`, `context.build_context`.
+Never create or overwrite Character Core.

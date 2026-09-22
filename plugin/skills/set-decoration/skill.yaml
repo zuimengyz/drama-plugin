@@ -1,6 +1,6 @@
 code: set-decoration
 name: Set Decoration
-description: Give places credible lived-in traces without changing their topology.
+description: Deprecated set-decoration view; forward concrete visual design to specialized-asset-design.
 context:
   required:
   - sourcePins
@@ -23,9 +23,5 @@ tools:
   - context.build_context
 completion:
   conditions:
-  - A place feels occupied without random clutter; hero objects stay findable; placement
-    never blocks approved movement without a scripted cause.
-  - Bible records retain source/dependency pins and ownership; unresolved requirements
-    remain explicit.
-  - Return department output references and validation status to the Host without
-    production.
+  - Return the specialized asset reference, or UPSTREAM_INFORMATION_REQUIRED; never
+    author a competing concrete asset.

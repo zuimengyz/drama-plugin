@@ -142,7 +142,7 @@ def test_existing_asset_no_music_rights_requirement(kind):
 
 def test_skill_tool_architecture():
     p=DramaPlugin.load(ROOT, mock_data=MockDramaData())
-    assert len(p.skills.list())==55 and len(p.tools.list())==51
+    assert len(p.skills.list())==56 and len(p.tools.list())==51
     for skill in ['cinematic-direction','cinematic-finishing']:
         text=(ROOT/'skills'/skill/'skill.yaml').read_text()
         assert 'asset.get_asset' in text

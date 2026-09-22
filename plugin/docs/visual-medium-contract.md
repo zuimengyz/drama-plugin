@@ -1,10 +1,10 @@
-# Character Art Visual Medium Contract
+# Legacy Visual Medium Compiler Dialect
 
 Current normative behavior is v3 (render visibility and presentation section below).
 The v1/v2 descriptions document the legacy medium-only compatibility path; they
 do not establish visible-filmic readiness for unspecified CG records.
 
-`contracts.visual_medium.VisualMediumIntent` is the provider-neutral authority:
+`contracts.visual_medium.VisualMediumIntent` is the preserved compiler input dialect. In Core Creative R1 its medium is projected from the immutable runtime MovieVisualMedium, not authored by an asset, Director or provider. See [the current authority entry](core-creative-r1.md). Archived examples below are replay fixtures, not new authoring defaults:
 
 ```json
 {
@@ -161,10 +161,10 @@ a global visible-CG default. `revise_render_intent` creates an explicit owner re
 without changing the original. Environment consumers can reuse the vocabulary;
 this implementation composes character prompts only.
 
-Character Art owns style realization under Director philosophy. Casting consumes
+GlobalVisualStyle owns shared style boundaries; Specialized Asset Design owns concrete realization under Director intent. Character Art is a read-only compatibility projection. Casting consumes
 that pinned contract; Production Design reviews it; Provider adapters map the
 compiled text unchanged. The current project can opt in through an explicit
-Character Art revision, not a compiler branch naming a Work or character.
+GlobalVisualStyle revision consumed by SpecializedAssetBible, not a compiler branch naming a Work or character.
 
 `realismLevel` controls anatomy/weight/joints/historical physical plausibility.
 `renderStylization` controls visible digital design versus near-photographic CG.

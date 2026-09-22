@@ -42,3 +42,14 @@ For scoped read-only corroboration use `episode.get_episode`, `scene.get_scene`,
 Own WHO and WHY DISTINCT. Delegate source-derived observable existence logic to Character Embodiment. Its authoring uses this authorized create-version entry and cannot rewrite the core. Existing eleven-file packages remain readable; an embodied schema version adds embodiment.yaml in a new package version.
 
 Read [Embodiment contract](../../docs/character-embodiment.md). Use the unified read-only `characters.embodiment.embodiment_handoff` with exact ref/version/checksum and route. Never create or overwrite embodiment in downstream execution. Comparisons are reasoning-only; they do not enter the generation prompt.
+
+## Core Creative R1 boundary
+
+Read [Core Creative R1](../../docs/core-creative-r1.md). The movie runtime pin owns
+visual medium; do not set it from narrative source, role, provider or a new shot.
+Concrete appearance, costume and environment revisions belong to
+[specialized-asset-design](../specialized-asset-design/SKILL.md). Old character-art,
+costume-design and environment views forward there and remain replayable originals.
+Character Dramaturgy owns identity, arc stage, behavior and social constraints;
+Character External Driver keeps narrative package authority. Proposed look never
+revises character meaning. Director owns intent and arbitration, not asset authorship.

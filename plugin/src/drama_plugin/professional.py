@@ -9,6 +9,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any, Literal, cast
 import re
 
+from drama_plugin.specialized_asset import FORWARDED_DEPARTMENTS
 from drama_plugin.contracts.base import dump_contract, sha256_canonical, canonical_json
 from drama_plugin.contracts.source_pin import SourcePin
 from drama_plugin.contracts.professional import (
@@ -19,11 +20,14 @@ from drama_plugin.contracts.professional import (
 # Fields are professional ownership boundaries, not instructions to fill every
 # slot. Scene/shot/entity/environment refs are explicit relationships only.
 _SPECS: tuple[tuple[str, str, str, str, str], ...] = (
+    ('runtime-visual-medium', 'MovieVisualMedium', 'MODULE', '', 'medium configuration_source'),
+    ('global-visual-style', 'GlobalVisualStyle', 'MODULE', 'runtime-visual-medium', 'realism render_stylization material_philosophy lighting_philosophy readability consistency'),
+    ('specialized-asset-design', 'SpecializedAssetBible', 'SKILL', 'runtime-visual-medium global-visual-style character-dramaturgy scene-development director adaptation-boundary', 'assets'),
     ('historical-research', 'Historical Source Bible', 'SKILL', '', 'sources facts timeline geography participants military_relationships confidence uncertainty'),
     ('historical-entity-registry', 'Historical Entity Bible', 'MODULE', 'historical-research', 'entity_id name entity_type historical_status identity_kind historical_identity_ref evidence_refs distinct_from'),
     ('adaptation-boundary', 'Adaptation Boundary Bible', 'SKILL', 'historical-research historical-entity-registry', 'claim historical_status source_basis reconstruction_boundary excluded_with_reason uncertainty'),
     ('story-architecture', 'Story Bible', 'SKILL', 'adaptation-boundary', 'premise theme protagonist dramatic_question acts sequences escalation climax ending'),
-    ('character-dramaturgy', 'Character Bible', 'SKILL', 'story-architecture historical-entity-registry', 'character_ref personality objective internal_conflict relationships dramatic_function character_arc historical_authority'),
+    ('character-dramaturgy', 'Character Bible', 'SKILL', 'story-architecture historical-entity-registry', 'character_ref personality objective internal_conflict relationships dramatic_function character_arc historical_authority arc_stage behavior_pattern social_position emotional_state performance_state'),
     ('scene-development', 'Scene Beat Bible', 'SKILL', 'story-architecture character-dramaturgy', 'scene_ref scene_purpose conflict beats reversal emotional_change information_change causality'),
     ('dialogue-design', 'Dialogue Bible', 'SKILL', 'scene-development character-dramaturgy', 'line_id scene_ref dialogue_text subtext historical_register speaker listener continuity'),
     ('director', 'Director Vision Bible', 'SKILL', 'story-architecture scene-development adaptation-boundary', 'cinematic_interpretation narrative_emphasis film_grammar visual_hierarchy performance_philosophy rhythm_philosophy restraint_principles climax_philosophy ending_philosophy editorial_intent'),
@@ -111,6 +115,15 @@ def registry(source_type: str = 'HISTORICAL') -> dict[str, DepartmentDefinition]
                 else 'Aggregates source-owned state without creative authority.' if kind == 'AGGREGATOR'
                 else 'Independent deterministic checks with separately reported semantic observation.'),
         )
+    for identity, validator in {'runtime-visual-medium': 'SpecializedAssetHost.bind_movie',
+            'global-visual-style': 'SpecializedAssetHost.save_style',
+            'specialized-asset-design': 'specialized_asset.validate_assets'}.items():
+        result[identity] = result[identity].model_copy(update={'validator': validator})
+    for identity in FORWARDED_DEPARTMENTS:
+        result[identity] = result[identity].model_copy(update={
+            'authority_owner': 'specialized-asset-design', 'deprecated_forward_to': 'specialized-asset-design',
+            'can_create': (), 'can_modify': (), 'skill_code': 'specialized-asset-design',
+            'rationale': 'Read-only legacy design view. New concrete design is owned by SpecializedAssetBible.'})
     return result
 
 
@@ -197,6 +210,8 @@ def validate_bible(bible: CreativeBible, artifacts: Mapping[str, Any], current: 
     if bible.created_by_capability not in definitions:
         raise ValueError('UNKNOWN_PROFESSIONAL_DEPARTMENT')
     definition = definitions[bible.created_by_capability]
+    if bible.created_by_capability in {'runtime-visual-medium', 'global-visual-style', 'specialized-asset-design'} and bible.status != 'NOT_REQUIRED':
+        raise ValueError('TYPED_VISUAL_CONTRACT_REQUIRED')
     if bible.type != definition.output_contract:
         raise ValueError('DEPARTMENT_OUTPUT_TYPE_MISMATCH')
     for ref in (*bible.source_refs, *bible.continuity_refs, *bible.approval_refs):
@@ -221,12 +236,24 @@ def validate_bible(bible: CreativeBible, artifacts: Mapping[str, Any], current: 
     scopes = {bible.work_ref, *bible.scene_refs, *bible.shot_refs}
     scopes.update(x for x in (bible.script_ref, bible.episode_ref) if x)
     for record in bible.content:
-        if not set(record.values) <= set(definition.can_create):
+        allowed_fields = (definition.authority_scope if bible.created_by_capability in FORWARDED_DEPARTMENTS
+                          and record.provenance in {'MIGRATED_FROM_R1', 'SPECIALIZED_ASSET_PROJECTION'} else definition.can_create)
+        if not set(record.values) <= set(allowed_fields):
             raise ValueError('DEPARTMENT_AUTHORITY_VIOLATION:' + ','.join(sorted(set(record.values) - set(definition.can_create))))
         if not set(record.scope_refs) <= scopes:
             raise ValueError('RECORD_SCOPE_OUTSIDE_BIBLE')
         for ref in record.source_refs:
             _fresh(ref, current)
+        if record.provenance == 'SPECIALIZED_ASSET_PROJECTION':
+            from drama_plugin.contracts.specialized_asset import SpecializedAssetBible
+            from drama_plugin.specialized_asset import validate_assets, department_values
+            source = [ref for ref in record.source_refs if ref.key == 'specialized-assets:' + bible.work_ref]
+            if len(source) != 1 or bible.created_by_capability not in FORWARDED_DEPARTMENTS:
+                raise ValueError('SPECIALIZED_ASSET_VIEW_SOURCE_REQUIRED')
+            asset_bible = SpecializedAssetBible.model_validate(_read(source[0], artifacts, current))
+            validate_assets(asset_bible, artifacts, current)
+            if record.values != department_values(asset_bible, record.id, bible.created_by_capability, artifacts, current):
+                raise ValueError('SPECIALIZED_ASSET_VIEW_CHANGED')
         keys = _nested_keys(record.values)
         if bible.created_by_capability not in ('video-model-selection', 'prompt-compiler') and keys & _PROVIDER_KEYS:
             raise ValueError('PROVIDER_CONTROLS_IN_CREATIVE_BIBLE')
@@ -402,7 +429,7 @@ def validate_environment_preservation(bible: CreativeBible, locked: Mapping[str,
             # share identity. Only records actually supplying the locked field
             # participate; every supplier must agree, irrespective of order/id.
             providers = [values[key] for values in records[environment] if key in values]
-            if key not in registry()['environment-design'].can_create or not providers or any(value != expected for value in providers):
+            if key not in registry()['environment-design'].authority_scope or not providers or any(value != expected for value in providers):
                 raise ValueError('LOCKED_ENVIRONMENT_CHANGED:' + environment + ':' + key)
     return {'status': 'PASS', 'lockedEnvironmentCount': len(locked)}
 

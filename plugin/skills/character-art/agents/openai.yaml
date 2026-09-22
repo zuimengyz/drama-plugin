@@ -1,4 +1,4 @@
 interface:
-  display_name: "Character Art"
-  short_description: "Source-bound Character Art design"
-  default_prompt: "Use $character-art to complete its source-bound department output."
+  display_name: Character Art
+  short_description: Forward concrete assets to Specialized Asset Design
+  default_prompt: Use $character-art to complete its source-bound department output.

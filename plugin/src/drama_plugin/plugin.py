@@ -133,6 +133,11 @@ class DramaPlugin:
         from drama_plugin.hosts.professional import ProfessionalDepartmentHost
         return ProfessionalDepartmentHost(artifact_root, self.skills.get, source_type=source_type)
 
+    def specialized_asset_host(self) -> Any:
+        from drama_plugin.hosts.specialized_asset import SpecializedAssetHost
+        self.skills.get('specialized-asset-design')
+        return SpecializedAssetHost(self.config)
+
     def video_provider_host(self, cache: Path | str) -> Any:
         """Host-neutral official HTTP lifecycle; Comfy MCP/image production stays intact."""
         from drama_plugin.hosts.http_video import VideoProviderHost

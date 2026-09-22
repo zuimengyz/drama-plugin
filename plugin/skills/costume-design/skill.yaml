@@ -1,6 +1,6 @@
 code: costume-design
 name: Costume Design
-description: Design clothing and armor identity and its causal scene variants.
+description: Deprecated costume-design view; forward concrete visual design to specialized-asset-design.
 context:
   required:
   - sourcePins
@@ -23,10 +23,5 @@ tools:
   - context.build_context
 completion:
   conditions:
-  - Rank and role remain readable; hands and joints can perform required actions;
-    broken pieces never reset without an event; no replacement costume for aesthetic
-    convenience.
-  - Bible records retain source/dependency pins and ownership; unresolved requirements
-    remain explicit.
-  - Return department output references and validation status to the Host without
-    production.
+  - Return the specialized asset reference, or UPSTREAM_INFORMATION_REQUIRED; never
+    author a competing concrete asset.

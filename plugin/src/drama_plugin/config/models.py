@@ -78,6 +78,14 @@ class DramaPluginConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     character_repository_root: str = ""
+    visual_medium: Literal["live_action", "cg"] | None = None
+    visual_authority_root: str = ""
+    _visual_medium_source: str = PrivateAttr(default="UNCONFIGURED")
+
+    @property
+    def visual_medium_source(self) -> str:
+        return self._visual_medium_source
+
 
     video_route_policy: VideoRoutePolicy = Field(default_factory=VideoRoutePolicy)
     rhythm_speed: Literal["work_defined", "slow", "medium", "fast"] = "work_defined"

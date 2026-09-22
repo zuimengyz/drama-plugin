@@ -8,6 +8,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Callable, Mapping
 
+from drama_plugin.specialized_asset import FORWARDED_DEPARTMENTS
 from drama_plugin.contracts.base import dump_contract, sha256_canonical
 from drama_plugin.contracts.professional import CreativeBible, DirectorPackage, SceneAssembly, ShotAssembly
 from drama_plugin.contracts.source_pin import SourcePin
@@ -23,7 +24,7 @@ class ProfessionalDepartmentHost:
         self.skill_lookup = skill_lookup
 
     def registry(self) -> list[dict[str, Any]]:
-        return [dump_contract(registry()[key]) for key in dependency_order()]
+        return [dump_contract(registry(self.source_type)[key]) for key in dependency_order(self.source_type)]
 
     def _artifacts(self, refs: tuple[SourcePin, ...]) -> dict[str, Any]:
         result: dict[str, Any] = {}
@@ -40,6 +41,14 @@ class ProfessionalDepartmentHost:
                 bible = CreativeBible.model_validate(value)
                 queue.extend(bible.depends_on)
                 queue.extend(bible.approval_refs)
+            elif value.get('schemaVersion') == 'specialized-asset-bible-v1':
+                from drama_plugin.contracts.specialized_asset import SpecializedAssetBible
+                asset_bible = SpecializedAssetBible.model_validate(value)
+                queue.extend((asset_bible.runtime_ref, asset_bible.style_ref))
+                if asset_bible.approval_ref:
+                    queue.append(asset_bible.approval_ref)
+                for asset in asset_bible.assets:
+                    queue.extend((asset.dramaturgy.bible_ref, asset.director.bible_ref, asset.world.bible_ref))
             elif value.get('schemaVersion') in ('scene-assembly-v1', 'shot-assembly-v1'):
                 queue.append(SourcePin.model_validate(value['sourceRef']))
         return result
@@ -79,7 +88,7 @@ class ProfessionalDepartmentHost:
             'dependency': list(definition.depends_on), 'missing': missing, 'stale': stale, 'unresolved': unresolved,
             'failedReviews': failed_reviews,
             'outputRef': None, 'validationStatus': 'NOT_RUN', 'skillCode': definition.skill_code,
-            'revisionOwner': department, 'directorMayFillMissingContent': False,
+            'revisionOwner': definition.authority_owner or department, 'forwardTo': definition.deprecated_forward_to, 'directorMayFillMissingContent': False,
             'automaticDispatch': False, 'providerCalls': 0}
 
     @staticmethod
@@ -96,7 +105,13 @@ class ProfessionalDepartmentHost:
         definition = registry(self.source_type)[department]
         if definition.skill_code and self.skill_lookup:
             self.skill_lookup(definition.skill_code)
-        artifacts = self._artifacts((*bible.depends_on, *bible.approval_refs))
+        if department in FORWARDED_DEPARTMENTS and bible.status != 'NOT_REQUIRED' and any(
+                r.provenance != 'SPECIALIZED_ASSET_PROJECTION' for r in bible.content):
+            raise ValueError('DEPRECATED_DESIGN_WRITER: submit SpecializedAssetBible through specialized_asset_host')
+        if department in {'runtime-visual-medium', 'global-visual-style', 'specialized-asset-design'} and bible.status != 'NOT_REQUIRED':
+            raise ValueError('TYPED_VISUAL_CONTRACT_REQUIRED: use specialized_asset_host')
+        artifacts = self._artifacts((*bible.depends_on, *bible.approval_refs,
+            *(ref for record in bible.content for ref in record.source_refs if ref.key.startswith('specialized-assets:'))))
         result = validate_bible(bible, artifacts, current)
         ref = bible_pin(bible)
         self.store.put(ref.key, dump_contract(bible))

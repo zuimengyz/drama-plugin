@@ -1,0 +1,4 @@
+interface:
+  display_name: Specialized Asset Design
+  short_description: Design source-pinned character, costume and scene assets
+  default_prompt: Use $specialized-asset-design for source-pinned visual asset decisions.

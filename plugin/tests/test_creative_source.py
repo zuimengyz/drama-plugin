@@ -167,6 +167,11 @@ def test_literary_professional_graph_consumes_same_root_without_historical_requi
     }
     for dept,v in values.items():
         bible=CreativeBible(source_type='LITERARY',id=dept,type=definitions[dept].output_contract,work_ref='test',source_refs=(source,),depends_on=tuple(bible_pin(bibles[d]) for d in definitions[dept].depends_on),content=(CreativeRecord(id=dept,scope_refs=('test',),values=v,provenance='NEW_PROFESSIONAL_ELABORATION',source_refs=(source,)),),created_by_capability=dept,status='READY_FOR_REVIEW',created_at=now,updated_at=now)
+        if dept == 'character-art':
+            with pytest.raises(ValueError,match='DEPRECATED_DESIGN_WRITER'):
+                host.submit(dept,bible,current=current)
+            bibles[dept]=bible
+            continue
         response=host.submit(dept,bible,current=current)
         assert response['validationStatus']=='PASS' and response['creativeApproval']=='NOT_GRANTED_BY_HOST_VALIDATOR'
         bibles[dept]=bible;ref=bible_pin(bible);current[ref.key]=ref.fingerprint
@@ -175,7 +180,7 @@ def test_literary_professional_graph_consumes_same_root_without_historical_requi
     bad=bibles['character-dramaturgy'].model_copy(deep=True);bad.content[0].values['character_arc']='art redefines narrative arc'
     with pytest.raises(ValueError,match='UPSTREAM_REVISION'):host.submit('character-dramaturgy',bad,current=current)
     bad=bibles['character-art'].model_copy(deep=True);bad.content[0].values['arc_continuity_boundaries']=[]
-    with pytest.raises(ValueError,match='CONSUME_ARC_BOUNDARIES'):host.submit('character-art',bad,current=current)
+    with pytest.raises(ValueError,match='DEPRECATED_DESIGN_WRITER'):host.submit('character-art',bad,current=current)
     bad=bibles['director'].model_copy(deep=True);bad.content[0].values['cinematic_interpretation']={'literary_analysis':'reinterpret'}
     with pytest.raises(ValueError,match='AUTHORITY_VIOLATION'):host.submit('director',bad,current=current)
 

@@ -1,7 +1,6 @@
 code: character-art
 name: Character Art
-description: Design reusable face, body and screen identity under approved character
-  meaning.
+description: Deprecated character-art view; forward concrete visual design to specialized-asset-design.
 context:
   required:
   - sourcePins
@@ -24,10 +23,5 @@ tools:
   - context.build_context
 completion:
   conditions:
-  - Character distinction and leading/supporting hierarchy work without costume spectacle;
-    no real-star copy or unsupported exact historical portrait; reference requirements
-    test identity rather than prettiness.
-  - Bible records retain source/dependency pins and ownership; unresolved requirements
-    remain explicit.
-  - Return department output references and validation status to the Host without
-    production.
+  - Return the specialized asset reference, or UPSTREAM_INFORMATION_REQUIRED; never
+    author a competing concrete asset.

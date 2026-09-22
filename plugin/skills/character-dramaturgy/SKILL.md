@@ -52,3 +52,18 @@ Use supplied current originals first. For missing scoped context, read `work.get
 Before screenplay approval, author Character Bible meaning. After approval, Character External Driver consolidates it into portable packages; revisions require explicit upstream authorization, never a production-time rewrite.
 
 Use the unified read-only `CharacterRepository.resolve_character_package` contract in [Character External Driver](../../docs/character-external-driver.md). Pin characterPackageRef, characterPackageVersion and checksum. Never create or overwrite Character Core in this Skill. Missing or stale packages return to the driver; model memory and old chat are not assets. DESIGN_REVIEW access does not authorize casting or production.
+
+## Core Creative R1 boundary
+
+Read [Core Creative R1](../../docs/core-creative-r1.md). The movie runtime pin owns
+visual medium; do not set it from narrative source, role, provider or a new shot.
+Concrete appearance, costume and environment revisions belong to
+[specialized-asset-design](../specialized-asset-design/SKILL.md). Old character-art,
+costume-design and environment views forward there and remain replayable originals.
+Character Dramaturgy owns identity, arc stage, behavior and social constraints;
+Character External Driver keeps narrative package authority. Proposed look never
+revises character meaning. Director owns intent and arbitration, not asset authorship.
+
+For an asset handoff, record `character_ref`, `arc_stage`, `behavior_pattern` and
+`social_position`, with applicable emotional/performance states and source pins.
+Assets must quote the specific approved record and stage, not infer them from art.

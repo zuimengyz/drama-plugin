@@ -666,3 +666,7 @@ MIT
 Drama Plugin is under active development.
 
 Issues, feedback, testing, and contributions are welcome.
+
+## Literary Cinema P0
+
+The registered `source.prepare_screenplay` boundary accepts reviewed HISTORICAL or LITERARY packages. Literary analysis, philosophical conflict, adaptation/compression and cinematic translation precede screenplay input. Artifact-specific rights and source maps are validated without provider calls. See [Creative Source](plugin/docs/creative-source.md). The historical-specific pipeline remains intact.

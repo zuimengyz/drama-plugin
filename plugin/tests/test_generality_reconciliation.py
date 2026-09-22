@@ -38,7 +38,7 @@ async def test_default_runtime_never_loads_example_story_or_verifies_mock_histor
         claim=await p.tools.invoke('research.verify_claim',claim='invented claim')
         assert claim.supported is False and not claim.evidence
         assert load_config(environment={}).rhythm_speed=='work_defined'
-        assert len(p.skills.list())==51 and len(p.tools.list())==50
+        assert len(p.skills.list())==55 and len(p.tools.list())==51
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('c',CASES,ids=[c['id'] for c in CASES])

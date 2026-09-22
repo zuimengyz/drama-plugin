@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any, Literal
 
-from pydantic import AliasChoices, Field
+from pydantic import AliasChoices, Field, model_validator
 
 from drama_plugin.contracts.asset import Asset
 from drama_plugin.contracts.base import ContractModel
@@ -69,6 +69,14 @@ class DramaRunContext(ContractModel):
     generated_media_ids: list[str] = Field(default_factory=list)
     research_context: dict[str, Any] = Field(default_factory=dict)
     temporary_state: dict[str, Any] = Field(default_factory=dict)
+
+
+    @model_validator(mode='after')
+    def creative_source_binding(self) -> DramaRunContext:
+        if self.work is not None and self.script is not None:
+            from drama_plugin.creative_source import validate_script_content
+            validate_script_content(self.work.content, self.script.content)
+        return self
 
 
 class ContextChange(ContractModel):

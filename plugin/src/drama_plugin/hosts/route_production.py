@@ -25,6 +25,8 @@ async def guard_direct_generation(memory: MemoryProvider, parameters: dict[str, 
 
 
 async def validate_route_direction_sources(memory: MemoryProvider, work: Work, route: ProductionRoute) -> None:
+    from drama_plugin.creative_source import production_gate
+    production_gate(work.content, work.content.get('productionJurisdiction'))
     # Source-pinned director artifacts use the same route, not another selector.
     # Re-read canon before a new/revised route can become a production plan.
     if route.requirements.get('cinematic_directions'):
@@ -35,6 +37,8 @@ async def validate_route_direction_sources(memory: MemoryProvider, work: Work, r
             scene = await memory.get_scene(shot.scene_id)
             episode = await memory.get_episode(scene.episode_id)
             script = await memory.get_script(episode.script_id)
+            from drama_plugin.creative_source import validate_script_content
+            validate_script_content(work.content, script.content)
             context: dict[str, Any] = {key: value.model_dump(mode='json') for key, value in
                 [('work', work), ('script', script), ('episode', episode), ('scene', scene), ('shot', shot)]}
             if frozen.get('dialogueCoverage'):

@@ -1,0 +1,309 @@
+{
+  "sourceType": "LITERARY",
+  "id": "synthetic-only",
+  "artifacts": [
+    {
+      "id": "original",
+      "title": "两只碗（结构测试）",
+      "kind": "ORIGINAL_TEXT",
+      "role": "SOURCE_OF_TRUTH",
+      "provenance": "Original technical fixture written for P0; no external work",
+      "text": "林在雨停后收起门边的空碗。她想敲邻居的门，手却停在半空。\n\n傍晚，邻居将一只干净的碗放回门边。林打开门，把两只碗摆在一起。",
+      "textSha256": "1141fc33faac1f959ad84af0f75b6fd5e057e6b8eebb6d11e8b93c0d5668f046",
+      "rights": {
+        "status": "USER_OWNED",
+        "jurisdictions": [
+          "TEST"
+        ],
+        "evidence": [
+          "synthetic fixture author record"
+        ],
+        "assertedBy": "test-author",
+        "basis": "PROVENANCE_RECORD",
+        "permittedUses": [
+          "ADAPTATION",
+          "COMMERCIAL_PRODUCTION"
+        ]
+      }
+    }
+  ],
+  "sourceArtifactId": "original",
+  "anchors": [
+    {
+      "id": "a",
+      "artifactId": "original",
+      "start": 0,
+      "end": 61,
+      "quote": "林在雨停后收起门边的空碗。她想敲邻居的门，手却停在半空。\n\n傍晚，邻居将一只干净的碗放回门边。林打开门，把两只碗摆在一起。"
+    }
+  ],
+  "analysis": {
+    "units": [
+      {
+        "id": "c",
+        "kind": "CHARACTER",
+        "origin": "SOURCE_FACT",
+        "statement": "林",
+        "anchorIds": [
+          "a"
+        ],
+        "supports": [],
+        "characterIds": [
+          "c"
+        ]
+      },
+      {
+        "id": "e1",
+        "kind": "EVENT",
+        "origin": "SOURCE_FACT",
+        "statement": "收碗后停手",
+        "anchorIds": [
+          "a"
+        ],
+        "supports": [],
+        "characterIds": [
+          "c"
+        ]
+      },
+      {
+        "id": "e2",
+        "kind": "EVENT",
+        "origin": "SOURCE_FACT",
+        "statement": "摆出两只碗",
+        "anchorIds": [
+          "a"
+        ],
+        "supports": [],
+        "characterIds": [
+          "c"
+        ]
+      },
+      {
+        "id": "object",
+        "kind": "OBJECT",
+        "origin": "SOURCE_FACT",
+        "statement": "碗",
+        "anchorIds": [
+          "a"
+        ],
+        "supports": [],
+        "characterIds": [
+          "c"
+        ]
+      },
+      {
+        "id": "internal",
+        "kind": "INTERNAL_STATE",
+        "origin": "SOURCE_FACT",
+        "statement": "想敲门",
+        "anchorIds": [
+          "a"
+        ],
+        "supports": [],
+        "characterIds": [
+          "c"
+        ]
+      },
+      {
+        "id": "relation",
+        "kind": "RELATIONSHIP",
+        "origin": "SOURCE_FACT",
+        "statement": "邻居关系",
+        "anchorIds": [
+          "a"
+        ],
+        "supports": [],
+        "characterIds": [
+          "c"
+        ]
+      },
+      {
+        "id": "interpretation",
+        "kind": "CONFLICT",
+        "origin": "INTERPRETATION",
+        "statement": "可能在迟疑与接近之间摇摆",
+        "anchorIds": [
+          "a"
+        ],
+        "supports": [
+          "e1",
+          "e2"
+        ],
+        "characterIds": [
+          "c"
+        ]
+      }
+    ],
+    "eventOrder": [
+      "e1",
+      "e2"
+    ],
+    "chronology": "同一天",
+    "narrativePov": "第三人称",
+    "narrator": "未具名叙述者",
+    "narrativeStructure": "两个动作阶段",
+    "absentCategories": {
+      "POV": "tiny fixture does not establish a separate unit",
+      "CHRONOLOGY": "tiny fixture does not establish a separate unit",
+      "NARRATOR": "tiny fixture does not establish a separate unit",
+      "SETTING": "tiny fixture does not establish a separate unit",
+      "MOTIF": "tiny fixture does not establish a separate unit",
+      "IMAGE": "tiny fixture does not establish a separate unit",
+      "ARC": "tiny fixture does not establish a separate unit",
+      "SCENE": "tiny fixture does not establish a separate unit",
+      "STRUCTURE": "tiny fixture does not establish a separate unit"
+    }
+  },
+  "philosophicalCore": {
+    "sourceUnitIds": [
+      "e1",
+      "e2"
+    ],
+    "question": "迟疑是否阻止接近？",
+    "conflict": "保留距离与试探接近",
+    "valuePoles": [
+      "距离",
+      "接近"
+    ],
+    "characterChoice": "摆碗",
+    "consequence": "距离有变化",
+    "ambiguity": "意图仍未知"
+  },
+  "adaptation": {
+    "preserved": {
+      "mustKeep": [
+        "e1",
+        "e2"
+      ],
+      "coreRelationships": [
+        "relation"
+      ],
+      "coreEvents": [
+        "e1",
+        "e2"
+      ],
+      "characterArc": "迟疑到试探",
+      "themeConflict": "距离与接近",
+      "narrativeIdentity": "两个门边动作"
+    },
+    "permittedChanges": [
+      "KEEP",
+      "EXTERNALIZE"
+    ],
+    "decisions": [
+      {
+        "id": "d",
+        "operation": "EXTERNALIZE",
+        "sourceUnitIds": [
+          "c",
+          "e1",
+          "e2",
+          "object",
+          "internal",
+          "relation",
+          "interpretation"
+        ],
+        "reason": "保留动作并让迟疑可见",
+        "narrativeEffect": "动作而非解释",
+        "expression": "手部停顿与摆碗"
+      }
+    ]
+  },
+  "compression": {
+    "mappings": [
+      {
+        "decisionId": "d",
+        "destinationIds": [
+          "beat:test"
+        ]
+      }
+    ]
+  },
+  "cinema": {
+    "expressions": [
+      {
+        "id": "x",
+        "decisionId": "d",
+        "destinationId": "beat:test",
+        "channels": [
+          "ACTION",
+          "SILENCE"
+        ],
+        "shootableExpression": "停手；摆碗",
+        "choiceActionConsequence": "先停下，后摆出第二只碗",
+        "nonverbalAlternative": "停顿与空间距离"
+      }
+    ]
+  },
+  "characterArc": {
+    "states": [
+      {
+        "characterId": "c",
+        "arcStage": "early",
+        "sourceUnitIds": [
+          "e1"
+        ],
+        "origin": "INTERPRETATION",
+        "narrativeState": "停手",
+        "emotionalState": "未明确",
+        "beliefState": "未明确",
+        "behavioralState": "停手",
+        "relationshipState": "邻居",
+        "performanceImplication": "停手",
+        "visualContinuityBoundary": "同一角色身份；不决定外貌"
+      },
+      {
+        "characterId": "c",
+        "arcStage": "late",
+        "sourceUnitIds": [
+          "e2"
+        ],
+        "origin": "INTERPRETATION",
+        "narrativeState": "摆碗",
+        "emotionalState": "未明确",
+        "beliefState": "未明确",
+        "behavioralState": "摆碗",
+        "relationshipState": "邻居",
+        "performanceImplication": "摆碗",
+        "visualContinuityBoundary": "同一角色身份；不决定外貌"
+      }
+    ]
+  },
+  "reviews": [
+    {
+      "authority": "literary-source-analysis",
+      "subjectHash": "dc57bc12085868831d14e2545a8e26784bb6f10c3bcaf6f65a24cf8d642213bc",
+      "status": "APPROVED",
+      "reviewer": "fixture-reviewer",
+      "evidence": "structural test only, not artistic acceptance"
+    },
+    {
+      "authority": "philosophical-core",
+      "subjectHash": "52fe62f7f13f2535f2245faa6f1e5da0157baada922fd8d396c5be9487e66850",
+      "status": "APPROVED",
+      "reviewer": "fixture-reviewer",
+      "evidence": "structural test only, not artistic acceptance"
+    },
+    {
+      "authority": "literary-adaptation",
+      "subjectHash": "67a6e255dbcba1da9b95df16a4d439edee8bb2418f9740e19cf565f9eb67525f",
+      "status": "APPROVED",
+      "reviewer": "fixture-reviewer",
+      "evidence": "structural test only, not artistic acceptance"
+    },
+    {
+      "authority": "literature-to-cinema",
+      "subjectHash": "b65ac6658201c080dc867178f53d3eaf78a7950b2702c4ef04c4b6fffa035e17",
+      "status": "APPROVED",
+      "reviewer": "fixture-reviewer",
+      "evidence": "structural test only, not artistic acceptance"
+    },
+    {
+      "authority": "character-dramaturgy",
+      "subjectHash": "1fd25b77cd5f90107a63d6fe91b27d98a86e6818914d049b8e91c90952e386e1",
+      "status": "APPROVED",
+      "reviewer": "fixture-reviewer",
+      "evidence": "structural test only, not artistic acceptance"
+    }
+  ]
+}

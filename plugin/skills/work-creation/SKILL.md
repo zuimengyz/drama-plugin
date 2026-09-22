@@ -3,6 +3,12 @@ name: work-creation
 description: Create or revise a historical-drama Work from research context. Use when defining literary premise, theme, viewpoint, relationships, central conflict, dramatic timeline, or the overall structure of the source work.
 ---
 
+## Source routing
+
+This Skill owns HISTORICAL Work creation only. Its historical-first chain below remains mandatory for that domain. For LITERARY, use literary-source-analysis → philosophical-core → literary-adaptation → literature-to-cinema and `source.prepare_screenplay`; persist the reviewed literaryPackage and exact screenplayInput through existing Work tools. Do not run the historical hard gates against literary fiction. See [Creative Source](../../docs/creative-source.md).
+
+
+
 # Work Creation
 
 Consume the unified `creativeRhythm` from the actual creation context before planning, even when source text is already supplied. Follow [narrative rhythm](../../docs/narrative-rhythm.md); Skills never read env directly. Pin this profile to the creative revision; refresh/resume keeps it, while a new revision reads current configuration.

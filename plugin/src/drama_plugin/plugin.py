@@ -124,10 +124,14 @@ class DramaPlugin:
         return {"plugin": self.manifest.model_dump(mode="json", by_alias=True), "skills": [skill.code for skill in self.skills.list()], "tools": [tool.describe() for tool in self.tools.list()],
                 "professionalDepartments": [dump_contract(registry()[key]) for key in dependency_order()]}
 
-    def professional_host(self, artifact_root: Path | str) -> Any:
+    def creative_source_host(self, artifact_root: Path | str) -> Any:
+        from drama_plugin.hosts.creative_source import CreativeSourceHost
+        return CreativeSourceHost(artifact_root)
+
+    def professional_host(self, artifact_root: Path | str, *, source_type: str = 'HISTORICAL') -> Any:
         """Explicit design-only Host entry; never starts an agent or production loop."""
         from drama_plugin.hosts.professional import ProfessionalDepartmentHost
-        return ProfessionalDepartmentHost(artifact_root, self.skills.get)
+        return ProfessionalDepartmentHost(artifact_root, self.skills.get, source_type=source_type)
 
     def video_provider_host(self, cache: Path | str) -> Any:
         """Host-neutral official HTTP lifecycle; Comfy MCP/image production stays intact."""

@@ -230,3 +230,22 @@ def trace_intent(items: list[dict[str, Any]], item_id: str) -> tuple[str, ...]:
         if not target or target.get('scopeLevel') != levels[level] or parent.fingerprint != sha256_canonical(target):
             raise DirectorError('STALE_SOURCE', 'Intent parent is missing, changed or at the wrong level')
         current = parent.key
+
+
+def source_intent(screenplay_input: Any) -> dict[str, Any]:
+    """Read-only projection of reconciled upstream intent; never reanalyse a source.
+
+    This function deliberately cannot receive source text, an LLM or a rights
+    resolver. CreativeSourceHost verifies the compiled input before calling it.
+    """
+    from drama_plugin.contracts.creative_source import ScreenplayInput
+    value = ScreenplayInput.model_validate(screenplay_input)
+    if value.source_type == 'LITERARY':
+        keys = ('philosophicalCore', 'adaptation', 'characterArc', 'cinema', 'themeExpressionOrder')
+        constraints = {key: value.resolved_input[key] for key in keys}
+    else:
+        constraints = {'historicalFoundation': value.resolved_input['workContent']}
+    return {'authority': 'director', 'role': 'CREATIVE_ORCHESTRATOR',
+        'sourceRef': dump_contract(value.package_ref), 'constraints': constraints,
+        'sourceMap': [dump_contract(r) for r in value.source_map],
+        'revisionOwner': list(value.pipeline), 'upstreamRevisionRequiredForChange': True}

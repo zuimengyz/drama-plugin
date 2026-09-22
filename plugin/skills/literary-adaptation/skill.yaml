@@ -1,0 +1,22 @@
+code: literary-adaptation
+name: Literary Adaptation
+description: Decide what a literary adaptation preserves or changes and map source
+  units to film destinations; no screenplay or media generation.
+context:
+  required:
+  - creativeSource
+  optional:
+  - screenplayInput
+  - creativeRhythm
+  refresh_after: []
+tools:
+  preferred:
+  - source.prepare_screenplay
+  allowed:
+  - work.get_work
+  - script.get_script
+  - context.build_context
+completion:
+  conditions:
+  - Owned contract is source-bound, distinctly labelled and reviewed; compiler validates
+    the complete package without media generation.

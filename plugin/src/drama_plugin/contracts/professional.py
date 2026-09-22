@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Any, Literal, Self
-from pydantic import Field, model_validator
+from pydantic import Field, model_validator, model_serializer, SerializerFunctionWrapHandler
 from drama_plugin.contracts.base import ContractModel
 from drama_plugin.contracts.creative_asset import Text
 from drama_plugin.contracts.source_pin import SourcePin
@@ -51,7 +51,19 @@ class CreativeRecord(ContractModel):
         return self
 
 
-class CreativeBible(ContractModel):
+class SourceScopedContract(ContractModel):
+    source_type: Literal['HISTORICAL', 'LITERARY'] = 'HISTORICAL'
+
+    @model_serializer(mode='wrap')
+    def preserve_historical_wire(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data = dict(handler(self))
+        if self.source_type == 'HISTORICAL':
+            data.pop('sourceType', None)
+            data.pop('source_type', None)
+        return data
+
+
+class CreativeBible(SourceScopedContract):
     schema_version: Literal['creative-bible-v1'] = 'creative-bible-v1'
     id: Text
     type: Text
@@ -125,7 +137,7 @@ class ShotAssembly(ContractModel):
     generation_clip_refs: tuple[SourcePin, ...] = ()
 
 
-class DirectorPackage(ContractModel):
+class DirectorPackage(SourceScopedContract):
     schema_version: Literal['director-package-v1'] = 'director-package-v1'
     id: Text
     version: int = Field(default=1, ge=1)

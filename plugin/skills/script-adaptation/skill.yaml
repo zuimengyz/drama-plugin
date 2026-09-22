@@ -1,15 +1,38 @@
 code: script-adaptation
 name: Script Adaptation
-description: Adapt a Work into a persistent audiovisual Script.
+description: Develop source-reconciled Historical or Literary screen drama; preserve
+  upstream authority.
 context:
-  required: [work]
-  optional: [scriptId, researchContext, temporaryState]
-  refresh_after: [script.create_script, script.save_script]
+  required:
+  - work
+  optional:
+  - scriptId
+  - researchContext
+  - temporaryState
+  - screenplayInput
+  - creativeSourceType
+  refresh_after:
+  - script.create_script
+  - script.save_script
 tools:
-  preferred: [work.get_work, script.get_script, script.list_scripts, script.create_script, script.save_script]
-  allowed: [research.verify_claim, context.build_context, context.refresh_context]
+  preferred:
+  - work.get_work
+  - script.get_script
+  - script.list_scripts
+  - script.create_script
+  - script.save_script
+  allowed:
+  - research.verify_claim
+  - context.build_context
+  - context.refresh_context
 completion:
   conditions:
-    - The Script inherits scope, spine, actor attribution, Narrative Authority, protagonist alignment, architecture mappings, and evidence boundary; every indispensable beat is covered without causal reassignment.
-    - The Script is screenable rather than a plot summary and remains continuity-aware without creating downstream Episodes.
-    - Persistence follows sufficient context, an internal plan, a complete draft, and a passing Script review with no unresolved historical or continuity conflict.
+  - 'For HISTORICAL: The Script inherits scope, spine, actor attribution, Narrative
+    Authority, protagonist alignment, architecture mappings, and evidence boundary;
+    every indispensable beat is covered without causal reassignment.'
+  - The Script is screenable rather than a plot summary and remains continuity-aware
+    without creating downstream Episodes.
+  - Persistence follows sufficient context, an internal plan, a complete draft, and
+    a passing Script review with no unresolved historical or continuity conflict.
+    For LITERARY, consume current reviewed ScreenplayInput; no analysis, rights or
+    adaptation decision is rewritten by Screenplay.

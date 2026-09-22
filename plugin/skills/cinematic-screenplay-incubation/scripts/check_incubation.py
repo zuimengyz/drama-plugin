@@ -12,29 +12,39 @@ CERTAINTIES = {"Confirmed", "Probable", "Disputed", "Later Tradition", "Dramatic
 
 def check(bible: dict[str, Any]) -> list[str]:
     errors: list[str] = []
-    grounding = bible["historicalGrounding"]
-    sources = grounding["sources"]
-    claims = grounding["claims"]
-    seen: set[str] = set()
-    for claim in claims:
-        key = claim["id"]
-        if key in seen:
-            errors.append(f"HISTORY duplicate claim: {key}")
-        for field in ("actor", "time", "location", "cause", "motivation", "knownInformation",
-                      "constraint", "decision", "consequence", "evidence", "certainty"):
-            if not claim.get(field):
-                errors.append(f"HISTORY {key} missing {field}; record unknown explicitly")
-        if claim.get("certainty") not in CERTAINTIES:
-            errors.append(f"HISTORY {key} invalid certainty")
-        if any(source not in sources for source in claim.get("evidence", [])):
-            errors.append(f"HISTORY {key} dangling evidence")
-        if any(cause not in seen for cause in claim.get("causeIds", [])):
-            errors.append(f"HISTORY {key} cause must precede consequence")
-        if claim.get("certainty") == "Disputed" and not (
-            claim.get("alternatives") and claim.get("adaptationPosition")
-        ):
-            errors.append(f"HISTORY {key} disputed claim needs alternatives and position")
-        seen.add(key)
+    source_type = bible.get('creativeSourceType', 'HISTORICAL')
+    if source_type == 'LITERARY':
+        from drama_plugin.creative_source import validate_work_content
+        try:
+            validate_work_content(bible)
+        except (ValueError, KeyError, TypeError) as exc:
+            errors.append('LITERARY ' + str(exc))
+    elif source_type == 'HISTORICAL':
+        grounding = bible["historicalGrounding"]
+        sources = grounding["sources"]
+        claims = grounding["claims"]
+        seen: set[str] = set()
+        for claim in claims:
+            key = claim["id"]
+            if key in seen:
+                errors.append(f"HISTORY duplicate claim: {key}")
+            for field in ("actor", "time", "location", "cause", "motivation", "knownInformation",
+                          "constraint", "decision", "consequence", "evidence", "certainty"):
+                if not claim.get(field):
+                    errors.append(f"HISTORY {key} missing {field}; record unknown explicitly")
+            if claim.get("certainty") not in CERTAINTIES:
+                errors.append(f"HISTORY {key} invalid certainty")
+            if any(source not in sources for source in claim.get("evidence", [])):
+                errors.append(f"HISTORY {key} dangling evidence")
+            if any(cause not in seen for cause in claim.get("causeIds", [])):
+                errors.append(f"HISTORY {key} cause must precede consequence")
+            if claim.get("certainty") == "Disputed" and not (
+                claim.get("alternatives") and claim.get("adaptationPosition")
+            ):
+                errors.append(f"HISTORY {key} disputed claim needs alternatives and position")
+            seen.add(key)
+    else:
+        errors.append('UNSUPPORTED_CREATIVE_SOURCE_TYPE')
 
     characters = set(bible["characters"])
     state = deepcopy(bible["ledger"]["initialState"])
@@ -152,7 +162,7 @@ def project(bible: dict[str, Any], *, scene_id: str | None = None,
     meta = bible["direction"]["meta"]
     return {
         "scope": scene_id or episode_id,
-        "authorConstraints": select(bible["historicalGrounding"]["claims"], "factIds"),
+        "authorConstraints": select(bible["literaryPackage"]["analysis"]["units"] if bible.get("creativeSourceType") == "LITERARY" else bible["historicalGrounding"]["claims"], "factIds"),
         "characters": {key: {k: deepcopy(v) for k, v in bible["characters"][key].items()
                             if k in {"identity", "behaviorModel", "invariants", "capabilities", "textualVoice", "elasticity"}}
                        for key in sorted(selection["characterIds"])},

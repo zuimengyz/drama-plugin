@@ -669,3 +669,7 @@ MIT
 Drama Plugin 正在积极开发中。
 
 Issues、建议、测试反馈和贡献都非常欢迎。
+
+## Literary Cinema P0
+
+正式支持 HISTORICAL / LITERARY 上游来源。文学来源先经过分析、哲学冲突、改编/压缩、电影化转换和来源权利门禁，再汇流到 Screenplay Input 与 Director；不会从小说文本直接生成通用剧本。接口、职责和证据语义见 [Creative Source](plugin/docs/creative-source.md)。历史专用链继续保留。

@@ -3,6 +3,11 @@ name: episode-development
 description: Develop or revise one historical-drama Episode from a Script. Use when deciding the episode goal, opening hook, conflict progression, information gain, character change, ending hook, or cross-episode continuity.
 ---
 
+## Creative Source applicability
+
+Consume the parent Script's current ScreenplayInput. Historical evidence, historical beat coverage, actor hierarchy and reconstruction rules in this Skill and its references apply to HISTORICAL. For LITERARY consume the pinned adaptation decisions, compression destinations, cinematic translation and arc stages instead; return new causal changes or source reinterpretation upstream. Shared continuity, knowledge, review and persistence gates remain mandatory. See [Creative Source](../../docs/creative-source.md). Do not use old Media or casting as a literary source.
+
+
 # Episode Development
 
 Consume the unified `creativeRhythm` from the actual creation context before planning, even when source text is already supplied. Follow [narrative rhythm](../../docs/narrative-rhythm.md); Skills never read env directly. Pin this profile to the creative revision; refresh/resume keeps it, while a new revision reads current configuration.

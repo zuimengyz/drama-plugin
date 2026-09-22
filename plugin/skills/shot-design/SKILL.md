@@ -3,6 +3,11 @@ name: shot-design
 description: Design actual shots, coverage purpose and start/end states from approved camera, blocking and action originals; use for coverage and thin Shot assembly, not camera or editorial re-authorship.
 ---
 
+## Creative Source applicability
+
+Consume the parent Script's current ScreenplayInput. Historical evidence, historical beat coverage, actor hierarchy and reconstruction rules in this Skill and its references apply to HISTORICAL. For LITERARY consume the pinned adaptation decisions, compression destinations, cinematic translation and arc stages instead; return new causal changes or source reinterpretation upstream. Shared continuity, knowledge, review and persistence gates remain mandatory. See [Creative Source](../../docs/creative-source.md). Do not use old Media or casting as a literary source.
+
+
 # Shot Design
 
 Read [professional department architecture](../../docs/professional-departments.md).

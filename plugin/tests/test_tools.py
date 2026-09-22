@@ -51,7 +51,7 @@ def test_missing_tool_fails() -> None:
 
 def test_every_registered_tool_has_stable_input_and_output_schema() -> None:
     plugin = DramaPlugin.load(ROOT, mock_data=MockDramaData())
-    assert len(plugin.tools.list()) == 50
+    assert len(plugin.tools.list()) == 51
     for tool in plugin.tools.list():
         assert tool.input_schema["type"] == "object"
         assert isinstance(tool.input_schema["required"], list)

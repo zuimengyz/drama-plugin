@@ -1,0 +1,22 @@
+code: literature-to-cinema
+name: Literature to Cinema
+description: Translate approved literary adaptation decisions into shootable expressions
+  with source mappings and justified explicitness; no camera execution or media.
+context:
+  required:
+  - creativeSource
+  optional:
+  - screenplayInput
+  - creativeRhythm
+  refresh_after: []
+tools:
+  preferred:
+  - source.prepare_screenplay
+  allowed:
+  - work.get_work
+  - script.get_script
+  - context.build_context
+completion:
+  conditions:
+  - Owned contract is source-bound, distinctly labelled and reviewed; compiler validates
+    the complete package without media generation.

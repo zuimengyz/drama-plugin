@@ -1,8 +1,9 @@
 name: drama-plugin
 version: 0.1.0
-description: Host-agnostic historical drama domain plugin
+description: Host-agnostic Historical and Literary cinema domain plugin
 skills_directory: skills
 supported_tool_domains:
+  - source
   - work
   - script
   - episode

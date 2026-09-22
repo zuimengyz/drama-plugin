@@ -1,6 +1,6 @@
 code: work-creation
 name: Work Creation
-description: Shape research context into a persistent literary Work.
+description: Shape historical research context into a persistent historically governed Work.
 context:
   required: [researchContext, creativeIntent]
   optional: [workId, temporaryState]

@@ -3,6 +3,12 @@ name: character-dramaturgy
 description: Define who a dramatic person is and how relationships and choices change. Use for Character Bible authoring and review; no media generation.
 ---
 
+## Narrative stages
+
+For Literary upstream work, own CharacterArc/CharacterArcState in `contracts/creative_source.py` under the reviewed literary package, before a screenplay exists. Bind characterId and arcStage to source units; record narrative, emotional, belief, behavioral and relationship state, performance implication and visualContinuityBoundary. Label SOURCE_FACT / INTERPRETATION / ADAPTATION_INVENTION. The historical entity dependencies below apply to historical department Bibles. Character Art consumes continuity boundaries and cannot rewrite the arc. Director consumes stage performance implications. No appearance or costume design is authored here.
+
+
+
 # Character Dramaturgy
 
 ## Role and authority

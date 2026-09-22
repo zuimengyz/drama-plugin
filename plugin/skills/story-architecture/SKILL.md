@@ -3,6 +3,12 @@ name: story-architecture
 description: Design premise, dramatic question and causal film structure before scene writing. Use for Story Bible authoring and review; no media generation.
 ---
 
+## Source-specific foundation
+
+For HISTORICAL retain Historical Scope/Spine/Narrative Authority. For LITERARY consume the compiled ScreenplayInput adaptation and philosophical constraints; do not rerun historical research or redefine the designated source. Proposed causal or preservation changes return to literary-adaptation. The historical department graph applies to historical Bible assembly; the Literary P0 handoff uses CreativeSourceHost.
+
+
+
 # Story Architecture
 
 ## Role and authority

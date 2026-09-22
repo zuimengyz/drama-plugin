@@ -3,6 +3,12 @@ name: adaptation-boundary
 description: Judge what a historical drama may infer or reconstruct from bounded evidence. Use for Adaptation Boundary Bible authoring and review; no media generation.
 ---
 
+## Domain scope
+
+This Skill owns historical evidence/reconstruction boundaries. Literary preservation and compression decisions belong to literary-adaptation; source facts to literary-source-analysis. Do not run historical reconstruction checks as global literary requirements. Both packages converge through ScreenplayInput; no competing literary decisions are kept here.
+
+
+
 # Adaptation Boundary
 
 ## Role and authority

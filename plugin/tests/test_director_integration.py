@@ -35,7 +35,7 @@ def test_s2_real_read_tool_scene_dpd_coverage_revision_and_resume(tmp_path):
             return no_call
     owner=FixtureOwner();tools=build_tool_registry(*([owner]*8))
     scene=asyncio.run(tools.invoke('scene.get_scene',scene_id=s.w.scope_id))
-    assert len(tools.list())==50
+    assert len(tools.list())==51
     q,inp=s.request('scene-development',{'scene':dump_contract(scene)})
     f=s.run(q,inp);assert s.store.read_ref(f.result_refs[0])==dump_contract(scene)
     s.review(q,f)

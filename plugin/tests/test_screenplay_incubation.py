@@ -33,7 +33,7 @@ def ledger() -> dict[str, Any]:
 def test_real_registry_discovers_incubation_without_changing_tool_surface() -> None:
     plugin = DramaPlugin.load(ROOT)
     skill = plugin.skills.get("cinematic-screenplay-incubation")
-    assert len(plugin.tools.list()) == 50
+    assert len(plugin.tools.list()) == 51
     assert skill.context.refresh_after == []
     assert not any("create" in code or "save" in code or "generate" in code for code in [*skill.tools.preferred, *skill.tools.allowed])
     assert {"work-creation", "script-adaptation", "scene-development"} <= {item.code for item in plugin.skills.list()}

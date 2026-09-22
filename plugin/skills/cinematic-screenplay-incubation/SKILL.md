@@ -3,6 +3,12 @@ name: cinematic-screenplay-incubation
 description: Incubate a historical screen drama from evidence through character, story, scenes and dialogue, with a shared Dramatic Bible and bounded targeted revision. Use for complete screenplay creation or cross-scene creative repair; production remains downstream.
 ---
 
+## Creative Source dispatch
+
+HISTORICAL retains the historical-first module and evidence rules below. LITERARY must first obtain a reviewed package through literary-source-analysis → philosophical-core → literary-adaptation → literature-to-cinema and `source.prepare_screenplay`. For LITERARY, replace only historical grounding with that package and exact screenplayInput; shared knowledge, continuity, scene craft and review checks remain active. Never apply Historical Scope/Spine as fictional truth requirements. PhilosophicalCore is an interpretive constraint, not a dialogue template. Follow [Creative Source](../../docs/creative-source.md); screenplay revisions cannot edit upstream decisions in place.
+
+
+
 # Authorial closure handoff
 
 At an already-developed closure point, `authorial-voice` may compare silence with

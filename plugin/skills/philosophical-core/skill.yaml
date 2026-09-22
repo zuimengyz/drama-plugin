@@ -1,0 +1,22 @@
+code: philosophical-core
+name: Philosophical Core
+description: Author question, conflicting values, choices, consequences and ambiguity
+  from a reviewed literary analysis; no thesis speech generation.
+context:
+  required:
+  - creativeSource
+  optional:
+  - screenplayInput
+  - creativeRhythm
+  refresh_after: []
+tools:
+  preferred:
+  - source.prepare_screenplay
+  allowed:
+  - work.get_work
+  - script.get_script
+  - context.build_context
+completion:
+  conditions:
+  - Owned contract is source-bound, distinctly labelled and reviewed; compiler validates
+    the complete package without media generation.

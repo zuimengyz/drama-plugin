@@ -68,16 +68,43 @@ _SPECS: tuple[tuple[str, str, str, str, str], ...] = (
 )
 
 
-def registry() -> dict[str, DepartmentDefinition]:
-    result: dict[str, DepartmentDefinition] = {}
+def _specs(source_type: str) -> tuple[tuple[str, str, str, str, str], ...]:
+    if source_type == 'HISTORICAL':
+        return _SPECS
+    if source_type != 'LITERARY':
+        raise ValueError('UNSUPPORTED_CREATIVE_SOURCE_TYPE')
+    # Only historical upstream assumptions change. Professional execution owners remain.
+    replacements = {'historical-research': 'literary-source-input',
+        'historical-entity-registry': 'literary-source-input',
+        'adaptation-boundary': 'literary-source-input', 'historical-qa': 'literary-source-qa'}
+    rows = [('literary-source-input', 'Literary Screenplay Input Bible', 'MODULE', '', 'source_package screenplay_input')]
     for identity, output, kind, deps, fields in _SPECS:
+        if identity in {'historical-research', 'historical-entity-registry', 'adaptation-boundary'}:
+            continue
+        deps = ' '.join(dict.fromkeys(replacements.get(d, d) for d in deps.split()))
+        identity = replacements.get(identity, identity)
+        if identity == 'literary-source-qa':
+            output = 'Literary Source QA'
+        fields = fields.replace('historical_status', 'source_identity').replace('historical_authority', 'source_authority')
+        fields = fields.replace('historical_visual_basis', 'source_visual_basis').replace('historical_register', 'source_register')
+        fields = fields.replace('historical_uncertainty', 'source_uncertainty').replace('historical_limits', 'source_limits')
+        if identity == 'character-art':
+            fields += ' arc_continuity_boundaries'
+        rows.append((identity, output, kind, deps, fields))
+    return tuple(rows)
+
+
+def registry(source_type: str = 'HISTORICAL') -> dict[str, DepartmentDefinition]:
+    result: dict[str, DepartmentDefinition] = {}
+    specs = _specs(source_type)
+    for identity, output, kind, deps, fields in specs:
         owned = tuple(fields.split())
         result[identity] = DepartmentDefinition(
             department_id=identity, name=output, capability_type=cast(Literal['SKILL', 'MODULE', 'VALIDATOR', 'AGGREGATOR'], kind),
             authority_scope=owned, output_contract=output, depends_on=tuple(deps.split()),
-            consumed_by=tuple(row[0] for row in _SPECS if identity in row[3].split()),
+            consumed_by=tuple(row[0] for row in specs if identity in row[3].split()),
             can_create=owned, can_modify=owned,
-            cannot_modify=('other_department_content', 'canonical_story', 'canonical_dialogue', 'historical_evidence_upgrade'),
+            cannot_modify=('other_department_content', 'canonical_story', 'canonical_dialogue', 'historical_evidence_upgrade' if source_type == 'HISTORICAL' else 'literary_source_or_adaptation_rewrite'),
             skill_code=identity if kind == 'SKILL' or identity == 'production-design' else None,
             rationale=('Independent professional creative judgment and revision boundary.' if kind == 'SKILL' or identity == 'production-design'
                 else 'Deterministic identity/index/projection; no new creative judgment.' if kind == 'MODULE'
@@ -87,8 +114,8 @@ def registry() -> dict[str, DepartmentDefinition]:
     return result
 
 
-def dependency_order() -> tuple[str, ...]:
-    definitions = registry()
+def dependency_order(source_type: str = 'HISTORICAL') -> tuple[str, ...]:
+    definitions = registry(source_type)
     ordered: list[str] = []
     remaining = set(definitions)
     while remaining:
@@ -166,7 +193,7 @@ def _inherited_entity(identity: str, dependencies: Sequence[CreativeBible], arti
 def validate_bible(bible: CreativeBible, artifacts: Mapping[str, Any], current: Mapping[str, str]) -> dict[str, Any]:
     """Validate one department's ownership and pinned upstreams, never fill gaps."""
     bible = CreativeBible.model_validate(dump_contract(bible))
-    definitions = registry()
+    definitions = registry(bible.source_type)
     if bible.created_by_capability not in definitions:
         raise ValueError('UNKNOWN_PROFESSIONAL_DEPARTMENT')
     definition = definitions[bible.created_by_capability]
@@ -178,6 +205,8 @@ def validate_bible(bible: CreativeBible, artifacts: Mapping[str, Any], current: 
     upstream: dict[str, CreativeBible] = {}
     for ref in bible.depends_on:
         other = CreativeBible.model_validate(_read(ref, artifacts, current))
+        if other.source_type != bible.source_type:
+            raise ValueError('CROSS_SOURCE_DEPARTMENT_DEPENDENCY')
         if ref != bible_pin(other) or other.work_ref != bible.work_ref or (other.script_ref and bible.script_ref and other.script_ref != bible.script_ref) or (other.episode_ref and bible.episode_ref and other.episode_ref != bible.episode_ref):
             raise ValueError('DEPENDENCY_IDENTITY_OR_SCOPE_MISMATCH')
         if other.created_by_capability in upstream:
@@ -187,6 +216,8 @@ def validate_bible(bible: CreativeBible, artifacts: Mapping[str, Any], current: 
             raise ValueError('DEPARTMENT_DEPENDENCY_NOT_READY:' + other.created_by_capability)
     if set(upstream) != set(definition.depends_on):
         raise ValueError('DEPARTMENT_DEPENDENCY_SET_MISMATCH:' + bible.created_by_capability)
+    if bible.source_type == 'LITERARY':
+        _validate_literary_department(bible, artifacts, current)
     scopes = {bible.work_ref, *bible.scene_refs, *bible.shot_refs}
     scopes.update(x for x in (bible.script_ref, bible.episode_ref) if x)
     for record in bible.content:
@@ -204,7 +235,7 @@ def validate_bible(bible: CreativeBible, artifacts: Mapping[str, Any], current: 
         forbidden_nested = {'environment-art': {'topology', 'routes', 'entrances', 'exits', 'final_camera'},
             'character-art': {'personality', 'dialogue_text', 'character_arc', 'costume_design', 'voice_identity'},
             'lighting-design': {'architectural_language', 'material_palette', 'topology', 'costume_design'},
-            'director': {'face_structure', 'armor_intent', 'ordered_actions', 'camera_height', 'provider_prompt'},
+            'director': {'face_structure', 'armor_intent', 'ordered_actions', 'camera_height', 'provider_prompt', 'literary_analysis', 'rights_status', 'historical_research', 'philosophical_core', 'adaptation_contract', 'source_package', 'screenplay_input'},
             'video-model-selection': {'dialogue_text', 'character_arc', 'ordered_actions', 'face_structure'}}
         if keys & forbidden_nested.get(bible.created_by_capability, set()):
             raise ValueError('NESTED_DEPARTMENT_AUTHORITY_VIOLATION')
@@ -405,16 +436,18 @@ def decompose_clip_intervals(total_seconds: float, *, verified_max_seconds: floa
 
 def validate_package(package: DirectorPackage, artifacts: Mapping[str, Any], current: Mapping[str, str]) -> dict[str, Any]:
     package = DirectorPackage.model_validate(dump_contract(package))
-    if set(package.bible_refs) != set(registry()):
+    if set(package.bible_refs) != set(registry(package.source_type)):
         raise ValueError('DIRECTOR_PACKAGE_DEPARTMENT_SET_MISMATCH')
     for ref in (*package.source_refs, *package.approval_refs):
         _fresh(ref, current)
     _validate_approvals(package, artifacts, current)
     rows = []
     blockers: list[str] = []
-    for department in dependency_order():
+    for department in dependency_order(package.source_type):
         ref = package.bible_refs[department]
         bible = CreativeBible.model_validate(_read(ref, artifacts, current))
+        if bible.source_type != package.source_type:
+            raise ValueError('CROSS_SOURCE_DIRECTOR_PACKAGE')
         if ref != bible_pin(bible) or bible.created_by_capability != department or bible.work_ref != package.work_ref:
             raise ValueError('DIRECTOR_PACKAGE_WRONG_OWNER_OR_WORK')
         if (package.script_ref is not None and bible.script_ref != package.script_ref) or (package.episode_ref is not None and bible.episode_ref != package.episode_ref):
@@ -422,7 +455,7 @@ def validate_package(package: DirectorPackage, artifacts: Mapping[str, Any], cur
         rows.append(validate_bible(bible, artifacts, current))
         if bible.status == 'DRAFT':
             blockers.append('DEPARTMENT_DRAFT:' + department)
-        if registry()[department].capability_type == 'VALIDATOR':
+        if registry(package.source_type)[department].capability_type == 'VALIDATOR':
             for record in bible.content:
                 if record.values.get('deterministic_status') in ('FAIL', 'BLOCKED') or record.values.get('semantic_review_status') == 'FAIL':
                     blockers.append('QA_FAILED:' + department + ':' + record.id)
@@ -510,3 +543,47 @@ def compile_prompt_projection(package: DirectorPackage, shot: ShotAssembly, arti
     return {'adapter': adapter, 'shotId': shot.shot_id, 'sourceRefs': {k: dump_contract(v) for k, v in shot.department_refs.items()},
             'projection': projected, 'executable': False, 'providerCalls': 0,
             'status': 'CREATIVE_PROJECTION_ONLY_PROVIDER_ADAPTER_REQUIRED'}
+
+
+def _validate_literary_department(bible: CreativeBible, artifacts: Mapping[str, Any], current: Mapping[str, str]) -> None:
+    from drama_plugin.creative_source import verify_screenplay_input
+    queue = [bible]
+    seen: set[str] = set()
+    roots: dict[str, Any] = {}
+    while queue:
+        node = queue.pop()
+        if node.id in seen:
+            continue
+        seen.add(node.id)
+        if node.source_type != 'LITERARY':
+            raise ValueError('CROSS_SOURCE_DEPARTMENT_DEPENDENCY')
+        if node.created_by_capability == 'literary-source-input':
+            if len(node.content) != 1 or node.content[0].status != 'DECIDED':
+                raise ValueError('LITERARY_ROOT_REQUIRES_ONE_COMPILED_INPUT')
+            record = node.content[0]
+            compiled = verify_screenplay_input(record.values['source_package'], record.values['screenplay_input'])
+            if compiled.source_type != 'LITERARY' or compiled.package_ref not in node.source_refs:
+                raise ValueError('LITERARY_ROOT_SOURCE_PIN_MISMATCH')
+            _fresh(compiled.package_ref, current)
+            roots[compiled.package_ref.fingerprint] = compiled
+        queue.extend(CreativeBible.model_validate(_read(r, artifacts, current)) for r in node.depends_on)
+    if len(roots) != 1:
+        raise ValueError('ONE_RECONCILED_LITERARY_ROOT_REQUIRED')
+    compiled = next(iter(roots.values()))
+    if bible.created_by_capability in ('character-dramaturgy', 'character-art'):
+        states = compiled.resolved_input['characterArc']['states']
+        for record in bible.content:
+            char = record.values.get('character_ref')
+            if char and char not in {s['characterId'] for s in states}:
+                raise ValueError('CHARACTER_OUTSIDE_LITERARY_SOURCE')
+            if bible.created_by_capability == 'character-art' and record.status == 'DECIDED':
+                boundaries = [{'arcStage': state['arcStage'], 'visualContinuityBoundary': state['visualContinuityBoundary']} for state in states if state['characterId'] == char]
+                if not boundaries or record.values.get('arc_continuity_boundaries') != boundaries:
+                    raise ValueError('CHARACTER_ART_MUST_CONSUME_ARC_BOUNDARIES')
+            for field in ('source_identity', 'source_authority'):
+                if field in record.values:
+                    unit = next((u for u in compiled.resolved_input['analysis']['units'] if u['id'] == char), None)
+                    if unit is None or record.values[field] != {'sourceUnitId': char, 'origin': unit['origin']}:
+                        raise ValueError('LITERARY_IDENTITY_CANNOT_RECLASSIFY_SOURCE')
+            if 'character_arc' in record.values and record.values['character_arc'] != [s for s in states if s['characterId'] == char]:
+                raise ValueError('CHARACTER_ARC_REQUIRES_UPSTREAM_REVISION')

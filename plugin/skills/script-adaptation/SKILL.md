@@ -3,6 +3,12 @@ name: script-adaptation
 description: Adapt a historical-drama Work into a screen Script. Use when designing the audiovisual dramatic structure, main and secondary lines, character arcs, pacing, escalation, climax, or short-form series shape.
 ---
 
+## Creative Source boundary
+
+Route by Work.content.creativeSourceType (legacy absence means HISTORICAL). HISTORICAL follows every existing historical rule below. LITERARY requires the current compiled screenplayInput and literaryPackage; use the [Creative Source boundary](../../docs/creative-source.md). The historical-specific scope/spine/actor rules below apply only to HISTORICAL. Shared screenability, continuity, review and persistence rules apply to both. Copy the exact screenplayInput into Script content and derive only within its adaptation decisions. Return a new deletion, causal change or invention to literary-adaptation. Do not reanalyse source text, reinterpret rights or silently change the adaptation contract.
+
+
+
 # Script Adaptation
 
 Consume the unified `creativeRhythm` from the actual creation context before planning, even when source text is already supplied. Follow [narrative rhythm](../../docs/narrative-rhythm.md); Skills never read env directly. Pin this profile to the creative revision; refresh/resume keeps it, while a new revision reads current configuration.

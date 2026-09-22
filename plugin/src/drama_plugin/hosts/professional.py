@@ -16,7 +16,9 @@ from drama_plugin.professional import registry, dependency_order, validate_bible
 
 
 class ProfessionalDepartmentHost:
-    def __init__(self, root: Path | str, skill_lookup: Callable[[str], Any] | None = None):
+    def __init__(self, root: Path | str, skill_lookup: Callable[[str], Any] | None = None, *, source_type: str = 'HISTORICAL'):
+        self.source_type = source_type
+        registry(source_type)
         self.store = DirectorArtifactStore(root)
         self.skill_lookup = skill_lookup
 
@@ -43,7 +45,7 @@ class ProfessionalDepartmentHost:
         return result
 
     def task(self, department: str, *, task: str, available: Mapping[str, SourcePin], current: Mapping[str, str]) -> dict[str, Any]:
-        definition = registry()[department]
+        definition = registry(self.source_type)[department]
         if definition.skill_code and self.skill_lookup:
             self.skill_lookup(definition.skill_code)
         missing = [key for key in definition.depends_on if key not in available]
@@ -54,6 +56,8 @@ class ProfessionalDepartmentHost:
         for key in definition.depends_on:
             if key in available and key not in stale:
                 bible = CreativeBible.model_validate(self.store.read_ref(available[key]))
+                if bible.source_type != self.source_type:
+                    raise ValueError('HOST_SOURCE_TYPE_MISMATCH')
                 if bible.created_by_capability != key:
                     raise ValueError('TASK_DEPENDENCY_WRONG_OWNER')
                 queue = [bible]
@@ -80,14 +84,16 @@ class ProfessionalDepartmentHost:
 
     @staticmethod
     def _failed_review(bible: CreativeBible) -> bool:
-        return registry()[bible.created_by_capability].capability_type == 'VALIDATOR' and any(
+        return registry(bible.source_type)[bible.created_by_capability].capability_type == 'VALIDATOR' and any(
             r.values.get('deterministic_status') in ('FAIL', 'BLOCKED') or r.values.get('semantic_review_status') == 'FAIL'
             for r in bible.content)
 
     def submit(self, department: str, bible: CreativeBible, *, current: Mapping[str, str]) -> dict[str, Any]:
+        if bible.source_type != self.source_type:
+            raise ValueError('HOST_SOURCE_TYPE_MISMATCH')
         if bible.created_by_capability != department:
             raise ValueError('SUBMISSION_DEPARTMENT_AUTHORITY_MISMATCH')
-        definition = registry()[department]
+        definition = registry(self.source_type)[department]
         if definition.skill_code and self.skill_lookup:
             self.skill_lookup(definition.skill_code)
         artifacts = self._artifacts((*bible.depends_on, *bible.approval_refs))
@@ -103,6 +109,8 @@ class ProfessionalDepartmentHost:
         return self.store.put(key, dump_contract(assembly))
 
     def retain_package(self, package: DirectorPackage, *, current: Mapping[str, str]) -> dict[str, Any]:
+        if package.source_type != self.source_type:
+            raise ValueError('HOST_SOURCE_TYPE_MISMATCH')
         refs = (*package.bible_refs.values(), *package.scene_assembly_refs, *package.shot_assembly_refs, *package.approval_refs)
         artifacts = self._artifacts(refs)
         result = validate_package(package, artifacts, current)
@@ -111,7 +119,7 @@ class ProfessionalDepartmentHost:
 
     def dashboard(self, package: DirectorPackage, *, current: Mapping[str, str]) -> list[dict[str, Any]]:
         rows = []
-        for department in dependency_order():
+        for department in dependency_order(package.source_type):
             task = self.task(department, task='Maintain owned professional Bible', available=package.bible_refs, current=current)
             ref = package.bible_refs.get(department)
             if ref:

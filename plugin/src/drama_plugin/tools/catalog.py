@@ -8,6 +8,8 @@ from pydantic import PositiveInt, NonNegativeInt
 from drama_plugin.contracts.asset import Asset, AssetType
 from drama_plugin.contracts.audio import RoleDubbingRequest, RoleDubbingResult
 from drama_plugin.contracts.context import ContextBuildRequest, DramaContextPatch, DramaRunContext
+from drama_plugin.contracts.creative_source import CompileSourceRequest, ScreenplayInput
+from drama_plugin.creative_source import compile_source, validate_work_content, validate_script_content, production_gate
 from drama_plugin.contracts.creation import Episode, Scene, Script, Shot, Work
 from drama_plugin.contracts.media import Media, MediaResolveResult, MediaRestoreResult, MediaType
 from drama_plugin.contracts.research import ClaimAssessment, ResearchEvidence, ResearchSource
@@ -40,15 +42,44 @@ def build_tool_registry(memory: MemoryProvider, asset: AssetProvider, research: 
         await guard_direct_generation(memory, parameters)
         raise AssertionError('legacy generation guard must reject')
 
+    async def prepare_screenplay(request: CompileSourceRequest) -> ScreenplayInput:
+        return compile_source(request)
+
+    async def create_work(title: str, content: dict[str, Any], description: str | None = None) -> Work:
+        validate_work_content(content)
+        return await memory.create_work(title, content, description)
+
+    async def save_work(work_id: str, title: str, content: dict[str, Any], description: str | None = None) -> Work:
+        previous = await memory.get_work(work_id)
+        validate_work_content(content, previous.content)
+        return await memory.save_work(work_id, title, content, description)
+
+    async def create_script(work_id: str, title: str, content: dict[str, Any]) -> Script:
+        work = await memory.get_work(work_id)
+        validate_script_content(work.content, content)
+        return await memory.create_script(work_id, title, content)
+
+    async def save_script(script_id: str, title: str, content: dict[str, Any]) -> Script:
+        script = await memory.get_script(script_id)
+        work = await memory.get_work(script.work_id)
+        validate_script_content(work.content, content)
+        return await memory.save_script(script_id, title, content)
+
+    async def generate_role_dubbing(request: RoleDubbingRequest) -> RoleDubbingResult:
+        work = await memory.get_work(request.speech_request.work_id)
+        production_gate(work.content, work.content.get('productionJurisdiction'))
+        return await role_dubbing.generate_role_dubbing(request)
+
     specs = [
-        _domain_tool("work.create_work", "Create a complete initial work as persistent memory.", memory.create_work, Work, required={"title": str, "content": dict[str, Any]}, optional={"description": str | None}),
+        _domain_tool("source.prepare_screenplay", "Validate reviewed Historical or Literary upstream decisions and compile a source-pinned Screenplay Input; never generate text or media.", prepare_screenplay, ScreenplayInput, required={"request": CompileSourceRequest}),
+        _domain_tool("work.create_work", "Create a complete initial work as persistent memory.", create_work, Work, required={"title": str, "content": dict[str, Any]}, optional={"description": str | None}),
         _domain_tool("work.get_work", "Read a work by stable ID.", memory.get_work, Work, required={"work_id": str}),
-        _domain_tool("work.save_work", "Replace the formal state of an existing work revision.", memory.save_work, Work, required={"work_id": str, "title": str, "content": dict[str, Any]}, optional={"description": str | None}),
+        _domain_tool("work.save_work", "Replace the formal state of an existing work revision.", save_work, Work, required={"work_id": str, "title": str, "content": dict[str, Any]}, optional={"description": str | None}),
         _domain_tool("work.list_works", "List works in the available structural scope.", memory.list_works, list[Work]),
         _domain_tool("work.search_works", "Discover works when the stable ID is unknown, using a natural-language query.", memory.search_works, list[Work], required={"query": str}),
-        _domain_tool("script.create_script", "Create a complete initial script under a work.", memory.create_script, Script, required={"work_id": str, "title": str, "content": dict[str, Any]}),
+        _domain_tool("script.create_script", "Create a complete initial script under a work.", create_script, Script, required={"work_id": str, "title": str, "content": dict[str, Any]}),
         _domain_tool("script.get_script", "Read a script by stable ID.", memory.get_script, Script, required={"script_id": str}),
-        _domain_tool("script.save_script", "Replace the formal state of an existing script revision.", memory.save_script, Script, required={"script_id": str, "title": str, "content": dict[str, Any]}),
+        _domain_tool("script.save_script", "Replace the formal state of an existing script revision.", save_script, Script, required={"script_id": str, "title": str, "content": dict[str, Any]}),
         _domain_tool("script.list_scripts", "List scripts under a work.", memory.list_scripts, list[Script], required={"work_id": str}),
         _domain_tool("episode.create_episode", "Create a complete initial episode under a script.", memory.create_episode, Episode, required={"script_id": str, "episode_no": NonNegativeInt, "title": str, "content": dict[str, Any]}),
         _domain_tool("episode.get_episode", "Read an episode by stable ID.", memory.get_episode, Episode, required={"episode_id": str}),
@@ -83,7 +114,7 @@ def build_tool_registry(memory: MemoryProvider, asset: AssetProvider, research: 
         _domain_tool("voice.resolve_voice", "Resolve the stable Voice master reference to a temporary Drama Service content URL.", voice.resolve_voice, VoiceResolveResult, required={"voice_id": str}),
         _domain_tool("production.generate_image", "Retired raw-prompt API: rejects execution; use professional compilation and formal route reservation.", generate_image, Media, required={"prompt": str}, optional={"reference_asset_ids": list[str] | None, "reference_media_ids": list[str] | None, "parameters": dict[str, Any] | None}),
         _domain_tool("production.generate_video", "Retired raw-prompt API: rejects execution; use compiled video decisions and formal route reservation.", generate_video, Media, required={"prompt": str}, optional={"start_frame_media_id": str | None, "end_frame_media_id": str | None, "reference_media_ids": list[str] | None, "parameters": dict[str, Any] | None}),
-        _domain_tool("production.generate_role_dubbing", "Resolve or create a durable role Voice, synthesize exact Dialogue, run intelligibility QC, and persist Audio Media.", role_dubbing.generate_role_dubbing, RoleDubbingResult, required={"request": RoleDubbingRequest}),
+        _domain_tool("production.generate_role_dubbing", "Resolve or create a durable role Voice, synthesize exact Dialogue, run intelligibility QC, and persist Audio Media.", generate_role_dubbing, RoleDubbingResult, required={"request": RoleDubbingRequest}),
         _domain_tool("research.search_sources", "Search external historical sources for the current run.", research.search_sources, list[ResearchSource], required={"query": str}),
         _domain_tool("research.search_events", "Search historical event evidence for the current run.", research.search_events, list[ResearchEvidence], required={"query": str}),
         _domain_tool("research.search_people", "Search historical person evidence for the current run.", research.search_people, list[ResearchEvidence], required={"query": str}),

@@ -185,5 +185,5 @@ async def test_composition_root_host_path(source,tmp_path):
     assert isinstance(p,BailianQwenOmniAudioSemanticProvider)
     await p._client.aclose();p._client=httpx.AsyncClient(transport=httpx.MockTransport(lambda r:success()))
     r=await observe_audio(plugin.providers.audio_semantic,source)
-    assert r.status=='READY_FOR_USER_ATTESTATION' and len(plugin.tools.list())==50
+    assert r.status=='READY_FOR_USER_ATTESTATION' and len(plugin.tools.list())==51
     await plugin.aclose()

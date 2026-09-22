@@ -20,6 +20,8 @@ EXPECTED |= {
     "editorial-design", "vfx-planning", "color-grading", "graphics-design", "asset-planning",
     "reference-strategy", "clip-decomposition",
 }
+EXPECTED |= {'literary-source-analysis', 'philosophical-core', 'literary-adaptation', 'literature-to-cinema'}
+
 CREATIVE = {
     "work-creation": ("work.create_work", "work.save_work", ("historical_spine_complete", "fact_attribution_valid", "protagonist_scope_alignment", "structure_covers_spine")),
     "script-adaptation": ("script.create_script", "script.save_script", ("historical spine", "fact attribution", "episode architecture", "climax")),
@@ -528,7 +530,7 @@ def test_media_registration_is_not_duplicated_after_generation() -> None:
 def test_openai_adapters_are_optional_interface_metadata_only() -> None:
     for directory in (ROOT / "skills").iterdir():
         if directory.name not in EXPECTED: continue
-        if directory.name == "music-direction":
+        if directory.name in {"music-direction", "literary-source-analysis", "philosophical-core", "literary-adaptation", "literature-to-cinema"}:
             # This capability intentionally adds no Agent or Host adapter.
             assert not (directory / "agents").exists()
             continue

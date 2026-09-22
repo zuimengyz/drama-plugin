@@ -3,6 +3,12 @@ name: director
 description: Own Director Vision and orchestrate registered professional creative departments; use for film interpretation, priorities, conflict arbitration and source-bound review, not specialist implementation.
 ---
 
+## Reconciled source input
+
+Consume ScreenplayInput through `CreativeSourceHost.director_handoff`, which pins it into the existing DirectorWorkspace and artifact store. `director.source_intent` projects philosophical constraints, adaptation boundaries, cinema decisions and CharacterArc states without source reinterpretation. Do not perform Literary Analysis, historical research or rights determination. Conflicts return to the recorded upstream owner. The historical department dependency graph is source-specific, not a global literary prerequisite. See [Creative Source](../../docs/creative-source.md).
+
+
+
 # Director
 
 Read [professional department architecture](../../docs/professional-departments.md).

@@ -1,16 +1,41 @@
 code: cinematic-screenplay-incubation
 name: Cinematic Screenplay Incubation
-description: Incubate an evidence-governed screenplay with shared creative state and targeted revision.
+description: Develop source-reconciled Historical or Literary screen drama; preserve
+  upstream authority.
 context:
-  required: [creativeGoal]
-  optional: [suppliedEvidence, work, script, episode, scenes, dramaticBible, temporaryState, screenplayReadinessReview, historicalDramaticAffordances]
+  required:
+  - creativeGoal
+  optional:
+  - suppliedEvidence
+  - work
+  - script
+  - episode
+  - scenes
+  - dramaticBible
+  - temporaryState
+  - screenplayReadinessReview
+  - historicalDramaticAffordances
+  - screenplayInput
+  - creativeSourceType
   refresh_after: []
 tools:
-  preferred: [research.search_sources, research.verify_claim]
-  allowed: [work.get_work, script.get_script, episode.get_episode, scene.get_scene, context.build_context]
+  preferred:
+  - research.search_sources
+  - research.verify_claim
+  allowed:
+  - work.get_work
+  - script.get_script
+  - episode.get_episode
+  - scene.get_scene
+  - context.build_context
 completion:
   conditions:
-    - A readable screenplay and compact Dramatic Bible preserve supported historical causality, character and information continuity.
-    - All twenty creative dimensions have an evidenced applicability/review result, with targeted revision bounded to two rounds.
-    - Freeze identifies the reviewed revision and remaining limitations; mechanical validation does not imply user artistic acceptance or production approval.
-    - Full-film handoff records readiness dimensions and historical opportunity decisions; major upstream issues stop direction.
+  - 'For HISTORICAL: A readable screenplay and compact Dramatic Bible preserve supported
+    historical causality, character and information continuity.'
+  - All twenty creative dimensions have an evidenced applicability/review result,
+    with targeted revision bounded to two rounds.
+  - Freeze identifies the reviewed revision and remaining limitations; mechanical
+    validation does not imply user artistic acceptance or production approval.
+  - Full-film handoff records readiness dimensions and historical opportunity decisions;
+    major upstream issues stop direction. For LITERARY, consume current reviewed ScreenplayInput;
+    no analysis, rights or adaptation decision is rewritten by Screenplay.

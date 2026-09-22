@@ -67,3 +67,12 @@ reading/silence and exact timing. This skill hands over only literary content, i
 form requirements and semantic position; no animation or UI timings.
 
 For a declared visual route, read [route-sensitive presentation](references/visual-routes.md). The literary gate and scarcity remain shared; presentation cannot grant literary eligibility.
+
+## Narration Line boundary
+
+Whole-film spoken narration identity, continuity, cue placement and source-narrator
+versus character-thought provenance belong to [Narration Line](../narration-line/SKILL.md).
+This skill retains closure eligibility, literary form and scarcity. A spoken coda
+proposal passes to Narration Line; it must not bypass its upstream cinema permission
+or become a second independent narration track. Nonspoken literary forms retain the
+existing finishing handoff. No historical coda contract or gate changes here.

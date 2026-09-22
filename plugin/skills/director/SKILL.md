@@ -232,3 +232,15 @@ costume-design and environment views forward there and remain replayable origina
 Character Dramaturgy owns identity, arc stage, behavior and social constraints;
 Character External Driver keeps narrative package authority. Proposed look never
 revises character meaning. Director owns intent and arbitration, not asset authorship.
+
+## Full scene Director screenplay
+
+Use [Narration Line](../narration-line/SKILL.md) and
+[its contract](../../docs/narration-line.md) for a continuous narration/silence plan.
+`compile_director_screenplay` consumes current screenplay, Character Dramaturgy and
+NarrationPlan pins. Record scene purpose, audience knowledge, character-stage refs,
+performance/blocking/spatial/attention intent, narration/sound/silence/music priority,
+transitions, continuity and department handoffs. Do not specify lenses, exact camera
+coordinates, shot/edit durations or concrete assets. Pending narration upstream
+requests block that variant; recommend only as USER_APPROVAL_PENDING. NONE still
+requires a reasoned silence policy per scene. This candidate is not P2 authorization.

@@ -75,6 +75,7 @@ class SwitchEvidence(ContractModel):
 
 
 class VideoRequest(ContractModel):
+    authority_context: dict[str, Any] | None = Field(default=None, alias='authority_context')
     prompt: Text
     negative_prompt: str = ''
     input_mode: InputMode

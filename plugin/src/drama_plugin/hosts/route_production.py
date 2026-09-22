@@ -120,7 +120,9 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
         from drama_plugin.hosts.specialized_asset import validate_visual_submission
         attempt = next(a for a in work.content.get('productionStage', {}).get('attempts', [])
                        if a['attempt_id'] == payload['attempt_id'])
-        validate_visual_submission(work, attempt['request'])
+        requirements = attempt['frame_snapshot'].get('requirements', {})
+        intent = requirements.get('frozen_creative', {}).get('cinematic_direction')
+        validate_visual_submission(work, attempt['request'], authority_context=requirements.get('authority_context'), creative_intent=intent)
     if command == 'check-input':
         duty = route_input_gate(route, payload['target_id'], payload['purpose'])
         if not work.content.get('productionStage'):

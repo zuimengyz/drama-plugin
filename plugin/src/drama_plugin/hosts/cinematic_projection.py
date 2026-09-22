@@ -44,6 +44,12 @@ def source_audio(spec: Any, sound: str) -> bool:
 
 def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
     spec = verify_frozen(r.frozen_creative['cinematic_direction'])
+    authority = getattr(r, 'authority_context', None)
+    if authority is not None:
+        from drama_plugin.hosts.specialized_asset import validate_authority_context
+        validate_authority_context(authority, r.frozen_creative['cinematic_direction'])
+        if authority['workId'] != spec.work_id:
+            raise ValueError('MOVIE_VISUAL_AUTHORITY_MISMATCH')
     raw = dump_contract(spec); all_fields = leaves(raw)
     manifest: dict[str, Any] = {}; sections: list[str] = []; compact_sections: list[str] = []
     missing_references: list[str] = []
@@ -146,10 +152,16 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
                 append('REQUIRED REFERENCE MISSING: ' + missing_references[-1], '缺必需参考:' + missing_references[-1])
     if set(manifest) != set(all_fields):
         raise ValueError('UNPROJECTED_CANONICAL_FIELDS:' + ','.join(set(all_fields)-set(manifest)))
+    if authority is not None:
+        from drama_plugin.hosts.specialized_asset import authority_semantics
+        asset_text = authority_semantics(authority)
+        append('ASSET CONTINUITY:\n' + asset_text, '资产连续:\n' + asset_text)
     result: dict[str, Any] = {'schema':'provider-semantic-projection-v1','prompt':'\n\n'.join(sections),
               # Map iteration order is not a creative instruction. Formal JSON
               # storage may reorder object keys; the audit manifest must not drift.
               'generate_audio':audio,'manifest':[manifest[k] for k in sorted(manifest)]}
+    if authority is not None:
+        result['authority_context_fingerprint'] = authority['fingerprint']
     capability = getattr(c, 'capability', {})
     limit, source = prompt_limit(capability, semantics, getattr(c, 'variant', ''))
     # All reference/wrapper text is already included, so reserve exactly zero.

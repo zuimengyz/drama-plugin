@@ -43,7 +43,8 @@ def test_old_stop_can_replan_without_target_authorization_or_reset(tmp_path,monk
  b=p.reserve(state,s.shot_id)
  assert b['ordinal']==3 and len(state['attempts'])==3
  assert state['remediations'][-1]['previous_pause']=='TARGETED_REVISION_FAILED'
- assert b['frame_snapshot']['fingerprint']==frame['fingerprint']
+ from drama_plugin.visual.history import attempt_frame
+ assert attempt_frame(state,b)['fingerprint']==frame['fingerprint']
  assert 'authorization' not in state['remediations'][-1]
 
 def test_unknown_submission_still_blocks_replanning(tmp_path):

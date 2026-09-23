@@ -16,6 +16,7 @@ from drama_plugin.providers.base import MemoryProvider, MediaProvider
 from drama_plugin.visual.video_selection import ProductionRoute, qualify_route, route_input_gate, choose_routes
 from drama_plugin.config.video_route import VideoRoutePolicy
 from drama_plugin.visual import production
+from drama_plugin.visual.history import attempt_frame, remember, compact, resolve
 
 
 async def guard_direct_generation(memory: MemoryProvider, parameters: dict[str, Any] | None) -> None:
@@ -72,8 +73,9 @@ async def save_route(memory: MemoryProvider, work_id: str, raw: dict[str, Any], 
         if route.candidate.cost.unit != stage['stage'].get('budget_unit', 'credits'):
             raise ValueError('BUDGET_UNIT_MISMATCH')
         if route.continuation:
-            previous = [old] + [ProductionRoute.model_validate(r['previous_route'])
-                for r in stage.get('route_revisions', []) if r.get('previous_route')]
+            previous = [old] + [ProductionRoute.model_validate(
+                resolve(stage, r['previous_route_ref'], 'route') if r.get('previous_route_ref') else r['previous_route'])
+                for r in stage.get('route_revisions', []) if r.get('previous_route') or r.get('previous_route_ref')]
             same = [p.continuation for p in previous if p.continuation and
                     p.continuation.authorization_ref == route.continuation.authorization_ref]
             if same and any(a != route.continuation for a in same):
@@ -90,12 +92,15 @@ async def save_route(memory: MemoryProvider, work_id: str, raw: dict[str, Any], 
         if stage['stage']['budget_credits'] is not None and result['incremental_credits'] > stage['stage']['budget_credits']:
             raise ValueError('ROUTE_CHANGE_EXCEEDS_AUTHORIZATION')
         stage = deepcopy(stage)
-        stage.setdefault('route_revisions', []).append({'previous_route': existing,
+        compact(stage)
+        remember(stage, stage['production_route'], 'route')
+        stage.setdefault('route_revisions', []).append({'previous_route_ref': remember(stage, existing or stage['production_route'], 'route'),
             'after_attempt': len(stage['attempts']), 'next_route_id': route.route_id})
         stage['production_route'] = raw
     content = {**work.content, 'productionPolicy': {**work.content.get('productionPolicy', {}), 'routeRequired': True,
                'videoRoutePolicyResolution': choice['route_policy_resolution']}, 'productionRoute': raw}
     if stage:
+        compact(stage)
         content['productionStage'] = stage
     await memory.save_work(work.id, work.title, content, work.description)
     fresh = await memory.get_work(work.id)
@@ -120,9 +125,10 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
         from drama_plugin.hosts.specialized_asset import validate_visual_submission
         attempt = next(a for a in work.content.get('productionStage', {}).get('attempts', [])
                        if a['attempt_id'] == payload['attempt_id'])
-        requirements = attempt['frame_snapshot'].get('requirements', {})
+        snapshot = attempt_frame(work.content['productionStage'], attempt)
+        requirements = snapshot.get('requirements', {})
         intent = requirements.get('frozen_creative', {}).get('cinematic_direction')
-        frame_context = attempt['frame_snapshot'].get('spec', {}).get('scope_context') or {}
+        frame_context = snapshot.get('spec', {}).get('scope_context') or {}
         authority = requirements.get('authority_context') or frame_context.get('authority_context')
         validate_visual_submission(work, attempt['request'], authority_context=authority, creative_intent=intent)
     if command == 'check-input':
@@ -262,6 +268,7 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
             (current.content.get('productionStage') != original_stage or
              current.content.get('productionRoute') != raw_route)):
         raise ValueError('WORK_CHANGED_RELOAD_BEFORE_RESERVING')
+    compact(state)
     content = {**current.content, 'productionStage': state}
     try:
         await memory.save_work(work.id, work.title, content, work.description)

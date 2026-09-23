@@ -230,7 +230,8 @@ def test_existing_replan_accepts_director_revision_without_resetting_history(tmp
     changed.cinematography.height='略低于胸高，仍是同一侧面'
     new=decision(changed);p.replan(state,frame=new,reason='camera height clarifies the hands',incremental_credits=100)
     assert state['attempts']==history and state['frames']['S1']==new
-    assert state['remediations'][-1]['previous_frame']==old
+    from drama_plugin.visual.history import resolve
+    assert resolve(state,state['remediations'][-1]['previous_frame_ref'])==old
     # A director replan is not authority to change the canonical narrative source.
     context['shot']['content']['action']='Different event';changed.source_fingerprint=fp(narrative_source(context))
     with pytest.raises(ValueError,match='CREATIVE_REQUIREMENTS_CHANGED'):

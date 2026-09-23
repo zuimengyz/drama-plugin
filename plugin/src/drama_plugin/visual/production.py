@@ -20,6 +20,7 @@ from pydantic import Field
 
 from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.visual.frame_request import Hash, Record, Text, verify_compiled
+from drama_plugin.visual.history import attempt_frame, remember, compact
 
 CATEGORIES = Literal["IDENTITY", "COSTUME", "BLOCKING", "PROP_STRUCTURE", "PROP_STATE",
                      "SCENE", "ANATOMY", "MODERN_ARTIFACT", "CROP", "COSMETIC",
@@ -466,7 +467,7 @@ def reserve(state: dict[str, Any], shot_id: str, *, quote: dict[str, Any] | None
                                    'attempt': ordinal, 'request': item,
                                    'remediations': state['remediations']})
     attempt = {'attempt_id': attempt_id, 'shot_id': shot_id, 'ordinal': ordinal,
-               'frame_fingerprint': frame['fingerprint'], 'frame_snapshot': deepcopy(frame), 'request': item,
+               'frame_fingerprint': frame['fingerprint'], 'frame_ref': sha256_canonical(frame), 'request': item,
                'request_fingerprint': sha256_canonical(item), 'status': 'RESERVED',
                'job_id': None, 'credits': None, 'billing_event_id': None}
     if 'production_route' in state:
@@ -494,7 +495,7 @@ def begin_submission(state: dict[str, Any], *, attempt_id: str) -> dict[str, Any
     attempt: dict[str, Any] = next(a for a in state['attempts'] if a['attempt_id'] == attempt_id)
     if attempt['status'] != 'RESERVED' or attempt.get('job_id') or attempt.get('submission_started'):
         raise ValueError('RECOVER_ORIGINAL_MCP_SUBMISSION')
-    frame = attempt['frame_snapshot']
+    frame = attempt_frame(state, attempt)
     verify_visual(frame)
     from drama_plugin.visual.prompt_ir import require_submission_ir
     require_submission_ir(frame, attempt['request'])
@@ -523,7 +524,7 @@ def record_result(state: dict[str, Any], *, attempt_id: str, status: str, job_id
     if job_id and any(a is not attempt and a['job_id'] == job_id for a in state['attempts']):
         raise ValueError("JOB_ALREADY_BOUND")
     if status == 'COMPLETED':
-        if attempt.get('frame_snapshot', {}).get('execution') is not None:
+        if attempt_frame(state, attempt).get('execution') is not None:
             from drama_plugin.visual.execution import validate_result_identity
             validate_result_identity(attempt, execution_receipt, job_id)
         from pydantic import TypeAdapter
@@ -713,6 +714,8 @@ def replan(state: dict[str, Any], *, frame: dict[str, Any], reason: str,
     images = [f for f in proposed.values() if f.get('schema') != 'video-decision-v1']
     if len(images) > (6 if 'production_route' in state else 3):
         raise ValueError('STAGE_IMAGE_LIMIT')
+    if old is not None and old != frame:
+        remember(state, old)
     state['frames'] = proposed
     if video and 'production_route' not in state:
         state['stage']['video_target'] = sid
@@ -721,7 +724,7 @@ def replan(state: dict[str, Any], *, frame: dict[str, Any], reason: str,
         state['pilots'].append(sid)
     state['remediations'].append({'reason': reason, 'after_attempt': len(state['attempts']), 'target': sid,
                                   'previous_fingerprint': old['fingerprint'] if old else None})
-    state['remediations'][-1].update(previous_frame=old, previous_pause=state.get('pause'),
+    state['remediations'][-1].update(previous_frame_ref=sha256_canonical(old) if old else None, previous_pause=state.get('pause'),
         incremental_credits=incremental_credits,frame_fingerprint=frame['fingerprint'])
     state['pause'] = None
 
@@ -769,6 +772,8 @@ def retry_not_created(state: dict[str, Any], *, attempt_id: str, evidence: str,
         # Conservatively count all submission attempts toward this small stage cap.
         amount = _stage_gate(state, frame, a['request'], quote, balance)
         new = deepcopy(a)
+        new['frame_ref'] = sha256_canonical(attempt_frame(state, a))
+        new.pop('frame_snapshot', None)
         new_id = sha256_canonical({'retry_of': attempt_id, 'event': len(state['attempts']) + 1})
         new.update(attempt_id=new_id, call_id=new_id, status='RESERVED',
                    ordinal=a['ordinal'] + 1, call_reason='TECHNICAL_RETRY',
@@ -786,6 +791,8 @@ def retry_not_created(state: dict[str, Any], *, attempt_id: str, evidence: str,
     amount = _stage_gate(remaining, frame, a['request'], quote, balance)
     a.update(status='RESERVED', reserved_credits=amount, quote=deepcopy(quote), balance=deepcopy(balance),
              technical_retry_count=a.get('technical_retry_count', 0)+1, retry_evidence=evidence)
+    a['frame_ref'] = sha256_canonical(attempt_frame(state, a))
+    a.pop('frame_snapshot', None)
     state['pause'] = None
     return a
 
@@ -869,6 +876,7 @@ def main() -> None:
                                                  if state['stage']['budget_credits'] is not None else None)
         if args.command != 'status':
             with tempfile.NamedTemporaryFile(mode='w', dir=args.state.parent, delete=False) as f:
+                compact(state)
                 json.dump(state, f, ensure_ascii=False, indent=2, allow_nan=False)
                 f.flush()
                 os.fsync(f.fileno())

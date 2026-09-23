@@ -13,7 +13,8 @@ async def complete_attempt(state: dict[str, Any], *, attempt_id: str, mcp_config
     attempt = next(a for a in state['attempts'] if a['attempt_id'] == attempt_id)
     if attempt['status'] != 'COMPLETED' or any(attempt.get('technical', {}).get('checks', {}).get(k) != 'PASS' for k in ('integrity','linkage')):
         raise ValueError('TECHNICAL_PROVIDER_OUTPUT_REQUIRED')
-    decision = attempt.get('frame_snapshot', state['frames'][attempt['shot_id']])
+    from drama_plugin.visual.history import attempt_frame
+    decision = attempt_frame(state, attempt)
     r = decision.get('requirements', decision['spec'])
     if r.get('work_id') not in (None, work_id) or (decision.get('schema') == 'video-decision-v1' and r['shot_id'] != shot_id):
         raise ValueError('OUTPUT_BUSINESS_SCOPE_MISMATCH')

@@ -401,6 +401,7 @@ async def test_http_frame_must_match_planned_canonical_request(setup):
     async with httpx.AsyncClient(transport=httpx.MockTransport(lambda q:httpx.Response(200,json={}))) as c:
         h,id=await formal_setup(setup,c)
         w=await setup.memory.get_work(setup.data.work.id)
-        state=w.content['productionStage'];frame=deepcopy(state['attempts'][0]['frame_snapshot'])
+        from drama_plugin.visual.history import attempt_frame
+        state=w.content['productionStage'];frame=deepcopy(attempt_frame(state,state['attempts'][0]))
         frame['requirements']['video_request']['negative_prompt']='changed after route approval'
         with pytest.raises(ValueError,match='CANONICAL_VIDEO_REQUEST_REQUIRES_ROUTE_REPLAN'):_route_frame_gate(state,frame)

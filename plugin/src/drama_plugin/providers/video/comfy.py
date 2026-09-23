@@ -13,12 +13,16 @@ class ComfyCloudProvider:
     def __init__(self, *, attempt: dict[str, Any], registry: MCPRegistry,
                  claim_submission: Callable[[str], Awaitable[dict[str, Any]]],
                  read_task: Callable[[ProviderTask], Awaitable[ProviderTask]],
-                 cancel: Callable[[ProviderTask], Awaitable[ProviderTask]] | None = None):
+                 cancel: Callable[[ProviderTask], Awaitable[ProviderTask]] | None = None,
+                 state: dict[str, Any] | None = None):
         self.attempt, self.registry, self.claim, self.read_task, self.cancel = attempt, registry, claim_submission, read_task, cancel
-        self.model = attempt['frame_snapshot']['execution']['capability']['model_key']
+        self.state = state
+        from drama_plugin.visual.history import attempt_frame
+        self.model = attempt_frame(state, attempt)['execution']['capability']['model_key']
 
     async def create_task(self, request: VideoRequest, *, client_request_id: str) -> ProviderTask:
-        frame = self.attempt['frame_snapshot']
+        from drama_plugin.visual.history import attempt_frame
+        frame = attempt_frame(self.state, self.attempt)
         r = frame['requirements']
         errors = continuity_errors(request, self.provider, self.model)
         if (errors or request.prompt != r['frozen_creative']['motion_prompt'] or request.duration != r['duration_seconds']
@@ -28,7 +32,7 @@ class ComfyCloudProvider:
             raise ValueError('COMFY_CANONICAL_CONTRACT_MISMATCH')
         # Exact image counts, input roles, graph and provider schema remain owned
         # and checked by the existing Comfy compiler/verifier and MCP registry.
-        receipt = await invoke_reserved(self.attempt, self.registry, verify_request=verify_execution, claim_submission=self.claim)
+        receipt = await invoke_reserved(self.attempt, self.registry, verify_request=verify_execution, claim_submission=self.claim, state=self.state)
         return ProviderTask(provider=self.provider, model=self.model, client_request_id=client_request_id,
                             request_fingerprint=request_fingerprint(request), provider_task_id=receipt['task_id'],
                             status='QUEUED', duration=request.duration, resolution=request.resolution)

@@ -104,7 +104,12 @@ class VideoProviderHost:
 
     async def _attempt(self, work_id: str, attempt_id: str) -> dict[str, Any]:
         work = await self.memory.get_work(work_id)
-        return next(a for a in work.content['productionStage']['attempts'] if a['attempt_id'] == attempt_id)
+        from copy import deepcopy
+        from drama_plugin.visual.history import attempt_frame
+        state = work.content['productionStage']
+        attempt = next(a for a in state['attempts'] if a['attempt_id'] == attempt_id)
+        # Hydrated execution view only; never written back to Work history.
+        return {**deepcopy(attempt), 'frame_snapshot': deepcopy(attempt_frame(state, attempt))}
 
     async def _validate_canon(self, work_id: str, r: VideoRequest) -> None:
         work = await self.memory.get_work(work_id)

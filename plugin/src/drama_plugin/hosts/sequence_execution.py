@@ -23,7 +23,8 @@ async def invoke_sequence_reserved(attempt: dict[str, Any], registry: MCPRegistr
         current_entries: tuple[FreezeEntry, ...], current_fingerprints: dict[str, str],
         binding: SequenceRequestBinding,
         verify_request: Callable[[dict[str, Any]], None],
-        claim_submission: Callable[[str], Awaitable[dict[str, Any]]]) -> dict[str, Any]:
+        claim_submission: Callable[[str], Awaitable[dict[str, Any]]],
+        state: dict[str, Any] | None = None) -> dict[str, Any]:
     """Every retry/resume rechecks live approval and references before discovery/claim."""
     verdict = executable_sequence_handoff(package, current_fingerprints, freeze, current_entries)
     if not verdict['designReady'] or not verdict['productionDesignComplete']:
@@ -34,9 +35,10 @@ async def invoke_sequence_reserved(attempt: dict[str, Any], registry: MCPRegistr
             or binding.request_fingerprint != sha256_canonical(attempt['request'])):
         raise ValueError('SEQUENCE_REQUEST_BINDING_STALE')
     clip = next(s for s in package.shots if s.key == binding.clip_key)
-    requirements = attempt.get('frame_snapshot', {}).get('requirements', {})
+    from drama_plugin.visual.history import attempt_frame
+    requirements = attempt_frame(state, attempt).get('requirements', {})
     if (requirements.get('shot_id') != clip.source_shot_id or clip.production is None
             or requirements.get('target_id') != clip.production.generation_group):
         raise ValueError('SEQUENCE_REQUEST_TARGET_MISMATCH')
     return await invoke_reserved(attempt, registry, verify_request=verify_request,
-                                 claim_submission=claim_submission)
+                                 claim_submission=claim_submission, state=state)

@@ -54,7 +54,8 @@ async def resolve_mcp(decision: dict[str, Any], registry: MCPRegistry, *,
 
 async def invoke_reserved(attempt: dict[str, Any], registry: MCPRegistry, *,
                           verify_request: Callable[[dict[str, Any]], None],
-                          claim_submission: Callable[[str], Awaitable[dict[str, Any]]]) -> dict[str, Any]:
+                          claim_submission: Callable[[str], Awaitable[dict[str, Any]]],
+                          state: dict[str, Any] | None = None) -> dict[str, Any]:
     """Invoke once after formal reservation; exceptions never trigger resubmission.
 
 The registry adapter returns identity observed through the bound channel and the
@@ -63,7 +64,8 @@ An ambiguous call leaves the original reservation for task/billing recovery.
 """
     if attempt['status'] != 'RESERVED' or attempt.get('job_id') is not None:
         raise ValueError('PERSISTED_UNUSED_RESERVATION_REQUIRED')
-    decision = attempt['frame_snapshot']
+    from drama_plugin.visual.history import attempt_frame
+    decision = attempt_frame(state, attempt)
     verify_request(decision)
     if (attempt['frame_fingerprint'] != decision['fingerprint']
             or attempt['request'] != decision['request']

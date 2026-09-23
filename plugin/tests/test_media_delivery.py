@@ -159,6 +159,8 @@ async def test_visual_attempt_persists_format_failure_as_candidate_without_reset
     state={'attempts':[a],'stage':{'id':'v2-06','budget_credits':1200},'plan_fingerprint':'p',
            'frames':{'clip1':{'schema':'video-decision-v1','spec':{},'requirements':{
                'work_id':x.data.work.id,'shot_id':x.data.shot.id,'inputs':[]}}}}
+    from drama_plugin.contracts.base import sha256_canonical
+    a['frame_ref']=sha256_canonical(state['frames']['clip1'])
     args=dict(attempt_id='attempt1',mcp_config='fixture',source_path=str(x.video),cache=str(x.tmp/'visual'),
               work_id=x.data.work.id,shot_id=x.data.shot.id)
     first=await complete_attempt(state,**args);second=await complete_attempt(state,**args)

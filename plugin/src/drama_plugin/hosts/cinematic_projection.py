@@ -192,6 +192,45 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
         result['authority_context_fingerprint'] = authority['fingerprint']
     capability = getattr(c, 'capability', {})
     limit, source = prompt_limit(capability, semantics, getattr(c, 'variant', ''))
+    if getattr(r, 'prompt_ir', None) is not None:
+        from drama_plugin.visual.prompt_ir import compile_ir
+        if getattr(r, 'prompt_normalization', None):
+            raise ValueError('VISUAL_PROMPT_IR_POST_REWRITE_FORBIDDEN')
+        compiled = compile_ir(r.prompt_ir, provider_family=c.model, audio_supported=audio,
+                              hard_limit=limit, model=c.model, limit_source=source)
+        ir = compiled['ir']
+        modes = {'TEXT_TO_VIDEO': 'text', 'SINGLE_IMAGE': 'single_image', 'START_END': 'first_last', 'MULTIMODAL': 'reference'}
+        if (ir['source_fingerprint'] != sha256_canonical(r.frozen_creative)
+                or ir['task']['task_type'] != 'VIDEO' or ir['task']['clip_id'] != r.target_id
+                or ir['task']['input_mode'] != modes[r.mode]):
+            raise ValueError('VISUAL_PROMPT_IR_SOURCE_CHANGED')
+        temporal = ir['video_temporal']
+        if (temporal['start_state']['text'] != spec.opening_state
+                or temporal['end_state']['text'] != spec.ending_state):
+            raise ValueError('VISUAL_PROMPT_IR_ENDPOINT_CHANGED')
+        # Canonical timed action and exact dialogue cannot disappear in a new IR.
+        executed = compiled['prompt']
+        for beat in raw['performance']['beats']:
+            fact = prose(executable({k:v for k,v in beat.items() if k not in ('start','end','kind')}))
+            if fact not in executed:
+                raise ValueError('VISUAL_PROMPT_IR_CANONICAL_ACTION_MISSING')
+        for d in spec.dialogue:
+            text = d.text if d.text_range is None else d.text[d.text_range[0]:d.text_range[1]]
+            if text not in executed:
+                raise ValueError('VISUAL_PROMPT_IR_CANONICAL_DIALOGUE_MISSING')
+        if authority is not None and any(row['executableSemantic'] not in executed for row in authority['assets']):
+            raise ValueError('ASSET_EXECUTABLE_SEMANTICS_MISSING')
+        if missing_references:
+            raise ValueError('REQUIRED_REFERENCE_UNFULFILLED')
+        # Keep the old manifest as source diagnostics, not a false IR coverage claim.
+        result['legacy_source_manifest'] = result.pop('manifest')
+        result.update(prompt=executed, prompt_ir_compilation=compiled, prompt_budget=compiled['prompt_budget'],
+            manifest=[{'canonical_field': row['path'], 'required_for_execution': row['required'],
+                       'destination': 'PROMPT', 'provider_field': prompt_field, 'source': row['source']}
+                      for row in compiled['retained']],
+            scope_review={'gate':'VISUAL_PROVIDER_SCOPE_REVIEW', 'task':'VIDEO', 'prompt_fingerprint':sha256_canonical(executed)})
+        validate_projection(result)
+        return {**result, 'fingerprint':sha256_canonical(result)}
     # All reference/wrapper text is already included, so reserve exactly zero.
     result['prompt'], budget = budget_prompt(result['prompt'], compact_prompt,
         model=getattr(c, 'model', semantics['model']), limit=limit, source=source)

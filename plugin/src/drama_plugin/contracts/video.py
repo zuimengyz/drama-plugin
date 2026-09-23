@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Any, Literal, Self
-from pydantic import Field, model_validator
+from pydantic import Field, model_validator, model_serializer, SerializerFunctionWrapHandler
 from drama_plugin.contracts.base import ContractModel, sha256_canonical
 from drama_plugin.contracts.creative_asset import Text, Hash
 from drama_plugin.contracts.source_pin import SourcePin
@@ -77,6 +77,7 @@ class SwitchEvidence(ContractModel):
 class VideoRequest(ContractModel):
     authority_context: dict[str, Any] | None = Field(default=None, alias='authority_context')
     prompt_normalization: dict[str, Any] | None = Field(default=None, alias='prompt_normalization')
+    prompt_ir: dict[str, Any] | None = Field(default=None, alias='prompt_ir')
     prompt: Text
     negative_prompt: str = ''
     input_mode: InputMode
@@ -96,6 +97,13 @@ class VideoRequest(ContractModel):
     provider_hints: dict[str, Any] = Field(default_factory=dict)
     continuity: ContinuityPack
     switch_evidence: SwitchEvidence | None = None
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_shape(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        value = handler(self)
+        if self.prompt_ir is None:
+            value.pop('prompt_ir', None)
+        return value
 
     def references(self) -> tuple[VideoReference, ...]:
         return tuple(r for r in (self.first_frame, self.last_frame) if r) + self.reference_images + self.reference_videos + self.reference_audios

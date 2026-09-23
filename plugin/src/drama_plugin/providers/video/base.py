@@ -129,6 +129,8 @@ class HttpVideoProvider:
         return str(path).format(model=self.model_spec['vendor_model'])
 
     async def create_task(self, request: VideoRequest, *, client_request_id: str) -> ProviderTask:
+        from drama_plugin.visual.video_prompt import compile_request_ir
+        compile_request_ir(request)  # Fail before URL resolution or a paid HTTP call.
         r, urls = await self.materialize(request)
         task = ProviderTask(provider=self.provider, model=self.model, client_request_id=client_request_id,
                             request_fingerprint=request_fingerprint(r), status='UNKNOWN', duration=r.duration, resolution=r.resolution)

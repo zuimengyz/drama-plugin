@@ -99,6 +99,7 @@ class FrameSpec(Record):
     edit_source: EditSource | None = None
     scope_context: dict[str, Any] | None = None
     prompt_normalization: dict[str, Any] | None = None
+    prompt_ir: dict[str, Any] | None = None
 
 
 class Template(Record):
@@ -265,13 +266,35 @@ def compile_frame(spec: FrameSpec, template: Template) -> dict[str, Any]:
                   'This is reference-conditioned editing, with no mask control.\n' + spec.edit_source.instruction)
     from drama_plugin.visual.payload_scope import compile_payload, review_compiled
     scope_review = None
-    if spec.scope_context is not None:
+    if spec.scope_context is not None and spec.prompt_ir is None:
         scoped = compile_payload('FIRST_FRAME', spec.scope_context)
         prompt = scoped['prompt']; scope_review = scoped['scope_review']
-    else:
+    elif spec.prompt_ir is None:
         prompt = review_compiled(prompt, 'FIRST_FRAME')
     from drama_plugin.visual.positive_projection import normalize
-    prompt, normalization = normalize(prompt, 'FIRST_FRAME', spec.prompt_normalization)
+    ir_compilation = None
+    if spec.prompt_ir is not None:
+        from drama_plugin.visual.prompt_ir import compile_ir
+        if spec.prompt_normalization:
+            raise ValueError('VISUAL_PROMPT_IR_POST_REWRITE_FORBIDDEN')
+        ir_compilation = compile_ir(spec.prompt_ir, provider_family=template.model)
+        ir = ir_compilation['ir']
+        source = spec.model_dump(mode='json', exclude={'prompt_ir'})
+        if ir['source_fingerprint'] != sha256_canonical(source):
+            raise ValueError('VISUAL_PROMPT_IR_SOURCE_CHANGED')
+        task = ir['task']['task_type']
+        if (task == 'VIDEO' or (spec.edit_source and task not in {'IMAGE_EDIT', 'REFERENCE_EDIT'})
+                or (task == 'IMAGE_EDIT' and not spec.edit_source)
+                or (task == 'REFERENCE_EDIT' and not inputs)
+                or (task == 'TEXT_TO_IMAGE' and inputs)):
+            raise ValueError('VISUAL_PROMPT_IR_TASK_SOURCE_MISMATCH')
+        if {s['id'] for s in ir['subjects']} != {a.entity_key for a in spec.actors}:
+            raise ValueError('VISUAL_PROMPT_IR_SUBJECT_BINDING_MISMATCH')
+        prompt, normalization = ir_compilation['prompt'], None
+        scope_review = {'gate': 'VISUAL_PROVIDER_SCOPE_REVIEW', 'task': task,
+                        'prompt_fingerprint': sha256_canonical(prompt)}
+    else:
+        prompt, normalization = normalize(prompt, 'FIRST_FRAME', spec.prompt_normalization)
     if normalization and scope_review:
         scope_review = {**scope_review, 'pre_normalization_prompt_fingerprint': scope_review['prompt_fingerprint'],
                         'prompt_fingerprint': normalization['prompt_fingerprint']}
@@ -310,6 +333,7 @@ def compile_frame(spec: FrameSpec, template: Template) -> dict[str, Any]:
     if not spec.edit_source: spec_data.pop('edit_source')
     if spec.scope_context is None: spec_data.pop('scope_context')
     if spec.prompt_normalization is None: spec_data.pop('prompt_normalization')
+    if spec.prompt_ir is None: spec_data.pop('prompt_ir')
     if template.api_workflow is None: template_data.pop('api_workflow')
     material = {"schema": "visual-frame-preflight-v1", "spec": spec_data,
                 "template": template_data, "request": request, "risks": sorted(risks)}
@@ -317,6 +341,8 @@ def compile_frame(spec: FrameSpec, template: Template) -> dict[str, Any]:
         material['scope_review'] = scope_review
     if normalization is not None:
         material['normalization'] = normalization
+    if ir_compilation is not None:
+        material['prompt_ir_compilation'] = ir_compilation
     return {**material, "fingerprint": sha256_canonical(material)}
 
 

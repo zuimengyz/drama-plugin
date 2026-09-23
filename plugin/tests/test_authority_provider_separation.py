@@ -114,6 +114,8 @@ def test_generic_video_and_http_payload_only_send_executable_semantics(tmp_path,
         'specializedAssetCompilationRefs': [compilation['compilationRef']], 'visualSourceCurrent': current})
     r = request()
     r.continuity.work_id = 'work'
+    from test_official_video_providers import with_ir
+    r = with_ir(r)
     bound = bind_video_request(work, r)
     validate_visual_submission(work, dump_contract(bound))
     validate_visual_submission(work, {'provider': 'seedance', 'videoRequest': dump_contract(bound)})

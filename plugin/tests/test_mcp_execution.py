@@ -13,7 +13,7 @@ from seedance_helpers import seed_fixture, execution_plan, execution_contract, a
 from test_video_selection import evidence, quote, fixture
 
 
-def decision(tmp_path, local=False):
+def decision(tmp_path, local=False, with_prompt_ir=False):
     if local:
         from test_cinematic_direction import frozen_example
         from drama_plugin.visual.cinematic import selection_handoff
@@ -23,6 +23,18 @@ def decision(tmp_path, local=False):
         r=add_director_inputs(r,a,frozen)
     else:
         r,c,g,s,a=seed_fixture(tmp_path)
+    if with_prompt_ir:
+        from test_visual_prompt_ir import visual_ir, fact
+        from drama_plugin.hosts.cinematic_projection import executable, prose
+        ir=visual_ir('VIDEO',c.model)
+        raw=r.frozen_creative['cinematic_direction']['spec']
+        ir['source_fingerprint']=fp(r.frozen_creative)
+        ir['task'].update(clip_id=r.target_id,input_mode={'SINGLE_IMAGE':'single_image','START_END':'first_last','TEXT_TO_VIDEO':'text'}[r.mode])
+        ir['secondary_details']=[]
+        ir['video_temporal'].update(start_state=fact(raw['openingState']),end_state=fact(raw['endingState']),
+            action_progression=[fact(prose(executable({k:v for k,v in beat.items() if k not in ('start','end','kind')})),scope='CLIP') for beat in raw['performance']['beats']],
+            audio_requirements=[fact(d['text'],scope='CLIP') for d in raw['dialogue']])
+        r=r.model_copy(update={'prompt_ir':ir})
     route=execution_plan(r,c)
     if local:
         route=ProductionRoute.model_validate({**route.model_dump(),
@@ -217,6 +229,10 @@ async def test_invocation_rejects_wrong_backend_return(tmp_path):
 def test_durable_claim_is_unknown_and_cannot_repeat(tmp_path,monkeypatch):
     monkeypatch.setattr(p,'video_verifier',verify_execution)
     a=reserved(decision(tmp_path));state={'attempts':[a]}
+    with pytest.raises(ValueError,match='VISUAL_PROMPT_IR_REQUIRED_BEFORE_SUBMISSION'):
+        p.begin_submission(state,attempt_id='attempt')
+    assert a['status']=='RESERVED' and not a.get('submission_started')
+    a=reserved(decision(tmp_path,with_prompt_ir=True));state={'attempts':[a]}
     assert p.begin_submission(state,attempt_id='attempt')['status']=='UNKNOWN'
     with pytest.raises(ValueError,match='RECOVER_ORIGINAL_MCP_SUBMISSION'):
         p.begin_submission(state,attempt_id='attempt')

@@ -496,6 +496,8 @@ def begin_submission(state: dict[str, Any], *, attempt_id: str) -> dict[str, Any
         raise ValueError('RECOVER_ORIGINAL_MCP_SUBMISSION')
     frame = attempt['frame_snapshot']
     verify_visual(frame)
+    from drama_plugin.visual.prompt_ir import require_submission_ir
+    require_submission_ir(frame, attempt['request'])
     if 'production_route' in state:
         _route_frame_gate(state, frame)
     from drama_plugin.visual.execution import validate_binding

@@ -29,7 +29,30 @@ def request(provider='seedance', **changes):
                 cameraGrammar='fixed shot',performanceGrammar='restrained',historicalBoundary='no modern objects',forbiddenDrifts=['photographic recast']),
             colorLanguage='warm grey',lensLanguage='normal lens',primaryProvider=provider,primaryModel=MODELS[provider]))
     r.update(changes)
-    return VideoRequest.model_validate(r)
+    return with_ir(VideoRequest.model_validate(r))
+
+
+def with_ir(r):
+    """Explicit scene IR for offline lifecycle fixtures, including source pin."""
+    from test_visual_prompt_ir import visual_ir, fact as f
+    from drama_plugin.visual.video_prompt import ir_source_fingerprint
+    ir = visual_ir('VIDEO', r.continuity.primary_provider)
+    ir['task'].update(subject_kind='SCENE', visual_medium='DESIGNED_CG', clip_id=r.continuity.segment_id,
+        input_mode={'text_to_video':'text','image_to_video':'single_image','first_last_frame':'first_last'}.get(r.input_mode,'reference'))
+    ir['subjects'] = []; ir.pop('blocking'); ir.pop('action'); ir['secondary_details'] = []
+    ir['negative_constraints'] = []
+    ir['world'] = dict(era=f('ancient'), location=f('courtyard'), historical_context=f('ancient courtyard'),
+                      environment_rules=[f('Only period-compatible objects')])
+    ir['environment'] = dict(architecture=f('stone courtyard','IMPORTANT'), topology=f('open courtyard','IMPORTANT'),
+                            required_period_objects=f('stone walls','IMPORTANT'))
+    ir['camera'] = dict(framing=f('courtyard','IMPORTANT'),shot_size=f('wide','IMPORTANT'),
+                       readable_details=f('stone','IMPORTANT'),perspective=f('eye level','IMPORTANT'))
+    ir['lighting'] = dict(time_of_day=f('morning','IMPORTANT'),light_sources=f('sun','IMPORTANT'),
+                         contrast=f('soft','IMPORTANT'),realism=f('cinematic CG','IMPORTANT'))
+    ir['video_temporal'] = dict(start_state=f(r.prompt),action_progression=[f('hold empty courtyard',scope='CLIP')],
+        performance=[f('still environment',scope='CLIP')],camera_motion=f('fixed',scope='CLIP'),end_state=f('same courtyard'))
+    ir['source_fingerprint'] = ir_source_fingerprint(r)
+    return r.model_copy(update={'prompt_ir': ir})
 
 
 def ref(id='ref1',kind='image',semantics=('identity',),duration=None):
@@ -77,7 +100,7 @@ async def test_shared_lifecycle_and_official_wire_contract(provider):
     body=json.loads(calls[0].content)
     assert calls[0].headers['Authorization']==('Token ' if provider=='vidu' else 'Bearer ')+'OFFLINE_SECRET_NEVER_LOG'
     assert 'An empty ancient courtyard' in json.dumps(body)
-    assert 'DESIGNED_CG' in json.dumps(body) and 'no modern objects' in json.dumps(body)
+    assert 'DESIGNED_CG' in json.dumps(body) and 'Only period-compatible objects' in json.dumps(body)
     if provider=='minimax':assert body['model']=='MiniMax-H3' and body['resolution']=='768P' and calls[1].url.path=='/v2/query/video_generation/job1'
     if provider=='wan':assert calls[0].headers['X-DashScope-Async']=='enable' and body['parameters']['prompt_extend'] is False
     if provider=='kling':assert calls[0].url.path=='/text-to-video/kling-3.0' and calls[1].url.params['task_ids']=='job1' and t.actual_cost==.1
@@ -134,7 +157,7 @@ def test_unconfigured_provider_is_optional_and_endpoint_official(provider):
 
 def with_refs(r,refs,**changes):
     pack=r.continuity.model_copy(update={'references':tuple(refs),'required_reference_ids':tuple(x.media_id for x in refs)})
-    return VideoRequest.model_validate(r.model_copy(update={'continuity':pack,**changes}).model_dump())
+    return with_ir(VideoRequest.model_validate(r.model_copy(update={'continuity':pack,**changes}).model_dump()))
 
 
 @pytest.mark.parametrize('provider',['seedance','minimax','wan','vidu'])
@@ -187,6 +210,7 @@ async def formal_setup(x,client):
     import os
     os.environ['DRAMA_PLUGIN_VISUAL_AUTHORITY_ROOT']=str(x.tmp/'visual-authority')
     r=request('seedance');r.continuity.work_id=x.data.work.id
+    r=with_ir(r)
     r=bind_video_request(x.data.work,r)
     x.data.work.content['continuityPacks']={'C1':r.continuity.model_dump(mode='json',by_alias=True)}
     req=Requirements(work_id=x.data.work.id,scene_id=x.data.scene.id,shot_id=x.data.shot.id,target_id='clip1',shot_type='ENVIRONMENT',
@@ -275,11 +299,13 @@ async def test_vidu_reference_alias_and_kling_omni_motion_modes():
         r=with_refs(r,[a,v],input_mode='reference',reference_images=(a,),reference_videos=(v,),native_audio=False)
         assert 'REFERENCE_VIDEO_REQUIRES_EXPLICIT_MULTI_SHOT' in capability_errors(r,'kling-3-omni')
         r.provider_hints={'multi_shot':True}
+        r=with_ir(r)
         p=ADAPTERS['kling']('kling-3-omni',config('kling'),resolve=resolve,client=c)
         r,urls=await p.materialize(r)
         assert p.create_path(r)=='/omni-video/kling-3.0-omni'
         assert p.payload(r,urls,'id')['contents'][-1]['type']=='feature_video'
         r.continuity.primary_model='kling-3-motion';r.input_mode='motion_transfer';r.provider_hints={'allow_duration_truncation':True}
+        r=with_ir(r)
         p=ADAPTERS['kling']('kling-3-motion',config('kling'),resolve=resolve,client=c)
         r,urls=await p.materialize(r)
         assert p.create_path(r)=='/motion-control/kling-3.0'

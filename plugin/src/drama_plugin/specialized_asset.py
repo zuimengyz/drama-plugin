@@ -187,6 +187,9 @@ def provider_projection(receipt: dict[str, Any], originals: Mapping[str, Any], c
         receipt['assetId'], originals, current, casting_mode=receipt['castingMode'])
     if receipt != expected:
         raise ValueError('SPECIALIZED_ASSET_COMPILATION_CHANGED')
-    return {'prompt': receipt['prompt'], 'promptFingerprint': receipt['promptFingerprint'],
+    from .visual.payload_scope import asset_payload
+    scoped = asset_payload(receipt)
+    return {'prompt': scoped['prompt'], 'promptFingerprint': sha256_canonical(scoped['prompt']),
+        'scope_review': scoped['scope_review'],
         'medium': receipt['medium'], 'promptEnhancement': 'DISABLED',
         'compilationFingerprint': sha256_canonical(receipt), 'productionAuthorized': False}

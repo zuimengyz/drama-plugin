@@ -122,7 +122,9 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
                        if a['attempt_id'] == payload['attempt_id'])
         requirements = attempt['frame_snapshot'].get('requirements', {})
         intent = requirements.get('frozen_creative', {}).get('cinematic_direction')
-        validate_visual_submission(work, attempt['request'], authority_context=requirements.get('authority_context'), creative_intent=intent)
+        frame_context = attempt['frame_snapshot'].get('spec', {}).get('scope_context') or {}
+        authority = requirements.get('authority_context') or frame_context.get('authority_context')
+        validate_visual_submission(work, attempt['request'], authority_context=authority, creative_intent=intent)
     if command == 'check-input':
         duty = route_input_gate(route, payload['target_id'], payload['purpose'])
         if not work.content.get('productionStage'):

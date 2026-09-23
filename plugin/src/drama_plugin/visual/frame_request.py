@@ -97,6 +97,7 @@ class FrameSpec(Record):
     identity_bootstrap: Text | None = None
     reference_members: dict[str, tuple[Text, ...]] = Field(default_factory=dict)
     edit_source: EditSource | None = None
+    scope_context: dict[str, Any] | None = None
 
 
 class Template(Record):
@@ -261,6 +262,13 @@ def compile_frame(spec: FrameSpec, template: Template) -> dict[str, Any]:
     if spec.edit_source:
         prompt = ('Edit the supplied exact frame. Preserve the source frame identities, subject count and scene except for the explicitly requested edit. '
                   'This is reference-conditioned editing, with no mask control.\n' + spec.edit_source.instruction)
+    from drama_plugin.visual.payload_scope import compile_payload, review_compiled
+    scope_review = None
+    if spec.scope_context is not None:
+        scoped = compile_payload('FIRST_FRAME', spec.scope_context)
+        prompt = scoped['prompt']; scope_review = scoped['scope_review']
+    else:
+        prompt = review_compiled(prompt, 'FIRST_FRAME')
     overrides: dict[str, Any] = {slot: {"image": ref.upload_name} for slot, ref in zip(template.image_slots, inputs)}
     overrides[template.prompt_node] = {**template.settings, template.prompt_key: prompt, template.seed_key: spec.seed}
     request = {"tool": "run_template", "name": template.name, "description": spec.shot_id + "-frame", "input_overrides": overrides}
@@ -294,9 +302,12 @@ def compile_frame(spec: FrameSpec, template: Template) -> dict[str, Any]:
     if not spec.identity_bootstrap: spec_data.pop('identity_bootstrap')
     if not spec.reference_members: spec_data.pop('reference_members')
     if not spec.edit_source: spec_data.pop('edit_source')
+    if spec.scope_context is None: spec_data.pop('scope_context')
     if template.api_workflow is None: template_data.pop('api_workflow')
     material = {"schema": "visual-frame-preflight-v1", "spec": spec_data,
                 "template": template_data, "request": request, "risks": sorted(risks)}
+    if scope_review is not None:
+        material['scope_review'] = scope_review
     return {**material, "fingerprint": sha256_canonical(material)}
 
 

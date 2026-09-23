@@ -49,7 +49,8 @@ def test_real_9736_authority_context_and_provider_budget(real_authority):
     validate_visual_submission(work, payload, authority_context=context, creative_intent=frozen)
     validate_visual_submission(work, {'videoRequest': {'inputMode': 'text_to_video', 'prompt': result['prompt']}},
                                authority_context=context, creative_intent=frozen)
-    assert len(result['prompt']) == 1726
+    assert len(result['prompt']) <= 2000
+    assert '后续S05' not in result['prompt']
     assert result['prompt_budget']['hardMaxPromptCharacters'] == 2000
     for asset in context['assets']:
         assert asset['receipt']['prompt'] not in result['prompt']
@@ -135,4 +136,6 @@ def test_legacy_asset_image_chain_still_valid(tmp_path, monkeypatch):
     monkeypatch.setenv('DRAMA_PLUGIN_VISUAL_AUTHORITY_ROOT', str(tmp_path))
     work = NS(id='work', content={'movieVisualMediumRef': dump_contract(bible.runtime_ref),
         'specializedAssetCompilationRefs': [compilation['compilationRef']], 'visualSourceCurrent': current})
-    validate_visual_submission(work, {'prompt': compilation['compilation']['prompt']})
+    validate_visual_submission(work, {'prompt': compilation['projection']['prompt']})
+    with pytest.raises(ValueError, match='CONTAINS_AUTHORITY_CONTEXT'):
+        validate_visual_submission(work, {'prompt': compilation['compilation']['prompt']})

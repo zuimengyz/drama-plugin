@@ -85,8 +85,9 @@ def test_actual_compiler_provider_all_combinations(tmp_path,medium,source):
     host,bible,ref,current=fixture(tmp_path,medium,source)
     for asset in bible.assets:
         result=host.compile(ref,asset.id,current=current,casting_mode='HERO_CASTING');receipt=result['compilation'];projection=result['projection']
-        assert projection['prompt']==receipt['prompt'] and projection['promptEnhancement']=='DISABLED'
-        assert 'do not reveal later anxiety' in projection['prompt']
+        assert projection['prompt'] != receipt['prompt'] and projection['promptEnhancement']=='DISABLED'
+        assert 'do not reveal later anxiety' not in projection['prompt']
+        assert projection['scope_review']['gate'] == 'VISUAL_PROVIDER_SCOPE_REVIEW'
         assert {'DRAMATURGY','GLOBAL_STYLE','ASSET_DESIGN','DIRECTOR_INTENT','RUNTIME_MEDIUM'} <= {r['layer'] for r in receipt['sourceMap']}
         if medium=='live_action':
             for token in ('VISIBLE_FILMIC_CG','LOOKDEV_NEUTRAL','GROUNDED_STYLIZED','digital sculpture','authored digital form','CG groom'):assert token not in projection['prompt']

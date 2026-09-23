@@ -8,6 +8,20 @@ from typing import Any
 from drama_plugin.contracts.base import dump_contract, sha256_canonical
 from drama_plugin.visual.cinematic import verify_frozen
 from drama_plugin.hosts.prompt_budget import compact_prose, prompt_limit, budget_prompt, PROVENANCE
+from drama_plugin.visual.payload_scope import review_compiled
+
+
+INTERNAL_FIELDS = set(PROVENANCE) | {'reason', 'sourceRefs', 'sourceMap', 'approvedBy', 'scenePurpose',
+    'audienceInterpretation', 'misreadRisk', 'futureContinuity', 'musicPlanning', 'grammarFingerprint',
+    'nativeAudioPolicy', 'canonicalDialogueBindings', 'generatedMusic', 'intentionalSilence'}
+
+
+def executable(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {k: executable(v) for k, v in value.items() if k not in INTERNAL_FIELDS}
+    if isinstance(value, list):
+        return [executable(v) for v in value]
+    return value
 
 
 def leaves(value: Any, path: str = '') -> dict[str, Any]:
@@ -44,6 +58,7 @@ def source_audio(spec: Any, sound: str) -> bool:
 
 def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
     spec = verify_frozen(r.frozen_creative['cinematic_direction'])
+    audio = source_audio(spec, r.sound)
     authority = getattr(r, 'authority_context', None)
     if authority is not None:
         from drama_plugin.hosts.specialized_asset import validate_authority_context
@@ -75,9 +90,12 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
                       'STABILITY / DO NOT CHANGE': '连续约束', 'SOURCE SOUND': '声音', 'ENDING STATE': '结束',
                       'PERFORMANCE objective': '目的', 'PERFORMANCE interactionTarget': '对象',
                       'PERFORMANCE intendedBelief': '希望对方相信', 'PERFORMANCE concealed': '隐藏', 'PERFORMANCE emotionalArc': '情绪'}
-            append(title + ': ' + prose(value), titles.get(title, title) + ':' +
-                   compact_prose(value, performance=path == 'performance.directorPerformance'))
+            append(title + ': ' + prose(executable(value)), titles.get(title, title) + ':' +
+                   compact_prose(executable(value), performance=path == 'performance.directorPerformance'))
         mark(path, 'PROMPT', prompt_field, f'完整保留于 {title}；不生成第二套时间轴')
+        for field in list(manifest):
+            if field.startswith(path + '.') and field.rsplit('.', 1)[-1] in INTERNAL_FIELDS:
+                mark(field, 'UPSTREAM_LOCK', 'frozen', 'Scope: internal evidence, not executable text', False)
     for key in ('schemaVersion','workId','sceneId','shotId','creativeRevision','sourceFingerprint','visualBibleFingerprint','narrativeIntent',
                 'anchorOmissionReason','secondaryMotionOmissionReason'):
         mark(key, 'UPSTREAM_LOCK', 'frozen', '来源/创作推理由冻结合同约束', False)
@@ -95,6 +113,9 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
     if spec.behavior_anchor:
         mark('behaviorAnchor.continuityBasis','UPSTREAM_LOCK','frozen','历史/连续性依据，无需作为独立动作',False)
     for key in ('objective','interactionTarget','intendedBelief','concealed','emotionalArc'):
+        if key in {'intendedBelief', 'concealed'}:
+            mark('performance.' + key, 'UPSTREAM_LOCK', 'frozen', 'Internal performance interpretation', False)
+            continue
         emit('PERFORMANCE '+key, 'performance.'+key, raw['performance'][key])
     if spec.performance.director_performance:
         emit('ACTOR DIRECTION / SHARED PERFORMANCE INTENT', 'performance.directorPerformance', raw['performance']['directorPerformance'])
@@ -109,8 +130,8 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
                     f'{d.speaker_key} → {d.target}: "{text}"；{d.delivery}；after: {d.after_line}')
         append('AUDIO / DIALOGUE ' + dialogue, '对白' + dialogue)
         if d.voice_performance:
-            append('NATIVE VOICE DIRECTION / SAME PERFORMANCE: ' + prose(dump_contract(d.voice_performance)),
-                   '声音表演:' + compact_prose(dump_contract(d.voice_performance), performance=True))
+            append('NATIVE VOICE DIRECTION / SAME PERFORMANCE: ' + prose(executable(dump_contract(d.voice_performance))),
+                   '声音表演:' + compact_prose(executable(dump_contract(d.voice_performance)), performance=True))
         mark(f'dialogue[{i}]','PROMPT',prompt_field,'仅说当前覆盖片段；整句正文保留为 Canon，不重复整句')
         if d.text_range is not None:
             manifest[f'dialogue[{i}].text']['executed_text_range'] = list(d.text_range)
@@ -121,10 +142,12 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
     for title,key in [('CAMERA','cinematography'),('ACTIVE LIGHT','lighting'),('SECONDARY MOTION','secondaryMotion'),
                       ('ENVIRONMENT INTERACTION','environmentInteraction'),('STABILITY / DO NOT CHANGE','stabilityContract'),
                       ('SOURCE SOUND','sourceSoundIntent'),('ENDING STATE','endingState')]:
+        if key == 'sourceSoundIntent' and not audio:
+            mark(key, 'UPSTREAM_LOCK', 'frozen', 'Silent route: no provider sound execution', False)
+            continue
         emit(title,key,raw[key])
     for i,_ in enumerate(spec.stability_contract):
         mark(f'stabilityContract[{i}].reason','UPSTREAM_LOCK','frozen','约束依据；允许/禁止行为已投影',False)
-    audio = source_audio(spec,r.sound)
     audio_field = semantics.get('audio', 'generate_audio' if inspected['class_type'].startswith('Flux') else 'model.generate_audio')
     mark('sourceSoundIntent.nativeAudioPolicy','PARAMETER' if audio_field in c.parameters else 'UPSTREAM_LOCK',
          audio_field if audio_field in c.parameters else 'native AV node contract', '源声音意图与路线声音共同决定；固定原生AV节点只能启用')
@@ -149,14 +172,19 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
             if ref.necessity == 'REQUIRED':
                 missing_references.append(f'{ref.role}/{ref.subject}/{ref.purpose}')
                 mark(f'referenceRequirements[{i}]','UNSUPPORTED','none','必需参考尚未履行')
-                append('REQUIRED REFERENCE MISSING: ' + missing_references[-1], '缺必需参考:' + missing_references[-1])
+    for path in list(manifest):
+        if manifest[path]['destination'] == 'PROMPT' and any(part.split('[')[0] in INTERNAL_FIELDS for part in path.split('.')):
+            mark(path, 'UPSTREAM_LOCK', 'frozen', 'Scope: internal evidence retained upstream', False)
     if set(manifest) != set(all_fields):
         raise ValueError('UNPROJECTED_CANONICAL_FIELDS:' + ','.join(set(all_fields)-set(manifest)))
     if authority is not None:
         from drama_plugin.hosts.specialized_asset import authority_semantics
         asset_text = authority_semantics(authority)
         append('ASSET CONTINUITY:\n' + asset_text, '资产连续:\n' + asset_text)
-    result: dict[str, Any] = {'schema':'provider-semantic-projection-v1','prompt':'\n\n'.join(sections),
+    # Unified scope review precedes the existing prompt-budget gate.
+    full_prompt = review_compiled('\n\n'.join(sections), 'VIDEO')
+    compact_prompt = review_compiled('\n'.join(compact_sections), 'VIDEO')
+    result: dict[str, Any] = {'schema':'provider-semantic-projection-v1','prompt':full_prompt,
               # Map iteration order is not a creative instruction. Formal JSON
               # storage may reorder object keys; the audit manifest must not drift.
               'generate_audio':audio,'manifest':[manifest[k] for k in sorted(manifest)]}
@@ -165,9 +193,11 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
     capability = getattr(c, 'capability', {})
     limit, source = prompt_limit(capability, semantics, getattr(c, 'variant', ''))
     # All reference/wrapper text is already included, so reserve exactly zero.
-    result['prompt'], budget = budget_prompt(result['prompt'], '\n'.join(compact_sections),
+    result['prompt'], budget = budget_prompt(result['prompt'], compact_prompt,
         model=getattr(c, 'model', semantics['model']), limit=limit, source=source)
     result['prompt_budget'] = budget
+    result['scope_review'] = {'gate': 'VISUAL_PROVIDER_SCOPE_REVIEW', 'task': 'VIDEO',
+                              'prompt_fingerprint': sha256_canonical(result['prompt'])}
     if budget['status'] == 'COMPRESSIBLE':
         for item in result['manifest']:
             path = item['canonical_field']

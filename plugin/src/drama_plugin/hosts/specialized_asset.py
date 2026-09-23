@@ -159,9 +159,9 @@ def compile_authority_context(work: Any, creative_intent: dict[str, Any]) -> dic
         spec = verify_frozen(creative_intent)
         if spec.work_id != work.id:
             raise ValueError('MOVIE_VISUAL_AUTHORITY_MISMATCH')
-    priorities = {'CHARACTER': ('visual_continuity', 'face', 'body'),
-                  'COSTUME': ('continuity', 'garment_structure', 'material'),
-                  'SCENE': ('environment_continuity', 'architecture')}
+    priorities = {'CHARACTER': ('face', 'body'),
+                  'COSTUME': ('garment_structure', 'material'),
+                  'SCENE': ('architecture',)}
     assets = []
     for ref, receipt in zip(work.content['specializedAssetCompilationRefs'], receipts, strict=True):
         asset = next(a for a in receipt['assetBible']['assets'] if a['id'] == receipt['assetId'])
@@ -241,6 +241,10 @@ def validate_visual_submission(work: Any, request: dict[str, Any], *, authority_
     collect(payload)
     context = authority_context if authority_context is not None else request.get('authority_context')
     is_video_intent = 'input_mode' in request or 'inputMode' in request
+    from ..visual.payload_scope import review_text, asset_payload
+    task = 'VIDEO' if is_video_intent or (creative_intent or {}).get('state') == 'CINEMATIC_DIRECTION_FROZEN' else 'IMAGE'
+    for prompt in prompts:
+        review_text(prompt, task, authority_texts=tuple(r['prompt'] for r in receipts))
     if context is not None or creative_intent is not None or is_video_intent:
         if not context:
             raise ValueError('SUBMISSION_DOES_NOT_CONSUME_SPECIALIZED_ASSETS: ASSET_AUTHORITY_CONTEXT_REQUIRED')
@@ -256,5 +260,6 @@ def validate_visual_submission(work: Any, request: dict[str, Any], *, authority_
         return
     # Image/casting consumers still use complete asset-design prompts. This
     # compatibility branch is never sufficient for a cinematic video frame.
-    if not prompts or not all(any(receipt['prompt'] in prompt for prompt in prompts) for receipt in receipts):
+    if not prompts or not all(all(any(line in prompt for prompt in prompts)
+                                  for line in asset_payload(receipt)['prompt'].splitlines()) for receipt in receipts):
         raise ValueError('SUBMISSION_DOES_NOT_CONSUME_SPECIALIZED_ASSETS')

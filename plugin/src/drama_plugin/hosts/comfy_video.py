@@ -170,6 +170,8 @@ def compile_request(r: Requirements, c: Candidate, graph: dict[str, Any], schema
         if params.get('generate_audio') is not (r.sound != 'SILENT'):
             raise ValueError('SOUND_SCHEME_CHANGED')
     validate_capability(c, r, inspected, prompt, projection)
+    from drama_plugin.visual.payload_scope import review_text
+    review_text(prompt, 'VIDEO')
     if projection:
         validate_reference_transport(r, bindings, inspected)
     overrides: dict[str, Any] = {mid: {**params, str(semantics['prompt']): prompt}}

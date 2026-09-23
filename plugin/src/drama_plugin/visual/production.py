@@ -399,6 +399,20 @@ def check_campaign(state: dict[str, Any], *, verify_inputs: bool = False) -> Non
             verify_visual(frame)
 
 
+def _confirmed_no_media(attempt: dict[str, Any], receipt: dict[str, Any] | None = None) -> bool:
+    proof = receipt if receipt is not None else attempt.get('no_media_failure_evidence', {})
+    if not isinstance(proof, dict):
+        return False
+    return bool(attempt.get('status') == 'FAILED' and attempt.get('job_id')
+        and proof.get('job_id') == attempt['job_id'] and proof.get('terminal_failure') is True
+        and type(proof.get('usable_media_count')) is int and proof['usable_media_count'] == 0
+        and isinstance(proof.get('evidence'), str) and proof['evidence'].strip()
+        and not attempt.get('output_hash') and not attempt.get('copies')
+        and not attempt.get('delivery', {}).get('mediaId')
+        and not attempt.get('video_task', {}).get('outputMediaId')
+        and not attempt.get('video_task', {}).get('output_media_id'))
+
+
 def reserve(state: dict[str, Any], shot_id: str, *, quote: dict[str, Any] | None = None,
             balance: dict[str, Any] | None = None,
             execution_binding: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -424,7 +438,11 @@ def reserve(state: dict[str, Any], shot_id: str, *, quote: dict[str, Any] | None
         prior = [a for a in state['attempts'][start:] if a['shot_id'] == shot_id]
     if any(usable(a) for a in prior):
         raise ValueError('DO_NOT_REGENERATE_PASSED_SHOT')
-    if prior and prior[-1].get('review_status') != 'FAIL':
+    no_media = bool(prior and prior[-1].get('review_status') == 'NOT_APPLICABLE_NO_MEDIA'
+                    and _confirmed_no_media(prior[-1]))
+    if no_media and prior[-1].get('technical_retry_count', 0) >= (1 if continuation else 2):
+        raise ValueError('TECHNICAL_RETRIES_EXHAUSTED')
+    if prior and prior[-1].get('review_status') != 'FAIL' and not no_media:
         raise ValueError('TECHNICAL_FAILURE_REQUIRES_OUTCOME_RECOVERY_NOT_VISUAL_REVISION')
     passed = {a['shot_id'] for a in state['attempts'] if a.get('review_status', '').startswith('PASS')}
     if shot_id not in state['pilots'] and not set(state['pilots']) <= passed:
@@ -435,7 +453,7 @@ def reserve(state: dict[str, Any], shot_id: str, *, quote: dict[str, Any] | None
         raise ValueError('VIDEO_REQUIRES_SHARED_STAGE_BUDGET')
     if prior and is_video and prior[-1]['frame_fingerprint'] == frame['fingerprint']:
         raise ValueError('VIDEO_REVISION_REQUIRES_REQUALIFIED_DECISION')
-    if prior and not is_video and not frame['spec'].get('edit_source'):
+    if prior and not no_media and not is_video and not frame['spec'].get('edit_source'):
         t = frame['template']
         correction = '; '.join(f['evidence'] for f in prior[-1].get('current_review', prior[-1]['review'])['findings'] if f['severity'] == 'MAJOR')
         if item['tool'] == 'submit_workflow':
@@ -455,6 +473,10 @@ def reserve(state: dict[str, Any], shot_id: str, *, quote: dict[str, Any] | None
         attempt.update(call_id=attempt_id, target_id=shot_id,
                        call_reason='CONTENT_REWORK' if prior else 'USER_AUTHORIZED_CANDIDATE' if continuation else 'INITIAL',
                        production_layer='LIMITED_TRIAL')
+    if no_media:
+        attempt.update(call_reason='TECHNICAL_RECOVERY_NO_MEDIA', retry_of=prior[-1]['attempt_id'],
+                       technical_retry_count=prior[-1].get('technical_retry_count', 0) + 1,
+                       retry_evidence=deepcopy(prior[-1]['no_media_failure_evidence']))
     if 'stage' in state:
         attempt.update(reserved_credits=reserved_credits, quote=deepcopy(quote), balance=deepcopy(balance),
                        media_kind='VIDEO' if is_video else 'IMAGE', stage_id=state['stage']['id'],
@@ -583,12 +605,19 @@ def revise_review(state: dict[str, Any], *, review: dict[str, Any], reason: str,
     return result
 
 
-def resume(state: dict[str, Any], *, reason: str, incremental_credits: float = 0) -> None:
+def resume(state: dict[str, Any], *, reason: str, incremental_credits: float = 0,
+           no_media_failure: dict[str, Any] | None = None) -> None:
     """Host records its next strategy; no creative approval token or counter reset."""
     if not reason.strip() or not math.isfinite(incremental_credits) or incremental_credits < 0:
         raise ValueError('REPLAN_REASON_AND_COST_REQUIRED')
     if any(a['status'] in {'RESERVED','UNKNOWN'} for a in state['attempts']):
         raise ValueError('RECOVER_ORIGINAL_SUBMISSION_FIRST')
+    if no_media_failure is not None:
+        attempt = next((a for a in state['attempts'] if a['attempt_id'] == no_media_failure.get('attempt_id')), None)
+        if attempt is None or not _confirmed_no_media(attempt, no_media_failure) or attempt.get('review'):
+            raise ValueError('CONFIRMED_TERMINAL_FAILURE_WITHOUT_MEDIA_REQUIRED')
+        attempt.update(no_media_failure_evidence=deepcopy(no_media_failure),
+                       review_status='NOT_APPLICABLE_NO_MEDIA', content_status='NOT_APPLICABLE_NO_MEDIA')
     state['remediations'].append({'reason':reason,'incremental_credits':incremental_credits,
         'after_attempt':len(state['attempts']),'previous_pause':state.get('pause')})
     state['pause'] = None

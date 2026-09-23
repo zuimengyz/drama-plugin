@@ -196,6 +196,13 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
     result['prompt'], budget = budget_prompt(result['prompt'], compact_prompt,
         model=getattr(c, 'model', semantics['model']), limit=limit, source=source)
     result['prompt_budget'] = budget
+    from drama_plugin.visual.positive_projection import normalize
+    result['prompt'], normalization = normalize(result['prompt'], 'VIDEO', getattr(r, 'prompt_normalization', None), audio=audio)
+    if normalization is not None:
+        result['normalization'] = {**normalization, 'pre_normalization_budget': budget}
+        # Positive wording can grow: retain the final provider hard-limit gate.
+        result['prompt'], result['prompt_budget'] = budget_prompt(result['prompt'], result['prompt'],
+            model=getattr(c, 'model', semantics['model']), limit=limit, source=source)
     result['scope_review'] = {'gate': 'VISUAL_PROVIDER_SCOPE_REVIEW', 'task': 'VIDEO',
                               'prompt_fingerprint': sha256_canonical(result['prompt'])}
     if budget['status'] == 'COMPRESSIBLE':

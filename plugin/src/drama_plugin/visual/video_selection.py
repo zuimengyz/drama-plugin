@@ -58,6 +58,7 @@ class Requirements(Record):
     language: Text | None = None
     frozen_creative: dict[str, Any] = Field(min_length=1)
     authority_context: dict[str, Any] | None = None
+    prompt_normalization: dict[str, Any] | None = None
     inputs: tuple[VideoInput, ...]
     video_request: VideoRequest | None = None
     reference_duties: tuple[ReferenceDuty, ...] = ()

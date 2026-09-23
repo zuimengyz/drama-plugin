@@ -98,6 +98,7 @@ class FrameSpec(Record):
     reference_members: dict[str, tuple[Text, ...]] = Field(default_factory=dict)
     edit_source: EditSource | None = None
     scope_context: dict[str, Any] | None = None
+    prompt_normalization: dict[str, Any] | None = None
 
 
 class Template(Record):
@@ -269,6 +270,11 @@ def compile_frame(spec: FrameSpec, template: Template) -> dict[str, Any]:
         prompt = scoped['prompt']; scope_review = scoped['scope_review']
     else:
         prompt = review_compiled(prompt, 'FIRST_FRAME')
+    from drama_plugin.visual.positive_projection import normalize
+    prompt, normalization = normalize(prompt, 'FIRST_FRAME', spec.prompt_normalization)
+    if normalization and scope_review:
+        scope_review = {**scope_review, 'pre_normalization_prompt_fingerprint': scope_review['prompt_fingerprint'],
+                        'prompt_fingerprint': normalization['prompt_fingerprint']}
     overrides: dict[str, Any] = {slot: {"image": ref.upload_name} for slot, ref in zip(template.image_slots, inputs)}
     overrides[template.prompt_node] = {**template.settings, template.prompt_key: prompt, template.seed_key: spec.seed}
     request = {"tool": "run_template", "name": template.name, "description": spec.shot_id + "-frame", "input_overrides": overrides}
@@ -303,11 +309,14 @@ def compile_frame(spec: FrameSpec, template: Template) -> dict[str, Any]:
     if not spec.reference_members: spec_data.pop('reference_members')
     if not spec.edit_source: spec_data.pop('edit_source')
     if spec.scope_context is None: spec_data.pop('scope_context')
+    if spec.prompt_normalization is None: spec_data.pop('prompt_normalization')
     if template.api_workflow is None: template_data.pop('api_workflow')
     material = {"schema": "visual-frame-preflight-v1", "spec": spec_data,
                 "template": template_data, "request": request, "risks": sorted(risks)}
     if scope_review is not None:
         material['scope_review'] = scope_review
+    if normalization is not None:
+        material['normalization'] = normalization
     return {**material, "fingerprint": sha256_canonical(material)}
 
 

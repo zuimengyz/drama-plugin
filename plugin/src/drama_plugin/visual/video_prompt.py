@@ -13,9 +13,11 @@ def compile_video_prompt(r: VideoRequest) -> str:
     for kind, refs in [('image', r.reference_images), ('video', r.reference_videos), ('audio', r.reference_audios)]:
         labels.extend({'slot': f'reference_{kind}_{i + 1}', 'semantics': list(x.semantics)} for i, x in enumerate(refs))
     from drama_plugin.visual.payload_scope import review_compiled
-    return review_compiled((r.prompt + ('\nNegative constraints: ' + r.negative_prompt if r.negative_prompt else '')
+    prompt = review_compiled((r.prompt + ('\nNegative constraints: ' + r.negative_prompt if r.negative_prompt else '')
             + '\nCanonical continuity (preserve exactly): ' + canonical_json(facts)
             + ('\nReference roles: ' + canonical_json(labels) if labels else '')), 'VIDEO', audio=r.native_audio)
+    from drama_plugin.visual.positive_projection import normalize
+    return normalize(prompt, 'VIDEO', r.prompt_normalization, audio=r.native_audio)[0]
 
 
 

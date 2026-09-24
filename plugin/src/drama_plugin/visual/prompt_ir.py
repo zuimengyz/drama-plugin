@@ -87,10 +87,17 @@ def compile_ir(raw: VisualPromptIR | dict[str, Any], *, provider_family: str,
         group = (0 if path.startswith('edit_delta') else 1 if path.startswith('preserve') else 2) if ir.edit_delta else 0
         return group, RANK[row['priority']]
     rows.sort(key=order)
+    if task in STATIC:
+        from drama_plugin.visual.image_serializer import select_image_rows
+        rows, excluded = select_image_rows(ir, rows)
+        omitted.extend(excluded)
     heading = ('IMAGE EDIT: SOURCE DELTA + PRESERVE + TARGET' if ir.edit_delta else
                'VIDEO CLIP' if task == 'VIDEO' else 'CURRENT VISIBLE FRAME' if task in {'FIRST_FRAME', 'KEY_FRAME'} else
                'TEXT TO IMAGE TARGET')
     def render(selected: list[dict[str, Any]]) -> str:
+        if task in STATIC:
+            from drama_plugin.visual.image_serializer import render_image
+            return render_image(ir, selected)
         return heading + '\n' + '\n'.join(f"{r['priority']} {r['path']}: {r['text']}" for r in selected)
     full = render(rows)
     kept = list(rows)

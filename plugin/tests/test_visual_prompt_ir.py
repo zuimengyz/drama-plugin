@@ -50,7 +50,7 @@ def visual_ir(task='FIRST_FRAME', provider='Flux.2 [pro]'):
 def test_static_contract_and_preserved_internal_intent(task):
     ir = visual_ir(task); before = deepcopy(ir)
     c = compile_ir(ir, provider_family='Flux.2 [pro]')
-    assert 'CRITICAL subject.man.apparent_age: 38–42 years old' in c['prompt']
+    assert 'man: 38–42 years old' in c['prompt']
     for text in ['19th century', 'old wool coat', 'gas street lamps', 'man left, girl right']:
         assert text in c['prompt']
     assert 'hand can grip' not in c['prompt'] and 'no scars' not in c['prompt']
@@ -63,13 +63,13 @@ def test_static_contract_and_preserved_internal_intent(task):
 def test_edit_corrections_survive_positive_projection(task):
     c = compile_ir(visual_ir(task), provider_family='Flux.2 [pro]')
     p = c['prompt']
-    assert 'SOURCE DELTA + PRESERVE + TARGET' in p
-    assert 'man appears too old' in p and 'CORRECT: 38–42' in p
-    assert 'modern parking sign' in p and 'REPLACE: continuous historical' in p
-    assert 'preserve[0]' in p and 'wet stone road' in p
-    assert p.index('edit_delta') < p.index('subject.man.apparent_age')
+    assert p.startswith('MUST CHANGE\n')
+    assert 'man appears too old → 38–42' in p and 'Correct man face' in p
+    assert 'modern parking sign → continuous historical' in p and 'Replace right background' in p
+    assert 'PRESERVE' in p and 'wet stone road' in p
+    assert p.index('MUST CHANGE') < p.index('PRESERVE') < p.index('TARGET RESULT')
     ir = visual_ir(task); ir['edit_delta'][1]['operation'] = 'remove'
-    assert 'REMOVE:' in compile_ir(ir, provider_family='Flux.2 [pro]')['prompt']
+    assert 'Remove right background' in compile_ir(ir, provider_family='Flux.2 [pro]')['prompt']
 
 
 @pytest.mark.parametrize('mode', ['text', 'single_image', 'first_last', 'reference'])
@@ -116,9 +116,9 @@ def test_missing_or_wrong_contract_fails_closed(mutation):
 
 def test_scene_and_character_text_to_image():
     ir = visual_ir('TEXT_TO_IMAGE'); ir['task']['subject_kind'] = 'CHARACTER'
-    assert 'apparent_age' in compile_ir(ir, provider_family='Flux.2 [pro]')['prompt']
+    assert '38–42 years old' in compile_ir(ir, provider_family='Flux.2 [pro]')['prompt']
     ir['task']['subject_kind'] = 'SCENE'; ir['subjects'] = []; ir.pop('action'); ir.pop('blocking')
-    assert 'environment.architecture' in compile_ir(ir, provider_family='Flux.2 [pro]')['prompt']
+    assert 'plaster facades' in compile_ir(ir, provider_family='Flux.2 [pro]')['prompt']
 
 
 def test_frame_integration_and_submission_gate(tmp_path):
@@ -175,6 +175,6 @@ def test_reference_edit_frame_preserves_operation_and_rejects_old_normalizer(tmp
     compiled=compile_frame(spec.model_copy(update={'prompt_ir':ir}),template)
     verify_compiled(compiled)
     require_submission_ir(compiled,compiled['request'])
-    assert 'REPLACE:' in compiled['prompt_ir_compilation']['prompt']
+    assert 'Replace right background' in compiled['prompt_ir_compilation']['prompt']
     with pytest.raises(ValueError,match='POST_REWRITE_FORBIDDEN'):
         compile_frame(spec.model_copy(update={'prompt_ir':ir,'prompt_normalization':{'rules':[]}}),template)

@@ -454,7 +454,10 @@ def reserve(state: dict[str, Any], shot_id: str, *, quote: dict[str, Any] | None
         raise ValueError('VIDEO_REQUIRES_SHARED_STAGE_BUDGET')
     if prior and is_video and prior[-1]['frame_fingerprint'] == frame['fingerprint']:
         raise ValueError('VIDEO_REVISION_REQUIRES_REQUALIFIED_DECISION')
-    if prior and not no_media and not is_video and not frame['spec'].get('edit_source'):
+    # Typed IR owns the complete executable prompt, including any edit delta.
+    # Legacy review prose must not mutate its sealed request after quotation.
+    if (prior and not no_media and not is_video and not frame['spec'].get('edit_source')
+            and not frame.get('prompt_ir_compilation')):
         t = frame['template']
         correction = '; '.join(f['evidence'] for f in prior[-1].get('current_review', prior[-1]['review'])['findings'] if f['severity'] == 'MAJOR')
         if item['tool'] == 'submit_workflow':

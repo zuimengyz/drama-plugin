@@ -87,6 +87,11 @@ def compile_ir(raw: VisualPromptIR | dict[str, Any], *, provider_family: str,
         group = (0 if path.startswith('edit_delta') else 1 if path.startswith('preserve') else 2) if ir.edit_delta else 0
         return group, RANK[row['priority']]
     rows.sort(key=order)
+    vidu = task == 'VIDEO' and provider_family.casefold().startswith('vidu')
+    if vidu:
+        from drama_plugin.visual.vidu_serializer import select_rows
+        rows, excluded = select_rows(ir, rows)
+        omitted.extend(excluded)
     if task in STATIC:
         from drama_plugin.visual.image_serializer import select_image_rows
         rows, excluded = select_image_rows(ir, rows)
@@ -95,6 +100,9 @@ def compile_ir(raw: VisualPromptIR | dict[str, Any], *, provider_family: str,
                'VIDEO CLIP' if task == 'VIDEO' else 'CURRENT VISIBLE FRAME' if task in {'FIRST_FRAME', 'KEY_FRAME'} else
                'TEXT TO IMAGE TARGET')
     def render(selected: list[dict[str, Any]]) -> str:
+        if vidu:
+            from drama_plugin.visual.vidu_serializer import render as render_vidu
+            return render_vidu(ir, selected)
         if task in STATIC:
             from drama_plugin.visual.image_serializer import render_image
             return render_image(ir, selected)
@@ -159,3 +167,12 @@ def require_submission_ir(snapshot: dict[str, Any], request: dict[str, Any]) -> 
     if not prompts or any(p != record['prompt'] for p in prompts):
         raise ValueError('VISUAL_PROMPT_IR_PAYLOAD_MISMATCH')
     verify_compilation(record, prompts[0])
+    if snapshot.get('schema') == 'visual-frame-preflight-v1':
+        # Historical frame compilations remain replayable, but new formal frame
+        # dispatch must follow the selected default rather than an old Flux template.
+        nodes = list(request.get('workflow', {}).values())
+        generation = [n for n in nodes if n.get('class_type') not in {'LoadImage', 'SaveImage'}]
+        if (snapshot.get('template', {}).get('model') != 'gpt-image-2' or len(generation) != 1
+                or generation[0].get('class_type') != 'OpenAIGPTImageNodeV2'
+                or generation[0].get('inputs', {}).get('model') != 'gpt-image-2'):
+            raise ValueError('HERO_KEYFRAME_ROUTE_REQUIRES_GPT_IMAGE2')

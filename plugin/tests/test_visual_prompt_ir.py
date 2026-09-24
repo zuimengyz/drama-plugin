@@ -121,6 +121,34 @@ def test_scene_and_character_text_to_image():
     assert 'plaster facades' in compile_ir(ir, provider_family='Flux.2 [pro]')['prompt']
 
 
+@pytest.mark.parametrize('typed', [True, False])
+def test_image_rework_preserves_typed_request_and_legacy_correction(tmp_path, typed):
+    from test_route_image_inputs import image_input
+    from test_visual_first_pass import outcome, review_for
+    from drama_plugin.visual.frame_request import compile_frame
+    from drama_plugin.visual import production
+    spec, template = image_input(tmp_path)
+    if typed:
+        ir = visual_ir('TEXT_TO_IMAGE')
+        ir['source_fingerprint'] = fp(spec.model_dump(mode='json', exclude={'prompt_ir'}))
+        ir['subjects'] = [{**deepcopy(ir['subjects'][0]), 'id': a.entity_key} for a in spec.actors]
+        spec = spec.model_copy(update={'prompt_ir': ir})
+    frame = compile_frame(spec, None if typed else template)
+    state = production.new_campaign([frame])
+    first = production.reserve(state, spec.shot_id)
+    outcome(state, first)
+    production.record_review(state, review_for(state, first, 'IDENTITY'))
+    production.resume(state, reason='Explicitly authorized new initial-image candidate')
+    second = production.reserve(state, spec.shot_id)
+    assert len(state['attempts']) == 2 and first['review_status'] == 'FAIL'
+    if typed:
+        assert second['request'] == frame['request']
+        assert second['request_fingerprint'] == fp(frame['request'])
+        require_submission_ir(frame, second['request'])
+    else:
+        assert 'TARGETED CORRECTION:' in second['request']['workflow']['1']['inputs']['prompt']
+
+
 def test_frame_integration_and_submission_gate(tmp_path):
     from test_route_image_inputs import image_input
     from drama_plugin.visual.frame_request import compile_frame, verify_compiled
@@ -130,11 +158,11 @@ def test_frame_integration_and_submission_gate(tmp_path):
         require_submission_ir(old, old['request'])
     ir = visual_ir(); ir['source_fingerprint'] = fp(spec.model_dump(mode='json', exclude={'prompt_ir'}))
     ir['subjects'] = [{**deepcopy(ir['subjects'][0]), 'id': a.entity_key} for a in spec.actors]
-    compiled = compile_frame(spec.model_copy(update={'prompt_ir': ir}), template)
+    compiled = compile_frame(spec.model_copy(update={'prompt_ir': ir}))
     verify_compiled(compiled)
     require_submission_ir(compiled, compiled['request'])
-    assert compiled['request']['workflow']['1']['inputs']['prompt'] == compiled['prompt_ir_compilation']['prompt']
-    request = deepcopy(compiled['request']); request['workflow']['1']['inputs']['prompt'] += ' extra'
+    assert compiled['request']['workflow']['271']['inputs']['prompt'] == compiled['prompt_ir_compilation']['prompt']
+    request = deepcopy(compiled['request']); request['workflow']['271']['inputs']['prompt'] += ' extra'
     with pytest.raises(ValueError, match='PAYLOAD_MISMATCH'):
         require_submission_ir(compiled, request)
     ir['source_fingerprint'] = 'b'*64
@@ -172,7 +200,7 @@ def test_reference_edit_frame_preserves_operation_and_rejects_old_normalizer(tmp
     ir=visual_ir('REFERENCE_EDIT')
     ir['subjects']=[{**deepcopy(ir['subjects'][0]),'id':a.entity_key} for a in spec.actors]
     ir['source_fingerprint']=fp(spec.model_dump(mode='json',exclude={'prompt_ir'}))
-    compiled=compile_frame(spec.model_copy(update={'prompt_ir':ir}),template)
+    compiled=compile_frame(spec.model_copy(update={'prompt_ir':ir}))
     verify_compiled(compiled)
     require_submission_ir(compiled,compiled['request'])
     assert 'Replace right background' in compiled['prompt_ir_compilation']['prompt']

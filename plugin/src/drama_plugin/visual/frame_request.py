@@ -132,6 +132,12 @@ def _verify_graph(spec: FrameSpec, template: Template) -> None:
     nodes = {str(n['id']): n for n in graph['nodes']}
     links = {link[0]: link for link in graph['links']}
     model = nodes[template.prompt_node]
+    if model['type'] == 'OpenAIGPTImageNodeV2':
+        # The inspected official template uses auto size and no references.
+        # Our derived API graph supplies explicit size/reference fields, verified below.
+        if template.model != 'gpt-image-2' or template.api_workflow is None or 'gpt-image-2' not in model['widgets_values']:
+            raise ValueError('UNVERIFIED_GPT_IMAGE2_TEMPLATE')
+        return
     widgets = model.get('widgets_values_named', {})
     if template.prompt_key not in widgets or template.seed_key not in widgets:
         raise ValueError("TEMPLATE_PROMPT_OR_SEED_SLOT_NOT_VERIFIED")
@@ -169,9 +175,18 @@ def _verify_graph(spec: FrameSpec, template: Template) -> None:
         raise ValueError("TEMPLATE_OUTPUT_SIZE_MISMATCH")
 
 
-def compile_frame(spec: FrameSpec, template: Template) -> dict[str, Any]:
+def compile_frame(spec: FrameSpec, template: Template | None = None) -> dict[str, Any]:
     # Revalidate even model_copy/update callers; Pydantic does not validate updates.
     spec = FrameSpec.model_validate(spec.model_dump())
+    if template is None:
+        from drama_plugin.visual.image_route import select_frame_template
+        template = select_frame_template(spec)
+        if spec.prompt_ir:
+            # Provider selection is a derived binding, never a persisted creative edit.
+            from copy import deepcopy
+            ir = deepcopy(spec.prompt_ir)
+            ir['task']['provider_family'] = template.model
+            spec = spec.model_copy(update={'prompt_ir': ir})
     template = Template.model_validate(template.model_dump())
     inputs: tuple[EditSource | Reference, ...] = (spec.edit_source,) if spec.edit_source else spec.references
     if spec.edit_source and (spec.references or spec.identity_bootstrap or spec.reference_members):
@@ -305,14 +320,25 @@ def compile_frame(spec: FrameSpec, template: Template) -> dict[str, Any]:
         from copy import deepcopy
         api = deepcopy(template.api_workflow)
         allowed = {template.prompt_node, *template.image_slots, 'output'}
-        if set(api) != allowed or api[template.prompt_node]['class_type'] != 'Flux2ImageNode':
+        node_type = api[template.prompt_node]['class_type']
+        gpt = node_type == 'OpenAIGPTImageNodeV2'
+        if set(api) != allowed or node_type not in {'Flux2ImageNode', 'OpenAIGPTImageNodeV2'}:
             raise ValueError('UNVERIFIED_IMAGE_API_GRAPH')
         model_inputs = api[template.prompt_node]['inputs']
-        expected_keys = {'prompt', 'model', 'model.width', 'model.height', 'seed'} | {
+        size_keys = ('model.custom_width', 'model.custom_height') if gpt else ('model.width', 'model.height')
+        expected_keys = {'prompt', 'model', *size_keys, 'seed'} | {
             f'model.images.image_{i+1}' for i in range(len(inputs))}
+        if gpt:
+            expected_keys |= {'model.size', 'model.background', 'model.quality', 'n'}
+            if (template.model != 'gpt-image-2' or model_inputs.get('model.size') != 'Custom'
+                    or model_inputs.get('model.background') != 'opaque' or model_inputs.get('n') != 1
+                    or model_inputs.get('model.quality') != 'high' or template.settings
+                    or any(v < 480 or v > 3840 or v % 16 for v in template.output_size)
+                    or spec.seed > 2147483647):
+                raise ValueError('UNVERIFIED_GPT_IMAGE2_PARAMETERS')
         if set(model_inputs) != expected_keys or model_inputs['model'] != template.model:
             raise ValueError('UNVERIFIED_IMAGE_API_PARAMETERS')
-        if (model_inputs['model.width'], model_inputs['model.height']) != template.output_size:
+        if tuple(model_inputs[k] for k in size_keys) != template.output_size:
             raise ValueError('IMAGE_API_DIMENSION_MISMATCH')
         for i, slot in enumerate(template.image_slots, 1):
             if api[slot]['class_type'] != 'LoadImage' or model_inputs[f'model.images.image_{i}'] != [slot, 0]:

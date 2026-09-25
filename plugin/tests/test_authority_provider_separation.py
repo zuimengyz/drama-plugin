@@ -106,7 +106,7 @@ def test_pollution_fails_final_budget(real_authority):
         budget_prompt(polluted, polluted, model='Vidu Q3 Turbo', limit=2000, source='runtime_node_schema')
 
 
-def test_generic_video_and_http_payload_only_send_executable_semantics(tmp_path, monkeypatch):
+async def test_generic_video_and_http_payload_only_send_executable_semantics(tmp_path, monkeypatch):
     host, bible, ref, current = fixture(tmp_path, medium='cg')
     compilation = host.compile(ref, 'room', current=current)
     monkeypatch.setenv('DRAMA_PLUGIN_VISUAL_AUTHORITY_ROOT', str(tmp_path))
@@ -122,8 +122,17 @@ def test_generic_video_and_http_payload_only_send_executable_semantics(tmp_path,
     assert r.authority_context is None
     assert compilation['compilation']['prompt'] not in bound.prompt
     from drama_plugin.providers.video.adapters import SeedanceProvider
-    provider = NS(model_spec={'vendor_model': 'offline'})
-    body = SeedanceProvider.payload(provider, bound, {}, 'offline')
+    from test_official_video_providers import config, resolve
+    from drama_plugin.visual.video_prompt import compile_request_ir
+    import httpx
+    def no_network(_):
+        raise AssertionError('offline payload inspection only')
+    async with httpx.AsyncClient(transport=httpx.MockTransport(no_network)) as client:
+        provider = SeedanceProvider(bound.continuity.primary_model, config('seedance'), resolve=resolve, client=client)
+        body = provider.payload(bound, {}, 'offline')
+        assert body['content'][0]['text'] == compile_request_ir(bound)['prompt']
+        with pytest.raises(ValueError, match='REQUIRES_CANONICAL_IR'):
+            provider.payload(bound.model_copy(update={'prompt_ir': None}), {}, 'offline')
     assert 'authority_context' not in json.dumps(body)
     assert compilation['compilation']['prompt'] not in json.dumps(body)
     changed = dump_contract(bound)

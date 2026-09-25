@@ -123,7 +123,9 @@ def test_provider_prompt_is_exact_core_compilation():
     p = ADAPTERS['seedance'](MODELS['seedance'], config('seedance'), resolve=resolve, client=client)
     texts = [item['text'] for item in p.payload(r, {}, 'offline')['content'] if item['type']=='text']
     assert texts == [compiled['prompt']]
-    assert compiled['compiledBy'] == 'video-prompt-compiler'
+    assert compiled['schema'] == 'visual-prompt-compilation-v1'
+    assert compiled['generator']['family'] == 'seedance_2'
+    assert compiled['statistics']['uncovered_required'] == 0
 
 
 @pytest.mark.asyncio
@@ -148,7 +150,9 @@ async def test_formal_http_compile_reserve_replays_receipt_without_media_or_auth
         assert 'authenticated' not in a['execution_binding']
         decision = a['frame_snapshot']
         verify_execution(decision)
-        assert decision['request']['promptCompilation']['compiledBy'] == 'video-prompt-compiler'
+        compilation = decision['request']['promptCompilation']
+        assert compilation['generator']['family'] == 'seedance_2'
+        assert compilation['coverage'] and compilation['statistics']['uncovered_required'] == 0
         forged = deepcopy(decision)
         forged['request']['promptCompilation']['prompt'] = 'Host replacement'
         forged['fingerprint'] = sha256_canonical({k:v for k,v in forged.items() if k!='fingerprint'})

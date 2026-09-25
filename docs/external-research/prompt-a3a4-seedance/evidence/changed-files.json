@@ -1,0 +1,106 @@
+[
+  {
+    "path": "plugin/docs/model-prompt-generators.md",
+    "sha256": "460cceb56606d15838d64bcaa192ba64137acee91be430957ee93d7547000840"
+  },
+  {
+    "path": "plugin/src/drama_plugin/contracts/video.py",
+    "sha256": "a098edd878e1432b54233f20835ab5cf2db1998469d378f5ba26680a0c5526c9"
+  },
+  {
+    "path": "plugin/src/drama_plugin/hosts/http_video.py",
+    "sha256": "d0abf9e49c83dc758ee1165b7c5cedabd4ec0250b39a83265eef775b9b2228aa"
+  },
+  {
+    "path": "plugin/src/drama_plugin/prompt_generators/__init__.py",
+    "sha256": "9cb5d7318d1a3b7bfc6f106b2bb5f3c50e68a0c483832b08c7d7e87a1914d837"
+  },
+  {
+    "path": "plugin/src/drama_plugin/prompt_generators/base.py",
+    "sha256": "401f07f7a7d1681a345fee8770c83c563ce4c42b2c1cc071a721f40d4ad9af27"
+  },
+  {
+    "path": "plugin/src/drama_plugin/prompt_generators/contracts.py",
+    "sha256": "1581813a6bc0023a694865da5ef125ef026db3ed24a14f2f5ed85c7dc991d96d"
+  },
+  {
+    "path": "plugin/src/drama_plugin/prompt_generators/flux/README.md",
+    "sha256": "4b425df84d9d6b92e4e786526a0d818b004fed0dc1400e78e8cd7bae789f11b6"
+  },
+  {
+    "path": "plugin/src/drama_plugin/prompt_generators/gpt_image_2/README.md",
+    "sha256": "5f1f2f141a9c72e6919036dd220cda2c399c0317dbcb91f7b80fada5bdce2d10"
+  },
+  {
+    "path": "plugin/src/drama_plugin/prompt_generators/kling/README.md",
+    "sha256": "8335368f1b0d6c5f38788ddcada6ee10e18948e147a11f182b4653bb8f9be793"
+  },
+  {
+    "path": "plugin/src/drama_plugin/prompt_generators/minimax/README.md",
+    "sha256": "c4d797dbe1f0838d87d306fb079e3eee94eed12572c99691e6e12f970427a94e"
+  },
+  {
+    "path": "plugin/src/drama_plugin/prompt_generators/registry.py",
+    "sha256": "2f74897950386b7da1ae875a332507d9752f7771d69f1ba97076a47db18cc9b2"
+  },
+  {
+    "path": "plugin/src/drama_plugin/prompt_generators/seedance_2/__init__.py",
+    "sha256": "64dd49b1ec64b743bd53d458ed84c69952934ab26dfc6ec1aca4aa34e5d14101"
+  },
+  {
+    "path": "plugin/src/drama_plugin/prompt_generators/seedance_2/canonical.py",
+    "sha256": "bef64ac22d23dd3aafdf8a4dbe95c00e2821679e1da1b8454f74cc668671f450"
+  },
+  {
+    "path": "plugin/src/drama_plugin/prompt_generators/seedance_2/generator.py",
+    "sha256": "bd34d66318a7308907a8f25c48889c3b6582e4282b75486a1b0c962abb291da4"
+  },
+  {
+    "path": "plugin/src/drama_plugin/prompt_generators/seedance_2/policy.json",
+    "sha256": "0cc4726d4739851508a8ea7032f76afa0b45984b874929a14891751b515ce35e"
+  },
+  {
+    "path": "plugin/src/drama_plugin/prompt_generators/seedance_2/policy.py",
+    "sha256": "01ead5c353a0e600a92bd295108a71bd4ad91fc5ab40e043aba1c5eec97041f7"
+  },
+  {
+    "path": "plugin/src/drama_plugin/prompt_generators/seedance_2_5/README.md",
+    "sha256": "5dcb84c971af6fd7f1015fb486256e6204f7cfd51207a4ab8bca513676a949a6"
+  },
+  {
+    "path": "plugin/src/drama_plugin/prompt_generators/vidu/README.md",
+    "sha256": "c20cb40f7198853cd056aa8476192b2f650555c4647f8226f39385de0de669b0"
+  },
+  {
+    "path": "plugin/src/drama_plugin/prompt_generators/wan/README.md",
+    "sha256": "4b29adb3aafad532dc173278414f477cd459676f37385b765dc51909c55bba10"
+  },
+  {
+    "path": "plugin/src/drama_plugin/providers/video/adapters.py",
+    "sha256": "0fb0a9ea02170a10b31e710d85ce3353188df3837dd1927ab5a7fec99032db40"
+  },
+  {
+    "path": "plugin/src/drama_plugin/providers/video/base.py",
+    "sha256": "1a70618a047be9e2422f8f03b67145bea9cde1ccac81c7e013e9259c37f6f173"
+  },
+  {
+    "path": "plugin/src/drama_plugin/visual/prompt_ir.py",
+    "sha256": "c1593e5d8e368daf76b1619ad06a721e2ef1fe192eb2e6cdcfd32ca4a7730f25"
+  },
+  {
+    "path": "plugin/src/drama_plugin/visual/video_prompt.py",
+    "sha256": "c1676af2adb679f4fa9c5d9ccc6e111faf6ca597f2f86a5b865e7939b2887dac"
+  },
+  {
+    "path": "plugin/tests/test_architecture_authority.py",
+    "sha256": "ba27b9687ee8d15b99eb9c640af6bf5c73f6f771ee676076c01ab3ad47c8a71d"
+  },
+  {
+    "path": "plugin/tests/test_authority_provider_separation.py",
+    "sha256": "fdead135f80eff4543c9703f8b9fb89ed8104d2215f74cd5b96ffabba5fdfc5b"
+  },
+  {
+    "path": "plugin/tests/test_seedance_prompt_generator.py",
+    "sha256": "fb322d76264be10c1493be7d421c43014613fac7fc65f458f8fb5a6cbda93000"
+  }
+]

@@ -1,11 +1,12 @@
 """Official vendor request translations. Endpoint/model data live in registry.json."""
 from typing import Any
-from .base import HttpVideoProvider, SafeProviderError, prompt_text
+from .base import HttpVideoProvider, SafeProviderError
+from drama_plugin.visual.video_prompt import compile_video_prompt as prompt_text
 from drama_plugin.contracts.video import VideoRequest, ProviderTask
 
 
-def content_items(r: VideoRequest, urls: dict[str, str]) -> list[dict[str, Any]]:
-    items: list[dict[str, Any]] = [{'type':'text', 'text':prompt_text(r)}]
+def content_items(r: VideoRequest, urls: dict[str, str], *, compiled_prompt: str | None = None) -> list[dict[str, Any]]:
+    items: list[dict[str, Any]] = [{'type':'text', 'text':compiled_prompt if compiled_prompt is not None else prompt_text(r)}]
     for ref in r.references():
         role = 'first_frame' if ref == r.first_frame else 'last_frame' if ref == r.last_frame else 'reference_' + ref.kind
         kind = ref.kind + '_url'
@@ -17,7 +18,7 @@ class SeedanceProvider(HttpVideoProvider):
     provider = 'seedance'
 
     def payload(self, r: VideoRequest, urls: dict[str, str], client_id: str) -> dict[str, Any]:
-        body = dict(model=self.model_spec['vendor_model'], content=content_items(r, urls), duration=r.duration,
+        body = dict(model=self.model_spec['vendor_model'], content=content_items(r, urls, compiled_prompt=self.compiled_prompt(r)), duration=r.duration,
                     resolution=r.resolution.lower(), ratio=r.aspect_ratio, generate_audio=r.native_audio, watermark=False)
         if r.seed is not None:
             body['seed'] = r.seed

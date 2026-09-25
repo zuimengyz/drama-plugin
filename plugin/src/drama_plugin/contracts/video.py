@@ -2,12 +2,13 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Literal, Self
+from typing import Any, Literal, Self, cast
 from pydantic import Field, model_validator, model_serializer, SerializerFunctionWrapHandler
 from drama_plugin.contracts.base import ContractModel, sha256_canonical
 from drama_plugin.contracts.creative_asset import Text, Hash
 from drama_plugin.contracts.source_pin import SourcePin
 from drama_plugin.contracts.visual_route import RouteStyleContract
+from drama_plugin.prompt_generators.contracts import ReferenceBinding, ProjectionAnnotations
 
 InputMode = Literal['text_to_video', 'image_to_video', 'first_last_frame', 'reference', 'motion_transfer', 'edit', 'extend']
 
@@ -23,6 +24,14 @@ class VideoReference(ContractModel):
     width: int | None = Field(default=None, gt=0)
     height: int | None = Field(default=None, gt=0)
     review_ref: Text
+    prompt_binding: ReferenceBinding | None = Field(default=None, alias='prompt_binding')
+
+    @model_serializer(mode='wrap')
+    def preserve_reference_shape(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        value = handler(self)
+        if self.prompt_binding is None:
+            value.pop('prompt_binding', None)
+        return cast(dict[str, Any], value)
 
 
 class CharacterContinuity(ContractModel):
@@ -78,6 +87,7 @@ class VideoRequest(ContractModel):
     authority_context: dict[str, Any] | None = Field(default=None, alias='authority_context')
     prompt_normalization: dict[str, Any] | None = Field(default=None, alias='prompt_normalization')
     prompt_ir: dict[str, Any] | None = Field(default=None, alias='prompt_ir')
+    prompt_projection: ProjectionAnnotations | None = Field(default=None, alias='prompt_projection')
     prompt: Text
     negative_prompt: str = ''
     input_mode: InputMode
@@ -103,7 +113,9 @@ class VideoRequest(ContractModel):
         value = handler(self)
         if self.prompt_ir is None:
             value.pop('prompt_ir', None)
-        return value
+        if self.prompt_projection is None:
+            value.pop('prompt_projection', None)
+        return cast(dict[str, Any], value)
 
     def references(self) -> tuple[VideoReference, ...]:
         return tuple(r for r in (self.first_frame, self.last_frame) if r) + self.reference_images + self.reference_videos + self.reference_audios

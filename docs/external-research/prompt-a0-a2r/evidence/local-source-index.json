@@ -1,0 +1,3406 @@
+[
+  {
+    "path": "plugin/src/drama_plugin/visual/cinematic.py",
+    "sha256": "0153978049b2cb145a37ff07c522d4f0af3f1a9a97c4e958dffd2251cba80359",
+    "lines": 315,
+    "symbols": [
+      {
+        "name": "resolve_visual_bible",
+        "start": 15,
+        "end": 37
+      },
+      {
+        "name": "narrative_source",
+        "start": 40,
+        "end": 55
+      },
+      {
+        "name": "validate_canon",
+        "start": 58,
+        "end": 101
+      },
+      {
+        "name": "review_direction",
+        "start": 104,
+        "end": 135
+      },
+      {
+        "name": "execution_brief",
+        "start": 138,
+        "end": 172
+      },
+      {
+        "name": "validated_upstream_performance",
+        "start": 175,
+        "end": 186
+      },
+      {
+        "name": "freeze_direction",
+        "start": 189,
+        "end": 235
+      },
+      {
+        "name": "verify_frozen",
+        "start": 238,
+        "end": 292
+      },
+      {
+        "name": "selection_handoff",
+        "start": 295,
+        "end": 300
+      },
+      {
+        "name": "validate_selection_handoff",
+        "start": 303,
+        "end": 315
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/visual/payload_scope.py",
+    "sha256": "c00ff8b282da84dc78dd4cad0ac098f001bf194e0cded54d165b6f6820b399da",
+    "lines": 117,
+    "symbols": [
+      {
+        "name": "review_text",
+        "start": 20,
+        "end": 29
+      },
+      {
+        "name": "compile_payload",
+        "start": 32,
+        "end": 89
+      },
+      {
+        "name": "review_compiled",
+        "start": 92,
+        "end": 96
+      },
+      {
+        "name": "asset_payload",
+        "start": 104,
+        "end": 117
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/visual/vidu_serializer.py",
+    "sha256": "5aaeba10870683434c18611f4ea9055704ae6bf52adc3737d0585026ff33cb20",
+    "lines": 50,
+    "symbols": [
+      {
+        "name": "select_rows",
+        "start": 6,
+        "end": 21
+      },
+      {
+        "name": "render",
+        "start": 24,
+        "end": 50
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/visual/execution.py",
+    "sha256": "6207f36d4cfe45520abf557042ac81ba9d084ccf932c1c181263d0dcad6e7057",
+    "lines": 95,
+    "symbols": [
+      {
+        "name": "ExecutionBackend",
+        "start": 9,
+        "end": 11
+      },
+      {
+        "name": "ExecutionCapability",
+        "start": 14,
+        "end": 16
+      },
+      {
+        "name": "MCPRequirement",
+        "start": 19,
+        "end": 20
+      },
+      {
+        "name": "ExecutionRoute",
+        "start": 23,
+        "end": 33
+      },
+      {
+        "name": "require_execution",
+        "start": 36,
+        "end": 45
+      },
+      {
+        "name": "validate_binding",
+        "start": 48,
+        "end": 64
+      },
+      {
+        "name": "validate_http_binding",
+        "start": 67,
+        "end": 80
+      },
+      {
+        "name": "validate_result_identity",
+        "start": 83,
+        "end": 95
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/visual/video_prompt.py",
+    "sha256": "1debbda8dac5cf48438e067fb20bdfaf016492752c83f8d37c9c40cc5489c720",
+    "lines": 71,
+    "symbols": [
+      {
+        "name": "compile_video_prompt",
+        "start": 6,
+        "end": 23
+      },
+      {
+        "name": "ir_source_fingerprint",
+        "start": 27,
+        "end": 36
+      },
+      {
+        "name": "compile_request_ir",
+        "start": 39,
+        "end": 62
+      },
+      {
+        "name": "prompt_compilation",
+        "start": 65,
+        "end": 71
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/visual/positive_projection.py",
+    "sha256": "bf37f1144797a83588a816ed4ca43a5868abebf1dcc7c6946a60b2e9c2e21ac1",
+    "lines": 38,
+    "symbols": [
+      {
+        "name": "normalize",
+        "start": 8,
+        "end": 38
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/visual/__init__.py",
+    "sha256": "b9551ab04e7a702c3b73acda151fd2027637adb84afb247cf3d12b29e0db60e9",
+    "lines": 19,
+    "symbols": []
+  },
+  {
+    "path": "plugin/src/drama_plugin/visual/still_knowledge.py",
+    "sha256": "16cc602fd3fec57738a040b48b6e2599dea8dca916db6b0003ec892b4ace180d",
+    "lines": 561,
+    "symbols": [
+      {
+        "name": "Metadata",
+        "start": 27,
+        "end": 28
+      },
+      {
+        "name": "Scope",
+        "start": 31,
+        "end": 35
+      },
+      {
+        "name": "Leaf",
+        "start": 38,
+        "end": 40
+      },
+      {
+        "name": "MappingRow",
+        "start": 43,
+        "end": 52
+      },
+      {
+        "name": "Coverage",
+        "start": 55,
+        "end": 60
+      },
+      {
+        "name": "ReferenceDuty",
+        "start": 63,
+        "end": 76
+      },
+      {
+        "name": "pointer",
+        "start": 79,
+        "end": 86
+      },
+      {
+        "name": "_assign",
+        "start": 89,
+        "end": 99
+      },
+      {
+        "name": "fact_paths",
+        "start": 102,
+        "end": 109
+      },
+      {
+        "name": "validate_imaging",
+        "start": 112,
+        "end": 123
+      },
+      {
+        "name": "_target",
+        "start": 139,
+        "end": 140
+      },
+      {
+        "name": "_leaf",
+        "start": 143,
+        "end": 241
+      },
+      {
+        "name": "make_receipt",
+        "start": 244,
+        "end": 282
+      },
+      {
+        "name": "project_ir",
+        "start": 285,
+        "end": 306
+      },
+      {
+        "name": "check_binding",
+        "start": 309,
+        "end": 325
+      },
+      {
+        "name": "validate_reference_plan",
+        "start": 328,
+        "end": 411
+      },
+      {
+        "name": "replay",
+        "start": 414,
+        "end": 450
+      },
+      {
+        "name": "Observation",
+        "start": 469,
+        "end": 490
+      },
+      {
+        "name": "observation_review",
+        "start": 493,
+        "end": 561
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/visual/image_serializer.py",
+    "sha256": "cb209b44074fec75a779ea760c6821b89a1ae4aeca5359e930f890243aca443a",
+    "lines": 69,
+    "symbols": [
+      {
+        "name": "select_image_rows",
+        "start": 9,
+        "end": 24
+      },
+      {
+        "name": "render_image",
+        "start": 27,
+        "end": 69
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/visual/dialogue_coverage.py",
+    "sha256": "d65d7cb23c75b5cf38890beff0dca0bfb735f3503b367c52cc38e8598e05ef8a",
+    "lines": 62,
+    "symbols": [
+      {
+        "name": "shot_projection",
+        "start": 11,
+        "end": 14
+      },
+      {
+        "name": "coverage_intervals",
+        "start": 17,
+        "end": 62
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/visual/frame_request.py",
+    "sha256": "740942a607618425e5a8801fe6dafff6d31c5e617d86a0d65737256cfa3efa0c",
+    "lines": 390,
+    "symbols": [
+      {
+        "name": "Record",
+        "start": 24,
+        "end": 25
+      },
+      {
+        "name": "Reference",
+        "start": 28,
+        "end": 41
+      },
+      {
+        "name": "Actor",
+        "start": 44,
+        "end": 53
+      },
+      {
+        "name": "EditSource",
+        "start": 56,
+        "end": 66
+      },
+      {
+        "name": "Prop",
+        "start": 69,
+        "end": 76
+      },
+      {
+        "name": "FrameSpec",
+        "start": 79,
+        "end": 111
+      },
+      {
+        "name": "Template",
+        "start": 114,
+        "end": 129
+      },
+      {
+        "name": "_unique",
+        "start": 132,
+        "end": 134
+      },
+      {
+        "name": "_verify_graph",
+        "start": 137,
+        "end": 184
+      },
+      {
+        "name": "compile_frame",
+        "start": 187,
+        "end": 384
+      },
+      {
+        "name": "verify_compiled",
+        "start": 387,
+        "end": 390
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/visual/image_route.py",
+    "sha256": "85d94582859dfc48b7c3dc9e7cca0cffe435042e4fd86da717cb3552a0f4ed6d",
+    "lines": 32,
+    "symbols": [
+      {
+        "name": "select_frame_template",
+        "start": 11,
+        "end": 32
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/visual/performance.py",
+    "sha256": "1f7105110e1e8b52228b364cf835976ef7320bb05c72491d9850477bf184c80f",
+    "lines": 379,
+    "symbols": [
+      {
+        "name": "VisualProjectionError",
+        "start": 17,
+        "end": 18
+      },
+      {
+        "name": "_brief_material",
+        "start": 21,
+        "end": 29
+      },
+      {
+        "name": "fingerprint_visual_projection",
+        "start": 32,
+        "end": 33
+      },
+      {
+        "name": "_visible_language",
+        "start": 36,
+        "end": 88
+      },
+      {
+        "name": "project_visual_performance",
+        "start": 91,
+        "end": 151
+      },
+      {
+        "name": "compile_video_motion_prompt",
+        "start": 154,
+        "end": 212
+      },
+      {
+        "name": "fingerprint_video_generation_request",
+        "start": 215,
+        "end": 239
+      },
+      {
+        "name": "couple_dialogue_visual_performance",
+        "start": 242,
+        "end": 329
+      },
+      {
+        "name": "diagnose_dialogue_visual_compatibility",
+        "start": 332,
+        "end": 355
+      },
+      {
+        "name": "_snapshot_material",
+        "start": 358,
+        "end": 362
+      },
+      {
+        "name": "fingerprint_realized_performance",
+        "start": 365,
+        "end": 366
+      },
+      {
+        "name": "build_realized_performance_snapshot",
+        "start": 369,
+        "end": 379
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/visual/prompt_ir.py",
+    "sha256": "af14c1a4ea9eb2b1a8fc3539434e3f4aaf2d1c5484f6bdd5ef7241c55711d916",
+    "lines": 178,
+    "symbols": [
+      {
+        "name": "compile_ir",
+        "start": 12,
+        "end": 127
+      },
+      {
+        "name": "verify_compilation",
+        "start": 130,
+        "end": 135
+      },
+      {
+        "name": "require_submission_ir",
+        "start": 138,
+        "end": 178
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/visual/video_selection.py",
+    "sha256": "eeedac016ce3c21942f54cfcaec419520e29e5e1332827b05e1c7bb18ca0ce1f",
+    "lines": 680,
+    "symbols": [
+      {
+        "name": "Evidence",
+        "start": 18,
+        "end": 27
+      },
+      {
+        "name": "VideoInput",
+        "start": 30,
+        "end": 43
+      },
+      {
+        "name": "Requirements",
+        "start": 46,
+        "end": 67
+      },
+      {
+        "name": "validate_requirements",
+        "start": 70,
+        "end": 110
+      },
+      {
+        "name": "direction_quality",
+        "start": 113,
+        "end": 128
+      },
+      {
+        "name": "CostResolution",
+        "start": 131,
+        "end": 134
+      },
+      {
+        "name": "Cost",
+        "start": 137,
+        "end": 177
+      },
+      {
+        "name": "Quality",
+        "start": 180,
+        "end": 185
+      },
+      {
+        "name": "AcceptedCostHistory",
+        "start": 188,
+        "end": 198
+      },
+      {
+        "name": "Candidate",
+        "start": 201,
+        "end": 223
+      },
+      {
+        "name": "qualify",
+        "start": 230,
+        "end": 294
+      },
+      {
+        "name": "model_key",
+        "start": 297,
+        "end": 301
+      },
+      {
+        "name": "_select_qualified",
+        "start": 304,
+        "end": 355
+      },
+      {
+        "name": "_policy_candidates",
+        "start": 358,
+        "end": 366
+      },
+      {
+        "name": "choose",
+        "start": 369,
+        "end": 378
+      },
+      {
+        "name": "verify_policy_resolution",
+        "start": 381,
+        "end": 400
+      },
+      {
+        "name": "seal_decision",
+        "start": 403,
+        "end": 452
+      },
+      {
+        "name": "verify_decision",
+        "start": 455,
+        "end": 483
+      },
+      {
+        "name": "PlannedInput",
+        "start": 486,
+        "end": 499
+      },
+      {
+        "name": "same_execution_candidate",
+        "start": 502,
+        "end": 506
+      },
+      {
+        "name": "same_route_parameters",
+        "start": 509,
+        "end": 521
+      },
+      {
+        "name": "ContinuationAuthorization",
+        "start": 524,
+        "end": 533
+      },
+      {
+        "name": "ProductionRoute",
+        "start": 536,
+        "end": 558
+      },
+      {
+        "name": "qualify_route",
+        "start": 561,
+        "end": 660
+      },
+      {
+        "name": "route_input_gate",
+        "start": 663,
+        "end": 670
+      },
+      {
+        "name": "choose_routes",
+        "start": 673,
+        "end": 680
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/visual/audit_view.py",
+    "sha256": "1eb62a8f82acbf22fcddad50671a930da1a5bee3e2c1dbbc9c5d90ab44852ad3",
+    "lines": 80,
+    "symbols": [
+      {
+        "name": "project",
+        "start": 7,
+        "end": 80
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/visual/production.py",
+    "sha256": "d97e8dd918f5052adcb5f1b00613c2bfcc065e1773516a773f8f4665a092e63c",
+    "lines": 895,
+    "symbols": [
+      {
+        "name": "verify_visual",
+        "start": 35,
+        "end": 46
+      },
+      {
+        "name": "new_stage",
+        "start": 49,
+        "end": 101
+      },
+      {
+        "name": "continuation_baseline",
+        "start": 104,
+        "end": 114
+      },
+      {
+        "name": "_route_frame_gate",
+        "start": 117,
+        "end": 181
+      },
+      {
+        "name": "add_route_frame",
+        "start": 184,
+        "end": 194
+      },
+      {
+        "name": "_fresh",
+        "start": 197,
+        "end": 201
+      },
+      {
+        "name": "exposure",
+        "start": 204,
+        "end": 205
+      },
+      {
+        "name": "_stage_gate",
+        "start": 208,
+        "end": 288
+      },
+      {
+        "name": "Finding",
+        "start": 291,
+        "end": 295
+      },
+      {
+        "name": "Review",
+        "start": 298,
+        "end": 305
+      },
+      {
+        "name": "_review_status",
+        "start": 308,
+        "end": 319
+      },
+      {
+        "name": "current_review",
+        "start": 322,
+        "end": 323
+      },
+      {
+        "name": "usable",
+        "start": 326,
+        "end": 327
+      },
+      {
+        "name": "new_campaign",
+        "start": 330,
+        "end": 376
+      },
+      {
+        "name": "reseal_plan",
+        "start": 379,
+        "end": 389
+      },
+      {
+        "name": "check_campaign",
+        "start": 392,
+        "end": 400
+      },
+      {
+        "name": "_confirmed_no_media",
+        "start": 403,
+        "end": 414
+      },
+      {
+        "name": "reserve",
+        "start": 417,
+        "end": 493
+      },
+      {
+        "name": "begin_submission",
+        "start": 496,
+        "end": 511
+      },
+      {
+        "name": "record_result",
+        "start": 514,
+        "end": 544
+      },
+      {
+        "name": "reconcile_billing",
+        "start": 547,
+        "end": 561
+      },
+      {
+        "name": "record_review",
+        "start": 564,
+        "end": 584
+      },
+      {
+        "name": "revise_review",
+        "start": 587,
+        "end": 611
+      },
+      {
+        "name": "resume",
+        "start": 614,
+        "end": 629
+      },
+      {
+        "name": "select_input",
+        "start": 632,
+        "end": 646
+      },
+      {
+        "name": "metrics",
+        "start": 649,
+        "end": 660
+      },
+      {
+        "name": "replan",
+        "start": 663,
+        "end": 732
+      },
+      {
+        "name": "inspect_output",
+        "start": 735,
+        "end": 756
+      },
+      {
+        "name": "retry_not_created",
+        "start": 759,
+        "end": 800
+      },
+      {
+        "name": "main",
+        "start": 803,
+        "end": 891
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/visual/reference_duties.py",
+    "sha256": "3bb0d22c69a9257cf97708db4800c07040247266c1625d4be44a0546da88b962",
+    "lines": 74,
+    "symbols": [
+      {
+        "name": "ReferenceDuty",
+        "start": 9,
+        "end": 25
+      },
+      {
+        "name": "validate_duties",
+        "start": 28,
+        "end": 61
+      },
+      {
+        "name": "validate_media_snapshot",
+        "start": 64,
+        "end": 68
+      },
+      {
+        "name": "validate_endpoint",
+        "start": 71,
+        "end": 74
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/visual/history.py",
+    "sha256": "82e6e32d5819caeb4fa56de8156143bda325bccbffc2a5239fef410a5a3284c2",
+    "lines": 90,
+    "symbols": [
+      {
+        "name": "resolve",
+        "start": 7,
+        "end": 15
+      },
+      {
+        "name": "attempt_frame",
+        "start": 18,
+        "end": 32
+      },
+      {
+        "name": "remember",
+        "start": 35,
+        "end": 44
+      },
+      {
+        "name": "compact",
+        "start": 47,
+        "end": 90
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/professional.py",
+    "sha256": "c7ca6da83c262b6ed47cb9cf9405fae72eab42c6bf6ef57474fa93bc64895cd1",
+    "lines": 616,
+    "symbols": [
+      {
+        "name": "_specs",
+        "start": 75,
+        "end": 98
+      },
+      {
+        "name": "registry",
+        "start": 101,
+        "end": 127
+      },
+      {
+        "name": "dependency_order",
+        "start": 130,
+        "end": 140
+      },
+      {
+        "name": "bible_pin",
+        "start": 143,
+        "end": 144
+      },
+      {
+        "name": "_fresh",
+        "start": 147,
+        "end": 149
+      },
+      {
+        "name": "_read",
+        "start": 152,
+        "end": 156
+      },
+      {
+        "name": "_nested_keys",
+        "start": 163,
+        "end": 169
+      },
+      {
+        "name": "approval_subject",
+        "start": 172,
+        "end": 176
+      },
+      {
+        "name": "_validate_approvals",
+        "start": 179,
+        "end": 183
+      },
+      {
+        "name": "_inherited_entity",
+        "start": 186,
+        "end": 203
+      },
+      {
+        "name": "validate_bible",
+        "start": 206,
+        "end": 312
+      },
+      {
+        "name": "validate_clip_plan",
+        "start": 315,
+        "end": 335
+      },
+      {
+        "name": "resolve_entity",
+        "start": 338,
+        "end": 343
+      },
+      {
+        "name": "validate_continuity",
+        "start": 346,
+        "end": 397
+      },
+      {
+        "name": "continuity_at",
+        "start": 400,
+        "end": 407
+      },
+      {
+        "name": "validate_environment_preservation",
+        "start": 410,
+        "end": 434
+      },
+      {
+        "name": "decompose_clip_intervals",
+        "start": 437,
+        "end": 461
+      },
+      {
+        "name": "validate_package",
+        "start": 464,
+        "end": 508
+      },
+      {
+        "name": "_validate_assembly",
+        "start": 511,
+        "end": 544
+      },
+      {
+        "name": "compile_prompt_projection",
+        "start": 547,
+        "end": 572
+      },
+      {
+        "name": "_validate_literary_department",
+        "start": 575,
+        "end": 616
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/director.py",
+    "sha256": "ae7ce9b17f37c330667022ceec257eddb4733ad9c23b8b166c2a6be90cc43f65",
+    "lines": 251,
+    "symbols": [
+      {
+        "name": "DirectorError",
+        "start": 15,
+        "end": 18
+      },
+      {
+        "name": "pin",
+        "start": 30,
+        "end": 31
+      },
+      {
+        "name": "request_pin",
+        "start": 34,
+        "end": 35
+      },
+      {
+        "name": "feedback_pin",
+        "start": 38,
+        "end": 39
+      },
+      {
+        "name": "freshness",
+        "start": 42,
+        "end": 43
+      },
+      {
+        "name": "dependencies",
+        "start": 46,
+        "end": 54
+      },
+      {
+        "name": "bind",
+        "start": 57,
+        "end": 62
+      },
+      {
+        "name": "validate_feedback",
+        "start": 65,
+        "end": 67
+      },
+      {
+        "name": "enter",
+        "start": 70,
+        "end": 120
+      },
+      {
+        "name": "reviewed_receipt",
+        "start": 123,
+        "end": 205
+      },
+      {
+        "name": "trace_intent",
+        "start": 208,
+        "end": 232
+      },
+      {
+        "name": "source_intent",
+        "start": 235,
+        "end": 251
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/creative_source.py",
+    "sha256": "3cd10a340c2ab88db8439c67fc61959f8902dee9ae858640d024bab3860a7747",
+    "lines": 320,
+    "symbols": [
+      {
+        "name": "route",
+        "start": 30,
+        "end": 35
+      },
+      {
+        "name": "_unique",
+        "start": 38,
+        "end": 41
+      },
+      {
+        "name": "_subset",
+        "start": 44,
+        "end": 46
+      },
+      {
+        "name": "review_subjects",
+        "start": 49,
+        "end": 58
+      },
+      {
+        "name": "review_hashes",
+        "start": 61,
+        "end": 71
+      },
+      {
+        "name": "validate_literary",
+        "start": 74,
+        "end": 184
+      },
+      {
+        "name": "rights_gate",
+        "start": 187,
+        "end": 207
+      },
+      {
+        "name": "_historical",
+        "start": 210,
+        "end": 221
+      },
+      {
+        "name": "compile_source",
+        "start": 224,
+        "end": 271
+      },
+      {
+        "name": "verify_screenplay_input",
+        "start": 274,
+        "end": 282
+      },
+      {
+        "name": "validate_work_content",
+        "start": 285,
+        "end": 299
+      },
+      {
+        "name": "validate_script_content",
+        "start": 302,
+        "end": 308
+      },
+      {
+        "name": "production_gate",
+        "start": 311,
+        "end": 320
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/specialized_asset.py",
+    "sha256": "529995ee4a2299ee13fe934a1830f04d09819d87842cf505c42c753db90f7949",
+    "lines": 203,
+    "symbols": [
+      {
+        "name": "department_values",
+        "start": 37,
+        "end": 62
+      },
+      {
+        "name": "resolve",
+        "start": 65,
+        "end": 69
+      },
+      {
+        "name": "upstream",
+        "start": 72,
+        "end": 82
+      },
+      {
+        "name": "validate_assets",
+        "start": 85,
+        "end": 132
+      },
+      {
+        "name": "compile_asset",
+        "start": 135,
+        "end": 186
+      },
+      {
+        "name": "provider_projection",
+        "start": 189,
+        "end": 203
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/casting_visual_compiler.py",
+    "sha256": "ea7bfb7c815cce88930551da090333b3a4a7c8bdbf08b42c96cc7ea2c3e6eb97",
+    "lines": 118,
+    "symbols": [
+      {
+        "name": "audit_hero_prompt",
+        "start": 47,
+        "end": 56
+      },
+      {
+        "name": "compile_heroic_visual_intent",
+        "start": 59,
+        "end": 118
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/visual_medium.py",
+    "sha256": "186fc3e2dacc80b64f471780be2a0895c4579b7831f3b8416f2087424c2a5e6a",
+    "lines": 372,
+    "symbols": [
+      {
+        "name": "compile_visual_medium",
+        "start": 17,
+        "end": 37
+      },
+      {
+        "name": "compile_character_treatment",
+        "start": 40,
+        "end": 45
+      },
+      {
+        "name": "compile_realism_level",
+        "start": 48,
+        "end": 53
+      },
+      {
+        "name": "compile_casting_mode",
+        "start": 56,
+        "end": 61
+      },
+      {
+        "name": "generated_sections",
+        "start": 64,
+        "end": 72
+      },
+      {
+        "name": "positive_matches",
+        "start": 85,
+        "end": 102
+      },
+      {
+        "name": "medium_consistency_gate",
+        "start": 117,
+        "end": 155
+      },
+      {
+        "name": "fact_domain",
+        "start": 197,
+        "end": 219
+      },
+      {
+        "name": "_neutral_wording",
+        "start": 222,
+        "end": 235
+      },
+      {
+        "name": "_key",
+        "start": 238,
+        "end": 239
+      },
+      {
+        "name": "compile_character_art",
+        "start": 242,
+        "end": 350
+      },
+      {
+        "name": "verify_medium_compilation",
+        "start": 353,
+        "end": 372
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/hosts/cinematic_projection.py",
+    "sha256": "9a24a0bb85274c55de6f70b1df229e4d56ed6f63b7f16fdcfcbe8326569a3886",
+    "lines": 271,
+    "symbols": [
+      {
+        "name": "executable",
+        "start": 19,
+        "end": 24
+      },
+      {
+        "name": "leaves",
+        "start": 27,
+        "end": 32
+      },
+      {
+        "name": "prose",
+        "start": 35,
+        "end": 40
+      },
+      {
+        "name": "source_audio",
+        "start": 43,
+        "end": 56
+      },
+      {
+        "name": "project",
+        "start": 59,
+        "end": 259
+      },
+      {
+        "name": "validate_projection",
+        "start": 262,
+        "end": 271
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/hosts/prompt_budget.py",
+    "sha256": "9a8bb9a14003beeae551e0e84d091fc6d8a43488147a6833a492e210290f7de0",
+    "lines": 99,
+    "symbols": [
+      {
+        "name": "PromptBudgetExceeded",
+        "start": 12,
+        "end": 18
+      },
+      {
+        "name": "prompt_limit",
+        "start": 21,
+        "end": 49
+      },
+      {
+        "name": "compact_prose",
+        "start": 74,
+        "end": 81
+      },
+      {
+        "name": "budget_prompt",
+        "start": 84,
+        "end": 99
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/hosts/route_production.py",
+    "sha256": "c78ce8d10b50950e7732c2af2944cc416001750ea62e6789166a30eeb2da948d",
+    "lines": 414,
+    "symbols": [
+      {
+        "name": "guard_direct_generation",
+        "start": 22,
+        "end": 25
+      },
+      {
+        "name": "validate_route_direction_sources",
+        "start": 28,
+        "end": 48
+      },
+      {
+        "name": "save_route",
+        "start": 51,
+        "end": 110
+      },
+      {
+        "name": "operate",
+        "start": 113,
+        "end": 286
+      },
+      {
+        "name": "still_rule_catalog",
+        "start": 289,
+        "end": 293
+      },
+      {
+        "name": "_still_originals",
+        "start": 296,
+        "end": 321
+      },
+      {
+        "name": "validate_still_professional_sources",
+        "start": 324,
+        "end": 357
+      },
+      {
+        "name": "prepare_still_projection",
+        "start": 360,
+        "end": 388
+      },
+      {
+        "name": "still_observation_payload",
+        "start": 391,
+        "end": 414
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/providers/video/base.py",
+    "sha256": "e88d6c47a95c8e596a5f92bf008c1d09ae77e9a4ac7e246c46640b042ff9a9b0",
+    "lines": 223,
+    "symbols": [
+      {
+        "name": "VideoProvider",
+        "start": 17,
+        "end": 25
+      },
+      {
+        "name": "SafeProviderError",
+        "start": 28,
+        "end": 32
+      },
+      {
+        "name": "timestamp",
+        "start": 35,
+        "end": 44
+      },
+      {
+        "name": "HttpVideoProvider",
+        "start": 51,
+        "end": 223
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/providers/video/adapters.py",
+    "sha256": "a1f6451e486be676eca69bd5b098b2c0e4470b2e55202db294b0c8d2bc280726",
+    "lines": 149,
+    "symbols": [
+      {
+        "name": "content_items",
+        "start": 7,
+        "end": 13
+      },
+      {
+        "name": "SeedanceProvider",
+        "start": 16,
+        "end": 29
+      },
+      {
+        "name": "MiniMaxProvider",
+        "start": 32,
+        "end": 43
+      },
+      {
+        "name": "ViduProvider",
+        "start": 46,
+        "end": 68
+      },
+      {
+        "name": "WanProvider",
+        "start": 71,
+        "end": 89
+      },
+      {
+        "name": "KlingProvider",
+        "start": 92,
+        "end": 146
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/providers/video/registry.py",
+    "sha256": "03be7d903a46c760a1214202cea67fb853cd79e1ad10dff7cf7d16824c7fe4fa",
+    "lines": 184,
+    "symbols": [
+      {
+        "name": "registry",
+        "start": 14,
+        "end": 15
+      },
+      {
+        "name": "model_keys",
+        "start": 18,
+        "end": 20
+      },
+      {
+        "name": "model_enabled_env",
+        "start": 23,
+        "end": 27
+      },
+      {
+        "name": "model_enabled",
+        "start": 30,
+        "end": 33
+      },
+      {
+        "name": "model_availability",
+        "start": 36,
+        "end": 42
+      },
+      {
+        "name": "ProviderSettings",
+        "start": 45,
+        "end": 63
+      },
+      {
+        "name": "settings",
+        "start": 66,
+        "end": 70
+      },
+      {
+        "name": "capability_errors",
+        "start": 73,
+        "end": 129
+      },
+      {
+        "name": "continuity_errors",
+        "start": 132,
+        "end": 162
+      },
+      {
+        "name": "validate_request",
+        "start": 165,
+        "end": 175
+      },
+      {
+        "name": "fingerprint",
+        "start": 178,
+        "end": 184
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/contracts/visual_prompt.py",
+    "sha256": "0e4050863f1582c236548c59e07659709331516861100be5d9f3c21a26454a3d",
+    "lines": 152,
+    "symbols": [
+      {
+        "name": "Record",
+        "start": 10,
+        "end": 11
+      },
+      {
+        "name": "Fact",
+        "start": 14,
+        "end": 25
+      },
+      {
+        "name": "Task",
+        "start": 28,
+        "end": 34
+      },
+      {
+        "name": "World",
+        "start": 37,
+        "end": 41
+      },
+      {
+        "name": "Subject",
+        "start": 44,
+        "end": 54
+      },
+      {
+        "name": "Blocking",
+        "start": 57,
+        "end": 61
+      },
+      {
+        "name": "Action",
+        "start": 64,
+        "end": 68
+      },
+      {
+        "name": "Environment",
+        "start": 71,
+        "end": 75
+      },
+      {
+        "name": "Camera",
+        "start": 78,
+        "end": 83
+      },
+      {
+        "name": "Lighting",
+        "start": 86,
+        "end": 90
+      },
+      {
+        "name": "EditDelta",
+        "start": 93,
+        "end": 97
+      },
+      {
+        "name": "Temporal",
+        "start": 100,
+        "end": 106
+      },
+      {
+        "name": "Negative",
+        "start": 109,
+        "end": 112
+      },
+      {
+        "name": "VisualPromptIR",
+        "start": 115,
+        "end": 152
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/contracts/creative_source.py",
+    "sha256": "ecd9bac9f66ff145852af624a6759bf19c1aacbff216bfee0e0139ec8eddba75",
+    "lines": 234,
+    "symbols": [
+      {
+        "name": "RightsAssertion",
+        "start": 21,
+        "end": 29
+      },
+      {
+        "name": "SourceArtifact",
+        "start": 32,
+        "end": 41
+      },
+      {
+        "name": "SourceAnchor",
+        "start": 44,
+        "end": 49
+      },
+      {
+        "name": "SourceUnit",
+        "start": 52,
+        "end": 59
+      },
+      {
+        "name": "LiteraryAnalysis",
+        "start": 62,
+        "end": 71
+      },
+      {
+        "name": "PhilosophicalCore",
+        "start": 74,
+        "end": 83
+      },
+      {
+        "name": "Preservation",
+        "start": 86,
+        "end": 92
+      },
+      {
+        "name": "AdaptationDecision",
+        "start": 95,
+        "end": 102
+      },
+      {
+        "name": "AdaptationContract",
+        "start": 105,
+        "end": 109
+      },
+      {
+        "name": "CompressionMapping",
+        "start": 112,
+        "end": 114
+      },
+      {
+        "name": "DramaticCompression",
+        "start": 117,
+        "end": 119
+      },
+      {
+        "name": "ExplicitnessException",
+        "start": 122,
+        "end": 126
+      },
+      {
+        "name": "CinemaExpression",
+        "start": 129,
+        "end": 138
+      },
+      {
+        "name": "CinemaTranslation",
+        "start": 141,
+        "end": 143
+      },
+      {
+        "name": "CharacterArcState",
+        "start": 146,
+        "end": 158
+      },
+      {
+        "name": "CharacterArc",
+        "start": 161,
+        "end": 163
+      },
+      {
+        "name": "StageReview",
+        "start": 166,
+        "end": 171
+      },
+      {
+        "name": "LiteraryPackage",
+        "start": 174,
+        "end": 186
+      },
+      {
+        "name": "HistoricalPackage",
+        "start": 189,
+        "end": 194
+      },
+      {
+        "name": "CompileSourceRequest",
+        "start": 200,
+        "end": 203
+      },
+      {
+        "name": "RightsGate",
+        "start": 206,
+        "end": 211
+      },
+      {
+        "name": "SourceMapEntry",
+        "start": 214,
+        "end": 222
+      },
+      {
+        "name": "ScreenplayInput",
+        "start": 225,
+        "end": 234
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/contracts/professional.py",
+    "sha256": "ec3da7e94b6b12619f26916ed15bf5d77250cea71bc0a4cbf4e684166d5fd111",
+    "lines": 222,
+    "symbols": [
+      {
+        "name": "DepartmentDefinition",
+        "start": 18,
+        "end": 35
+      },
+      {
+        "name": "CreativeRecord",
+        "start": 38,
+        "end": 53
+      },
+      {
+        "name": "SourceScopedContract",
+        "start": 56,
+        "end": 65
+      },
+      {
+        "name": "CreativeBible",
+        "start": 68,
+        "end": 112
+      },
+      {
+        "name": "SceneAssembly",
+        "start": 115,
+        "end": 125
+      },
+      {
+        "name": "ShotAssembly",
+        "start": 128,
+        "end": 139
+      },
+      {
+        "name": "DirectorPackage",
+        "start": 142,
+        "end": 167
+      },
+      {
+        "name": "ContinuityState",
+        "start": 170,
+        "end": 199
+      },
+      {
+        "name": "EntityIdentity",
+        "start": 202,
+        "end": 222
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/contracts/cinematic.py",
+    "sha256": "712b26eee6e94ec6453cd1f2f4d773e549e558f2e2cc0ff7d767122c8ec8b671",
+    "lines": 287,
+    "symbols": [
+      {
+        "name": "Palette",
+        "start": 20,
+        "end": 22
+      },
+      {
+        "name": "Lighting",
+        "start": 25,
+        "end": 28
+      },
+      {
+        "name": "ImageCharacter",
+        "start": 31,
+        "end": 35
+      },
+      {
+        "name": "Materials",
+        "start": 38,
+        "end": 42
+      },
+      {
+        "name": "VisualBible",
+        "start": 45,
+        "end": 53
+      },
+      {
+        "name": "BehaviorAnchor",
+        "start": 56,
+        "end": 60
+      },
+      {
+        "name": "ObservableAction",
+        "start": 63,
+        "end": 68
+      },
+      {
+        "name": "PerformanceBeat",
+        "start": 71,
+        "end": 78
+      },
+      {
+        "name": "Performance",
+        "start": 81,
+        "end": 95
+      },
+      {
+        "name": "DialogueDirection",
+        "start": 98,
+        "end": 120
+      },
+      {
+        "name": "SourceSoundIntent",
+        "start": 123,
+        "end": 139
+      },
+      {
+        "name": "Cinematography",
+        "start": 142,
+        "end": 157
+      },
+      {
+        "name": "SecondaryMotion",
+        "start": 160,
+        "end": 164
+      },
+      {
+        "name": "EnvironmentInteraction",
+        "start": 167,
+        "end": 172
+      },
+      {
+        "name": "StabilityRule",
+        "start": 175,
+        "end": 179
+      },
+      {
+        "name": "ReferenceRequirement",
+        "start": 182,
+        "end": 194
+      },
+      {
+        "name": "ExecutionRequirements",
+        "start": 197,
+        "end": 203
+      },
+      {
+        "name": "CinematicShotSpec",
+        "start": 206,
+        "end": 287
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/contracts/character_embodiment.py",
+    "sha256": "fa84432498d7ada5b0c0b897de8d75ae84523f73b569b3b19908c1e190f88b02",
+    "lines": 119,
+    "symbols": [
+      {
+        "name": "EmbodimentSource",
+        "start": 8,
+        "end": 10
+      },
+      {
+        "name": "ObservableEvidence",
+        "start": 12,
+        "end": 25
+      },
+      {
+        "name": "EmbodimentRule",
+        "start": 27,
+        "end": 35
+      },
+      {
+        "name": "PhysicalThesis",
+        "start": 37,
+        "end": 41
+      },
+      {
+        "name": "EmbodimentContrast",
+        "start": 43,
+        "end": 54
+      },
+      {
+        "name": "CounterfactualReview",
+        "start": 56,
+        "end": 60
+      },
+      {
+        "name": "BodyIndependenceReview",
+        "start": 62,
+        "end": 65
+      },
+      {
+        "name": "EmbodimentProvenance",
+        "start": 67,
+        "end": 77
+      },
+      {
+        "name": "CharacterEmbodiment",
+        "start": 79,
+        "end": 119
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/contracts/film_grammar.py",
+    "sha256": "875545d928a40e419bf4e6b3f3dfc07f479a85e84e533476ff003d579049680d",
+    "lines": 145,
+    "symbols": [
+      {
+        "name": "FilmGrammarRule",
+        "start": 15,
+        "end": 22
+      },
+      {
+        "name": "GrammarState",
+        "start": 25,
+        "end": 30
+      },
+      {
+        "name": "AestheticRule",
+        "start": 33,
+        "end": 39
+      },
+      {
+        "name": "WorkDirectingAuthority",
+        "start": 42,
+        "end": 62
+      },
+      {
+        "name": "EditorialIntentHandoff",
+        "start": 65,
+        "end": 75
+      },
+      {
+        "name": "AdaptiveIntentHandoff",
+        "start": 78,
+        "end": 87
+      },
+      {
+        "name": "AestheticPairwiseReviewContract",
+        "start": 90,
+        "end": 145
+      }
+    ]
+  },
+  {
+    "path": "plugin/src/drama_plugin/contracts/specialized_asset.py",
+    "sha256": "f9c18111f011b6e9fa226f59abeea8708eb2bdad4f3e11c542d16d36d68e2735",
+    "lines": 128,
+    "symbols": [
+      {
+        "name": "MovieVisualMedium",
+        "start": 11,
+        "end": 15
+      },
+      {
+        "name": "OpticalTextureIntent",
+        "start": 18,
+        "end": 22
+      },
+      {
+        "name": "ImagingCharacterIntent",
+        "start": 25,
+        "end": 36
+      },
+      {
+        "name": "GlobalVisualStyle",
+        "start": 39,
+        "end": 58
+      },
+      {
+        "name": "DramaturgyInput",
+        "start": 61,
+        "end": 65
+      },
+      {
+        "name": "AssetDecision",
+        "start": 68,
+        "end": 71
+      },
+      {
+        "name": "AssetBase",
+        "start": 85,
+        "end": 89
+      },
+      {
+        "name": "CharacterAsset",
+        "start": 92,
+        "end": 96
+      },
+      {
+        "name": "CostumeAsset",
+        "start": 99,
+        "end": 103
+      },
+      {
+        "name": "SceneAsset",
+        "start": 106,
+        "end": 109
+      },
+      {
+        "name": "SpecializedAssetBible",
+        "start": 115,
+        "end": 128
+      }
+    ]
+  },
+  {
+    "path": "docs/external-research/fal-cinematography-a3/A3-Source-IR-Consumer-Mapping.md",
+    "sha256": "b497a28fd79670831d93a7b8ebe272e00b95c7766459a739b0081e19e793d83d",
+    "lines": 93,
+    "headings": [
+      {
+        "line": 1,
+        "text": "# A3 — Source / IR / Consumer Mapping"
+      },
+      {
+        "line": 5,
+        "text": "## 单一消费链"
+      },
+      {
+        "line": 19,
+        "text": "## SOURCE_IR_CONSUMER_MATRIX"
+      },
+      {
+        "line": 42,
+        "text": "## Field-level 映射规则"
+      },
+      {
+        "line": 54,
+        "text": "## Source 与 provenance 两条链"
+      },
+      {
+        "line": 60,
+        "text": "### D2 与 mapping receipt 的最小设计"
+      },
+      {
+        "line": 74,
+        "text": "## No Professional Skill Owns Final Provider Prompt"
+      },
+      {
+        "line": 82,
+        "text": "## 失败与回流"
+      }
+    ]
+  },
+  {
+    "path": "docs/external-research/fal-cinematography-a3/A3-Canonical-Expressiveness-Audit.md",
+    "sha256": "d238cf3c55cf1e95746c202427e21d3c98162a8a7cfce66235154e281dc7067b",
+    "lines": 68,
+    "headings": [
+      {
+        "line": 1,
+        "text": "# A3 — Canonical Expressiveness Audit"
+      },
+      {
+        "line": 5,
+        "text": "## 输入与当前版本"
+      },
+      {
+        "line": 9,
+        "text": "## CANONICAL_EXPRESSIVENESS_MATRIX"
+      },
+      {
+        "line": 32,
+        "text": "## 源码核验结论"
+      },
+      {
+        "line": 45,
+        "text": "## Schema delta 上限"
+      },
+      {
+        "line": 54,
+        "text": "## 本轮源码定位"
+      }
+    ]
+  },
+  {
+    "path": "docs/external-research/fal-cinematography-a3/A3-Professional-Knowledge-Contract.md",
+    "sha256": "1cb383895500a4561e2d24d219c5127899c2997bf3f588330ac9577a55769d6d",
+    "lines": 181,
+    "headings": [
+      {
+        "line": 1,
+        "text": "# A3 — Professional Knowledge Contract"
+      },
+      {
+        "line": 5,
+        "text": "## 1. 决策形状与权威"
+      },
+      {
+        "line": 17,
+        "text": "## 2. Cinematography：C02–C07、C13"
+      },
+      {
+        "line": 53,
+        "text": "## 3. Lighting：C09、C28 光照部分"
+      },
+      {
+        "line": 69,
+        "text": "## 4. Color / Imaging：C10、C11、C30"
+      },
+      {
+        "line": 75,
+        "text": "### D1 — 唯一 Work 级成像扩展（设计草案）"
+      },
+      {
+        "line": 100,
+        "text": "## 5. REFERENCE_RESPONSIBILITY_CONTRACT：C15"
+      },
+      {
+        "line": 115,
+        "text": "## 6. Realism without Realism Owner：C28"
+      },
+      {
+        "line": 128,
+        "text": "## 7. STILL / LIVE_ACTION QC：C04、C17、C28、C36"
+      },
+      {
+        "line": 160,
+        "text": "## 8. C35：仅受控实验原则"
+      },
+      {
+        "line": 164,
+        "text": "## 9. Knowledge provenance 与成熟度"
+      }
+    ]
+  },
+  {
+    "path": "docs/external-research/fal-cinematography-a3/README.md",
+    "sha256": "c03ae1f809cd5770a7da46b0c2177277ae577b1249cee08694088e713a767e57",
+    "lines": 17,
+    "headings": [
+      {
+        "line": 1,
+        "text": "# A3 Canonical Cinematography Knowledge Contract Design"
+      }
+    ]
+  },
+  {
+    "path": "docs/external-research/fal-cinematography-a3/A3-A4-Minimal-Implementation-Plan.md",
+    "sha256": "1543e8f11adcc293eb0501f09ffec56cfda4040ab59ff71e5bcff1de7bba079b",
+    "lines": 109,
+    "headings": [
+      {
+        "line": 1,
+        "text": "# A3 — A4 Minimal Implementation Plan"
+      },
+      {
+        "line": 5,
+        "text": "## 决定"
+      },
+      {
+        "line": 11,
+        "text": "## 逐文件预计影响"
+      },
+      {
+        "line": 41,
+        "text": "## 明确无需修改的文件/模块"
+      },
+      {
+        "line": 57,
+        "text": "## 两个 schema delta 的实施接受条件"
+      },
+      {
+        "line": 69,
+        "text": "## 建议实现顺序与验收"
+      },
+      {
+        "line": 78,
+        "text": "## 旧规则与 deprecation"
+      },
+      {
+        "line": 84,
+        "text": "## A4_READINESS_MATRIX"
+      }
+    ]
+  },
+  {
+    "path": "docs/external-research/fal-cinematography-a3/A3-A5-Validation-Contract.md",
+    "sha256": "4350978172aa6fe1b92928fe3755c639568640e4c565170e1a2d9a9d9651703d",
+    "lines": 84,
+    "headings": [
+      {
+        "line": 1,
+        "text": "# A3 — A5 Validation Contract"
+      },
+      {
+        "line": 5,
+        "text": "## 目标与授权边界"
+      },
+      {
+        "line": 11,
+        "text": "## 固定条件与唯一干预"
+      },
+      {
+        "line": 21,
+        "text": "## 五类样本框架"
+      },
+      {
+        "line": 35,
+        "text": "## 配对、顺序与随机性"
+      },
+      {
+        "line": 43,
+        "text": "## OBSERVATION_DIMENSIONS（逐维，不给主观总分 winner）"
+      },
+      {
+        "line": 62,
+        "text": "## 不用加权总分的决策规则"
+      },
+      {
+        "line": 70,
+        "text": "## 实验记录草案（非 runtime）"
+      }
+    ]
+  },
+  {
+    "path": "docs/external-research/face-a3/Face-A3-Source-IR-Consumer-Mapping.md",
+    "sha256": "b4eab5c3dac257056aaa06cd0f3bc57631a547bcb35b64139723df2337a09d7c",
+    "lines": 45,
+    "headings": [
+      {
+        "line": 1,
+        "text": "# Face A3 — Source / IR / Consumer Mapping"
+      },
+      {
+        "line": 7,
+        "text": "## 唯一目标链"
+      },
+      {
+        "line": 13,
+        "text": "## 事实、理由、观察与知识各自去向"
+      },
+      {
+        "line": 31,
+        "text": "## Pin 与 receipt 的可信边界"
+      },
+      {
+        "line": 41,
+        "text": "## Deltas"
+      }
+    ]
+  },
+  {
+    "path": "docs/external-research/face-a3/Face-A3-A4-Minimal-Implementation-Plan.md",
+    "sha256": "900c89369f97d555717d83d0147caa0ffb1e93f24e3f418703eab218a2d02989",
+    "lines": 87,
+    "headings": [
+      {
+        "line": 1,
+        "text": "# Face A3 — A4 Minimal Implementation Plan"
+      },
+      {
+        "line": 7,
+        "text": "## 决定"
+      },
+      {
+        "line": 11,
+        "text": "## 未来逐文件最小清单"
+      },
+      {
+        "line": 32,
+        "text": "## 冲突风险与顺序"
+      },
+      {
+        "line": 45,
+        "text": "## FACE_A4_READINESS_MATRIX"
+      }
+    ]
+  },
+  {
+    "path": "docs/external-research/face-a3/Face-A3-Reference-Identity-Contract.md",
+    "sha256": "b1dd8eaa897374d2e708b3ca6ab989777ab46341c789135c8b4bf9238c8c0dcb",
+    "lines": 31,
+    "headings": [
+      {
+        "line": 1,
+        "text": "# Face A3 — Reference Identity Contract"
+      },
+      {
+        "line": 7,
+        "text": "## C15 延伸，D2 共享"
+      },
+      {
+        "line": 13,
+        "text": "## 三参考的实际表示"
+      },
+      {
+        "line": 25,
+        "text": "## Identity preservation 与 redescription"
+      }
+    ]
+  },
+  {
+    "path": "docs/external-research/face-a3/README.md",
+    "sha256": "1415f73aeedf2e11dcb0ded8825daf902682693dd04768ad5a14107abc4f0aba",
+    "lines": 19,
+    "headings": [
+      {
+        "line": 1,
+        "text": "# Face A3 — 交付索引"
+      }
+    ]
+  },
+  {
+    "path": "docs/external-research/face-a3/Face-A3-Facial-Identity-Knowledge-Contract.md",
+    "sha256": "09337913f9d15c682dc7a87d04dcb9ce793bb9a5b3c211ff4c3488b2f6e818d5",
+    "lines": 54,
+    "headings": [
+      {
+        "line": 1,
+        "text": "# Face A3 — Facial Identity Knowledge Contract"
+      },
+      {
+        "line": 7,
+        "text": "## 最小决定"
+      },
+      {
+        "line": 13,
+        "text": "## 唯一决定位置与 owner"
+      },
+      {
+        "line": 32,
+        "text": "## 年龄及皮肤"
+      },
+      {
+        "line": 38,
+        "text": "## 覆盖与不确定性"
+      },
+      {
+        "line": 44,
+        "text": "## 反审美与反刻板"
+      },
+      {
+        "line": 50,
+        "text": "## 来源、成熟度与版本"
+      }
+    ]
+  },
+  {
+    "path": "docs/external-research/face-a3/Face-A3-QC-Contract.md",
+    "sha256": "03aabda9903b564f418ce628835f33034dc7bd107d904cfcd040084f1e0587b6",
+    "lines": 44,
+    "headings": [
+      {
+        "line": 1,
+        "text": "# Face A3 — QC Contract"
+      },
+      {
+        "line": 7,
+        "text": "## 观察结构与用途"
+      },
+      {
+        "line": 28,
+        "text": "## 从观察到唯一修复路由"
+      },
+      {
+        "line": 36,
+        "text": "## AAA/CG 感的证据纪律"
+      },
+      {
+        "line": 42,
+        "text": "## 既有 Review 处置保持"
+      }
+    ]
+  },
+  {
+    "path": "docs/external-research/face-a3/Face-A3-A5-Validation-Contract.md",
+    "sha256": "39f28dd1da64d788fd382c82a73d40dd42c2a016e85b0c44a20132b25028aed7",
+    "lines": 55,
+    "headings": [
+      {
+        "line": 1,
+        "text": "# Face A3 — A5 Validation Contract"
+      },
+      {
+        "line": 7,
+        "text": "## 状态与入场条件"
+      },
+      {
+        "line": 11,
+        "text": "## Fixture registry（待从真实原件填入，不可直接执行）"
+      },
+      {
+        "line": 23,
+        "text": "## OLD/NEW唯一处理变量"
+      },
+      {
+        "line": 31,
+        "text": "## 样本与评审"
+      },
+      {
+        "line": 51,
+        "text": "## 结果与停止"
+      }
+    ]
+  },
+  {
+    "path": "docs/external-research/face-a3/Face-A3-Canonical-Expressiveness-Audit.md",
+    "sha256": "d9f5c775ec83d3ed9482624eefbeff1f55e9af9a2fbd9f2c4c85f24bd098c8ac",
+    "lines": 109,
+    "headings": [
+      {
+        "line": 1,
+        "text": "# Face A3 — Canonical Expressiveness Audit"
+      },
+      {
+        "line": 7,
+        "text": "## 读取依据与结论"
+      },
+      {
+        "line": 17,
+        "text": "## FACE_A3_ALLOWLIST"
+      },
+      {
+        "line": 57,
+        "text": "## FACE_CANONICAL_EXPRESSIVENESS_MATRIX"
+      },
+      {
+        "line": 99,
+        "text": "## 真实源码定位"
+      }
+    ]
+  },
+  {
+    "path": "docs/external-research/still-liveaction-a4/Still-LiveAction-A4-Implementation-Report.md",
+    "sha256": "78d8bd035f699f54c44add9ab86d9234f1d402c65403a4f0ee9af53ff572c756",
+    "lines": 126,
+    "headings": [
+      {
+        "line": 1,
+        "text": "# Still Live-action A4 — Joint Implementation Report"
+      },
+      {
+        "line": 5,
+        "text": "## 最终状态"
+      },
+      {
+        "line": 19,
+        "text": "## Changed Runtime Files"
+      },
+      {
+        "line": 48,
+        "text": "## Canonical Capabilities Implemented"
+      },
+      {
+        "line": 59,
+        "text": "## Contract Delta 与消费边界"
+      },
+      {
+        "line": 74,
+        "text": "## Legacy Reconciliation"
+      },
+      {
+        "line": 91,
+        "text": "## Tests 与 Runtime Evidence"
+      },
+      {
+        "line": 113,
+        "text": "## Architectural Regression 与限制"
+      },
+      {
+        "line": 122,
+        "text": "## Mandatory Completion Check"
+      }
+    ]
+  },
+  {
+    "path": "plugin/skills/director/SKILL.md",
+    "sha256": "b3c04e92dae07fd00e95bbc3c0a96adcb0d61f3ca11a479f010c3d96d5ae62c5",
+    "lines": 246,
+    "headings": [
+      {
+        "line": 6,
+        "text": "## Reconciled source input"
+      },
+      {
+        "line": 12,
+        "text": "# Director"
+      },
+      {
+        "line": 16,
+        "text": "## Role and authority"
+      },
+      {
+        "line": 20,
+        "text": "## Inputs and dependencies"
+      },
+      {
+        "line": 24,
+        "text": "## Outputs"
+      },
+      {
+        "line": 28,
+        "text": "## Forbidden authority"
+      },
+      {
+        "line": 32,
+        "text": "## Quality gates"
+      },
+      {
+        "line": 36,
+        "text": "## Failure and escalation"
+      },
+      {
+        "line": 41,
+        "text": "## Work-level directing authority"
+      },
+      {
+        "line": 50,
+        "text": "## Full-film performance coverage (R3)"
+      },
+      {
+        "line": 56,
+        "text": "## Cross-modal performance direction (R2)"
+      },
+      {
+        "line": 67,
+        "text": "## One entry, on demand"
+      },
+      {
+        "line": 81,
+        "text": "## Understand and intend"
+      },
+      {
+        "line": 98,
+        "text": "## Select and delegate"
+      },
+      {
+        "line": 120,
+        "text": "## Review, dispose, then update"
+      },
+      {
+        "line": 144,
+        "text": "## Runtime boundary"
+      },
+      {
+        "line": 156,
+        "text": "## Full-film preproduction gate and department integration"
+      },
+      {
+        "line": 162,
+        "text": "## Film score boundary"
+      },
+      {
+        "line": 166,
+        "text": "## Creative runtime and revision scope"
+      },
+      {
+        "line": 183,
+        "text": "## Film editorial authority facet"
+      },
+      {
+        "line": 191,
+        "text": "## Coverage production formalization"
+      },
+      {
+        "line": 200,
+        "text": "## Observed adaptive direction"
+      },
+      {
+        "line": 209,
+        "text": "## Route-owned expression"
+      },
+      {
+        "line": 213,
+        "text": "## Character Package ownership"
+      },
+      {
+        "line": 219,
+        "text": "## Character Embodiment ownership"
+      },
+      {
+        "line": 225,
+        "text": "## Core Creative R1 boundary"
+      },
+      {
+        "line": 236,
+        "text": "## Full scene Director screenplay"
+      }
+    ]
+  },
+  {
+    "path": "plugin/skills/work-creation/SKILL.md",
+    "sha256": "8996d17f2cf0ffb63921ce401e77912aeff180c8a036d7fec557c4fbe6f05b32",
+    "lines": 65,
+    "headings": [
+      {
+        "line": 6,
+        "text": "## Source routing"
+      },
+      {
+        "line": 12,
+        "text": "# Work Creation"
+      },
+      {
+        "line": 27,
+        "text": "## Creative Lifecycle"
+      },
+      {
+        "line": 29,
+        "text": "### 1. Understand Goal"
+      },
+      {
+        "line": 33,
+        "text": "### 2. Gather Context"
+      },
+      {
+        "line": 39,
+        "text": "### 3. Plan"
+      },
+      {
+        "line": 43,
+        "text": "### 4. Execute Draft"
+      },
+      {
+        "line": 47,
+        "text": "### 5. Review"
+      },
+      {
+        "line": 51,
+        "text": "### 6. Revise or Re-plan"
+      },
+      {
+        "line": 55,
+        "text": "### 7. Persist"
+      },
+      {
+        "line": 63,
+        "text": "## Historical causality and dramatic invention"
+      }
+    ]
+  },
+  {
+    "path": "plugin/skills/script-adaptation/SKILL.md",
+    "sha256": "a972ab8fcd20f161242fcc3c27b0f67fb48bfc44db654e496855b67d5323673c",
+    "lines": 62,
+    "headings": [
+      {
+        "line": 6,
+        "text": "## Creative Source boundary"
+      },
+      {
+        "line": 12,
+        "text": "# Script Adaptation"
+      },
+      {
+        "line": 20,
+        "text": "## Creative Lifecycle"
+      },
+      {
+        "line": 22,
+        "text": "### 1. Understand Goal"
+      },
+      {
+        "line": 26,
+        "text": "### 2. Gather Context"
+      },
+      {
+        "line": 32,
+        "text": "### 3. Plan"
+      },
+      {
+        "line": 36,
+        "text": "### 4. Execute Draft"
+      },
+      {
+        "line": 40,
+        "text": "### 5. Review"
+      },
+      {
+        "line": 44,
+        "text": "### 6. Revise or Re-plan"
+      },
+      {
+        "line": 48,
+        "text": "### 7. Persist"
+      },
+      {
+        "line": 56,
+        "text": "## Earned dramatic peaks"
+      },
+      {
+        "line": 60,
+        "text": "## Historical causality and dramatic invention"
+      }
+    ]
+  },
+  {
+    "path": "plugin/skills/cinematic-screenplay-incubation/SKILL.md",
+    "sha256": "81af1db0f2126200707c37aea18a3679bb58eb2a3d3db88484323d27d5083726",
+    "lines": 107,
+    "headings": [
+      {
+        "line": 6,
+        "text": "## Creative Source dispatch"
+      },
+      {
+        "line": 12,
+        "text": "# Authorial closure handoff"
+      },
+      {
+        "line": 19,
+        "text": "# Cinematic Screenplay Incubation · 影视编剧孵化"
+      },
+      {
+        "line": 25,
+        "text": "## Scope and compatibility"
+      },
+      {
+        "line": 33,
+        "text": "## Meta dramaturgy before incubation"
+      },
+      {
+        "line": 39,
+        "text": "## Plan → Execute → Review → Revise → Freeze"
+      },
+      {
+        "line": 43,
+        "text": "### 1. Historical & Logic"
+      },
+      {
+        "line": 49,
+        "text": "### 2. Character & Relationship"
+      },
+      {
+        "line": 53,
+        "text": "### 3. Story & Rhythm"
+      },
+      {
+        "line": 57,
+        "text": "### 4. Scene & Dialogue"
+      },
+      {
+        "line": 69,
+        "text": "### 5. War & Cinematic Expression"
+      },
+      {
+        "line": 75,
+        "text": "### 6. Review & Revision"
+      },
+      {
+        "line": 83,
+        "text": "## Downstream handoff"
+      },
+      {
+        "line": 93,
+        "text": "## Earned dramatic peaks"
+      },
+      {
+        "line": 99,
+        "text": "## Screenplay Readiness before direction"
+      },
+      {
+        "line": 103,
+        "text": "## Creative runtime and revision scope"
+      }
+    ]
+  },
+  {
+    "path": "plugin/skills/scene-development/SKILL.md",
+    "sha256": "b5a6fa58f87a10ba9e0608b0b1fe5bf9df657791ad4121f1f286df16ad5c1c34",
+    "lines": 124,
+    "headings": [
+      {
+        "line": 6,
+        "text": "## Creative Source applicability"
+      },
+      {
+        "line": 11,
+        "text": "# Scene Development"
+      },
+      {
+        "line": 15,
+        "text": "## Role and authority"
+      },
+      {
+        "line": 19,
+        "text": "## Inputs and dependencies"
+      },
+      {
+        "line": 23,
+        "text": "## Outputs"
+      },
+      {
+        "line": 27,
+        "text": "## Forbidden authority"
+      },
+      {
+        "line": 31,
+        "text": "## Quality gates"
+      },
+      {
+        "line": 35,
+        "text": "## Failure and escalation"
+      },
+      {
+        "line": 40,
+        "text": "## Opt-in Director authority"
+      },
+      {
+        "line": 61,
+        "text": "## Creative Lifecycle"
+      },
+      {
+        "line": 63,
+        "text": "### 1. Understand Goal"
+      },
+      {
+        "line": 67,
+        "text": "### 2. Gather Context"
+      },
+      {
+        "line": 75,
+        "text": "### 3. Plan"
+      },
+      {
+        "line": 79,
+        "text": "### 4. Execute Draft"
+      },
+      {
+        "line": 83,
+        "text": "### 5. Review"
+      },
+      {
+        "line": 89,
+        "text": "### 6. Revise or Re-plan"
+      },
+      {
+        "line": 93,
+        "text": "### 7. Persist"
+      },
+      {
+        "line": 101,
+        "text": "## Performance language adaptation"
+      },
+      {
+        "line": 122,
+        "text": "## Pressure, release and first appearance"
+      }
+    ]
+  },
+  {
+    "path": "plugin/skills/shot-design/SKILL.md",
+    "sha256": "329185b81573092bfaebd4b2c195a0062ccf3bccbffbfa2602f74509dfaac5c7",
+    "lines": 140,
+    "headings": [
+      {
+        "line": 6,
+        "text": "## Creative Source applicability"
+      },
+      {
+        "line": 11,
+        "text": "# Shot Design"
+      },
+      {
+        "line": 15,
+        "text": "## Role and authority"
+      },
+      {
+        "line": 19,
+        "text": "## Inputs and dependencies"
+      },
+      {
+        "line": 23,
+        "text": "## Outputs"
+      },
+      {
+        "line": 27,
+        "text": "## Forbidden authority"
+      },
+      {
+        "line": 31,
+        "text": "## Quality gates"
+      },
+      {
+        "line": 35,
+        "text": "## Failure and escalation"
+      },
+      {
+        "line": 48,
+        "text": "## Opt-in Director authority"
+      },
+      {
+        "line": 65,
+        "text": "## Creative Lifecycle"
+      },
+      {
+        "line": 67,
+        "text": "### 1. Understand Goal"
+      },
+      {
+        "line": 71,
+        "text": "### 2. Gather Context"
+      },
+      {
+        "line": 77,
+        "text": "### 3. Plan"
+      },
+      {
+        "line": 83,
+        "text": "### 4. Execute Draft"
+      },
+      {
+        "line": 87,
+        "text": "### 5. Review"
+      },
+      {
+        "line": 93,
+        "text": "### 6. Revise or Re-plan"
+      },
+      {
+        "line": 99,
+        "text": "### 7. Persist"
+      },
+      {
+        "line": 107,
+        "text": "## Visual authority and editorial rhythm"
+      },
+      {
+        "line": 111,
+        "text": "## Sequence production handoff"
+      },
+      {
+        "line": 117,
+        "text": "## Shot Transition Plan in existing editorial contract"
+      },
+      {
+        "line": 121,
+        "text": "## Film editorial authority facet"
+      },
+      {
+        "line": 129,
+        "text": "## Coverage production formalization"
+      },
+      {
+        "line": 138,
+        "text": "## Route-owned expression"
+      }
+    ]
+  },
+  {
+    "path": "plugin/skills/cinematic-direction/SKILL.md",
+    "sha256": "8b42f9cbc44a105340a0ba273fd8a91c85ff1c4f6283f824d701b748c9a47415",
+    "lines": 46,
+    "headings": [
+      {
+        "line": 6,
+        "text": "# Cinematic Execution Projection"
+      },
+      {
+        "line": 8,
+        "text": "## Role and authority"
+      },
+      {
+        "line": 14,
+        "text": "## Inputs and dependencies"
+      },
+      {
+        "line": 18,
+        "text": "## Professional decisions"
+      },
+      {
+        "line": 22,
+        "text": "## Outputs"
+      },
+      {
+        "line": 26,
+        "text": "## Forbidden authority"
+      },
+      {
+        "line": 30,
+        "text": "## Quality gates"
+      },
+      {
+        "line": 34,
+        "text": "## Failure and escalation"
+      },
+      {
+        "line": 40,
+        "text": "## Source reads"
+      },
+      {
+        "line": 44,
+        "text": "## Route-owned expression"
+      }
+    ]
+  },
+  {
+    "path": "plugin/skills/character-dramaturgy/SKILL.md",
+    "sha256": "3adb60adb16e89c236d56283b0dacea758d0a7993d9a9dea2e41619b22ee65cd",
+    "lines": 69,
+    "headings": [
+      {
+        "line": 6,
+        "text": "## Narrative stages"
+      },
+      {
+        "line": 12,
+        "text": "# Character Dramaturgy"
+      },
+      {
+        "line": 14,
+        "text": "## Role and authority"
+      },
+      {
+        "line": 22,
+        "text": "## Inputs and dependencies"
+      },
+      {
+        "line": 26,
+        "text": "## Professional decisions"
+      },
+      {
+        "line": 30,
+        "text": "## Outputs"
+      },
+      {
+        "line": 34,
+        "text": "## Forbidden authority"
+      },
+      {
+        "line": 38,
+        "text": "## Quality gates"
+      },
+      {
+        "line": 42,
+        "text": "## Failure and escalation"
+      },
+      {
+        "line": 46,
+        "text": "## Source reads"
+      },
+      {
+        "line": 50,
+        "text": "## Character Package ownership"
+      },
+      {
+        "line": 56,
+        "text": "## Core Creative R1 boundary"
+      }
+    ]
+  },
+  {
+    "path": "plugin/skills/character-embodiment/SKILL.md",
+    "sha256": "7c40ffc3cb7c2b296d8a96ecf7bcfa65dea2c7f4b7c2a9fb069cc966c2521a15",
+    "lines": 40,
+    "headings": [
+      {
+        "line": 6,
+        "text": "# Character Embodiment"
+      },
+      {
+        "line": 14,
+        "text": "## Derive existence, not appearance"
+      },
+      {
+        "line": 24,
+        "text": "## Test distinctiveness before handoff"
+      },
+      {
+        "line": 34,
+        "text": "## Version, hand off, stop"
+      }
+    ]
+  },
+  {
+    "path": "plugin/skills/performance-casting/SKILL.md",
+    "sha256": "787d52457e86b53f7b49589604151e7f2aae01cdec83954d5be5900200431978",
+    "lines": 202,
+    "headings": [
+      {
+        "line": 6,
+        "text": "# Performance Casting"
+      },
+      {
+        "line": 131,
+        "text": "## Route-owned expression"
+      },
+      {
+        "line": 139,
+        "text": "## Character Package ownership"
+      },
+      {
+        "line": 147,
+        "text": "## Character Embodiment ownership"
+      },
+      {
+        "line": 153,
+        "text": "## Visual Medium compilation"
+      },
+      {
+        "line": 157,
+        "text": "## Medium-first fact handoff"
+      },
+      {
+        "line": 176,
+        "text": "## Render style and presentation handoff"
+      },
+      {
+        "line": 187,
+        "text": "## Core Creative R1 boundary"
+      },
+      {
+        "line": 198,
+        "text": "## Still live-action professional knowledge"
+      }
+    ]
+  },
+  {
+    "path": "plugin/skills/specialized-asset-design/SKILL.md",
+    "sha256": "deaccf9d2d88ed9b7b60f8dcb986dbbea924348f6bf5c35df7a391993c741a51",
+    "lines": 49,
+    "headings": [
+      {
+        "line": 6,
+        "text": "# Specialized Asset Design"
+      },
+      {
+        "line": 43,
+        "text": "## Still live-action professional knowledge"
+      }
+    ]
+  },
+  {
+    "path": "plugin/skills/environment-design/SKILL.md",
+    "sha256": "e9dd17d078325d9e2095274cca49a28f94bbe9114b19a849fc87ac5960519a69",
+    "lines": 21,
+    "headings": [
+      {
+        "line": 6,
+        "text": "# environment-design: compatibility view"
+      }
+    ]
+  },
+  {
+    "path": "plugin/skills/cinematography/SKILL.md",
+    "sha256": "0438aaed986333f010a58009ac9833790dc8be81eb28ce3f36d28bd67b932bb7",
+    "lines": 52,
+    "headings": [
+      {
+        "line": 6,
+        "text": "# Cinematography"
+      },
+      {
+        "line": 8,
+        "text": "## Role and authority"
+      },
+      {
+        "line": 16,
+        "text": "## Inputs and dependencies"
+      },
+      {
+        "line": 20,
+        "text": "## Professional decisions"
+      },
+      {
+        "line": 24,
+        "text": "## Outputs"
+      },
+      {
+        "line": 28,
+        "text": "## Forbidden authority"
+      },
+      {
+        "line": 32,
+        "text": "## Quality gates"
+      },
+      {
+        "line": 36,
+        "text": "## Failure and escalation"
+      },
+      {
+        "line": 40,
+        "text": "## Source reads"
+      },
+      {
+        "line": 44,
+        "text": "## Route-owned expression"
+      },
+      {
+        "line": 48,
+        "text": "## Still live-action professional knowledge"
+      }
+    ]
+  },
+  {
+    "path": "plugin/skills/lighting-design/SKILL.md",
+    "sha256": "a50131b04a8045b288520e7ac9adb80996ba0b992b46a558abdcf8839b09c3c6",
+    "lines": 48,
+    "headings": [
+      {
+        "line": 6,
+        "text": "# Lighting Design"
+      },
+      {
+        "line": 8,
+        "text": "## Role and authority"
+      },
+      {
+        "line": 16,
+        "text": "## Inputs and dependencies"
+      },
+      {
+        "line": 20,
+        "text": "## Professional decisions"
+      },
+      {
+        "line": 24,
+        "text": "## Outputs"
+      },
+      {
+        "line": 28,
+        "text": "## Forbidden authority"
+      },
+      {
+        "line": 32,
+        "text": "## Quality gates"
+      },
+      {
+        "line": 36,
+        "text": "## Failure and escalation"
+      },
+      {
+        "line": 40,
+        "text": "## Source reads"
+      },
+      {
+        "line": 44,
+        "text": "## Still live-action professional knowledge"
+      }
+    ]
+  },
+  {
+    "path": "plugin/skills/color-design/SKILL.md",
+    "sha256": "01ea74297aaf71fe1e1b23ecc90aeff67fde2aa8082848daf99d8eda9390b6bb",
+    "lines": 48,
+    "headings": [
+      {
+        "line": 6,
+        "text": "# Color Design"
+      },
+      {
+        "line": 8,
+        "text": "## Role and authority"
+      },
+      {
+        "line": 16,
+        "text": "## Inputs and dependencies"
+      },
+      {
+        "line": 20,
+        "text": "## Professional decisions"
+      },
+      {
+        "line": 24,
+        "text": "## Outputs"
+      },
+      {
+        "line": 28,
+        "text": "## Forbidden authority"
+      },
+      {
+        "line": 32,
+        "text": "## Quality gates"
+      },
+      {
+        "line": 36,
+        "text": "## Failure and escalation"
+      },
+      {
+        "line": 40,
+        "text": "## Source reads"
+      },
+      {
+        "line": 44,
+        "text": "## Still live-action professional knowledge"
+      }
+    ]
+  },
+  {
+    "path": "plugin/skills/color-grading/SKILL.md",
+    "sha256": "b8d8842fb79a2974677149b4d8d92647e10570eee7804934e44f05838d6f4cd7",
+    "lines": 48,
+    "headings": [
+      {
+        "line": 6,
+        "text": "# Final Color Grading"
+      },
+      {
+        "line": 8,
+        "text": "## Role and authority"
+      },
+      {
+        "line": 16,
+        "text": "## Inputs and dependencies"
+      },
+      {
+        "line": 20,
+        "text": "## Professional decisions"
+      },
+      {
+        "line": 24,
+        "text": "## Outputs"
+      },
+      {
+        "line": 28,
+        "text": "## Forbidden authority"
+      },
+      {
+        "line": 32,
+        "text": "## Quality gates"
+      },
+      {
+        "line": 36,
+        "text": "## Failure and escalation"
+      },
+      {
+        "line": 40,
+        "text": "## Source reads"
+      },
+      {
+        "line": 44,
+        "text": "## Still live-action professional knowledge"
+      }
+    ]
+  },
+  {
+    "path": "plugin/skills/reference-strategy/SKILL.md",
+    "sha256": "2528c5f963f16dc62976f224f10707e6780ce086897dac4f21908a37a92c1716",
+    "lines": 50,
+    "headings": [
+      {
+        "line": 6,
+        "text": "# Reference Strategy"
+      },
+      {
+        "line": 8,
+        "text": "## Role and authority"
+      },
+      {
+        "line": 16,
+        "text": "## Inputs and dependencies"
+      },
+      {
+        "line": 20,
+        "text": "## Professional decisions"
+      },
+      {
+        "line": 24,
+        "text": "## Outputs"
+      },
+      {
+        "line": 28,
+        "text": "## Forbidden authority"
+      },
+      {
+        "line": 32,
+        "text": "## Quality gates"
+      },
+      {
+        "line": 36,
+        "text": "## Failure and escalation"
+      },
+      {
+        "line": 40,
+        "text": "## Source reads"
+      },
+      {
+        "line": 44,
+        "text": "## Still live-action professional knowledge"
+      }
+    ]
+  },
+  {
+    "path": "plugin/skills/shot-production/SKILL.md",
+    "sha256": "9486168af2afb1ddb29d3c43a1e143001396f4b4e26301e5276d4d19b82bafb5",
+    "lines": 160,
+    "headings": [
+      {
+        "line": 6,
+        "text": "# Shot Production"
+      },
+      {
+        "line": 10,
+        "text": "## Every performance-bearing Shot and silent Beat (R3)"
+      },
+      {
+        "line": 16,
+        "text": "## Actor / visual projection and realized evidence (R2)"
+      },
+      {
+        "line": 51,
+        "text": "## Dialogue-coupled execution"
+      },
+      {
+        "line": 58,
+        "text": "## Durable completion and recovery"
+      },
+      {
+        "line": 80,
+        "text": "## New-story route gate"
+      },
+      {
+        "line": 101,
+        "text": "## Use-based content review and autonomous recovery"
+      },
+      {
+        "line": 109,
+        "text": "## One visual execution authority"
+      },
+      {
+        "line": 138,
+        "text": "## Official video lifecycle"
+      },
+      {
+        "line": 144,
+        "text": "## Route-owned expression"
+      },
+      {
+        "line": 148,
+        "text": "## Character Package ownership"
+      },
+      {
+        "line": 154,
+        "text": "## Still live-action professional knowledge"
+      }
+    ]
+  },
+  {
+    "path": "plugin/skills/literature-to-cinema/SKILL.md",
+    "sha256": "d2330b32c6d99a05ab4aa086ba4844f2dc6c6e392730c03fdec103ea35474b12",
+    "lines": 16,
+    "headings": [
+      {
+        "line": 6,
+        "text": "# Literature to Cinema"
+      }
+    ]
+  }
+]

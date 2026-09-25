@@ -1,12 +1,15 @@
 """Compile authored video facts and constraints without inventing creative decisions."""
-from typing import Any
+from typing import Any, cast
 from drama_plugin.contracts.base import canonical_json, sha256_canonical
 from drama_plugin.contracts.video import VideoRequest
 
-def compile_video_prompt(r: VideoRequest) -> str:
+def compile_video_prompt(r: VideoRequest, *, provider: str | None = None, model: str | None = None) -> str:
     """Lossless structural projection. No LLM rewrite, vendor-owned characters or style."""
     if r.prompt_ir is not None:
-        return compile_request_ir(r)['prompt']
+        return cast(str, compile_request_ir(r, provider=provider, model=model)['prompt'])
+    from drama_plugin.prompt_generators.registry import is_seedance2
+    if is_seedance2(model or r.continuity.primary_model):
+        raise ValueError('SEEDANCE_GENERATOR_REQUIRES_CANONICAL_IR')
     p = r.continuity
     facts = {k: v for k, v in p.model_dump(mode='json', by_alias=True).items() if k in {
         'characters', 'locationIdentity', 'timeOfDay', 'weather', 'lighting', 'style', 'colorLanguage', 'lensLanguage'}}
@@ -36,7 +39,7 @@ def ir_source_fingerprint(r: VideoRequest) -> str:
     return sha256_canonical(source)
 
 
-def compile_request_ir(r: VideoRequest) -> dict[str, Any]:
+def compile_request_ir(r: VideoRequest, *, provider: str | None = None, model: str | None = None) -> dict[str, Any]:
     from drama_plugin.visual.prompt_ir import compile_ir
     from copy import deepcopy
     if not r.prompt_ir:
@@ -49,10 +52,23 @@ def compile_request_ir(r: VideoRequest) -> dict[str, Any]:
             raw.setdefault('continuity', []).append(dict(text=row['executableSemantic'], priority='CRITICAL',
                 source='asset:' + row['assetId'], scope='CURRENT'))
     from drama_plugin.providers.video.registry import registry
-    model = r.continuity.primary_model
+    model = model or r.continuity.primary_model
+    provider = provider or r.continuity.primary_provider
     limit = registry()['models'][model]['prompt_limit']
-    result = compile_ir(raw, provider_family=r.continuity.primary_provider, audio_supported=r.native_audio,
-                        hard_limit=limit, model=model, limit_source='provider adapter capability')
+    from drama_plugin.prompt_generators.registry import is_seedance2
+    context = None
+    if is_seedance2(model):
+        from drama_plugin.providers.video.registry import validate_request
+        validate_request(r, provider, model)
+        references = []
+        for ref in r.references():
+            slot = 'first_frame' if ref == r.first_frame else 'last_frame' if ref == r.last_frame else 'reference_' + ref.kind
+            references.append({**ref.model_dump(mode='json'), 'slot': slot})
+        context = dict(mode=r.input_mode, references=references, native_audio=r.native_audio,
+                       annotations=r.prompt_projection.model_dump(mode='json') if r.prompt_projection else {})
+    result = compile_ir(raw, provider_family=provider, audio_supported=r.native_audio,
+                        hard_limit=limit, model=model, limit_source='provider adapter capability',
+                        generator_context=context)
     ir = result['ir']
     modes = {'text_to_video': 'text', 'image_to_video': 'single_image', 'first_last_frame': 'first_last'}
     if ir['task']['task_type'] != 'VIDEO' or ir['task']['input_mode'] != modes.get(r.input_mode, 'reference'):
@@ -62,10 +78,10 @@ def compile_request_ir(r: VideoRequest) -> dict[str, Any]:
     return result
 
 
-def prompt_compilation(request: VideoRequest) -> dict[str, Any]:
+def prompt_compilation(request: VideoRequest, *, provider: str | None = None, model: str | None = None) -> dict[str, Any]:
     if request.prompt_ir is not None:
-        return compile_request_ir(request)
-    prompt = compile_video_prompt(request)
+        return compile_request_ir(request, provider=provider, model=model)
+    prompt = compile_video_prompt(request, provider=provider, model=model)
     return {"compiledBy": "video-prompt-compiler", "compilerVersion": "1",
             "sourceIntent": sha256_canonical(request.model_dump(mode='json', by_alias=True)),
             "prompt": prompt, "promptFingerprint": sha256_canonical(prompt)}

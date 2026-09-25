@@ -1,0 +1,673 @@
+{
+  "captured_at": "2026-09-25T16:16:05.576054+00:00",
+  "classification": "NON_RUNTIME / NOT_IMPORTED / NOT_REGISTERED",
+  "sources": [
+    {
+      "repository": "https://github.com/getsentry/skills",
+      "branch": "main",
+      "sha": "c2f99a5b04b4cd992ec3022d7c2c3e23e938d241",
+      "commit": "2026-08-25T07:33:48-07:00 fix(iterate-pr): Remove default Claude attribution (#169)",
+      "shallow": "true",
+      "relevant_paths": [
+        "skills/prompt-optimizer"
+      ],
+      "checkout": "/tmp/prompt-a0-research/sentry",
+      "status": "",
+      "licenses": {
+        "LICENSE": "                                 Apache License\n                           Version 2.0, January 2004\n                        http://www.apache.org/licenses/\n\n   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\n\n   1. Definitions.\n\n      \"License\" shall mean the terms and conditions for use, reproduction,\n      and distribution as defined by Sections 1 through 9 of this document.\n\n      \"Licensor\" shall mean the copyright owner or entity authorized by\n      the copyright owner that is granting the License.\n\n      \"Legal Entity\" shall mean the union of the acting entity and all\n      other entities that control, are controlled by, or are under common\n      control with that entity. For the purposes of this definition,\n      \"control\" means (i) the power, direct or indirect, to cause the\n      direction or management of such entity, whether by contract or\n      otherwise, or (ii) ownership of fifty percent (50%) or more of the\n      outstanding shares, or (iii) beneficial ownership of such entity.\n\n      \"You\" (or \"Your\") shall mean an individual or Legal Entity\n      exercising permissions granted by this License.\n\n      \"Source\" form shall mean the preferred form for making modifications,\n      including but not limited to software source code, documentation\n      source, and configuration files.\n\n      \"Object\" form shall mean any form resulting from mechanical\n      transformation or translation of a Source form, including but\n      not limited to compiled object code, generated documentation,\n      and conversions to other media types.\n\n      \"Work\" shall mean the work of authorship, whether in Source or\n      Object form, made available under the License, as indicated by a\n      copyright notice that is included in or attached to the work\n      (an example is provided in the Appendix below).\n\n      \"Derivative Works\" shall mean any work, whether in Source or Object\n      form, that is based on (or derived from) the Work and for which the\n      editorial revisions, annotations, elaborations, or other modifications\n      represent, as a whole, an original work of authorship. For the purposes\n      of this License, Derivative Works shall not include works that remain\n      separable from, or merely link (or bind by name) to the interfaces of,\n      the Work and Derivative Works thereof.\n\n      \"Contribution\" shall mean any work of authorship, including\n      the original version of the Work and any modifications or additions\n      to that Work or Derivative Works thereof, that is intentionally\n      submitted to the Licensor for inclusion in the Work by the copyright owner\n      or by an individual or Legal Entity authorized to submit on behalf of\n      the copyright owner. For the purposes of this definition, \"submitted\"\n      means any form of electronic, verbal, or written communication sent\n      to the Licensor or its representatives, including but not limited to\n      communication on electronic mailing lists, source code control systems,\n      and issue tracking systems that are managed by, or on behalf of, the\n      Licensor for the purpose of discussing and improving the Work, but\n      excluding communication that is conspicuously marked or otherwise\n      designated in writing by the copyright owner as \"Not a Contribution.\"\n\n      \"Contributor\" shall mean Licensor and any individual or Legal Entity\n      on behalf of whom a Contribution has been received by Licensor and\n      subsequently incorporated within the Work.\n\n   2. Grant of Copyright License. Subject to the terms and conditions of\n      this License, each Contributor hereby grants to You a perpetual,\n      worldwide, non-exclusive, no-charge, royalty-free, irrevocable\n      copyright license to reproduce, prepare Derivative Works of,\n      publicly display, publicly perform, sublicense, and distribute the\n      Work and such Derivative Works in Source or Object form.\n\n   3. Grant of Patent License. Subject to the terms and conditions of\n      this License, each Contributor hereby grants to You a perpetual,\n      worldwide, non-exclusive, no-charge, royalty-free, irrevocable\n      (except as stated in this section) patent license to make, have made,\n      use, offer to sell, sell, import, and otherwise transfer the Work,\n      where such license applies only to those patent claims licensable\n      by such Contributor that are necessarily infringed by their\n      Contribution(s) alone or by combination of their Contribution(s)\n      with the Work to which such Contribution(s) was submitted. If You\n      institute patent litigation against any entity (including a\n      cross-claim or counterclaim in a lawsuit) alleging that the Work\n      or a Contribution incorporated within the Work constitutes direct\n      or contributory patent infringement, then any patent licenses\n      granted to You under this License for that Work shall terminate\n      as of the date such litigation is filed.\n\n   4. Redistribution. You may reproduce and distribute copies of the\n      Work or Derivative Works thereof in any medium, with or without\n      modifications, and in Source or Object form, provided that You\n      meet the following conditions:\n\n      (a) You must give any other recipients of the Work or\n          Derivative Works a copy of this License; and\n\n      (b) You must cause any modified files to carry prominent notices\n          stating that You changed the files; and\n\n      (c) You must retain, in the Source form of any Derivative Works\n          that You distribute, all copyright, patent, trademark, and\n          attribution notices from the Source form of the Work,\n          excluding those notices that do not pertain to any part of\n          the Derivative Works; and\n\n      (d) If the Work includes a \"NOTICE\" text file as part of its\n          distribution, then any Derivative Works that You distribute must\n          include a readable copy of the attribution notices contained\n          within such NOTICE file, excluding those notices that do not\n          pertain to any part of the Derivative Works, in at least one\n          of the following places: within a NOTICE text file distributed\n          as part of the Derivative Works; within the Source form or\n          documentation, if provided along with the Derivative Works; or,\n          within a display generated by the Derivative Works, if and\n          wherever such third-party notices normally appear. The contents\n          of the NOTICE file are for informational purposes only and\n          do not modify the License. You may add Your own attribution\n          notices within Derivative Works that You distribute, alongside\n          or as an addendum to the NOTICE text from the Work, provided\n          that such additional attribution notices cannot be construed\n          as modifying the License.\n\n      You may add Your own copyright statement to Your modifications and\n      may provide additional or different license terms and conditions\n      for use, reproduction, or distribution of Your modifications, or\n      for any such Derivative Works as a whole, provided Your use,\n      reproduction, and distribution of the Work otherwise complies with\n      the conditions stated in this License.\n\n   5. Submission of Contributions. Unless You explicitly state otherwise,\n      any Contribution intentionally submitted for inclusion in the Work\n      by You to the Licensor shall be under the terms and conditions of\n      this License, without any additional terms or conditions.\n      Notwithstanding the above, nothing herein shall supersede or modify\n      the terms of any separate license agreement you may have executed\n      with Licensor regarding such Contributions.\n\n   6. Trademarks. This License does not grant permission to use the trade\n      names, trademarks, service marks, or product names of the Licensor,\n      except as required for reasonable and customary use in describing the\n      origin of the Work and reproducing the content of the NOTICE file.\n\n   7. Disclaimer of Warranty. Unless required by applicable law or\n      agreed to in writing, Licensor provides the Work (and each\n      Contributor provides its Contributions) on an \"AS IS\" BASIS,\n      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or\n      implied, including, without limitation, any warranties or conditions\n      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A\n      PARTICULAR PURPOSE. You are solely responsible for determining the\n      appropriateness of using or redistributing the Work and assume any\n      risks associated with Your exercise of permissions under this License.\n\n   8. Limitation of Liability. In no event and under no legal theory,\n      whether in tort (including negligence), contract, or otherwise,\n      unless required by applicable law (such as deliberate and grossly\n      negligent acts) or agreed to in writing, shall any Contributor be\n      liable to You for damages, including any direct, indirect, special,\n      incidental, or consequential damages of any character arising as a\n      result of this License or out of the use or inability to use the\n      Work (including but not limited to damages for loss of goodwill,\n      work stoppage, computer failure or malfunction, or any and all\n      other commercial damages or losses), even if such Contributor\n      has been advised of the possibility of such damages.\n\n   9. Accepting Warranty or Additional Liability. While redistributing\n      the Work or Derivative Works thereof, You may choose to offer,\n      and charge a fee for, acceptance of support, warranty, indemnity,\n      or other liability obligations and/or rights consistent with this\n      License. However, in accepting such obligations, You may act only\n      on Your own behalf and on Your sole responsibility, not on behalf\n      of any other Contributor, and only if You agree to indemnify,\n      defend, and hold each Contributor harmless for any liability\n      incurred by, or claims asserted against, such Contributor by reason\n      of your accepting any such warranty or additional liability.\n\n   END OF TERMS AND CONDITIONS\n\n   Copyright 2025 Functional Software, Inc. dba Sentry\n\n   Licensed under the Apache License, Version 2.0 (the \"License\");\n   you may not use this file except in compliance with the License.\n   You may obtain a copy of the License at\n\n       http://www.apache.org/licenses/LICENSE-2.0\n\n   Unless required by applicable law or agreed to in writing, software\n   distributed under the License is distributed on an \"AS IS\" BASIS,\n   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n   See the License for the specific language governing permissions and\n   limitations under the License.\n"
+      },
+      "selected_files": {
+        "skills/prompt-optimizer/SOURCES.md": {
+          "sha256": "2effb8172cb365ca7c6e0312c9ecb2aa6761ba00b3269637ada10daa284566a4",
+          "lines": 138
+        },
+        "skills/prompt-optimizer/SKILL.md": {
+          "sha256": "b5ba1525d7964004d8664fea9d5028972cca599f346ff4662152479b94e25cb3",
+          "lines": 122
+        },
+        "skills/prompt-optimizer/SPEC.md": {
+          "sha256": "b56cdc168549dc916a29dc2c360fff95ecc0db8618eb43839c1eef9a11f1d499",
+          "lines": 92
+        },
+        "skills/prompt-optimizer/references/core-patterns.md": {
+          "sha256": "508199c575439e3d021848df67cb8a8be7675f0e1f2e8c77438e0e4734ca415c",
+          "lines": 150
+        },
+        "skills/prompt-optimizer/references/meta-optimization-loop.md": {
+          "sha256": "9489e6ee08a184319a3ac3e88de54ea9f91bc2da74e4ee2dd8ada662291a9e71",
+          "lines": 131
+        },
+        "skills/prompt-optimizer/references/transformed-examples.md": {
+          "sha256": "3cfb92aadc7b30ca4ad4e9bb02204a92c2366b0483b8023115ad2a1e614d235e",
+          "lines": 141
+        },
+        "skills/prompt-optimizer/references/model-family-notes.md": {
+          "sha256": "57a5292ec6e68c846136599c8a424e95330aecc3d2443831fa0a4283fa0f2f04",
+          "lines": 52
+        },
+        "LICENSE": {
+          "sha256": "96e78a9ce85795b117c8929887bdb78f88bf23f7b85a31f0872cde4dff7e92cd",
+          "lines": 190
+        }
+      },
+      "history_scope": "depth=1; no issue/CI success inferred",
+      "tests_run": false
+    },
+    {
+      "repository": "https://github.com/fal-ai-community/skills",
+      "branch": "main",
+      "sha": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+      "commit": "2026-05-13T21:10:57+01:00 Merge pull request #16 from koumpas/feat/genmedia-smart-routing",
+      "shallow": "true",
+      "relevant_paths": [
+        "skills/fal-prompting"
+      ],
+      "checkout": "/tmp/prompt-a0-research/fal",
+      "status": "",
+      "licenses": {},
+      "selected_files": {
+        "skills/fal-prompting/SKILL.md": {
+          "sha256": "e9e88c6b5ccac9367353ab9a829ce764c7a253ae3b93f1306bb247eabafde1d7",
+          "lines": 41
+        },
+        "skills/fal-prompting/references/gpt-image-2.md": {
+          "sha256": "50430650b1b03ca83ee80ff5fef9844bb27ed56e0e621c280f0353ea18cdd84b",
+          "lines": 158
+        },
+        "skills/fal-prompting/references/kling.md": {
+          "sha256": "cd0653d33aead4b622753aa84f8f47be816932a4cfe222da8c6962f05068929e",
+          "lines": 139
+        },
+        "skills/fal-prompting/references/happy-horse.md": {
+          "sha256": "82bc895cfbf4f42b2672f329f069a5130ecf77a09500b9d4127e5acd296b17f7",
+          "lines": 127
+        }
+      },
+      "history_scope": "depth=1; no issue/CI success inferred",
+      "tests_run": false
+    },
+    {
+      "repository": "https://github.com/microsoft/LLMLingua",
+      "branch": "main",
+      "sha": "5a4c78ae18ab17a98cf997e8259354e546081d64",
+      "commit": "2026-09-10T16:36:23-07:00 Merge pull request #257 from danfiedler-msft/danfiedler/pin-actions",
+      "shallow": "true",
+      "relevant_paths": [
+        "llmlingua/prompt_compressor.py",
+        "tests",
+        "examples/LLMLingua2.ipynb"
+      ],
+      "checkout": "/tmp/prompt-a0-research/llmlingua",
+      "status": "",
+      "licenses": {
+        "LICENSE": "    MIT License\n\n    Copyright (c) Microsoft Corporation.\n\n    Permission is hereby granted, free of charge, to any person obtaining a copy\n    of this software and associated documentation files (the \"Software\"), to deal\n    in the Software without restriction, including without limitation the rights\n    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n    copies of the Software, and to permit persons to whom the Software is\n    furnished to do so, subject to the following conditions:\n\n    The above copyright notice and this permission notice shall be included in all\n    copies or substantial portions of the Software.\n\n    THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n    SOFTWARE\n"
+      },
+      "selected_files": {
+        "llmlingua/prompt_compressor.py": {
+          "sha256": "814e02e8dfaf33c2cd91d3990c0ecd9c42c1cb11ca57b665730bcf8fb2e4a2a4",
+          "lines": 2455
+        },
+        "tests/test_llmlingua2.py": {
+          "sha256": "51047ffb351db092b42be096324c09f7f61ac3b9bd580eea99ea040a8d6d4066",
+          "lines": 192
+        },
+        "tests/test_llmlingua.py": {
+          "sha256": "391abff116ae285a5e1225d41c54f76a10d0ba5d401a882b08b96b1bb4dbab53",
+          "lines": 135
+        },
+        "tests/test_longllmlingua.py": {
+          "sha256": "85d9404bc4849cb0aabafc17c2403cdb2765cb863d1bb1840d07fb206d2679cd",
+          "lines": 167
+        },
+        "examples/LLMLingua2.ipynb": {
+          "sha256": "ad7f207bdb7a0de1ad8e751dc8b1209a156f03319c7debe1513ae4462d5d44cd",
+          "lines": 1032
+        },
+        "LICENSE": {
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+          "lines": 21
+        }
+      },
+      "history_scope": "depth=1; no issue/CI success inferred",
+      "tests_run": false
+    },
+    {
+      "repository": "https://github.com/promptfoo/promptfoo",
+      "branch": "main",
+      "sha": "8ebdb3818c10b4ac7c2b665cd148d996f4fcd740",
+      "commit": "2026-09-25T12:03:36-04:00 chore(deps): update vitest to v5.0.1 (#11069)",
+      "shallow": "true",
+      "relevant_paths": [
+        "plugins/promptfoo/skills/promptfoo-evals",
+        "src/assertions",
+        "test/assertions",
+        "examples/compare-claude-vs-gpt-image"
+      ],
+      "checkout": "/tmp/prompt-a0-research/promptfoo",
+      "status": "",
+      "licenses": {
+        "LICENSE": "Copyright (c) Promptfoo 2025\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n"
+      },
+      "selected_files": {
+        "plugins/promptfoo/skills/promptfoo-evals/SKILL.md": {
+          "sha256": "897473f598d1b96816f08c755fa83c9cbf85b4012ba0ce28213faaa5f5df63e3",
+          "lines": 91
+        },
+        "plugins/promptfoo/skills/promptfoo-evals/references/eval-patterns.md": {
+          "sha256": "96813515b954c59cb259a0b8ecf365fab8ca20e81c3cc10adb81a2d57b54fb0c",
+          "lines": 242
+        },
+        "plugins/promptfoo/skills/promptfoo-evals/agents/openai.yaml": {
+          "sha256": "9632b009a937b9ed6d4c9319e6b0c2a2cc20f3b4d0dac78cc90cbeef1f6f7b83",
+          "lines": 7
+        },
+        "src/assertions/synthesis.ts": {
+          "sha256": "e5ce352163a810e66c33131fb4d600374975580424d46bdc2895fb21e60417bf",
+          "lines": 527
+        },
+        "src/assertions/traceSpanDuration.ts": {
+          "sha256": "e82047227f77a5089e1a80c6b7102db9a513c2c03e1ebeabc6aff8b9654747aa",
+          "lines": 113
+        },
+        "src/assertions/ragDefaults.ts": {
+          "sha256": "9da6d568474f87152785936652eac7c574038fcf63f958a966b0adc98a60f994",
+          "lines": 20
+        },
+        "src/assertions/toolCallF1.ts": {
+          "sha256": "cc31cabab6a3436033a4fc6945fd59a63541c4d20ad1da5db720567f5fb48b06",
+          "lines": 433
+        },
+        "src/assertions/regex.ts": {
+          "sha256": "6b599fe2170070bc2cf72a4612fcebd732d3f61d5dfe130b776f3869337cea34",
+          "lines": 33
+        },
+        "src/assertions/answerRelevance.ts": {
+          "sha256": "4d35eae1bbe31004ebc7361f42616d92146fdcba796e0d35fea18df3d7c17175",
+          "lines": 35
+        },
+        "src/assertions/json.ts": {
+          "sha256": "3d2c3839380c2c93fea35d3d6e830508293434ecf42e0040e886d74990656163",
+          "lines": 113
+        },
+        "src/assertions/similar.ts": {
+          "sha256": "c70a388a496917cad21a53603efc217cdddd9fb4928085ae4a991415c7ca68d2",
+          "lines": 123
+        },
+        "src/assertions/javascript.ts": {
+          "sha256": "53dc8ac53c5906f36141d970d23dbe0085bfd6e1db8ece6e0d81cc32926714b3",
+          "lines": 263
+        },
+        "src/assertions/modelGradedClosedQa.ts": {
+          "sha256": "3ad78ec94872e20c5dd709939e413163f268c4bf69951e8e87032ca3d1d8df34",
+          "lines": 33
+        },
+        "src/assertions/cost.ts": {
+          "sha256": "4a9b1f73496e3e87d2ba353c0d8e5b7a7a85a9d47f9258cde68dd5ad23c601d8",
+          "lines": 22
+        },
+        "src/assertions/agentRubric.ts": {
+          "sha256": "6a02ce157d431c812813ce29b8c30f9bc1ddeb185bdf224214f609ca9a6404ae",
+          "lines": 47
+        },
+        "src/assertions/functionToolCall.ts": {
+          "sha256": "79ec62f694402cb6eb7bd7c03dc63f9893347173ba893463f7b775ca6ad1701a",
+          "lines": 30
+        },
+        "src/assertions/meteor.ts": {
+          "sha256": "045075a0428369a09282c7ece56601151a229c1d92f9603a5c4feb2382b0d3f6",
+          "lines": 296
+        },
+        "src/assertions/sql.ts": {
+          "sha256": "4aecb1785a1626f7ffa9245c1cac15bb4c35e1cda7adb5f335106c53d01ae815",
+          "lines": 402
+        },
+        "src/assertions/contextUtils.ts": {
+          "sha256": "269180c7862e6c35058b4e019d9087d35b7bad52c28a1797658dbe2175051abe",
+          "lines": 104
+        },
+        "src/assertions/python.ts": {
+          "sha256": "791128f7e26bcf0e253b2c37daf30fbb030340e192586c54c5ce380d3f13b287",
+          "lines": 65
+        },
+        "src/assertions/redteam.ts": {
+          "sha256": "2aa7864ff7b15ffcab9291482dcd71e75485b4d8022dcb34ce10d50dc87f3a60",
+          "lines": 383
+        },
+        "src/assertions/contextRelevance.ts": {
+          "sha256": "5d0680fa2774732867c1ea6908f1a78f43e28617be3fc542f81ce11f820c95a9",
+          "lines": 58
+        },
+        "src/assertions/levenshtein.ts": {
+          "sha256": "ae6d74fd499762834ee60bf929dd1d5036b8dc3639ab55490976082bd3b7a1ff",
+          "lines": 29
+        },
+        "src/assertions/factuality.ts": {
+          "sha256": "fcbf3c0cd403b2605ac85d7606baa946e55f990c64b58c0a69fd9331a67c74e0",
+          "lines": 33
+        },
+        "src/assertions/traceSpanCount.ts": {
+          "sha256": "db1ea4e6015e4ae26c5aad0ace0b433eda6067707ab0d9098649d37b88e82c25",
+          "lines": 65
+        },
+        "src/assertions/contains.ts": {
+          "sha256": "9fd173d9db9ae193976cf763902eab275d91b0d137a0b9094e3143c8129bd4a9",
+          "lines": 259
+        },
+        "src/assertions/guardrails.ts": {
+          "sha256": "f81a1b090e3767b0a9cd05f8995b26441669e975f65d7ffe04034655c6a40b76",
+          "lines": 55
+        },
+        "src/assertions/utils.ts": {
+          "sha256": "4ce1d0ac5926b9a2764ddfe4a01bab7a5678cc46294bacd44d36a616ed13859b",
+          "lines": 78
+        },
+        "src/assertions/openai.ts": {
+          "sha256": "8680005f6765889a7b348151fcb270275762f564da98b4b46c422992d70e629d",
+          "lines": 110
+        },
+        "src/assertions/assertionsResult.ts": {
+          "sha256": "a1b91ecb711ab6f2b78085b2f051b74e692ade564d52d7b086fe968721e617d0",
+          "lines": 412
+        },
+        "src/assertions/contextRecall.ts": {
+          "sha256": "67e9e26320f6f7c33e05629dd49d9295e3292b8eb1b828eea0b73e3bfc79a3ab",
+          "lines": 54
+        },
+        "src/assertions/contextFaithfulness.ts": {
+          "sha256": "89b26ded5e5af4aaf100e0fed148cdb3d39dcbc85e51f7816ac17d4955968382",
+          "lines": 64
+        },
+        "src/assertions/trajectoryUtils.ts": {
+          "sha256": "4dd771780119863c755592db5473ebf01c810e5e489d4bfcae02f235c54b0243",
+          "lines": 527
+        },
+        "src/assertions/pi.ts": {
+          "sha256": "c196d04f6ac32815da820a332ee1404da17a940ffe318f4e169cede5fa125e16",
+          "lines": 15
+        },
+        "src/assertions/ruby.ts": {
+          "sha256": "e865890dc0d14fa2636430a4fa5af77f4f03c4d7f148dad90b35eb70c88e5414",
+          "lines": 63
+        },
+        "src/assertions/llmRubric.ts": {
+          "sha256": "48aaabe42374ffbcf720366795d6a88e7d76cc4c2b8479712ade7d7a01464be1",
+          "lines": 51
+        },
+        "src/assertions/trajectory.ts": {
+          "sha256": "c00323cf858186c81a73282541b23d9c330d3116c11339dd0d64178fa4a2e278",
+          "lines": 668
+        },
+        "src/assertions/perplexity.ts": {
+          "sha256": "7db261e4e6ed5fa918842f381a25ea2850f02dcf308c8dd5245f12573afde13e",
+          "lines": 55
+        },
+        "src/assertions/rouge.ts": {
+          "sha256": "fede576f259a8fea990d3f51ca89fef2ff6bb7826c3587dc7e0b0b116dce88f8",
+          "lines": 92
+        },
+        "src/assertions/xml.ts": {
+          "sha256": "749f6f780420b3e4c99821b9bc0fe8222413240d509484218e33d666cd32ba14",
+          "lines": 626
+        },
+        "src/assertions/geval.ts": {
+          "sha256": "06d942b2764cd06700788b3d569f0e3cd4a4203d401a8daee63b41d6f4e47195",
+          "lines": 116
+        },
+        "src/assertions/html.ts": {
+          "sha256": "d0f119ccd02ff48be8a17b08979046a8680dbed02b1bf0e74ebafeb5899f305e",
+          "lines": 365
+        },
+        "src/assertions/traceErrorSpans.ts": {
+          "sha256": "f7cd62405a88b34a688b856795680650211a0f912e35a4b72875bb3e01454267",
+          "lines": 160
+        },
+        "src/assertions/finishReason.ts": {
+          "sha256": "ef844f6cbdcdfda4e0ad534e83d1cef97418776154ad591357a91fbba8b73597",
+          "lines": 37
+        },
+        "src/assertions/bleu.ts": {
+          "sha256": "278fe716aba9305e8f5817c3a2830b70fe1faa1fe61e1e9642802e74172f54db",
+          "lines": 207
+        },
+        "src/assertions/scriptResultNormalization.ts": {
+          "sha256": "adb7929411e25f77a1dcd629be6596c84d18ad6a78ed30b026e7d583478c5174",
+          "lines": 159
+        },
+        "src/assertions/moderation.ts": {
+          "sha256": "a523afb67f40a1234ca32dc57bf203ecf30d60db0610f625a08b9214a1c3ebdf",
+          "lines": 110
+        },
+        "src/assertions/validateAssertions.ts": {
+          "sha256": "3d4e522feda3b93c1daa895360b5d8bca1e5d57458bf985b8a4729bc4f22c18e",
+          "lines": 124
+        },
+        "src/assertions/wordCount.ts": {
+          "sha256": "2da673e5d01937a35c9eb30f718b01e41c9b86b680eac5087887f474a6254ac5",
+          "lines": 112
+        },
+        "src/assertions/gleu.ts": {
+          "sha256": "cf118c6a01b6b6ab803086b77a179de4a55099060320976820d173859ef6ee90",
+          "lines": 186
+        },
+        "src/assertions/webhook.ts": {
+          "sha256": "2a9597c67c29a3bbc41bd67d3ccf912e3f41610a5ebb4cd51213c05c29219d55",
+          "lines": 70
+        },
+        "src/assertions/index.ts": {
+          "sha256": "d16f755be78fc01f08837873ea3053bd5e21449c368d1ccc61c4fea5bc893dc1",
+          "lines": 935
+        },
+        "src/assertions/ngrams.ts": {
+          "sha256": "3c8f719f3ed1757346880eef47c3d2587ed6acf7e90dc76b55f4ef752f47d8be",
+          "lines": 20
+        },
+        "src/assertions/AGENTS.md": {
+          "sha256": "81cf92e24c2f835a1c5fbba3c9eae9e72be75ef250f480699579474dc9aef3cf",
+          "lines": 46
+        },
+        "src/assertions/traceUtils.ts": {
+          "sha256": "5ae904c0091103167891f1a92a530a522a266ab8ae7bd5bb5dea20624c186130",
+          "lines": 22
+        },
+        "src/assertions/classifier.ts": {
+          "sha256": "75f07ef8e0712c2b0a9943d6550fcf41eb81e744d67d908e2b5b0a44cf1925ab",
+          "lines": 44
+        },
+        "src/assertions/startsWith.ts": {
+          "sha256": "ab79c82403d4c8737e2f04a724da909e7658fa216d6429924a826c17ef928316",
+          "lines": 25
+        },
+        "src/assertions/searchRubric.ts": {
+          "sha256": "5c955aa4b61e69614a94513412681f04e92f50c2d9031c9ec855203bd0a549cb",
+          "lines": 50
+        },
+        "src/assertions/latency.ts": {
+          "sha256": "36b4d071be738afc05553d5268f66147a3595d9745a1c8fa8a7fa67a8f9b31e9",
+          "lines": 27
+        },
+        "src/assertions/skill.ts": {
+          "sha256": "bd5ec7abd03038535751f41c970887bc088f71db70994ef9ee5eeddf929af92e",
+          "lines": 205
+        },
+        "src/assertions/equals.ts": {
+          "sha256": "09fd90808590c92401d6f7ae04b7f9c9b195a0f77a6791ee3f83a1d72a4dc00b",
+          "lines": 37
+        },
+        "src/assertions/refusal.ts": {
+          "sha256": "9000b5f7851556144d6a81c301a7d9ffedc864672f0c975e30c741363fb25c97",
+          "lines": 54
+        },
+        "test/assertions/agentRubric.test.ts": {
+          "sha256": "568423c31231a9c195c3f5a31cb1c25c43eeb65de111ab1d2bc5f0830a1c39b4",
+          "lines": 128
+        },
+        "test/assertions/toolCallF1.responses.test.ts": {
+          "sha256": "70c3f0e790d5f6e6394fb14f0547bf7f3c733103a24e3bbac19c50876e2f6bc1",
+          "lines": 101
+        },
+        "test/assertions/contextUtils.test.ts": {
+          "sha256": "cff4082ddcc336a4ef1fee9a5b98f4c04348d7d9ad6129141ea7415d7612037f",
+          "lines": 304
+        },
+        "test/assertions/pi.test.ts": {
+          "sha256": "1f10d8f291031b39d3c8e95216940076720dc75ebc5fa056d8505e71cb806204",
+          "lines": 133
+        },
+        "test/assertions/traceSpanDuration.test.ts": {
+          "sha256": "254c52c41ebe27d8acc35bf8f4c6a423ea188e6e299e11fd5ce8d521bc0d54ee",
+          "lines": 482
+        },
+        "test/assertions/utils.test.ts": {
+          "sha256": "21235634a1b50e3954e2ba40f966c4c89f2e5157fb0b5c57d94f000c64aa71e9",
+          "lines": 274
+        },
+        "test/assertions/classifier.test.ts": {
+          "sha256": "a5d6ef1a5e677885a77e992a326a49c89d9caa25e1e1264961b7ccc84d8bdf9f",
+          "lines": 148
+        },
+        "test/assertions/trace.test.ts": {
+          "sha256": "94facb0cab6052519a862435d3640a9311445cfc4a4646203ab8d644ab782c71",
+          "lines": 524
+        },
+        "test/assertions/rouge.test.ts": {
+          "sha256": "bf53facbe59c07138c145254b8b17e4f3e52ed043dc62c16c7696c4c298a3bba",
+          "lines": 133
+        },
+        "test/assertions/answerRelevance.test.ts": {
+          "sha256": "f39e8fddd22cefa240c913c1e70355132b53a5362f4a8d7a3451d49e85555119",
+          "lines": 254
+        },
+        "test/assertions/index.test.ts": {
+          "sha256": "8377252d10ec6d0dc0c71ed57dd3948ea59b9a1cc087b72f9966ea938559bf99",
+          "lines": 34
+        },
+        "test/assertions/meteor.test.ts": {
+          "sha256": "b7fd1d7d2bc369f322c4289f9346778c259ec41887b1f8decd3aa54aa0c34af2",
+          "lines": 463
+        },
+        "test/assertions/redteam.test.ts": {
+          "sha256": "90cb7e0c65ffa8fb8f286ba229187e2777976a5ec12e71a36bd291aaee079220",
+          "lines": 1381
+        },
+        "test/assertions/google.test.ts": {
+          "sha256": "20aa492fdd6039f1f6403331d42fea0535746d1711a0f126a25c3d46503f82a8",
+          "lines": 600
+        },
+        "test/assertions/bleu.test.ts": {
+          "sha256": "81223d58a85d3cc2b7e19269ea00de55c4ddade35a9bb5b145dad8679d11bcb5",
+          "lines": 429
+        },
+        "test/assertions/contextRelevance.test.ts": {
+          "sha256": "b73dce88283b6380d3e87b88778ac99a11f48f25bc69564db8282588b7aef0f7",
+          "lines": 444
+        },
+        "test/assertions/searchRubric.test.ts": {
+          "sha256": "2bb3fe359b9f56fec30ae6f70731361cbea43721efe0d75fe48057c5a32a2f15",
+          "lines": 311
+        },
+        "test/assertions/trajectoryGoalSuccess.test.ts": {
+          "sha256": "f600eee68ccc92079717d4ed254055d9065185a56f67a7263b9796ae9ae8e5c3",
+          "lines": 264
+        },
+        "test/assertions/trajectory.test.ts": {
+          "sha256": "77352b11f4d8a45f533d83fa77d5557b9d7b2f08f038fe3cd9ef405d98acedc7",
+          "lines": 2665
+        },
+        "test/assertions/traceUtils.test.ts": {
+          "sha256": "c48a3ed2a137d5a2afbd73d157c90056d0df6e9174bfe906285d3465b77babc0",
+          "lines": 75
+        },
+        "test/assertions/javascript.test.ts": {
+          "sha256": "202c7d8e1ffbf12872dea8939350c87ab63285f1ef3729f9cfb426146a0b64fb",
+          "lines": 1747
+        },
+        "test/assertions/levenshtein.test.ts": {
+          "sha256": "05ba8743a1670db8777f0e024c14533b6c93f2bf2171db12124cfcdb85053e42",
+          "lines": 323
+        },
+        "test/assertions/synthesis.test.ts": {
+          "sha256": "0902f9246a2683946ba62ae24eae33a3affd07a6e9dd278791baf76d3c2b07e9",
+          "lines": 450
+        },
+        "test/assertions/modelGradedClosedQa.test.ts": {
+          "sha256": "dc526122ba693e6f15f94cc06424ac3c20670b07abf5618729b43dc6ecce864a",
+          "lines": 126
+        },
+        "test/assertions/llmRubric.test.ts": {
+          "sha256": "44527004b12c45ee2bcba3ec0ebf06273006a2859bdc25763be226e98d4d2d28",
+          "lines": 637
+        },
+        "test/assertions/ruby.test.ts": {
+          "sha256": "4bfdb2c2cc9fa8eb9cba0437e5435097712fab87f246a159a4475bda1f521dcc",
+          "lines": 246
+        },
+        "test/assertions/sql.test.ts": {
+          "sha256": "8f28d8e916c588ea4fee8a91c58de6a674f9a8835753ede79afdf085be58a221",
+          "lines": 864
+        },
+        "test/assertions/llmRubric.audio.test.ts": {
+          "sha256": "68e55cd8dd0c5ca02ef5507433871718aaa7a06ca3fd31509366785115ef0620",
+          "lines": 235
+        },
+        "test/assertions/gleu.test.ts": {
+          "sha256": "14fd97267469ea77199fe90fd86aec89231f0ea95e9e67e89de9adeac7ee6d0d",
+          "lines": 299
+        },
+        "test/assertions/html.test.ts": {
+          "sha256": "a2bbad0ad8e1bf4fe8c08d2524ecf0f5f801054d3b480ac53c6bc3403576e4b3",
+          "lines": 526
+        },
+        "test/assertions/similar.test.ts": {
+          "sha256": "093b4c3ec9fae00303874cb2e9e1cb900e8ccfd1b5c772998f21e31aa1bd6094",
+          "lines": 581
+        },
+        "test/assertions/runAssertion.test.ts": {
+          "sha256": "693bf37fcaa1e04dc976da8b0e467401c7e69531e241cf7d19beef0087c0227e",
+          "lines": 4146
+        },
+        "test/assertions/cost.test.ts": {
+          "sha256": "70afb1f00b6e631bcd6e1227d13a1fd58556cb2fcdc34e0343021396fdc9a163",
+          "lines": 57
+        },
+        "test/assertions/contextPropagation.test.ts": {
+          "sha256": "658e9004e28fa6fc9e93d0bb32f3edee16d949dae0670fdc74c052431859f593",
+          "lines": 402
+        },
+        "test/assertions/json.test.ts": {
+          "sha256": "86c82a7349d3c99b94d8b2b4b8f0dc9d3a28e1105a395052ab91aa3675718448",
+          "lines": 186
+        },
+        "test/assertions/openai.test.ts": {
+          "sha256": "7a9a597e0b8b726c099d8c4408a59f9a1994f84066d17d9669f76eb856bc0428",
+          "lines": 1453
+        },
+        "test/assertions/traceSpanCount.test.ts": {
+          "sha256": "2764756d028e0bfec9175860cd7b8bcd3d69292132ac425d33d58dd88da05803",
+          "lines": 348
+        },
+        "test/assertions/guardrails.test.ts": {
+          "sha256": "07e2b6a7d161c1790742168f095c9f61c8cec3f0a88519c3ea09d8df7fcf610d",
+          "lines": 291
+        },
+        "test/assertions/toolCallF1.test.ts": {
+          "sha256": "f4e8b1fa22374861f8ca79bdb11b484f68d3a5da890b7377e88bbbce9a6f61b9",
+          "lines": 895
+        },
+        "test/assertions/geval.test.ts": {
+          "sha256": "7746fa6c2f1a86c3ba76b6af75ef446faed597faa35d6c3183a5af977dd69f7e",
+          "lines": 1033
+        },
+        "test/assertions/moderation.test.ts": {
+          "sha256": "9373a0da12cd554f15b11f46ab4fbe493c1e2be90a61e0abdb82c41c2d6ff117",
+          "lines": 543
+        },
+        "test/assertions/meteorIntegration.test.ts": {
+          "sha256": "9656cb3118116a22830caa4014b4ca0ff58ffed153f13864ccc50c99446430e9",
+          "lines": 102
+        },
+        "test/assertions/scriptValueResolution.test.ts": {
+          "sha256": "f06b0b6d2dd0b33a429bde970131bf96938573331433e73cd91b171c07c4fe93",
+          "lines": 465
+        },
+        "test/assertions/refusal.test.ts": {
+          "sha256": "ceacb4f9f7f07946b1efc9986fbdf24bdc0bc8152c99105b69c6ba25833b3fed",
+          "lines": 440
+        },
+        "test/assertions/python.test.ts": {
+          "sha256": "a0e717cf516a799ea9941a8e645a00a66407ee38f7c31d1bc8aeaa6f8871ddf7",
+          "lines": 774
+        },
+        "test/assertions/contains.test.ts": {
+          "sha256": "08c6ec9478462c23e0c27469e1683c78cdf14fdcdd3f99b80c99032d2ef83cb6",
+          "lines": 953
+        },
+        "test/assertions/skill.test.ts": {
+          "sha256": "e7f60563df9922bfcb68546922c25f022e0791eaf29d0648d9bdab919f3b8cdc",
+          "lines": 240
+        },
+        "test/assertions/assertionsResult.test.ts": {
+          "sha256": "0f1414d03904719324a4f38fe4ff6544e7667baf2fd29f10a8f7e2ba8b5879ab",
+          "lines": 1011
+        },
+        "test/assertions/xml.test.ts": {
+          "sha256": "a7a54457b7e03820f0d6e28b171dd19be5450500095aaeb0d7004bb16e2cdc20",
+          "lines": 456
+        },
+        "test/assertions/finishReason.test.ts": {
+          "sha256": "ce40bc7bf95f98bfb8c4e06228f0fb92e84bbbbd9634bf22775f79621afd6eb1",
+          "lines": 159
+        },
+        "test/assertions/validateAssertions.test.ts": {
+          "sha256": "3f02cf2f7314ad0d849c0a5f3e21e7ef1b295cb5cd0d2c0ca652430518bafd36",
+          "lines": 370
+        },
+        "test/assertions/max-score.test.ts": {
+          "sha256": "3f85d98ab559210d1494eda329e8d7db4401f0b3edc8022a37be27999a29059e",
+          "lines": 47
+        },
+        "test/assertions/latency.test.ts": {
+          "sha256": "47e6524774d1b1995a90f175473474979fb34f95c5cb0bf03bb749761d4a8b49",
+          "lines": 57
+        },
+        "test/assertions/ngrams.test.ts": {
+          "sha256": "701e50d70c6bc9cbe962c64003b3289f541e1d14909c29855be54bbd1a114628",
+          "lines": 101
+        },
+        "test/assertions/perplexity.test.ts": {
+          "sha256": "c8c9e96fe6695966df44576ba0b9d9251751e6c9ec9e882763598842f7b1cf4a",
+          "lines": 116
+        },
+        "test/assertions/traceErrorSpans.test.ts": {
+          "sha256": "211d0f2900179008c0706ccf83ef66d23e3a538662c8bfb95015b6c3cfe59063",
+          "lines": 515
+        },
+        "test/assertions/contextRecall.test.ts": {
+          "sha256": "db79d272c5085f130fa16d29e15b03baa56a8d83149fc430cb291ff3c1f7c2b0",
+          "lines": 466
+        },
+        "test/assertions/contextFaithfulness.test.ts": {
+          "sha256": "b73438233af34206163a39aac37bf9c935525f40a8feeba5ccccabc66302bff1",
+          "lines": 410
+        },
+        "test/assertions/equals.test.ts": {
+          "sha256": "2f8a004397296446c45fd3044db1594ae56f3147c37a3eb2c3840782ecf01a40",
+          "lines": 127
+        },
+        "test/assertions/runAssertions.test.ts": {
+          "sha256": "179b844a4a8e98c3f49a32ed85fed760a48c946c7c8abaa2ccaa54f82eb19416",
+          "lines": 928
+        },
+        "test/assertions/assertionResult.test.ts": {
+          "sha256": "f6793ebbb336f8883fd3b996c3f0b732457259c32403e5828d186c3287687917",
+          "lines": 446
+        },
+        "test/assertions/wordCount.test.ts": {
+          "sha256": "7d558a9638f02c29b7f3d31e9cb0a573107b08202c301a706b845f573c1d93f7",
+          "lines": 436
+        },
+        "examples/compare-claude-vs-gpt-image/promptfooconfig.yaml": {
+          "sha256": "b03a9c176e9e38d83f16865492dce86a119ee4ae08e8cee8447a26fdc0e50612",
+          "lines": 39
+        },
+        "examples/compare-claude-vs-gpt-image/README.md": {
+          "sha256": "45a8df08f635c32509a6508b21c3618041ec33bc60171e333d4cbf18e2686b39",
+          "lines": 41
+        },
+        "examples/compare-claude-vs-gpt-image/prompt.js": {
+          "sha256": "7e22fc1d75ef61e7949a00691b929388b7a3cbad7e3bfc0a41ba8fb8e4911a8a",
+          "lines": 107
+        },
+        "examples/compare-claude-vs-gpt-image/prompt.py": {
+          "sha256": "7f5b54e3799a49b5f6141f6e6e588f6f335f8c01f5b8fbf1bfc3e86b21293cf7",
+          "lines": 114
+        },
+        "LICENSE": {
+          "sha256": "bf813686553f451e1b833fbd827488aee49b60b189626915bf3108d10b754e44",
+          "lines": 19
+        }
+      },
+      "history_scope": "depth=1; no issue/CI success inferred",
+      "tests_run": false
+    }
+  ]
+}

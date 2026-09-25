@@ -1,0 +1,17 @@
+{
+  "head": "789ed88d895bee045f24cf4432971da8220e5310",
+  "full_tests": 2695,
+  "focused_tests": 139,
+  "new_tests": 57,
+  "mypy": "14 files / 0 issues",
+  "network_guard": "INET connections blocked in final pytest process",
+  "paid_generation": 0,
+  "seedance_generation": 0,
+  "image_model_generation": 0,
+  "source_and_runtime_hashes_checked": true,
+  "ready_for_seedance_prompt_a5": true,
+  "a5_executed": false,
+  "runtime_modified": true,
+  "generator_formal_dispatch": true,
+  "adapter_exact_transfer": true
+}

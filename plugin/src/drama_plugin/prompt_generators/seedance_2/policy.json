@@ -1,0 +1,149 @@
+{
+  "policy_id": "seedance-2-projection",
+  "policy_version": "1",
+  "source": "provided official Seedance 2.0 SKILL",
+  "source_sha256": "8836cdb2bc4f7d8a329c4ecd33cca19efdcfc71afdd927e8defe6e1f9a2e2b3c",
+  "validation_status": "LOCAL_EXPERIMENTAL",
+  "soft_budget": {
+    "status": "UNVALIDATED",
+    "value": null
+  },
+  "rules": [
+    {
+      "rule_id": "references",
+      "source_section": "引用语法（统一标准）",
+      "category": "MODEL_POLICY_CANDIDATE",
+      "disposition": "ADOPT_AS_SEEDANCE_SYNTAX",
+      "local_adaptation_rule": "Actual adapter input order determines per-kind tags; no asset IDs.",
+      "validation_status": "LOCAL_EXPERIMENTAL"
+    },
+    {
+      "rule_id": "subjects",
+      "source_section": "引用语法（统一标准）",
+      "category": "MODEL_POLICY_CANDIDATE",
+      "disposition": "ADAPT",
+      "local_adaptation_rule": "Stable canonical subject labels; binding only from reviewed reference duties.",
+      "validation_status": "LOCAL_EXPERIMENTAL"
+    },
+    {
+      "rule_id": "task",
+      "source_section": "任务分类",
+      "category": "MODEL_POLICY_CANDIDATE",
+      "disposition": "KEEP_UPSTREAM",
+      "local_adaptation_rule": "Typed route and provider capability decide mode; unsupported modes fail.",
+      "validation_status": "LOCAL_EXPERIMENTAL"
+    },
+    {
+      "rule_id": "structure",
+      "source_section": "Step 4：结构化重写输出",
+      "category": "MODEL_POLICY_CANDIDATE",
+      "disposition": "ADAPT",
+      "local_adaptation_rule": "Space before ordered approved temporal facts; no new shots or mandatory tails.",
+      "validation_status": "LOCAL_EXPERIMENTAL"
+    },
+    {
+      "rule_id": "camera",
+      "source_section": "Step 3 / 一镜一运镜",
+      "category": "MODEL_POLICY_CANDIDATE",
+      "disposition": "CONDITIONAL",
+      "local_adaptation_rule": "Report declared conflicts to Camera; preserve explicitly approved compound motion.",
+      "validation_status": "LOCAL_EXPERIMENTAL"
+    },
+    {
+      "rule_id": "time",
+      "source_section": "镜头顺序优先于绝对时间",
+      "category": "MODEL_POLICY_CANDIDATE",
+      "disposition": "ADAPT",
+      "local_adaptation_rule": "Order existing beats; preserve all authored durations/triggers verbatim.",
+      "validation_status": "LOCAL_EXPERIMENTAL"
+    },
+    {
+      "rule_id": "emotion",
+      "source_section": "动作描述要求",
+      "category": "CANON_FACT",
+      "disposition": "KEEP_UPSTREAM",
+      "local_adaptation_rule": "Observable carriers come from Performance/Action, never invented by translator.",
+      "validation_status": "LOCAL_EXPERIMENTAL"
+    },
+    {
+      "rule_id": "quality",
+      "source_section": "画质包",
+      "category": "QUALITY_CANDIDATE",
+      "disposition": "DISABLED_PENDING_A5",
+      "local_adaptation_rule": "No unconditional adjectives; approved IR medium/light/color remain exact.",
+      "validation_status": "LOCAL_EXPERIMENTAL"
+    },
+    {
+      "rule_id": "stability",
+      "source_section": "稳定包",
+      "category": "QUALITY_CANDIDATE",
+      "disposition": "ADAPT",
+      "local_adaptation_rule": "Only existing identity/contact/continuity obligations; scoped semantic dedup.",
+      "validation_status": "LOCAL_EXPERIMENTAL"
+    },
+    {
+      "rule_id": "subtitle",
+      "source_section": "字幕兜底",
+      "category": "UNVALIDATED_DEFAULT",
+      "disposition": "DISABLED_PENDING_A5",
+      "local_adaptation_rule": "Only explicit scoped canonical constraints; no universal no-text tail.",
+      "validation_status": "LOCAL_EXPERIMENTAL"
+    },
+    {
+      "rule_id": "watermark_logo",
+      "source_section": "水印 / Logo 兜底",
+      "category": "UNVALIDATED_DEFAULT",
+      "disposition": "DISABLED_PENDING_A5",
+      "local_adaptation_rule": "Existing watermark API field stays structured; no generic logo prohibition.",
+      "validation_status": "LOCAL_EXPERIMENTAL"
+    },
+    {
+      "rule_id": "twins",
+      "source_section": "双胞胎兜底",
+      "category": "UNVALIDATED_DEFAULT",
+      "disposition": "DISABLED_PENDING_A5",
+      "local_adaptation_rule": "No unconditional duplicate-person text; A5 must assess contextual value.",
+      "validation_status": "LOCAL_EXPERIMENTAL"
+    },
+    {
+      "rule_id": "face",
+      "source_section": "人脸参考最佳实践",
+      "category": "MODEL_POLICY_CANDIDATE",
+      "disposition": "KEEP_UPSTREAM",
+      "local_adaptation_rule": "Reference owner chooses media; portrait cannot inherit pose/light.",
+      "validation_status": "LOCAL_EXPERIMENTAL"
+    },
+    {
+      "rule_id": "audio",
+      "source_section": "音频通道 / 特殊字符规范",
+      "category": "MODEL_POLICY_CANDIDATE",
+      "disposition": "CONDITIONAL",
+      "local_adaptation_rule": "Exact approved audio leaf plus speaker/language metadata; no dialogue rewriting.",
+      "validation_status": "LOCAL_EXPERIMENTAL"
+    },
+    {
+      "rule_id": "homophones",
+      "source_section": "中文发音兜底",
+      "category": "UNVALIDATED_DEFAULT",
+      "disposition": "REJECT",
+      "local_adaptation_rule": "Changing approved dialogue is forbidden; no pronunciation substitution.",
+      "validation_status": "LOCAL_EXPERIMENTAL"
+    },
+    {
+      "rule_id": "completion",
+      "source_section": "3.2 非关键缺失 / 自动补全",
+      "category": "UNVALIDATED_DEFAULT",
+      "disposition": "REJECT",
+      "local_adaptation_rule": "Missing action, identity, camera, reference duty returns to professional owner.",
+      "validation_status": "LOCAL_EXPERIMENTAL"
+    },
+    {
+      "rule_id": "director",
+      "source_section": "角色定位",
+      "category": "CANON_FACT",
+      "disposition": "REJECT",
+      "local_adaptation_rule": "Generator is a translator, never a Director.",
+      "validation_status": "LOCAL_EXPERIMENTAL"
+    }
+  ]
+}

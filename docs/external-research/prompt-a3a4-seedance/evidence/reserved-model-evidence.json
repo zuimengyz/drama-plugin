@@ -1,0 +1,23 @@
+{
+  "registered_models": {
+    "seedance-2-standard": "seedance",
+    "seedance-2-fast": "seedance",
+    "seedance-2-mini": "seedance",
+    "minimax-h3": "minimax",
+    "vidu-q3-turbo": "vidu",
+    "vidu-q3-pro": "vidu",
+    "wan-3-video": "wan",
+    "wan-3-video-prime": "wan",
+    "kling-3": "kling",
+    "kling-3-omni": "kling",
+    "kling-3-motion": "kling",
+    "kling-3-turbo": "kling"
+  },
+  "legacy_model_keys": [
+    "seedance-2.5",
+    "minimax-h3",
+    "flux-3"
+  ],
+  "still_family": "gpt_image_2: existing visual/image_route.py",
+  "statuses": "Only seedance_2 has an implemented new generator"
+}

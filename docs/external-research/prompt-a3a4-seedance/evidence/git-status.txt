@@ -1,0 +1,14 @@
+ M plugin/src/drama_plugin/contracts/video.py
+ M plugin/src/drama_plugin/hosts/http_video.py
+ M plugin/src/drama_plugin/providers/video/adapters.py
+ M plugin/src/drama_plugin/providers/video/base.py
+ M plugin/src/drama_plugin/visual/prompt_ir.py
+ M plugin/src/drama_plugin/visual/video_prompt.py
+ M plugin/tests/test_architecture_authority.py
+ M plugin/tests/test_authority_provider_separation.py
+?? docs/external-research/.DS_Store
+?? docs/external-research/prompt-a0-a2r/
+?? docs/external-research/prompt-a3a4-seedance/
+?? plugin/docs/model-prompt-generators.md
+?? plugin/src/drama_plugin/prompt_generators/
+?? plugin/tests/test_seedance_prompt_generator.py

@@ -1,0 +1,48 @@
+{
+  "protected_sources": [
+    {
+      "path": "plugin/src/drama_plugin/providers/video/registry.json",
+      "unchanged": true,
+      "sha256": "127fe017af1487fe5fb364a02df75259ab2d6f0128679a2023588376a3961bbf"
+    },
+    {
+      "path": "plugin/src/drama_plugin/contracts/cinematic.py",
+      "unchanged": true,
+      "sha256": "712b26eee6e94ec6453cd1f2f4d773e549e558f2e2cc0ff7d767122c8ec8b671"
+    },
+    {
+      "path": "plugin/src/drama_plugin/contracts/visual_prompt.py",
+      "unchanged": true,
+      "sha256": "0e4050863f1582c236548c59e07659709331516861100be5d9f3c21a26454a3d"
+    },
+    {
+      "path": "plugin/src/drama_plugin/director.py",
+      "unchanged": true,
+      "sha256": "ae7ce9b17f37c330667022ceec257eddb4733ad9c23b8b166c2a6be90cc43f65"
+    },
+    {
+      "path": "plugin/src/drama_plugin/professional.py",
+      "unchanged": true,
+      "sha256": "c7ca6da83c262b6ed47cb9cf9405fae72eab42c6bf6ef57474fa93bc64895cd1"
+    },
+    {
+      "path": "plugin/src/drama_plugin/visual/video_selection.py",
+      "unchanged": true,
+      "sha256": "eeedac016ce3c21942f54cfcaec419520e29e5e1332827b05e1c7bb18ca0ce1f"
+    },
+    {
+      "path": "plugin/src/drama_plugin/visual/still_knowledge.py",
+      "unchanged": true,
+      "sha256": "16cc602fd3fec57738a040b48b6e2599dea8dca916db6b0003ec892b4ace180d"
+    },
+    {
+      "path": "plugin/src/drama_plugin/hosts/cinematic_projection.py",
+      "unchanged": true,
+      "sha256": "9a24a0bb85274c55de6f70b1df229e4d56ed6f63b7f16fdcfcbe8326569a3886"
+    }
+  ],
+  "route_selection_changed": false,
+  "new_canon": false,
+  "new_skill_installed": false,
+  "paid_calls": 0
+}

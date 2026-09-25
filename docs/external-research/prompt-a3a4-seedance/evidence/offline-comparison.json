@@ -1,0 +1,2050 @@
+{
+  "schema": "seedance-offline-comparison-v1",
+  "paid_generation": 0,
+  "media_generation": 0,
+  "policy": {
+    "policy_id": "seedance-2-projection",
+    "policy_version": "1",
+    "source": "provided official Seedance 2.0 SKILL",
+    "source_sha256": "8836cdb2bc4f7d8a329c4ecd33cca19efdcfc71afdd927e8defe6e1f9a2e2b3c",
+    "validation_status": "LOCAL_EXPERIMENTAL",
+    "soft_budget": {
+      "status": "UNVALIDATED",
+      "value": null
+    },
+    "rules": [
+      {
+        "rule_id": "references",
+        "source_section": "引用语法（统一标准）",
+        "category": "MODEL_POLICY_CANDIDATE",
+        "disposition": "ADOPT_AS_SEEDANCE_SYNTAX",
+        "local_adaptation_rule": "Actual adapter input order determines per-kind tags; no asset IDs.",
+        "validation_status": "LOCAL_EXPERIMENTAL"
+      },
+      {
+        "rule_id": "subjects",
+        "source_section": "引用语法（统一标准）",
+        "category": "MODEL_POLICY_CANDIDATE",
+        "disposition": "ADAPT",
+        "local_adaptation_rule": "Stable canonical subject labels; binding only from reviewed reference duties.",
+        "validation_status": "LOCAL_EXPERIMENTAL"
+      },
+      {
+        "rule_id": "task",
+        "source_section": "任务分类",
+        "category": "MODEL_POLICY_CANDIDATE",
+        "disposition": "KEEP_UPSTREAM",
+        "local_adaptation_rule": "Typed route and provider capability decide mode; unsupported modes fail.",
+        "validation_status": "LOCAL_EXPERIMENTAL"
+      },
+      {
+        "rule_id": "structure",
+        "source_section": "Step 4：结构化重写输出",
+        "category": "MODEL_POLICY_CANDIDATE",
+        "disposition": "ADAPT",
+        "local_adaptation_rule": "Space before ordered approved temporal facts; no new shots or mandatory tails.",
+        "validation_status": "LOCAL_EXPERIMENTAL"
+      },
+      {
+        "rule_id": "camera",
+        "source_section": "Step 3 / 一镜一运镜",
+        "category": "MODEL_POLICY_CANDIDATE",
+        "disposition": "CONDITIONAL",
+        "local_adaptation_rule": "Report declared conflicts to Camera; preserve explicitly approved compound motion.",
+        "validation_status": "LOCAL_EXPERIMENTAL"
+      },
+      {
+        "rule_id": "time",
+        "source_section": "镜头顺序优先于绝对时间",
+        "category": "MODEL_POLICY_CANDIDATE",
+        "disposition": "ADAPT",
+        "local_adaptation_rule": "Order existing beats; preserve all authored durations/triggers verbatim.",
+        "validation_status": "LOCAL_EXPERIMENTAL"
+      },
+      {
+        "rule_id": "emotion",
+        "source_section": "动作描述要求",
+        "category": "CANON_FACT",
+        "disposition": "KEEP_UPSTREAM",
+        "local_adaptation_rule": "Observable carriers come from Performance/Action, never invented by translator.",
+        "validation_status": "LOCAL_EXPERIMENTAL"
+      },
+      {
+        "rule_id": "quality",
+        "source_section": "画质包",
+        "category": "QUALITY_CANDIDATE",
+        "disposition": "DISABLED_PENDING_A5",
+        "local_adaptation_rule": "No unconditional adjectives; approved IR medium/light/color remain exact.",
+        "validation_status": "LOCAL_EXPERIMENTAL"
+      },
+      {
+        "rule_id": "stability",
+        "source_section": "稳定包",
+        "category": "QUALITY_CANDIDATE",
+        "disposition": "ADAPT",
+        "local_adaptation_rule": "Only existing identity/contact/continuity obligations; scoped semantic dedup.",
+        "validation_status": "LOCAL_EXPERIMENTAL"
+      },
+      {
+        "rule_id": "subtitle",
+        "source_section": "字幕兜底",
+        "category": "UNVALIDATED_DEFAULT",
+        "disposition": "DISABLED_PENDING_A5",
+        "local_adaptation_rule": "Only explicit scoped canonical constraints; no universal no-text tail.",
+        "validation_status": "LOCAL_EXPERIMENTAL"
+      },
+      {
+        "rule_id": "watermark_logo",
+        "source_section": "水印 / Logo 兜底",
+        "category": "UNVALIDATED_DEFAULT",
+        "disposition": "DISABLED_PENDING_A5",
+        "local_adaptation_rule": "Existing watermark API field stays structured; no generic logo prohibition.",
+        "validation_status": "LOCAL_EXPERIMENTAL"
+      },
+      {
+        "rule_id": "twins",
+        "source_section": "双胞胎兜底",
+        "category": "UNVALIDATED_DEFAULT",
+        "disposition": "DISABLED_PENDING_A5",
+        "local_adaptation_rule": "No unconditional duplicate-person text; A5 must assess contextual value.",
+        "validation_status": "LOCAL_EXPERIMENTAL"
+      },
+      {
+        "rule_id": "face",
+        "source_section": "人脸参考最佳实践",
+        "category": "MODEL_POLICY_CANDIDATE",
+        "disposition": "KEEP_UPSTREAM",
+        "local_adaptation_rule": "Reference owner chooses media; portrait cannot inherit pose/light.",
+        "validation_status": "LOCAL_EXPERIMENTAL"
+      },
+      {
+        "rule_id": "audio",
+        "source_section": "音频通道 / 特殊字符规范",
+        "category": "MODEL_POLICY_CANDIDATE",
+        "disposition": "CONDITIONAL",
+        "local_adaptation_rule": "Exact approved audio leaf plus speaker/language metadata; no dialogue rewriting.",
+        "validation_status": "LOCAL_EXPERIMENTAL"
+      },
+      {
+        "rule_id": "homophones",
+        "source_section": "中文发音兜底",
+        "category": "UNVALIDATED_DEFAULT",
+        "disposition": "REJECT",
+        "local_adaptation_rule": "Changing approved dialogue is forbidden; no pronunciation substitution.",
+        "validation_status": "LOCAL_EXPERIMENTAL"
+      },
+      {
+        "rule_id": "completion",
+        "source_section": "3.2 非关键缺失 / 自动补全",
+        "category": "UNVALIDATED_DEFAULT",
+        "disposition": "REJECT",
+        "local_adaptation_rule": "Missing action, identity, camera, reference duty returns to professional owner.",
+        "validation_status": "LOCAL_EXPERIMENTAL"
+      },
+      {
+        "rule_id": "director",
+        "source_section": "角色定位",
+        "category": "CANON_FACT",
+        "disposition": "REJECT",
+        "local_adaptation_rule": "Generator is a translator, never a Director.",
+        "validation_status": "LOCAL_EXPERIMENTAL"
+      }
+    ],
+    "policy_hash": "35054a2fd51c487823d80fe9102c05201b1f80f564ff5a0188fb622e7e303649"
+  },
+  "cases": [
+    {
+      "mode": "text_to_video",
+      "fixture": "SYNTHETIC_OFFLINE_NOT_APPROVED_PRODUCTION",
+      "chars_before": 2016,
+      "obligations_total": 37,
+      "text_covered": 37,
+      "reference_covered": 0,
+      "omitted_optional": 0,
+      "uncovered_required": 0,
+      "semantic_duplicates": 0,
+      "chars_before_budget": 922,
+      "chars_after": 922,
+      "old_prompt": "VIDEO CLIP\nCRITICAL medium: LIVE_ACTION\nCRITICAL world.era: 19th century\nCRITICAL world.location: Petersburg\nCRITICAL world.historical_context: historical city street\nCRITICAL world.environment_rules[0]: Period-compatible street fixtures only\nCRITICAL subject.man.role: man\nCRITICAL subject.man.apparent_age: 38–42 years old\nCRITICAL subject.man.face: narrow long face\nCRITICAL subject.man.hair: short dark brown hair\nCRITICAL subject.man.beard: short uneven stubble\nCRITICAL subject.man.body_proportions: ordinary narrow shoulders\nCRITICAL blocking.positions: AT CLIP START: man at left\nCRITICAL blocking.orientation: AT CLIP START: man remains facing away\nCRITICAL blocking.contact: AT CLIP START: man keeps hold of the sleeve\nCRITICAL blocking.visible_relation: AT CLIP START: one man beside the gate\nCRITICAL action.current_visible_action: AT CLIP START: standing step\nCRITICAL action.expression: AT CLIP START: restrained expression\nCRITICAL continuity[0]: The grip never releases; identity and costume remain unchanged throughout\nCRITICAL positive_target[0]: intact natural skin\nCRITICAL video.start_state[0]: man holds the sleeve\nCRITICAL video.action_progression[0]: man maintains the grip until the other person stops\nCRITICAL video.performance[0]: man remains facing away\nCRITICAL video.camera_motion[0]: locked camera\nCRITICAL video.end_state[0]: man still holds the sleeve\nIMPORTANT subject.man.costume: old wool coat\nIMPORTANT subject.man.visible_condition: natural skin\nIMPORTANT environment.architecture: plaster facades\nIMPORTANT environment.topology: side street junction\nIMPORTANT environment.required_period_objects: gas street lamps\nIMPORTANT camera.framing: two people, left and right\nIMPORTANT camera.shot_size: full body\nIMPORTANT camera.readable_details: faces and shoes readable\nIMPORTANT camera.perspective: eye level\nIMPORTANT lighting.time_of_day: night\nIMPORTANT lighting.light_sources: gas lamps\nIMPORTANT lighting.contrast: readable shadows\nIMPORTANT lighting.realism: natural textures",
+      "new_prompt": "LIVE_ACTION；19th century；Petersburg；historical city street；Period-compatible street fixtures only；<主体1>身份：man；<主体1>年龄：38–42 years old；<主体1>面部：narrow long face；<主体1>头发：short dark brown hair；<主体1>胡须：short uneven stubble；<主体1>体型：ordinary narrow shoulders；<主体1>服装：old wool coat；<主体1>当前状态：natural skin；开场站位：<主体1> at left；开场朝向：<主体1> remains facing away；开场接触：<主体1> keeps hold of the sleeve；开场关系：one <主体1> beside the gate；开场动作：standing step；开场表情：restrained expression；plaster facades；side street junction；gas street lamps；构图：two people, left and right；景别：full body；可见细节：faces and shoes readable；视角：eye level；时段：night；光源：gas lamps；明暗：readable shadows；成像：natural textures；全程保持：The grip never releases; identity and costume remain unchanged throughout；intact natural skin；开场：<主体1> holds the sleeve；事件1：<主体1> maintains the grip until the other person stops；表演：<主体1> remains facing away；运镜：locked camera；终态：<主体1> still holds the sleeve",
+      "coverage": [
+        {
+          "obligation_id": "medium",
+          "status": "TEXT_COVERED",
+          "span": [
+            0,
+            11
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "world.era",
+          "status": "TEXT_COVERED",
+          "span": [
+            12,
+            24
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "world.location",
+          "status": "TEXT_COVERED",
+          "span": [
+            25,
+            35
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "world.historical_context",
+          "status": "TEXT_COVERED",
+          "span": [
+            36,
+            58
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "world.environment_rules[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            59,
+            97
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.role",
+          "status": "TEXT_COVERED",
+          "span": [
+            98,
+            109
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.apparent_age",
+          "status": "TEXT_COVERED",
+          "span": [
+            110,
+            133
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.face",
+          "status": "TEXT_COVERED",
+          "span": [
+            134,
+            158
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.hair",
+          "status": "TEXT_COVERED",
+          "span": [
+            159,
+            188
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.beard",
+          "status": "TEXT_COVERED",
+          "span": [
+            189,
+            217
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.body_proportions",
+          "status": "TEXT_COVERED",
+          "span": [
+            218,
+            251
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.costume",
+          "status": "TEXT_COVERED",
+          "span": [
+            252,
+            273
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.visible_condition",
+          "status": "TEXT_COVERED",
+          "span": [
+            274,
+            296
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "blocking.positions",
+          "status": "TEXT_COVERED",
+          "span": [
+            297,
+            315
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "blocking.orientation",
+          "status": "TEXT_COVERED",
+          "span": [
+            316,
+            346
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "blocking.contact",
+          "status": "TEXT_COVERED",
+          "span": [
+            347,
+            382
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "blocking.visible_relation",
+          "status": "TEXT_COVERED",
+          "span": [
+            383,
+            413
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "action.current_visible_action",
+          "status": "TEXT_COVERED",
+          "span": [
+            414,
+            432
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "action.expression",
+          "status": "TEXT_COVERED",
+          "span": [
+            433,
+            459
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "environment.architecture",
+          "status": "TEXT_COVERED",
+          "span": [
+            460,
+            475
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "environment.topology",
+          "status": "TEXT_COVERED",
+          "span": [
+            476,
+            496
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "environment.required_period_objects",
+          "status": "TEXT_COVERED",
+          "span": [
+            497,
+            513
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "camera.framing",
+          "status": "TEXT_COVERED",
+          "span": [
+            514,
+            543
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "camera.shot_size",
+          "status": "TEXT_COVERED",
+          "span": [
+            544,
+            556
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "camera.readable_details",
+          "status": "TEXT_COVERED",
+          "span": [
+            557,
+            586
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "camera.perspective",
+          "status": "TEXT_COVERED",
+          "span": [
+            587,
+            599
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "lighting.time_of_day",
+          "status": "TEXT_COVERED",
+          "span": [
+            600,
+            608
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "lighting.light_sources",
+          "status": "TEXT_COVERED",
+          "span": [
+            609,
+            621
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "lighting.contrast",
+          "status": "TEXT_COVERED",
+          "span": [
+            622,
+            641
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "lighting.realism",
+          "status": "TEXT_COVERED",
+          "span": [
+            642,
+            661
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "continuity[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            662,
+            740
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "positive_target[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            741,
+            760
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "video.start_state[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            761,
+            786
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "video.action_progression[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            787,
+            844
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "video.performance[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            845,
+            873
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "video.camera_motion[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            874,
+            890
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "video.end_state[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            891,
+            922
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        }
+      ],
+      "input_slots": []
+    },
+    {
+      "mode": "image_to_video",
+      "fixture": "SYNTHETIC_OFFLINE_NOT_APPROVED_PRODUCTION",
+      "chars_before": 2016,
+      "obligations_total": 37,
+      "text_covered": 36,
+      "reference_covered": 1,
+      "omitted_optional": 0,
+      "uncovered_required": 0,
+      "semantic_duplicates": 0,
+      "chars_before_budget": 1003,
+      "chars_after": 1003,
+      "old_prompt": "VIDEO CLIP\nCRITICAL medium: LIVE_ACTION\nCRITICAL world.era: 19th century\nCRITICAL world.location: Petersburg\nCRITICAL world.historical_context: historical city street\nCRITICAL world.environment_rules[0]: Period-compatible street fixtures only\nCRITICAL subject.man.role: man\nCRITICAL subject.man.apparent_age: 38–42 years old\nCRITICAL subject.man.face: narrow long face\nCRITICAL subject.man.hair: short dark brown hair\nCRITICAL subject.man.beard: short uneven stubble\nCRITICAL subject.man.body_proportions: ordinary narrow shoulders\nCRITICAL blocking.positions: AT CLIP START: man at left\nCRITICAL blocking.orientation: AT CLIP START: man remains facing away\nCRITICAL blocking.contact: AT CLIP START: man keeps hold of the sleeve\nCRITICAL blocking.visible_relation: AT CLIP START: one man beside the gate\nCRITICAL action.current_visible_action: AT CLIP START: standing step\nCRITICAL action.expression: AT CLIP START: restrained expression\nCRITICAL continuity[0]: The grip never releases; identity and costume remain unchanged throughout\nCRITICAL positive_target[0]: intact natural skin\nCRITICAL video.start_state[0]: man holds the sleeve\nCRITICAL video.action_progression[0]: man maintains the grip until the other person stops\nCRITICAL video.performance[0]: man remains facing away\nCRITICAL video.camera_motion[0]: locked camera\nCRITICAL video.end_state[0]: man still holds the sleeve\nIMPORTANT subject.man.costume: old wool coat\nIMPORTANT subject.man.visible_condition: natural skin\nIMPORTANT environment.architecture: plaster facades\nIMPORTANT environment.topology: side street junction\nIMPORTANT environment.required_period_objects: gas street lamps\nIMPORTANT camera.framing: two people, left and right\nIMPORTANT camera.shot_size: full body\nIMPORTANT camera.readable_details: faces and shoes readable\nIMPORTANT camera.perspective: eye level\nIMPORTANT lighting.time_of_day: night\nIMPORTANT lighting.light_sources: gas lamps\nIMPORTANT lighting.contrast: readable shadows\nIMPORTANT lighting.realism: natural textures",
+      "new_prompt": "<主体1>仅参考 @图片1 的身份。@图片1 作为首帧约束。@图片1 不承担姿势职责。@图片1 不承担灯光职责。@图片1 不承担构图职责。@图片1 不承担表情职责。；LIVE_ACTION；19th century；Petersburg；historical city street；Period-compatible street fixtures only；<主体1>身份：man；<主体1>年龄：38–42 years old；<主体1>的面部身份保持与 @图片1 一致。；<主体1>头发：short dark brown hair；<主体1>胡须：short uneven stubble；<主体1>体型：ordinary narrow shoulders；<主体1>服装：old wool coat；<主体1>当前状态：natural skin；开场站位：<主体1> at left；开场朝向：<主体1> remains facing away；开场接触：<主体1> keeps hold of the sleeve；开场关系：one <主体1> beside the gate；开场动作：standing step；开场表情：restrained expression；plaster facades；side street junction；gas street lamps；构图：two people, left and right；景别：full body；可见细节：faces and shoes readable；视角：eye level；时段：night；光源：gas lamps；明暗：readable shadows；成像：natural textures；全程保持：The grip never releases; identity and costume remain unchanged throughout；intact natural skin；开场：<主体1> holds the sleeve；事件1：<主体1> maintains the grip until the other person stops；表演：<主体1> remains facing away；运镜：locked camera；终态：<主体1> still holds the sleeve",
+      "coverage": [
+        {
+          "obligation_id": "medium",
+          "status": "TEXT_COVERED",
+          "span": [
+            83,
+            94
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "world.era",
+          "status": "TEXT_COVERED",
+          "span": [
+            95,
+            107
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "world.location",
+          "status": "TEXT_COVERED",
+          "span": [
+            108,
+            118
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "world.historical_context",
+          "status": "TEXT_COVERED",
+          "span": [
+            119,
+            141
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "world.environment_rules[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            142,
+            180
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.role",
+          "status": "TEXT_COVERED",
+          "span": [
+            181,
+            192
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.apparent_age",
+          "status": "TEXT_COVERED",
+          "span": [
+            193,
+            216
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.face",
+          "status": "REFERENCE_COVERED",
+          "span": [
+            217,
+            239
+          ],
+          "input_tag": "@图片1",
+          "input_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "input_version": "1",
+          "duty": "face"
+        },
+        {
+          "obligation_id": "subject.man.hair",
+          "status": "TEXT_COVERED",
+          "span": [
+            240,
+            269
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.beard",
+          "status": "TEXT_COVERED",
+          "span": [
+            270,
+            298
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.body_proportions",
+          "status": "TEXT_COVERED",
+          "span": [
+            299,
+            332
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.costume",
+          "status": "TEXT_COVERED",
+          "span": [
+            333,
+            354
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.visible_condition",
+          "status": "TEXT_COVERED",
+          "span": [
+            355,
+            377
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "blocking.positions",
+          "status": "TEXT_COVERED",
+          "span": [
+            378,
+            396
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "blocking.orientation",
+          "status": "TEXT_COVERED",
+          "span": [
+            397,
+            427
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "blocking.contact",
+          "status": "TEXT_COVERED",
+          "span": [
+            428,
+            463
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "blocking.visible_relation",
+          "status": "TEXT_COVERED",
+          "span": [
+            464,
+            494
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "action.current_visible_action",
+          "status": "TEXT_COVERED",
+          "span": [
+            495,
+            513
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "action.expression",
+          "status": "TEXT_COVERED",
+          "span": [
+            514,
+            540
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "environment.architecture",
+          "status": "TEXT_COVERED",
+          "span": [
+            541,
+            556
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "environment.topology",
+          "status": "TEXT_COVERED",
+          "span": [
+            557,
+            577
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "environment.required_period_objects",
+          "status": "TEXT_COVERED",
+          "span": [
+            578,
+            594
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "camera.framing",
+          "status": "TEXT_COVERED",
+          "span": [
+            595,
+            624
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "camera.shot_size",
+          "status": "TEXT_COVERED",
+          "span": [
+            625,
+            637
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "camera.readable_details",
+          "status": "TEXT_COVERED",
+          "span": [
+            638,
+            667
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "camera.perspective",
+          "status": "TEXT_COVERED",
+          "span": [
+            668,
+            680
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "lighting.time_of_day",
+          "status": "TEXT_COVERED",
+          "span": [
+            681,
+            689
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "lighting.light_sources",
+          "status": "TEXT_COVERED",
+          "span": [
+            690,
+            702
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "lighting.contrast",
+          "status": "TEXT_COVERED",
+          "span": [
+            703,
+            722
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "lighting.realism",
+          "status": "TEXT_COVERED",
+          "span": [
+            723,
+            742
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "continuity[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            743,
+            821
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "positive_target[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            822,
+            841
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "video.start_state[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            842,
+            867
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "video.action_progression[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            868,
+            925
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "video.performance[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            926,
+            954
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "video.camera_motion[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            955,
+            971
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "video.end_state[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            972,
+            1003
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        }
+      ],
+      "input_slots": [
+        {
+          "tag": "@图片1",
+          "media_id": "asset-face",
+          "version": "1",
+          "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "slot": "first_frame"
+        }
+      ]
+    },
+    {
+      "mode": "first_last_frame",
+      "fixture": "SYNTHETIC_OFFLINE_NOT_APPROVED_PRODUCTION",
+      "chars_before": 2016,
+      "obligations_total": 37,
+      "text_covered": 35,
+      "reference_covered": 2,
+      "omitted_optional": 0,
+      "uncovered_required": 0,
+      "semantic_duplicates": 0,
+      "chars_before_budget": 1079,
+      "chars_after": 1079,
+      "old_prompt": "VIDEO CLIP\nCRITICAL medium: LIVE_ACTION\nCRITICAL world.era: 19th century\nCRITICAL world.location: Petersburg\nCRITICAL world.historical_context: historical city street\nCRITICAL world.environment_rules[0]: Period-compatible street fixtures only\nCRITICAL subject.man.role: man\nCRITICAL subject.man.apparent_age: 38–42 years old\nCRITICAL subject.man.face: narrow long face\nCRITICAL subject.man.hair: short dark brown hair\nCRITICAL subject.man.beard: short uneven stubble\nCRITICAL subject.man.body_proportions: ordinary narrow shoulders\nCRITICAL blocking.positions: AT CLIP START: man at left\nCRITICAL blocking.orientation: AT CLIP START: man remains facing away\nCRITICAL blocking.contact: AT CLIP START: man keeps hold of the sleeve\nCRITICAL blocking.visible_relation: AT CLIP START: one man beside the gate\nCRITICAL action.current_visible_action: AT CLIP START: standing step\nCRITICAL action.expression: AT CLIP START: restrained expression\nCRITICAL continuity[0]: The grip never releases; identity and costume remain unchanged throughout\nCRITICAL positive_target[0]: intact natural skin\nCRITICAL video.start_state[0]: man holds the sleeve\nCRITICAL video.action_progression[0]: man maintains the grip until the other person stops\nCRITICAL video.performance[0]: man remains facing away\nCRITICAL video.camera_motion[0]: locked camera\nCRITICAL video.end_state[0]: man still holds the sleeve\nIMPORTANT subject.man.costume: old wool coat\nIMPORTANT subject.man.visible_condition: natural skin\nIMPORTANT environment.architecture: plaster facades\nIMPORTANT environment.topology: side street junction\nIMPORTANT environment.required_period_objects: gas street lamps\nIMPORTANT camera.framing: two people, left and right\nIMPORTANT camera.shot_size: full body\nIMPORTANT camera.readable_details: faces and shoes readable\nIMPORTANT camera.perspective: eye level\nIMPORTANT lighting.time_of_day: night\nIMPORTANT lighting.light_sources: gas lamps\nIMPORTANT lighting.contrast: readable shadows\nIMPORTANT lighting.realism: natural textures",
+      "new_prompt": "<主体1>仅参考 @图片1 的身份。@图片1 作为首帧约束。@图片1 不承担姿势职责。@图片1 不承担灯光职责。@图片1 不承担构图职责。@图片1 不承担表情职责。仅参考 @图片2 的场景。@图片2 作为尾帧约束。@图片2 不承担姿势职责。@图片2 不承担灯光职责。@图片2 不承担构图职责。@图片2 不承担表情职责。；LIVE_ACTION；19th century；Petersburg；historical city street；Period-compatible street fixtures only；<主体1>身份：man；<主体1>年龄：38–42 years old；<主体1>的面部身份保持与 @图片1 一致。；<主体1>头发：short dark brown hair；<主体1>胡须：short uneven stubble；<主体1>体型：ordinary narrow shoulders；<主体1>服装：old wool coat；<主体1>当前状态：natural skin；开场站位：<主体1> at left；开场朝向：<主体1> remains facing away；开场接触：<主体1> keeps hold of the sleeve；开场关系：one <主体1> beside the gate；开场动作：standing step；开场表情：restrained expression；场景保持与 @图片2 一致。；side street junction；gas street lamps；构图：two people, left and right；景别：full body；可见细节：faces and shoes readable；视角：eye level；时段：night；光源：gas lamps；明暗：readable shadows；成像：natural textures；全程保持：The grip never releases; identity and costume remain unchanged throughout；intact natural skin；开场：<主体1> holds the sleeve；事件1：<主体1> maintains the grip until the other person stops；表演：<主体1> remains facing away；运镜：locked camera；终态：<主体1> still holds the sleeve",
+      "coverage": [
+        {
+          "obligation_id": "medium",
+          "status": "TEXT_COVERED",
+          "span": [
+            160,
+            171
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "world.era",
+          "status": "TEXT_COVERED",
+          "span": [
+            172,
+            184
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "world.location",
+          "status": "TEXT_COVERED",
+          "span": [
+            185,
+            195
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "world.historical_context",
+          "status": "TEXT_COVERED",
+          "span": [
+            196,
+            218
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "world.environment_rules[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            219,
+            257
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.role",
+          "status": "TEXT_COVERED",
+          "span": [
+            258,
+            269
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.apparent_age",
+          "status": "TEXT_COVERED",
+          "span": [
+            270,
+            293
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.face",
+          "status": "REFERENCE_COVERED",
+          "span": [
+            294,
+            316
+          ],
+          "input_tag": "@图片1",
+          "input_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "input_version": "1",
+          "duty": "face"
+        },
+        {
+          "obligation_id": "subject.man.hair",
+          "status": "TEXT_COVERED",
+          "span": [
+            317,
+            346
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.beard",
+          "status": "TEXT_COVERED",
+          "span": [
+            347,
+            375
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.body_proportions",
+          "status": "TEXT_COVERED",
+          "span": [
+            376,
+            409
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.costume",
+          "status": "TEXT_COVERED",
+          "span": [
+            410,
+            431
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.visible_condition",
+          "status": "TEXT_COVERED",
+          "span": [
+            432,
+            454
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "blocking.positions",
+          "status": "TEXT_COVERED",
+          "span": [
+            455,
+            473
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "blocking.orientation",
+          "status": "TEXT_COVERED",
+          "span": [
+            474,
+            504
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "blocking.contact",
+          "status": "TEXT_COVERED",
+          "span": [
+            505,
+            540
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "blocking.visible_relation",
+          "status": "TEXT_COVERED",
+          "span": [
+            541,
+            571
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "action.current_visible_action",
+          "status": "TEXT_COVERED",
+          "span": [
+            572,
+            590
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "action.expression",
+          "status": "TEXT_COVERED",
+          "span": [
+            591,
+            617
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "environment.architecture",
+          "status": "REFERENCE_COVERED",
+          "span": [
+            618,
+            632
+          ],
+          "input_tag": "@图片2",
+          "input_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "input_version": "1",
+          "duty": "environment"
+        },
+        {
+          "obligation_id": "environment.topology",
+          "status": "TEXT_COVERED",
+          "span": [
+            633,
+            653
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "environment.required_period_objects",
+          "status": "TEXT_COVERED",
+          "span": [
+            654,
+            670
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "camera.framing",
+          "status": "TEXT_COVERED",
+          "span": [
+            671,
+            700
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "camera.shot_size",
+          "status": "TEXT_COVERED",
+          "span": [
+            701,
+            713
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "camera.readable_details",
+          "status": "TEXT_COVERED",
+          "span": [
+            714,
+            743
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "camera.perspective",
+          "status": "TEXT_COVERED",
+          "span": [
+            744,
+            756
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "lighting.time_of_day",
+          "status": "TEXT_COVERED",
+          "span": [
+            757,
+            765
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "lighting.light_sources",
+          "status": "TEXT_COVERED",
+          "span": [
+            766,
+            778
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "lighting.contrast",
+          "status": "TEXT_COVERED",
+          "span": [
+            779,
+            798
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "lighting.realism",
+          "status": "TEXT_COVERED",
+          "span": [
+            799,
+            818
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "continuity[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            819,
+            897
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "positive_target[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            898,
+            917
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "video.start_state[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            918,
+            943
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "video.action_progression[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            944,
+            1001
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "video.performance[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            1002,
+            1030
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "video.camera_motion[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            1031,
+            1047
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "video.end_state[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            1048,
+            1079
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        }
+      ],
+      "input_slots": [
+        {
+          "tag": "@图片1",
+          "media_id": "asset-face",
+          "version": "1",
+          "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "slot": "first_frame"
+        },
+        {
+          "tag": "@图片2",
+          "media_id": "asset-scene",
+          "version": "1",
+          "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "slot": "last_frame"
+        }
+      ]
+    },
+    {
+      "mode": "reference",
+      "fixture": "SYNTHETIC_OFFLINE_NOT_APPROVED_PRODUCTION",
+      "chars_before": 2016,
+      "obligations_total": 37,
+      "text_covered": 34,
+      "reference_covered": 3,
+      "omitted_optional": 0,
+      "uncovered_required": 0,
+      "semantic_duplicates": 0,
+      "chars_before_budget": 1124,
+      "chars_after": 1124,
+      "old_prompt": "VIDEO CLIP\nCRITICAL medium: LIVE_ACTION\nCRITICAL world.era: 19th century\nCRITICAL world.location: Petersburg\nCRITICAL world.historical_context: historical city street\nCRITICAL world.environment_rules[0]: Period-compatible street fixtures only\nCRITICAL subject.man.role: man\nCRITICAL subject.man.apparent_age: 38–42 years old\nCRITICAL subject.man.face: narrow long face\nCRITICAL subject.man.hair: short dark brown hair\nCRITICAL subject.man.beard: short uneven stubble\nCRITICAL subject.man.body_proportions: ordinary narrow shoulders\nCRITICAL blocking.positions: AT CLIP START: man at left\nCRITICAL blocking.orientation: AT CLIP START: man remains facing away\nCRITICAL blocking.contact: AT CLIP START: man keeps hold of the sleeve\nCRITICAL blocking.visible_relation: AT CLIP START: one man beside the gate\nCRITICAL action.current_visible_action: AT CLIP START: standing step\nCRITICAL action.expression: AT CLIP START: restrained expression\nCRITICAL continuity[0]: The grip never releases; identity and costume remain unchanged throughout\nCRITICAL positive_target[0]: intact natural skin\nCRITICAL video.start_state[0]: man holds the sleeve\nCRITICAL video.action_progression[0]: man maintains the grip until the other person stops\nCRITICAL video.performance[0]: man remains facing away\nCRITICAL video.camera_motion[0]: locked camera\nCRITICAL video.end_state[0]: man still holds the sleeve\nIMPORTANT subject.man.costume: old wool coat\nIMPORTANT subject.man.visible_condition: natural skin\nIMPORTANT environment.architecture: plaster facades\nIMPORTANT environment.topology: side street junction\nIMPORTANT environment.required_period_objects: gas street lamps\nIMPORTANT camera.framing: two people, left and right\nIMPORTANT camera.shot_size: full body\nIMPORTANT camera.readable_details: faces and shoes readable\nIMPORTANT camera.perspective: eye level\nIMPORTANT lighting.time_of_day: night\nIMPORTANT lighting.light_sources: gas lamps\nIMPORTANT lighting.contrast: readable shadows\nIMPORTANT lighting.realism: natural textures",
+      "new_prompt": "<主体1>仅参考 @图片1 的服装。@图片1 不承担姿势职责。@图片1 不承担灯光职责。@图片1 不承担构图职责。@图片1 不承担表情职责。<主体1>仅参考 @图片2 的身份。@图片2 不承担姿势职责。@图片2 不承担灯光职责。@图片2 不承担构图职责。@图片2 不承担表情职责。仅参考 @图片3 的场景。@图片3 不承担姿势职责。@图片3 不承担灯光职责。@图片3 不承担构图职责。@图片3 不承担表情职责。；LIVE_ACTION；19th century；Petersburg；historical city street；Period-compatible street fixtures only；<主体1>身份：man；<主体1>年龄：38–42 years old；<主体1>的面部身份保持与 @图片2 一致。；<主体1>头发：short dark brown hair；<主体1>胡须：short uneven stubble；<主体1>体型：ordinary narrow shoulders；<主体1>的服装保持与 @图片1 一致。；<主体1>当前状态：natural skin；开场站位：<主体1> at left；开场朝向：<主体1> remains facing away；开场接触：<主体1> keeps hold of the sleeve；开场关系：one <主体1> beside the gate；开场动作：standing step；开场表情：restrained expression；场景保持与 @图片3 一致。；side street junction；gas street lamps；构图：two people, left and right；景别：full body；可见细节：faces and shoes readable；视角：eye level；时段：night；光源：gas lamps；明暗：readable shadows；成像：natural textures；全程保持：The grip never releases; identity and costume remain unchanged throughout；intact natural skin；开场：<主体1> holds the sleeve；事件1：<主体1> maintains the grip until the other person stops；表演：<主体1> remains facing away；运镜：locked camera；终态：<主体1> still holds the sleeve",
+      "coverage": [
+        {
+          "obligation_id": "medium",
+          "status": "TEXT_COVERED",
+          "span": [
+            206,
+            217
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "world.era",
+          "status": "TEXT_COVERED",
+          "span": [
+            218,
+            230
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "world.location",
+          "status": "TEXT_COVERED",
+          "span": [
+            231,
+            241
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "world.historical_context",
+          "status": "TEXT_COVERED",
+          "span": [
+            242,
+            264
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "world.environment_rules[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            265,
+            303
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.role",
+          "status": "TEXT_COVERED",
+          "span": [
+            304,
+            315
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.apparent_age",
+          "status": "TEXT_COVERED",
+          "span": [
+            316,
+            339
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.face",
+          "status": "REFERENCE_COVERED",
+          "span": [
+            340,
+            362
+          ],
+          "input_tag": "@图片2",
+          "input_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "input_version": "1",
+          "duty": "face"
+        },
+        {
+          "obligation_id": "subject.man.hair",
+          "status": "TEXT_COVERED",
+          "span": [
+            363,
+            392
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.beard",
+          "status": "TEXT_COVERED",
+          "span": [
+            393,
+            421
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.body_proportions",
+          "status": "TEXT_COVERED",
+          "span": [
+            422,
+            455
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "subject.man.costume",
+          "status": "REFERENCE_COVERED",
+          "span": [
+            456,
+            476
+          ],
+          "input_tag": "@图片1",
+          "input_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "input_version": "1",
+          "duty": "costume"
+        },
+        {
+          "obligation_id": "subject.man.visible_condition",
+          "status": "TEXT_COVERED",
+          "span": [
+            477,
+            499
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "blocking.positions",
+          "status": "TEXT_COVERED",
+          "span": [
+            500,
+            518
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "blocking.orientation",
+          "status": "TEXT_COVERED",
+          "span": [
+            519,
+            549
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "blocking.contact",
+          "status": "TEXT_COVERED",
+          "span": [
+            550,
+            585
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "blocking.visible_relation",
+          "status": "TEXT_COVERED",
+          "span": [
+            586,
+            616
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "action.current_visible_action",
+          "status": "TEXT_COVERED",
+          "span": [
+            617,
+            635
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "action.expression",
+          "status": "TEXT_COVERED",
+          "span": [
+            636,
+            662
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "environment.architecture",
+          "status": "REFERENCE_COVERED",
+          "span": [
+            663,
+            677
+          ],
+          "input_tag": "@图片3",
+          "input_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "input_version": "1",
+          "duty": "environment"
+        },
+        {
+          "obligation_id": "environment.topology",
+          "status": "TEXT_COVERED",
+          "span": [
+            678,
+            698
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "environment.required_period_objects",
+          "status": "TEXT_COVERED",
+          "span": [
+            699,
+            715
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "camera.framing",
+          "status": "TEXT_COVERED",
+          "span": [
+            716,
+            745
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "camera.shot_size",
+          "status": "TEXT_COVERED",
+          "span": [
+            746,
+            758
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "camera.readable_details",
+          "status": "TEXT_COVERED",
+          "span": [
+            759,
+            788
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "camera.perspective",
+          "status": "TEXT_COVERED",
+          "span": [
+            789,
+            801
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "lighting.time_of_day",
+          "status": "TEXT_COVERED",
+          "span": [
+            802,
+            810
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "lighting.light_sources",
+          "status": "TEXT_COVERED",
+          "span": [
+            811,
+            823
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "lighting.contrast",
+          "status": "TEXT_COVERED",
+          "span": [
+            824,
+            843
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "lighting.realism",
+          "status": "TEXT_COVERED",
+          "span": [
+            844,
+            863
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "continuity[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            864,
+            942
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "positive_target[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            943,
+            962
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "video.start_state[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            963,
+            988
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "video.action_progression[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            989,
+            1046
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "video.performance[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            1047,
+            1075
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "video.camera_motion[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            1076,
+            1092
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        },
+        {
+          "obligation_id": "video.end_state[0]",
+          "status": "TEXT_COVERED",
+          "span": [
+            1093,
+            1124
+          ],
+          "input_tag": null,
+          "input_hash": null,
+          "input_version": null,
+          "duty": null
+        }
+      ],
+      "input_slots": [
+        {
+          "tag": "@图片1",
+          "media_id": "asset-costume",
+          "version": "1",
+          "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "slot": "reference_image"
+        },
+        {
+          "tag": "@图片2",
+          "media_id": "asset-face",
+          "version": "1",
+          "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "slot": "reference_image"
+        },
+        {
+          "tag": "@图片3",
+          "media_id": "asset-scene",
+          "version": "1",
+          "content_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "slot": "reference_image"
+        }
+      ]
+    }
+  ]
+}

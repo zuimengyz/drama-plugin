@@ -34,16 +34,24 @@ def compile_request(r: Requirements, c: Candidate) -> dict[str, Any]:
     if v.last_frame: slots[v.last_frame.media_id] = 'lastFrame'
     if any(d.status == 'FULFILLED' and slots.get(d.media_id or '') != d.provider_slot for d in r.reference_duties):
         raise ValueError('REFERENCE_PROVIDER_SLOT_MISMATCH')
+    from drama_plugin.prompt_generators.registry import is_seedance2
+    if is_seedance2(c.model) and r.prompt_ir is not None and r.prompt_ir != v.prompt_ir:
+        raise ValueError('SEEDANCE_CONFLICTING_IR_AUTHORITIES')
+    compilation = prompt_compilation(v, provider=provider, model=c.model) if is_seedance2(c.model) else prompt_compilation(v)
     if r.frozen_creative.get('creative_schema') == 'cinematic-shot-v1':
-        from drama_plugin.hosts.cinematic_projection import project
-        projected = project(r, c, {'class_type':'OfficialHTTP'})
-        if v.prompt != projected['prompt'] or v.native_audio != projected['generate_audio']:
-            raise ValueError('DIRECTOR_INTENT_MUST_EQUAL_CANONICAL_PROJECTION')
+        if is_seedance2(c.model):
+            from drama_plugin.prompt_generators.seedance_2.canonical import verify_cinematic
+            verify_cinematic(r, compilation)
+        else:
+            from drama_plugin.hosts.cinematic_projection import project
+            projected = project(r, c, {'class_type':'OfficialHTTP'})
+            if v.prompt != projected['prompt'] or v.native_audio != projected['generate_audio']:
+                raise ValueError('DIRECTOR_INTENT_MUST_EQUAL_CANONICAL_PROJECTION')
     elif v.prompt != r.frozen_creative.get('motion_prompt'):
         raise ValueError('CANONICAL_PROMPT_CHANGED')
     return {'tool':'video.create_task', 'provider':provider, 'model':c.model,
             'videoRequest':v.model_dump(mode='json', by_alias=True),
-            'promptCompilation':prompt_compilation(v)}
+            'promptCompilation':compilation}
 
 
 def seal_execution(r: Requirements, c: Candidate, request: dict[str, Any], host: dict[str, Any]) -> dict[str, Any]:

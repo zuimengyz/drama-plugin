@@ -11,11 +11,17 @@ STATIC = {'TEXT_TO_IMAGE', 'IMAGE_EDIT', 'REFERENCE_EDIT', 'FIRST_FRAME', 'KEY_F
 
 def compile_ir(raw: VisualPromptIR | dict[str, Any], *, provider_family: str,
                audio_supported: bool = False, hard_limit: int | None = None,
-               model: str = 'visual', limit_source: str = 'provider capability') -> dict[str, Any]:
+               model: str = 'visual', limit_source: str = 'provider capability',
+               generator_context: dict[str, Any] | None = None,
+               legacy_replay: bool = False) -> dict[str, Any]:
     ir = VisualPromptIR.model_validate(raw.model_dump() if isinstance(raw, VisualPromptIR) else raw)
     if ir.task.provider_family.casefold() != provider_family.casefold():
         raise ValueError('VISUAL_PROMPT_PROVIDER_FAMILY_MISMATCH')
     task = ir.task.task_type
+    from drama_plugin.prompt_generators.registry import is_seedance2, get_generator
+    seedance = task == 'VIDEO' and is_seedance2(model) and not legacy_replay
+    if task == 'VIDEO' and provider_family.casefold() == 'seedance' and not seedance and not legacy_replay:
+        raise ValueError('SEEDANCE_MODEL_GENERATOR_NOT_IMPLEMENTED:' + model)
     scope_task = 'VIDEO' if task == 'VIDEO' else 'IMAGE'
     rows: list[dict[str, Any]] = []
     omitted: list[dict[str, str]] = []
@@ -32,6 +38,8 @@ def compile_ir(raw: VisualPromptIR | dict[str, Any], *, provider_family: str,
         review_text(fact.text, scope_task, audio=audio_supported)
         rows.append({'path': path, 'priority': fact.priority, 'text': prefix + fact.text,
                      'required': required, 'source': fact.source})
+        if seedance:
+            rows[-1]['scope'] = fact.scope
 
     add('medium', Fact(text=ir.task.visual_medium, priority='CRITICAL', source='task.visual_medium'), 'CRITICAL')
     for key in ('era', 'location', 'historical_context'):
@@ -81,6 +89,23 @@ def compile_ir(raw: VisualPromptIR | dict[str, Any], *, provider_family: str,
     for i, fact in enumerate(ir.secondary_details):
         add(f'secondary[{i}]', fact, required=False)
 
+    if seedance:
+        if provider_family.casefold() != 'seedance' or generator_context is None or hard_limit is None:
+            raise ValueError('SEEDANCE_GENERATOR_CONTEXT_REQUIRED')
+        generated = get_generator('seedance_2').generate(ir, rows, context=generator_context, hard_limit=hard_limit)
+        prompt = generated['prompt']
+        review_text(prompt, scope_task, audio=audio_supported)
+        from drama_plugin.hosts.prompt_budget import budget_prompt
+        _, budget = budget_prompt(prompt, prompt, model=model, limit=hard_limit, source=limit_source)
+        budget['soft_budget'] = 'UNVALIDATED'
+        return {'schema': 'visual-prompt-compilation-v1', 'ir': ir.model_dump(mode='json'),
+                'ir_fingerprint': fp(ir.model_dump(mode='json')), 'prompt_fingerprint': fp(prompt),
+                'provider_family': provider_family, 'audio_supported': audio_supported,
+                'hard_limit': hard_limit, 'model': model, 'limit_source': limit_source,
+                'generator_context': generator_context, **generated,
+                'omitted': omitted + generated['omitted'],
+                'prompt_budget': budget}
+
     # Edits lead with the correction operations, followed by what must survive.
     def order(row: dict[str, Any]) -> tuple[int, int]:
         path = row['path']
@@ -127,10 +152,11 @@ def compile_ir(raw: VisualPromptIR | dict[str, Any], *, provider_family: str,
             'retained': kept, 'omitted': omitted, 'prompt_budget': budget}
 
 
-def verify_compilation(record: dict[str, Any], prompt: str) -> None:
+def verify_compilation(record: dict[str, Any], prompt: str, *, legacy_replay: bool = False) -> None:
     expected = compile_ir(record['ir'], provider_family=record['provider_family'],
                           audio_supported=record['audio_supported'], hard_limit=record['hard_limit'],
-                          model=record['model'], limit_source=record['limit_source'])
+                          model=record['model'], limit_source=record['limit_source'],
+                          generator_context=record.get('generator_context'), legacy_replay=legacy_replay)
     if expected != record or prompt != expected['prompt']:
         raise ValueError('VISUAL_PROMPT_IR_COMPILATION_CHANGED')
 
@@ -159,7 +185,8 @@ def require_submission_ir(snapshot: dict[str, Any], request: dict[str, Any]) -> 
     if request.get('tool') == 'video.create_task':
         from drama_plugin.contracts.video import VideoRequest
         from drama_plugin.visual.video_prompt import compile_request_ir
-        if compile_request_ir(VideoRequest.model_validate(request['videoRequest'])) != record:
+        if compile_request_ir(VideoRequest.model_validate(request['videoRequest']),
+                              provider=record['provider_family'], model=record['model']) != record:
             raise ValueError('VISUAL_PROMPT_IR_COMPILATION_CHANGED')
         prompts.append(record['prompt'])
     else:

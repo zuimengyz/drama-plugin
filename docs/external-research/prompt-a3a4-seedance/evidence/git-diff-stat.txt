@@ -1,0 +1,9 @@
+ plugin/src/drama_plugin/contracts/video.py         | 16 ++++++++--
+ plugin/src/drama_plugin/hosts/http_video.py        | 18 ++++++++---
+ .../src/drama_plugin/providers/video/adapters.py   |  9 +++---
+ plugin/src/drama_plugin/providers/video/base.py    | 13 ++++++--
+ plugin/src/drama_plugin/visual/prompt_ir.py        | 35 ++++++++++++++++++---
+ plugin/src/drama_plugin/visual/video_prompt.py     | 36 ++++++++++++++++------
+ plugin/tests/test_architecture_authority.py        |  8 +++--
+ plugin/tests/test_authority_provider_separation.py | 15 +++++++--
+ 8 files changed, 118 insertions(+), 32 deletions(-)

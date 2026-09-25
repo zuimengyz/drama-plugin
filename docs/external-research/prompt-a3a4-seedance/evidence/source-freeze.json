@@ -1,0 +1,30 @@
+{
+  "head": "789ed88d895bee045f24cf4432971da8220e5310",
+  "sources": [
+    {
+      "path": "/Users/zy/historical-plugin/drama-plugin/docs/external-research/prompt-a0-a2r/Prompt-A0-External-Source-Freeze.md",
+      "sha256": "45e3da60f5b5f1206110403aa9d7123d609940b2240dcd2f969d2e3b4689e8b7"
+    },
+    {
+      "path": "/Users/zy/historical-plugin/drama-plugin/docs/external-research/prompt-a0-a2r/Prompt-A1-Capability-Forensics.md",
+      "sha256": "880f4fb8992212d157b925848bf0c6762606590bba160246558e1959a46e21fb"
+    },
+    {
+      "path": "/Users/zy/historical-plugin/drama-plugin/docs/external-research/prompt-a0-a2r/Prompt-A2-Local-Capability-Mapping.md",
+      "sha256": "e181009b4ef9bffadc7ca6b7cad4adbbd1709508ba8689a542dd16ab523f396b"
+    },
+    {
+      "path": "/Users/zy/historical-plugin/drama-plugin/docs/external-research/prompt-a0-a2r/Prompt-A2R-Conflict-Authority-Reconciliation.md",
+      "sha256": "52dfdb0f225b1979a0b33c6483d80be5a7a40b45dc6f4c20018aca0dad4b84ab"
+    },
+    {
+      "path": "/Users/zy/historical-plugin/drama-plugin/docs/external-research/still-liveaction-a4/Still-LiveAction-A4-Implementation-Report.md",
+      "sha256": "78d8bd035f699f54c44add9ab86d9234f1d402c65403a4f0ee9af53ff572c756"
+    },
+    {
+      "path": "/Users/zy/Downloads/SKILL.md",
+      "sha256": "8836cdb2bc4f7d8a329c4ecd33cca19efdcfc71afdd927e8defe6e1f9a2e2b3c"
+    }
+  ],
+  "external_skill_installed": false
+}

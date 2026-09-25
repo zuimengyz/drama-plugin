@@ -52,6 +52,12 @@ class HttpVideoProvider:
     transport = 'http'
     provider = ''
 
+    def compiled_prompt(self, request: VideoRequest) -> str:
+        # Route identity is transport metadata, not creative prompt enhancement.
+        if self.provider == 'seedance':
+            return prompt_text(request, provider=self.provider, model=self.model)
+        return prompt_text(request)
+
     def __init__(self, model: str, settings: ProviderSettings, *, resolve: ReferenceResolver,
                  client: httpx.AsyncClient | None = None, cost_quote: CostEstimate | None = None):
         self.model, self.settings, self.resolve, self.cost_quote = model, settings, resolve, cost_quote
@@ -106,7 +112,7 @@ class HttpVideoProvider:
 
     async def materialize(self, request: VideoRequest) -> tuple[VideoRequest, dict[str, str]]:
         r = validate_request(request, self.provider, self.model)
-        if len(prompt_text(r)) > self.model_spec['prompt_limit']:
+        if len(self.compiled_prompt(r)) > self.model_spec['prompt_limit']:
             raise ValueError('CANONICAL_PROMPT_EXCEEDS_PROVIDER_LIMIT')
         urls = {}
         for ref in r.references():
@@ -130,7 +136,10 @@ class HttpVideoProvider:
 
     async def create_task(self, request: VideoRequest, *, client_request_id: str) -> ProviderTask:
         from drama_plugin.visual.video_prompt import compile_request_ir
-        compile_request_ir(request)  # Fail before URL resolution or a paid HTTP call.
+        if self.provider == 'seedance':
+            compile_request_ir(request, provider=self.provider, model=self.model)
+        else:
+            compile_request_ir(request)  # Fail before URL resolution or a paid HTTP call.
         r, urls = await self.materialize(request)
         task = ProviderTask(provider=self.provider, model=self.model, client_request_id=client_request_id,
                             request_fingerprint=request_fingerprint(r), status='UNKNOWN', duration=r.duration, resolution=r.resolution)

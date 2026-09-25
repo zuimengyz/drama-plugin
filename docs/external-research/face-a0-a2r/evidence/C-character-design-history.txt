@@ -1,0 +1,2 @@
+653a2b7955a867ca5d12b2a2d93342b9cd706c99 2026-05-03T20:51:14-07:00 flatten skills/claude.ai into skills/
+8390c77f9c2ae8b4532f6d7cf551d7779825a5f7 2026-05-01T03:20:23+03:00 Restructure repo around genmedia CLI: foundational, umbrellas, verticals

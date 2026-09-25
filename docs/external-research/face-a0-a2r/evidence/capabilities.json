@@ -1,0 +1,1109 @@
+[
+  {
+    "id": "F01",
+    "capability": "整体脸形与长宽关系",
+    "content_classes": [
+      "K"
+    ],
+    "external_refs": [
+      "A-structure",
+      "C-anchor"
+    ],
+    "local_refs": [
+      "L-asset",
+      "L-facelegacy",
+      "L-cast"
+    ],
+    "owner": "Specialized Asset；Casting 提供候选",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "记录批准人物差异；不统一瓜子脸或理想比。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F02",
+    "capability": "纵向比例与前后突出程度分离",
+    "content_classes": [
+      "K"
+    ],
+    "external_refs": [
+      "A-axes"
+    ],
+    "local_refs": [
+      "L-asset",
+      "L-cast"
+    ],
+    "owner": "Specialized Asset",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "比例是人物事实的描述轴，不是三等分达标线。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F03",
+    "capability": "眉骨起伏与眼窝深度分离",
+    "content_classes": [
+      "K"
+    ],
+    "external_refs": [
+      "A-structure",
+      "A-axes"
+    ],
+    "local_refs": [
+      "L-asset",
+      "L-facelegacy"
+    ],
+    "owner": "Specialized Asset",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "眉毛、眼睑、阴影不能替代骨骼；未知不补。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F04",
+    "capability": "颧位、颧宽、前突与面颊软组织分离",
+    "content_classes": [
+      "K"
+    ],
+    "external_refs": [
+      "A-structure",
+      "A-axes"
+    ],
+    "local_refs": [
+      "L-asset",
+      "L-facelegacy"
+    ],
+    "owner": "Specialized Asset",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "保留独立关系，拒绝高颧必瘦脸。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F05",
+    "capability": "面中纵长与鼻基底／面中凸凹区分",
+    "content_classes": [
+      "K"
+    ],
+    "external_refs": [
+      "A-axes",
+      "A-nose"
+    ],
+    "local_refs": [
+      "L-asset"
+    ],
+    "owner": "Specialized Asset",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "只吸收关系描述；不吸收饱满才美的规范。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F06",
+    "capability": "下颌相对颧宽及转折",
+    "content_classes": [
+      "K"
+    ],
+    "external_refs": [
+      "A-structure",
+      "C-anchor"
+    ],
+    "local_refs": [
+      "L-asset",
+      "L-facelegacy"
+    ],
+    "owner": "Specialized Asset",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "方窄圆钝均可；无英雄下颌默认。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F07",
+    "capability": "下巴长度形状与前后投射／侧貌",
+    "content_classes": [
+      "K"
+    ],
+    "external_refs": [
+      "A-axes",
+      "A-profile"
+    ],
+    "local_refs": [
+      "L-asset",
+      "L-facelegacy"
+    ],
+    "owner": "Specialized Asset",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "不能用尖等于前伸；不使用理想角度。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F08",
+    "capability": "眼形、间距、眼睑作为身份差异",
+    "content_classes": [
+      "K"
+    ],
+    "external_refs": [
+      "C-anchor",
+      "A-roster"
+    ],
+    "local_refs": [
+      "L-asset",
+      "L-ir"
+    ],
+    "owner": "Specialized Asset",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "开合受当前表演影响；跨角度比较不得直接比像素宽。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F09",
+    "capability": "自然眉形与眉眼间距",
+    "content_classes": [
+      "K"
+    ],
+    "external_refs": [
+      "C-anchor",
+      "A-roster"
+    ],
+    "local_refs": [
+      "L-asset",
+      "L-facelegacy"
+    ],
+    "owner": "Specialized Asset；妆态归 Look",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "自然毛发生长与眉妆、眉间紧张分开。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F10",
+    "capability": "鼻梁、鼻尖与鼻翼／宽度",
+    "content_classes": [
+      "K"
+    ],
+    "external_refs": [
+      "C-anchor",
+      "A-roster"
+    ],
+    "local_refs": [
+      "L-asset",
+      "L-ir"
+    ],
+    "owner": "Specialized Asset",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "拒绝统一高细鼻梁。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F11",
+    "capability": "唇形、嘴宽与上下唇比例",
+    "content_classes": [
+      "K"
+    ],
+    "external_refs": [
+      "C-anchor",
+      "A-roster"
+    ],
+    "local_refs": [
+      "L-asset",
+      "L-ir"
+    ],
+    "owner": "Specialized Asset",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "不把笑容、描唇与当前张口写成稳定形态。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F12",
+    "capability": "耳廓身份保持",
+    "content_classes": [
+      "K",
+      "Q"
+    ],
+    "external_refs": [
+      "B-principle",
+      "A-three"
+    ],
+    "local_refs": [
+      "L-asset",
+      "L-review"
+    ],
+    "owner": "Specialized Asset / QA",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "外部只支持保存/检查，不提供完整耳部设计或测量法。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F13",
+    "capability": "发际线身份与局部重建限制",
+    "content_classes": [
+      "K",
+      "Q"
+    ],
+    "external_refs": [
+      "B-hair",
+      "D-duty"
+    ],
+    "local_refs": [
+      "L-asset",
+      "L-look"
+    ],
+    "owner": "Specialized Asset / Look / QA",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "遮帽区域重建是提案，不能声称还原了未知真实发际线。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F14",
+    "capability": "头发密度、质地与可信毛发",
+    "content_classes": [
+      "K",
+      "Q"
+    ],
+    "external_refs": [
+      "A-bio",
+      "B-qc",
+      "C-anchor"
+    ],
+    "local_refs": [
+      "L-asset",
+      "L-medium",
+      "L-look"
+    ],
+    "owner": "Specialized Asset；当前整理归 Look",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "保留批准密度长度；不普遍加碎发、灰发或头屑。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F15",
+    "capability": "肤色家族与漂白防护",
+    "content_classes": [
+      "K",
+      "Q"
+    ],
+    "external_refs": [
+      "B-principle",
+      "B-skin",
+      "C-anchor"
+    ],
+    "local_refs": [
+      "L-asset",
+      "L-style"
+    ],
+    "owner": "Specialized Asset / Color / Grade",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "受光颜色不是基础肤色；不按族裔或角色身份自动填色。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F16",
+    "capability": "皮肤区域纹理与可见尺度",
+    "content_classes": [
+      "K"
+    ],
+    "external_refs": [
+      "A-skin",
+      "B-skin"
+    ],
+    "local_refs": [
+      "L-asset",
+      "L-medium",
+      "L-a3qc"
+    ],
+    "owner": "Specialized Asset / QA",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "按年龄、肤况、妆、景别、光线判断可见度；不要求每张都见毛孔。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F17",
+    "capability": "自然不对称的保存",
+    "content_classes": [
+      "K",
+      "Q"
+    ],
+    "external_refs": [
+      "B-principle",
+      "A-realism"
+    ],
+    "local_refs": [
+      "L-medium",
+      "L-asset"
+    ],
+    "owner": "Specialized Asset / QA",
+    "relationship": "OVERLAP",
+    "final_decision": "KEEP_LOCAL",
+    "boundary": "本地已明确 retain individual asymmetry；保持批准不对称，不强制制造。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F18",
+    "capability": "痣、雀斑、疤等辨识标记",
+    "content_classes": [
+      "K"
+    ],
+    "external_refs": [
+      "C-anchor",
+      "B-skin"
+    ],
+    "local_refs": [
+      "L-asset",
+      "L-look"
+    ],
+    "owner": "Specialized Asset；阶段变更归 Look",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "来源和批准决定其是否长期/阶段性；不能为真实感随意添加。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F19",
+    "capability": "年龄印象不得被精修改变",
+    "content_classes": [
+      "K",
+      "Q"
+    ],
+    "external_refs": [
+      "B-principle",
+      "C-anchor"
+    ],
+    "local_refs": [
+      "L-asset",
+      "L-ir",
+      "L-owner"
+    ],
+    "owner": "Specialized Asset / QA",
+    "relationship": "OVERLAP",
+    "final_decision": "KEEP_LOCAL",
+    "boundary": "本地已禁止自动减龄；加强观察是 F31，不重复建年龄 owner。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F20",
+    "capability": "年龄与眼口区纹理、体积及毛发成熟度核对",
+    "content_classes": [
+      "K",
+      "Q"
+    ],
+    "external_refs": [
+      "A-bio",
+      "B-qc"
+    ],
+    "local_refs": [
+      "L-asset",
+      "L-ir"
+    ],
+    "owner": "Specialized Asset / Look / QA",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "外部仅部分线索；没有跨年龄可靠映射、通用皱纹数量或年龄估计器。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F21",
+    "capability": "身份优先于美化",
+    "content_classes": [
+      "K",
+      "Q"
+    ],
+    "external_refs": [
+      "B-principle",
+      "A-decouple"
+    ],
+    "local_refs": [
+      "L-owner",
+      "L-style",
+      "L-castpolicy"
+    ],
+    "owner": "Specialized Asset / Casting",
+    "relationship": "DUPLICATE",
+    "final_decision": "KEEP_LOCAL",
+    "boundary": "本地已有 IDENTITY_WITHOUT_BEAUTIFICATION，非外部首次发现。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F22",
+    "capability": "稳定 anchor 与当前变量分开",
+    "content_classes": [
+      "K",
+      "W"
+    ],
+    "external_refs": [
+      "C-anchor",
+      "C-variable"
+    ],
+    "local_refs": [
+      "L-a3ref",
+      "L-frame",
+      "L-ir"
+    ],
+    "owner": "Specialized Asset / Blocking / Performance",
+    "relationship": "OVERLAP",
+    "final_decision": "KEEP_LOCAL",
+    "boundary": "A3 C15 保持上位；C 的姿态/签名配饰/媒介不自动成为不可变脸身份。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F23",
+    "capability": "身份参考可见性与质量适用性",
+    "content_classes": [
+      "W",
+      "Q"
+    ],
+    "external_refs": [
+      "D-stop",
+      "B-principle"
+    ],
+    "local_refs": [
+      "L-reference",
+      "L-binding"
+    ],
+    "owner": "Reference Strategy / QA",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "不清楚/遮挡即不可确认；不把参考图暗部推成结构事实。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F24",
+    "capability": "可见、推测、不可确认的面部参考证据",
+    "content_classes": [
+      "K",
+      "Q"
+    ],
+    "external_refs": [
+      "A-visible"
+    ],
+    "local_refs": [
+      "L-reference",
+      "L-decision"
+    ],
+    "owner": "Reference Strategy；事实由 Asset 决定",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "光影可能伪装深眼窝/颧点，观察不等于已批准事实。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F25",
+    "capability": "多角度身份参考及脸部与全身证明分开",
+    "content_classes": [
+      "W"
+    ],
+    "external_refs": [
+      "A-three",
+      "A-proof"
+    ],
+    "local_refs": [
+      "L-reference",
+      "L-castpolicy"
+    ],
+    "owner": "Reference Strategy / Casting",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "多视图是待检查的证据，不是任意角度永不漂移保证；不生成。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F26",
+    "capability": "表情变化中保持身份",
+    "content_classes": [
+      "W",
+      "Q"
+    ],
+    "external_refs": [
+      "C-expression",
+      "C-variable"
+    ],
+    "local_refs": [
+      "L-ir",
+      "L-castpolicy",
+      "L-a3ref"
+    ],
+    "owner": "Performance / Reference Strategy / QA",
+    "relationship": "OVERLAP",
+    "final_decision": "KEEP_LOCAL",
+    "boundary": "表情属于当前状态；外部九宫格模板不能替代场景表演。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F27",
+    "capability": "多人对比检查结构区别而非只换装饰",
+    "content_classes": [
+      "K",
+      "Q"
+    ],
+    "external_refs": [
+      "A-roster"
+    ],
+    "local_refs": [
+      "L-cast",
+      "L-castpolicy"
+    ],
+    "owner": "Casting；正式身份归 Specialized Asset",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "吸收结构比较目的；不保证纯文字选项不同等于成像不同。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F28",
+    "capability": "每对四组差异、模板三项触发、两轮上限",
+    "content_classes": [
+      "A",
+      "W"
+    ],
+    "external_refs": [
+      "A-roster"
+    ],
+    "local_refs": [
+      "L-cast",
+      "L-castpolicy"
+    ],
+    "owner": "Casting",
+    "relationship": "AESTHETIC_ONLY",
+    "final_decision": "REFERENCE_ONLY",
+    "boundary": "来源自称治理启发式；不得成通用阈值、自动改脸或重试配额。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F29",
+    "capability": "皮肤物理状态与光照响应分开",
+    "content_classes": [
+      "K"
+    ],
+    "external_refs": [
+      "A-skin",
+      "A-makeup"
+    ],
+    "local_refs": [
+      "L-look",
+      "L-a3qc",
+      "L-medium"
+    ],
+    "owner": "Asset / Look / Lighting / Grade",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "保留职责拆分；固定高光位置不是身份，不吸收 universal 半哑光。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F30",
+    "capability": "geometry drift 按区域观察",
+    "content_classes": [
+      "Q"
+    ],
+    "external_refs": [
+      "B-qc",
+      "C-drift"
+    ],
+    "local_refs": [
+      "L-review",
+      "L-qa",
+      "L-a3qc"
+    ],
+    "owner": "Visual Continuity QA / Production Review",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "脸形、眼距、鼻唇与 approved anchor 比；透视表情差异先控制。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F31",
+    "capability": "age drift 观察",
+    "content_classes": [
+      "Q"
+    ],
+    "external_refs": [
+      "B-principle",
+      "B-qc",
+      "C-drift"
+    ],
+    "local_refs": [
+      "L-review",
+      "L-ir"
+    ],
+    "owner": "Visual Continuity QA / Production Review",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "未来候选 QC-AGE-DRIFT；本轮不注册；不能从噪声或肤亮断言变年轻。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F32",
+    "capability": "beautification drift 观察",
+    "content_classes": [
+      "Q"
+    ],
+    "external_refs": [
+      "B-qc"
+    ],
+    "local_refs": [
+      "L-review",
+      "L-style"
+    ],
+    "owner": "Visual Continuity QA / Production Review",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "检查未授权瘦颌、大眼、改鼻、磨平年龄与辨识细节。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F33",
+    "capability": "皮肤塑料／蜡／绘制感观察",
+    "content_classes": [
+      "Q"
+    ],
+    "external_refs": [
+      "B-qc",
+      "A-fail"
+    ],
+    "local_refs": [
+      "L-review",
+      "L-medium"
+    ],
+    "owner": "Visual Continuity QA / Production Review",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "结合批准真人媒介、妆态、光照与局部证据，不以有没有瑕疵一刀切。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F34",
+    "capability": "眼部与牙齿完整性观察",
+    "content_classes": [
+      "Q"
+    ],
+    "external_refs": [
+      "B-qc"
+    ],
+    "local_refs": [
+      "L-review"
+    ],
+    "owner": "Visual Continuity QA / Production Review",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "形态、反射、重复结构/牙齿漂移；不让更亮更清等于更真实。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F35",
+    "capability": "耳部完整性观察",
+    "content_classes": [
+      "Q"
+    ],
+    "external_refs": [
+      "B-qc",
+      "B-hair"
+    ],
+    "local_refs": [
+      "L-review"
+    ],
+    "owner": "Visual Continuity QA / Production Review",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "遮挡合理性、额外耳廓、边界失真；不可见用 UNKNOWN。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F36",
+    "capability": "下颌／下巴漂移观察",
+    "content_classes": [
+      "Q"
+    ],
+    "external_refs": [
+      "B-qc",
+      "A-three"
+    ],
+    "local_refs": [
+      "L-review",
+      "L-asset"
+    ],
+    "owner": "Visual Continuity QA / Production Review",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "与人物身份和当前视角比；非方颌/尖颌达标。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F37",
+    "capability": "发际线漂移及头发边界观察",
+    "content_classes": [
+      "Q"
+    ],
+    "external_refs": [
+      "B-qc",
+      "B-hair"
+    ],
+    "local_refs": [
+      "L-review",
+      "L-look"
+    ],
+    "owner": "Visual Continuity QA / Production Review",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "角色版本与当前整理/遮挡分开，不将新造发际线当已知。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F38",
+    "capability": "稳定标记漂移观察",
+    "content_classes": [
+      "Q"
+    ],
+    "external_refs": [
+      "C-drift",
+      "B-skin"
+    ],
+    "local_refs": [
+      "L-review",
+      "L-asset"
+    ],
+    "owner": "Visual Continuity QA / Production Review",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "位置侧别在可见条件下比较；看不清不判消失。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F39",
+    "capability": "reference leakage 观察",
+    "content_classes": [
+      "Q"
+    ],
+    "external_refs": [
+      "D-duty",
+      "A-visible"
+    ],
+    "local_refs": [
+      "L-a3qc",
+      "L-reference",
+      "L-frameir"
+    ],
+    "owner": "Visual Continuity QA / 当前状态 owner",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "C15 细化到脸形身份与 pose/gaze/expression/light/camera 来源；D 非验证方法。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F40",
+    "capability": "局部修复、回原锚点、保留其它已批准事实",
+    "content_classes": [
+      "W"
+    ],
+    "external_refs": [
+      "B-passes",
+      "B-repair",
+      "D-revision"
+    ],
+    "local_refs": [
+      "L-review",
+      "L-serializer"
+    ],
+    "owner": "Production Review / Production",
+    "relationship": "OVERLAP",
+    "final_decision": "ADAPT",
+    "boundary": "吸收修复范围原则；禁止外部检查失败即自动调用。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F41",
+    "capability": "修已有照片时保留原表情姿态相机",
+    "content_classes": [
+      "W"
+    ],
+    "external_refs": [
+      "B-principle"
+    ],
+    "local_refs": [
+      "L-serializer",
+      "L-a3ref"
+    ],
+    "owner": "Production / 当前状态 owner",
+    "relationship": "OVERLAP",
+    "final_decision": "KEEP_LOCAL",
+    "boundary": "只适用于批准编辑基底及保留范围；不能推广成所有镜头继承肖像状态。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F42",
+    "capability": "场景参考自动提供表情、姿态、光照、构图",
+    "content_classes": [
+      "W"
+    ],
+    "external_refs": [
+      "D-duty"
+    ],
+    "local_refs": [
+      "L-a3ref",
+      "L-reference"
+    ],
+    "owner": "Blocking / Performance / Camera / Lighting",
+    "relationship": "CONFLICT",
+    "final_decision": "REJECT",
+    "boundary": "拒绝自动授权；各部门可明确批准借鉴，scene reference 不成为全能 owner。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F43",
+    "capability": "黄金比、三庭五眼、理想角度作为美貌达标",
+    "content_classes": [
+      "A"
+    ],
+    "external_refs": [
+      "A-aesthetic",
+      "A-profile",
+      "A-academic"
+    ],
+    "local_refs": [
+      "L-owner",
+      "L-style"
+    ],
+    "owner": "Specialized Asset / Casting",
+    "relationship": "AESTHETIC_ONLY",
+    "final_decision": "REJECT",
+    "boundary": "不能据此纠正批准人物；描述坐标与理想值强制是不同能力。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F44",
+    "capability": "职业、性格、性别族群类型自动推脸型",
+    "content_classes": [
+      "A"
+    ],
+    "external_refs": [
+      "A-auto",
+      "A-theory",
+      "A-prompt"
+    ],
+    "local_refs": [
+      "L-owner",
+      "L-castpolicy"
+    ],
+    "owner": "Character facts / Specialized Asset",
+    "relationship": "CONFLICT",
+    "final_decision": "REJECT",
+    "boundary": "AESTHETIC_OR_STEREOTYPE_HEURISTIC；不能生成历史/文学人物面部事实。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F45",
+    "capability": "通用皮肤段自动加泛红、细纹、半哑光及固定高光",
+    "content_classes": [
+      "A",
+      "P"
+    ],
+    "external_refs": [
+      "A-inject",
+      "A-skin"
+    ],
+    "local_refs": [
+      "L-owner",
+      "L-look",
+      "L-a3qc"
+    ],
+    "owner": "Asset / Look / Lighting",
+    "relationship": "CONFLICT",
+    "final_decision": "REJECT",
+    "boundary": "年龄占位只换词，中文还固定成年；不具年龄适应能力。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F46",
+    "capability": "冷脸不笑、偏移视线作为身份／真实感铁律",
+    "content_classes": [
+      "A",
+      "W"
+    ],
+    "external_refs": [
+      "A-realism",
+      "A-claim"
+    ],
+    "local_refs": [
+      "L-ir",
+      "L-a3ref"
+    ],
+    "owner": "Performance / Blocking",
+    "relationship": "CONFLICT",
+    "final_decision": "REJECT",
+    "boundary": "表演与身份分开，剧情需笑时不能用真实感禁笑。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F47",
+    "capability": "手机感、噪点、失焦、倾斜就是更真实",
+    "content_classes": [
+      "A"
+    ],
+    "external_refs": [
+      "A-candid",
+      "D-duty"
+    ],
+    "local_refs": [
+      "L-style",
+      "L-a3ref"
+    ],
+    "owner": "Camera / Global Visual Style",
+    "relationship": "AESTHETIC_ONLY",
+    "final_decision": "REFERENCE_ONLY",
+    "boundary": "只是风格选择，不是人脸身份或真人充分条件；不重审摄影。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F48",
+    "capability": "精致路线完美皮肤、雕塑化脸部规范",
+    "content_classes": [
+      "A"
+    ],
+    "external_refs": [
+      "A-style"
+    ],
+    "local_refs": [
+      "L-style",
+      "L-owner"
+    ],
+    "owner": "Global Visual Style / Specialized Asset",
+    "relationship": "CONFLICT",
+    "final_decision": "REJECT",
+    "boundary": "在本任务真人身份职责下禁默认美化；不能据此声称实际模型必然 CG 化。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F49",
+    "capability": "外部最终 prompt 模板、词权重和 provider 语法",
+    "content_classes": [
+      "P",
+      "W"
+    ],
+    "external_refs": [
+      "A-prompt",
+      "C-exec"
+    ],
+    "local_refs": [
+      "L-serializer",
+      "L-frameir",
+      "L-source"
+    ],
+    "owner": "现有 compiler / serializer",
+    "relationship": "PROVIDER_ONLY",
+    "final_decision": "REFERENCE_ONLY",
+    "boundary": "无 same-provider 因果证据；不复制模板，不取得最终 prompt 所有权。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F50",
+    "capability": "外部 CLI、模型路由、安装及 runtime context",
+    "content_classes": [
+      "P",
+      "R"
+    ],
+    "external_refs": [
+      "A-provider",
+      "B-context",
+      "C-exec"
+    ],
+    "local_refs": [
+      "L-frameir"
+    ],
+    "owner": "现有 Runtime / Provider",
+    "relationship": "OUT_OF_SCOPE",
+    "final_decision": "OUT_OF_SCOPE",
+    "boundary": "依赖仅静态识别；不执行、不安装、不移植反馈审批系统。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F51",
+    "capability": "视频／运动生成及端点切换",
+    "content_classes": [
+      "P",
+      "W"
+    ],
+    "external_refs": [
+      "C-exec",
+      "A-lock"
+    ],
+    "local_refs": [
+      "L-a3ref"
+    ],
+    "owner": "现有 Video owners（不审计）",
+    "relationship": "OUT_OF_SCOPE",
+    "final_decision": "OUT_OF_SCOPE",
+    "boundary": "只记录排除边界，不进入 Video。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F52",
+    "capability": "学术引文推出 AI 平均脸与词语机理",
+    "content_classes": [
+      "A",
+      "K"
+    ],
+    "external_refs": [
+      "A-academic",
+      "A-fail"
+    ],
+    "local_refs": [
+      "L-castpolicy"
+    ],
+    "owner": "Research evidence",
+    "relationship": "CONFLICT",
+    "final_decision": "REJECT",
+    "boundary": "审美论文不验证此 skill、模型机理、固定角度或真实演员生成能力。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F53",
+    "capability": "批量锁脸永不漂移／生产效果自我声明",
+    "content_classes": [
+      "W",
+      "Q"
+    ],
+    "external_refs": [
+      "A-proof",
+      "A-claim"
+    ],
+    "local_refs": [
+      "L-review",
+      "L-test"
+    ],
+    "owner": "QA evidence",
+    "relationship": "OVERLAP",
+    "final_decision": "REFERENCE_ONLY",
+    "boundary": "保留为待验证假设；文字记录不是已观察 paired output。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  },
+  {
+    "id": "F54",
+    "capability": "结构、妆容与气质解耦，未知不补全",
+    "content_classes": [
+      "K"
+    ],
+    "external_refs": [
+      "A-decouple",
+      "A-makeup",
+      "A-visible"
+    ],
+    "local_refs": [
+      "L-owner",
+      "L-look",
+      "L-castpolicy"
+    ],
+    "owner": "Specialized Asset / Look / Performance",
+    "relationship": "COMPLEMENTARY",
+    "final_decision": "ADAPT",
+    "boundary": "仅保存 source/approved design 事实；不将化妆视觉效果反写骨相。",
+    "validation": "NOT_PLATFORM_VALIDATED"
+  }
+]

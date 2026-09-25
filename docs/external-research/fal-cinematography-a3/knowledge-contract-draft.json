@@ -1,0 +1,425 @@
+{
+  "schema": "a3-knowledge-design-draft-v1",
+  "status": "DESIGN_ONLY",
+  "runtime_registration": false,
+  "capability_allowlist": [
+    "C02",
+    "C03",
+    "C04",
+    "C05",
+    "C06",
+    "C07",
+    "C09",
+    "C10",
+    "C11",
+    "C13",
+    "C15",
+    "C17",
+    "C28",
+    "C30",
+    "C35",
+    "C36"
+  ],
+  "rules": [
+    {
+      "rule_id": "A3-C02",
+      "rule_version": 1,
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION",
+        "provider": "NEUTRAL",
+        "stage": "design / observed review / experiment as mapped"
+      },
+      "knowledge_provenance": {
+        "capability_id": "C02",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/cinematography/references/shot-language.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Shot sizes",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/cinematography/references/shot-language.md#L3",
+        "local_owner": "cinematography",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "local_decision": "先定义需要读到的身体、环境和关系，再选景别；补知识而非景别枚举。",
+      "application_fields": "Camera Bible.values.shot_scale_philosophy / spatial_readability",
+      "executable": false,
+      "production_authorized": false
+    },
+    {
+      "rule_id": "A3-C03",
+      "rule_version": 1,
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION",
+        "provider": "NEUTRAL",
+        "stage": "design / observed review / experiment as mapped"
+      },
+      "knowledge_provenance": {
+        "capability_id": "C03",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/cinematography/references/shot-language.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Angles",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/cinematography/references/shot-language.md#L13",
+        "local_owner": "cinematography",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "local_decision": "视点关系、高度和光轴俯仰分别决定；不以角度自动推断人物强弱。",
+      "application_fields": "values.camera_point_of_view / camera_height / perspective",
+      "executable": false,
+      "production_authorized": false
+    },
+    {
+      "rule_id": "A3-C04",
+      "rule_version": 1,
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION",
+        "provider": "NEUTRAL",
+        "stage": "design / observed review / experiment as mapped"
+      },
+      "knowledge_provenance": {
+        "capability_id": "C04",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/cinematography/SKILL.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Quality bar",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/cinematography/SKILL.md#L132",
+        "local_owner": "cinematography（设计）; spatial-continuity-qa（观察）",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "local_decision": "增加跨字段一致性 criteria，不做虚假的 mm 物理模拟。",
+      "application_fields": "values.camera_distance / perspective / lens_intention; Review.checks / findings",
+      "executable": false,
+      "production_authorized": false
+    },
+    {
+      "rule_id": "A3-C05",
+      "rule_version": 1,
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION",
+        "provider": "NEUTRAL",
+        "stage": "design / observed review / experiment as mapped"
+      },
+      "knowledge_provenance": {
+        "capability_id": "C05",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/cinematography/references/shot-language.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Composition",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/cinematography/references/shot-language.md#L35",
+        "local_owner": "cinematography",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "local_decision": "subject_hierarchy 承载构图选择；空间可读性承载前后层关系，不新增 composition 顶层键。",
+      "application_fields": "values.subject_hierarchy / spatial_readability / perspective",
+      "executable": false,
+      "production_authorized": false
+    },
+    {
+      "rule_id": "A3-C06",
+      "rule_version": 1,
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION",
+        "provider": "NEUTRAL",
+        "stage": "design / observed review / experiment as mapped"
+      },
+      "knowledge_provenance": {
+        "capability_id": "C06",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/cinematography/references/lighting-lens-color.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Lens feel",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/cinematography/references/lighting-lens-color.md#L16",
+        "local_owner": "cinematography",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "local_decision": "以空间伸缩/分离意图和相机距离定义镜头感；mm 可选且必须有理由。",
+      "application_fields": "values.lens_intention / camera_distance / perspective",
+      "executable": false,
+      "production_authorized": false
+    },
+    {
+      "rule_id": "A3-C07",
+      "rule_version": 1,
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION",
+        "provider": "NEUTRAL",
+        "stage": "design / observed review / experiment as mapped"
+      },
+      "knowledge_provenance": {
+        "capability_id": "C07",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/cinematography/references/lighting-lens-color.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Depth of field",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/cinematography/references/lighting-lens-color.md#L26",
+        "local_owner": "cinematography",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "local_decision": "lens_intention 区分可读焦平面与允许柔化层；不含 rack focus。",
+      "application_fields": "values.lens_intention / spatial_readability",
+      "executable": false,
+      "production_authorized": false
+    },
+    {
+      "rule_id": "A3-C09",
+      "rule_version": 1,
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION",
+        "provider": "NEUTRAL",
+        "stage": "design / observed review / experiment as mapped"
+      },
+      "knowledge_provenance": {
+        "capability_id": "C09",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/cinematography/references/lighting-lens-color.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Lighting setups",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/cinematography/references/lighting-lens-color.md#L3",
+        "local_owner": "lighting-design",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "local_decision": "source 说明可见/隐含来源，direction 区分方位与软硬；材质反应归光照意图而非新增材质。",
+      "application_fields": "values.source / motivation / direction / intensity_relationship / contrast / falloff / visibility_priorities / practical_lights",
+      "executable": false,
+      "production_authorized": false
+    },
+    {
+      "rule_id": "A3-C10",
+      "rule_version": 1,
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION",
+        "provider": "NEUTRAL",
+        "stage": "design / observed review / experiment as mapped"
+      },
+      "knowledge_provenance": {
+        "capability_id": "C10",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/cinematography/references/lighting-lens-color.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Color and grade",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/cinematography/references/lighting-lens-color.md#L32",
+        "local_owner": "color-design; color-grading",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "local_decision": "色彩意图与事后匹配分开；复用 preserve/secondary_details 传递批准静态目标。",
+      "application_fields": "values.scene_palettes / sequence_palettes / character_environment_color_relation; grade_intention / exposure_continuity / skin_preservation",
+      "executable": false,
+      "production_authorized": false
+    },
+    {
+      "rule_id": "A3-C11",
+      "rule_version": 1,
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION",
+        "provider": "NEUTRAL",
+        "stage": "design / observed review / experiment as mapped"
+      },
+      "knowledge_provenance": {
+        "capability_id": "C11",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/cinematography/references/lighting-lens-color.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Texture",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/cinematography/references/lighting-lens-color.md#L42",
+        "local_owner": "global-visual-style（work边界）; cinematography/color-grading（各自实现）",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "local_decision": "D1：GlobalVisualStyle 可空 imaging_character，限定批准的摄影类型、capture character 与可选 texture 边界；不增加 IR 字段。",
+      "application_fields": "GlobalVisualStyle 封闭枚举; Camera.lens_intention; Grade.grade_intention",
+      "executable": false,
+      "production_authorized": false
+    },
+    {
+      "rule_id": "A3-C13",
+      "rule_version": 1,
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION",
+        "provider": "NEUTRAL",
+        "stage": "design / observed review / experiment as mapped"
+      },
+      "knowledge_provenance": {
+        "capability_id": "C13",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/cinematography/SKILL.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "If a result looks generic",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/cinematography/SKILL.md#L144",
+        "local_owner": "各原专业 owner；cinematography协调镜头描述缺口",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "local_decision": "generic 反馈退回原 owner 补具体可见决定；不在 compiler 添加事实或简单删词。",
+      "application_fields": "CreativeRecord.values 的原部门字段; AssetDecision.text/reason",
+      "executable": false,
+      "production_authorized": false
+    },
+    {
+      "rule_id": "A3-C15",
+      "rule_version": 1,
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION",
+        "provider": "NEUTRAL",
+        "stage": "design / observed review / experiment as mapped"
+      },
+      "knowledge_provenance": {
+        "capability_id": "C15",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/character-design/references/anchor-system.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Anchor fields",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/character-design/references/anchor-system.md#L6",
+        "local_owner": "specialized-asset-design; reference-strategy; blocking/action/DPD（当前状态）",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "local_decision": "D2：FrameSpec.professional_sources 可空 pins；来源映射验证参考责任进入 IR.preserve，不能依靠被 IR 覆盖的 legacy 文本。",
+      "application_fields": "AssetDecision; Reference Plan.reference_roles; FrameSpec.references / reference_members / actors; IR.subjects / blocking / action",
+      "executable": false,
+      "production_authorized": false
+    },
+    {
+      "rule_id": "A3-C17",
+      "rule_version": 1,
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION",
+        "provider": "NEUTRAL",
+        "stage": "design / observed review / experiment as mapped"
+      },
+      "knowledge_provenance": {
+        "capability_id": "C17",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/character-design/SKILL.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Quality bar",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/character-design/SKILL.md#L140",
+        "local_owner": "visual-continuity-qa / production review",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "local_decision": "增加 identity/costume 可观测 criteria；不增加 disposition 或自动 retry。",
+      "application_fields": "Review.checks / findings; QA.values.findings / evidence_refs / owner_routes",
+      "executable": false,
+      "production_authorized": false
+    },
+    {
+      "rule_id": "A3-C28",
+      "rule_version": 1,
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION",
+        "provider": "NEUTRAL",
+        "stage": "design / observed review / experiment as mapped"
+      },
+      "knowledge_provenance": {
+        "capability_id": "C28",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/fal-prompting/references/gpt-image-2.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "**Edits, three-sentence pattern",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/fal-prompting/references/gpt-image-2.md#L100",
+        "local_owner": "specialized-asset-design/prop-design; blocking/action; cinematography; lighting-design; QA（各自子职责）",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "local_decision": "分为 material/contact/action/light/perspective/observation 六子责任；补对应 QC criteria。",
+      "application_fields": "AssetDecision; Prop.material; Blocking.physical_relations; Action.contact_constraints; Camera.perspective; Lighting.*; Review.*",
+      "executable": false,
+      "production_authorized": false
+    },
+    {
+      "rule_id": "A3-C30",
+      "rule_version": 1,
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION",
+        "provider": "NEUTRAL",
+        "stage": "design / observed review / experiment as mapped"
+      },
+      "knowledge_provenance": {
+        "capability_id": "C30",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/fal-recipes/references/realism.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Two orthogonal axes",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/fal-recipes/references/realism.md#L83",
+        "local_owner": "global-visual-style; source/world 原 owner不变",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "local_decision": "复用同一 D1；拍摄类型/capture character 与 world.era 隔离，不推默认摄影年代。",
+      "application_fields": "GlobalVisualStyle 封闭字段; IR.world.era 是故事年代",
+      "executable": false,
+      "production_authorized": false
+    },
+    {
+      "rule_id": "A3-C35",
+      "rule_version": 1,
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION",
+        "provider": "NEUTRAL",
+        "stage": "design / observed review / experiment as mapped"
+      },
+      "knowledge_provenance": {
+        "capability_id": "C35",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/fal-prompting/references/gpt-image-2.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "**6. One revision",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/fal-prompting/references/gpt-image-2.md#L44",
+        "local_owner": "shot-production 的实验设计（不取得常规生产控制权）",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "local_decision": "A5 非 Runtime 实验 manifest 固定 inputs，只变一个可解释决策族；不加生产次数限制。",
+      "application_fields": "既有不可变请求/attempt/review/输出hash；无生产单变量字段",
+      "executable": false,
+      "production_authorized": false
+    },
+    {
+      "rule_id": "A3-C36",
+      "rule_version": 1,
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION",
+        "provider": "NEUTRAL",
+        "stage": "design / observed review / experiment as mapped"
+      },
+      "knowledge_provenance": {
+        "capability_id": "C36",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/cinematography/SKILL.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Quality bar",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/cinematography/SKILL.md#L132",
+        "local_owner": "visual-continuity-qa / spatial-continuity-qa / production review",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "local_decision": "同一媒体的联合审查按维度记录；一份 finding 对应唯一修复 owner。",
+      "application_fields": "QA.values.checks / findings / evidence_refs / owner_routes; Review.*",
+      "executable": false,
+      "production_authorized": false
+    }
+  ]
+}

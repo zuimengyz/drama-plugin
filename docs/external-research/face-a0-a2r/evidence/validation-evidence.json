@@ -1,0 +1,119 @@
+{
+  "audited_at": "2026-09-25T14:09:31.762797+00:00",
+  "sources": [
+    {
+      "source": "A",
+      "classification": "EXTERNAL_CANDIDATE",
+      "classification_confidence": "HIGH",
+      "quality_validated": false,
+      "license_state": "NO_LICENSE_FOUND",
+      "maintenance": {
+        "archived": false,
+        "disabled": false,
+        "pushed_at": "2026-09-12T00:13:41Z",
+        "default_branch": "main",
+        "open_issues_count": 0
+      },
+      "api_issue_query": "state=all&per_page=100",
+      "issues_and_prs_returned": 0,
+      "pagination_complete_at_retrieval": true,
+      "non_pr_issues": [],
+      "quality_evidence": "Text claims and static checks; no committed result media"
+    },
+    {
+      "source": "B",
+      "classification": "EXTERNAL_CANDIDATE",
+      "classification_confidence": "HIGH",
+      "quality_validated": false,
+      "license_state": "MIT_NOTICE_PRESENT",
+      "maintenance": {
+        "archived": false,
+        "disabled": false,
+        "pushed_at": "2026-08-23T16:53:52Z",
+        "default_branch": "main",
+        "open_issues_count": 0
+      },
+      "api_issue_query": "state=all&per_page=100",
+      "issues_and_prs_returned": 0,
+      "pagination_complete_at_retrieval": true,
+      "non_pr_issues": [],
+      "quality_evidence": "One visually inspected four-stage composite; not controlled A/B or batch identity validation"
+    },
+    {
+      "source": "C",
+      "classification": "EXTERNAL_CANDIDATE",
+      "classification_confidence": "HIGH",
+      "quality_validated": false,
+      "license_state": "LICENSE_DECLARED_MIT_NOTICE_INCOMPLETE",
+      "maintenance": {
+        "archived": false,
+        "disabled": false,
+        "pushed_at": "2026-05-13T20:10:57Z",
+        "default_branch": "main",
+        "open_issues_count": 8
+      },
+      "api_issue_query": "state=all&per_page=100",
+      "issues_and_prs_returned": 25,
+      "pagination_complete_at_retrieval": true,
+      "non_pr_issues": [
+        25,
+        3
+      ],
+      "quality_evidence": "Character-design text examples only; unrelated repo usage excluded"
+    },
+    {
+      "source": "D",
+      "classification": "REFERENCE_ONLY",
+      "classification_confidence": "HIGH",
+      "quality_validated": false,
+      "license_state": "MIT_NOTICE_PRESENT",
+      "maintenance": {
+        "archived": false,
+        "disabled": false,
+        "pushed_at": "2026-05-16T07:29:08Z",
+        "default_branch": "main",
+        "open_issues_count": 0
+      },
+      "api_issue_query": "state=all&per_page=100",
+      "issues_and_prs_returned": 0,
+      "pagination_complete_at_retrieval": true,
+      "non_pr_issues": [],
+      "quality_evidence": "Role-separation instructions and text examples only"
+    }
+  ],
+  "image_observation": {
+    "path": "cases/professional-portrait-progress-16x9.png",
+    "repo": "B",
+    "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+    "sha256": "62369f1fef892a7f8f22636df8e56eda68925b40022fc0f7fc0934428d1ac904",
+    "viewed": true,
+    "dimensions": [
+      1920,
+      1080
+    ],
+    "limitations": [
+      "Composite only, not independent inputs and outputs",
+      "No call parameters, seed, model revision or rejected outputs",
+      "Multiple variables change; no causal isolation",
+      "Occluded pre-edit hairline has no visible truth reference"
+    ],
+    "copied_into_plugin": false
+  },
+  "academic_checks": [
+    {
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39525174/",
+      "read_scope": "abstract and bibliographic record",
+      "result": "Beauty-proportion study; not skill or identity-preservation validation"
+    },
+    {
+      "url": "https://link.springer.com/article/10.1007/s10044-021-00975-z",
+      "read_scope": "abstract and conclusion search extract",
+      "result": "Attractiveness/AR study; not target task validation"
+    },
+    {
+      "url": "https://www.jmir.org/2026/1/e95452/",
+      "read_scope": "bibliographic search results only; article JS challenge",
+      "result": "Full text not verified; no validation credit"
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "status": "PASS",
+  "checked_at": "2026-09-25T13:36:06.823325+00:00",
+  "head": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+  "capabilities": 16,
+  "reports": [
+    "A3-Canonical-Expressiveness-Audit.md",
+    "A3-Professional-Knowledge-Contract.md",
+    "A3-Source-IR-Consumer-Mapping.md",
+    "A3-A4-Minimal-Implementation-Plan.md",
+    "A3-A5-Validation-Contract.md"
+  ],
+  "proposed_top_level_optional_fields": 2,
+  "current_fields_from_ast": {
+    "Camera": [
+      "framing",
+      "shot_size",
+      "readable_details",
+      "perspective",
+      "depth_cues"
+    ],
+    "Lighting": [
+      "time_of_day",
+      "light_sources",
+      "contrast",
+      "realism"
+    ],
+    "GlobalVisualStyle": [
+      "schema_version",
+      "work_id",
+      "runtime_ref",
+      "realism",
+      "render_stylization",
+      "material_philosophy",
+      "lighting_philosophy",
+      "readability",
+      "consistency"
+    ],
+    "FrameSpec": [
+      "shot_id",
+      "shot_fingerprint",
+      "entry_state",
+      "composition",
+      "environment",
+      "actors",
+      "props",
+      "required",
+      "forbidden",
+      "references",
+      "reference_lock",
+      "omitted",
+      "shot_type",
+      "target_size",
+      "crop_review",
+      "seed",
+      "identity_bootstrap",
+      "reference_members",
+      "edit_source",
+      "scope_context",
+      "prompt_normalization",
+      "prompt_ir"
+    ],
+    "Review": [
+      "attempt_id",
+      "output_hash",
+      "reviewer",
+      "evidence",
+      "checks",
+      "findings"
+    ]
+  },
+  "tracked_files_unchanged": 835,
+  "prior_a0_a2r_files_unchanged": 19,
+  "changed_frozen_files": [],
+  "errors": [],
+  "ready_for_a4": "YES: design readiness only; no A4 execution",
+  "runtime_changes": 0,
+  "paid_generation": 0,
+  "parallel_authorities_added": 0,
+  "external_prompt_templates_copied": 0,
+  "provider_route_changes": 0,
+  "unresolved_ownership_conflicts": 0,
+  "validation": "Document/metadata consistency and read-only AST checks; no production tests rerun, no A5 media validation claimed"
+}

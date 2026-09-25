@@ -1,0 +1,254 @@
+{
+  "L01": {
+    "id": "L01",
+    "owner": "Director",
+    "source": {
+      "file": "plugin/skills/director/SKILL.md",
+      "symbol_or_section": "## Role and authority",
+      "line": 16,
+      "commit": "8f805217f9b7b692a10f3ec0a5363a938f91b192"
+    },
+    "authority": "WHY、优先级、部门仲裁；不得代写镜头、灯光、资产或 provider prompt。",
+    "validation": "部门边界测试；不等于作品审美验证"
+  },
+  "L02": {
+    "id": "L02",
+    "owner": "Specialized Asset Design",
+    "source": {
+      "file": "plugin/src/drama_plugin/specialized_asset.py",
+      "symbol_or_section": "FORWARDED_DEPARTMENTS",
+      "line": 12,
+      "commit": "8f805217f9b7b692a10f3ec0a5363a938f91b192"
+    },
+    "authority": "具体人物、服装、场景设计；五个旧 visual 部门只读转发。",
+    "validation": "test_specialized_asset.py：旧 writer 拒绝、source replay、审批绑定"
+  },
+  "L03": {
+    "id": "L03",
+    "owner": "MovieVisualMedium / GlobalVisualStyle",
+    "source": {
+      "file": "plugin/src/drama_plugin/hosts/specialized_asset.py",
+      "symbol_or_section": "def bind_movie",
+      "line": 19,
+      "commit": "8f805217f9b7b692a10f3ec0a5363a938f91b192"
+    },
+    "authority": "配置建立 Work 不可变 medium；共享 style 限制而非人物设计。",
+    "validation": "test_specialized_asset.py：env pin、跨 Work、medium override"
+  },
+  "L04": {
+    "id": "L04",
+    "owner": "Cinematography",
+    "source": {
+      "file": "plugin/skills/cinematography/SKILL.md",
+      "symbol_or_section": "## Professional decisions",
+      "line": 20,
+      "commit": "8f805217f9b7b692a10f3ec0a5363a938f91b192"
+    },
+    "authority": "视点、lens intention、相机高度距离、景深意图、主体层级、相机运动；从 approved action 出发。",
+    "validation": "声明＋registry 字段；没有本轮可归因实拍 A/B"
+  },
+  "L05": {
+    "id": "L05",
+    "owner": "Lighting Design",
+    "source": {
+      "file": "plugin/skills/lighting-design/SKILL.md",
+      "symbol_or_section": "## Professional decisions",
+      "line": 20,
+      "commit": "8f805217f9b7b692a10f3ec0a5363a938f91b192"
+    },
+    "authority": "光源、动机、方向、相对强度、反差、衰减和日夜连续性。",
+    "validation": "部门归属测试；艺术效果未证实"
+  },
+  "L06": {
+    "id": "L06",
+    "owner": "Color Design",
+    "source": {
+      "file": "plugin/skills/color-design/SKILL.md",
+      "symbol_or_section": "## Professional decisions",
+      "line": 20,
+      "commit": "8f805217f9b7b692a10f3ec0a5363a938f91b192"
+    },
+    "authority": "跨场景色彩发展和材质/人物色彩关系。",
+    "validation": "部门归属测试；非 provider 性能证明"
+  },
+  "L07": {
+    "id": "L07",
+    "owner": "Color Grading",
+    "source": {
+      "file": "plugin/skills/color-grading/SKILL.md",
+      "symbol_or_section": "## Professional decisions",
+      "line": 20,
+      "commit": "8f805217f9b7b692a10f3ec0a5363a938f91b192"
+    },
+    "authority": "最终匹配、曝光、肤色/材质保真；设计意图和实际调色分开。",
+    "validation": "声明；本轮无画面调色观察"
+  },
+  "L08": {
+    "id": "L08",
+    "owner": "Blocking / Action",
+    "source": {
+      "file": "plugin/skills/blocking/SKILL.md",
+      "symbol_or_section": "## Role and authority",
+      "line": 8,
+      "commit": "8f805217f9b7b692a10f3ec0a5363a938f91b192"
+    },
+    "authority": "演员位置、朝向、路径、视线归 Blocking；力与接触细节归 action-choreography。",
+    "validation": "部门边界与连续性测试"
+  },
+  "L09": {
+    "id": "L09",
+    "owner": "Shot Design",
+    "source": {
+      "file": "plugin/skills/shot-design/SKILL.md",
+      "symbol_or_section": "## Role and authority",
+      "line": 15,
+      "commit": "8f805217f9b7b692a10f3ec0a5363a938f91b192"
+    },
+    "authority": "coverage、subjects、起止与用途；不能重写 Camera／Blocking。",
+    "validation": "thin assembly 与 dependency tests"
+  },
+  "L10": {
+    "id": "L10",
+    "owner": "Cinematic Projection",
+    "source": {
+      "file": "plugin/skills/cinematic-direction/SKILL.md",
+      "symbol_or_section": "## Role and authority",
+      "line": 8,
+      "commit": "8f805217f9b7b692a10f3ec0a5363a938f91b192"
+    },
+    "authority": "引用已批准部门到 CinematicShotSpec；不能创作或生成 final prompt。",
+    "validation": "test_professional_departments.py 的纯投影/篡改测试"
+  },
+  "L11": {
+    "id": "L11",
+    "owner": "VisualPromptIR + compiler",
+    "source": {
+      "file": "plugin/src/drama_plugin/visual/prompt_ir.py",
+      "symbol_or_section": "def compile_ir",
+      "line": 12,
+      "commit": "8f805217f9b7b692a10f3ec0a5363a938f91b192"
+    },
+    "authority": "带 source 的 CURRENT/CLIP facts、优先级、task scope、retained/omitted 和 replay。",
+    "validation": "test_visual_prompt_ir.py；deterministic，不证明照片真实"
+  },
+  "L12": {
+    "id": "L12",
+    "owner": "Static serializer",
+    "source": {
+      "file": "plugin/src/drama_plugin/visual/image_serializer.py",
+      "symbol_or_section": "def render_image",
+      "line": 27,
+      "commit": "8f805217f9b7b692a10f3ec0a5363a938f91b192"
+    },
+    "authority": "所有 STATIC 任务共用序列化；生成目标与 edit delta 分开；edit 保留 face/costume anchors。",
+    "validation": "test_image_serializer.py：顺序/遗漏/identity/预算；非 provider A/B"
+  },
+  "L13": {
+    "id": "L13",
+    "owner": "Image route + frame adapter",
+    "source": {
+      "file": "plugin/src/drama_plugin/visual/image_route.py",
+      "symbol_or_section": "def select_frame_template",
+      "line": 11,
+      "commit": "8f805217f9b7b692a10f3ec0a5363a938f91b192"
+    },
+    "authority": "当前默认 formal frame 为 GPT Image 2 Comfy node；参数、slots、尺寸由 route/adapter 管。",
+    "validation": "test_hero_vidu_routes.py、test_route_image_inputs.py；未实时重新连 Provider"
+  },
+  "L14": {
+    "id": "L14",
+    "owner": "Frame compiler / references",
+    "source": {
+      "file": "plugin/src/drama_plugin/visual/frame_request.py",
+      "symbol_or_section": "def compile_frame",
+      "line": 178,
+      "commit": "8f805217f9b7b692a10f3ec0a5363a938f91b192"
+    },
+    "authority": "参考图 hash/version/slot 和 actor binding；当前最多三张稳定 reference，edit_source 与 identities 不混用。",
+    "validation": "frame input、source mismatch、slot wiring tests"
+  },
+  "L15": {
+    "id": "L15",
+    "owner": "Route / MCP execution",
+    "source": {
+      "file": "plugin/src/drama_plugin/visual/execution.py",
+      "symbol_or_section": "def require_execution",
+      "line": 36,
+      "commit": "8f805217f9b7b692a10f3ec0a5363a938f91b192"
+    },
+    "authority": "密封 backend/model/transport；MCP/HTTP 绑定、能力及来源身份；不是摄影专业 owner。",
+    "validation": "源码边界；不在本轮调用运行服务"
+  },
+  "L16": {
+    "id": "L16",
+    "owner": "Video selection / motion",
+    "source": {
+      "file": "plugin/skills/video-model-selection/SKILL.md",
+      "symbol_or_section": "---",
+      "line": 1,
+      "commit": "8f805217f9b7b692a10f3ec0a5363a938f91b192"
+    },
+    "authority": "执行模型能力、输入和成本选择；运动原意来自 Camera/Action，CinematicShotSpec 唯一投影。",
+    "validation": "本轮只定位；video 正式吸收排除"
+  },
+  "L17": {
+    "id": "L17",
+    "owner": "QA / production gate",
+    "source": {
+      "file": "plugin/src/drama_plugin/visual/production.py",
+      "symbol_or_section": "class Review",
+      "line": 298,
+      "commit": "8f805217f9b7b692a10f3ec0a5363a938f91b192"
+    },
+    "authority": "observed checks + severity/evidence/remedy；预算预约、UNKNOWN、review/adoption 分离。",
+    "validation": "源码和 selected tests；无新媒体语义 PASS"
+  },
+  "L18": {
+    "id": "L18",
+    "owner": "Media persistence",
+    "source": {
+      "file": "plugin/src/drama_plugin/hosts/visual_delivery.py",
+      "symbol_or_section": "async def complete_attempt",
+      "line": 10,
+      "commit": "8f805217f9b7b692a10f3ec0a5363a938f91b192"
+    },
+    "authority": "正式 Media import/readback/hash/ownership 与绑定；路径不等于完成。",
+    "validation": "源码与 shot-production durable completion；本轮未访问 Media"
+  },
+  "L19": {
+    "id": "L19",
+    "owner": "Source Map",
+    "source": {
+      "file": "plugin/src/drama_plugin/specialized_asset.py",
+      "symbol_or_section": "def compile_asset",
+      "line": 132,
+      "commit": "8f805217f9b7b692a10f3ec0a5363a938f91b192"
+    },
+    "authority": "asset decision sourceMap + 原始 pins；IR Fact.source、retained/omitted 和 fingerprint 保留 lineage。",
+    "validation": "test_specialized_asset.py、test_visual_prompt_ir.py 的 replay 测试"
+  },
+  "L20": {
+    "id": "L20",
+    "owner": "Registry / professional gates",
+    "source": {
+      "file": "plugin/src/drama_plugin/professional.py",
+      "symbol_or_section": "('cinematography'",
+      "line": 48,
+      "commit": "8f805217f9b7b692a10f3ec0a5363a938f91b192"
+    },
+    "authority": "Camera/Lighting/Color/QA/modules 的真实字段与 DAG；禁止跨部门和 provider control 混入。",
+    "validation": "test_professional_departments.py"
+  },
+  "L21": {
+    "id": "L21",
+    "owner": "Shot Production lifecycle",
+    "source": {
+      "file": "plugin/skills/shot-production/SKILL.md",
+      "symbol_or_section": "## Use-based content review",
+      "line": 101,
+      "commit": "8f805217f9b7b692a10f3ec0a5363a938f91b192"
+    },
+    "authority": "按用途观察、对已批准动作/身份负责；小缺陷不自动失败；只有 qualified route 和预算可执行。",
+    "validation": "规范＋production.py；不把测试视为审美有效性"
+  }
+}

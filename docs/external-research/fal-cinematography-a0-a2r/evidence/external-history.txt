@@ -1,0 +1,53 @@
+9ca850412943251fc9a466c4c29fdaf7a303a3d8 2026-05-13T21:10:57+01:00 Merge pull request #16 from koumpas/feat/genmedia-smart-routing
+85097ca49bd5f9ce6e297a4a6947ab2333a207ab 2026-05-13T19:37:07+03:00 Add fan-cam plate workflow
+d349a8cdb1792101a9f198bbce9e9fb3b1b07960 2026-05-13T19:35:27+03:00 Add fan-cam plate workflow
+067a732cb17da73755c6a3e07877fd266e892831 2026-05-13T17:47:02+03:00 Merge pull request #19 from fal-ai-community/codex/fan-cam-default-quality
+c080fb9c9afdd699109e20decb284365091c4324 2026-05-13T17:45:02+03:00 Set fan-cam premium defaults
+e887ea7128f9d09d340f8d64d7dc35f704f42d5a 2026-05-13T17:36:08+03:00 Merge pull request #18 from fal-ai-community/codex/add-fan-cam-skill
+a053661515d2937ecf32780e588345d0d927ad37 2026-05-13T17:33:23+03:00 Harden fan-cam generation workflow
+e536df2bf0095060e3818a13226dba4102e94b37 2026-05-13T12:49:17+03:00 Merge pull request #17 from fal-ai-community/codex/add-fan-cam-skill
+5eedfea3b51cd644e7ec22f2db0273f5f25d064d 2026-05-13T12:45:53+03:00 Add fan-cam genmedia skill
+4333412135d10070de3d61b4ec6c8634c26a6fbe 2026-05-08T02:40:12+01:00 genmedia: teach agents about smart routing and auto-category filtering
+d401c29bc1db990eb316dc8c5f035fb153d72c21 2026-05-07T22:15:48+03:00 Merge pull request #15 from fal-ai-community/codex/cleanup-readme-script-references
+71885a66d32efde0ab090445b40b877c46951adf 2026-05-07T22:06:02+03:00 clean stale script references
+7750a4a9d4284fd41765182aa9c5d7cf20f1cf8c 2026-05-07T21:49:52+03:00 add ugc and marketing skills
+197f1d527b4a6067962206edfe4fde5f7f49fb88 2026-05-07T21:45:13+03:00 Merge pull request #9 from blendi-remade/feat/add-gamedev-skill
+bd7041c46587a8ea44cc28dac95c9be0715a991c 2026-05-07T21:45:04+03:00 Merge branch 'main' into feat/add-gamedev-skill
+85af100e917c1ad056813895ab099213b591c363 2026-05-07T21:44:25+03:00 Merge pull request #14 from fal-ai-community/codex/add-ugc-marketing-skills
+cfcd7329ac2519670476300e99b7936296d4aae2 2026-05-07T21:35:15+03:00 add ugc and marketing skills
+ca47dba09dc29e8a42793937ad4e75105cf69e99 2026-05-04T23:16:09+03:00 Merge pull request #13 from blendi-remade/add-skills-registry
+2483aa412e47cec270f7e144baa1949815209a12 2026-05-03T20:57:33-07:00 fix stale claude.ai path in fal-redesign README
+653a2b7955a867ca5d12b2a2d93342b9cd706c99 2026-05-03T20:51:14-07:00 flatten skills/claude.ai into skills/
+af215b01a22272ab3becb364258a81b0a77bc3c0 2026-05-03T20:16:48-07:00 add skills registry index and build script
+08a70bbf30d0e719126429d13e5f92f3ad374d2e 2026-05-01T18:10:20+03:00 Merge pull request #12 from fal-ai-community/architecture/genmedia-aligned
+01a9c3f1f310d9615bc138fda1efc703bbf87f98 2026-05-01T03:30:00+03:00 Remove all .sh scripts; consolidate to genmedia CLI runtime
+8390c77f9c2ae8b4532f6d7cf551d7779825a5f7 2026-05-01T03:20:23+03:00 Restructure repo around genmedia CLI: foundational, umbrellas, verticals
+a17b715b6e9e26a14ed897610f36fee6263b1cc8 2026-04-30T01:58:19-07:00 Fix skill repo link to point at fal-ai-community/skills
+dbe1070ee42bd407f8d50a0765f4891c6fa0fc74 2026-04-30T01:43:23-07:00 Merge pull request #11 from fal-ai-community/update-readme-fal-regenerate-3d
+21a7033298b43939e69dec8a1b5bd66415bfa0f1 2026-04-30T01:43:02-07:00 README: add fal-regenerate-3d to Creative & Production table
+38ea7623803ff2a7922833b536f5db36efbb6593 2026-04-30T01:41:07-07:00 Merge pull request #10 from fal-ai-community/add-fal-regenerate-3d
+abe2be235aea1db66aced69414bdd8e005f470c2 2026-04-30T01:40:17-07:00 Add fal-regenerate-3d skill — full 3D character-selector recipe
+f901cd02c0d9cfa425deaaaa6c531a941b8678cb 2026-04-29T22:21:41-07:00 Add fal-gamedev skill for generating 2D pixel art game assets
+5cd97bbac5cde79742214ba8f0c3002ed869a4b3 2026-04-22T12:07:34-07:00 Merge pull request #8 from fal-ai-community/fix/strip-trailing-after-html
+5e06ee4593e0a630d46b36cd5e17a17c9a619503 2026-04-22T12:06:39-07:00 fal-redesign: strip trailing content after </html> in implement
+6a32bd7a8cc24dc473086d153034f6ee3e3dc5f6 2026-04-21T18:19:33-07:00 Merge pull request #7 from fal-ai-community/improve/prompt-neutral-designer
+4fc609c22f4957c64ca4d86c2deffb7c3b475281 2026-04-21T18:18:37-07:00 fal-redesign: rewrite the redesign prompt to think like a designer
+173ea5b5a3241ae0013f3b992fe1130ee2dc8dee 2026-04-21T17:43:59-07:00 Merge pull request #6 from fal-ai-community/promote/fal-redesign-to-core
+a56fd3ecf1979345cca9b135f097b0623ef99ecb 2026-04-21T17:43:06-07:00 Promote fal-redesign to the Core section
+2096ffef168dfcf62401dadb2f4aefb0f645d5bf 2026-04-21T17:41:44-07:00 Move fal-redesign to the top (Core section)
+800e3c46e1ccd2fb1715611eaa42a988db6df737 2026-04-21T17:40:54-07:00 Merge pull request #5 from fal-ai-community/add/fal-redesign
+f77ef48d788a77ba100af390c8ef2876102d4b96 2026-04-21T17:40:13-07:00 fal-redesign: rename title to "fal redesign", refine artistic-universal direction
+af8cb04534c831ed1ee8de731678d0167bdc9ab8 2026-04-21T17:23:45-07:00 Merge pull request #4 from fal-ai-community/add/fal-redesign
+0a3280d2d937c64e43da05b22cf458c266d7fcd6 2026-04-21T17:20:26-07:00 Add fal-redesign skill
+282eba6fb2a88c68aa3dc05335be7b955688258e 2026-03-05T17:14:17-08:00 Merge fal-updates: dynamic models, fix IDs, new skills
+af093223b6898fee9b0b18dcd75571936f7f790c 2026-02-25T16:36:31-08:00 Remove hardcoded recommended models from README
+cc51b4ed476712afdf7fff9e28c69dab64c0fae1 2026-02-25T16:13:45-08:00 Remove all remaining hardcoded model recommendations from SKILL.md files
+7a8ab955efffb26a483afd6ce07114b5a4352796 2026-02-25T15:45:30-08:00 Replace hardcoded model tables with dynamic search instructions
+0524307d979d9a671e1f79878135f17fca2272e3 2026-02-25T15:45:20-08:00 Fix 28 invalid model IDs across skills scripts and references
+1d1c0c28dae3c31a6037bf0bea77e0312f5f90b8 2026-02-17T15:21:08-08:00 update
+4f002317da1ea599997e8f770bc529f318b3c716 2026-02-16T16:21:18-08:00 Move to skills/claude.ai/ structure to match main branch
+1c78ba78d99249345f96c8a79cb8e3bfff7d3c05 2026-02-16T16:17:05-08:00 Add 9 new skills + update existing models to Feb 2026
+69efe6e17ae3c6ae9605dd177a36f47ee9e745f9 2026-01-27T18:14:37+03:00  Enhance SKILL.md with references and critical rules for workflow creation
+d6b6f7f715372eae3aed831b2393d10f5961e9a3 2026-01-23T01:04:13+03:00 Enhance AGENTS.md and SKILL.md with detailed workflow creation guideliness
+1a0fe390559964abbc690595c4337c0c578893c9 2026-01-23T00:33:46+03:00 Update SKILL.md to clarify workflow structure and node types. Removed the concept of an 'input' node
+864a63c8ba9346cba48408570a5a271c139e669e 2026-01-23T00:12:57+03:00 first commit

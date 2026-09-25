@@ -1,0 +1,10 @@
+35728411922ddf83c612612bc4d2d1c6df8a94a0 2026-05-16T15:14:09+08:00 Initial RealPortrait AI skill
+
+ .gitignore                                         |  12 ++
+ INSTALL.md                                         |  94 +++++++++++
+ LICENSE                                            |  21 +++
+ README.md                                          | 143 ++++++++++++++++
+ skill/realportrait-ai/SKILL.md                     | 182 +++++++++++++++++++++
+ skill/realportrait-ai/agents/openai.yaml           |   7 +
+ skill/realportrait-ai/references/usage-examples.md |  55 +++++++
+ 7 files changed, 514 insertions(+)

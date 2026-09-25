@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "errors": [],
+  "capability_count": 54,
+  "decision_counts": {
+    "ADOPT": 0,
+    "ADAPT": 35,
+    "REPLACE_LOCAL": 0,
+    "KEEP_LOCAL": 6,
+    "REFERENCE_ONLY": 4,
+    "REJECT": 7,
+    "OUT_OF_SCOPE": 2
+  },
+  "conflicts_resolved": 16,
+  "tracked_files_unchanged": 835,
+  "prior_report_files_unchanged": 32,
+  "changed_frozen_files": [],
+  "head": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+  "validation_scope": "Document/JSON/AST/source-link/hash checks; no runtime tests or platform generation experiments; B published comparison board visually inspected",
+  "runtime_behavior_changes": 0,
+  "paid_generations": 0,
+  "external_skill_installations": 0,
+  "parallel_face_authorities": 0,
+  "copied_prompt_bundles": 0,
+  "unresolved_same_scope_conflicts": 0,
+  "face_a3_or_a4_executed": false,
+  "ready_for_face_a3": "YES"
+}

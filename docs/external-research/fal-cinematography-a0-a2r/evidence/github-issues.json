@@ -1,0 +1,415 @@
+[
+  {
+    "number": 25,
+    "html_url": "https://github.com/fal-ai-community/skills/issues/25",
+    "title": "Qualify skill activation descriptions with fal.ai",
+    "state": "open",
+    "created_at": "2026-09-06T19:21:22Z",
+    "updated_at": "2026-09-06T19:21:22Z",
+    "comments": 0,
+    "body": "The descriptions of fal-platform and fal-realtime in skills/claude.ai use service-independent phrases such as \"check usage\" and \"Realtime\". Those phrases can match requests about unrelated services.\n\nSuggested descriptions:\n- fal-platform: Manage fal.ai model pricing, usage, API credentials, and cost estimates.\n- fal-realtime: Build and troubleshoot real-time image generation with fal.ai models.\n\nKeep detailed model coverage and examples in the body. For routing checks, \"check my Codex usage\" should not select fal-platform, while \"check my fal.ai usage\" should. A generic real-time audio request should not automatically select fal-realtime.\n",
+    "pull_request": null
+  },
+  {
+    "number": 24,
+    "html_url": "https://github.com/fal-ai-community/skills/pull/24",
+    "title": "fal-redesign: bump default models to claude-opus-5 / claude-sonnet-5",
+    "state": "open",
+    "created_at": "2026-08-07T11:29:38Z",
+    "updated_at": "2026-08-07T11:29:38Z",
+    "comments": 0,
+    "body": "Updates the default vision/spec models from the retired anthropic/claude-opus-4.7 / claude-sonnet-4.6 to the current anthropic/claude-opus-5 and anthropic/claude-sonnet-5 (same OpenRouter routing, verified slugs). Covers the runtime defaults (upgrade.mjs, fal.mjs, variants.mjs, implement.mjs, review.mjs, bin/fal-site.mjs) and the doc references in SKILL.md and both READMEs. FAL_SITE_MODEL override behavior is unchanged.",
+    "pull_request": {
+      "url": "https://api.github.com/repos/fal-ai-community/skills/pulls/24",
+      "html_url": "https://github.com/fal-ai-community/skills/pull/24",
+      "diff_url": "https://github.com/fal-ai-community/skills/pull/24.diff",
+      "patch_url": "https://github.com/fal-ai-community/skills/pull/24.patch",
+      "merged_at": null
+    }
+  },
+  {
+    "number": 23,
+    "html_url": "https://github.com/fal-ai-community/skills/pull/23",
+    "title": "README: add \"Built on genmedia\" section for third-party skills",
+    "state": "open",
+    "created_at": "2026-07-16T21:26:05Z",
+    "updated_at": "2026-07-16T21:26:05Z",
+    "comments": 0,
+    "body": "genmedia is becoming an execution layer for skills outside this repo, and the README has no place that shows that. This adds a small **Built on genmedia** section for third-party skills, seeded with one production example.\n\n**[HyperShots](https://github.com/hypersocialinc/hypershots)** (MIT) generates App Store screenshots from a coding agent — deterministic HTML rendered at exact store dimensions with a fail-closed spec validator — and uses **genmedia as its generative layer**: GPT Image 2 + BiRefNet for transparent sticker art, and image-to-image style passes with a re-composite step that keeps the output store-compliant. Its references document verified genmedia API behaviors (upload `cdn_url`, `image_urls` array literals, `image_size` objects, one skill per `genmedia skills install`), and its install flow offers to install genmedia + the fal-models-catalog skill when missing.\n\nEvery image on [hypershots.dev](https://hypershots.dev) — including the site's own icons — was generated through genmedia.\n\nDisclosure: I'm the author of HyperShots. If you'd rather track ecosystem links elsewhere (or not at all), happy to close — or adapt this to whatever format you prefer.",
+    "pull_request": {
+      "url": "https://api.github.com/repos/fal-ai-community/skills/pulls/23",
+      "html_url": "https://github.com/fal-ai-community/skills/pull/23",
+      "diff_url": "https://github.com/fal-ai-community/skills/pull/23.diff",
+      "patch_url": "https://github.com/fal-ai-community/skills/pull/23.patch",
+      "merged_at": null
+    }
+  },
+  {
+    "number": 22,
+    "html_url": "https://github.com/fal-ai-community/skills/pull/22",
+    "title": "fix(fal-workflow): quote multiline description so YAML frontmatter parses",
+    "state": "open",
+    "created_at": "2026-06-21T18:03:56Z",
+    "updated_at": "2026-06-21T18:03:56Z",
+    "comments": 0,
+    "body": "## Problem\n\n`npx skills add fal-ai-community/skills --skill fal-workflow` fails with:\n\n```\n■  No matching skills found for: fal-workflow\n●  Available skills:  (16 listed — fal-workflow missing)\n```\n\neven though `skills/fal-workflow/SKILL.md` exists and is in `index.json`.\n\n## Root cause\n\nThe `description` in `skills/fal-workflow/SKILL.md` is an **unquoted (plain) YAML scalar** containing `Two modes: ` (a colon followed by a space) and inline double quotes:\n\n```yaml\ndescription: Author and execute multi-step media pipelines on fal.ai. Two modes: (A) declarative ...\n```\n\nIn YAML, `: ` is the key/value indicator, so a strict parser treats `Two modes:` as a nested mapping key and throws `bad indentation of a mapping entry` (reproduced with `js-yaml`, error located on the `description` line).\n\n- `scripts/build-skills-index.py` uses a lenient regex parser, so the skill still landed in `index.json`.\n- But `npx skills add` parses `SKILL.md` with a **strict** YAML parser (js-yaml), which throws and the CLI **silently skips** the skill → 16 of 17 skills found.\n\n## Fix\n\nConvert the description to a **folded block scalar (`>-`)** — the same style `genmedia-workflow` already uses and that `build-skills-index.py` supports — so `:` and `\"` become literal and both parsers accept it. Regenerated `index.json` via `scripts/build-skills-index.py` (only the `fal-workflow/SKILL.md` sha256/bytes change).\n\n## Verification\n\n```bash\npython3 scripts/build-skills-index.py --check   # → index.json is up to date\nnpx skills add fal-ai-community/skills --skill fal-workflow   # now resolves\n```\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nhttps://claude.ai/code/session_018cqWSwpNH6FxhCsrgRoXmA\n",
+    "pull_request": {
+      "url": "https://api.github.com/repos/fal-ai-community/skills/pulls/22",
+      "html_url": "https://github.com/fal-ai-community/skills/pull/22",
+      "diff_url": "https://github.com/fal-ai-community/skills/pull/22.diff",
+      "patch_url": "https://github.com/fal-ai-community/skills/pull/22.patch",
+      "merged_at": null
+    }
+  },
+  {
+    "number": 21,
+    "html_url": "https://github.com/fal-ai-community/skills/pull/21",
+    "title": "feat: add fal-controlnet-lock skill",
+    "state": "open",
+    "created_at": "2026-06-05T10:12:28Z",
+    "updated_at": "2026-06-05T10:12:28Z",
+    "comments": 0,
+    "body": "## Summary\n\n- Adds a new `fal-controlnet-lock` skill for building ControlNet composition-lock workflows on fal.ai\n- Covers **canny-edge**, **depth**, and **pose** control types in both workflow JSON (Mode A) and genmedia CLI (Mode B)\n- Includes a local Python runner (`generate.py`) using `fal-ai/flux-general` with ControlNet Union Pro + IP-Adapter for character-reference + composition-lock in a single call\n\n## Files\n\n| File | Purpose |\n|------|---------|\n| `SKILL.md` | Concept overview, working skeleton, critical rules, pre-output checklist |\n| `references/endpoints.md` | Preprocessor + ControlNet endpoint catalog with parameter tables and conditioning-scale guide |\n| `references/patterns.md` | 6 reusable JSON node patterns (canny, depth, pose, LLM-enhanced, +upscale, parallel comparison) |\n| `references/workflows.md` | 3 complete production-ready workflow JSONs |\n| `generate.py` | Local Python script — uploads refs, calls `fal-ai/flux-general` with ControlNet Union + IP-Adapter, saves result |\n| `.env.example` | Required env vars for `generate.py` |\n\n## Test plan\n\n- [ ] `python3 scripts/build-skills-index.py --check` passes (index is current)\n- [ ] SKILL.md frontmatter `name` matches directory name `fal-controlnet-lock`\n- [ ] All `$node.xxx` references in workflow JSONs have matching `depends` entries\n- [ ] `generate.py` runs end-to-end with a valid `FAL_KEY` and reference images\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+    "pull_request": {
+      "url": "https://api.github.com/repos/fal-ai-community/skills/pulls/21",
+      "html_url": "https://github.com/fal-ai-community/skills/pull/21",
+      "diff_url": "https://github.com/fal-ai-community/skills/pull/21.diff",
+      "patch_url": "https://github.com/fal-ai-community/skills/pull/21.patch",
+      "merged_at": null
+    }
+  },
+  {
+    "number": 20,
+    "html_url": "https://github.com/fal-ai-community/skills/pull/20",
+    "title": "[codex] Add fan-cam plate workflow",
+    "state": "open",
+    "created_at": "2026-05-13T16:37:56Z",
+    "updated_at": "2026-05-13T16:37:56Z",
+    "comments": 0,
+    "body": "## Summary\n- Add a two-pass GPT Image 2 workflow for higher-fidelity fan-cam frames: generate an identity-free 4K broadcast plate, then edit the placeholder spectator with the user photo.\n- Document stable image URL order, prompt-stability guidance, and stricter frame quality gates before Kling.\n- Add `openai/gpt-image-2` endpoint checks alongside the existing GPT Image 2 edit and Kling v3 Pro flow.\n\n## Validation\n- python3 scripts/build-skills-index.py --check\n- git diff --check",
+    "pull_request": {
+      "url": "https://api.github.com/repos/fal-ai-community/skills/pulls/20",
+      "html_url": "https://github.com/fal-ai-community/skills/pull/20",
+      "diff_url": "https://github.com/fal-ai-community/skills/pull/20.diff",
+      "patch_url": "https://github.com/fal-ai-community/skills/pull/20.patch",
+      "merged_at": null
+    }
+  },
+  {
+    "number": 19,
+    "html_url": "https://github.com/fal-ai-community/skills/pull/19",
+    "title": "[codex] Set fan-cam premium defaults",
+    "state": "closed",
+    "created_at": "2026-05-13T14:45:36Z",
+    "updated_at": "2026-05-13T16:36:08Z",
+    "comments": 0,
+    "body": "## Summary\n- Make fan-cam defaults explicit: GPT Image 2 edit uses high quality 3840x2160 frames and Kling v3 Pro for normal personalized cutaways.\n- Clarify lower-cost GPT low/Kling standard paths are opt-in for economy or preview runs.\n- Add a two-pass GPT Image 2 plate workflow for higher-fidelity broadcast composition: generate an identity-free 4K plate, then edit the placeholder spectator with the user photo.\n- Document prompt-stability rules for GPT Image 2: short positive prompts, stable image URL order, and frame quality gates before Kling.\n\n## Validation\n- python3 scripts/build-skills-index.py\n- python3 scripts/build-skills-index.py --check\n- git diff --check",
+    "pull_request": {
+      "url": "https://api.github.com/repos/fal-ai-community/skills/pulls/19",
+      "html_url": "https://github.com/fal-ai-community/skills/pull/19",
+      "diff_url": "https://github.com/fal-ai-community/skills/pull/19.diff",
+      "patch_url": "https://github.com/fal-ai-community/skills/pull/19.patch",
+      "merged_at": "2026-05-13T14:47:02Z"
+    }
+  },
+  {
+    "number": 18,
+    "html_url": "https://github.com/fal-ai-community/skills/pull/18",
+    "title": "[codex] Add fan-cam genmedia skill",
+    "state": "closed",
+    "created_at": "2026-05-13T14:34:13Z",
+    "updated_at": "2026-05-13T14:36:09Z",
+    "comments": 0,
+    "body": "## Summary\n\n- Add a fan-cam skill for personalized live sports broadcast spectator videos with genmedia.\n- Document the required identity-photo to GPT Image 2 edit to Kling workflow, so ordinary person photos are turned into approved 16:9 broadcast frames before animation.\n- Harden Kling guidance for native audio, external voiceover phrasing, optional elements, and the `multi_prompt` plus `end_image_url` incompatibility.\n\n## Validation\n\n- `python3 scripts/build-skills-index.py`\n- `python3 scripts/build-skills-index.py --check`\n- `git diff --check`\n",
+    "pull_request": {
+      "url": "https://api.github.com/repos/fal-ai-community/skills/pulls/18",
+      "html_url": "https://github.com/fal-ai-community/skills/pull/18",
+      "diff_url": "https://github.com/fal-ai-community/skills/pull/18.diff",
+      "patch_url": "https://github.com/fal-ai-community/skills/pull/18.patch",
+      "merged_at": "2026-05-13T14:36:09Z"
+    }
+  },
+  {
+    "number": 17,
+    "html_url": "https://github.com/fal-ai-community/skills/pull/17",
+    "title": "Add fan-cam genmedia skill",
+    "state": "closed",
+    "created_at": "2026-05-13T09:47:49Z",
+    "updated_at": "2026-05-13T09:49:18Z",
+    "comments": 0,
+    "body": "## Summary\n- add a new `fan-cam` skill for personalized live sports broadcast cutaway videos\n- document GPT Image 2 edit + Kling v3 genmedia command flow\n- include prompt contracts, duration rules, endpoint selection, and generalized examples\n- update README and regenerated `skills/index.json`\n\n## Validation\n- `python3 scripts/build-skills-index.py`\n- `python3 scripts/build-skills-index.py --check`\n- `python3 -m json.tool skills/index.json`\n- `git diff --check`",
+    "pull_request": {
+      "url": "https://api.github.com/repos/fal-ai-community/skills/pulls/17",
+      "html_url": "https://github.com/fal-ai-community/skills/pull/17",
+      "diff_url": "https://github.com/fal-ai-community/skills/pull/17.diff",
+      "patch_url": "https://github.com/fal-ai-community/skills/pull/17.patch",
+      "merged_at": "2026-05-13T09:49:18Z"
+    }
+  },
+  {
+    "number": 16,
+    "html_url": "https://github.com/fal-ai-community/skills/pull/16",
+    "title": "genmedia: teach agents about smart routing and auto-category filtering",
+    "state": "closed",
+    "created_at": "2026-05-08T01:41:53Z",
+    "updated_at": "2026-05-13T20:11:03Z",
+    "comments": 0,
+    "body": "## Summary\n\nThe genmedia CLI gained smart-default routing and auto-category inference in [fal-ai-community/genmedia-cli#8](https://github.com/fal-ai-community/genmedia-cli/pull/8). Until SKILL.md teaches this, agents keep their old habit of picking endpoints themselves and bypass the routing entirely — verified empirically: a Claude Code session running `genmedia run \"a cat in a hat\"` picked an explicit endpoint based on this skill's \"Critical rules\" rather than letting the CLI route.\n\nThis PR updates the skill content so agents prefer smart routing for default-quality requests, with explicit endpoint discovery still available when the user names a model or needs non-default behavior.\n\n## Changes\n\n### `skills/genmedia/SKILL.md`\n\n- **Critical rule #2 added**: prefer smart routing for default-quality requests. The \"Never invent endpoint IDs\" rule drops to #3 with refined guidance for the explicit path.\n- **Critical rule #4 (schema) clarified**: smart routing only needs `prompt`; schema inspection is required for explicit endpoints with custom params, not for default routing.\n- **Quick patterns reordered**: smart routing leads (`genmedia run \"a cat on the moon\"`), explicit-endpoint demoted to a later section. New smart-routing async + poll example shows how to extract `endpoint_id` from the response for follow-up `status` calls.\n- **Discover section** mentions `--no-classify` and that `genmedia models` auto-applies `--category` from the same classifier.\n\n### `skills/genmedia/references/full-reference.md`\n\n- Split the `run` section into \"Smart routing (preferred)\" and \"Explicit endpoint\" with a sample `routed` JSON block and the three `source` values (`manifest` / `cached` / `baked-in`).\n- Added `--no-classify` to the `models` flag table and a paragraph on auto-category inference.\n\n### `skills/index.json`\n\nRegenerated via `scripts/build-skills-index.py` — sha256 + bytes updated for both files.\n\n## Why this matters\n\nSmart routing as a CLI feature is necessary but not sufficient. Agents do whatever the skill tells them. Without this update, the new ergonomics ship in the binary but agents still go through the discovery dance because the skill content tells them to.\n\nAfter this PR lands and gets pulled into installed projects via `genmedia skills update genmedia`:\n\n- `genmedia run \"a cat\"` becomes the canonical pattern in agent reasoning, not an alternative.\n- Default token cost per generation drops from 3-4 LLM turns (read 50+ endpoints, pick one, fetch schema, run) to one shell call.\n- `genmedia models \"<query>\"` returns a focused list (~10 entries scoped to the inferred modality) instead of 50+ across all modalities — direct context-savings for the agent.\n\n## Test plan\n\n- [x] Built `skills/index.json` via `python3 scripts/build-skills-index.py` — clean output, 16 skills, byte/sha changes only on `genmedia/SKILL.md` and `genmedia/references/full-reference.md`.\n- [x] Visual review of the rendered SKILL.md and full-reference.md.\n- [x] Manual smoke once landed: in a real Claude Code session with this skill installed (via `genmedia init` or `genmedia skills update genmedia`), prompt `\"Generate a quick logo\"` and verify the agent uses `genmedia run \"<prompt>\"` (no endpoint) instead of running discovery first.\n\n## Cross-links\n\n- CLI side: [fal-ai-community/genmedia-cli#8](https://github.com/fal-ai-community/genmedia-cli/pull/8) — the implementation that this skill update teaches agents to use.",
+    "pull_request": {
+      "url": "https://api.github.com/repos/fal-ai-community/skills/pulls/16",
+      "html_url": "https://github.com/fal-ai-community/skills/pull/16",
+      "diff_url": "https://github.com/fal-ai-community/skills/pull/16.diff",
+      "patch_url": "https://github.com/fal-ai-community/skills/pull/16.patch",
+      "merged_at": "2026-05-13T20:10:57Z"
+    }
+  },
+  {
+    "number": 15,
+    "html_url": "https://github.com/fal-ai-community/skills/pull/15",
+    "title": "[codex] align README with current skills system",
+    "state": "closed",
+    "created_at": "2026-05-07T18:51:37Z",
+    "updated_at": "2026-05-07T19:15:49Z",
+    "comments": 0,
+    "body": "## Summary\n- Rewrite the root README around the current flattened `skills/<name>` system while preserving the existing umbrella model.\n- Keep `fal-models-catalog`, `fal-prompting`, and `fal-recipes` under `Umbrellas, knowledge organized by modality, family, or use case`.\n- Remove stale README sections that referenced old `skills/claude.ai` paths, `.sh` scripts, and `Scripts` tables.\n- Keep the canonical `skills/fal-gamedev/SKILL.md`; delete only the reintroduced stale duplicate at `skills/claude.ai/fal-gamedev/SKILL.md` so the generated skills index remains valid.\n\n## Validation\n- `python3 scripts/build-skills-index.py --check`\n- `python3 -m json.tool skills/index.json`\n- `git diff --check`\n- `find . -path \"./.git\" -prune -o -name \"*.sh\" -print` returned no shell scripts\n- `rg \"\\.sh|skills/claude\\.ai|\\bScripts\\b\" README.md skills/index.json` returned no matches\n- `find skills -maxdepth 2 -name SKILL.md | rg \"fal-gamedev|claude.ai\"` shows only `skills/fal-gamedev/SKILL.md`",
+    "pull_request": {
+      "url": "https://api.github.com/repos/fal-ai-community/skills/pulls/15",
+      "html_url": "https://github.com/fal-ai-community/skills/pull/15",
+      "diff_url": "https://github.com/fal-ai-community/skills/pull/15.diff",
+      "patch_url": "https://github.com/fal-ai-community/skills/pull/15.patch",
+      "merged_at": "2026-05-07T19:15:49Z"
+    }
+  },
+  {
+    "number": 14,
+    "html_url": "https://github.com/fal-ai-community/skills/pull/14",
+    "title": "[codex] add UGC and marketing skills",
+    "state": "closed",
+    "created_at": "2026-05-07T18:30:52Z",
+    "updated_at": "2026-05-07T18:44:26Z",
+    "comments": 0,
+    "body": "## Summary\n- Add a new `ugc` skill for creator-style ads, talking-head clips, demos, testimonials, and short vertical social videos.\n- Add a new `marketing` skill for campaign matrices, launch kits, paid social variants, landing-page visuals, and channel-specific assets.\n- Update model routing, README listings, and the generated skills index.\n\n## Validation\n- `python3 scripts/build-skills-index.py --check`\n- `python3 -m json.tool skills/index.json`\n- `git diff --cached --check`",
+    "pull_request": {
+      "url": "https://api.github.com/repos/fal-ai-community/skills/pulls/14",
+      "html_url": "https://github.com/fal-ai-community/skills/pull/14",
+      "diff_url": "https://github.com/fal-ai-community/skills/pull/14.diff",
+      "patch_url": "https://github.com/fal-ai-community/skills/pull/14.patch",
+      "merged_at": "2026-05-07T18:44:26Z"
+    }
+  },
+  {
+    "number": 13,
+    "html_url": "https://github.com/fal-ai-community/skills/pull/13",
+    "title": "add skills registry index and build script",
+    "state": "closed",
+    "created_at": "2026-05-04T03:36:33Z",
+    "updated_at": "2026-05-04T20:16:10Z",
+    "comments": 0,
+    "body": "Adds `skills/claude.ai/index.json` so the genmedia CLI can use this repo as its skills registry via `GENMEDIA_SKILLS_URL`.\n\n## Changes\n- `scripts/build-skills-index.py` — generates the index by walking `skills/claude.ai/`, reading SKILL.md frontmatter, and computing SHA256s per file. Run with `--check` to validate in CI.\n- `skills/claude.ai/index.json` — generated registry manifest for all 14 skills\n\n## How it works\nSet `GENMEDIA_SKILLS_URL=https://raw.githubusercontent.com/fal-ai-community/skills/refs/heads/main/skills/claude.ai` and `genmedia skills list/install/update` will use this repo as the registry.\n\nA companion PR on genmedia-cli will make this the default registry URL and drop `genmedia-ref` from the default bundle (its content is already in `genmedia/references/full-reference.md`), making Ilker's PR ([fal-ai-community/genmedia-cli#1](https://github.com/fal-ai-community/genmedia-cli/pull/1)) unnecessary.",
+    "pull_request": {
+      "url": "https://api.github.com/repos/fal-ai-community/skills/pulls/13",
+      "html_url": "https://github.com/fal-ai-community/skills/pull/13",
+      "diff_url": "https://github.com/fal-ai-community/skills/pull/13.diff",
+      "patch_url": "https://github.com/fal-ai-community/skills/pull/13.patch",
+      "merged_at": "2026-05-04T20:16:10Z"
+    }
+  },
+  {
+    "number": 12,
+    "html_url": "https://github.com/fal-ai-community/skills/pull/12",
+    "title": "Restructure repo around genmedia CLI: foundational, umbrellas, verticals",
+    "state": "closed",
+    "created_at": "2026-05-01T00:21:19Z",
+    "updated_at": "2026-05-01T15:10:21Z",
+    "comments": 0,
+    "body": "## Summary\n\nArchitectural overhaul aligned with the [genmedia CLI](https://github.com/fal-ai-community/genmedia-cli) as runtime. Repo now follows a three-tier hierarchy (Skill, Reference, Section). Skills are knowledge layers, not API wrappers.\n\n## New structure\n\n**Foundational (1)**\n- `genmedia`: full CLI surface (models, schema, run, status, upload, pricing, docs)\n\n**Umbrellas (3)**\n- `fal-models-catalog`: 10 modality references with curated endpoint picks (text-to-image, image-to-image, text-to-video, image-to-video, video-to-video, text-to-3d, image-to-3d, text-to-audio, audio-to-text, image-to-text). About 250 endpoints curated from a hand triage of fal.ai's full 1,326-endpoint catalog into ~50 use-case buckets.\n- `fal-prompting`: family-specific guides (Kling, GPT Image 2, Happy Horse).\n- `fal-recipes`: 10 use-case pipelines (cinematography, character-design, commercial, storytelling, character-lipsync, image-restoration, virtual-tryon, video-with-audio, product-shot, realism).\n\n**Verticals (5)**\n- `fal-workflow`: now two modes. Mode A authors workflow JSON for the fal.ai cloud runtime; Mode B drives the genmedia CLI for local orchestration. Mode B integrates the genmedia-workflow content (pipeline-patterns, node-rules, utility-endpoints, recipes).\n- `fal-gamedev`: 2D pixel-art game assets (added).\n- `fal-train`, `fal-redesign`, `fal-regenerate-3d`: preserved.\n\n## Other changes\n\n- Imported source skills from upstream PRs (cinematography, character-design, commercial, storytelling, model-routing, genmedia-workflow). Their content is also consolidated into the umbrella references for the canonical agent path.\n- Each umbrella and vertical has a Runtime note pointing at the genmedia skill.\n- Cross-skill markdown link paths fixed to use sibling-relative form (`../skill-name/...`).\n- Stripped em-dashes, smart quotes, and non-English remnants from agent-facing content (intentional French TTS demos preserved as multi-language showcase).\n- Regenerated all 28 distribution `.zip` packages.\n- All 28 `SKILL.md` frontmatter files validated: `name` matches folder name, descriptions are explicit triggers.\n- Older single-endpoint skills (`fal-3d`, `fal-audio`, `fal-image-edit`, `fal-upscale`, etc.) are preserved for backward compatibility; their knowledge has been consolidated into the umbrella skills above.\n\n## Test plan\n\n- [x] 28 SKILL.md frontmatter validates (name = folder)\n- [x] 76 internal markdown links resolve\n- [x] 28 folder ↔ zip 1:1 match, no junk in zips\n- [x] 0 em-dashes, smart quotes, or unintended non-English content\n- [x] All scripts retain executable bits\n- [ ] Reviewer to spot-check a few catalog picks against latest fal.ai endpoint availability\n- [ ] Reviewer to confirm no breaking changes for users of legacy `fal-*` skills",
+    "pull_request": {
+      "url": "https://api.github.com/repos/fal-ai-community/skills/pulls/12",
+      "html_url": "https://github.com/fal-ai-community/skills/pull/12",
+      "diff_url": "https://github.com/fal-ai-community/skills/pull/12.diff",
+      "patch_url": "https://github.com/fal-ai-community/skills/pull/12.patch",
+      "merged_at": "2026-05-01T15:10:21Z"
+    }
+  },
+  {
+    "number": 11,
+    "html_url": "https://github.com/fal-ai-community/skills/pull/11",
+    "title": "README: list fal-regenerate-3d in skills table",
+    "state": "closed",
+    "created_at": "2026-04-30T08:43:06Z",
+    "updated_at": "2026-04-30T08:43:24Z",
+    "comments": 0,
+    "body": "Adds a row in the Creative & Production table for the new `fal-regenerate-3d` skill (added in #10).\n\nSkill recipe powers [fal-roster.vercel.app](https://fal-roster.vercel.app).\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+    "pull_request": {
+      "url": "https://api.github.com/repos/fal-ai-community/skills/pulls/11",
+      "html_url": "https://github.com/fal-ai-community/skills/pull/11",
+      "diff_url": "https://github.com/fal-ai-community/skills/pull/11.diff",
+      "patch_url": "https://github.com/fal-ai-community/skills/pull/11.patch",
+      "merged_at": "2026-04-30T08:43:24Z"
+    }
+  },
+  {
+    "number": 10,
+    "html_url": "https://github.com/fal-ai-community/skills/pull/10",
+    "title": "Add fal-regenerate-3d skill",
+    "state": "closed",
+    "created_at": "2026-04-30T08:40:49Z",
+    "updated_at": "2026-04-30T08:41:08Z",
+    "comments": 0,
+    "body": "Adds a new `fal-regenerate-3d` skill that documents the full pipeline used to ship [fal-roster.vercel.app](https://fal-roster.vercel.app) — a cyberpunk character selector with 10 stylized 3D operatives, each with a matching companion creature, environment-themed PATINA floor texture, and Seedance background loop.\n\n## What it covers\n\n- Character image (GPT-Image-2 or FLUX.2 klein 9b)\n- Meshy v6 image-to-3d (rigged + animated, baked GLB)\n- Companion creature (gpt-image-2/edit + meshy v6 no rig)\n- PATINA per-character PBR floor maps (basecolor / normal / roughness / metalness)\n- Seedance 2.0 fast for background video loops\n- gltf-transform pipeline (resize 1024 + webp q80 + draco) — typically 95% size reduction\n- Three.js scene: alpha-mapped floor disc, breathing reflections, palette-swap via CSS variables, transition fx, create-your-own flow with flux-2 klein 9b\n\n## Reference implementation\n\n- Live: https://fal-roster.vercel.app\n- Source: https://github.com/lovisdotio/fal-roster\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+    "pull_request": {
+      "url": "https://api.github.com/repos/fal-ai-community/skills/pulls/10",
+      "html_url": "https://github.com/fal-ai-community/skills/pull/10",
+      "diff_url": "https://github.com/fal-ai-community/skills/pull/10.diff",
+      "patch_url": "https://github.com/fal-ai-community/skills/pull/10.patch",
+      "merged_at": "2026-04-30T08:41:08Z"
+    }
+  },
+  {
+    "number": 9,
+    "html_url": "https://github.com/fal-ai-community/skills/pull/9",
+    "title": "Add fal-gamedev skill for generating 2D pixel art game assets",
+    "state": "closed",
+    "created_at": "2026-04-30T05:23:06Z",
+    "updated_at": "2026-05-07T18:45:14Z",
+    "comments": 0,
+    "body": null,
+    "pull_request": {
+      "url": "https://api.github.com/repos/fal-ai-community/skills/pulls/9",
+      "html_url": "https://github.com/fal-ai-community/skills/pull/9",
+      "diff_url": "https://github.com/fal-ai-community/skills/pull/9.diff",
+      "patch_url": "https://github.com/fal-ai-community/skills/pull/9.patch",
+      "merged_at": "2026-05-07T18:45:13Z"
+    }
+  },
+  {
+    "number": 8,
+    "html_url": "https://github.com/fal-ai-community/skills/pull/8",
+    "title": "fal-redesign: strip trailing content after </html>",
+    "state": "closed",
+    "created_at": "2026-04-22T19:07:25Z",
+    "updated_at": "2026-04-22T19:07:35Z",
+    "comments": 0,
+    "body": "## Summary\n\nWhen opus-4.7 writes the final HTML + tile-prompt JSON, it sometimes runs past the token budget and spills a trailing ```` ```tiles ```` code fence (or other commentary) **after** the closing `</html>` tag. That trailing text renders as visible body content in the browser and leaks the internal tile spec into the final page.\n\nThis PR truncates the HTML at `</html>` during `cleanupHtml()` so anything after the document end is silently discarded.\n\n## Repro\n\nRun `implement` on a content-heavy page (e.g. a full dashboard with inventory + stats + activity feed). Opus occasionally closes `</html>` then keeps writing:\n\n```html\n</body>\n</html>\n\n```tiles\n{ \"tiles\": [ { \"file\": \"tile-01.jpg\", ... } ] }\n```\n\nBefore this fix, that leaked block rendered as visible text at the bottom of the page.\n\n## Test plan\n\n- [x] Existing plain redesigns still parse correctly (leading fence stripped as before)\n- [x] Documents with a leaked trailing fence now end exactly at `</html>`\n- [x] No change to files that already end cleanly\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+    "pull_request": {
+      "url": "https://api.github.com/repos/fal-ai-community/skills/pulls/8",
+      "html_url": "https://github.com/fal-ai-community/skills/pull/8",
+      "diff_url": "https://github.com/fal-ai-community/skills/pull/8.diff",
+      "patch_url": "https://github.com/fal-ai-community/skills/pull/8.patch",
+      "merged_at": "2026-04-22T19:07:34Z"
+    }
+  },
+  {
+    "number": 7,
+    "html_url": "https://github.com/fal-ai-community/skills/pull/7",
+    "title": "fal-redesign: rewrite the redesign prompt to think like a designer",
+    "state": "closed",
+    "created_at": "2026-04-22T01:19:22Z",
+    "updated_at": "2026-04-22T01:19:34Z",
+    "comments": 0,
+    "body": "## Summary\n\nThe previous system prompt made every redesign look the same — editorial, typography-first, oversized serif, hairline rules, dark canvas. The bias was baked into the rules (e.g. example brand→palette tuples all leaned \"editorial photography wants deep ink + warm paper\", a hard-ban on cream backgrounds, \"do not default to Instrument-Serif-plus-Inter\", etc.).\n\nThis PR rewrites the rules so the model picks the primary visual carrier — **product-hero image / photography / illustration / typography / diagram / graphic system** — based on the actual brand and content. Illustrated character-led designs for playful brands, type-led designs for slow-media products, photo-led for editorial, etc. The rules no longer default to any one direction.\n\n## Test plan\n\n- [ ] Run `scripts/upgrade.sh` on a playful children's / collectibles brand — expect illustrated, character-led output, not serif editorial.\n- [ ] Run `scripts/upgrade.sh` on a slow-media / manifesto product — expect typography-first, as before.\n- [ ] Run `scripts/upgrade.sh` on a precision-instrument brand — expect product-hero image, possibly photographic.\n- [ ] Run `scripts/upgrade.sh` on a B2B SaaS tool — expect clean, trust-forward design without defaulting to the editorial look.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
+    "pull_request": {
+      "url": "https://api.github.com/repos/fal-ai-community/skills/pulls/7",
+      "html_url": "https://github.com/fal-ai-community/skills/pull/7",
+      "diff_url": "https://github.com/fal-ai-community/skills/pull/7.diff",
+      "patch_url": "https://github.com/fal-ai-community/skills/pull/7.patch",
+      "merged_at": "2026-04-22T01:19:34Z"
+    }
+  },
+  {
+    "number": 6,
+    "html_url": "https://github.com/fal-ai-community/skills/pull/6",
+    "title": "Promote fal-redesign to the Core section",
+    "state": "closed",
+    "created_at": "2026-04-22T00:43:39Z",
+    "updated_at": "2026-04-22T00:43:59Z",
+    "comments": 0,
+    "body": "Move the fal-redesign skill into the Core table at the top of the README. It's the flagship end-to-end redesign flow and deserves first-click visibility, alongside fal-generate / fal-image-edit / fal-audio / fal-upscale.",
+    "pull_request": {
+      "url": "https://api.github.com/repos/fal-ai-community/skills/pulls/6",
+      "html_url": "https://github.com/fal-ai-community/skills/pull/6",
+      "diff_url": "https://github.com/fal-ai-community/skills/pull/6.diff",
+      "patch_url": "https://github.com/fal-ai-community/skills/pull/6.patch",
+      "merged_at": "2026-04-22T00:43:59Z"
+    }
+  },
+  {
+    "number": 5,
+    "html_url": "https://github.com/fal-ai-community/skills/pull/5",
+    "title": "Add fal-redesign skill",
+    "state": "closed",
+    "created_at": "2026-04-22T00:40:26Z",
+    "updated_at": "2026-04-22T00:40:54Z",
+    "comments": 0,
+    "body": "## Summary\n\nAdds **fal-redesign**, an end-to-end redesign skill for coded websites.\n\n```\nyour site.html           →  puppeteer screenshot\nscreenshot + brand       →  opus-4.7 vision writes a redesign prompt\nscreenshot + prompt      →  fal-ai/gpt-image-2/edit → after.png mockup\nafter.png                →  opus-4.7 vision writes changes.md + tokens.json\nchanges.md + original    →  opus-4.7 rewrites the HTML + flux-2 regenerates imagery\nbefore + implemented     →  ffmpeg assembles a split-screen demo MP4\n```\n\nEverything runs locally through fal.ai — no browser, no figma, no manual design loop.\n\n## What the PR contains\n\n- `skills/claude.ai/fal-redesign/` — the skill: `SKILL.md`, `README.md`, `DEMO.md`, `LICENSE`, 4 scripts, self-contained Node 18+ runtime.\n- `skills/claude.ai/fal-redesign/install.sh` — one-command installer (`curl | bash`) that drops the skill into `~/.claude/skills/fal-redesign`.\n- `README.md` — fal-redesign row added to the Creative & Production table.\n\n## Models used\n\n- `openrouter/router/vision` with `anthropic/claude-opus-4.7` — VLM#1 (edit prompt) + VLM#2 (build-spec) + implementer.\n- `fal-ai/gpt-image-2/edit` — screenshot-to-redesign edit.\n- `fal-ai/flux-2/klein/9b/edit` — per-tile imagery regeneration for the implemented HTML.\n\n## How to install\n\n```bash\ncurl -fsSL https://raw.githubusercontent.com/fal-ai-community/skills/main/skills/claude.ai/fal-redesign/install.sh | bash\n```\n\nThen in Claude Code / Codex:\n\n```\n/fal-redesign upgrade ./your-site.html\n```\n\n## Demo\n\n25 sites processed end-to-end (20 existing + 5 innovative concepts). Split-screen reel at [video link].\n\n## Test plan\n\n- [ ] `install.sh` runs clean on a fresh macOS / Linux machine with node 18+\n- [ ] `bash scripts/upgrade.sh --target ./fixture.html` produces `before.png`, `after.png`, `changes.md`, `tokens.json`\n- [ ] `scripts/iterate.sh` produces a valid delta-spec after the agent implements changes\n- [ ] `scripts/generate.sh` produces a single-file HTML from a freeform brief\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n",
+    "pull_request": {
+      "url": "https://api.github.com/repos/fal-ai-community/skills/pulls/5",
+      "html_url": "https://github.com/fal-ai-community/skills/pull/5",
+      "diff_url": "https://github.com/fal-ai-community/skills/pull/5.diff",
+      "patch_url": "https://github.com/fal-ai-community/skills/pull/5.patch",
+      "merged_at": "2026-04-22T00:40:54Z"
+    }
+  },
+  {
+    "number": 4,
+    "html_url": "https://github.com/fal-ai-community/skills/pull/4",
+    "title": "Add fal-redesign skill",
+    "state": "closed",
+    "created_at": "2026-04-22T00:23:27Z",
+    "updated_at": "2026-04-22T00:23:46Z",
+    "comments": 0,
+    "body": "## Summary\n\nAdds **fal-redesign**, an end-to-end redesign skill for coded websites.\n\n```\nyour site.html           →  puppeteer screenshot\nscreenshot + brand       →  opus-4.7 vision writes a redesign prompt\nscreenshot + prompt      →  fal-ai/gpt-image-2/edit → after.png mockup\nafter.png                →  opus-4.7 vision writes changes.md + tokens.json\nchanges.md + original    →  opus-4.7 rewrites the HTML + flux-2 regenerates imagery\nbefore + implemented     →  ffmpeg assembles a split-screen demo MP4\n```\n\nEverything runs locally through fal.ai — no browser, no figma, no manual design loop.\n\n## What the PR contains\n\n- `skills/claude.ai/fal-redesign/` — the skill: `SKILL.md`, `README.md`, `DEMO.md`, `LICENSE`, 4 scripts, self-contained Node 18+ runtime.\n- `skills/claude.ai/fal-redesign/install.sh` — one-command installer (`curl | bash`) that drops the skill into `~/.claude/skills/fal-redesign`.\n- `README.md` — fal-redesign row added to the Creative & Production table.\n\n## Models used\n\n- `openrouter/router/vision` with `anthropic/claude-opus-4.7` — VLM#1 (edit prompt) + VLM#2 (build-spec) + implementer.\n- `fal-ai/gpt-image-2/edit` — screenshot-to-redesign edit.\n- `fal-ai/flux-2/klein/9b/edit` — per-tile imagery regeneration for the implemented HTML.\n\n## How to install\n\n```bash\ncurl -fsSL https://raw.githubusercontent.com/fal-ai-community/skills/main/skills/claude.ai/fal-redesign/install.sh | bash\n```\n\nThen in Claude Code / Codex:\n\n```\n/fal-redesign upgrade ./your-site.html\n```\n\n## Demo\n\n25 sites processed end-to-end (20 existing + 5 innovative concepts). Split-screen reel at [video link].\n\n## Test plan\n\n- [ ] `install.sh` runs clean on a fresh macOS / Linux machine with node 18+\n- [ ] `bash scripts/upgrade.sh --target ./fixture.html` produces `before.png`, `after.png`, `changes.md`, `tokens.json`\n- [ ] `scripts/iterate.sh` produces a valid delta-spec after the agent implements changes\n- [ ] `scripts/generate.sh` produces a single-file HTML from a freeform brief\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n",
+    "pull_request": {
+      "url": "https://api.github.com/repos/fal-ai-community/skills/pulls/4",
+      "html_url": "https://github.com/fal-ai-community/skills/pull/4",
+      "diff_url": "https://github.com/fal-ai-community/skills/pull/4.diff",
+      "patch_url": "https://github.com/fal-ai-community/skills/pull/4.patch",
+      "merged_at": "2026-04-22T00:23:46Z"
+    }
+  },
+  {
+    "number": 3,
+    "html_url": "https://github.com/fal-ai-community/skills/issues/3",
+    "title": "Support Claude Code marketplace plugin installation",
+    "state": "open",
+    "created_at": "2026-03-19T09:52:00Z",
+    "updated_at": "2026-03-19T09:52:00Z",
+    "comments": 0,
+    "body": "Hey! Love these skills – I've been using them with Claude Code and they work great.\n\nIt would be great to make it downloadable from claude marketplace directly:\n\n  ▎ claude plugin marketplace add <repo>\n  ▎ claude plugin install fal-ai\n\nI put together a working wrapper repo as a proof of concept: [morozovdd/fal-ai-claude-code](https://github.com/morozovdd/fal-ai-claude-code)\n\nWould you be open to adding native marketplace support to this repo? Happy to help with a PR if so.",
+    "pull_request": null
+  },
+  {
+    "number": 2,
+    "html_url": "https://github.com/fal-ai-community/skills/pull/2",
+    "title": "fix(fal-scripts): normalize model path for queue request ops",
+    "state": "open",
+    "created_at": "2026-03-13T10:27:35Z",
+    "updated_at": "2026-03-13T10:27:35Z",
+    "comments": 0,
+    "body": "## Background\r\n\r\n  In the fal generation scripts, queue request management endpoints (`--status`, `--result`, `--cancel`) should use the **queue-\r\n  level model path**.\r\n  Passing full model paths (for example, `fal-ai/nano-banana-pro/edit` or `fal-ai/kling-video/o3/pro/reference-to-video`) can\r\n  produce mismatched endpoint paths.\r\n\r\n  This PR fixes that by normalizing `--model` for these queue operations to the first two path segments.\r\n\r\n  ## Changes\r\n\r\n  ### 1) `fal-ai-skills/skills/claude.ai/fal-generate/scripts/generate.sh`\r\n\r\n  - Added `normalize_request_model()`:\r\n    - `fal-ai/nano-banana-pro/edit` -> `fal-ai/nano-banana-pro`\r\n    - `fal-ai/kling-video/o3/pro/reference-to-video` -> `fal-ai/kling-video`\r\n  - Updated queue operation branches (`--status`, `--result`, `--cancel`) to use normalized `REQUEST_MODEL` in queue API URLs.\r\n  - Kept generation submission behavior unchanged to avoid unintended model behavior changes.\r\n\r\n  ## Behavior Impact\r\n\r\n  - Affects only queue request management actions:\r\n    - `--status ID`\r\n    - `--result ID`\r\n    - `--cancel ID`\r\n  - Does not change normal generation submission/polling behavior.\r\n\r\n  ## Validation\r\n\r\n  - `bash -n fal-ai-skills/skills/claude.ai/fal-generate/scripts/generate.sh` passed.\r\n  - Verified queue request URLs now use normalized model path (`$REQUEST_MODEL`) instead of raw `$MODEL`.\r\n\r\n  ## Risk / Compatibility\r\n\r\n  - Low-risk change.\r\n  - Fully compatible when `--model` is already two segments.\r\n  - Fixes failures for longer model paths by routing queue operations to the correct endpoint.\r\n",
+    "pull_request": {
+      "url": "https://api.github.com/repos/fal-ai-community/skills/pulls/2",
+      "html_url": "https://github.com/fal-ai-community/skills/pull/2",
+      "diff_url": "https://github.com/fal-ai-community/skills/pull/2.diff",
+      "patch_url": "https://github.com/fal-ai-community/skills/pull/2.patch",
+      "merged_at": null
+    }
+  },
+  {
+    "number": 1,
+    "html_url": "https://github.com/fal-ai-community/skills/pull/1",
+    "title": "docs: make skill script paths portable via <skills-root>",
+    "state": "closed",
+    "created_at": "2026-03-07T09:12:07Z",
+    "updated_at": "2026-03-07T15:21:32Z",
+    "comments": 1,
+    "body": "## What\n- Replaced hardcoded `/mnt/skills/user/...` paths in SKILL.md files with portable `<skills-root>/...` placeholders\n- Added README note explaining `<skills-root>` replacement\n\n## Why\nHardcoded runtime-specific paths make these skills harder to use outside a specific environment. This keeps docs copy-paste friendly across Claude.ai, Claude Code, and local repos.\n\n## Scope\n- Documentation-only change (no script behavior changes)\n- Updated 14 skill docs + root README\n",
+    "pull_request": {
+      "url": "https://api.github.com/repos/fal-ai-community/skills/pulls/1",
+      "html_url": "https://github.com/fal-ai-community/skills/pull/1",
+      "diff_url": "https://github.com/fal-ai-community/skills/pull/1.diff",
+      "patch_url": "https://github.com/fal-ai-community/skills/pull/1.patch",
+      "merged_at": null
+    }
+  }
+]

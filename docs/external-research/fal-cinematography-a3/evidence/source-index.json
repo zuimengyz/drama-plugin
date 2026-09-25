@@ -1,0 +1,57 @@
+[
+  {
+    "file": "plugin/src/drama_plugin/professional.py",
+    "line": 48,
+    "symbol": "('cinematography'"
+  },
+  {
+    "file": "plugin/src/drama_plugin/contracts/professional.py",
+    "line": 38,
+    "symbol": "class CreativeRecord"
+  },
+  {
+    "file": "plugin/src/drama_plugin/contracts/visual_prompt.py",
+    "line": 78,
+    "symbol": "class Camera"
+  },
+  {
+    "file": "plugin/src/drama_plugin/contracts/specialized_asset.py",
+    "line": 18,
+    "symbol": "class GlobalVisualStyle"
+  },
+  {
+    "file": "plugin/src/drama_plugin/visual/frame_request.py",
+    "line": 178,
+    "symbol": "def compile_frame"
+  },
+  {
+    "file": "plugin/src/drama_plugin/visual/image_serializer.py",
+    "line": 9,
+    "symbol": "def select_image_rows"
+  },
+  {
+    "file": "plugin/src/drama_plugin/visual/prompt_ir.py",
+    "line": 12,
+    "symbol": "def compile_ir"
+  },
+  {
+    "file": "plugin/src/drama_plugin/visual/production.py",
+    "line": 298,
+    "symbol": "class Review"
+  },
+  {
+    "file": "plugin/src/drama_plugin/hosts/professional.py",
+    "line": 100,
+    "symbol": "def submit"
+  },
+  {
+    "file": "plugin/src/drama_plugin/hosts/route_production.py",
+    "line": 113,
+    "symbol": "async def operate"
+  },
+  {
+    "file": "plugin/src/drama_plugin/specialized_asset.py",
+    "line": 85,
+    "symbol": "def validate_assets"
+  }
+]

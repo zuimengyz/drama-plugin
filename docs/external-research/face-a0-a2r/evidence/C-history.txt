@@ -1,0 +1,335 @@
+9ca850412943251fc9a466c4c29fdaf7a303a3d8 2026-05-13T21:10:57+01:00 Merge pull request #16 from koumpas/feat/genmedia-smart-routing
+067a732cb17da73755c6a3e07877fd266e892831 2026-05-13T17:47:02+03:00 Merge pull request #19 from fal-ai-community/codex/fan-cam-default-quality
+c080fb9c9afdd699109e20decb284365091c4324 2026-05-13T17:45:02+03:00 Set fan-cam premium defaults
+
+ skills/fan-cam/SKILL.md                        | 34 ++++++++++++++------------
+ skills/fan-cam/references/examples.md          |  4 +--
+ skills/fan-cam/references/genmedia-commands.md | 28 ++++++++++++---------
+ skills/fan-cam/references/prompt-contract.md   | 12 ++++++---
+ skills/index.json                              | 16 ++++++------
+ 5 files changed, 55 insertions(+), 39 deletions(-)
+e887ea7128f9d09d340f8d64d7dc35f704f42d5a 2026-05-13T17:36:08+03:00 Merge pull request #18 from fal-ai-community/codex/add-fan-cam-skill
+a053661515d2937ecf32780e588345d0d927ad37 2026-05-13T17:33:23+03:00 Harden fan-cam generation workflow
+
+ skills/fan-cam/SKILL.md                        | 37 ++++++++++++++++--
+ skills/fan-cam/references/genmedia-commands.md | 23 +++++++++--
+ skills/fan-cam/references/prompt-contract.md   | 54 ++++++++++++++++++++++++--
+ skills/index.json                              | 12 +++---
+ 4 files changed, 109 insertions(+), 17 deletions(-)
+e536df2bf0095060e3818a13226dba4102e94b37 2026-05-13T12:49:17+03:00 Merge pull request #17 from fal-ai-community/codex/add-fan-cam-skill
+5eedfea3b51cd644e7ec22f2db0273f5f25d064d 2026-05-13T12:45:53+03:00 Add fan-cam genmedia skill
+
+ README.md                                      |   1 +
+ skills/fan-cam/SKILL.md                        | 254 +++++++++++++++++++++++++
+ skills/fan-cam/references/examples.md          | 212 +++++++++++++++++++++
+ skills/fan-cam/references/genmedia-commands.md | 201 +++++++++++++++++++
+ skills/fan-cam/references/prompt-contract.md   | 190 ++++++++++++++++++
+ skills/index.json                              |  26 +++
+ 6 files changed, 884 insertions(+)
+4333412135d10070de3d61b4ec6c8634c26a6fbe 2026-05-08T02:40:12+01:00 genmedia: teach agents about smart routing and auto-category filtering
+
+ skills/genmedia/SKILL.md                     | 55 +++++++++++++++++++++-------
+ skills/genmedia/references/full-reference.md | 43 +++++++++++++++++++++-
+ skills/index.json                            |  8 ++--
+ 3 files changed, 87 insertions(+), 19 deletions(-)
+d401c29bc1db990eb316dc8c5f035fb153d72c21 2026-05-07T22:15:48+03:00 Merge pull request #15 from fal-ai-community/codex/cleanup-readme-script-references
+71885a66d32efde0ab090445b40b877c46951adf 2026-05-07T22:06:02+03:00 clean stale script references
+
+ README.md                             |  60 ++++---
+ skills/claude.ai/fal-gamedev/SKILL.md | 283 ----------------------------------
+ 2 files changed, 29 insertions(+), 314 deletions(-)
+197f1d527b4a6067962206edfe4fde5f7f49fb88 2026-05-07T21:45:13+03:00 Merge pull request #9 from blendi-remade/feat/add-gamedev-skill
+bd7041c46587a8ea44cc28dac95c9be0715a991c 2026-05-07T21:45:04+03:00 Merge branch 'main' into feat/add-gamedev-skill
+85af100e917c1ad056813895ab099213b591c363 2026-05-07T21:44:25+03:00 Merge pull request #14 from fal-ai-community/codex/add-ugc-marketing-skills
+cfcd7329ac2519670476300e99b7936296d4aae2 2026-05-07T21:35:15+03:00 add ugc and marketing skills
+
+ README.md                                        |  12 ++
+ skills/index.json                                |  58 +++++++-
+ skills/marketing/SKILL.md                        | 167 +++++++++++++++++++++++
+ skills/marketing/references/campaign-patterns.md |  61 +++++++++
+ skills/marketing/references/examples.md          |  49 +++++++
+ skills/marketing/references/workflows.md         |  45 ++++++
+ skills/model-routing/SKILL.md                    |  31 ++++-
+ skills/ugc/SKILL.md                              | 157 +++++++++++++++++++++
+ skills/ugc/references/examples.md                |  42 ++++++
+ skills/ugc/references/formats.md                 |  82 +++++++++++
+ skills/ugc/references/workflows.md               |  52 +++++++
+ 11 files changed, 751 insertions(+), 5 deletions(-)
+ca47dba09dc29e8a42793937ad4e75105cf69e99 2026-05-04T23:16:09+03:00 Merge pull request #13 from blendi-remade/add-skills-registry
+2483aa412e47cec270f7e144baa1949815209a12 2026-05-03T20:57:33-07:00 fix stale claude.ai path in fal-redesign README
+
+ skills/fal-redesign/README.md | 2 +-
+ skills/index.json             | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+653a2b7955a867ca5d12b2a2d93342b9cd706c99 2026-05-03T20:51:14-07:00 flatten skills/claude.ai into skills/
+
+ README.md                                           |  20 ++++++++++----------
+ scripts/build-skills-index.py                       |   4 ++--
+ skills/{claude.ai => }/character-design/SKILL.md    |   0
+ .../character-design/references/anchor-system.md    |   0
+ .../character-design/references/examples.md         |   0
+ .../character-design/references/prompt-patterns.md  |   0
+ skills/{claude.ai => }/cinematography/SKILL.md      |   0
+ .../cinematography/references/examples.md           |   0
+ .../references/lighting-lens-color.md               |   0
+ .../cinematography/references/shot-language.md      |   0
+ skills/claude.ai/fal-workflow.zip                   | Bin 21607 -> 0 bytes
+ skills/{claude.ai => }/commercial/SKILL.md          |   0
+ .../commercial/references/examples.md               |   0
+ .../commercial/references/prompt-patterns.md        |   0
+ .../commercial/references/workflows.md              |   0
+ skills/{claude.ai => }/fal-gamedev/SKILL.md         |   0
+ skills/{claude.ai => }/fal-models-catalog/SKILL.md  |   0
+ .../fal-models-catalog/references/audio-to-text.md  |   0
+ .../fal-models-catalog/references/image-to-3d.md    |   0
+ .../fal-models-catalog/references/image-to-image.md |   0
+ .../fal-models-catalog/references/image-to-text.md  |   0
+ .../fal-models-catalog/references/image-to-video.md |   0
+ .../fal-models-catalog/references/text-to-3d.md     |   0
+ .../fal-models-catalog/references/text-to-audio.md  |   0
+ .../fal-models-catalog/references/text-to-image.md  |   0
+ .../fal-models-catalog/references/text-to-video.md  |   0
+ .../fal-models-catalog/references/video-to-video.md |   0
+ skills/{claude.ai => }/fal-prompting/SKILL.md       |   0
+ .../fal-prompting/references/gpt-image-2.md         |   0
+ .../fal-prompting/references/happy-horse.md         |   0
+ .../fal-prompting/references/kling.md               |   0
+ skills/{claude.ai => }/fal-recipes/SKILL.md         |   0
+ .../fal-recipes/references/character-design.md      |   0
+ .../fal-recipes/references/character-lipsync.md     |   0
+ .../fal-recipes/references/cinematography.md        |   0
+ .../fal-recipes/references/commercial.md            |   0
+ .../fal-recipes/references/image-restoration.md     |   0
+ .../fal-recipes/references/product-shot.md          |   0
+ .../fal-recipes/references/realism.md               |   0
+ .../fal-recipes/references/storytelling.md          |   0
+ .../fal-recipes/references/video-with-audio.md      |   0
+ .../fal-recipes/references/virtual-tryon.md         |   0
+ skills/{claude.ai => }/fal-redesign/.gitignore      |   0
+ skills/{claude.ai => }/fal-redesign/DEMO.md         |   0
+ skills/{claude.ai => }/fal-redesign/LICENSE         |   0
+ skills/{claude.ai => }/fal-redesign/README.md       |   0
+ skills/{claude.ai => }/fal-redesign/SKILL.md        |   0
+ .../{claude.ai => }/fal-redesign/runtime/.gitignore |   0
+ .../{claude.ai => }/fal-redesign/runtime/README.md  |   0
+ .../fal-redesign/runtime/bin/fal-site.mjs           |   0
+ .../fal-redesign/runtime/package-lock.json          |   0
+ .../fal-redesign/runtime/package.json               |   0
+ .../fal-redesign/runtime/src/brief.mjs              |   0
+ .../fal-redesign/runtime/src/directions.mjs         |   0
+ .../fal-redesign/runtime/src/fal.mjs                |   0
+ .../fal-redesign/runtime/src/hero.mjs               |   0
+ .../fal-redesign/runtime/src/implement.mjs          |   0
+ .../fal-redesign/runtime/src/mockup.mjs             |   0
+ .../fal-redesign/runtime/src/review.mjs             |   0
+ .../fal-redesign/runtime/src/upgrade.mjs            |   0
+ .../fal-redesign/runtime/src/variants.mjs           |   0
+ .../fal-redesign/runtime/src/video.mjs              |   0
+ skills/{claude.ai => }/fal-regenerate-3d/SKILL.md   |   0
+ skills/{claude.ai => }/fal-workflow/SKILL.md        |   0
+ .../fal-workflow/references/EXAMPLES.md             |   0
+ .../fal-workflow/references/MODELS.md               |   0
+ .../fal-workflow/references/PATTERNS.md             |   0
+ .../fal-workflow/references/WORKFLOWS.md            |   0
+ .../fal-workflow/references/node-rules.md           |   0
+ .../fal-workflow/references/pipeline-patterns.md    |   0
+ .../fal-workflow/references/recipes.md              |   0
+ .../fal-workflow/references/utility-endpoints.md    |   0
+ skills/{claude.ai => }/genmedia-workflow/SKILL.md   |   0
+ .../genmedia-workflow/references/node-rules.md      |   0
+ .../references/pipeline-patterns.md                 |   0
+ .../genmedia-workflow/references/recipes.md         |   0
+ .../references/utility-endpoints.md                 |   0
+ skills/{claude.ai => }/genmedia/SKILL.md            |   0
+ .../genmedia/references/full-reference.md           |   0
+ skills/{claude.ai => }/index.json                   |   0
+ skills/{claude.ai => }/model-routing/SKILL.md       |   0
+ skills/{claude.ai => }/storytelling/SKILL.md        |   0
+ .../storytelling/references/examples.md             |   0
+ .../storytelling/references/shot-planning.md        |   0
+ .../storytelling/references/workflows.md            |   0
+ 85 files changed, 12 insertions(+), 12 deletions(-)
+af215b01a22272ab3becb364258a81b0a77bc3c0 2026-05-03T20:16:48-07:00 add skills registry index and build script
+
+ scripts/build-skills-index.py | 131 +++++++++++
+ skills/claude.ai/index.json   | 494 ++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 625 insertions(+)
+08a70bbf30d0e719126429d13e5f92f3ad374d2e 2026-05-01T18:10:20+03:00 Merge pull request #12 from fal-ai-community/architecture/genmedia-aligned
+01a9c3f1f310d9615bc138fda1efc703bbf87f98 2026-05-01T03:30:00+03:00 Remove all .sh scripts; consolidate to genmedia CLI runtime
+
+ README.md                                          |   9 +-
+ skills/claude.ai/fal-3d/SKILL.md                   |  70 ---
+ skills/claude.ai/fal-3d/scripts/generate-3d.sh     |  79 ----
+ skills/claude.ai/fal-audio.zip                     | Bin 5011 -> 0 bytes
+ skills/claude.ai/fal-audio/SKILL.md                | 179 -------
+ .../claude.ai/fal-audio/scripts/speech-to-text.sh  | 141 ------
+ .../claude.ai/fal-audio/scripts/text-to-speech.sh  | 141 ------
+ skills/claude.ai/fal-generate.zip                  | Bin 13965 -> 0 bytes
+ skills/claude.ai/fal-generate/SKILL.md             | 290 ------------
+ skills/claude.ai/fal-generate/scripts/generate.sh  | 519 ---------------------
+ .../claude.ai/fal-generate/scripts/get-schema.sh   | 216 ---------
+ .../fal-generate/scripts/search-models.sh          | 154 ------
+ skills/claude.ai/fal-generate/scripts/upload.sh    | 216 ---------
+ skills/claude.ai/fal-image-edit.zip                | Bin 4114 -> 0 bytes
+ skills/claude.ai/fal-image-edit/SKILL.md           | 181 -------
+ .../claude.ai/fal-image-edit/scripts/edit-image.sh | 199 --------
+ skills/claude.ai/fal-kling-o3/SKILL.md             | 100 ----
+ .../fal-kling-o3/scripts/kling-generate.sh         |  72 ---
+ .../claude.ai/fal-kling-o3/scripts/kling-video.sh  | 107 -----
+ skills/claude.ai/fal-lip-sync/SKILL.md             |  84 ----
+ skills/claude.ai/fal-lip-sync/scripts/lip-sync.sh  |  71 ---
+ .../claude.ai/fal-lip-sync/scripts/talking-head.sh | 126 -----
+ skills/claude.ai/fal-platform.zip                  | Bin 10209 -> 0 bytes
+ skills/claude.ai/fal-platform/SKILL.md             | 160 -------
+ .../fal-platform/scripts/estimate-cost.sh          | 161 -------
+ skills/claude.ai/fal-platform/scripts/pricing.sh   | 143 ------
+ skills/claude.ai/fal-platform/scripts/requests.sh  | 158 -------
+ skills/claude.ai/fal-platform/scripts/setup.sh     | 126 -----
+ skills/claude.ai/fal-platform/scripts/usage.sh     | 183 --------
+ skills/claude.ai/fal-realtime/SKILL.md             |  95 ----
+ skills/claude.ai/fal-realtime/scripts/realtime.sh  |  93 ----
+ skills/claude.ai/fal-redesign/DEMO.md              |  10 +-
+ skills/claude.ai/fal-redesign/README.md            |   8 +-
+ skills/claude.ai/fal-redesign/SKILL.md             |  35 +-
+ skills/claude.ai/fal-redesign/install.sh           |  71 ---
+ skills/claude.ai/fal-redesign/scripts/describe.sh  |  52 ---
+ skills/claude.ai/fal-redesign/scripts/generate.sh  |  65 ---
+ skills/claude.ai/fal-redesign/scripts/iterate.sh   |  60 ---
+ skills/claude.ai/fal-redesign/scripts/upgrade.sh   |  65 ---
+ skills/claude.ai/fal-restore/SKILL.md              |  63 ---
+ skills/claude.ai/fal-restore/scripts/restore.sh    |  75 ---
+ skills/claude.ai/fal-train/SKILL.md                |  87 ----
+ skills/claude.ai/fal-train/scripts/train.sh        | 100 ----
+ skills/claude.ai/fal-tryon/SKILL.md                |  59 ---
+ skills/claude.ai/fal-tryon/scripts/tryon.sh        |  61 ---
+ skills/claude.ai/fal-upscale.zip                   | Bin 3426 -> 0 bytes
+ skills/claude.ai/fal-upscale/SKILL.md              | 142 ------
+ skills/claude.ai/fal-upscale/scripts/upscale.sh    | 141 ------
+ skills/claude.ai/fal-video-edit/SKILL.md           |  83 ----
+ .../claude.ai/fal-video-edit/scripts/edit-video.sh |  95 ----
+ .../fal-video-edit/scripts/video-audio.sh          |  72 ---
+ skills/claude.ai/fal-vision/SKILL.md               |  74 ---
+ skills/claude.ai/fal-vision/scripts/analyze.sh     |  83 ----
+ skills/claude.ai/fal-workflow.zip                  | Bin 23201 -> 21607 bytes
+ skills/claude.ai/fal-workflow/SKILL.md             |  29 +-
+ .../fal-workflow/scripts/create-workflow.sh        | 138 ------
+ 56 files changed, 44 insertions(+), 5697 deletions(-)
+8390c77f9c2ae8b4532f6d7cf551d7779825a5f7 2026-05-01T03:20:23+03:00 Restructure repo around genmedia CLI: foundational, umbrellas, verticals
+
+ README.md                                          | 123 +++-----
+ skills/claude.ai/character-design/SKILL.md         | 151 +++++++++
+ .../character-design/references/anchor-system.md   |  65 ++++
+ .../character-design/references/examples.md        |  56 ++++
+ .../character-design/references/prompt-patterns.md |  74 +++++
+ skills/claude.ai/cinematography/SKILL.md           | 145 +++++++++
+ .../cinematography/references/examples.md          |  49 +++
+ .../references/lighting-lens-color.md              |  49 +++
+ .../cinematography/references/shot-language.md     |  52 +++
+ skills/claude.ai/commercial/SKILL.md               | 153 +++++++++
+ skills/claude.ai/commercial/references/examples.md |  50 +++
+ .../commercial/references/prompt-patterns.md       |  74 +++++
+ .../claude.ai/commercial/references/workflows.md   |  51 +++
+ skills/claude.ai/fal-3d/SKILL.md                   |  18 +-
+ skills/claude.ai/fal-3d/scripts/generate-3d.sh     |   4 +-
+ skills/claude.ai/fal-audio.zip                     | Bin 5292 -> 5011 bytes
+ skills/claude.ai/fal-audio/SKILL.md                |   4 +-
+ skills/claude.ai/fal-gamedev/SKILL.md              | 283 +++++++++++++++++
+ skills/claude.ai/fal-generate.zip                  | Bin 14196 -> 13965 bytes
+ skills/claude.ai/fal-generate/SKILL.md             |  10 +-
+ skills/claude.ai/fal-image-edit.zip                | Bin 4301 -> 4114 bytes
+ skills/claude.ai/fal-image-edit/SKILL.md           |   2 +-
+ skills/claude.ai/fal-kling-o3/SKILL.md             |  12 +-
+ .../fal-kling-o3/scripts/kling-generate.sh         |   2 +-
+ .../claude.ai/fal-kling-o3/scripts/kling-video.sh  |   2 +-
+ skills/claude.ai/fal-lip-sync/scripts/lip-sync.sh  |   2 +-
+ .../claude.ai/fal-lip-sync/scripts/talking-head.sh |   2 +-
+ skills/claude.ai/fal-models-catalog/SKILL.md       |  51 +++
+ .../fal-models-catalog/references/audio-to-text.md |  59 ++++
+ .../fal-models-catalog/references/image-to-3d.md   |  66 ++++
+ .../references/image-to-image.md                   | 124 ++++++++
+ .../fal-models-catalog/references/image-to-text.md |  67 ++++
+ .../references/image-to-video.md                   | 102 ++++++
+ .../fal-models-catalog/references/text-to-3d.md    |  54 ++++
+ .../fal-models-catalog/references/text-to-audio.md |  79 +++++
+ .../fal-models-catalog/references/text-to-image.md |  93 ++++++
+ .../fal-models-catalog/references/text-to-video.md |  57 ++++
+ .../references/video-to-video.md                   |  69 ++++
+ skills/claude.ai/fal-platform.zip                  | Bin 10189 -> 10209 bytes
+ skills/claude.ai/fal-prompting/SKILL.md            |  41 +++
+ .../fal-prompting/references/gpt-image-2.md        | 158 ++++++++++
+ .../fal-prompting/references/happy-horse.md        | 127 ++++++++
+ skills/claude.ai/fal-prompting/references/kling.md | 139 ++++++++
+ skills/claude.ai/fal-realtime/SKILL.md             |  32 +-
+ skills/claude.ai/fal-realtime/scripts/realtime.sh  |   2 +-
+ skills/claude.ai/fal-recipes/SKILL.md              |  68 ++++
+ .../fal-recipes/references/character-design.md     | 280 +++++++++++++++++
+ .../fal-recipes/references/character-lipsync.md    | 140 +++++++++
+ .../fal-recipes/references/cinematography.md       | 253 +++++++++++++++
+ .../claude.ai/fal-recipes/references/commercial.md | 263 ++++++++++++++++
+ .../fal-recipes/references/image-restoration.md    | 141 +++++++++
+ .../fal-recipes/references/product-shot.md         | 132 ++++++++
+ skills/claude.ai/fal-recipes/references/realism.md | 350 +++++++++++++++++++++
+ .../fal-recipes/references/storytelling.md         | 302 ++++++++++++++++++
+ .../fal-recipes/references/video-with-audio.md     | 135 ++++++++
+ .../fal-recipes/references/virtual-tryon.md        | 130 ++++++++
+ skills/claude.ai/fal-redesign/DEMO.md              |  52 +--
+ skills/claude.ai/fal-redesign/README.md            |  38 +--
+ skills/claude.ai/fal-redesign/SKILL.md             |  56 ++--
+ skills/claude.ai/fal-redesign/install.sh           |   6 +-
+ skills/claude.ai/fal-redesign/runtime/README.md    |  36 +--
+ .../fal-redesign/runtime/bin/fal-site.mjs          |   6 +-
+ .../fal-redesign/runtime/src/directions.mjs        |   4 +-
+ skills/claude.ai/fal-redesign/runtime/src/fal.mjs  |   2 +-
+ skills/claude.ai/fal-redesign/runtime/src/hero.mjs |   2 +-
+ .../fal-redesign/runtime/src/implement.mjs         |  14 +-
+ .../claude.ai/fal-redesign/runtime/src/mockup.mjs  |   8 +-
+ .../claude.ai/fal-redesign/runtime/src/review.mjs  |   6 +-
+ .../claude.ai/fal-redesign/runtime/src/upgrade.mjs |  68 ++--
+ .../fal-redesign/runtime/src/variants.mjs          |   6 +-
+ skills/claude.ai/fal-redesign/scripts/describe.sh  |   2 +-
+ skills/claude.ai/fal-redesign/scripts/generate.sh  |   2 +-
+ skills/claude.ai/fal-redesign/scripts/iterate.sh   |   2 +-
+ skills/claude.ai/fal-redesign/scripts/upgrade.sh   |   2 +-
+ skills/claude.ai/fal-regenerate-3d/SKILL.md        |  48 +--
+ skills/claude.ai/fal-restore/SKILL.md              |   8 +-
+ skills/claude.ai/fal-restore/scripts/restore.sh    |   2 +-
+ skills/claude.ai/fal-train/SKILL.md                |  26 +-
+ skills/claude.ai/fal-train/scripts/train.sh        |   2 +-
+ skills/claude.ai/fal-tryon/SKILL.md                |   8 +-
+ skills/claude.ai/fal-tryon/scripts/tryon.sh        |   2 +-
+ skills/claude.ai/fal-upscale.zip                   | Bin 3528 -> 3426 bytes
+ skills/claude.ai/fal-upscale/SKILL.md              |   2 +-
+ skills/claude.ai/fal-video-edit/SKILL.md           |   6 +-
+ .../claude.ai/fal-video-edit/scripts/edit-video.sh |   2 +-
+ .../fal-video-edit/scripts/video-audio.sh          |   2 +-
+ skills/claude.ai/fal-vision/SKILL.md               |   8 +-
+ skills/claude.ai/fal-vision/scripts/analyze.sh     |   2 +-
+ skills/claude.ai/fal-workflow.zip                  | Bin 7535 -> 23201 bytes
+ skills/claude.ai/fal-workflow/SKILL.md             | 299 ++++++++++++------
+ .../fal-workflow/references/node-rules.md          |  84 +++++
+ .../fal-workflow/references/pipeline-patterns.md   | 132 ++++++++
+ .../claude.ai/fal-workflow/references/recipes.md   | 103 ++++++
+ .../fal-workflow/references/utility-endpoints.md   |  95 ++++++
+ skills/claude.ai/genmedia-workflow/SKILL.md        | 153 +++++++++
+ .../genmedia-workflow/references/node-rules.md     |  84 +++++
+ .../references/pipeline-patterns.md                | 132 ++++++++
+ .../genmedia-workflow/references/recipes.md        | 103 ++++++
+ .../references/utility-endpoints.md                |  95 ++++++
+ skills/claude.ai/genmedia/SKILL.md                 |  93 ++++++
+ .../genmedia/references/full-reference.md          | 262 +++++++++++++++
+ skills/claude.ai/model-routing/SKILL.md            | 141 +++++++++
+ skills/claude.ai/storytelling/SKILL.md             | 165 ++++++++++
+ .../claude.ai/storytelling/references/examples.md  |  65 ++++
+ .../storytelling/references/shot-planning.md       |  69 ++++
+ .../claude.ai/storytelling/references/workflows.md |  56 ++++
+ 106 files changed, 7073 insertions(+), 435 deletions(-)
+dbe1070ee42bd407f8d50a0765f4891c6fa0fc74 2026-04-30T01:43:23-07:00 Merge pull request #11 from fal-ai-community/update-readme-fal-regenerate-3d
+21a7033298b43939e69dec8a1b5bd66415bfa0f1 2026-04-30T01:43:02-07:00 README: add fal-regenerate-3d to Creative & Production table
+
+ README.md | 1 +
+ 1 file changed, 1 insertion(+)
+38ea7623803ff2a7922833b536f5db36efbb6593 2026-04-30T01:41:07-07:00 Merge pull request #10 from fal-ai-community/add-fal-regenerate-3d
+abe2be235aea1db66aced69414bdd8e005f470c2 2026-04-30T01:40:17-07:00 Add fal-regenerate-3d skill — full 3D character-selector recipe
+
+ skills/claude.ai/fal-regenerate-3d/SKILL.md | 116 ++++++++++++++++++++++++++++
+ 1 file changed, 116 insertions(+)

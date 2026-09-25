@@ -1,0 +1,17 @@
+{
+  "observed_date": "2026-09-25",
+  "method": "read-only public API documentation; no endpoint execution",
+  "sources": [
+    "https://fal.ai/models/openai/gpt-image-2/api",
+    "https://fal.ai/models/openai/gpt-image-2/edit/api"
+  ],
+  "findings": {
+    "fal_edit_reference_limit": 16,
+    "fal_edit_mask_field": "mask_url",
+    "external_guide_mask_field": "mask_image_url",
+    "input_fidelity": "not present in observed edit Input listing; not a tested rejection",
+    "comfy_inference": "none; different transport and verified adapter capacity"
+  },
+  "other_endpoints_currency": "not independently verified",
+  "quality_ranking": "not validated"
+}

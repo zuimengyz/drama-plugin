@@ -1,0 +1,211 @@
+[
+  {
+    "id": "FC01",
+    "capabilities": [
+      "F43",
+      "F48"
+    ],
+    "external_rule": "理想比例/无瑕/雕塑化面部默认",
+    "local_rule": "批准身份与禁止自动美化",
+    "winner": "Level 1/2 本地边界",
+    "future_action": "REJECT；不把外部审美值纳入身份或 QC；无本地 loser",
+    "status": "RESOLVED_FOR_AUDIT",
+    "external_winner": false
+  },
+  {
+    "id": "FC02",
+    "capabilities": [
+      "F44"
+    ],
+    "external_rule": "职业/性格/类型推面部",
+    "local_rule": "来源与批准设计，casting 禁 physiognomy",
+    "winner": "Level 2 人物事实",
+    "future_action": "REJECT AESTHETIC_OR_STEREOTYPE_HEURISTIC；外部默认不得导入",
+    "status": "RESOLVED_FOR_AUDIT",
+    "external_winner": false
+  },
+  {
+    "id": "FC03",
+    "capabilities": [
+      "F45",
+      "F16",
+      "F20",
+      "F29"
+    ],
+    "external_rule": "半哑光/鼻红/眼纹/固定高光通用注入",
+    "local_rule": "年龄/皮肤/剧情状态及 Lighting 各自批准",
+    "winner": "Level 1/2 平台与人物状态",
+    "future_action": "REJECT 自动注入；ADAPT 分区观察，未知保持未知",
+    "status": "RESOLVED_FOR_AUDIT",
+    "external_winner": false
+  },
+  {
+    "id": "FC04",
+    "capabilities": [
+      "F41",
+      "F22",
+      "F26"
+    ],
+    "external_rule": "肖像编辑锁 pose/gaze/expression",
+    "local_rule": "C15 当前镜头拥有表演",
+    "winner": "Scope-specific local authority",
+    "future_action": "编辑基底有批准 preserve 时 KEEP_LOCAL；镜头迁移不得照搬保留清单",
+    "status": "RESOLVED_FOR_AUDIT",
+    "external_winner": false
+  },
+  {
+    "id": "FC05",
+    "capabilities": [
+      "F42",
+      "F39"
+    ],
+    "external_rule": "scene reference 默认授权表情光照相机",
+    "local_rule": "Reference 不转移 owner",
+    "winner": "C15 / 当前专业原件",
+    "future_action": "REJECT 自动继承；ADAPT leakage 观察",
+    "status": "RESOLVED_FOR_AUDIT",
+    "external_winner": false
+  },
+  {
+    "id": "FC06",
+    "capabilities": [
+      "F46"
+    ],
+    "external_rule": "冷脸不笑/偏移视线是真实感必需",
+    "local_rule": "Performance / Blocking 当前原件",
+    "winner": "Level 2 approved performance",
+    "future_action": "REJECT 默认表演；不把固定表情纳入身份",
+    "status": "RESOLVED_FOR_AUDIT",
+    "external_winner": false
+  },
+  {
+    "id": "FC07",
+    "capabilities": [
+      "F49"
+    ],
+    "external_rule": "外部 prompt 模板写最终 provider prompt",
+    "local_rule": "现有 compiler/serializer 独占各自正式路径",
+    "winner": "Level 1 平台",
+    "future_action": "REFERENCE_ONLY；不复制 prompt bundle/附加第二写入者",
+    "status": "RESOLVED_FOR_AUDIT",
+    "external_winner": false
+  },
+  {
+    "id": "FC08",
+    "capabilities": [
+      "F40"
+    ],
+    "external_rule": "QC fail 即修图/迭代调用",
+    "local_rule": "Review 处置、预算与授权独立",
+    "winner": "Level 1 平台",
+    "future_action": "ADAPT 局部修复建议；外部自动执行分支不采用",
+    "status": "RESOLVED_FOR_AUDIT",
+    "external_winner": false
+  },
+  {
+    "id": "FC09",
+    "capabilities": [
+      "F28",
+      "F27"
+    ],
+    "external_rule": "固定差异组数/两轮上限",
+    "local_rule": "本地角色需求与差异证明",
+    "winner": "本地角色任务与证据门",
+    "future_action": "REFERENCE_ONLY 数字阈值；ADAPT 比较思想，不替换 casting",
+    "status": "RESOLVED_FOR_AUDIT",
+    "external_winner": false
+  },
+  {
+    "id": "FC10",
+    "capabilities": [
+      "F47"
+    ],
+    "external_rule": "手机/噪点/随拍等于真人",
+    "local_rule": "Work medium 与已批准视觉风格",
+    "winner": "Level 1/2 平台与作品",
+    "future_action": "REFERENCE_ONLY 风格；不重审 cinematography、不默改镜头",
+    "status": "RESOLVED_FOR_AUDIT",
+    "external_winner": false
+  },
+  {
+    "id": "FC11",
+    "capabilities": [
+      "F23",
+      "F24",
+      "F13"
+    ],
+    "external_rule": "从强阴影或遮帽区补确定结构",
+    "local_rule": "只接受可见证据/批准创作",
+    "winner": "Level 2 已批准事实",
+    "future_action": "ADAPT 不确定性；推测不可自动成为事实",
+    "status": "RESOLVED_FOR_AUDIT",
+    "external_winner": false
+  },
+  {
+    "id": "FC12",
+    "capabilities": [
+      "F52",
+      "F53"
+    ],
+    "external_rule": "论文/自述产量/四图一致证明通用能力",
+    "local_rule": "same task/medium/credible evidence 才能赢",
+    "winner": "证据门槛",
+    "future_action": "REJECT 模型机理推论；REFERENCE_ONLY 效果声称",
+    "status": "RESOLVED_FOR_AUDIT",
+    "external_winner": false
+  },
+  {
+    "id": "FC13",
+    "capabilities": [
+      "F22",
+      "F18"
+    ],
+    "external_rule": "C anchor 含姿态服装及任意可变 medium",
+    "local_rule": "身份/服装/当前状态/Work pin 独立",
+    "winner": "Level 1/2 + C15",
+    "future_action": "KEEP_LOCAL；只保留合法稳定项，不能通过换场顺带改 medium",
+    "status": "RESOLVED_FOR_AUDIT",
+    "external_winner": false
+  },
+  {
+    "id": "FC14",
+    "capabilities": [
+      "F50",
+      "F51"
+    ],
+    "external_rule": "安装外部 runtime / route / video",
+    "local_rule": "本轮研究限定",
+    "winner": "用户范围 + Level 1",
+    "future_action": "OUT_OF_SCOPE；不导入执行/反馈失效规则",
+    "status": "RESOLVED_FOR_AUDIT",
+    "external_winner": false
+  },
+  {
+    "id": "FC15",
+    "capabilities": [
+      "F54",
+      "F44"
+    ],
+    "external_rule": "A 结构解耦新文档与 auto_bss 旧默认并存",
+    "local_rule": "本地事实优先",
+    "winner": "批准人物事实",
+    "future_action": "ADAPT 解耦；REJECT 推型；不接受整包内部优先级作为平台规则",
+    "status": "RESOLVED_FOR_AUDIT",
+    "external_winner": false
+  },
+  {
+    "id": "FC16",
+    "capabilities": [
+      "F01",
+      "F03",
+      "F06",
+      "F27"
+    ],
+    "external_rule": "误把外部几何视为本地从未具有",
+    "local_rule": "旧 FaceDesign + 当前 casting 已有几何",
+    "winner": "本地事实与审计完整性",
+    "future_action": "保留已有能力；仅调查 formal asset/IR/QC 的连接缺口，无 REPLACE_LOCAL",
+    "status": "RESOLVED_FOR_AUDIT",
+    "external_winner": false
+  }
+]

@@ -1,0 +1,89 @@
+{
+  "schema": "a3-canonical-delta-design-v1",
+  "status": "DESIGN_ONLY",
+  "not_runtime_schema": true,
+  "changes": [
+    {
+      "id": "D1",
+      "target": "GlobalVisualStyle.imaging_character",
+      "capabilities": [
+        "C11",
+        "C30"
+      ],
+      "type": "ImagingCharacterIntent | null",
+      "default": null,
+      "scope": {
+        "medium": "LIVE_ACTION",
+        "modality": "STILL",
+        "level": "WORK"
+      },
+      "shape": {
+        "photographic_genre": "Text | null",
+        "capture_character": "Text | null",
+        "optical_texture": "OpticalTextureIntent[] (default empty)",
+        "reason": "nonempty Text",
+        "source_refs": "SourcePin[] (nonempty, approved design basis)"
+      },
+      "nested_shape": {
+        "OpticalTextureIntent": {
+          "effect": [
+            "GRAIN",
+            "HALATION",
+            "BLOOM",
+            "SHUTTER_CHARACTER",
+            "OPTICAL_SOFTNESS"
+          ],
+          "intent": "nonempty Text",
+          "applicability": "nonempty Text",
+          "preservation_constraints": "nonempty Text[]"
+        }
+      },
+      "constraints": [
+        "Non-null object requires at least one genre/capture/texture choice",
+        "No medium, story-era, identity, material or blocking override",
+        "Omit only new absent key to preserve legacy bytes",
+        "Non-null requires new fingerprint and source-bound approval; no automatic default/migration",
+        "Registry metadata exposes this field under existing global-visual-style owner"
+      ]
+    },
+    {
+      "id": "D2",
+      "target": "FrameSpec.professional_sources",
+      "capabilities": [
+        "C15"
+      ],
+      "type": "tuple[SourcePin, ...]",
+      "default": [],
+      "scope": {
+        "medium": "LIVE_ACTION",
+        "modality": "STILL"
+      },
+      "constraints": [
+        "Omit only new empty key from legacy serialization",
+        "Bind original sources plus derived mapping receipt before calculating FrameSpec source fingerprint",
+        "No provider prompt or execution parameters in pins",
+        "Resolve owner/scope/approval/freshness before reserve and begin-submission",
+        "Mapping receipt points to originals; never includes FrameSpec or IR hash to avoid cyclic hashing",
+        "Existing store/resolver only; no new Storage or MCP API"
+      ]
+    }
+  ],
+  "unchanged_contracts": [
+    "CreativeBible",
+    "CreativeRecord",
+    "VisualPromptIR",
+    "Review",
+    "CinematicShotSpec",
+    "provider request schema"
+  ],
+  "values_profile": {
+    "container": "existing CreativeRecord.values under current owned keys",
+    "semantic_members": {
+      "intent": "one independently authored visible choice; not a provider template",
+      "reason": "approved dramatic/design basis",
+      "constraints": "preservation requirements",
+      "criteria": "observable acceptance questions"
+    },
+    "runtime_status": "not implemented; current dict acceptance is not semantic validation"
+  }
+}

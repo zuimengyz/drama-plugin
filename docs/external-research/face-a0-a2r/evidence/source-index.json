@@ -1,0 +1,522 @@
+{
+  "A-structure": {
+    "source": "A",
+    "path": "references/structure_and_makeup.md",
+    "line": 5,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L5",
+    "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba"
+  },
+  "A-axes": {
+    "source": "A",
+    "path": "references/structure_and_makeup.md",
+    "line": 15,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L15",
+    "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba"
+  },
+  "A-decouple": {
+    "source": "A",
+    "path": "references/structure_and_makeup.md",
+    "line": 26,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L26",
+    "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba"
+  },
+  "A-makeup": {
+    "source": "A",
+    "path": "references/structure_and_makeup.md",
+    "line": 36,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L36",
+    "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba"
+  },
+  "A-roster": {
+    "source": "A",
+    "path": "references/structure_and_makeup.md",
+    "line": 70,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L70",
+    "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba"
+  },
+  "A-visible": {
+    "source": "A",
+    "path": "references/structure_and_makeup.md",
+    "line": 104,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L104",
+    "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba"
+  },
+  "A-aesthetic": {
+    "source": "A",
+    "path": "references/aesthetics.md",
+    "line": 28,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/aesthetics.md#L28",
+    "sha256": "c1872e66c60000346bd0db49b42483f9c5c08c2dbf69af85ce219890be724a6b"
+  },
+  "A-nose": {
+    "source": "A",
+    "path": "references/aesthetics.md",
+    "line": 46,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/aesthetics.md#L46",
+    "sha256": "c1872e66c60000346bd0db49b42483f9c5c08c2dbf69af85ce219890be724a6b"
+  },
+  "A-profile": {
+    "source": "A",
+    "path": "references/aesthetics.md",
+    "line": 54,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/aesthetics.md#L54",
+    "sha256": "c1872e66c60000346bd0db49b42483f9c5c08c2dbf69af85ce219890be724a6b"
+  },
+  "A-realism": {
+    "source": "A",
+    "path": "references/realism_vs_refined.md",
+    "line": 27,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/realism_vs_refined.md#L27",
+    "sha256": "7ce35cfd669bb4566945ae7f20cb62d649db86ef36664b80e5c7df16f196695e"
+  },
+  "A-bio": {
+    "source": "A",
+    "path": "references/realism_vs_refined.md",
+    "line": 73,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/realism_vs_refined.md#L73",
+    "sha256": "7ce35cfd669bb4566945ae7f20cb62d649db86ef36664b80e5c7df16f196695e"
+  },
+  "A-three": {
+    "source": "A",
+    "path": "references/realism_vs_refined.md",
+    "line": 170,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/realism_vs_refined.md#L170",
+    "sha256": "7ce35cfd669bb4566945ae7f20cb62d649db86ef36664b80e5c7df16f196695e"
+  },
+  "A-lock": {
+    "source": "A",
+    "path": "references/engineering.md",
+    "line": 27,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/engineering.md#L27",
+    "sha256": "119c510be452650f542bcd54cbd404fa037fa47f8ba873714a993610ba40d0ff"
+  },
+  "A-diff": {
+    "source": "A",
+    "path": "references/engineering.md",
+    "line": 19,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/engineering.md#L19",
+    "sha256": "119c510be452650f542bcd54cbd404fa037fa47f8ba873714a993610ba40d0ff"
+  },
+  "A-proof": {
+    "source": "A",
+    "path": "references/engineering.md",
+    "line": 5,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/engineering.md#L5",
+    "sha256": "119c510be452650f542bcd54cbd404fa037fa47f8ba873714a993610ba40d0ff"
+  },
+  "A-fail": {
+    "source": "A",
+    "path": "references/engineering.md",
+    "line": 60,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/engineering.md#L60",
+    "sha256": "119c510be452650f542bcd54cbd404fa037fa47f8ba873714a993610ba40d0ff"
+  },
+  "A-skin": {
+    "source": "A",
+    "path": "references/prompt_craft.md",
+    "line": 116,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/prompt_craft.md#L116",
+    "sha256": "ea146bb80b7849e09636c6d63b26b4cdf00284a0ce511bae62f40e18a324058c"
+  },
+  "A-claim": {
+    "source": "A",
+    "path": "references/prompt_craft.md",
+    "line": 171,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/prompt_craft.md#L171",
+    "sha256": "ea146bb80b7849e09636c6d63b26b4cdf00284a0ce511bae62f40e18a324058c"
+  },
+  "A-academic": {
+    "source": "A",
+    "path": "references/academic.md",
+    "line": 17,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/academic.md#L17",
+    "sha256": "a6bd23e255889a1c0e1033394bb9ded32d82c8d7e975d38c275873f146bf35cf"
+  },
+  "A-auto": {
+    "source": "A",
+    "path": "scripts/generate.py",
+    "line": 271,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/scripts/generate.py#L271",
+    "sha256": "ba1f18b87a33450faa63515948caa3a9bab62ab61715469e082bd56ccfbd6dbb"
+  },
+  "A-inject": {
+    "source": "A",
+    "path": "scripts/generate.py",
+    "line": 507,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/scripts/generate.py#L507",
+    "sha256": "ba1f18b87a33450faa63515948caa3a9bab62ab61715469e082bd56ccfbd6dbb"
+  },
+  "A-style": {
+    "source": "A",
+    "path": "scripts/generate.py",
+    "line": 426,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/scripts/generate.py#L426",
+    "sha256": "ba1f18b87a33450faa63515948caa3a9bab62ab61715469e082bd56ccfbd6dbb"
+  },
+  "A-provider": {
+    "source": "A",
+    "path": "scripts/generate.py",
+    "line": 939,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/scripts/generate.py#L939",
+    "sha256": "ba1f18b87a33450faa63515948caa3a9bab62ab61715469e082bd56ccfbd6dbb"
+  },
+  "A-theory": {
+    "source": "A",
+    "path": "references/theory.md",
+    "line": 36,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/theory.md#L36",
+    "sha256": "aa37a5bd0508b5215ec847fea0df5470757bfed85b7c5de11acbda3406714d2d"
+  },
+  "A-prompt": {
+    "source": "A",
+    "path": "references/prompt_standards.md",
+    "line": 9,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/prompt_standards.md#L9",
+    "sha256": "1577d9495a8df7a9acbf19b1d5957cbb9aa961ea952a4b0d2a78a3e01359cae8"
+  },
+  "A-candid": {
+    "source": "A",
+    "path": "references/candid_snapshot.md",
+    "line": 8,
+    "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+    "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/candid_snapshot.md#L8",
+    "sha256": "1028d9b2cde87eb65b86809e1d229840290b97a7b0c85815fed067a8da523891"
+  },
+  "B-principle": {
+    "source": "B",
+    "path": "SKILL.md",
+    "line": 41,
+    "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+    "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/SKILL.md#L41",
+    "sha256": "0f2f6fcd46e6aa5918d026ec736b281bb278323c61157d89a5b05b81667ab084"
+  },
+  "B-passes": {
+    "source": "B",
+    "path": "SKILL.md",
+    "line": 85,
+    "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+    "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/SKILL.md#L85",
+    "sha256": "0f2f6fcd46e6aa5918d026ec736b281bb278323c61157d89a5b05b81667ab084"
+  },
+  "B-qc": {
+    "source": "B",
+    "path": "references/quality-gate.md",
+    "line": 5,
+    "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+    "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/references/quality-gate.md#L5",
+    "sha256": "92cde1d96b2e404b07b60620b49fe4d2236b75d3d098aa416d82d6580fc95269"
+  },
+  "B-repair": {
+    "source": "B",
+    "path": "references/quality-gate.md",
+    "line": 18,
+    "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+    "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/references/quality-gate.md#L18",
+    "sha256": "92cde1d96b2e404b07b60620b49fe4d2236b75d3d098aa416d82d6580fc95269"
+  },
+  "B-skin": {
+    "source": "B",
+    "path": "references/prompts.md",
+    "line": 22,
+    "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+    "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/references/prompts.md#L22",
+    "sha256": "f0b4667b921f2333453e0b6cd37fda9444fe067306da50c12d21110d15298ad1"
+  },
+  "B-hair": {
+    "source": "B",
+    "path": "references/prompts.md",
+    "line": 54,
+    "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+    "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/references/prompts.md#L54",
+    "sha256": "f0b4667b921f2333453e0b6cd37fda9444fe067306da50c12d21110d15298ad1"
+  },
+  "B-context": {
+    "source": "B",
+    "path": "SKILL.md",
+    "line": 180,
+    "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+    "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/SKILL.md#L180",
+    "sha256": "0f2f6fcd46e6aa5918d026ec736b281bb278323c61157d89a5b05b81667ab084"
+  },
+  "B-ci": {
+    "source": "B",
+    "path": ".github/workflows/validate.yml",
+    "line": 9,
+    "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+    "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/.github/workflows/validate.yml#L9",
+    "sha256": "7772fbd9c88772b472f84f24f81ca5018f40248c8f668dd8e7e8722823ed51a1"
+  },
+  "C-anchor": {
+    "source": "C",
+    "path": "skills/character-design/references/anchor-system.md",
+    "line": 6,
+    "sha": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+    "url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/character-design/references/anchor-system.md#L6",
+    "sha256": "397f23ee81160990aad789931649aded955314c583539665fb89f1bf15831acd"
+  },
+  "C-variable": {
+    "source": "C",
+    "path": "skills/character-design/references/anchor-system.md",
+    "line": 37,
+    "sha": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+    "url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/character-design/references/anchor-system.md#L37",
+    "sha256": "397f23ee81160990aad789931649aded955314c583539665fb89f1bf15831acd"
+  },
+  "C-drift": {
+    "source": "C",
+    "path": "skills/character-design/SKILL.md",
+    "line": 140,
+    "sha": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+    "url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/character-design/SKILL.md#L140",
+    "sha256": "1f62641d84b3dc0f2c0e13663afbb71cd9682483e82b920cc53450713c5f5d57"
+  },
+  "C-expression": {
+    "source": "C",
+    "path": "skills/character-design/references/prompt-patterns.md",
+    "line": 38,
+    "sha": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+    "url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/character-design/references/prompt-patterns.md#L38",
+    "sha256": "256ba5364c0b9b52538774e1c307ec1e8dbeffcd5cd85950e2b3551bcac382bc"
+  },
+  "C-exec": {
+    "source": "C",
+    "path": "skills/character-design/SKILL.md",
+    "line": 37,
+    "sha": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+    "url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/character-design/SKILL.md#L37",
+    "sha256": "1f62641d84b3dc0f2c0e13663afbb71cd9682483e82b920cc53450713c5f5d57"
+  },
+  "D-duty": {
+    "source": "D",
+    "path": "skill/realportrait-ai/SKILL.md",
+    "line": 18,
+    "sha": "35728411922ddf83c612612bc4d2d1c6df8a94a0",
+    "url": "https://github.com/Shinning1010/realportrait-ai/blob/35728411922ddf83c612612bc4d2d1c6df8a94a0/skill/realportrait-ai/SKILL.md#L18",
+    "sha256": "526da416302ebc3d89f44d150ba0fe69d1f7c8667581201e55d973bf967d52b7"
+  },
+  "D-revision": {
+    "source": "D",
+    "path": "skill/realportrait-ai/SKILL.md",
+    "line": 91,
+    "sha": "35728411922ddf83c612612bc4d2d1c6df8a94a0",
+    "url": "https://github.com/Shinning1010/realportrait-ai/blob/35728411922ddf83c612612bc4d2d1c6df8a94a0/skill/realportrait-ai/SKILL.md#L91",
+    "sha256": "526da416302ebc3d89f44d150ba0fe69d1f7c8667581201e55d973bf967d52b7"
+  },
+  "D-stop": {
+    "source": "D",
+    "path": "skill/realportrait-ai/SKILL.md",
+    "line": 138,
+    "sha": "35728411922ddf83c612612bc4d2d1c6df8a94a0",
+    "url": "https://github.com/Shinning1010/realportrait-ai/blob/35728411922ddf83c612612bc4d2d1c6df8a94a0/skill/realportrait-ai/SKILL.md#L138",
+    "sha256": "526da416302ebc3d89f44d150ba0fe69d1f7c8667581201e55d973bf967d52b7"
+  },
+  "L-asset": {
+    "source": "LOCAL",
+    "path": "plugin/src/drama_plugin/contracts/specialized_asset.py",
+    "line": 44,
+    "sha": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+    "url": "/Users/zy/historical-plugin/drama-plugin/plugin/src/drama_plugin/contracts/specialized_asset.py:44",
+    "sha256": "edd86c9a630a112a830b2f5913abcca25bccf9dec93f645073062d481de51d19"
+  },
+  "L-decision": {
+    "source": "LOCAL",
+    "path": "plugin/src/drama_plugin/contracts/specialized_asset.py",
+    "line": 38,
+    "sha": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+    "url": "/Users/zy/historical-plugin/drama-plugin/plugin/src/drama_plugin/contracts/specialized_asset.py:38",
+    "sha256": "edd86c9a630a112a830b2f5913abcca25bccf9dec93f645073062d481de51d19"
+  },
+  "L-style": {
+    "source": "LOCAL",
+    "path": "plugin/src/drama_plugin/contracts/specialized_asset.py",
+    "line": 18,
+    "sha": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+    "url": "/Users/zy/historical-plugin/drama-plugin/plugin/src/drama_plugin/contracts/specialized_asset.py:18",
+    "sha256": "edd86c9a630a112a830b2f5913abcca25bccf9dec93f645073062d481de51d19"
+  },
+  "L-facelegacy": {
+    "source": "LOCAL",
+    "path": "plugin/src/drama_plugin/contracts/production_design.py",
+    "line": 73,
+    "sha": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+    "url": "/Users/zy/historical-plugin/drama-plugin/plugin/src/drama_plugin/contracts/production_design.py:73",
+    "sha256": "b9cd0d7f04533c02cbf6be281c113b0f077742c79704e3938e9b7f14218b0252"
+  },
+  "L-cast": {
+    "source": "LOCAL",
+    "path": "plugin/src/drama_plugin/contracts/casting_discriminants.py",
+    "line": 80,
+    "sha": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+    "url": "/Users/zy/historical-plugin/drama-plugin/plugin/src/drama_plugin/contracts/casting_discriminants.py:80",
+    "sha256": "00787727dac8725f6e69f5df98ca6ebde13544c4a9f8f683bd3e5b89f3fd107f"
+  },
+  "L-castpolicy": {
+    "source": "LOCAL",
+    "path": "plugin/skills/performance-casting/references/visual-discriminants.md",
+    "line": 20,
+    "sha": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+    "url": "/Users/zy/historical-plugin/drama-plugin/plugin/skills/performance-casting/references/visual-discriminants.md:20",
+    "sha256": "eb1e927aaea94af982f6517b3742908b1256f368eea508637558aaa1d34e2588"
+  },
+  "L-owner": {
+    "source": "LOCAL",
+    "path": "plugin/skills/specialized-asset-design/SKILL.md",
+    "line": 9,
+    "sha": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+    "url": "/Users/zy/historical-plugin/drama-plugin/plugin/skills/specialized-asset-design/SKILL.md:9",
+    "sha256": "c9a252f165d9e1cbe52bedc863bf6583b2ad383daec6b4282893ed2b1b364e8a"
+  },
+  "L-reference": {
+    "source": "LOCAL",
+    "path": "plugin/skills/reference-strategy/SKILL.md",
+    "line": 22,
+    "sha": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+    "url": "/Users/zy/historical-plugin/drama-plugin/plugin/skills/reference-strategy/SKILL.md:22",
+    "sha256": "1802e5c93330a505bbb9f96192d77ef6ebfdd1b92d8baa3f54612f5212d59676"
+  },
+  "L-look": {
+    "source": "LOCAL",
+    "path": "plugin/skills/look-continuity/SKILL.md",
+    "line": 22,
+    "sha": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+    "url": "/Users/zy/historical-plugin/drama-plugin/plugin/skills/look-continuity/SKILL.md:22",
+    "sha256": "67f72eb09aea3169887d5229fddfa88967c752c79dee8bbf1bbbac90580f1346"
+  },
+  "L-frame": {
+    "source": "LOCAL",
+    "path": "plugin/src/drama_plugin/visual/frame_request.py",
+    "line": 43,
+    "sha": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+    "url": "/Users/zy/historical-plugin/drama-plugin/plugin/src/drama_plugin/visual/frame_request.py:43",
+    "sha256": "069a453247bceae3652f26e6c3fdc9cf919aef54ec3afbd59225506cb3ec434a"
+  },
+  "L-binding": {
+    "source": "LOCAL",
+    "path": "plugin/src/drama_plugin/visual/frame_request.py",
+    "line": 222,
+    "sha": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+    "url": "/Users/zy/historical-plugin/drama-plugin/plugin/src/drama_plugin/visual/frame_request.py:222",
+    "sha256": "069a453247bceae3652f26e6c3fdc9cf919aef54ec3afbd59225506cb3ec434a"
+  },
+  "L-frameir": {
+    "source": "LOCAL",
+    "path": "plugin/src/drama_plugin/visual/frame_request.py",
+    "line": 291,
+    "sha": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+    "url": "/Users/zy/historical-plugin/drama-plugin/plugin/src/drama_plugin/visual/frame_request.py:291",
+    "sha256": "069a453247bceae3652f26e6c3fdc9cf919aef54ec3afbd59225506cb3ec434a"
+  },
+  "L-ir": {
+    "source": "LOCAL",
+    "path": "plugin/src/drama_plugin/contracts/visual_prompt.py",
+    "line": 44,
+    "sha": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+    "url": "/Users/zy/historical-plugin/drama-plugin/plugin/src/drama_plugin/contracts/visual_prompt.py:44",
+    "sha256": "0e4050863f1582c236548c59e07659709331516861100be5d9f3c21a26454a3d"
+  },
+  "L-serializer": {
+    "source": "LOCAL",
+    "path": "plugin/src/drama_plugin/visual/image_serializer.py",
+    "line": 9,
+    "sha": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+    "url": "/Users/zy/historical-plugin/drama-plugin/plugin/src/drama_plugin/visual/image_serializer.py:9",
+    "sha256": "cb209b44074fec75a779ea760c6821b89a1ae4aeca5359e930f890243aca443a"
+  },
+  "L-review": {
+    "source": "LOCAL",
+    "path": "plugin/src/drama_plugin/visual/production.py",
+    "line": 298,
+    "sha": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+    "url": "/Users/zy/historical-plugin/drama-plugin/plugin/src/drama_plugin/visual/production.py:298",
+    "sha256": "d97e8dd918f5052adcb5f1b00613c2bfcc065e1773516a773f8f4665a092e63c"
+  },
+  "L-status": {
+    "source": "LOCAL",
+    "path": "plugin/src/drama_plugin/visual/production.py",
+    "line": 308,
+    "sha": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+    "url": "/Users/zy/historical-plugin/drama-plugin/plugin/src/drama_plugin/visual/production.py:308",
+    "sha256": "d97e8dd918f5052adcb5f1b00613c2bfcc065e1773516a773f8f4665a092e63c"
+  },
+  "L-qa": {
+    "source": "LOCAL",
+    "path": "plugin/src/drama_plugin/professional.py",
+    "line": 63,
+    "sha": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+    "url": "/Users/zy/historical-plugin/drama-plugin/plugin/src/drama_plugin/professional.py:63",
+    "sha256": "a7ce8afb6433c6dcb3797411e11bfcfb32aef0ff093ad85763e6ec1ddcfd58fd"
+  },
+  "L-source": {
+    "source": "LOCAL",
+    "path": "plugin/src/drama_plugin/specialized_asset.py",
+    "line": 145,
+    "sha": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+    "url": "/Users/zy/historical-plugin/drama-plugin/plugin/src/drama_plugin/specialized_asset.py:145",
+    "sha256": "eecec8c3be33ec2de109661610115c72096ecab078d33dfdc3b0053419103635"
+  },
+  "L-medium": {
+    "source": "LOCAL",
+    "path": "plugin/src/drama_plugin/visual_medium.py",
+    "line": 31,
+    "sha": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+    "url": "/Users/zy/historical-plugin/drama-plugin/plugin/src/drama_plugin/visual_medium.py:31",
+    "sha256": "186fc3e2dacc80b64f471780be2a0895c4579b7831f3b8416f2087424c2a5e6a"
+  },
+  "L-a3ref": {
+    "source": "LOCAL",
+    "path": "docs/external-research/fal-cinematography-a3/A3-Professional-Knowledge-Contract.md",
+    "line": 100,
+    "sha": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+    "url": "/Users/zy/historical-plugin/drama-plugin/docs/external-research/fal-cinematography-a3/A3-Professional-Knowledge-Contract.md:100",
+    "sha256": "1cb383895500a4561e2d24d219c5127899c2997bf3f588330ac9577a55769d6d"
+  },
+  "L-a3qc": {
+    "source": "LOCAL",
+    "path": "docs/external-research/fal-cinematography-a3/A3-Professional-Knowledge-Contract.md",
+    "line": 135,
+    "sha": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+    "url": "/Users/zy/historical-plugin/drama-plugin/docs/external-research/fal-cinematography-a3/A3-Professional-Knowledge-Contract.md:135",
+    "sha256": "1cb383895500a4561e2d24d219c5127899c2997bf3f588330ac9577a55769d6d"
+  },
+  "L-a3d2": {
+    "source": "LOCAL",
+    "path": "docs/external-research/fal-cinematography-a3/A3-Professional-Knowledge-Contract.md",
+    "line": 113,
+    "sha": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+    "url": "/Users/zy/historical-plugin/drama-plugin/docs/external-research/fal-cinematography-a3/A3-Professional-Knowledge-Contract.md:113",
+    "sha256": "1cb383895500a4561e2d24d219c5127899c2997bf3f588330ac9577a55769d6d"
+  },
+  "L-test": {
+    "source": "LOCAL",
+    "path": "plugin/tests/test_specialized_asset.py",
+    "line": 84,
+    "sha": "8f805217f9b7b692a10f3ec0a5363a938f91b192",
+    "url": "/Users/zy/historical-plugin/drama-plugin/plugin/tests/test_specialized_asset.py:84",
+    "sha256": "33c82b2217475380a0b6b3108bbab3cb62e2db83d7d1ef587beab2e06c6631b1"
+  }
+}

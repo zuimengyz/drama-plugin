@@ -1,0 +1,27 @@
+{
+  "checked_at": "2026-09-25T12:33:42.945054+00:00",
+  "status": "PASS",
+  "errors": [],
+  "capabilities": 41,
+  "authority_nodes": 21,
+  "conflict_records": 25,
+  "same_scope_conflicts": 20,
+  "unresolved_same_scope_conflicts": 0,
+  "final_disposition_counts": {
+    "ADOPT": 0,
+    "ADAPT": 16,
+    "REPLACE_LOCAL": 0,
+    "KEEP_LOCAL": 8,
+    "REFERENCE_ONLY": 5,
+    "REJECT": 9,
+    "FUTURE_VIDEO_ROUND": 3
+  },
+  "local_tracked_files_checked": 835,
+  "changed_tracked_files": [],
+  "new_files_all_in_report_directory": true,
+  "offline_tests": "127 passed; network socket connections disabled; no pytest/dependency installation",
+  "external_installations": 0,
+  "paid_generation_calls": 0,
+  "runtime_behavior_changes": 0,
+  "limitations": "No provider quality experiment; tests are contract validation only. API metadata and document reading do not prove production use."
+}

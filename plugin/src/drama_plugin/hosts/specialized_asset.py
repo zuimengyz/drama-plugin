@@ -39,7 +39,7 @@ class SpecializedAssetHost:
             raise ValueError('MOVIE_VISUAL_AUTHORITY_MISMATCH')
         return SourcePin(key='runtime-medium:' + work_id, kind='DIRECTION', fingerprint=sha256_canonical(value))
 
-    def save_style(self, style: GlobalVisualStyle) -> SourcePin:
+    def save_style(self, style: GlobalVisualStyle, *, current: Mapping[str, str] | None = None) -> SourcePin:
         style = GlobalVisualStyle.model_validate(dump_contract(style))
         if style.runtime_ref != self.movie(style.work_id):
             raise ValueError('MOVIE_VISUAL_AUTHORITY_MISMATCH')
@@ -47,12 +47,21 @@ class SpecializedAssetHost:
         if ((medium.medium == 'CG') != (style.render_stylization is not None)
                 or medium.medium == 'LIVE_ACTION' and style.realism != 'NATURALISTIC'):
             raise ValueError('RENDER_STYLIZATION_MEDIUM_MISMATCH')
+        if style.imaging_character is not None:
+            from .professional import ProfessionalDepartmentHost
+            from ..visual.still_knowledge import validate_imaging
+            originals = ProfessionalDepartmentHost(self.store.root)._artifacts(style.imaging_character.source_refs)
+            originals[style.runtime_ref.key] = dump_contract(medium)
+            validate_imaging(style, originals, {**(current or {}), style.runtime_ref.key: style.runtime_ref.fingerprint})
         return self.store.put('global-style:' + style.work_id, dump_contract(style))
 
     def _inputs(self, bible: SpecializedAssetBible, current: Mapping[str, str]) -> tuple[dict[str, Any], dict[str, str]]:
         if bible.runtime_ref != self.movie(bible.work_id):
             raise ValueError('MOVIE_VISUAL_AUTHORITY_MISMATCH')
         refs = [bible.runtime_ref, bible.style_ref]
+        style = GlobalVisualStyle.model_validate(self.store.read_ref(bible.style_ref))
+        if style.imaging_character is not None:
+            refs.extend(style.imaging_character.source_refs)
         if bible.approval_ref:
             refs.append(bible.approval_ref)
         for asset in bible.assets:

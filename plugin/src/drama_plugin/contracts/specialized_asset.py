@@ -1,6 +1,6 @@
 """Movie-level medium and source-owned visual assets; no provider controls."""
-from typing import Annotated, Literal, Self
-from pydantic import Field, model_validator
+from typing import Annotated, Any, Literal, Self
+from pydantic import Field, model_validator, model_serializer, SerializerFunctionWrapHandler
 from .base import ContractModel
 from .creative_asset import Text
 from .source_pin import SourcePin
@@ -15,17 +15,47 @@ class MovieVisualMedium(ContractModel):
     configuration_source: Text
 
 
+class OpticalTextureIntent(ContractModel):
+    effect: Literal['GRAIN', 'HALATION', 'BLOOM', 'SHUTTER_CHARACTER', 'OPTICAL_SOFTNESS']
+    intent: Text
+    applicability: Text
+    preservation_constraints: tuple[Text, ...] = Field(min_length=1)
+
+
+class ImagingCharacterIntent(ContractModel):
+    photographic_genre: Text | None = None
+    capture_character: Text | None = None
+    optical_texture: tuple[OpticalTextureIntent, ...] = ()
+    reason: Text
+    source_refs: tuple[SourcePin, ...] = Field(min_length=1)
+
+    @model_validator(mode='after')
+    def chosen(self) -> Self:
+        if not (self.photographic_genre or self.capture_character or self.optical_texture):
+            raise ValueError('IMAGING_CHARACTER_REQUIRES_CHOICE')
+        return self
+
+
 class GlobalVisualStyle(ContractModel):
     """Closed choices intentionally cannot carry individual anatomy or set design."""
     schema_version: Literal['global-visual-style-v1'] = 'global-visual-style-v1'
     work_id: Text
     runtime_ref: SourcePin
+    imaging_character: ImagingCharacterIntent | None = None
     realism: Literal['NATURALISTIC', 'GROUNDED_STYLIZED', 'HEIGHTENED']
     render_stylization: Literal['PHOTOREAL_DIGITAL_HUMAN', 'VISIBLE_FILMIC_CG', 'HEIGHTENED_FILMIC_CG'] | None = None
     material_philosophy: Literal['PHYSICALLY_CREDIBLE'] = 'PHYSICALLY_CREDIBLE'
     lighting_philosophy: Literal['MOTIVATED', 'EXPRESSIVE'] = 'MOTIVATED'
     readability: Literal['IDENTITY_WITHOUT_BEAUTIFICATION'] = 'IDENTITY_WITHOUT_BEAUTIFICATION'
     consistency: Literal['PRESERVE_AUTHORED_IDENTITY'] = 'PRESERVE_AUTHORED_IDENTITY'
+
+    @model_serializer(mode='wrap')
+    def legacy_wire(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data = dict(handler(self))
+        if self.imaging_character is None:
+            data.pop('imagingCharacter', None)
+            data.pop('imaging_character', None)
+        return data
 
 
 class DramaturgyInput(ContractModel):

@@ -1,0 +1,46 @@
+{
+  "plugin/skills/action-choreography/SKILL.md": [
+    true,
+    "Skill is valid!"
+  ],
+  "plugin/skills/blocking/SKILL.md": [
+    true,
+    "Skill is valid!"
+  ],
+  "plugin/skills/cinematography/SKILL.md": [
+    true,
+    "Skill is valid!"
+  ],
+  "plugin/skills/color-design/SKILL.md": [
+    true,
+    "Skill is valid!"
+  ],
+  "plugin/skills/color-grading/SKILL.md": [
+    true,
+    "Skill is valid!"
+  ],
+  "plugin/skills/lighting-design/SKILL.md": [
+    true,
+    "Skill is valid!"
+  ],
+  "plugin/skills/look-continuity/SKILL.md": [
+    true,
+    "Skill is valid!"
+  ],
+  "plugin/skills/performance-casting/SKILL.md": [
+    true,
+    "Skill is valid!"
+  ],
+  "plugin/skills/reference-strategy/SKILL.md": [
+    true,
+    "Skill is valid!"
+  ],
+  "plugin/skills/shot-production/SKILL.md": [
+    true,
+    "Skill is valid!"
+  ],
+  "plugin/skills/specialized-asset-design/SKILL.md": [
+    true,
+    "Skill is valid!"
+  ]
+}

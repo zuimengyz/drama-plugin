@@ -40,3 +40,9 @@ Return creative palette changes to Color Design and missing imagery to future po
 ## Source reads
 
 Use supplied current originals first. For missing scoped context, read `work.get_work`, `scene.get_scene`, `script.get_script`, `episode.get_episode`, `shot.get_shot`, `asset.get_asset`, `context.build_context`. These reads do not authorize source writes or production.
+
+## Still live-action professional knowledge
+
+For STILL/LIVE_ACTION, distinguish approved capture/optical intent from measured correction of actual imagery. With no footage, report design targets and unresolved conformity. Read optional GlobalVisualStyle.imaging_character as a Work boundary, never as authority to change skin age or anatomy. Its grain/halation/bloom/softness requires applicability and preservation constraints; none is a default test of realism. Required skin/material fidelity targets remain critical preservation facts.
+
+Read [mapping and evidence profile](../../docs/still-professional-mapping.md) when preparing these still records. Knowledge remains LOCAL_EXPERIMENTAL until scoped A5 media evidence.

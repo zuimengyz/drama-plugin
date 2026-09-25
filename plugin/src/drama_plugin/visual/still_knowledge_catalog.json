@@ -1,0 +1,1614 @@
+{
+  "schema": "still-knowledge-catalog-v1",
+  "rules": [
+    {
+      "capability_id": "C02",
+      "rule_id": "A3-C02",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "先定义需要读到的身体、环境和关系，再选景别；补知识而非景别枚举。",
+      "provenance": {
+        "capability_id": "C02",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/cinematography/references/shot-language.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Shot sizes",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/cinematography/references/shot-language.md#L3",
+        "local_owner": "cinematography",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "a3_rule_hash": null,
+      "rule_hash": "feec920009c32d3ae75355d194ef63433e04f6874046fe7bbc62130ce99b5816"
+    },
+    {
+      "capability_id": "C03",
+      "rule_id": "A3-C03",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "视点关系、高度和光轴俯仰分别决定；不以角度自动推断人物强弱。",
+      "provenance": {
+        "capability_id": "C03",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/cinematography/references/shot-language.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Angles",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/cinematography/references/shot-language.md#L13",
+        "local_owner": "cinematography",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "a3_rule_hash": null,
+      "rule_hash": "a78a2941ae16f9fff000e973de1a536b7b914d3f228faa2252566f4af70f8782"
+    },
+    {
+      "capability_id": "C04",
+      "rule_id": "A3-C04",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "增加跨字段一致性 criteria，不做虚假的 mm 物理模拟。",
+      "provenance": {
+        "capability_id": "C04",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/cinematography/SKILL.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Quality bar",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/cinematography/SKILL.md#L132",
+        "local_owner": "cinematography（设计）; spatial-continuity-qa（观察）",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "a3_rule_hash": null,
+      "rule_hash": "e2bf3c75976773dff2019dd9cd774ac32bace56e5e0e50938ca417f4f6881493"
+    },
+    {
+      "capability_id": "C05",
+      "rule_id": "A3-C05",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "subject_hierarchy 承载构图选择；空间可读性承载前后层关系，不新增 composition 顶层键。",
+      "provenance": {
+        "capability_id": "C05",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/cinematography/references/shot-language.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Composition",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/cinematography/references/shot-language.md#L35",
+        "local_owner": "cinematography",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "a3_rule_hash": null,
+      "rule_hash": "fa7fb410507557ed383de35d2dfd9b6305329d0db76c5c802796f2081dae6b0c"
+    },
+    {
+      "capability_id": "C06",
+      "rule_id": "A3-C06",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "以空间伸缩/分离意图和相机距离定义镜头感；mm 可选且必须有理由。",
+      "provenance": {
+        "capability_id": "C06",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/cinematography/references/lighting-lens-color.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Lens feel",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/cinematography/references/lighting-lens-color.md#L16",
+        "local_owner": "cinematography",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "a3_rule_hash": null,
+      "rule_hash": "ad84c2acdbebf62b7023a796f17f36db3383fe328d55197059393879404d8fa6"
+    },
+    {
+      "capability_id": "C07",
+      "rule_id": "A3-C07",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "lens_intention 区分可读焦平面与允许柔化层；不含 rack focus。",
+      "provenance": {
+        "capability_id": "C07",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/cinematography/references/lighting-lens-color.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Depth of field",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/cinematography/references/lighting-lens-color.md#L26",
+        "local_owner": "cinematography",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "a3_rule_hash": null,
+      "rule_hash": "aa00d5404d8c342552887bedb2a0a7426e0af1387cf49a9230177b4fe5c5ec1e"
+    },
+    {
+      "capability_id": "C09",
+      "rule_id": "A3-C09",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "source 说明可见/隐含来源，direction 区分方位与软硬；材质反应归光照意图而非新增材质。",
+      "provenance": {
+        "capability_id": "C09",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/cinematography/references/lighting-lens-color.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Lighting setups",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/cinematography/references/lighting-lens-color.md#L3",
+        "local_owner": "lighting-design",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "a3_rule_hash": null,
+      "rule_hash": "c439698660821f5c8be3a8faa39c4d219ca3dbba4392630878b2778c1d22db6e"
+    },
+    {
+      "capability_id": "C10",
+      "rule_id": "A3-C10",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "色彩意图与事后匹配分开；复用 preserve/secondary_details 传递批准静态目标。",
+      "provenance": {
+        "capability_id": "C10",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/cinematography/references/lighting-lens-color.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Color and grade",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/cinematography/references/lighting-lens-color.md#L32",
+        "local_owner": "color-design; color-grading",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "a3_rule_hash": null,
+      "rule_hash": "720a1c187eaa6cd6e42d2a4fa455a8a5c6e9017a42bf7e7b48be601956207e91"
+    },
+    {
+      "capability_id": "C11",
+      "rule_id": "A3-C11",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "D1：GlobalVisualStyle 可空 imaging_character，限定批准的摄影类型、capture character 与可选 texture 边界；不增加 IR 字段。",
+      "provenance": {
+        "capability_id": "C11",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/cinematography/references/lighting-lens-color.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Texture",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/cinematography/references/lighting-lens-color.md#L42",
+        "local_owner": "global-visual-style（work边界）; cinematography/color-grading（各自实现）",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "a3_rule_hash": null,
+      "rule_hash": "559924667365c45ec29b0f4a5c09a4c2b698a1a22ea1f8f4f57b8cb11de9d5f9"
+    },
+    {
+      "capability_id": "C13",
+      "rule_id": "A3-C13",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "generic 反馈退回原 owner 补具体可见决定；不在 compiler 添加事实或简单删词。",
+      "provenance": {
+        "capability_id": "C13",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/cinematography/SKILL.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "If a result looks generic",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/cinematography/SKILL.md#L144",
+        "local_owner": "各原专业 owner；cinematography协调镜头描述缺口",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "a3_rule_hash": null,
+      "rule_hash": "bbe9ed6ddcf69a255c7514694c3379aef9bae4906bf821f830d14a7a23acfc17"
+    },
+    {
+      "capability_id": "C15",
+      "rule_id": "A3-C15",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "D2：FrameSpec.professional_sources 可空 pins；来源映射验证参考责任进入 IR.preserve，不能依靠被 IR 覆盖的 legacy 文本。",
+      "provenance": {
+        "capability_id": "C15",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/character-design/references/anchor-system.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Anchor fields",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/character-design/references/anchor-system.md#L6",
+        "local_owner": "specialized-asset-design; reference-strategy; blocking/action/DPD（当前状态）",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "a3_rule_hash": null,
+      "rule_hash": "a15fe0aeaf909e9a170adc863c4ebf57b3434f4b87c17f168893f3ac7654d17f"
+    },
+    {
+      "capability_id": "C17",
+      "rule_id": "A3-C17",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "增加 identity/costume 可观测 criteria；不增加 disposition 或自动 retry。",
+      "provenance": {
+        "capability_id": "C17",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/character-design/SKILL.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Quality bar",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/character-design/SKILL.md#L140",
+        "local_owner": "visual-continuity-qa / production review",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "a3_rule_hash": null,
+      "rule_hash": "9b62b7c33553a078b233a57994304083a6fa8bf4b15815d40765ccb8b2f4e211"
+    },
+    {
+      "capability_id": "C28",
+      "rule_id": "A3-C28",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "分为 material/contact/action/light/perspective/observation 六子责任；补对应 QC criteria。",
+      "provenance": {
+        "capability_id": "C28",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/fal-prompting/references/gpt-image-2.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "**Edits, three-sentence pattern",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/fal-prompting/references/gpt-image-2.md#L100",
+        "local_owner": "specialized-asset-design/prop-design; blocking/action; cinematography; lighting-design; QA（各自子职责）",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "a3_rule_hash": null,
+      "rule_hash": "ebe81d2965be73d2dc9e60ea4ed074f12f9effd2a0b2d0c32cd588d765762d6c"
+    },
+    {
+      "capability_id": "C30",
+      "rule_id": "A3-C30",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "复用同一 D1；拍摄类型/capture character 与 world.era 隔离，不推默认摄影年代。",
+      "provenance": {
+        "capability_id": "C30",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/fal-recipes/references/realism.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Two orthogonal axes",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/fal-recipes/references/realism.md#L83",
+        "local_owner": "global-visual-style; source/world 原 owner不变",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "a3_rule_hash": null,
+      "rule_hash": "cec08e05baa8868af9b3918442a965d8a316fb031b2f1d1c9d1cbae1d0f497dd"
+    },
+    {
+      "capability_id": "C35",
+      "rule_id": "A3-C35",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "A5 非 Runtime 实验 manifest 固定 inputs，只变一个可解释决策族；不加生产次数限制。",
+      "provenance": {
+        "capability_id": "C35",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/fal-prompting/references/gpt-image-2.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "**6. One revision",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/fal-prompting/references/gpt-image-2.md#L44",
+        "local_owner": "shot-production 的实验设计（不取得常规生产控制权）",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "a3_rule_hash": null,
+      "rule_hash": "39adca01715bcc5b1cd7abcd5b9a3cb6bd20f7b36c436bbb86972bd418619e82"
+    },
+    {
+      "capability_id": "C36",
+      "rule_id": "A3-C36",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "同一媒体的联合审查按维度记录；一份 finding 对应唯一修复 owner。",
+      "provenance": {
+        "capability_id": "C36",
+        "external_source": "https://github.com/fal-ai-community/skills/skills/cinematography/SKILL.md",
+        "external_commit": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+        "external_section": "## Quality bar",
+        "external_url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/cinematography/SKILL.md#L132",
+        "local_owner": "visual-continuity-qa / spatial-continuity-qa / production review",
+        "adaptation_type": "INDEPENDENT_ABSTRACTION",
+        "validation_status": "LOCAL_EXPERIMENTAL",
+        "external_validation_status": "EXTERNAL_CANDIDATE"
+      },
+      "a3_rule_hash": null,
+      "rule_hash": "187656ce305c11c50eb758c74273b26f23b579d65909aa51fe94094d35ea326e"
+    },
+    {
+      "capability_id": "F01",
+      "rule_id": "FACE-F01",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "记录批准人物差异；不统一瓜子脸或理想比。",
+      "provenance": [
+        {
+          "index_key": "A-structure",
+          "source": "A",
+          "path": "references/structure_and_makeup.md",
+          "line": 5,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L5",
+          "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba",
+          "external_section": "references/structure_and_makeup.md:5"
+        },
+        {
+          "index_key": "C-anchor",
+          "source": "C",
+          "path": "skills/character-design/references/anchor-system.md",
+          "line": 6,
+          "sha": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+          "url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/character-design/references/anchor-system.md#L6",
+          "sha256": "397f23ee81160990aad789931649aded955314c583539665fb89f1bf15831acd",
+          "external_section": "skills/character-design/references/anchor-system.md:6"
+        }
+      ],
+      "a3_rule_hash": "a1008f4f0c2a7c5f9edb7613029577c87b278b5ddb417d9a172deec39e4aa5d8",
+      "rule_hash": "8d2213a91caf21f2b9bed329a7785d3525365109a49efbe26745f7c83dc2411a"
+    },
+    {
+      "capability_id": "F02",
+      "rule_id": "FACE-F02",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "比例是人物事实的描述轴，不是三等分达标线。",
+      "provenance": [
+        {
+          "index_key": "A-axes",
+          "source": "A",
+          "path": "references/structure_and_makeup.md",
+          "line": 15,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L15",
+          "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba",
+          "external_section": "references/structure_and_makeup.md:15"
+        }
+      ],
+      "a3_rule_hash": "5aa25607b6c202f4f65678eceed3e0faf67c507c0557cdc7940feaf58d0bb42c",
+      "rule_hash": "0255e307770d09d9c670963d678928d3fa23269ba1bfcfc3fbcaf5d7b05dbec7"
+    },
+    {
+      "capability_id": "F03",
+      "rule_id": "FACE-F03",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "眉毛、眼睑、阴影不能替代骨骼；未知不补。",
+      "provenance": [
+        {
+          "index_key": "A-structure",
+          "source": "A",
+          "path": "references/structure_and_makeup.md",
+          "line": 5,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L5",
+          "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba",
+          "external_section": "references/structure_and_makeup.md:5"
+        },
+        {
+          "index_key": "A-axes",
+          "source": "A",
+          "path": "references/structure_and_makeup.md",
+          "line": 15,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L15",
+          "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba",
+          "external_section": "references/structure_and_makeup.md:15"
+        }
+      ],
+      "a3_rule_hash": "4ba0a061849a3ce090f2c8433d9a0dd78b64122da2496f898f0a03ac72b7326d",
+      "rule_hash": "e92d629dfe2ccdfd3da3d767a6992f967eab4631be4b8c385a26e816a9d70185"
+    },
+    {
+      "capability_id": "F04",
+      "rule_id": "FACE-F04",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "保留独立关系，拒绝高颧必瘦脸。",
+      "provenance": [
+        {
+          "index_key": "A-structure",
+          "source": "A",
+          "path": "references/structure_and_makeup.md",
+          "line": 5,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L5",
+          "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba",
+          "external_section": "references/structure_and_makeup.md:5"
+        },
+        {
+          "index_key": "A-axes",
+          "source": "A",
+          "path": "references/structure_and_makeup.md",
+          "line": 15,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L15",
+          "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba",
+          "external_section": "references/structure_and_makeup.md:15"
+        }
+      ],
+      "a3_rule_hash": "2a710223fc4baf855ae2b1bde05e5467b4417aeb22d721806e5ff7140cecd13d",
+      "rule_hash": "eb90a6302291d9652e88fccade67933ac4adbbc4ee0192fa3edbc958277fbd91"
+    },
+    {
+      "capability_id": "F05",
+      "rule_id": "FACE-F05",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "只吸收关系描述；不吸收饱满才美的规范。",
+      "provenance": [
+        {
+          "index_key": "A-axes",
+          "source": "A",
+          "path": "references/structure_and_makeup.md",
+          "line": 15,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L15",
+          "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba",
+          "external_section": "references/structure_and_makeup.md:15"
+        },
+        {
+          "index_key": "A-nose",
+          "source": "A",
+          "path": "references/aesthetics.md",
+          "line": 46,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/aesthetics.md#L46",
+          "sha256": "c1872e66c60000346bd0db49b42483f9c5c08c2dbf69af85ce219890be724a6b",
+          "external_section": "references/aesthetics.md:46"
+        }
+      ],
+      "a3_rule_hash": "5b3a2a218499508faf2105e866774d848311bd781da4efac5098572ab8942da3",
+      "rule_hash": "b4cda32010c7ddd9965d90f605f5e2a5a1929660a64ce3d1b8f7096a0d69509c"
+    },
+    {
+      "capability_id": "F06",
+      "rule_id": "FACE-F06",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "方窄圆钝均可；无英雄下颌默认。",
+      "provenance": [
+        {
+          "index_key": "A-structure",
+          "source": "A",
+          "path": "references/structure_and_makeup.md",
+          "line": 5,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L5",
+          "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba",
+          "external_section": "references/structure_and_makeup.md:5"
+        },
+        {
+          "index_key": "C-anchor",
+          "source": "C",
+          "path": "skills/character-design/references/anchor-system.md",
+          "line": 6,
+          "sha": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+          "url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/character-design/references/anchor-system.md#L6",
+          "sha256": "397f23ee81160990aad789931649aded955314c583539665fb89f1bf15831acd",
+          "external_section": "skills/character-design/references/anchor-system.md:6"
+        }
+      ],
+      "a3_rule_hash": "8ad06647312daabe4e54459fbb67a6d37897c741e9ef999f32cdbaeaed56d1fa",
+      "rule_hash": "e562692eaba43547e32824d316433d141f2f4f82cfc431fc3662b6377e06eb91"
+    },
+    {
+      "capability_id": "F07",
+      "rule_id": "FACE-F07",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "不能用尖等于前伸；不使用理想角度。",
+      "provenance": [
+        {
+          "index_key": "A-axes",
+          "source": "A",
+          "path": "references/structure_and_makeup.md",
+          "line": 15,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L15",
+          "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba",
+          "external_section": "references/structure_and_makeup.md:15"
+        },
+        {
+          "index_key": "A-profile",
+          "source": "A",
+          "path": "references/aesthetics.md",
+          "line": 54,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/aesthetics.md#L54",
+          "sha256": "c1872e66c60000346bd0db49b42483f9c5c08c2dbf69af85ce219890be724a6b",
+          "external_section": "references/aesthetics.md:54"
+        }
+      ],
+      "a3_rule_hash": "bbc25a4eb6c6a5409e3cfc93bdd7bf2517bf97325e701370e1f76ca14e9e00f2",
+      "rule_hash": "b869a5d255cc81357cf6fc5e44103b9648f2019c520f416b6f500e577339115c"
+    },
+    {
+      "capability_id": "F08",
+      "rule_id": "FACE-F08",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "开合受当前表演影响；跨角度比较不得直接比像素宽。",
+      "provenance": [
+        {
+          "index_key": "C-anchor",
+          "source": "C",
+          "path": "skills/character-design/references/anchor-system.md",
+          "line": 6,
+          "sha": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+          "url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/character-design/references/anchor-system.md#L6",
+          "sha256": "397f23ee81160990aad789931649aded955314c583539665fb89f1bf15831acd",
+          "external_section": "skills/character-design/references/anchor-system.md:6"
+        },
+        {
+          "index_key": "A-roster",
+          "source": "A",
+          "path": "references/structure_and_makeup.md",
+          "line": 70,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L70",
+          "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba",
+          "external_section": "references/structure_and_makeup.md:70"
+        }
+      ],
+      "a3_rule_hash": "6970e2267dff6e7704ff692881847aa537d548c694b66d540de822bb78d59f11",
+      "rule_hash": "40637333f5e33e36e9c448e3bfe6189d7904bf29d411f35279fd8b4c1c2f7750"
+    },
+    {
+      "capability_id": "F09",
+      "rule_id": "FACE-F09",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "自然毛发生长与眉妆、眉间紧张分开。",
+      "provenance": [
+        {
+          "index_key": "C-anchor",
+          "source": "C",
+          "path": "skills/character-design/references/anchor-system.md",
+          "line": 6,
+          "sha": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+          "url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/character-design/references/anchor-system.md#L6",
+          "sha256": "397f23ee81160990aad789931649aded955314c583539665fb89f1bf15831acd",
+          "external_section": "skills/character-design/references/anchor-system.md:6"
+        },
+        {
+          "index_key": "A-roster",
+          "source": "A",
+          "path": "references/structure_and_makeup.md",
+          "line": 70,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L70",
+          "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba",
+          "external_section": "references/structure_and_makeup.md:70"
+        }
+      ],
+      "a3_rule_hash": "e5c5517c3df653f0e53186cd57a77d3d2baee8225f1688be10811c696735d463",
+      "rule_hash": "d699c5c61170fd343cf2a8b6c7602a84d54b07003e4a44656a9a4eef9990e9cf"
+    },
+    {
+      "capability_id": "F10",
+      "rule_id": "FACE-F10",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "拒绝统一高细鼻梁。",
+      "provenance": [
+        {
+          "index_key": "C-anchor",
+          "source": "C",
+          "path": "skills/character-design/references/anchor-system.md",
+          "line": 6,
+          "sha": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+          "url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/character-design/references/anchor-system.md#L6",
+          "sha256": "397f23ee81160990aad789931649aded955314c583539665fb89f1bf15831acd",
+          "external_section": "skills/character-design/references/anchor-system.md:6"
+        },
+        {
+          "index_key": "A-roster",
+          "source": "A",
+          "path": "references/structure_and_makeup.md",
+          "line": 70,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L70",
+          "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba",
+          "external_section": "references/structure_and_makeup.md:70"
+        }
+      ],
+      "a3_rule_hash": "8f974e016f37c30972252169bb712aac99fe65adc6131db225bcd605a2f3cce9",
+      "rule_hash": "27be9e34c7bde60a3608faf6784c71e5cb4018f6bcba7f5765ab743ae943a901"
+    },
+    {
+      "capability_id": "F11",
+      "rule_id": "FACE-F11",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "不把笑容、描唇与当前张口写成稳定形态。",
+      "provenance": [
+        {
+          "index_key": "C-anchor",
+          "source": "C",
+          "path": "skills/character-design/references/anchor-system.md",
+          "line": 6,
+          "sha": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+          "url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/character-design/references/anchor-system.md#L6",
+          "sha256": "397f23ee81160990aad789931649aded955314c583539665fb89f1bf15831acd",
+          "external_section": "skills/character-design/references/anchor-system.md:6"
+        },
+        {
+          "index_key": "A-roster",
+          "source": "A",
+          "path": "references/structure_and_makeup.md",
+          "line": 70,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L70",
+          "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba",
+          "external_section": "references/structure_and_makeup.md:70"
+        }
+      ],
+      "a3_rule_hash": "270fcf60ead4dc8a78be0930e9602b85d100bc6ad5d6072fb2c7649a193e46e6",
+      "rule_hash": "d38c2494ded8ba9d979068eb8b1a9cf764fe922b08d3e9e542f8d86b972063e5"
+    },
+    {
+      "capability_id": "F12",
+      "rule_id": "FACE-F12",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "外部只支持保存/检查，不提供完整耳部设计或测量法。",
+      "provenance": [
+        {
+          "index_key": "B-principle",
+          "source": "B",
+          "path": "SKILL.md",
+          "line": 41,
+          "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+          "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/SKILL.md#L41",
+          "sha256": "0f2f6fcd46e6aa5918d026ec736b281bb278323c61157d89a5b05b81667ab084",
+          "external_section": "SKILL.md:41"
+        },
+        {
+          "index_key": "A-three",
+          "source": "A",
+          "path": "references/realism_vs_refined.md",
+          "line": 170,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/realism_vs_refined.md#L170",
+          "sha256": "7ce35cfd669bb4566945ae7f20cb62d649db86ef36664b80e5c7df16f196695e",
+          "external_section": "references/realism_vs_refined.md:170"
+        }
+      ],
+      "a3_rule_hash": "ef1c496dc45e127cc356eb6f1bc32e80817e980215da37e1a7c37d6abe0a42d8",
+      "rule_hash": "c7061d0f2d1f77e13efd6107c0469f0476517b746ddf8e6a8bd507398dd0d2f7"
+    },
+    {
+      "capability_id": "F13",
+      "rule_id": "FACE-F13",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "遮帽区域重建是提案，不能声称还原了未知真实发际线。",
+      "provenance": [
+        {
+          "index_key": "B-hair",
+          "source": "B",
+          "path": "references/prompts.md",
+          "line": 54,
+          "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+          "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/references/prompts.md#L54",
+          "sha256": "f0b4667b921f2333453e0b6cd37fda9444fe067306da50c12d21110d15298ad1",
+          "external_section": "references/prompts.md:54"
+        },
+        {
+          "index_key": "D-duty",
+          "source": "D",
+          "path": "skill/realportrait-ai/SKILL.md",
+          "line": 18,
+          "sha": "35728411922ddf83c612612bc4d2d1c6df8a94a0",
+          "url": "https://github.com/Shinning1010/realportrait-ai/blob/35728411922ddf83c612612bc4d2d1c6df8a94a0/skill/realportrait-ai/SKILL.md#L18",
+          "sha256": "526da416302ebc3d89f44d150ba0fe69d1f7c8667581201e55d973bf967d52b7",
+          "external_section": "skill/realportrait-ai/SKILL.md:18"
+        }
+      ],
+      "a3_rule_hash": "d30a09d48941fc7e8c374a8072d12c335e0654080f81104ce7b208ddd7cdfd34",
+      "rule_hash": "789637503d650bca0440fdaf62e1ccf1541798577dd037186e6e2da91d5c0504"
+    },
+    {
+      "capability_id": "F14",
+      "rule_id": "FACE-F14",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "保留批准密度长度；不普遍加碎发、灰发或头屑。",
+      "provenance": [
+        {
+          "index_key": "A-bio",
+          "source": "A",
+          "path": "references/realism_vs_refined.md",
+          "line": 73,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/realism_vs_refined.md#L73",
+          "sha256": "7ce35cfd669bb4566945ae7f20cb62d649db86ef36664b80e5c7df16f196695e",
+          "external_section": "references/realism_vs_refined.md:73"
+        },
+        {
+          "index_key": "B-qc",
+          "source": "B",
+          "path": "references/quality-gate.md",
+          "line": 5,
+          "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+          "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/references/quality-gate.md#L5",
+          "sha256": "92cde1d96b2e404b07b60620b49fe4d2236b75d3d098aa416d82d6580fc95269",
+          "external_section": "references/quality-gate.md:5"
+        },
+        {
+          "index_key": "C-anchor",
+          "source": "C",
+          "path": "skills/character-design/references/anchor-system.md",
+          "line": 6,
+          "sha": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+          "url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/character-design/references/anchor-system.md#L6",
+          "sha256": "397f23ee81160990aad789931649aded955314c583539665fb89f1bf15831acd",
+          "external_section": "skills/character-design/references/anchor-system.md:6"
+        }
+      ],
+      "a3_rule_hash": "ff57b064fe5a5901bce84af2a9cc65539c74decc251de0ac3116f93210bf812c",
+      "rule_hash": "2e390ae604ff15bb0f1ff0482db6dbb45599d0ccd40d5f4b7f5a097f58cd1f27"
+    },
+    {
+      "capability_id": "F15",
+      "rule_id": "FACE-F15",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "受光颜色不是基础肤色；不按族裔或角色身份自动填色。",
+      "provenance": [
+        {
+          "index_key": "B-principle",
+          "source": "B",
+          "path": "SKILL.md",
+          "line": 41,
+          "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+          "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/SKILL.md#L41",
+          "sha256": "0f2f6fcd46e6aa5918d026ec736b281bb278323c61157d89a5b05b81667ab084",
+          "external_section": "SKILL.md:41"
+        },
+        {
+          "index_key": "B-skin",
+          "source": "B",
+          "path": "references/prompts.md",
+          "line": 22,
+          "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+          "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/references/prompts.md#L22",
+          "sha256": "f0b4667b921f2333453e0b6cd37fda9444fe067306da50c12d21110d15298ad1",
+          "external_section": "references/prompts.md:22"
+        },
+        {
+          "index_key": "C-anchor",
+          "source": "C",
+          "path": "skills/character-design/references/anchor-system.md",
+          "line": 6,
+          "sha": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+          "url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/character-design/references/anchor-system.md#L6",
+          "sha256": "397f23ee81160990aad789931649aded955314c583539665fb89f1bf15831acd",
+          "external_section": "skills/character-design/references/anchor-system.md:6"
+        }
+      ],
+      "a3_rule_hash": "d6c641a5f37d3de9e15c39cc4793880c459ee1210369c49c4d8c244fd002a716",
+      "rule_hash": "1724ca3792606df1dc07ae5a4d307e8f0bc4eccdafc76bb94b48c0644860db71"
+    },
+    {
+      "capability_id": "F16",
+      "rule_id": "FACE-F16",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "按年龄、肤况、妆、景别、光线判断可见度；不要求每张都见毛孔。",
+      "provenance": [
+        {
+          "index_key": "A-skin",
+          "source": "A",
+          "path": "references/prompt_craft.md",
+          "line": 116,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/prompt_craft.md#L116",
+          "sha256": "ea146bb80b7849e09636c6d63b26b4cdf00284a0ce511bae62f40e18a324058c",
+          "external_section": "references/prompt_craft.md:116"
+        },
+        {
+          "index_key": "B-skin",
+          "source": "B",
+          "path": "references/prompts.md",
+          "line": 22,
+          "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+          "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/references/prompts.md#L22",
+          "sha256": "f0b4667b921f2333453e0b6cd37fda9444fe067306da50c12d21110d15298ad1",
+          "external_section": "references/prompts.md:22"
+        }
+      ],
+      "a3_rule_hash": "fd016272dfcecc4f396d1648fc5908da141431cfc977e3e4daf7333e9d3b174d",
+      "rule_hash": "6695c0c161240c1730027ce961ef42ef96c22bea03df20c3a4afeb802f9ee2c4"
+    },
+    {
+      "capability_id": "F18",
+      "rule_id": "FACE-F18",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "来源和批准决定其是否长期/阶段性；不能为真实感随意添加。",
+      "provenance": [
+        {
+          "index_key": "C-anchor",
+          "source": "C",
+          "path": "skills/character-design/references/anchor-system.md",
+          "line": 6,
+          "sha": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+          "url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/character-design/references/anchor-system.md#L6",
+          "sha256": "397f23ee81160990aad789931649aded955314c583539665fb89f1bf15831acd",
+          "external_section": "skills/character-design/references/anchor-system.md:6"
+        },
+        {
+          "index_key": "B-skin",
+          "source": "B",
+          "path": "references/prompts.md",
+          "line": 22,
+          "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+          "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/references/prompts.md#L22",
+          "sha256": "f0b4667b921f2333453e0b6cd37fda9444fe067306da50c12d21110d15298ad1",
+          "external_section": "references/prompts.md:22"
+        }
+      ],
+      "a3_rule_hash": "4fad149a6d92be2dc11f6af09ac269881c0876022b2329c89300fa8a5431a005",
+      "rule_hash": "14fcf74ca26aee6dc982228d2143bbba3f749f31d8cc4db304b2a570c04a6d04"
+    },
+    {
+      "capability_id": "F20",
+      "rule_id": "FACE-F20",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "外部仅部分线索；没有跨年龄可靠映射、通用皱纹数量或年龄估计器。",
+      "provenance": [
+        {
+          "index_key": "A-bio",
+          "source": "A",
+          "path": "references/realism_vs_refined.md",
+          "line": 73,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/realism_vs_refined.md#L73",
+          "sha256": "7ce35cfd669bb4566945ae7f20cb62d649db86ef36664b80e5c7df16f196695e",
+          "external_section": "references/realism_vs_refined.md:73"
+        },
+        {
+          "index_key": "B-qc",
+          "source": "B",
+          "path": "references/quality-gate.md",
+          "line": 5,
+          "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+          "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/references/quality-gate.md#L5",
+          "sha256": "92cde1d96b2e404b07b60620b49fe4d2236b75d3d098aa416d82d6580fc95269",
+          "external_section": "references/quality-gate.md:5"
+        }
+      ],
+      "a3_rule_hash": "aec35f9951d2747d8e8affe6822a533d5d2c51967bafc92b695104b35b229ee7",
+      "rule_hash": "64a2b9965fe34851be461f5f82f57a3543327fec70bf8b849c8f316f6d6e84d2"
+    },
+    {
+      "capability_id": "F23",
+      "rule_id": "FACE-F23",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "不清楚/遮挡即不可确认；不把参考图暗部推成结构事实。",
+      "provenance": [
+        {
+          "index_key": "D-stop",
+          "source": "D",
+          "path": "skill/realportrait-ai/SKILL.md",
+          "line": 138,
+          "sha": "35728411922ddf83c612612bc4d2d1c6df8a94a0",
+          "url": "https://github.com/Shinning1010/realportrait-ai/blob/35728411922ddf83c612612bc4d2d1c6df8a94a0/skill/realportrait-ai/SKILL.md#L138",
+          "sha256": "526da416302ebc3d89f44d150ba0fe69d1f7c8667581201e55d973bf967d52b7",
+          "external_section": "skill/realportrait-ai/SKILL.md:138"
+        },
+        {
+          "index_key": "B-principle",
+          "source": "B",
+          "path": "SKILL.md",
+          "line": 41,
+          "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+          "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/SKILL.md#L41",
+          "sha256": "0f2f6fcd46e6aa5918d026ec736b281bb278323c61157d89a5b05b81667ab084",
+          "external_section": "SKILL.md:41"
+        }
+      ],
+      "a3_rule_hash": "8d1c723590c122f53da972f9fad69206335c164108648f5809026c415f248736",
+      "rule_hash": "1e3f33fd6d19bc1699d31f7ddb60665240bbb46b4b48ccabb08e4acffdd400bd"
+    },
+    {
+      "capability_id": "F24",
+      "rule_id": "FACE-F24",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "光影可能伪装深眼窝/颧点，观察不等于已批准事实。",
+      "provenance": [
+        {
+          "index_key": "A-visible",
+          "source": "A",
+          "path": "references/structure_and_makeup.md",
+          "line": 104,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L104",
+          "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba",
+          "external_section": "references/structure_and_makeup.md:104"
+        }
+      ],
+      "a3_rule_hash": "03c0430ae9815c2c27a5ef2d3a98b328787ffe73fcc782766db3fda52f74e64d",
+      "rule_hash": "9a624fc18f0d173b108614d8cc08a3ac9ccd8c64c6aa72e775cbd619993c614a"
+    },
+    {
+      "capability_id": "F25",
+      "rule_id": "FACE-F25",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "多视图是待检查的证据，不是任意角度永不漂移保证；不生成。",
+      "provenance": [
+        {
+          "index_key": "A-three",
+          "source": "A",
+          "path": "references/realism_vs_refined.md",
+          "line": 170,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/realism_vs_refined.md#L170",
+          "sha256": "7ce35cfd669bb4566945ae7f20cb62d649db86ef36664b80e5c7df16f196695e",
+          "external_section": "references/realism_vs_refined.md:170"
+        },
+        {
+          "index_key": "A-proof",
+          "source": "A",
+          "path": "references/engineering.md",
+          "line": 5,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/engineering.md#L5",
+          "sha256": "119c510be452650f542bcd54cbd404fa037fa47f8ba873714a993610ba40d0ff",
+          "external_section": "references/engineering.md:5"
+        }
+      ],
+      "a3_rule_hash": "93de5489113833ba34dafe50cbcaa9560f89eed48ace735e52af25b9d14ca357",
+      "rule_hash": "2f58a6ce1926bddd48aac54b969cd8548fdcacfb21e6555548ca52570956fc41"
+    },
+    {
+      "capability_id": "F27",
+      "rule_id": "FACE-F27",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "吸收结构比较目的；不保证纯文字选项不同等于成像不同。",
+      "provenance": [
+        {
+          "index_key": "A-roster",
+          "source": "A",
+          "path": "references/structure_and_makeup.md",
+          "line": 70,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L70",
+          "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba",
+          "external_section": "references/structure_and_makeup.md:70"
+        }
+      ],
+      "a3_rule_hash": "21ba73002d62af0cfd2bf67266f90b9f7d39321175fdfd4f60cf82b06c03c9d6",
+      "rule_hash": "bf1d21f4827b11d05aabd814022b88b0e5f1c2ec0f7af3508b15833c46371af6"
+    },
+    {
+      "capability_id": "F29",
+      "rule_id": "FACE-F29",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "保留职责拆分；固定高光位置不是身份，不吸收 universal 半哑光。",
+      "provenance": [
+        {
+          "index_key": "A-skin",
+          "source": "A",
+          "path": "references/prompt_craft.md",
+          "line": 116,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/prompt_craft.md#L116",
+          "sha256": "ea146bb80b7849e09636c6d63b26b4cdf00284a0ce511bae62f40e18a324058c",
+          "external_section": "references/prompt_craft.md:116"
+        },
+        {
+          "index_key": "A-makeup",
+          "source": "A",
+          "path": "references/structure_and_makeup.md",
+          "line": 36,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L36",
+          "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba",
+          "external_section": "references/structure_and_makeup.md:36"
+        }
+      ],
+      "a3_rule_hash": "b3cbe5d41114f48b0590fc74096b569e1e956e90eb2432e7ffb90ab777f6f813",
+      "rule_hash": "3692bedfa3b9d04fa185cd84008a590e448943340a22bbc355f7c632753d4a94"
+    },
+    {
+      "capability_id": "F30",
+      "rule_id": "FACE-F30",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "脸形、眼距、鼻唇与 approved anchor 比；透视表情差异先控制。",
+      "provenance": [
+        {
+          "index_key": "B-qc",
+          "source": "B",
+          "path": "references/quality-gate.md",
+          "line": 5,
+          "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+          "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/references/quality-gate.md#L5",
+          "sha256": "92cde1d96b2e404b07b60620b49fe4d2236b75d3d098aa416d82d6580fc95269",
+          "external_section": "references/quality-gate.md:5"
+        },
+        {
+          "index_key": "C-drift",
+          "source": "C",
+          "path": "skills/character-design/SKILL.md",
+          "line": 140,
+          "sha": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+          "url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/character-design/SKILL.md#L140",
+          "sha256": "1f62641d84b3dc0f2c0e13663afbb71cd9682483e82b920cc53450713c5f5d57",
+          "external_section": "skills/character-design/SKILL.md:140"
+        }
+      ],
+      "a3_rule_hash": "671650accc7f963245687d3c820b60d6858f926499b8759a32b0aaf9c4388ab5",
+      "rule_hash": "c9a5a3fab6fa64b8f520bb9a1ecd6a425b19568e940d0e525f62fd1b15204705"
+    },
+    {
+      "capability_id": "F31",
+      "rule_id": "FACE-F31",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "QC-AGE-DRIFT 逐项观察；不能从噪声或肤亮断言变年轻。",
+      "provenance": [
+        {
+          "index_key": "B-principle",
+          "source": "B",
+          "path": "SKILL.md",
+          "line": 41,
+          "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+          "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/SKILL.md#L41",
+          "sha256": "0f2f6fcd46e6aa5918d026ec736b281bb278323c61157d89a5b05b81667ab084",
+          "external_section": "SKILL.md:41"
+        },
+        {
+          "index_key": "B-qc",
+          "source": "B",
+          "path": "references/quality-gate.md",
+          "line": 5,
+          "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+          "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/references/quality-gate.md#L5",
+          "sha256": "92cde1d96b2e404b07b60620b49fe4d2236b75d3d098aa416d82d6580fc95269",
+          "external_section": "references/quality-gate.md:5"
+        },
+        {
+          "index_key": "C-drift",
+          "source": "C",
+          "path": "skills/character-design/SKILL.md",
+          "line": 140,
+          "sha": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+          "url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/character-design/SKILL.md#L140",
+          "sha256": "1f62641d84b3dc0f2c0e13663afbb71cd9682483e82b920cc53450713c5f5d57",
+          "external_section": "skills/character-design/SKILL.md:140"
+        }
+      ],
+      "a3_rule_hash": "fc36ebf3efbedb4594eabd9a922c6d421a3d88be1706f524b1433c4631721a9b",
+      "rule_hash": "6ee1f71643c92ae2452e9873b028a508ac03d884bb7d3d281c1d277fc8bd5982"
+    },
+    {
+      "capability_id": "F32",
+      "rule_id": "FACE-F32",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "检查未授权瘦颌、大眼、改鼻、磨平年龄与辨识细节。",
+      "provenance": [
+        {
+          "index_key": "B-qc",
+          "source": "B",
+          "path": "references/quality-gate.md",
+          "line": 5,
+          "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+          "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/references/quality-gate.md#L5",
+          "sha256": "92cde1d96b2e404b07b60620b49fe4d2236b75d3d098aa416d82d6580fc95269",
+          "external_section": "references/quality-gate.md:5"
+        }
+      ],
+      "a3_rule_hash": "ef0c72ddb8c9b0153efd7d5fc892df313b1fed0db442986740a5776b68fc2817",
+      "rule_hash": "b1a761987ad2cef1c481f942751c0a213a03e02628f5f2897237b84828ec5231"
+    },
+    {
+      "capability_id": "F33",
+      "rule_id": "FACE-F33",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "结合批准真人媒介、妆态、光照与局部证据，不以有没有瑕疵一刀切。",
+      "provenance": [
+        {
+          "index_key": "B-qc",
+          "source": "B",
+          "path": "references/quality-gate.md",
+          "line": 5,
+          "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+          "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/references/quality-gate.md#L5",
+          "sha256": "92cde1d96b2e404b07b60620b49fe4d2236b75d3d098aa416d82d6580fc95269",
+          "external_section": "references/quality-gate.md:5"
+        },
+        {
+          "index_key": "A-fail",
+          "source": "A",
+          "path": "references/engineering.md",
+          "line": 60,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/engineering.md#L60",
+          "sha256": "119c510be452650f542bcd54cbd404fa037fa47f8ba873714a993610ba40d0ff",
+          "external_section": "references/engineering.md:60"
+        }
+      ],
+      "a3_rule_hash": "b0de316bb755ebc48168aed85a422d2db542dea2cc96a05a6de059fa6aae87ef",
+      "rule_hash": "c33a999ff1282c3199d06947fc6bf4196d289048367015c2508184d57eff6a6e"
+    },
+    {
+      "capability_id": "F34",
+      "rule_id": "FACE-F34",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "形态、反射、重复结构/牙齿漂移；不让更亮更清等于更真实。",
+      "provenance": [
+        {
+          "index_key": "B-qc",
+          "source": "B",
+          "path": "references/quality-gate.md",
+          "line": 5,
+          "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+          "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/references/quality-gate.md#L5",
+          "sha256": "92cde1d96b2e404b07b60620b49fe4d2236b75d3d098aa416d82d6580fc95269",
+          "external_section": "references/quality-gate.md:5"
+        }
+      ],
+      "a3_rule_hash": "69ebe3647f95401f54b5f99e07f0f0d5eeaa98a7404803278114f0417d7f1af5",
+      "rule_hash": "c4ab346b66c42eb1b0ba63f984694fc30bb10ce030a4eee21ed239ff0d7542b2"
+    },
+    {
+      "capability_id": "F35",
+      "rule_id": "FACE-F35",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "遮挡合理性、额外耳廓、边界失真；不可见用 UNKNOWN。",
+      "provenance": [
+        {
+          "index_key": "B-qc",
+          "source": "B",
+          "path": "references/quality-gate.md",
+          "line": 5,
+          "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+          "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/references/quality-gate.md#L5",
+          "sha256": "92cde1d96b2e404b07b60620b49fe4d2236b75d3d098aa416d82d6580fc95269",
+          "external_section": "references/quality-gate.md:5"
+        },
+        {
+          "index_key": "B-hair",
+          "source": "B",
+          "path": "references/prompts.md",
+          "line": 54,
+          "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+          "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/references/prompts.md#L54",
+          "sha256": "f0b4667b921f2333453e0b6cd37fda9444fe067306da50c12d21110d15298ad1",
+          "external_section": "references/prompts.md:54"
+        }
+      ],
+      "a3_rule_hash": "c15465812fd0204a847497f1db667d82e7c8f66d65c1c591d01caaa78afaf172",
+      "rule_hash": "a88f5d8ea0d852ff1ba09623e280776b8ae1a6af3b5ad26336a893d70bce38ab"
+    },
+    {
+      "capability_id": "F36",
+      "rule_id": "FACE-F36",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "与人物身份和当前视角比；非方颌/尖颌达标。",
+      "provenance": [
+        {
+          "index_key": "B-qc",
+          "source": "B",
+          "path": "references/quality-gate.md",
+          "line": 5,
+          "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+          "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/references/quality-gate.md#L5",
+          "sha256": "92cde1d96b2e404b07b60620b49fe4d2236b75d3d098aa416d82d6580fc95269",
+          "external_section": "references/quality-gate.md:5"
+        },
+        {
+          "index_key": "A-three",
+          "source": "A",
+          "path": "references/realism_vs_refined.md",
+          "line": 170,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/realism_vs_refined.md#L170",
+          "sha256": "7ce35cfd669bb4566945ae7f20cb62d649db86ef36664b80e5c7df16f196695e",
+          "external_section": "references/realism_vs_refined.md:170"
+        }
+      ],
+      "a3_rule_hash": "f412e8f51676ceb345f1b7211b08c77b974b110da51f06cac2a69f56b5a794dd",
+      "rule_hash": "e431bab8b663e3773b76ad75b319fddf29067f4472001a05078e6647f393a84b"
+    },
+    {
+      "capability_id": "F37",
+      "rule_id": "FACE-F37",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "角色版本与当前整理/遮挡分开，不将新造发际线当已知。",
+      "provenance": [
+        {
+          "index_key": "B-qc",
+          "source": "B",
+          "path": "references/quality-gate.md",
+          "line": 5,
+          "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+          "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/references/quality-gate.md#L5",
+          "sha256": "92cde1d96b2e404b07b60620b49fe4d2236b75d3d098aa416d82d6580fc95269",
+          "external_section": "references/quality-gate.md:5"
+        },
+        {
+          "index_key": "B-hair",
+          "source": "B",
+          "path": "references/prompts.md",
+          "line": 54,
+          "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+          "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/references/prompts.md#L54",
+          "sha256": "f0b4667b921f2333453e0b6cd37fda9444fe067306da50c12d21110d15298ad1",
+          "external_section": "references/prompts.md:54"
+        }
+      ],
+      "a3_rule_hash": "45b1e21dfe5bfd46a1cbc8162b5edf0337e4f270cde70fea8199ce5fe359e2ed",
+      "rule_hash": "cd6e8085c06f735daef1471178d8a79234e2407d9ef26857dd8c3068128b8ae9"
+    },
+    {
+      "capability_id": "F38",
+      "rule_id": "FACE-F38",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "位置侧别在可见条件下比较；看不清不判消失。",
+      "provenance": [
+        {
+          "index_key": "C-drift",
+          "source": "C",
+          "path": "skills/character-design/SKILL.md",
+          "line": 140,
+          "sha": "9ca850412943251fc9a466c4c29fdaf7a303a3d8",
+          "url": "https://github.com/fal-ai-community/skills/blob/9ca850412943251fc9a466c4c29fdaf7a303a3d8/skills/character-design/SKILL.md#L140",
+          "sha256": "1f62641d84b3dc0f2c0e13663afbb71cd9682483e82b920cc53450713c5f5d57",
+          "external_section": "skills/character-design/SKILL.md:140"
+        },
+        {
+          "index_key": "B-skin",
+          "source": "B",
+          "path": "references/prompts.md",
+          "line": 22,
+          "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+          "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/references/prompts.md#L22",
+          "sha256": "f0b4667b921f2333453e0b6cd37fda9444fe067306da50c12d21110d15298ad1",
+          "external_section": "references/prompts.md:22"
+        }
+      ],
+      "a3_rule_hash": "85767e9f2164969fb8b9be500599b208a1f8ddb4ed334978784b63e65d79fb8a",
+      "rule_hash": "77cf25fd9a72973aeddbb12d197242b80f2b80976ca64712c69fbf9757914ec2"
+    },
+    {
+      "capability_id": "F39",
+      "rule_id": "FACE-F39",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "C15 细化到脸形身份与 pose/gaze/expression/light/camera 来源；D 非验证方法。",
+      "provenance": [
+        {
+          "index_key": "D-duty",
+          "source": "D",
+          "path": "skill/realportrait-ai/SKILL.md",
+          "line": 18,
+          "sha": "35728411922ddf83c612612bc4d2d1c6df8a94a0",
+          "url": "https://github.com/Shinning1010/realportrait-ai/blob/35728411922ddf83c612612bc4d2d1c6df8a94a0/skill/realportrait-ai/SKILL.md#L18",
+          "sha256": "526da416302ebc3d89f44d150ba0fe69d1f7c8667581201e55d973bf967d52b7",
+          "external_section": "skill/realportrait-ai/SKILL.md:18"
+        },
+        {
+          "index_key": "A-visible",
+          "source": "A",
+          "path": "references/structure_and_makeup.md",
+          "line": 104,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L104",
+          "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba",
+          "external_section": "references/structure_and_makeup.md:104"
+        }
+      ],
+      "a3_rule_hash": "3bb43feac3ed28c99edd1cdc3e3497b20e37f5346db15d1559190fdc9ad5a114",
+      "rule_hash": "ee5f9e72df0e1e0a94a33121ce89218e442ec67be755a766a3f520518b44961d"
+    },
+    {
+      "capability_id": "F40",
+      "rule_id": "FACE-F40",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "吸收修复范围原则；禁止外部检查失败即自动调用。",
+      "provenance": [
+        {
+          "index_key": "B-passes",
+          "source": "B",
+          "path": "SKILL.md",
+          "line": 85,
+          "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+          "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/SKILL.md#L85",
+          "sha256": "0f2f6fcd46e6aa5918d026ec736b281bb278323c61157d89a5b05b81667ab084",
+          "external_section": "SKILL.md:85"
+        },
+        {
+          "index_key": "B-repair",
+          "source": "B",
+          "path": "references/quality-gate.md",
+          "line": 18,
+          "sha": "923523b861e20b88544706e83b2a8e0726fc5542",
+          "url": "https://github.com/lovstudio/professional-portrait-skill/blob/923523b861e20b88544706e83b2a8e0726fc5542/references/quality-gate.md#L18",
+          "sha256": "92cde1d96b2e404b07b60620b49fe4d2236b75d3d098aa416d82d6580fc95269",
+          "external_section": "references/quality-gate.md:18"
+        },
+        {
+          "index_key": "D-revision",
+          "source": "D",
+          "path": "skill/realportrait-ai/SKILL.md",
+          "line": 91,
+          "sha": "35728411922ddf83c612612bc4d2d1c6df8a94a0",
+          "url": "https://github.com/Shinning1010/realportrait-ai/blob/35728411922ddf83c612612bc4d2d1c6df8a94a0/skill/realportrait-ai/SKILL.md#L91",
+          "sha256": "526da416302ebc3d89f44d150ba0fe69d1f7c8667581201e55d973bf967d52b7",
+          "external_section": "skill/realportrait-ai/SKILL.md:91"
+        }
+      ],
+      "a3_rule_hash": "dbfd5538bed018e78bf262160b43fddadae4d0ca0057ee4a8dada1f03f24737b",
+      "rule_hash": "f7cc484e36fbf7dc662959ae2092f8443e51a97b0aef518d1528e6a565c94044"
+    },
+    {
+      "capability_id": "F54",
+      "rule_id": "FACE-F54",
+      "rule_version": "1.0-a4",
+      "scope": {
+        "modality": "STILL",
+        "medium": "LIVE_ACTION"
+      },
+      "validation_status": "LOCAL_EXPERIMENTAL",
+      "local_decision": "仅保存 source/approved design 事实；不将化妆视觉效果反写骨相。",
+      "provenance": [
+        {
+          "index_key": "A-decouple",
+          "source": "A",
+          "path": "references/structure_and_makeup.md",
+          "line": 26,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L26",
+          "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba",
+          "external_section": "references/structure_and_makeup.md:26"
+        },
+        {
+          "index_key": "A-makeup",
+          "source": "A",
+          "path": "references/structure_and_makeup.md",
+          "line": 36,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L36",
+          "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba",
+          "external_section": "references/structure_and_makeup.md:36"
+        },
+        {
+          "index_key": "A-visible",
+          "source": "A",
+          "path": "references/structure_and_makeup.md",
+          "line": 104,
+          "sha": "4b531c9e1b429562504ad7ec1db3e20b27df79f5",
+          "url": "https://github.com/snowfrost/ai-character-designer/blob/4b531c9e1b429562504ad7ec1db3e20b27df79f5/references/structure_and_makeup.md#L104",
+          "sha256": "d54c3507d17017d9b142d695754ca93d91f332f0a7594089961126c1652e29ba",
+          "external_section": "references/structure_and_makeup.md:104"
+        }
+      ],
+      "a3_rule_hash": "532bac9757fd7c3ef343db37f14b2236c4160d3bb042c0ca95c8c872df012752",
+      "rule_hash": "03f79c615ac8672f0232f03307b6071e8efb6aaec64c1d958ca2c298fb8a1013"
+    }
+  ]
+}

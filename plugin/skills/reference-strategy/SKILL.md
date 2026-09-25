@@ -40,3 +40,11 @@ Return contradictory demands to the originating departments; execution limits re
 ## Source reads
 
 Use supplied current originals first. For missing scoped context, read `work.get_work`, `scene.get_scene`, `script.get_script`, `episode.get_episode`, `shot.get_shot`, `asset.get_asset`, `context.build_context`. These reads do not authorize source writes or production.
+
+## Still live-action professional knowledge
+
+For opt-in STILL/LIVE_ACTION use `reference_roles` entries with exact entity/media/version/hash/ordinal, target actor IDs, carry properties, explicit must-not-carry domains and source-bound preservation text. Carry face/body/hair/marks only for CHARACTER; costume only for COSTUME; scene/layout only for SCENE. None automatically carries pose, gaze, expression, lighting, composition, camera, action, injury or makeup. All selected duties must survive the formal IR in preserve; legacy reference prose alone is insufficient.
+
+Use distinct entity keys for character/costume/scene and retain the three-image cap. Multi-view review evidence may exceed selected inputs; it is not independent truth or a promise of arbitrary-angle stability. In `requirements.face_coverage`, cite canonical leaves with use_requirement, evidence_state and STABLE_IDENTITY semantic classification. REQUIRED unconfirmed facts block that use. Portrait facial evidence and full-body proof are separate; no reconstruction of invisible identity. Reference Strategy owns duties, never the face facts.
+
+Read [mapping and evidence profile](../../docs/still-professional-mapping.md) when preparing these still records. Knowledge remains LOCAL_EXPERIMENTAL until scoped A5 media evidence.

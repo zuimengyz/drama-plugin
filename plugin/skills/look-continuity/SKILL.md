@@ -59,3 +59,9 @@ appendix may replace compilation. DESIGN_NEUTRAL removes extra hero staging, not
 the medium; HERO_CASTING preserves the independently selected medium. Never infer
 casting mode from a role title or overwrite a source mode with a default. Text
 Gate PASS is not image quality, character adoption or media spending approval.
+
+## Still live-action professional knowledge
+
+For opt-in STILL/LIVE_ACTION, `skin_condition`, fatigue, dirt/blood/wounds and current grooming describe the current shot state. Do not rewrite CharacterAsset baseline complexion, hairline, age or marks. A newly lasting scar needs the asset owner's approved stage revision; fatigue does not authorize rejuvenation or a new age. Never add universal redness, sweat, wrinkles or dirt to make a face real. Keep makeup effects distinct from geometry; their source-pinned leaves map to visible_condition.
+
+Read [mapping and evidence profile](../../docs/still-professional-mapping.md) when preparing these still records. Knowledge remains LOCAL_EXPERIMENTAL until scoped A5 media evidence.

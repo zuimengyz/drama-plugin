@@ -1,0 +1,49 @@
+# Still live-action professional knowledge
+
+This is the opt-in STILL/LIVE_ACTION implementation of the approved cinematography and Face A3 contracts. It is not an additional professional owner, renderer, route or production approval. Rules remain LOCAL_EXPERIMENTAL. Real image validation is A5.
+
+## Authoring and source ownership
+
+Use existing CreativeBible fields, approved through the existing exact-content approval receipts. A visible choice is a single-line string or `{intent: string | string[], reason, constraints, criteria}` under the owning field. Select an exact string leaf; never stringify a dictionary. Camera height, observer relation, distance and perspective are separate; lens intent lists current spatial/focus choices, not motion. Lighting source/motivation/direction are separate from material identity. Color/grade targets go to preservation or explicitly optional secondary detail.
+
+CharacterAsset keeps its existing schema. Stable geometry belongs to `face`, apparent stage age to `age_presentation`, baseline complexion/texture to `surface_state`, hairline/base hair to `hair`, marks to `physical_identity`. Reference coverage indexes these leaves without duplicating facts. Pose/gaze and relations remain Blocking; expression remains Performance; current sweat, makeup, fatigue and wounds remain Look. Knowledge never supplies character facts. Skin can be clean; pores, wrinkles, redness and asymmetry are not injected. Uncertain anatomy and historical face details return to their source/approved design owner rather than stereotype inference.
+
+The packaged [rule catalog](../src/drama_plugin/visual/still_knowledge_catalog.json) contains exactly 16 cinematography and 35 Face ADAPT rules with original provenance, version, hash and validation status. It contains independently expressed local decisions, not external prompt templates. `rule_catalog_digest` and row rule hashes are provenance only. They never enter the prompt or AssetDecision.source_refs.
+
+## D1 and D2
+
+`GlobalVisualStyle.imaging_character` is optional. Its `photographic_genre`, `capture_character` and optical textures have a reason and approved source basis. Each texture has effect, intent, applicability and preservation constraints. `save_style(style, current=...)` validates a nonempty choice against current approved Work sources and LIVE_ACTION. The field is omitted completely when absent, preserving legacy bytes. Nonempty style changes fingerprint. Generic asset/video projection explicitly rejects this still-only extension; it must be consumed through the still mapper, not silently appended to an asset prompt.
+
+`FrameSpec.professional_sources` is an optional tuple of SourcePin. Empty is omitted in model dumps; nonempty pins are part of the FrameSpec source fingerprint. Include direct professional originals, runtime medium, global style, Reference Plan and the immutable mapping receipt. Existing Work.content.visualSourceCurrent supplies current hashes; a submitted frame cannot supply its own freshness map.
+
+## Preparation and mapping API
+
+Use `hosts.route_production.prepare_still_projection(work, spec, base_ir, scope=Scope(...), source_pins=(...), rows=(MappingRow(...), ...))`. This reads existing immutable originals and their approval/source closure. Scope includes Work/Scene/Shot and character→arc_stage. Pass an existing IR shape and map every Fact, including preservation; no arbitrary base Fact is carried over. Task/adapter metadata remains the existing contract. The returned FrameSpec can be compiled by the unchanged `compile_frame` → `compile_ir` → `image_serializer` path.
+
+A row contains a stable mapping_id, capability_ids, one owner, exact input Leaf(pin, JSON pointer), target JSON pointer, operation, priority and required consumption flag. Operations are COPY_LEAF, JOIN_ORDERED_LEAVES (fixed space join), SELECT_SCOPED_ITEM (an explicit leaf in a uniquely scoped approved record). No inference, summarization, auto-polish, model interpretation or provider parameters. Duplicate input atoms or targets fail rather than using last-writer-wins.
+
+Examples of paths: `/content/0/values/camera_height/intent` → `/camera/perspective`; `/assets/0/decisions/age_presentation/text` → `/subjects/0/apparent_age`. Combine observer/height/distance/axis in a single ordered perspective row. Face combines whole leaves in face→surface_state→physical_identity order. Reasons and criteria cannot be selected. Approved independent facts that were mixed in an old leaf need owner revision, not an NLP splitter.
+
+The ordinary `still-professional-map:work:shot` receipt records scope, original pins, catalog digest, rows, selected text hashes and metadata excluded from projection. It contains no FrameSpec/IR/prompt hash, avoiding a cycle. Freeze receipt first, bind D2, derive actor identity from the same face Fact, compute FrameSpec source fingerprint, then bind the IR. Each Fact.source is `receipt-key@fingerprint#rows/id`. Compilation retains/omits sources and records prompt/request fingerprints through existing machinery. Both reservation and submission reopen current originals and approvals, replay the receipt/IR, require all mandatory facts retained, and verify the compiled request. No nonempty D1 can be silently omitted.
+
+## Reference responsibilities
+
+Existing Reference Plan `reference_roles` uses `ReferenceDuty` metadata: entity_key, media_id/version/content_hash, ordinal slot, actor_ids, carries, must_not_carry, canonical_fields (exact Leaf references), evidence_state, visibility, use and preservation_text. CHARACTER carries only face/body/hair/marks; COSTUME costume; SCENE scene/layout. Each selected reference gets exactly one duty and its preservation_text maps to an IR.preserve Fact. `must_not_carry` explicitly lists pose, gaze, expression, lighting, composition, camera, action, injury, makeup. Current state must come from its actual department. Slots, entity, media/hash, actor binding and canonical asset ownership are checked against the actual FrameSpec. Three-image cap and adapter slots remain unchanged.
+
+Use Reference Plan `requirements.face_coverage` entries: capability_id, canonical_field Leaf, use_requirement (REQUIRED_FOR_USE/OPTIONAL/NOT_OBSERVABLE_FOR_USE), evidence_state (VISIBLE/INFERRED/UNCONFIRMED), semantic_class. Stable projected face/age/hair leaves require coverage with STABLE_IDENTITY classification. A mixed/current/imaging leaf is returned to its owner. Unknown required evidence fails; approved inferred design is distinguishable from a reference's visible proof. These classifications are explicit review assertions, not automated semantic or pixel classifiers.
+
+The mapper cannot discover that an approved human incorrectly labelled an expression as geometry. Approval and observation remain necessary; deterministic tests establish source/ownership/consumption, not artistic truth or likeness.
+
+Edits use the existing edit_delta and preserve. `MappingRow.semantic_target` may identify the canonical destination of an edit target_correction; it is invalid on other rows. source_issue comes from an approved visual-continuity-qa finding's evidence, never a creative correction invented by QA. Reference Plan `requirements.preservation[].intent` may hold explicitly approved unchanged obligations. Existing edit selection omits age/hair/camera/light rows in some cases; required omitted rows fail. Mark a non-required subject restatement as such only when the approved preservation decision carries the obligation. No selector policy is changed.
+
+## Executable QC over existing Review
+
+`still_knowledge.Observation` validates evidence metadata; `observation_review` projects it into the existing Review and QA values. It performs no image classification and cannot write identity. Criteria are QC-CAMERA, QC-IDENTITY, QC-COSTUME, QC-MATERIAL, QC-CONTACT, QC-LIGHT-MOTIVATION, QC-LIGHT-DIRECTION, QC-COLOR, QC-READABILITY, QC-CONTACT-SHADOW, QC-INTEGRATION, QC-REFERENCE-LEAKAGE; plus QC-FACE-GEOMETRY, QC-AGE-DRIFT, QC-BEAUTIFICATION-DRIFT, QC-SKIN-RESPONSE, QC-EYES-TEETH, QC-EAR-INTEGRITY, QC-JAW-CHIN, QC-HAIRLINE-EDGE, QC-STABLE-MARKS.
+
+Provide requirement Leaf, actor/stage, output/reference hashes, region, intended use, visibility, comparison, specific observation, impact, root-cause hypothesis/confidence, one repair_owner, severity/remedy and preserve_scope. Missing output visibility becomes UNKNOWN; reference leakage also requires reference evidence. Inapplicable observations remain metadata, not fabricated PASS. MINOR findings produce notes with ACCEPT/POSTPROCESS; MAJOR pairs a FAIL check with a finding. Existing Review validates consistency and disposition; no new statuses, auto-retry or overall beauty/CG score.
+
+For formal review, retain an ordinary sidecar with work_id/attempt_id/output_hash/observations in the existing artifact store. Existing `operate(..., 'review', payload)` accepts `{attempt_id, output_hash, reviewer, still_observation_ref}` and re-resolves requirements before calling existing record_review. Alternatively consume `observation_review()['review']` through the usual Review flow. A hypothesis routes investigation to the original owner, compiler or shot-production; it never edits a nose or calls a provider.
+
+## Compatibility and limits
+
+No changes to Director authority, provider adapter, image route, single serializer, Video contracts, MCP/Service or storage mechanism. No new top-level Skill. Legacy no-D1/no-D2 requests follow their original path. This opt-in path fails explicitly on stale/unapproved sources, ambiguous mappings, unsupported fields, wrong Work/actor/stage, missing duties or mandatory omitted facts. Human semantic approval and actual media observation are still required. Offline synthetic fixtures prove enforcement and replay only, not A5 human realism.

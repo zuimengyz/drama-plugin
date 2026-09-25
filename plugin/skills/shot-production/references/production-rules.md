@@ -12,7 +12,7 @@ Organize image preparation and legacy MCP context using the following facts. For
   - Character: identity, age, face, hair, beard, and general physical appearance.
   - Costume: base costume, color, material, major silhouette, and active variant.
   - Scene: location identity, spatial structure, historical material, and major fixed objects.
-  - Lighting: time of day, major source, warm/cool relationship, exposure, and atmosphere.
+  - Sequence lighting continuity: independently approved time/source/relationship/exposure/atmosphere bounds. These are Lighting-owned continuity facts, never portrait identity or automatic reference inheritance.
   - Props: only continuity-significant ownership, presence, state, and location.
 - **Locked Facts**: facts that must remain stable across the sequence.
 - **Allowed Delta**: justified pose, gaze, expression, body direction, natural folds, framing-dependent background visibility, and scale changes.
@@ -131,3 +131,7 @@ stable Review-PASS Video
 ```
 
 The Snapshot describes the actual video, not the intended DPD. Record visible expression, gaze, head/body motion, gesture, mouth-activity windows, pauses, and pre/post-speech action only when observable. Use `UNKNOWN` instead of guessing. DPD-versus-video deviation is diagnostic only: it never blocks or changes the Snapshot. A later replacement video must produce a new content hash and Realized Performance fingerprint, making any dependent final Audio stale.
+
+## Still live-action observation evidence
+
+Use [the shared still profile](../../../docs/still-professional-mapping.md) for executable observation validation. Its criteria refine existing QA/Review: approved requirement pin, visible region, comparison, output/reference hashes, use-based impact, hypothesis/confidence and one repair owner. No image evidence means UNKNOWN. Clean, symmetric, beautiful or unwrinkled skin is not failure; pores/roughness are not automatic PASS. Keep skin response separate from geometry and current makeup/light. Compare normal viewing usefulness, not imagined pixel-perfect anatomy. Existing FAIL-check/MAJOR-finding consistency remains mandatory; a minor defect is a note with ACCEPT/POSTPROCESS, never automatic REGENERATE. Observation metadata contains no creative replacement or generation command.

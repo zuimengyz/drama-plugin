@@ -44,3 +44,9 @@ Use supplied current originals first. For missing scoped context, read `work.get
 ## Route-owned expression
 
 Author camera energy in response to the selected character action and Director intensity. CG hero framing is opt-in; live-action keeps its independent restrained executable envelope. Camera never invents physical action. Read [expression route contract](../../docs/expression-route-contract.md) when using character or action expression profiles.
+
+## Still live-action professional knowledge
+
+For the opt-in STILL/LIVE_ACTION profile, author one visible `intent` per existing field, with separate reason/constraints/criteria. Decide the required subjects, hands, contacts and landmarks in `spatial_readability` before `shot_scale_philosophy`. Keep observer relation (`camera_point_of_view`), height, distance and optical-axis/depth relation (`perspective`) distinct: a low camera can remain level. `subject_hierarchy` owns framing and attention; symmetry and centered framing are valid choices. `lens_intention.intent` may be an ordered list of spatial effect, current focus plane and permitted softness decisions. Do not invent millimeters from genre or promise exact optical simulation. Resolve distance/lens/readability conflicts against Layout, not by moving actors. Replace generic cinematic praise with observable choices at the authoring source; the mapper cannot polish them. No focus pulls or camera-motion facts enter this still profile.
+
+Read [mapping and evidence profile](../../docs/still-professional-mapping.md) when preparing these still records. Knowledge remains LOCAL_EXPERIMENTAL until scoped A5 media evidence.

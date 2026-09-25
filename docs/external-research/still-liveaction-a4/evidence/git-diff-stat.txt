@@ -1,0 +1,21 @@
+ plugin/docs/core-creative-r1.md                    |   4 +
+ plugin/docs/professional-departments.md            |   4 +
+ plugin/skills/action-choreography/SKILL.md         |   6 +
+ plugin/skills/blocking/SKILL.md                    |   6 +
+ plugin/skills/cinematography/SKILL.md              |   6 +
+ plugin/skills/color-design/SKILL.md                |   6 +
+ plugin/skills/color-grading/SKILL.md               |   6 +
+ plugin/skills/lighting-design/SKILL.md             |   6 +
+ plugin/skills/look-continuity/SKILL.md             |   6 +
+ plugin/skills/performance-casting/SKILL.md         |  10 +-
+ plugin/skills/reference-strategy/SKILL.md          |   8 ++
+ plugin/skills/shot-production/SKILL.md             |   8 ++
+ .../shot-production/references/production-rules.md |   6 +-
+ plugin/skills/specialized-asset-design/SKILL.md    |   8 ++
+ .../drama_plugin/contracts/specialized_asset.py    |  34 +++++-
+ plugin/src/drama_plugin/hosts/route_production.py  | 135 ++++++++++++++++++++-
+ plugin/src/drama_plugin/hosts/specialized_asset.py |  11 +-
+ plugin/src/drama_plugin/professional.py            |   2 +-
+ plugin/src/drama_plugin/specialized_asset.py       |   8 ++
+ plugin/src/drama_plugin/visual/frame_request.py    |  14 ++-
+ 20 files changed, 284 insertions(+), 10 deletions(-)

@@ -1,0 +1,42 @@
+{
+  "python": "/Users/zy/historical-plugin/drama-mcp-service/.venv/bin/python",
+  "cwd": "/Users/zy/historical-plugin/drama-plugin",
+  "new_tests": {
+    "command": "python -m pytest plugin/tests/test_still_knowledge.py -q",
+    "passed": 32,
+    "failed": 0
+  },
+  "focused": {
+    "command": "python -m pytest plugin/tests/test_still_knowledge.py plugin/tests/test_specialized_asset.py plugin/tests/test_visual_prompt_ir.py plugin/tests/test_route_image_inputs.py plugin/tests/test_production_route.py -q",
+    "passed": 121,
+    "failed": 0
+  },
+  "full": {
+    "command": "python -m pytest plugin/tests -q",
+    "passed": 2636,
+    "failed": 2
+  },
+  "final_full": {
+    "command": "python -m pytest plugin/tests -q --deselect=plugin/tests/test_architecture_authority.py::test_provider_prompt_is_exact_core_compilation --deselect=plugin/tests/test_architecture_authority.py::test_formal_http_compile_reserve_replays_receipt_without_media_or_auth_claim",
+    "passed": 2636,
+    "failed": 2,
+    "deselected": 0,
+    "note": "Requested deselection did not match collected node IDs; the entire suite ran again. Actual outcome retained."
+  },
+  "baseline": {
+    "command": "python -m pytest /tmp/still-a4-baseline-3b286cc/plugin/tests/test_architecture_authority.py -q",
+    "passed": 14,
+    "failed": 2
+  },
+  "baseline_failure_names": [
+    "test_provider_prompt_is_exact_core_compilation",
+    "test_formal_http_compile_reserve_replays_receipt_without_media_or_auth_claim"
+  ],
+  "failure": "KeyError: compiledBy",
+  "new_test_failures": 0,
+  "mypy": {
+    "files": 7,
+    "issues": 0
+  },
+  "all_suite_green": false
+}

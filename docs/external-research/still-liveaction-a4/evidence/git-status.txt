@@ -1,0 +1,27 @@
+ M plugin/docs/core-creative-r1.md
+ M plugin/docs/professional-departments.md
+ M plugin/skills/action-choreography/SKILL.md
+ M plugin/skills/blocking/SKILL.md
+ M plugin/skills/cinematography/SKILL.md
+ M plugin/skills/color-design/SKILL.md
+ M plugin/skills/color-grading/SKILL.md
+ M plugin/skills/lighting-design/SKILL.md
+ M plugin/skills/look-continuity/SKILL.md
+ M plugin/skills/performance-casting/SKILL.md
+ M plugin/skills/reference-strategy/SKILL.md
+ M plugin/skills/shot-production/SKILL.md
+ M plugin/skills/shot-production/references/production-rules.md
+ M plugin/skills/specialized-asset-design/SKILL.md
+ M plugin/src/drama_plugin/contracts/specialized_asset.py
+ M plugin/src/drama_plugin/hosts/route_production.py
+ M plugin/src/drama_plugin/hosts/specialized_asset.py
+ M plugin/src/drama_plugin/professional.py
+ M plugin/src/drama_plugin/specialized_asset.py
+ M plugin/src/drama_plugin/visual/frame_request.py
+?? docs/external-research/.DS_Store
+?? docs/external-research/face-a3/
+?? docs/external-research/still-liveaction-a4/
+?? plugin/docs/still-professional-mapping.md
+?? plugin/src/drama_plugin/visual/still_knowledge.py
+?? plugin/src/drama_plugin/visual/still_knowledge_catalog.json
+?? plugin/tests/test_still_knowledge.py

@@ -74,3 +74,7 @@ approved Character Dramaturgy character_arc; the existing Literary validator
 compares them against the original reconciled package. They are never authored
 by the visual designer. Source/rights gates execute before visual production gates.
 See tests/test_literary_visual_convergence.py for the actual P0 → R1 chain in both media.
+
+## Still-only imaging character
+
+GlobalVisualStyle optionally carries ImagingCharacterIntent: photographic genre, capture character and bounded optical textures, with reason and approved source pins. Absence is serialized exactly as before. Nonempty choices are LIVE_ACTION/STILL only, change source fingerprints and require the [still mapping consumer](still-professional-mapping.md); legacy asset/video consumers fail explicitly rather than ignoring them. CharacterAsset anatomy and current state ownership do not change.

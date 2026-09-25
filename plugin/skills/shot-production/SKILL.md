@@ -150,3 +150,11 @@ Consume the frozen route-specific expression via the existing cinematic projecti
 Consume locked package identity and the selected visual envelope read-only. Missing production-ready identity blocks dedicated-character production; provider prompts are task projections only.
 
 Use the unified read-only `CharacterRepository.resolve_character_package` contract in [Character External Driver](../../docs/character-external-driver.md). Pin characterPackageRef, characterPackageVersion and checksum. Never create or overwrite Character Core in this Skill. Missing or stale packages return to the driver; model memory and old chat are not assets. DESIGN_REVIEW access does not authorize casting or production.
+
+## Still live-action professional knowledge
+
+For an explicitly selected STILL/LIVE_ACTION knowledge profile, use the shared source mapper and Host preparation described in [still professional mapping](../../docs/still-professional-mapping.md). Freeze approved originals and receipt before FrameSpec.professional_sources and the IR fingerprint. reserve and begin-submission re-read Work-owned current pins and exact approvals. Existing compile_ir/image_serializer remains the sole static writer; no face/camera prompt appendix. Nonempty imaging_character cannot silently pass an unsupported consumer.
+
+Use the evidence-based face/camera criteria through the existing Review handoff in that document. A face looks game-like only as a summary of specific regional evidence, never as a standalone FAIL or beauty score. Invisible evidence is UNKNOWN, minor observations do not request regeneration, and each actual failure routes one responsible owner. F40 scopes a proposed repair around original anchors and preserved facts; it does not spend or retry. C35's one-variable rule is an A5 experimental control, not a limit on authorized production repairs.
+
+Read [mapping and evidence profile](../../docs/still-professional-mapping.md) when preparing these still records. Knowledge remains LOCAL_EXPERIMENTAL until scoped A5 media evidence.

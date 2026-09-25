@@ -130,7 +130,8 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
         intent = requirements.get('frozen_creative', {}).get('cinematic_direction')
         frame_context = snapshot.get('spec', {}).get('scope_context') or {}
         authority = requirements.get('authority_context') or frame_context.get('authority_context')
-        validate_visual_submission(work, attempt['request'], authority_context=authority, creative_intent=intent)
+        if not validate_still_professional_sources(work, snapshot):
+            validate_visual_submission(work, attempt['request'], authority_context=authority, creative_intent=intent)
     if command == 'check-input':
         duty = route_input_gate(route, payload['target_id'], payload['purpose'])
         if not work.content.get('productionStage'):
@@ -173,6 +174,7 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
         elif command == 'add-frame':
             production.add_route_frame(state, payload['frame']); result = {'added': True}
         elif command == 'reserve':
+            validate_still_professional_sources(work, state['frames'][payload['shot_id']])
             result = production.reserve(state, **payload)
         elif command == 'begin-submission':
             result = production.begin_submission(state, **payload)
@@ -232,7 +234,8 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
                 attempt['submitted_at'] = payload['submission_ack_at']
             result = {'usageRecorded': True, 'invoiceSettlement': 'UNKNOWN'}
         elif command == 'review':
-            result = {'review': production.record_review(state, production.Review.model_validate(payload))}
+            review_payload = still_observation_payload(work, payload)
+            result = {'review': production.record_review(state, production.Review.model_validate(review_payload))}
         elif command == 'revise-review':
             result = {'review': production.revise_review(state, **payload)}
         elif command == 'select-input':
@@ -281,3 +284,131 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
         raise ValueError('FORMAL_RESERVATION_NOT_VERIFIED_DO_NOT_SUBMIT')
     return {'result': result, 'state': state, 'formalOwner': work_id,
             'stateFingerprint': sha256_canonical(state), 'localRole': 'REBUILDABLE_AUDIT_VIEW'}
+
+
+def still_rule_catalog() -> dict[str, Any]:
+    """Packaged independent knowledge metadata; never character fact provenance."""
+    import json
+    from importlib.resources import files
+    return dict(json.loads(files('drama_plugin.visual').joinpath('still_knowledge_catalog.json').read_text()))
+
+
+def _still_originals(store: Any, pins: tuple[Any, ...], current: dict[str, str]) -> dict[str, Any]:
+    from drama_plugin.contracts.source_pin import SourcePin
+    originals: dict[str, Any] = {}
+    queue = list(pins)
+    def nested(value: Any) -> None:
+        if isinstance(value, dict):
+            if set(value) == {'key', 'kind', 'fingerprint'}:
+                queue.append(SourcePin.model_validate(value))
+            else:
+                for item in value.values():
+                    nested(item)
+        elif isinstance(value, list):
+            for item in value:
+                nested(item)
+    while queue:
+        pin = queue.pop()
+        if current.get(pin.key) != pin.fingerprint:
+            raise ValueError('STILL_STALE_PROFESSIONAL_SOURCE:' + pin.key)
+        if pin.key in originals:
+            if sha256_canonical(originals[pin.key]) != pin.fingerprint:
+                raise ValueError('STILL_CONFLICTING_PROFESSIONAL_SOURCE')
+            continue
+        value = store.read_ref(pin)
+        originals[pin.key] = value
+        nested(value)
+    return originals
+
+
+def validate_still_professional_sources(work: Work, snapshot: dict[str, Any]) -> bool:
+    """Re-read Work-owned current pins and immutable approvals at each spend gate."""
+    from drama_plugin.visual.frame_request import FrameSpec, verify_compiled
+    from drama_plugin.contracts.source_pin import SourcePin
+    from drama_plugin.hosts.specialized_asset import SpecializedAssetHost
+    from drama_plugin.config import load_config
+    from drama_plugin.visual.still_knowledge import replay
+    raw = snapshot.get('spec', {})
+    if not raw.get('professional_sources'):
+        return False
+    spec = FrameSpec.model_validate(raw)
+    host = SpecializedAssetHost(load_config())
+    runtime = SourcePin.model_validate(work.content.get('movieVisualMediumRef', {}))
+    if runtime != host.movie(work.id) or host.store.read_ref(runtime)['medium'] != 'LIVE_ACTION':
+        raise ValueError('STILL_MOVIE_MEDIUM_MISMATCH')
+    receipts = [p for p in spec.professional_sources if p.key.startswith('still-professional-map:')]
+    if len(receipts) != 1:
+        raise ValueError('STILL_EXACT_RECEIPT_REQUIRED')
+    receipt = host.store.read_ref(receipts[0])
+    if receipt['scope']['work_id'] != work.id:
+        raise ValueError('STILL_WORK_SCOPE_MISMATCH')
+    current = {**work.content.get('visualSourceCurrent', {}), runtime.key: runtime.fingerprint}
+    pins = tuple(p for p in spec.professional_sources if p != receipts[0])
+    originals = _still_originals(host.store, pins, current)
+    if runtime.key not in originals or originals[runtime.key] != host.store.read_ref(runtime):
+        raise ValueError('STILL_RUNTIME_PIN_REQUIRED')
+    style_key = 'global-style:' + work.id
+    if style_key not in originals or not any(p.key == style_key for p in pins):
+        raise ValueError('STILL_GLOBAL_STYLE_PIN_REQUIRED')
+    if spec.actors and not any(v.get('schemaVersion') == 'specialized-asset-bible-v1' for v in originals.values()):
+        raise ValueError('STILL_APPROVED_IDENTITY_REQUIRED')
+    replay(spec, receipt, originals, current, still_rule_catalog())
+    verify_compiled(snapshot)
+    return True
+
+
+def prepare_still_projection(work: Work, spec: Any, base_ir: dict[str, Any], *,
+                             scope: Any, source_pins: tuple[Any, ...], rows: tuple[Any, ...]) -> Any:
+    """Freeze receipt before FrameSpec fingerprint; no request or provider side effects."""
+    from drama_plugin.config import load_config
+    from drama_plugin.contracts.source_pin import SourcePin
+    from drama_plugin.hosts.specialized_asset import SpecializedAssetHost
+    from drama_plugin.visual.frame_request import FrameSpec
+    from drama_plugin.visual.still_knowledge import make_receipt, project_ir, replay
+    host = SpecializedAssetHost(load_config())
+    runtime = SourcePin.model_validate(work.content.get('movieVisualMediumRef', {}))
+    if (runtime != host.movie(work.id) or host.store.read_ref(runtime)['medium'] != 'LIVE_ACTION'
+            or scope.work_id != work.id or scope.shot_id != spec.shot_id):
+        raise ValueError('STILL_MOVIE_OR_SHOT_SCOPE')
+    current = {**work.content.get('visualSourceCurrent', {}), runtime.key: runtime.fingerprint}
+    originals = _still_originals(host.store, source_pins, current)
+    receipt = make_receipt(scope=scope, source_pins=source_pins, rows=rows, originals=originals,
+        current=current, subject_ids=[s['id'] for s in base_ir['subjects']], rule_catalog=still_rule_catalog())
+    pin = host.store.put('still-professional-map:' + scope.work_id + ':' + scope.shot_id, receipt)
+    ir = project_ir(base_ir, receipt, pin, originals, current)
+    data = spec.model_dump(mode='json')
+    data['professional_sources'] = [p.model_dump(mode='json') for p in (*source_pins, pin)]
+    for actor in data['actors']:
+        actor['identity'] = next(s['face']['text'] for s in ir['subjects'] if s['id'] == actor['entity_key'])
+    data['prompt_ir'] = None
+    bound = FrameSpec.model_validate(data)
+    ir['source_fingerprint'] = sha256_canonical(bound.model_dump(mode='json', exclude={'prompt_ir'}))
+    bound = bound.model_copy(update={'prompt_ir': ir})
+    replay(bound, receipt, originals, current, still_rule_catalog())
+    return bound
+
+
+def still_observation_payload(work: Work, payload: dict[str, Any]) -> dict[str, Any]:
+    """Optional evidence sidecar -> existing Review; cannot mutate creative sources."""
+    if 'still_observation_ref' not in payload:
+        return payload
+    from drama_plugin.contracts.source_pin import SourcePin
+    from drama_plugin.hosts.specialized_asset import SpecializedAssetHost
+    from drama_plugin.config import load_config
+    from drama_plugin.visual.still_knowledge import Observation, observation_review
+    host = SpecializedAssetHost(load_config())
+    ref = SourcePin.model_validate(payload['still_observation_ref'])
+    data = host.store.read_ref(ref)
+    if (set(payload) != {'attempt_id', 'output_hash', 'reviewer', 'still_observation_ref'}
+            or data.get('work_id') != work.id or data.get('attempt_id') != payload['attempt_id']
+            or data.get('output_hash') != payload['output_hash']):
+        raise ValueError('STILL_QC_EVIDENCE_BINDING')
+    observations = tuple(Observation.model_validate(o) for o in data['observations'])
+    current = work.content.get('visualSourceCurrent', {})
+    originals = _still_originals(host.store, tuple(o.requirement.pin for o in observations), current)
+    if any(originals[o.requirement.pin.key].get('workId', originals[o.requirement.pin.key].get('workRef')) != work.id for o in observations):
+        raise ValueError('STILL_QC_REQUIREMENT_WORK')
+    result = observation_review(attempt_id=payload['attempt_id'], output_hash=payload['output_hash'],
+        reviewer=payload['reviewer'], evidence_ref=ref.key + '@' + ref.fingerprint,
+        observations=observations, originals=originals, current=current)
+    return dict(result['review'])

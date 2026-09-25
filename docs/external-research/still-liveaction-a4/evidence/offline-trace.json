@@ -1,0 +1,1202 @@
+{
+  "fixture": "OFFLINE_SYNTHETIC_NOT_A5",
+  "generated_media": false,
+  "work_mutations": "temporary fixture only",
+  "scope": {
+    "actors": {
+      "c": "opening"
+    },
+    "scene_id": "s",
+    "shot_id": "shot",
+    "work_id": "work"
+  },
+  "mapping_schema": "still-professional-map-v1",
+  "receipt_pin": {
+    "key": "still-professional-map:work:shot",
+    "kind": "DIRECTION",
+    "fingerprint": "1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e"
+  },
+  "mapping_rows": [
+    {
+      "capability_ids": [
+        "C15"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "50d6aa5808cf8d9e5589a6eb83f398ca72a7526a49ef66f272343a9a32e9dd30",
+            "key": "bible:still-adaptation-boundary",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/source_basis/intent/0"
+        }
+      ],
+      "mapping_id": "m0",
+      "operation": "COPY_LEAF",
+      "owner": "adaptation-boundary",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "a15fe0aeaf909e9a170adc863c4ebf57b3434f4b87c17f168893f3ac7654d17f",
+          "rule_id": "A3-C15",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/world/era",
+      "text_hash": "5b357df8140f87894f089e5391f96d81c552d2313d3ed41491deb5d61a93827b"
+    },
+    {
+      "capability_ids": [
+        "C15"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "50d6aa5808cf8d9e5589a6eb83f398ca72a7526a49ef66f272343a9a32e9dd30",
+            "key": "bible:still-adaptation-boundary",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/source_basis/intent/1"
+        }
+      ],
+      "mapping_id": "m1",
+      "operation": "COPY_LEAF",
+      "owner": "adaptation-boundary",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "a15fe0aeaf909e9a170adc863c4ebf57b3434f4b87c17f168893f3ac7654d17f",
+          "rule_id": "A3-C15",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/world/location",
+      "text_hash": "4c14a7dc5bd8408fcb6078ab295e24d5386b18b0f466f49fe9fba187821e915c"
+    },
+    {
+      "capability_ids": [
+        "C15"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "50d6aa5808cf8d9e5589a6eb83f398ca72a7526a49ef66f272343a9a32e9dd30",
+            "key": "bible:still-adaptation-boundary",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/source_basis/intent/2"
+        }
+      ],
+      "mapping_id": "m2",
+      "operation": "COPY_LEAF",
+      "owner": "adaptation-boundary",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "a15fe0aeaf909e9a170adc863c4ebf57b3434f4b87c17f168893f3ac7654d17f",
+          "rule_id": "A3-C15",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/world/historical_context",
+      "text_hash": "f3e465e7fa32da9a48b85618ca40bf084ff78af801ac5f92c7fc2cbc388a3dd8"
+    },
+    {
+      "capability_ids": [
+        "C15"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "50d6aa5808cf8d9e5589a6eb83f398ca72a7526a49ef66f272343a9a32e9dd30",
+            "key": "bible:still-adaptation-boundary",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/source_basis/intent/3"
+        }
+      ],
+      "mapping_id": "m3",
+      "operation": "COPY_LEAF",
+      "owner": "adaptation-boundary",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "a15fe0aeaf909e9a170adc863c4ebf57b3434f4b87c17f168893f3ac7654d17f",
+          "rule_id": "A3-C15",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/world/environment_rules/0",
+      "text_hash": "ca029ee0c216c3d59bedbf3a8cf2faa3e532466d566047cfa3d42659cdc7526f"
+    },
+    {
+      "capability_ids": [
+        "C15"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "918f498b8a29a1c71093595b670d4ff699ddd7e9c04696d4876948363a2c1b32",
+            "key": "bible:character-dramaturgy",
+            "kind": "DIRECTION"
+          },
+          "pointer": "/content/0/values/character_ref"
+        }
+      ],
+      "mapping_id": "m4",
+      "operation": "COPY_LEAF",
+      "owner": "character-dramaturgy",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "a15fe0aeaf909e9a170adc863c4ebf57b3434f4b87c17f168893f3ac7654d17f",
+          "rule_id": "A3-C15",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/subjects/0/role",
+      "text_hash": "879923da020d1533f4d8e921ea7bac61e8ba41d3c89d17a4d14e3a89c6780d5d"
+    },
+    {
+      "capability_ids": [
+        "F01"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "ec2749af161cf8409dabc7c3b380f688a3af19820a0ea580887c5da2aae1fa39",
+            "key": "specialized-assets:work",
+            "kind": "DIRECTION"
+          },
+          "pointer": "/assets/0/decisions/face/text"
+        },
+        {
+          "pin": {
+            "fingerprint": "ec2749af161cf8409dabc7c3b380f688a3af19820a0ea580887c5da2aae1fa39",
+            "key": "specialized-assets:work",
+            "kind": "DIRECTION"
+          },
+          "pointer": "/assets/0/decisions/surface_state/text"
+        },
+        {
+          "pin": {
+            "fingerprint": "ec2749af161cf8409dabc7c3b380f688a3af19820a0ea580887c5da2aae1fa39",
+            "key": "specialized-assets:work",
+            "kind": "DIRECTION"
+          },
+          "pointer": "/assets/0/decisions/physical_identity/text"
+        }
+      ],
+      "mapping_id": "m5",
+      "operation": "JOIN_ORDERED_LEAVES",
+      "owner": "specialized-asset-design",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "8d2213a91caf21f2b9bed329a7785d3525365109a49efbe26745f7c83dc2411a",
+          "rule_id": "FACE-F01",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/subjects/0/face",
+      "text_hash": "45bae0a9ba827de6f6b4689a1ae540890b72e8392ae6a925e0d2421a1ede3ac6"
+    },
+    {
+      "capability_ids": [
+        "F20"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "ec2749af161cf8409dabc7c3b380f688a3af19820a0ea580887c5da2aae1fa39",
+            "key": "specialized-assets:work",
+            "kind": "DIRECTION"
+          },
+          "pointer": "/assets/0/decisions/age_presentation/text"
+        }
+      ],
+      "mapping_id": "m6",
+      "operation": "COPY_LEAF",
+      "owner": "specialized-asset-design",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "64a2b9965fe34851be461f5f82f57a3543327fec70bf8b849c8f316f6d6e84d2",
+          "rule_id": "FACE-F20",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/subjects/0/apparent_age",
+      "text_hash": "db8ed707960b88979fb96e9cf83cef8d01bf989c6084bc75f465d1cd4d7368fd"
+    },
+    {
+      "capability_ids": [
+        "F13"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "ec2749af161cf8409dabc7c3b380f688a3af19820a0ea580887c5da2aae1fa39",
+            "key": "specialized-assets:work",
+            "kind": "DIRECTION"
+          },
+          "pointer": "/assets/0/decisions/hair/text"
+        }
+      ],
+      "mapping_id": "m7",
+      "operation": "COPY_LEAF",
+      "owner": "specialized-asset-design",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "789637503d650bca0440fdaf62e1ccf1541798577dd037186e6e2da91d5c0504",
+          "rule_id": "FACE-F13",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/subjects/0/hair",
+      "text_hash": "f740ef19ade2830a91d891b9e43c167422751cf95bb2149e4105ea4e584972fc"
+    },
+    {
+      "capability_ids": [
+        "C15"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "ec2749af161cf8409dabc7c3b380f688a3af19820a0ea580887c5da2aae1fa39",
+            "key": "specialized-assets:work",
+            "kind": "DIRECTION"
+          },
+          "pointer": "/assets/0/decisions/body/text"
+        }
+      ],
+      "mapping_id": "m8",
+      "operation": "COPY_LEAF",
+      "owner": "specialized-asset-design",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "a15fe0aeaf909e9a170adc863c4ebf57b3434f4b87c17f168893f3ac7654d17f",
+          "rule_id": "A3-C15",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/subjects/0/body_proportions",
+      "text_hash": "19c6284e1dd82beb94c5b4e0e5c0444db61677e7649e45fdf26a5c3aa60b877f"
+    },
+    {
+      "capability_ids": [
+        "C15"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "ec2749af161cf8409dabc7c3b380f688a3af19820a0ea580887c5da2aae1fa39",
+            "key": "specialized-assets:work",
+            "kind": "DIRECTION"
+          },
+          "pointer": "/assets/1/decisions/material/text"
+        }
+      ],
+      "mapping_id": "m9",
+      "operation": "COPY_LEAF",
+      "owner": "specialized-asset-design",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "a15fe0aeaf909e9a170adc863c4ebf57b3434f4b87c17f168893f3ac7654d17f",
+          "rule_id": "A3-C15",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/subjects/0/costume",
+      "text_hash": "185784ec29c7c1759451ceeccc86dd36222c46a73c21e296bb1c9dc6ca21739d"
+    },
+    {
+      "capability_ids": [
+        "F29"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "85c48926c34bee1a4c3943020ff59cf38fe24310cc4c2a336dfd7b019205311d",
+            "key": "bible:still-look-continuity",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/skin_condition/intent"
+        }
+      ],
+      "mapping_id": "m10",
+      "operation": "COPY_LEAF",
+      "owner": "look-continuity",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "3692bedfa3b9d04fa185cd84008a590e448943340a22bbc355f7c632753d4a94",
+          "rule_id": "FACE-F29",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/subjects/0/visible_condition",
+      "text_hash": "615c7b96aa16a77f7ab447c2cf0fc178349b0697b3307629935415e403208cfd"
+    },
+    {
+      "capability_ids": [
+        "C15"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "cfa83be038ba433a98ef6f4f88254b410b1501d96816d26d5848b02941944d5b",
+            "key": "bible:still-blocking",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/actor_positions/intent"
+        }
+      ],
+      "mapping_id": "m11",
+      "operation": "COPY_LEAF",
+      "owner": "blocking",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "a15fe0aeaf909e9a170adc863c4ebf57b3434f4b87c17f168893f3ac7654d17f",
+          "rule_id": "A3-C15",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/blocking/positions",
+      "text_hash": "f17c60b47b4f30520afdf37a9074d51fbe90fbb4a69765f0c0e0aae5e1e20691"
+    },
+    {
+      "capability_ids": [
+        "C15"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "cfa83be038ba433a98ef6f4f88254b410b1501d96816d26d5848b02941944d5b",
+            "key": "bible:still-blocking",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/eye_lines/intent"
+        }
+      ],
+      "mapping_id": "m12",
+      "operation": "COPY_LEAF",
+      "owner": "blocking",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "a15fe0aeaf909e9a170adc863c4ebf57b3434f4b87c17f168893f3ac7654d17f",
+          "rule_id": "A3-C15",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/blocking/orientation",
+      "text_hash": "4d30f1fb6cf725ecc04376a0f13a03710ad39ce208924ebc8a28f250381d8a96"
+    },
+    {
+      "capability_ids": [
+        "C15"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "cfa83be038ba433a98ef6f4f88254b410b1501d96816d26d5848b02941944d5b",
+            "key": "bible:still-blocking",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/physical_relations/intent"
+        }
+      ],
+      "mapping_id": "m13",
+      "operation": "COPY_LEAF",
+      "owner": "blocking",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "a15fe0aeaf909e9a170adc863c4ebf57b3434f4b87c17f168893f3ac7654d17f",
+          "rule_id": "A3-C15",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/blocking/contact",
+      "text_hash": "db7cece5cbecfa4f96385e7d9afc3e0de842b9f808bd702c430510ca997e6fa6"
+    },
+    {
+      "capability_ids": [
+        "C15"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "cfa83be038ba433a98ef6f4f88254b410b1501d96816d26d5848b02941944d5b",
+            "key": "bible:still-blocking",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/actor_movements/intent"
+        }
+      ],
+      "mapping_id": "m14",
+      "operation": "COPY_LEAF",
+      "owner": "blocking",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "a15fe0aeaf909e9a170adc863c4ebf57b3434f4b87c17f168893f3ac7654d17f",
+          "rule_id": "A3-C15",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/blocking/visible_relation",
+      "text_hash": "a0f8585857e69a7aa56c8d0bd33dbd8784deb27d8c05d4a1330dc32a2130db44"
+    },
+    {
+      "capability_ids": [
+        "C15"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "577d3c4ca273656d90c3b70956ee0d91cd808a73d59452f3e5fc2bef89823b1c",
+            "key": "bible:still-action-choreography",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/body_mechanics/intent"
+        }
+      ],
+      "mapping_id": "m15",
+      "operation": "COPY_LEAF",
+      "owner": "action-choreography",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "a15fe0aeaf909e9a170adc863c4ebf57b3434f4b87c17f168893f3ac7654d17f",
+          "rule_id": "A3-C15",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/action/current_visible_action",
+      "text_hash": "3d6c28f301f94f4cecb880343c9736827c238b152188c20c35a0bfaf6b863346"
+    },
+    {
+      "capability_ids": [
+        "C15"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "1fec529565afb6cbe5923258856c4f1f3540c4b5ba351cc94b608c4b9614ecd0",
+            "key": "bible:still-dramatic-performance-direction",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/emotional_state/intent"
+        }
+      ],
+      "mapping_id": "m16",
+      "operation": "COPY_LEAF",
+      "owner": "dramatic-performance-direction",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "a15fe0aeaf909e9a170adc863c4ebf57b3434f4b87c17f168893f3ac7654d17f",
+          "rule_id": "A3-C15",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/action/expression",
+      "text_hash": "2a7b506a6173aef9e486342a1709d10af2f64f77d022d897b0806fbd49518694"
+    },
+    {
+      "capability_ids": [
+        "C15"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "ec2749af161cf8409dabc7c3b380f688a3af19820a0ea580887c5da2aae1fa39",
+            "key": "specialized-assets:work",
+            "kind": "DIRECTION"
+          },
+          "pointer": "/assets/2/decisions/architecture/text"
+        }
+      ],
+      "mapping_id": "m17",
+      "operation": "COPY_LEAF",
+      "owner": "specialized-asset-design",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "a15fe0aeaf909e9a170adc863c4ebf57b3434f4b87c17f168893f3ac7654d17f",
+          "rule_id": "A3-C15",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/environment/architecture",
+      "text_hash": "01b9a1d8ef894d9ab2d0019a5c8dffef4dc4128f0d95963ab96e57f26ad9f499"
+    },
+    {
+      "capability_ids": [
+        "C15"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "ec2749af161cf8409dabc7c3b380f688a3af19820a0ea580887c5da2aae1fa39",
+            "key": "specialized-assets:work",
+            "kind": "DIRECTION"
+          },
+          "pointer": "/assets/2/decisions/interior_structure/text"
+        }
+      ],
+      "mapping_id": "m18",
+      "operation": "COPY_LEAF",
+      "owner": "specialized-asset-design",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "a15fe0aeaf909e9a170adc863c4ebf57b3434f4b87c17f168893f3ac7654d17f",
+          "rule_id": "A3-C15",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/environment/topology",
+      "text_hash": "b7d424c962633b7857793ffe314cf33da4f1ad758f3ea75787b2c55f224efb91"
+    },
+    {
+      "capability_ids": [
+        "C15"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "ec2749af161cf8409dabc7c3b380f688a3af19820a0ea580887c5da2aae1fa39",
+            "key": "specialized-assets:work",
+            "kind": "DIRECTION"
+          },
+          "pointer": "/assets/2/decisions/period_visible_details/text"
+        }
+      ],
+      "mapping_id": "m19",
+      "operation": "COPY_LEAF",
+      "owner": "specialized-asset-design",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "a15fe0aeaf909e9a170adc863c4ebf57b3434f4b87c17f168893f3ac7654d17f",
+          "rule_id": "A3-C15",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/environment/required_period_objects",
+      "text_hash": "5352807d8c4a024a1e37774696e2dae3e11729ecb853aa4eb42e9cd26f3e3651"
+    },
+    {
+      "capability_ids": [
+        "C02"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "858ca17f82ad382a70d3a8a5a91cebf1273ab03fa5f78bf10b65344519756108",
+            "key": "bible:still-cinematography",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/shot_scale_philosophy/intent"
+        }
+      ],
+      "mapping_id": "m20",
+      "operation": "COPY_LEAF",
+      "owner": "cinematography",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "feec920009c32d3ae75355d194ef63433e04f6874046fe7bbc62130ce99b5816",
+          "rule_id": "A3-C02",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/camera/shot_size",
+      "text_hash": "cb65aff92024beb7f43c8d07f8b8e588bf159be05b5268758bd337e17be69a0d"
+    },
+    {
+      "capability_ids": [
+        "C02"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "858ca17f82ad382a70d3a8a5a91cebf1273ab03fa5f78bf10b65344519756108",
+            "key": "bible:still-cinematography",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/spatial_readability/intent"
+        }
+      ],
+      "mapping_id": "m21",
+      "operation": "COPY_LEAF",
+      "owner": "cinematography",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "feec920009c32d3ae75355d194ef63433e04f6874046fe7bbc62130ce99b5816",
+          "rule_id": "A3-C02",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/camera/readable_details",
+      "text_hash": "35bdd9184dc5909fa730e8c1c5db32df79fd65376da6368c2b5137c804a51f2e"
+    },
+    {
+      "capability_ids": [
+        "C05"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "858ca17f82ad382a70d3a8a5a91cebf1273ab03fa5f78bf10b65344519756108",
+            "key": "bible:still-cinematography",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/subject_hierarchy/intent"
+        }
+      ],
+      "mapping_id": "m22",
+      "operation": "COPY_LEAF",
+      "owner": "cinematography",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "fa7fb410507557ed383de35d2dfd9b6305329d0db76c5c802796f2081dae6b0c",
+          "rule_id": "A3-C05",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/camera/framing",
+      "text_hash": "079f4574b50c2ec7f0ffd5a16654984baff28c8c2fbda024052e4ab1c2decdd2"
+    },
+    {
+      "capability_ids": [
+        "C03"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "858ca17f82ad382a70d3a8a5a91cebf1273ab03fa5f78bf10b65344519756108",
+            "key": "bible:still-cinematography",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/camera_point_of_view/intent"
+        },
+        {
+          "pin": {
+            "fingerprint": "858ca17f82ad382a70d3a8a5a91cebf1273ab03fa5f78bf10b65344519756108",
+            "key": "bible:still-cinematography",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/camera_height/intent"
+        },
+        {
+          "pin": {
+            "fingerprint": "858ca17f82ad382a70d3a8a5a91cebf1273ab03fa5f78bf10b65344519756108",
+            "key": "bible:still-cinematography",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/camera_distance/intent"
+        },
+        {
+          "pin": {
+            "fingerprint": "858ca17f82ad382a70d3a8a5a91cebf1273ab03fa5f78bf10b65344519756108",
+            "key": "bible:still-cinematography",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/perspective/intent"
+        }
+      ],
+      "mapping_id": "m23",
+      "operation": "JOIN_ORDERED_LEAVES",
+      "owner": "cinematography",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "a78a2941ae16f9fff000e973de1a536b7b914d3f228faa2252566f4af70f8782",
+          "rule_id": "A3-C03",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/camera/perspective",
+      "text_hash": "dab80be573b81ac74880f291c9a64664d319fc3bd868c98d79eb2f0fb703c219"
+    },
+    {
+      "capability_ids": [
+        "C06"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "858ca17f82ad382a70d3a8a5a91cebf1273ab03fa5f78bf10b65344519756108",
+            "key": "bible:still-cinematography",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/lens_intention/intent/0"
+        }
+      ],
+      "mapping_id": "m24",
+      "operation": "COPY_LEAF",
+      "owner": "cinematography",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "ad84c2acdbebf62b7023a796f17f36db3383fe328d55197059393879404d8fa6",
+          "rule_id": "A3-C06",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/camera/depth_cues/0",
+      "text_hash": "89e683eca347393ac8283f6d4d6d9538673722e1ed2cedab6ed9f6ed084ffde8"
+    },
+    {
+      "capability_ids": [
+        "C07"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "858ca17f82ad382a70d3a8a5a91cebf1273ab03fa5f78bf10b65344519756108",
+            "key": "bible:still-cinematography",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/lens_intention/intent/1"
+        }
+      ],
+      "mapping_id": "m25",
+      "operation": "COPY_LEAF",
+      "owner": "cinematography",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "aa00d5404d8c342552887bedb2a0a7426e0af1387cf49a9230177b4fe5c5ec1e",
+          "rule_id": "A3-C07",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/camera/depth_cues/1",
+      "text_hash": "50f02a24497edee963a62b06cbc118ccd82bd1c73bacfdb763d330b4cb2e6134"
+    },
+    {
+      "capability_ids": [
+        "C09"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "f46a11b5ed35d9a92ba693520a07bc86ec99d3ecf0ef142f261451f3dd46e639",
+            "key": "bible:still-lighting-design",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/source/intent"
+        },
+        {
+          "pin": {
+            "fingerprint": "f46a11b5ed35d9a92ba693520a07bc86ec99d3ecf0ef142f261451f3dd46e639",
+            "key": "bible:still-lighting-design",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/motivation/intent"
+        },
+        {
+          "pin": {
+            "fingerprint": "f46a11b5ed35d9a92ba693520a07bc86ec99d3ecf0ef142f261451f3dd46e639",
+            "key": "bible:still-lighting-design",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/direction/intent"
+        }
+      ],
+      "mapping_id": "m26",
+      "operation": "JOIN_ORDERED_LEAVES",
+      "owner": "lighting-design",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "c439698660821f5c8be3a8faa39c4d219ca3dbba4392630878b2778c1d22db6e",
+          "rule_id": "A3-C09",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/lighting/light_sources",
+      "text_hash": "2493172fc4cbd23e8a005af82054467d4306b88f91530d23f25c00ec3f5736ac"
+    },
+    {
+      "capability_ids": [
+        "C09"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "f46a11b5ed35d9a92ba693520a07bc86ec99d3ecf0ef142f261451f3dd46e639",
+            "key": "bible:still-lighting-design",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/contrast/intent"
+        }
+      ],
+      "mapping_id": "m27",
+      "operation": "COPY_LEAF",
+      "owner": "lighting-design",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "c439698660821f5c8be3a8faa39c4d219ca3dbba4392630878b2778c1d22db6e",
+          "rule_id": "A3-C09",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/lighting/contrast",
+      "text_hash": "ed1e9e8860d78205642b87b323c3cc860bb6799693465a4e67823d944f7084d5"
+    },
+    {
+      "capability_ids": [
+        "C09"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "f46a11b5ed35d9a92ba693520a07bc86ec99d3ecf0ef142f261451f3dd46e639",
+            "key": "bible:still-lighting-design",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/falloff/intent"
+        }
+      ],
+      "mapping_id": "m28",
+      "operation": "COPY_LEAF",
+      "owner": "lighting-design",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "c439698660821f5c8be3a8faa39c4d219ca3dbba4392630878b2778c1d22db6e",
+          "rule_id": "A3-C09",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/lighting/realism",
+      "text_hash": "5a3641dd7b47649b7d5623518f8d6dab32023b791b851321d54d081d8b72c785"
+    },
+    {
+      "capability_ids": [
+        "C09"
+      ],
+      "inputs": [
+        {
+          "pin": {
+            "fingerprint": "f46a11b5ed35d9a92ba693520a07bc86ec99d3ecf0ef142f261451f3dd46e639",
+            "key": "bible:still-lighting-design",
+            "kind": "DESIGN"
+          },
+          "pointer": "/content/0/values/day_night_continuity/intent"
+        }
+      ],
+      "mapping_id": "m29",
+      "operation": "COPY_LEAF",
+      "owner": "lighting-design",
+      "priority": "CRITICAL",
+      "required": true,
+      "rule_refs": [
+        {
+          "rule_hash": "c439698660821f5c8be3a8faa39c4d219ca3dbba4392630878b2778c1d22db6e",
+          "rule_id": "A3-C09",
+          "rule_version": "1.0-a4"
+        }
+      ],
+      "semantic_target": null,
+      "target": "/lighting/time_of_day",
+      "text_hash": "522dc2b7b1fab149199013b415354aae13f48f11fd0f03b5dad4d549f7a7031e"
+    }
+  ],
+  "source_fingerprint": "25d886fb81049109e525252e2cd64720eff88bfe4dec97714e1be8f56b91ba9a",
+  "prompt_fingerprint": "0e8505535dcdb35dc5edb6e35d98655d563feb007bc8720ca93982983f20cda7",
+  "retained": [
+    {
+      "path": "medium",
+      "priority": "CRITICAL",
+      "text": "LIVE_ACTION",
+      "required": true,
+      "source": "task.visual_medium"
+    },
+    {
+      "path": "world.era",
+      "priority": "CRITICAL",
+      "text": "Present day.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m0"
+    },
+    {
+      "path": "world.location",
+      "priority": "CRITICAL",
+      "text": "Workshop courtyard.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m1"
+    },
+    {
+      "path": "world.historical_context",
+      "priority": "CRITICAL",
+      "text": "An ordinary workplace.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m2"
+    },
+    {
+      "path": "world.environment_rules[0]",
+      "priority": "CRITICAL",
+      "text": "Only approved workshop objects.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m3"
+    },
+    {
+      "path": "subject.c.role",
+      "priority": "CRITICAL",
+      "text": "c",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m4"
+    },
+    {
+      "path": "subject.c.apparent_age",
+      "priority": "CRITICAL",
+      "text": "Forty years old as cast.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m6"
+    },
+    {
+      "path": "subject.c.face",
+      "priority": "CRITICAL",
+      "text": "A lined asymmetric face. Even olive complexion. A small mole on the left cheek.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m5"
+    },
+    {
+      "path": "subject.c.hair",
+      "priority": "CRITICAL",
+      "text": "Short brown hair with a high hairline.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m7"
+    },
+    {
+      "path": "subject.c.body_proportions",
+      "priority": "CRITICAL",
+      "text": "Ordinary narrow adult shoulders.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m8"
+    },
+    {
+      "path": "subject.c.costume",
+      "priority": "CRITICAL",
+      "text": "Worn plain cotton with repaired cuffs.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m9"
+    },
+    {
+      "path": "subject.c.visible_condition",
+      "priority": "CRITICAL",
+      "text": "Dry, uninjured skin.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m10"
+    },
+    {
+      "path": "blocking.positions",
+      "priority": "CRITICAL",
+      "text": "Person left.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m11"
+    },
+    {
+      "path": "blocking.orientation",
+      "priority": "CRITICAL",
+      "text": "Looking toward the door.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m12"
+    },
+    {
+      "path": "blocking.contact",
+      "priority": "CRITICAL",
+      "text": "Hands apart.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m13"
+    },
+    {
+      "path": "blocking.visible_relation",
+      "priority": "CRITICAL",
+      "text": "Standing still.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m14"
+    },
+    {
+      "path": "action.current_visible_action",
+      "priority": "CRITICAL",
+      "text": "Standing with hands at rest.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m15"
+    },
+    {
+      "path": "action.expression",
+      "priority": "CRITICAL",
+      "text": "A small smile.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m16"
+    },
+    {
+      "path": "environment.architecture",
+      "priority": "CRITICAL",
+      "text": "A modest stone courtyard with a low timber door.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m17"
+    },
+    {
+      "path": "environment.topology",
+      "priority": "CRITICAL",
+      "text": "A single courtyard.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m18"
+    },
+    {
+      "path": "environment.required_period_objects",
+      "priority": "CRITICAL",
+      "text": "A low timber door.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m19"
+    },
+    {
+      "path": "camera.framing",
+      "priority": "CRITICAL",
+      "text": "Person framed left.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m22"
+    },
+    {
+      "path": "camera.shot_size",
+      "priority": "CRITICAL",
+      "text": "Medium shot.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m20"
+    },
+    {
+      "path": "camera.readable_details",
+      "priority": "CRITICAL",
+      "text": "Face and both hands readable.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m21"
+    },
+    {
+      "path": "camera.perspective",
+      "priority": "CRITICAL",
+      "text": "A shared observer. Waist height. Across the courtyard. Level optical axis.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m23"
+    },
+    {
+      "path": "camera.depth_cues[0]",
+      "priority": "CRITICAL",
+      "text": "Normal spatial relationship.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m24"
+    },
+    {
+      "path": "camera.depth_cues[1]",
+      "priority": "CRITICAL",
+      "text": "Face and hands share the focus plane.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m25"
+    },
+    {
+      "path": "lighting.time_of_day",
+      "priority": "CRITICAL",
+      "text": "Daytime.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m29"
+    },
+    {
+      "path": "lighting.light_sources",
+      "priority": "CRITICAL",
+      "text": "Window daylight. The visible window lights the room. Soft light from the left.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m26"
+    },
+    {
+      "path": "lighting.contrast",
+      "priority": "CRITICAL",
+      "text": "Readable shade.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m27"
+    },
+    {
+      "path": "lighting.realism",
+      "priority": "CRITICAL",
+      "text": "Light falls gradually across the face.",
+      "required": true,
+      "source": "still-professional-map:work:shot@1ec151db6ba93dac95d47c95b655f4056f71ac59f040b9c49c0afa13ec7fe83e#rows/m28"
+    }
+  ],
+  "omitted": [],
+  "adapter_model": "gpt-image-2",
+  "provider_calls": 0,
+  "host_source_replay": "PASS"
+}

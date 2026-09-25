@@ -40,3 +40,9 @@ Request source palette revisions from the relevant art owner; technical final-im
 ## Source reads
 
 Use supplied current originals first. For missing scoped context, read `work.get_work`, `scene.get_scene`, `script.get_script`, `episode.get_episode`, `shot.get_shot`, `asset.get_asset`, `context.build_context`. These reads do not authorize source writes or production.
+
+## Still live-action professional knowledge
+
+For STILL/LIVE_ACTION, author source-bound scene/sequence palette and character/environment relations under the existing keys. Separate actual hue/value/saturation obligations from mood labels. Required targets map to critical preservation; only explicitly optional decoration may be secondary. Preserve approved complexion and costume/material identity under light. Story era never determines capture era. No preset filter, provider parameters or unapproved whitening.
+
+Read [mapping and evidence profile](../../docs/still-professional-mapping.md) when preparing these still records. Knowledge remains LOCAL_EXPERIMENTAL until scoped A5 media evidence.

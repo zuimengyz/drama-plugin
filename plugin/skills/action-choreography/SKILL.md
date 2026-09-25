@@ -56,3 +56,9 @@ Use the unified read-only `CharacterRepository.resolve_character_package` contra
 Combine script action + Director intent + embodiment baseline + actionSignature. Do not invent movement identity or new action results.
 
 Read [Embodiment contract](../../docs/character-embodiment.md). Use the unified read-only `characters.embodiment.embodiment_handoff` with exact ref/version/checksum and route. Never create or overwrite embodiment in downstream execution. Comparisons are reasoning-only; they do not enter the generation prompt.
+
+## Still live-action professional knowledge
+
+For opt-in STILL/LIVE_ACTION, project only the approved current body_mechanics or contact_constraints slice into existing action/contact facts. Ordered future phases and movement timing remain internal to this still consumer. Identity references cannot create an action. Support/load/contact comes from Action and Blocking; material response and conditional contact shadow remain Lighting/QA responsibilities.
+
+Read [mapping and evidence profile](../../docs/still-professional-mapping.md) when preparing these still records. Knowledge remains LOCAL_EXPERIMENTAL until scoped A5 media evidence.

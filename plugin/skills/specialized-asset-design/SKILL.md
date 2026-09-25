@@ -39,3 +39,11 @@ Frozen approved prompts are read-only replay artifacts.
 Read current originals with `work.get_work`, `scene.get_scene`, `script.get_script`,
 `episode.get_episode`, `shot.get_shot`, `asset.get_asset`, `context.build_context`.
 Never create or overwrite Character Core.
+
+## Still live-action professional knowledge
+
+For opt-in STILL/LIVE_ACTION, `face.text` owns approved craniofacial relationships: shape, vertical proportion versus projection, orbit/brow, cheek/midface, jaw/chin and individual eyes/nose/lips/known ears. Use relational distinctions, not ideal ratios or mandatory measurements. `age_presentation` owns the approved stage's apparent age; source age and casting intent are distinct evidence. `hair` owns baseline hairline/density/texture; `surface_state` baseline complexion/region texture; `physical_identity` stable marks. Current expression belongs to Performance and current sweat/injury/makeup/fatigue to Look. A mixed old leaf returns to its author for clarification and renewed approval; mapping does not infer or rewrite it.
+
+Reference Plan coverage cites these exact leaves and character/arc stage; it does not create a second face description. Unknown hidden hairline/ears stay unconfirmed. Neither pores/wrinkles/asymmetry nor clean skin is a universal requirement. Do not infer a jaw, eyes, nose or complexion from occupation, personality, class or ethnicity. Modern casting choices must be explicit approved interpretation, never historical fact. Knowledge provenance never enters the restricted AssetDecision source_refs as character evidence. Existing character-art remains a compatibility view.
+
+Read [mapping and evidence profile](../../docs/still-professional-mapping.md) when preparing these still records. Knowledge remains LOCAL_EXPERIMENTAL until scoped A5 media evidence.

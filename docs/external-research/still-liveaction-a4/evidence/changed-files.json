@@ -1,0 +1,32 @@
+{
+  "modified": [
+    "plugin/docs/core-creative-r1.md",
+    "plugin/docs/professional-departments.md",
+    "plugin/skills/action-choreography/SKILL.md",
+    "plugin/skills/blocking/SKILL.md",
+    "plugin/skills/cinematography/SKILL.md",
+    "plugin/skills/color-design/SKILL.md",
+    "plugin/skills/color-grading/SKILL.md",
+    "plugin/skills/lighting-design/SKILL.md",
+    "plugin/skills/look-continuity/SKILL.md",
+    "plugin/skills/performance-casting/SKILL.md",
+    "plugin/skills/reference-strategy/SKILL.md",
+    "plugin/skills/shot-production/SKILL.md",
+    "plugin/skills/shot-production/references/production-rules.md",
+    "plugin/skills/specialized-asset-design/SKILL.md",
+    "plugin/src/drama_plugin/contracts/specialized_asset.py",
+    "plugin/src/drama_plugin/hosts/route_production.py",
+    "plugin/src/drama_plugin/hosts/specialized_asset.py",
+    "plugin/src/drama_plugin/professional.py",
+    "plugin/src/drama_plugin/specialized_asset.py",
+    "plugin/src/drama_plugin/visual/frame_request.py"
+  ],
+  "new_plugin_files": [
+    "plugin/docs/still-professional-mapping.md",
+    "plugin/src/drama_plugin/visual/still_knowledge.py",
+    "plugin/src/drama_plugin/visual/still_knowledge_catalog.json",
+    "plugin/tests/test_still_knowledge.py"
+  ],
+  "modified_count": 20,
+  "new_plugin_count": 4
+}

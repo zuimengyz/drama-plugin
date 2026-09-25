@@ -40,3 +40,9 @@ Return impossible placement to Layout; complex mechanics to Action; altered caus
 ## Source reads
 
 Use supplied current originals first. For missing scoped context, read `work.get_work`, `scene.get_scene`, `script.get_script`, `episode.get_episode`, `shot.get_shot`, `asset.get_asset`, `context.build_context`. These reads do not authorize source writes or production.
+
+## Still live-action professional knowledge
+
+For opt-in STILL/LIVE_ACTION, current actor positions, eye_lines, orientation and physical relations come from this approved record. A portrait supplies no pose/gaze permission. State the visible contact slice; Action owns its causal mechanics and Lighting owns illumination at contact. Preserve the approved expression owner; camera readability cannot silently relocate the actor.
+
+Read [mapping and evidence profile](../../docs/still-professional-mapping.md) when preparing these still records. Knowledge remains LOCAL_EXPERIMENTAL until scoped A5 media evidence.

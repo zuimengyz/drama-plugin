@@ -1,11 +1,11 @@
 ---
 name: performance-casting
-description: Search and test screen-role candidates through role-specific face, relative-scale and performance proofs, then present a source-pinned shortlist for user selection. Use when casting suitability or performance range is unresolved; character-art retains stable appearance authority.
+description: Search and test screen-role candidates through role-specific face, relative-scale and performance proofs, then present a source-pinned shortlist for user selection. Use when casting suitability or performance range is unresolved; Specialized Asset retains stable appearance authority.
 ---
 
 # Performance Casting
 
-Consume [Character Art](../character-art/SKILL.md) as the stable appearance authority. This skill searches/tests realizations of that design; it does not redesign face/body/costume to win a proof. Return appearance changes to Character Art and alignment to Production Design.
+Consume [Specialized Asset Design](../specialized-asset-design/SKILL.md) as the stable appearance authority; Character Art is its compatibility view. This skill searches/tests realizations of that design; it does not redesign face/body/costume to win a proof. Return appearance changes to Specialized Asset Design and alignment to Production Design.
 
 ROLE SALIENCE > AESTHETIC OPTIMIZATION. Modern screen appeal should amplify the
 role's defining features. If prettier conflicts with more recognizably this role,
@@ -194,3 +194,9 @@ costume-design and environment views forward there and remain replayable origina
 Character Dramaturgy owns identity, arc stage, behavior and social constraints;
 Character External Driver keeps narrative package authority. Proposed look never
 revises character meaning. Director owns intent and arbitration, not asset authorship.
+
+## Still live-action professional knowledge
+
+For opt-in STILL/LIVE_ACTION compare approved structural distinctions between candidates, not just exchanged hair/clothes. Face shape, orbital/cheek/jaw relationships, nose/lip relations, hairline and age evidence are role-specific observations; no fixed count of difference groups, ideal ratio or default handsome face. Source age, apparent casting age and temporary fatigue differ. Preserve the selected approved identity through the Specialized Asset owner; a casting reference cannot itself amend AssetDecision.source_refs or claim historical facial truth.
+
+Read [mapping and evidence profile](../../docs/still-professional-mapping.md) when preparing these still records. Knowledge remains LOCAL_EXPERIMENTAL until scoped A5 media evidence.

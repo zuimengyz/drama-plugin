@@ -21,7 +21,7 @@ from drama_plugin.contracts.professional import (
 # slot. Scene/shot/entity/environment refs are explicit relationships only.
 _SPECS: tuple[tuple[str, str, str, str, str], ...] = (
     ('runtime-visual-medium', 'MovieVisualMedium', 'MODULE', '', 'medium configuration_source'),
-    ('global-visual-style', 'GlobalVisualStyle', 'MODULE', 'runtime-visual-medium', 'realism render_stylization material_philosophy lighting_philosophy readability consistency'),
+    ('global-visual-style', 'GlobalVisualStyle', 'MODULE', 'runtime-visual-medium', 'realism render_stylization material_philosophy lighting_philosophy readability consistency imaging_character'),
     ('specialized-asset-design', 'SpecializedAssetBible', 'SKILL', 'runtime-visual-medium global-visual-style character-dramaturgy scene-development director adaptation-boundary', 'assets'),
     ('historical-research', 'Historical Source Bible', 'SKILL', '', 'sources facts timeline geography participants military_relationships confidence uncertainty'),
     ('historical-entity-registry', 'Historical Entity Bible', 'MODULE', 'historical-research', 'entity_id name entity_type historical_status identity_kind historical_identity_ref evidence_refs distinct_from'),

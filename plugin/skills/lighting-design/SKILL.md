@@ -40,3 +40,9 @@ Return impossible source placement to Layout/Props and material conflicts to Env
 ## Source reads
 
 Use supplied current originals first. For missing scoped context, read `work.get_work`, `scene.get_scene`, `script.get_script`, `episode.get_episode`, `shot.get_shot`, `asset.get_asset`, `context.build_context`. These reads do not authorize source writes or production.
+
+## Still live-action professional knowledge
+
+In the STILL/LIVE_ACTION profile, keep visible/implied source, motivation, direction/softness, relative intensity, contrast and falloff as independent decisions under the existing keys. `day_night_continuity` supplies current time. Light reveals authored skin/material; it does not supply skin identity, scars or a fixed facial highlight. Contact shadows are conditional on light and visibility, not compulsory darkness under every contact. No automatic rim, bloom, fill or imperfection recipe. Approved intent leaves alone are projected; reasons and observation questions remain internal.
+
+Read [mapping and evidence profile](../../docs/still-professional-mapping.md) when preparing these still records. Knowledge remains LOCAL_EXPERIMENTAL until scoped A5 media evidence.

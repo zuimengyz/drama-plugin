@@ -1,0 +1,92 @@
+........................................................................ [  2%]
+..FF.................................................................... [  5%]
+........................................................................ [  8%]
+........................................................................ [ 10%]
+........................................................................ [ 13%]
+........................................................................ [ 16%]
+........................................................................ [ 19%]
+........................................................................ [ 21%]
+........................................................................ [ 24%]
+........................................................................ [ 27%]
+........................................................................ [ 30%]
+........................................................................ [ 32%]
+........................................................................ [ 35%]
+........................................................................ [ 38%]
+........................................................................ [ 40%]
+........................................................................ [ 43%]
+........................................................................ [ 46%]
+........................................................................ [ 49%]
+........................................................................ [ 51%]
+........................................................................ [ 54%]
+........................................................................ [ 57%]
+........................................................................ [ 60%]
+........................................................................ [ 62%]
+........................................................................ [ 65%]
+........................................................................ [ 68%]
+........................................................................ [ 70%]
+........................................................................ [ 73%]
+........................................................................ [ 76%]
+........................................................................ [ 79%]
+........................................................................ [ 81%]
+........................................................................ [ 84%]
+........................................................................ [ 87%]
+........................................................................ [ 90%]
+........................................................................ [ 92%]
+........................................................................ [ 95%]
+........................................................................ [ 98%]
+..............................................                           [100%]
+=================================== FAILURES ===================================
+________________ test_provider_prompt_is_exact_core_compilation ________________
+
+    def test_provider_prompt_is_exact_core_compilation():
+        from test_official_video_providers import request, config, resolve, MODELS
+        from drama_plugin.providers.video.adapters import ADAPTERS
+        from drama_plugin.visual.video_prompt import prompt_compilation
+        import json
+        import httpx
+        r = request()
+        compiled = prompt_compilation(r)
+        client = httpx.AsyncClient(transport=httpx.MockTransport(lambda r: (_ for _ in ()).throw(AssertionError())))
+        p = ADAPTERS['seedance'](MODELS['seedance'], config('seedance'), resolve=resolve, client=client)
+        texts = [item['text'] for item in p.payload(r, {}, 'offline')['content'] if item['type']=='text']
+        assert texts == [compiled['prompt']]
+>       assert compiled['compiledBy'] == 'video-prompt-compiler'
+               ^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'compiledBy'
+
+plugin/tests/test_architecture_authority.py:126: KeyError
+_ test_formal_http_compile_reserve_replays_receipt_without_media_or_auth_claim _
+
+tmp_path = PosixPath('/private/var/folders/n4/g3fj5h2s18s7l8wzf89r83cc0000gn/T/pytest-of-zy/pytest-52/test_formal_http_compile_reser0')
+
+    @pytest.mark.asyncio
+    async def test_formal_http_compile_reserve_replays_receipt_without_media_or_auth_claim(tmp_path):
+        from drama_plugin import DramaPlugin
+        from drama_plugin.providers.mock import MockDramaData
+        from drama_plugin.hosts.http_video import verify_execution
+        from drama_plugin.contracts.base import sha256_canonical
+        from test_official_video_providers import formal_setup
+        from copy import deepcopy
+        import httpx
+        data = MockDramaData()
+        plugin = DramaPlugin.load(Path(__file__).parents[1], mock_data=data)
+        x = SimpleNamespace(data=data, memory=plugin.providers.memory, store=plugin.providers.media,
+                            asset=plugin.providers.asset, tmp=tmp_path)
+        def no_call(req):
+            raise AssertionError('No Provider request is allowed in this regression')
+        async with httpx.AsyncClient(transport=httpx.MockTransport(no_call)) as client:
+            host, attempt_id = await formal_setup(x, client)
+            a = await host._attempt(data.work.id, attempt_id)
+            assert a['execution_binding']['authentication_status'] == 'CONFIGURED_NOT_VERIFIED'
+            assert 'authenticated' not in a['execution_binding']
+            decision = a['frame_snapshot']
+            verify_execution(decision)
+>           assert decision['request']['promptCompilation']['compiledBy'] == 'video-prompt-compiler'
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           KeyError: 'compiledBy'
+
+plugin/tests/test_architecture_authority.py:151: KeyError
+=========================== short test summary info ============================
+FAILED plugin/tests/test_architecture_authority.py::test_provider_prompt_is_exact_core_compilation
+FAILED plugin/tests/test_architecture_authority.py::test_formal_http_compile_reserve_replays_receipt_without_media_or_auth_claim
+2 failed, 2636 passed in 128.05s (0:02:08)

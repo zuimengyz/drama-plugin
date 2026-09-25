@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "head": "3b286cca94ad3a1683060d4df2a986a6f789236f",
+  "protected_files_unchanged": 52,
+  "registry_departments": {
+    "HISTORICAL": 49,
+    "LITERARY": 47
+  },
+  "registry_delta": "existing global-visual-style imaging_character metadata only",
+  "runtime_skill_count": 57,
+  "new_runtime_skills": 0,
+  "serializer_provider_route_storage_director_unchanged": true,
+  "approved_A3_inputs_unchanged": true,
+  "paid_generation": 0,
+  "provider_installation": 0
+}

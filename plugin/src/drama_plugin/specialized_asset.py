@@ -106,6 +106,9 @@ def validate_assets(bible: SpecializedAssetBible, originals: Mapping[str, Any],
         raise ValueError('RENDER_STYLIZATION_MEDIUM_MISMATCH')
     if medium.medium == 'LIVE_ACTION' and style.realism != 'NATURALISTIC':
         raise ValueError('LIVE_ACTION_REQUIRES_NATURALISTIC_BOUNDARY')
+    if style.imaging_character is not None:
+        from .visual.still_knowledge import validate_imaging
+        validate_imaging(style, originals, current)
     for asset in bible.assets:
         upstream(asset.director, {'director'}, bible.work_id, originals, current)
         upstream(asset.world, {'adaptation-boundary', 'historical-research', 'literary-source-input'},
@@ -173,6 +176,8 @@ def compile_asset(bible: SpecializedAssetBible, asset_id: str, originals: Mappin
         ('DIRECTOR_INTENT', asset.director.bible_ref, list(asset.director.constraint_fields)),
         ('SOURCE_WORLD', asset.world.bible_ref, list(asset.world.constraint_fields)),
     ):
+        if layer == 'GLOBAL_STYLE' and style.imaging_character is not None:
+            fields = [*fields, 'imagingCharacter']
         source_map.append({'layer': layer, 'ref': dump_contract(ref), 'fields': fields})
     return {'schemaVersion': 'specialized-asset-compilation-v1', 'workId': bible.work_id,
         'assetId': asset_id, 'medium': medium.medium, 'castingMode': casting_mode,
@@ -187,6 +192,9 @@ def provider_projection(receipt: dict[str, Any], originals: Mapping[str, Any], c
         receipt['assetId'], originals, current, casting_mode=receipt['castingMode'])
     if receipt != expected:
         raise ValueError('SPECIALIZED_ASSET_COMPILATION_CHANGED')
+    style = GlobalVisualStyle.model_validate(resolve(SpecializedAssetBible.model_validate(receipt['assetBible']).style_ref, originals, current))
+    if style.imaging_character is not None:
+        raise ValueError('IMAGING_CHARACTER_REQUIRES_STILL_PROFESSIONAL_CONSUMER')
     from .visual.payload_scope import asset_payload
     scoped = asset_payload(receipt)
     return {'prompt': scoped['prompt'], 'promptFingerprint': sha256_canonical(scoped['prompt']),

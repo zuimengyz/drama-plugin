@@ -1,0 +1,107 @@
+{
+  "status": "NON_RUNTIME",
+  "criteria": [
+    {
+      "criterion_id": "QC-FACE-GEOMETRY",
+      "capability_id": "F30",
+      "observable": "脸形/眼距/鼻唇相对关系",
+      "comparison_boundary": "批准 face + 身份参考；控制透视/表情",
+      "existing_category": "IDENTITY",
+      "initial_investigation_owner": "specialized-asset-design"
+    },
+    {
+      "criterion_id": "QC-AGE-DRIFT",
+      "capability_id": "F31",
+      "observable": "眼口体积、年龄线索与批准阶段偏离",
+      "comparison_boundary": "age_presentation 与该人物具体线索；疲劳/妆/光先分开",
+      "existing_category": "IDENTITY",
+      "initial_investigation_owner": "specialized-asset-design"
+    },
+    {
+      "criterion_id": "QC-BEAUTIFICATION-DRIFT",
+      "capability_id": "F32",
+      "observable": "未批准放眼、缩鼻、瘦颌、磨掉年龄或标记",
+      "comparison_boundary": "批准差异；漂亮本身不构成证据",
+      "existing_category": "IDENTITY",
+      "initial_investigation_owner": "specialized-asset-design"
+    },
+    {
+      "criterion_id": "QC-SKIN-RESPONSE",
+      "capability_id": "F33",
+      "observable": "区域表面过度同质、蜡状边界/高光与妆光不相容",
+      "comparison_boundary": "baseline + 当前肤况 + light/grade；至少多项具体证据支持CG感归纳",
+      "existing_category": "COSMETIC",
+      "initial_investigation_owner": "lighting-design"
+    },
+    {
+      "criterion_id": "QC-EYES-TEETH",
+      "capability_id": "F34",
+      "observable": "异常重复/融合、形态或反射不连贯",
+      "comparison_boundary": "可见区域、角度和张口状态；不能要求牙齿总露出",
+      "existing_category": "ANATOMY",
+      "initial_investigation_owner": "shot-production"
+    },
+    {
+      "criterion_id": "QC-EAR-INTEGRITY",
+      "capability_id": "F35",
+      "observable": "额外耳廓、边缘连接或身份失真",
+      "comparison_boundary": "有耳部可见证据；遮发不判耳缺失",
+      "existing_category": "ANATOMY",
+      "initial_investigation_owner": "shot-production"
+    },
+    {
+      "criterion_id": "QC-JAW-CHIN",
+      "capability_id": "F36",
+      "observable": "颌转折/颏投射相对批准身份偏移",
+      "comparison_boundary": "当前角度与face；不是尖/方下巴达标",
+      "existing_category": "IDENTITY",
+      "initial_investigation_owner": "specialized-asset-design"
+    },
+    {
+      "criterion_id": "QC-HAIRLINE-EDGE",
+      "capability_id": "F37",
+      "observable": "发际线位置漂移、毛发边界/纹理不可信",
+      "comparison_boundary": "批准hair与当前整理/遮挡；规整发际线本身合法",
+      "existing_category": "CONTINUITY",
+      "initial_investigation_owner": "look-continuity"
+    },
+    {
+      "criterion_id": "QC-STABLE-MARKS",
+      "capability_id": "F38",
+      "observable": "已批准标记侧别、位置、形态漂移",
+      "comparison_boundary": "physical_identity 与阶段Look；看不清标UNKNOWN",
+      "existing_category": "IDENTITY",
+      "initial_investigation_owner": "specialized-asset-design"
+    },
+    {
+      "criterion_id": "QC-REFERENCE-LEAKAGE",
+      "capability_id": "F39",
+      "observable": "参考pose/gaze/expression/light/camera覆盖当前原件",
+      "comparison_boundary": "逐职责对照Reference Plan及当前owner；不是所有相似都泄漏",
+      "existing_category": "CONTINUITY",
+      "initial_investigation_owner": "reference-strategy"
+    }
+  ],
+  "observation_required": [
+    "criterion_id",
+    "actor",
+    "arc_stage",
+    "output_media_hash",
+    "reference_media_hash",
+    "region",
+    "approved_requirement_pin",
+    "approved_requirement_pointer",
+    "use",
+    "visibility",
+    "comparison",
+    "observation",
+    "status",
+    "impact",
+    "root_cause_hypothesis",
+    "confidence",
+    "repair_owner",
+    "preserve_scope"
+  ],
+  "new_review_enums": [],
+  "auto_retry": false
+}

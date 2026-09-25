@@ -1,0 +1,47 @@
+{
+  "status": "NON_RUNTIME",
+  "face_schema_deltas": [],
+  "shared_dependencies": [
+    {
+      "id": "CINE_D2",
+      "field": "FrameSpec.professional_sources",
+      "implemented_now": false,
+      "owner": "existing Frame compiler",
+      "scope": "opt-in LIVE_ACTION still",
+      "serialization_effect": "omit empty for exact legacy replay",
+      "source_effect": "pins approved originals and immutable mapping receipt",
+      "backward_compatibility": "absent byte-equivalent",
+      "fingerprint_effect": "nonempty sources affect source fingerprint; new approval/requalify",
+      "consumer": "shared source resolver and still_knowledge mapping then existing compile_ir"
+    }
+  ],
+  "semantic_profiles": {
+    "reference_roles": [
+      "entity_key",
+      "media_id",
+      "version",
+      "content_hash",
+      "slot",
+      "actor_id",
+      "carry_source_pointers",
+      "excluded_current_domains",
+      "evidence_state",
+      "preservation_text_source"
+    ],
+    "requirements": [
+      "capability_id",
+      "canonical_field_pointer",
+      "use_requirement",
+      "evidence_state",
+      "scope"
+    ],
+    "mapping_receipt": [
+      "source_pins",
+      "mapping_rows",
+      "knowledge_provenance"
+    ]
+  },
+  "new_owners": [],
+  "serializer_changes": [],
+  "provider_changes": []
+}

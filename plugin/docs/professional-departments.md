@@ -57,3 +57,7 @@ Asset Manifest, Reference Plan and Generation Clip Plan can be authored before p
 No professional package, dependency PASS or source-pinned design authorizes image/video/TTS/music generation, paid API calls, casting adoption, or Phase II. Those retain existing authorization and execution gates.
 
 The current visual entry, typed contracts, runtime pin and consumer migration are documented in [Core Creative R1](core-creative-r1.md).
+
+## Opt-in still live-action source mapping
+
+The existing owners can use the [still professional mapping profile](still-professional-mapping.md) for approved cinematography, facial identity and Reference Plan decisions. This adds no department or creative permission. GlobalVisualStyle exposes optional imaging_character; FrameSpec pins professional originals and the derived receipt. QA observations retain the existing Review dispositions and route repairs to one existing owner. The profile's knowledge catalog is provenance, never a character fact source.

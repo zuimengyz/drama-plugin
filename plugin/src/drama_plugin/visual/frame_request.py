@@ -12,9 +12,10 @@ import struct
 from pathlib import Path
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_serializer, SerializerFunctionWrapHandler
 
 from drama_plugin.contracts.base import sha256_canonical
+from drama_plugin.contracts.source_pin import SourcePin
 
 Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 Hash = Annotated[str, StringConstraints(pattern=r"^[0-9a-f]{64}$")]
@@ -100,6 +101,14 @@ class FrameSpec(Record):
     scope_context: dict[str, Any] | None = None
     prompt_normalization: dict[str, Any] | None = None
     prompt_ir: dict[str, Any] | None = None
+    professional_sources: tuple[SourcePin, ...] = ()
+
+    @model_serializer(mode='wrap')
+    def legacy_wire(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data = dict(handler(self))
+        if not self.professional_sources:
+            data.pop('professional_sources', None)
+        return data
 
 
 class Template(Record):
@@ -187,6 +196,9 @@ def compile_frame(spec: FrameSpec, template: Template | None = None) -> dict[str
             ir = deepcopy(spec.prompt_ir)
             ir['task']['provider_family'] = template.model
             spec = spec.model_copy(update={'prompt_ir': ir})
+    if spec.professional_sources:
+        from drama_plugin.visual.still_knowledge import check_binding
+        check_binding(spec)
     template = Template.model_validate(template.model_dump())
     inputs: tuple[EditSource | Reference, ...] = (spec.edit_source,) if spec.edit_source else spec.references
     if spec.edit_source and (spec.references or spec.identity_bootstrap or spec.reference_members):

@@ -51,6 +51,9 @@ def validate_beat_playability(scene: Mapping[str, Any], beat: BeatDPD) -> None:
         _concrete(action.behavior, "playable action")
         if not any(action.behavior in carrier for carrier in carriers):
             raise ValueError("UNRESOLVED: action requires screenplay carrier; return to author")
+    if scene['content'].get('dramaturgy') is not None:
+        from drama_plugin.scene_dramaturgy import validate_carrier_order
+        validate_carrier_order(scene, beat)
 
 
 def validate_line_playability(scene: Mapping[str, Any], dpd: DPDSnapshot) -> dict[str, Any]:
@@ -90,8 +93,21 @@ def validate_line_playability(scene: Mapping[str, Any], dpd: DPDSnapshot) -> dic
     return deepcopy(line)
 
 
+def validate_exact_turn(scene: Mapping[str, Any], turn_id: str, dpd: DPDSnapshot) -> dict[str, Any]:
+    """Bind a coverage row to its turn, not merely a valid DPD in the same Scene."""
+    if (dpd.scene.scene_id, dpd.line.scene_id, dpd.line.spoken_content_id) != (scene['id'], scene['id'], turn_id):
+        raise ValueError('EXACT_DIALOGUE_TURN_MISMATCH')
+    return validate_line_playability(scene, dpd)
+
+
+def dialogue_turn_fingerprint(scene: Mapping[str, Any], turn_id: str, dpd: DPDSnapshot) -> str:
+    line = validate_exact_turn(scene, turn_id, dpd)
+    return sha256_canonical({'scene': sha256_canonical(scene), 'turn': line, 'dpd': dpd.fingerprint})
+
+
 def map_screenplay_performance(scene: Mapping[str, Any], scene_dpd: SceneDPD,
-                               beats: Sequence[BeatDPD], lines: Sequence[LineDPD]) -> dict[str, Any]:
+                               beats: Sequence[BeatDPD], lines: Sequence[LineDPD], *,
+                               dramaturgy_review: Mapping[str, Any] | None = None) -> dict[str, Any]:
     """Project reviewed author inputs. No guessed objective, action, or dialogue.
 
     Result reuses BeatDPD / DPDSnapshot / ObservableAction. Body and voice receive
@@ -117,5 +133,15 @@ def map_screenplay_performance(scene: Mapping[str, Any], scene_dpd: SceneDPD,
         dpd = compose_dpd(scene_dpd, by_id[line.beat_id], line)
         spoken.append(validate_line_playability(scene, dpd))
         snapshots.append(dpd)
+    receipt: dict[str, Any] = {'status': 'UNRESOLVED', 'repairOwner': 'scene-development',
+                              'finding': 'SCENE_DRAMATURGY_REQUIRED', 'productionAuthorized': False}
+    if scene['content'].get('dramaturgy') is not None:
+        if dramaturgy_review is None:
+            raise ValueError('UNRESOLVED:scene-development:DRAMATURGY_REVIEW_REQUIRED')
+        from drama_plugin.scene_dramaturgy import review_scene_dramaturgy
+        bound: dict[str, DPDSnapshot | BeatDPD] = {b.beat_id: b for b in beats}
+        bound.update({d.line.spoken_content_id: d for d in snapshots})
+        receipt = review_scene_dramaturgy(scene, bound, dramaturgy_review)
     return {"beats": tuple(b.model_copy(deep=True) for b in beats),
-            "dpds": tuple(snapshots), "spokenContent": spoken}
+            "dpds": tuple(snapshots), "spokenContent": spoken, 'dramaturgy': receipt,
+            'readyForDirection': receipt['status'] == 'PASS'}

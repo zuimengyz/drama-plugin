@@ -118,14 +118,40 @@ def validate_continuity_edge(edge: Mapping[str, Any]) -> None:
         raise ValueError('RELEASE_CANNOT_OVERWRITE_BASELINE')
 
 
+def resolve_shared_direction(directions: Mapping[str, Any]) -> dict[str, Any]:
+    """Compact ordinary turns may reference authored same-Scene shared language.
+
+    Identity, DPD, target, density and approval are never inherited implicitly.
+    """
+    from copy import deepcopy
+    resolved = deepcopy(dict(directions))
+    shared_fields = STANDARD - {'objective_ref', 'target_ref'}
+    for ref, direction in resolved.items():
+        shared_ref = direction.get('shared_ref')
+        if shared_ref is None:
+            continue
+        shared = directions.get(shared_ref)
+        if (shared is None or shared_ref == ref or shared.get('shared_ref') is not None
+                or (shared.get('scene'), shared.get('source_ref')) != (direction.get('scene'), direction.get('source_ref'))):
+            raise ValueError('SHARED_DIRECTION_SCOPE_MISMATCH')
+        for key in shared_fields:
+            if key not in direction and key in shared:
+                direction[key] = deepcopy(shared[key])
+    return resolved
+
+
 def full_performance_coverage_gate(inventory: Mapping[str, Any], directions: Mapping[str, Any], *, current_source_hash: str,
                                     contexts: Mapping[str, Any], dpds: Mapping[str, DPDSnapshot | BeatDPD], source_text: str | None = None, formal_source: FormalSourceWitness | None = None,
-                                    scene_dpds: Mapping[str, SceneDPD] | None = None) -> dict[str, Any]:
+                                    scene_dpds: Mapping[str, SceneDPD] | None = None,
+                                    dramaturgy_reviews: Mapping[str, Any] | None = None) -> dict[str, Any]:
     if inventory.get('source_hash')!=current_source_hash:raise ValueError('STALE_SOURCE')
+    directions = resolve_shared_direction(directions)
+    dramaturgy: dict[str, Any] = {}
     if inventory.get('scope') == 'FORMAL_PRODUCTION_BOOK':
         from drama_plugin.hosts.formal_performance import FormalSourceWitness
         if not isinstance(formal_source, FormalSourceWitness):raise ValueError('TRUSTED_FORMAL_READER_REQUIRED')
-        formal_source.validate(inventory,directions,dpds,scene_dpds or {},current_source_hash)
+        dramaturgy = formal_source.validate(inventory,directions,dpds,scene_dpds or {},current_source_hash,
+                                             dramaturgy_reviews=dramaturgy_reviews)
     elif inventory.get('scope') not in ('PROPOSAL_ONLY','DESIGN_FIXTURE_ONLY'):
         raise ValueError('PERFORMANCE_SOURCE_KIND_REQUIRED')
     if inventory.get('scope') == 'PROPOSAL_ONLY':
@@ -141,6 +167,12 @@ def full_performance_coverage_gate(inventory: Mapping[str, Any], directions: Map
         if any({x['ref'] for x in inventory.get(k, [])} != refs for k, refs in expected_sets.items()):
             raise ValueError('SOURCE_COVERAGE_INVENTORY_MISMATCH')
     rows: dict[str, Any]={};missing: list[dict[str,str]]=[]
+    for sid, receipt in dramaturgy.items():
+        if receipt['status'] != 'PASS':
+            for finding in receipt['findings']:
+                if finding['status'] != 'PASS':
+                    missing.append({'category': 'dramaturgy', 'ref': sid,
+                                    'reason': 'RETURN_TO_OWNER:' + finding['repairOwner'] + ':' + finding['finding']})
     for category in CATEGORIES:
         expected=inventory.get(category)
         if expected is None:raise ValueError('COVERAGE_INVENTORY_MISSING: '+category)
@@ -155,6 +187,13 @@ def full_performance_coverage_gate(inventory: Mapping[str, Any], directions: Map
                 if item.get('performance_bearing',True) or not d.get('reason') or any(item.get(x) for x in ('actors','vocal','ensemble')):reason='INVALID_NO_ACTOR_EXEMPTION'
                 else:na+=1;continue
             else:
+                if inventory.get('scope') == 'FORMAL_PRODUCTION_BOOK' and category in ('spoken', 'voice', 'interactions'):
+                    from drama_plugin.contracts.scene_dramaturgy import DirectionDensity
+                    density = DirectionDensity.model_validate(d.get('density', {}))
+                    if set(density.source_refs) != {item['source_ref']}:
+                        raise ValueError('DIRECTION_DENSITY_SOURCE_UNBOUND')
+                    if density.expanded and d.get('detail') != 'EXPANDED':
+                        raise ValueError('DIRECTION_DENSITY_REQUIRES_EXPANDED')
                 if d.get('status') != 'COVERED':reason='DIRECTION_STATUS_NOT_COVERED'
                 elif d.get('source_ref')!=item.get('source_ref') or d.get('scene')!=item.get('scene'):reason='DIRECTION_SOURCE_SCOPE_MISMATCH'
                 elif any(not d.get(k) for k in STANDARD):reason='STANDARD_DIRECTION_INCOMPLETE'
@@ -179,7 +218,8 @@ def full_performance_coverage_gate(inventory: Mapping[str, Any], directions: Map
         if not expected and not empty_reason:missing.append({'category':category,'ref':'scope','reason':'EMPTY_INVENTORY_WITHOUT_REASON'})
         if category=='shots' and inventory.get('scope')=='FORMAL_PRODUCTION_BOOK' and not expected:missing.append({'category':category,'ref':'scope','reason':'FORMAL_SHOT_INVENTORY_REQUIRED'})
         rows[category]={'required':len(expected),'covered':covered,'notApplicable':na,'status':'MISSING' if any(x['category']==category for x in missing) else 'COVERED' if expected else 'NOT_APPLICABLE_WITH_REASON','reason':empty_reason}
-    return {'status':'FULL_PERFORMANCE_COVERAGE_INCOMPLETE' if missing else 'FULL_PERFORMANCE_COVERAGE_READY','coverage':rows,'findings':missing,'inventoryFingerprint':sha256_canonical(inventory),'derivedArtifactOnly':True,'productionAuthorized':False}
+    return {'status':'FULL_PERFORMANCE_COVERAGE_INCOMPLETE' if missing else 'FULL_PERFORMANCE_COVERAGE_READY','coverage':rows,'findings':missing,'inventoryFingerprint':sha256_canonical(inventory),'derivedArtifactOnly':True,'productionAuthorized':False,
+            'dramaturgy': dramaturgy}
 
 
 def bind_full_performance_review(review: FilmReview, inventory: Mapping[str, Any]) -> FilmReview:

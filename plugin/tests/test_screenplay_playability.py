@@ -190,11 +190,11 @@ async def test_formal_book_entry_rejects_missing_playability_without_legacy_fall
     from formal_performance_helpers import formal_case
     case = await formal_case(tmp_path / 'formal.json')
     witness = case['formal_source']
-    witness.validate(case['inventory'], case['directions'], case['dpds'], case['scene_dpds'], case['source_hash'])
+    witness.validate(case['inventory'], case['directions'], case['dpds'], case['scene_dpds'], case['source_hash'], dramaturgy_reviews=case['dramaturgy_reviews'])
     key, snapshot = next((k, d) for k, d in case['dpds'].items() if hasattr(d, 'effective'))
     case['dpds'][key] = compose_dpd(snapshot.scene, snapshot.beat.model_copy(update={'playability': None}), snapshot.line)
     with pytest.raises(ValueError, match='UNRESOLVED'):
-        witness.validate(case['inventory'], case['directions'], case['dpds'], case['scene_dpds'], case['source_hash'])
+        witness.validate(case['inventory'], case['directions'], case['dpds'], case['scene_dpds'], case['source_hash'], dramaturgy_reviews=case['dramaturgy_reviews'])
 
 
 def test_line_override_cannot_replace_actor_objective_with_emotion():

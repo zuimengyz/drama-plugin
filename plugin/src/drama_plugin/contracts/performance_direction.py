@@ -59,12 +59,18 @@ class DirectorPerformanceIntent(ContractModel):
     music_constraints: tuple[Text, ...] = ()
     physical_consequences: dict[Text, Text] = Field(default_factory=dict)
     review_basis: Literal['DESIGN_FIXTURE_ONLY', 'SOURCE_BOUND_DESIGN']
+    dramaturgy_fingerprint: Hash | None = None
+    turn_fingerprints: dict[Text, Hash] = Field(default_factory=dict)
 
     @model_serializer(mode='wrap')
     def legacy_intent(self, handler: SerializerFunctionWrapHandler) -> dict[str,Any]:
         result: dict[str,Any]=handler(self)
         for snake,camel in (('music_constraints','musicConstraints'),('physical_consequences','physicalConsequences')):
             if not getattr(self,snake):result.pop(snake,None);result.pop(camel,None)
+        if self.dramaturgy_fingerprint is None:
+            result.pop('dramaturgyFingerprint', None)
+        if not self.turn_fingerprints:
+            result.pop('turnFingerprints', None)
         return result
 
     @model_validator(mode='after')
@@ -127,10 +133,13 @@ class PerformanceProjection(ContractModel):
     vocal_delivery: VocalDelivery | None = None
     context_fingerprint: Hash | None = None
     context_refs: tuple[Text, ...] = ()
+    turn_fingerprint: Hash | None = None
 
     @model_serializer(mode="wrap")
     def legacy_projection(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
         result: dict[str, Any] = handler(self)
+        if self.turn_fingerprint is None:
+            result.pop('turnFingerprint', None)
         for snake, camel in (("vocal_delivery", "vocalDelivery"), ("context_fingerprint", "contextFingerprint"), ("context_refs", "contextRefs")):
             if not getattr(self, snake):
                 result.pop(snake, None); result.pop(camel, None)

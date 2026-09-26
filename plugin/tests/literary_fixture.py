@@ -22,6 +22,13 @@ def fixture():
 
 
 def reviewed(data):
+    # Explicit synthetic preservation attestation, never applied to real sources.
+    protected = data['adaptation']['preserved']
+    keys = set(protected['mustKeep'] + protected['coreRelationships'] + protected['coreEvents']) | {'character_arc','theme_conflict','narrative_identity'}
+    for review in data['reviews']:
+        if review['authority']=='literary-adaptation':
+            review['preservationChecks']={key:dict(status='PRESERVED',sourceUnitIds=[key] if key in {u['id'] for u in data['analysis']['units']} else ['e1','e2'],
+                destinationIds=['beat:test'],evidence='Synthetic source preserves the hesitation, neighbor relation and later bowl arrangement.') for key in keys}
     p = LiteraryPackage.model_validate(data)
     for review in data['reviews']:
         review['subjectHash'] = review_hashes(p)[review['authority']]

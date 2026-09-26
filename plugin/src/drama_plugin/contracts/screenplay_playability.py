@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 from typing import Annotated, Literal
-from pydantic import Field, StringConstraints, model_validator
+from typing import Any
+from pydantic import Field, StringConstraints, model_validator, model_serializer, SerializerFunctionWrapHandler
 from drama_plugin.contracts.base import ContractModel
 from drama_plugin.contracts.cinematic import ObservableAction
 
@@ -11,6 +12,8 @@ Hash = Annotated[str, StringConstraints(pattern=r"^[0-9a-f]{64}$")]
 
 
 class BeatPlayability(ContractModel):
+    action_carrier_refs: tuple[Text, ...] = ()
+    reaction_carrier_ref: Text | None = None
     source_scene_hash: Hash
     source_excerpt: Text
     playable_actions: tuple[ObservableAction, ...] = Field(min_length=1)
@@ -18,6 +21,15 @@ class BeatPlayability(ContractModel):
     state_scope: Literal["CURRENT_BEAT"] = "CURRENT_BEAT"
     reaction: ObservableAction
     review_evidence: Text
+
+    @model_serializer(mode='wrap')
+    def legacy_wire(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data: dict[str, Any] = handler(self)
+        if not self.action_carrier_refs:
+            data.pop('actionCarrierRefs', None)
+        if self.reaction_carrier_ref is None:
+            data.pop('reactionCarrierRef', None)
+        return data
 
 
 class LinePlayability(ContractModel):

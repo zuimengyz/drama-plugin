@@ -32,6 +32,8 @@ def validate_intent(intent: DirectorPerformanceIntent, dpd: DPDSnapshot,
         raise ValueError('DPD_REVIEW_REQUIRED: source/effective fingerprint mismatch')
     if any(current.get(k) != h for k, h in intent.source_fingerprints.items()):
         raise ValueError('STALE_SOURCE: Director performance intent')
+    if intent.dramaturgy_fingerprint is not None and current.get('dramaturgy:' + intent.scene_id) != intent.dramaturgy_fingerprint:
+        raise ValueError('STALE_DIRECTOR_DRAMATURGY')
     if dpd.scene.source_fingerprint not in intent.source_fingerprints.values():
         raise ValueError('DPD source is not pinned by Director intent')
     if (dpd.fingerprint not in intent.dpd_fingerprints or dpd.effective.scene_id != intent.scene_id
@@ -51,6 +53,8 @@ def validate_projection(intent: DirectorPerformanceIntent, dpd: DPDSnapshot,
         raise ValueError('DIRECTOR_INTENT_PROJECTION_MISMATCH')
     if p.interaction_target != e.interaction_target:
         raise ValueError('DPD_AUTHORITY_MISMATCH: interaction target')
+    if intent.turn_fingerprints and p.turn_fingerprint != intent.turn_fingerprints.get(e.spoken_content_id):
+        raise ValueError('EXACT_TURN_PROJECTION_MISMATCH')
     if p.external_control != e.external_control.value:
         raise ValueError('DPD_AUTHORITY_MISMATCH: external control')
     if LEVEL[p.external_expression] > LEVEL[intent.external_expression_ceiling]:
@@ -74,6 +78,25 @@ def validate_projection(intent: DirectorPerformanceIntent, dpd: DPDSnapshot,
     if p.channel == 'VISUAL' and current.get('grammar:' + str(p.route)) != p.grammar_fingerprint:
         raise ValueError('STALE_VISUAL_PERFORMANCE_GRAMMAR')
     return p
+
+
+def validate_turn_direction(scene: Mapping[str, Any], turn_id: str, dpd: DPDSnapshot,
+                            intent: DirectorPerformanceIntent, projections: Mapping[str, Any],
+                            current: Mapping[str, str]) -> None:
+    """New formal direction requires the complete source → exact turn → intent chain."""
+    from drama_plugin.screenplay_playability import dialogue_turn_fingerprint
+    turn_hash = dialogue_turn_fingerprint(scene, turn_id, dpd)
+    if intent.source_fingerprints.get('scenes:' + str(scene['id'])) != sha256_canonical(scene):
+        raise ValueError('STALE_DIRECTOR_SCENE_BINDING')
+    if not intent.dramaturgy_fingerprint or intent.turn_fingerprints.get(turn_id) != turn_hash:
+        raise ValueError('STALE_DIRECTOR_TURN_BINDING')
+    if set(projections) != {'VISUAL', 'VOICE'}:
+        raise ValueError('EXACT_TURN_BOTH_PROJECTIONS_REQUIRED')
+    for channel, value in projections.items():
+        projection = PerformanceProjection.model_validate(dump_contract(value) if isinstance(value, PerformanceProjection) else value)
+        if projection.turn_fingerprint != turn_hash:
+            raise ValueError('EXACT_TURN_PROJECTION_MISMATCH')
+        validate_projection(intent, dpd, projection, current, channel)
 
 
 def visual_language(p: PerformanceProjection) -> dict[str, Any]:

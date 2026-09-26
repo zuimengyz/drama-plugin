@@ -1,0 +1,24 @@
+{
+  "audit_date": "2026-09-26",
+  "head": "bb83843074ae685a5fdd53ed94b1a27bd863a014",
+  "baseline_files_checked": 863,
+  "changed_baseline_files": [],
+  "required_reports": 6,
+  "report_sizes": {
+    "Literary-Cinema-R3A-Adaptation-Dramaturgy-Gap-Audit.md": 14753,
+    "Literary-Cinema-R3A-Conflict-Authority-Reconciliation.md": 15219,
+    "Literary-Cinema-R3A-Current-Authority-Map.md": 12312,
+    "Literary-Cinema-R3A-Directorial-Performance-Gap-Audit.md": 11893,
+    "Literary-Cinema-R3A-External-Capability-Forensics.md": 11265,
+    "Literary-Cinema-R3A-S02-Dramaturgy-Trace.md": 8506
+  },
+  "broken_local_links": [],
+  "tracked_diff_stat": "",
+  "git_status_short": "?? docs/external-research/.DS_Store\n?? docs/external-research/literary-cinema-r3a/\n",
+  "runtime_changes": 0,
+  "screenplay_changes": 0,
+  "paid_generation": 0,
+  "external_workflows_executed": 0,
+  "external_sources_installed": 0,
+  "evidence_limit": "Read-only source and current candidate audit; no independent cold read, no live canonical database or media observation, no end-to-end exploit reproduction."
+}

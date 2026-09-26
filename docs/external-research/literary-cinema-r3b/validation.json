@@ -1,0 +1,30 @@
+{
+  "baselineHead": "bb83843074ae685a5fdd53ed94b1a27bd863a014",
+  "baselineTests": {
+    "passed": 2730,
+    "seconds": 120.96
+  },
+  "newTests": 52,
+  "focusedTests": {
+    "passed": 371,
+    "seconds": 5.98
+  },
+  "fullTests": {
+    "passed": 2782,
+    "seconds": 119.19
+  },
+  "mypy": {
+    "baselineErrors": 40,
+    "finalErrors": 40,
+    "exactDiagnosticsUnchanged": true,
+    "newErrors": 0,
+    "baselineSourceFiles": 201,
+    "finalSourceFiles": 203
+  },
+  "gitDiffCheckExit": 0,
+  "creativeFilesUnchanged": 22,
+  "protectedFilesUnchanged": 264,
+  "paidGeneration": 0,
+  "artisticValidation": false,
+  "readyForLiteraryCinemaR3C": true
+}

@@ -6,7 +6,7 @@ No provider controls or generated screenplay text belong to this upstream contra
 from __future__ import annotations
 
 from typing import Annotated, Any, Literal
-from pydantic import Field
+from pydantic import Field, model_serializer, SerializerFunctionWrapHandler
 from drama_plugin.contracts.base import ContractModel
 from drama_plugin.contracts.creative_asset import Text, Hash
 from drama_plugin.contracts.source_pin import SourcePin
@@ -163,12 +163,27 @@ class CharacterArc(ContractModel):
     states: tuple[CharacterArcState, ...] = Field(min_length=1)
 
 
+class PreservationCheck(ContractModel):
+    status: Literal['PRESERVED', 'CONCERN', 'UNRESOLVED']
+    source_unit_ids: tuple[Text, ...] = Field(min_length=1)
+    destination_ids: tuple[Text, ...] = Field(min_length=1)
+    evidence: Text
+
+
 class StageReview(ContractModel):
     authority: Stage
     subject_hash: Hash
     status: Literal['APPROVED', 'REVISE']
     reviewer: Text
     evidence: Text
+    preservation_checks: dict[Text, PreservationCheck] = Field(default_factory=dict)
+
+    @model_serializer(mode='wrap')
+    def legacy_review(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data: dict[str, Any] = handler(self)
+        if not self.preservation_checks:
+            data.pop('preservationChecks', None)
+        return data
 
 
 class LiteraryPackage(ContractModel):

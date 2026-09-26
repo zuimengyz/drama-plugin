@@ -184,6 +184,37 @@ def validate_literary(p: LiteraryPackage) -> None:
             raise ValueError('UNAPPROVED_OR_STALE_SPECIALIST_REVIEW:' + r.authority)
 
 
+def adaptation_freedom_receipt(p: LiteraryPackage, *, required: bool = True) -> dict[str, Any]:
+    """Reuse decision prose and its StageReview; never authorize a new change.
+
+    Preservation evidence is professional attestation, not automatic semantic
+    inference. All protected categories must be explicitly reviewed.
+    """
+    validate_literary(p)
+    review = next(r for r in p.reviews if r.authority == 'literary-adaptation')
+    if not review.preservation_checks and not required:
+        return {'status': 'UNRESOLVED', 'repairOwner': 'literary-adaptation'}
+    preserve = p.adaptation.preserved
+    protected = set(preserve.must_keep + preserve.core_relationships + preserve.core_events)
+    expected = protected | {'character_arc', 'theme_conflict', 'narrative_identity'}
+    if set(review.preservation_checks) != expected:
+        raise ValueError('UNRESOLVED:literary-adaptation:PRESERVATION_REVIEW_REQUIRED')
+    if review.status != 'APPROVED' or review.subject_hash != review_hashes(p)['literary-adaptation']:
+        raise ValueError('STALE_ADAPTATION_FREEDOM_REVIEW')
+    units = {u.id for u in p.analysis.units}
+    destinations = {dest for m in p.compression.mappings for dest in m.destination_ids}
+    for key, check in review.preservation_checks.items():
+        if (check.status != 'PRESERVED' or not set(check.source_unit_ids) <= units
+                or not set(check.destination_ids) <= destinations
+                or key in protected and key not in check.source_unit_ids):
+            raise ValueError('SOURCE_CRITICAL_PRESERVATION_UNRESOLVED:' + key)
+    return {'status': 'PASS', 'authorizingOwner': review.authority, 'reviewHash': sha256_canonical(review),
+            'decisions': [{'decisionId': d.id, 'whatChanged': d.expression, 'whyCinematic': d.reason,
+                           'dramaticFunction': d.narrative_effect, 'sourceUnitIds': list(d.source_unit_ids)}
+                          for d in p.adaptation.decisions],
+            'protectedFacts': {k: dump_contract(v) for k, v in review.preservation_checks.items()}}
+
+
 def rights_gate(p: LiteraryPackage, jurisdiction: str, intended_use: str) -> RightsGate:
     reasons = []
     for a in p.artifacts:
@@ -222,6 +253,11 @@ def _historical(p: HistoricalPackage, plugin_root: Path) -> None:
 
 
 def compile_source(request: CompileSourceRequest | dict[str, Any], *, plugin_root: Path | None = None) -> ScreenplayInput:
+    return _compile_source(request, plugin_root=plugin_root, verify_legacy=False)
+
+
+def _compile_source(request: CompileSourceRequest | dict[str, Any], *, plugin_root: Path | None = None,
+                    verify_legacy: bool = False) -> ScreenplayInput:
     request = CompileSourceRequest.model_validate(dump_contract(request) if isinstance(request, CompileSourceRequest) else request)
     p = request.source
     ref = SourcePin(key='creative-source:' + p.id, kind='CANON', fingerprint=sha256_canonical(p))
@@ -238,6 +274,7 @@ def compile_source(request: CompileSourceRequest | dict[str, Any], *, plugin_roo
     gate = rights_gate(p, request.jurisdiction, request.intended_use)
     if request.intended_use != 'STUDY' and not gate.authorized:
         raise ValueError('RIGHTS_GATE_BLOCKED:' + ';'.join(gate.reasons))
+    freedom = adaptation_freedom_receipt(p, required=request.intended_use != 'STUDY' and not verify_legacy)
     units = {u.id: u for u in p.analysis.units}
     decisions = {d.id: d for d in p.adaptation.decisions}
     rows: list[SourceMapEntry] = []
@@ -268,7 +305,8 @@ def compile_source(request: CompileSourceRequest | dict[str, Any], *, plugin_roo
         rights_gate=gate, resolved_input={'analysis': dump_contract(p.analysis), 'philosophicalCore': dump_contract(p.philosophical_core),
             'adaptation': dump_contract(p.adaptation), 'compression': dump_contract(p.compression),
             'cinema': dump_contract(p.cinema), 'characterArc': dump_contract(p.character_arc),
-            'themeExpressionOrder': list(THEME_EXPRESSION_ORDER)})
+            'themeExpressionOrder': list(THEME_EXPRESSION_ORDER),
+            **({'adaptationFreedomReceipt': freedom} if freedom['status'] == 'PASS' else {})})
 
 
 def verify_screenplay_input(source: Any, compiled: Any) -> ScreenplayInput:
@@ -276,7 +314,10 @@ def verify_screenplay_input(source: Any, compiled: Any) -> ScreenplayInput:
     gate = result.rights_gate
     request = CompileSourceRequest(source=source, jurisdiction=gate.jurisdiction if gate else 'UNSPECIFIED',
         intended_use=gate.intended_use if gate else 'STUDY')
-    current = compile_source(request)
+    # Exact historical replay is not a new adaptation approval. Empty legacy
+    # checks remain absent; never fabricate a preservation attestation. The
+    # public compiler still requires one for every new non-study compilation.
+    current = _compile_source(request, verify_legacy='adaptationFreedomReceipt' not in result.resolved_input)
     if dump_contract(current) != dump_contract(result):
         raise ValueError('SCREENPLAY_INPUT_STALE_OR_TAMPERED')
     return current

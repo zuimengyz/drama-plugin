@@ -36,7 +36,7 @@ def test_f02_legacy_packet_cannot_claim_complete_book():
     assert department_integration(p,r,c,a)['status']=='DEPARTMENT_REVIEW_READY'
     assert complete_production_book(p,r,c,a)['status']=='DIRECTOR_PRODUCTION_BOOK_NOT_READY'
 
-def gate(f):return full_performance_coverage_gate(f['inventory'],f['directions'],current_source_hash=f['source_hash'],contexts=f['contexts'],dpds=f['dpds'],formal_source=f['formal_source'],scene_dpds=f['scene_dpds'])
+def gate(f):return full_performance_coverage_gate(f['inventory'],f['directions'],current_source_hash=f['source_hash'],contexts=f['contexts'],dpds=f['dpds'],formal_source=f['formal_source'],scene_dpds=f['scene_dpds'],dramaturgy_reviews=f.get('dramaturgy_reviews'))
 
 @pytest.mark.asyncio
 async def test_f03_persisted_formal_fixture_passes(tmp_path):
@@ -78,6 +78,7 @@ async def test_f02_full_composed_book_passes_and_missing_evidence_blocks(tmp_pat
     reviewed={k:f[k] for k in ('inventory','directions')}
     reviewed.update({k:{ref:dump_contract(v) for ref,v in f[k].items()} for k in ('scene_dpds','dpds','intents')})
     reviewed['score_plan']=dump_contract(score)
+    reviewed['dramaturgy_reviews']=f['dramaturgy_reviews']
     reviewed['projections']={k:{ch:dump_contract(v) for ch,v in pair.items()} for k,pair in f['projections'].items()}
     f['self_review']={'verdict':'PASS','reviewedFingerprint':fp(reviewed),'sourcePins':f['formal_source'].pins,'routeRef':dump_contract(p.route_ref)}
     assert complete_production_book(p,r,c,a,performance=f)['status']=='DIRECTOR_PRODUCTION_BOOK_NOT_READY'

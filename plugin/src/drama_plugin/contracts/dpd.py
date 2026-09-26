@@ -7,6 +7,7 @@ from pydantic import Field, StringConstraints, model_validator, model_serializer
 
 from drama_plugin.contracts.base import ContractModel
 from drama_plugin.contracts.screenplay_playability import BeatPlayability, LinePlayability
+from drama_plugin.contracts.scene_dramaturgy import ResponseInterpretation
 
 
 NonBlankText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
@@ -66,10 +67,13 @@ class _PlayabilityCompatible(ContractModel):
         data: dict[str, Any] = handler(self)
         if data.get("playability") is None:
             data.pop("playability", None)
+        if not getattr(self, 'response_interpretations', ()):
+            data.pop('responseInterpretations', None)
         return data
 
 
 class BeatDPD(_PlayabilityCompatible):
+    response_interpretations: tuple[ResponseInterpretation, ...] = ()
     playability: BeatPlayability | None = None
     schema_version: Literal["dpd-v1"] = "dpd-v1"
     scope: Literal["BEAT"] = "BEAT"

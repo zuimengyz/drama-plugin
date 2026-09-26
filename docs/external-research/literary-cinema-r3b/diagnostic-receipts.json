@@ -1,0 +1,822 @@
+{
+  "S01": {
+    "sourceHash": "6c4625985c202e32ccc102f7df3824c754b21d478eb4373ff86b18458438acb8",
+    "subjectHash": "c7c4a30d38a8bb816433588fa0da706db0325453a7376aa069c4d04c2290300b",
+    "reviewHash": "e77fb5652ee388f67eb19f8ac8469d131501dc47983820276f3a05f399bc365f",
+    "status": "PASS",
+    "findings": [
+      {
+        "axis": "ACTION_RESPONSE_CHAIN",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "spoken:S01-L1",
+          "spoken:S01-L2",
+          "spoken:S01-L3",
+          "spoken:S01-L4",
+          "spoken:S01-L5",
+          "action:263:271",
+          "action:271:289",
+          "action:290:297"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "ENTRY_EXIT_DELTA",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "spoken:S01-L1",
+          "spoken:S01-L2",
+          "spoken:S01-L3",
+          "spoken:S01-L4",
+          "spoken:S01-L5",
+          "action:263:271",
+          "action:271:289",
+          "action:290:297"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "INFORMATION_RELEASE",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "spoken:S01-L1",
+          "spoken:S01-L2",
+          "spoken:S01-L3",
+          "spoken:S01-L4",
+          "spoken:S01-L5",
+          "action:263:271",
+          "action:271:289",
+          "action:290:297"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "LISTENER_CAUSALITY",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "spoken:S01-L1",
+          "spoken:S01-L2",
+          "spoken:S01-L3",
+          "spoken:S01-L4",
+          "spoken:S01-L5",
+          "action:263:271",
+          "action:271:289",
+          "action:290:297"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "SILENCE_FUNCTION",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "spoken:S01-L1",
+          "spoken:S01-L2",
+          "spoken:S01-L3",
+          "spoken:S01-L4",
+          "spoken:S01-L5",
+          "action:263:271",
+          "action:271:289",
+          "action:290:297"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "STRATEGY_CHANGE",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "spoken:S01-L1",
+          "spoken:S01-L2",
+          "spoken:S01-L3",
+          "spoken:S01-L4",
+          "spoken:S01-L5",
+          "action:263:271",
+          "action:271:289",
+          "action:290:297"
+        ],
+        "repairOwner": "scene-development"
+      }
+    ],
+    "informationCoverage": [],
+    "causalCoverage": [],
+    "productionAuthorized": false,
+    "fingerprint": "cc5192eee3252f9ef955f81866c01f438a8688fbc21bdcde7b4596f6c3704d16"
+  },
+  "S02": {
+    "sourceHash": "3ec15b8f3460181f316562a35f7556b8c37196f034460c835e5f029203a487a6",
+    "subjectHash": "87588b490d4cd33841717542995087f2617bf69caf5e34bffe94697423eaa15f",
+    "reviewHash": "9d5ff9a38872a8594156300bfd754d079e94da895a0b57d32169b137c1a6771a",
+    "status": "CONCERN",
+    "findings": [
+      {
+        "axis": "ACTION_RESPONSE_CHAIN",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "action:73:83",
+          "action:100:111",
+          "action:111:127",
+          "spoken:S02-L1",
+          "action:128:143",
+          "action:171:183",
+          "action:183:197",
+          "action:197:211",
+          "spoken:S02-L2",
+          "action:212:230",
+          "spoken:S02-L3",
+          "action:247:261",
+          "action:262:272",
+          "spoken:S02-L4",
+          "action:273:285",
+          "action:286:294",
+          "action:294:304",
+          "action:305:313",
+          "action:314:319",
+          "action:334:343"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "ENTRY_EXIT_DELTA",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "action:73:83",
+          "action:100:111",
+          "action:111:127",
+          "spoken:S02-L1",
+          "action:128:143",
+          "action:171:183",
+          "action:183:197",
+          "action:197:211",
+          "spoken:S02-L2",
+          "action:212:230",
+          "spoken:S02-L3",
+          "action:247:261",
+          "action:262:272",
+          "spoken:S02-L4",
+          "action:273:285",
+          "action:286:294",
+          "action:294:304",
+          "action:305:313",
+          "action:314:319",
+          "action:334:343"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "INFORMATION_RELEASE",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "action:73:83",
+          "action:100:111",
+          "action:111:127",
+          "spoken:S02-L1",
+          "action:128:143",
+          "action:171:183",
+          "action:183:197",
+          "action:197:211",
+          "spoken:S02-L2",
+          "action:212:230",
+          "spoken:S02-L3",
+          "action:247:261",
+          "action:262:272",
+          "spoken:S02-L4",
+          "action:273:285",
+          "action:286:294",
+          "action:294:304",
+          "action:305:313",
+          "action:314:319",
+          "action:334:343"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "LISTENER_CAUSALITY",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "action:73:83",
+          "action:100:111",
+          "action:111:127",
+          "spoken:S02-L1",
+          "action:128:143",
+          "action:171:183",
+          "action:183:197",
+          "action:197:211",
+          "spoken:S02-L2",
+          "action:212:230",
+          "spoken:S02-L3",
+          "action:247:261",
+          "action:262:272",
+          "spoken:S02-L4",
+          "action:273:285",
+          "action:286:294",
+          "action:294:304",
+          "action:305:313",
+          "action:314:319",
+          "action:334:343"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "SILENCE_FUNCTION",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "action:73:83",
+          "action:100:111",
+          "action:111:127",
+          "spoken:S02-L1",
+          "action:128:143",
+          "action:171:183",
+          "action:183:197",
+          "action:197:211",
+          "spoken:S02-L2",
+          "action:212:230",
+          "spoken:S02-L3",
+          "action:247:261",
+          "action:262:272",
+          "spoken:S02-L4",
+          "action:273:285",
+          "action:286:294",
+          "action:294:304",
+          "action:305:313",
+          "action:314:319",
+          "action:334:343"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "STRATEGY_CHANGE",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "action:73:83",
+          "action:100:111",
+          "action:111:127",
+          "spoken:S02-L1",
+          "action:128:143",
+          "action:171:183",
+          "action:183:197",
+          "action:197:211",
+          "spoken:S02-L2",
+          "action:212:230",
+          "spoken:S02-L3",
+          "action:247:261",
+          "action:262:272",
+          "spoken:S02-L4",
+          "action:273:285",
+          "action:286:294",
+          "action:294:304",
+          "action:305:313",
+          "action:314:319",
+          "action:334:343"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "INFORMATION_RELEASE",
+        "scope": "S02-first-request",
+        "status": "PASS",
+        "finding": "RELEASE_FUNCTION_REVIEWED",
+        "reason": "The authored release serves the declared current choice.",
+        "evidenceRefs": [
+          "action:73:83",
+          "action:100:111",
+          "action:111:127",
+          "spoken:S02-L1",
+          "action:128:143",
+          "action:171:183",
+          "action:183:197",
+          "action:197:211",
+          "spoken:S02-L2",
+          "action:212:230",
+          "spoken:S02-L3",
+          "action:247:261",
+          "action:262:272",
+          "spoken:S02-L4",
+          "action:273:285",
+          "action:286:294",
+          "action:294:304",
+          "action:305:313",
+          "action:314:319",
+          "action:334:343"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "INFORMATION_RELEASE",
+        "scope": "S02-first-request",
+        "status": "CONCERN",
+        "finding": "DRAMATICALLY_PREMATURE",
+        "reason": "首次身体停住不等于参与女孩处境；四项核心信息在真正转脸/误判/撤手之前完整释放。R3A Scene 过程审阅，不是禁直接陈述。",
+        "evidenceRefs": [
+          "spoken:S02-L1",
+          "action:171:183",
+          "action:212:230"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "INFORMATION_RELEASE",
+        "scope": "S02-first-request",
+        "status": "CONCERN",
+        "finding": "DRAMATICALLY_PREMATURE",
+        "reason": "DRAMATICALLY_PREMATURE",
+        "evidenceRefs": [
+          "spoken:S02-L1",
+          "action:171:183"
+        ],
+        "repairOwner": "scene-development"
+      }
+    ],
+    "informationCoverage": [
+      {
+        "informationRef": "S02-first-request",
+        "firstRelease": "spoken:S02-L1",
+        "firstReleasePosition": 3,
+        "firstReleaseParts": [
+          "mother",
+          "help",
+          "follow",
+          "urgency"
+        ],
+        "totalParts": 4,
+        "releases": [
+          {
+            "carrierRef": "spoken:S02-L1",
+            "parts": [
+              "mother",
+              "help",
+              "follow",
+              "urgency"
+            ],
+            "audience": true,
+            "characters": [
+              "男人"
+            ],
+            "afterResponseRef": null
+          }
+        ],
+        "directStatementReason": null
+      }
+    ],
+    "causalCoverage": [
+      {
+        "actionRef": "spoken:S02-L1",
+        "actualResponseRef": "action:171:183",
+        "expectedResponse": "男人跟自己去妈妈那里",
+        "interpretation": "她以为转脸表示要跟来",
+        "previousTactic": "拉住他的手肘，用短句催他跟来",
+        "transitionReason": null,
+        "nextActionRef": "spoken:S02-L2",
+        "nextTactic": null,
+        "dpdRef": "S02:carrier:spoken:S02-L1",
+        "listenerDpdRefs": [
+          "S02:carrier:action:171:183"
+        ]
+      },
+      {
+        "actionRef": "spoken:S02-L2",
+        "actualResponseRef": "action:212:230",
+        "expectedResponse": "男人立即跟来",
+        "interpretation": "收回手，没有跟随",
+        "previousTactic": "拉住他的手肘，用短句催他跟来",
+        "transitionReason": null,
+        "nextActionRef": null,
+        "nextTactic": null,
+        "dpdRef": "S02:carrier:spoken:S02-L2",
+        "listenerDpdRefs": [
+          "S02:carrier:action:212:230"
+        ]
+      },
+      {
+        "actionRef": "spoken:S02-L3",
+        "actualResponseRef": "action:247:261",
+        "expectedResponse": "女孩放开，让他离开",
+        "interpretation": "女孩又抓住，推开求助未奏效",
+        "previousTactic": "把求助推给警察，抽袖离开",
+        "transitionReason": "抽袖后又被抓住，源下一行动转为喝斥",
+        "nextActionRef": "spoken:S02-L4",
+        "nextTactic": "跺脚喝斥，把她吓退",
+        "dpdRef": "S02:carrier:spoken:S02-L3",
+        "listenerDpdRefs": [
+          "S02:carrier:spoken:S02-L2",
+          "S02:carrier:action:247:261"
+        ]
+      },
+      {
+        "actionRef": "spoken:S02-L4",
+        "actualResponseRef": "action:273:285",
+        "expectedResponse": "女孩松手退开",
+        "interpretation": "女孩已经松手后缩",
+        "previousTactic": "跺脚喝斥，把她吓退",
+        "transitionReason": null,
+        "nextActionRef": null,
+        "nextTactic": null,
+        "dpdRef": "S02:carrier:spoken:S02-L4",
+        "listenerDpdRefs": [
+          "S02:carrier:action:273:285"
+        ]
+      }
+    ],
+    "productionAuthorized": false,
+    "fingerprint": "520b3ecca9b8b5153284fa61324206242bf6bb0105d17b7913f98da2c17f9c40"
+  },
+  "S03": {
+    "sourceHash": "54a2cc346297dbac654b857e11f345156a89bc28d9ced63c1b4b71c6624e2bee",
+    "subjectHash": "176d3f72f5ee2667d1456da9238977dd3c40e2608e6d7eeb199e332b8ab0e59d",
+    "reviewHash": "93ea8a0e4810ecd0373fb46fefef37706dddb6be7624e90392449698389caa02",
+    "status": "PASS",
+    "findings": [
+      {
+        "axis": "ACTION_RESPONSE_CHAIN",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "spoken:S03-L1",
+          "action:159:176",
+          "action:176:192",
+          "spoken:S03-L2",
+          "action:237:242",
+          "action:242:253",
+          "spoken:S03-L3",
+          "action:254:265",
+          "action:266:285",
+          "action:307:319"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "ENTRY_EXIT_DELTA",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "spoken:S03-L1",
+          "action:159:176",
+          "action:176:192",
+          "spoken:S03-L2",
+          "action:237:242",
+          "action:242:253",
+          "spoken:S03-L3",
+          "action:254:265",
+          "action:266:285",
+          "action:307:319"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "INFORMATION_RELEASE",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "spoken:S03-L1",
+          "action:159:176",
+          "action:176:192",
+          "spoken:S03-L2",
+          "action:237:242",
+          "action:242:253",
+          "spoken:S03-L3",
+          "action:254:265",
+          "action:266:285",
+          "action:307:319"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "LISTENER_CAUSALITY",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "spoken:S03-L1",
+          "action:159:176",
+          "action:176:192",
+          "spoken:S03-L2",
+          "action:237:242",
+          "action:242:253",
+          "spoken:S03-L3",
+          "action:254:265",
+          "action:266:285",
+          "action:307:319"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "SILENCE_FUNCTION",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "spoken:S03-L1",
+          "action:159:176",
+          "action:176:192",
+          "spoken:S03-L2",
+          "action:237:242",
+          "action:242:253",
+          "spoken:S03-L3",
+          "action:254:265",
+          "action:266:285",
+          "action:307:319"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "STRATEGY_CHANGE",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "spoken:S03-L1",
+          "action:159:176",
+          "action:176:192",
+          "spoken:S03-L2",
+          "action:237:242",
+          "action:242:253",
+          "spoken:S03-L3",
+          "action:254:265",
+          "action:266:285",
+          "action:307:319"
+        ],
+        "repairOwner": "scene-development"
+      }
+    ],
+    "informationCoverage": [],
+    "causalCoverage": [],
+    "productionAuthorized": false,
+    "fingerprint": "6a2abf4b39f8631d1a89aaf9ca5df4e4354eb7d69b426210b4e195bba2fa4c11"
+  },
+  "S04": {
+    "sourceHash": "23fd8186b87698012d0bf2f5755cddd3b33c4d99492bc6ec0f56b8a1546203e6",
+    "subjectHash": "07c62d686e2f805b9b8a0147928057c8047011dcd965fec2584e39c839a6ae53",
+    "reviewHash": "ce2bad84a09a2de1fb59a44522ed37785d87f81340ec9b0d236a1e27f689781d",
+    "status": "PASS",
+    "findings": [
+      {
+        "axis": "ACTION_RESPONSE_CHAIN",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "action:0:11",
+          "action:76:84",
+          "action:97:104"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "ENTRY_EXIT_DELTA",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "action:0:11",
+          "action:76:84",
+          "action:97:104"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "INFORMATION_RELEASE",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "action:0:11",
+          "action:76:84",
+          "action:97:104"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "LISTENER_CAUSALITY",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "action:0:11",
+          "action:76:84",
+          "action:97:104"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "SILENCE_FUNCTION",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "action:0:11",
+          "action:76:84",
+          "action:97:104"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "STRATEGY_CHANGE",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "action:0:11",
+          "action:76:84",
+          "action:97:104"
+        ],
+        "repairOwner": "scene-development"
+      }
+    ],
+    "informationCoverage": [],
+    "causalCoverage": [],
+    "productionAuthorized": false,
+    "fingerprint": "e2b3641cbff3ebfc5aa43aad4eeb9e344e48c9085aaa929dc062e9c8cfc07912"
+  },
+  "synthetic": {
+    "sourceHash": "b41bbac4d809d7d5760bb3149dea24bf05d9d96dbb01644b749798b8485c19b8",
+    "subjectHash": "4173095ff4a456dbf7a41d9c76eedbbfa1cb6882b2b90575b3918c374c4054bd",
+    "reviewHash": "67cea8a5b933ee4bc897148c1410b32f09ca84f013886d5678c4369c52ea9d68",
+    "status": "PASS",
+    "findings": [
+      {
+        "axis": "ACTION_RESPONSE_CHAIN",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "action:0:20",
+          "spoken:L1",
+          "action:21:45",
+          "action:46:66",
+          "spoken:L2",
+          "action:67:84",
+          "action:85:107"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "ENTRY_EXIT_DELTA",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "action:0:20",
+          "spoken:L1",
+          "action:21:45",
+          "action:46:66",
+          "spoken:L2",
+          "action:67:84",
+          "action:85:107"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "INFORMATION_RELEASE",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "action:0:20",
+          "spoken:L1",
+          "action:21:45",
+          "action:46:66",
+          "spoken:L2",
+          "action:67:84",
+          "action:85:107"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "LISTENER_CAUSALITY",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "action:0:20",
+          "spoken:L1",
+          "action:21:45",
+          "action:46:66",
+          "spoken:L2",
+          "action:67:84",
+          "action:85:107"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "SILENCE_FUNCTION",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "action:0:20",
+          "spoken:L1",
+          "action:21:45",
+          "action:46:66",
+          "spoken:L2",
+          "action:67:84",
+          "action:85:107"
+        ],
+        "repairOwner": "scene-development"
+      },
+      {
+        "axis": "STRATEGY_CHANGE",
+        "scope": "SCENE",
+        "status": "PASS",
+        "finding": "SOURCE_PROCESS_REVIEWED",
+        "reason": "Synthetic source locators and actor tasks were authored together; no claim of artistic outcome.",
+        "evidenceRefs": [
+          "action:0:20",
+          "spoken:L1",
+          "action:21:45",
+          "action:46:66",
+          "spoken:L2",
+          "action:67:84",
+          "action:85:107"
+        ],
+        "repairOwner": "scene-development"
+      }
+    ],
+    "informationCoverage": [],
+    "causalCoverage": [
+      {
+        "actionRef": "spoken:L1",
+        "actualResponseRef": "action:21:45",
+        "expectedResponse": "The partner leaves the desk and follows",
+        "interpretation": "The partner is not following",
+        "previousTactic": "Ask the partner to leave together",
+        "transitionReason": "Keeping the original direction frustrates the request to move; ask here instead",
+        "nextActionRef": "spoken:L2",
+        "nextTactic": "Drop the demand to move and ask for an answer",
+        "dpdRef": "scene:spoken:L1",
+        "listenerDpdRefs": [
+          "scene:carrier:action:21:45"
+        ]
+      },
+      {
+        "actionRef": "spoken:L2",
+        "actualResponseRef": "action:67:84",
+        "expectedResponse": "The partner turns and answers here",
+        "interpretation": "The partner offers attention, not yet an answer",
+        "previousTactic": "Drop the demand to move and ask for an answer",
+        "transitionReason": null,
+        "nextActionRef": null,
+        "nextTactic": null,
+        "dpdRef": "scene:spoken:L2",
+        "listenerDpdRefs": [
+          "scene:carrier:action:67:84"
+        ]
+      }
+    ],
+    "productionAuthorized": false,
+    "fingerprint": "a83744c920be515db9073ff22a71c7ed1e0beac5eb63469881166b7fcbde9147"
+  }
+}

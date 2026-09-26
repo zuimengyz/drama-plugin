@@ -28,7 +28,7 @@ _SPECS: tuple[tuple[str, str, str, str, str], ...] = (
     ('adaptation-boundary', 'Adaptation Boundary Bible', 'SKILL', 'historical-research historical-entity-registry', 'claim historical_status source_basis reconstruction_boundary excluded_with_reason uncertainty'),
     ('story-architecture', 'Story Bible', 'SKILL', 'adaptation-boundary', 'premise theme protagonist dramatic_question acts sequences escalation climax ending'),
     ('character-dramaturgy', 'Character Bible', 'SKILL', 'story-architecture historical-entity-registry', 'character_ref personality objective internal_conflict relationships dramatic_function character_arc historical_authority arc_stage behavior_pattern social_position emotional_state performance_state'),
-    ('scene-development', 'Scene Beat Bible', 'SKILL', 'story-architecture character-dramaturgy', 'scene_ref scene_purpose conflict beats reversal emotional_change information_change causality'),
+    ('scene-development', 'Scene Beat Bible', 'SKILL', 'story-architecture character-dramaturgy', 'scene_ref scene_purpose conflict beats reversal emotional_change information_change causality dramaturgy'),
     ('dialogue-design', 'Dialogue Bible', 'SKILL', 'scene-development character-dramaturgy', 'line_id scene_ref dialogue_text subtext historical_register speaker listener continuity'),
     ('director', 'Director Vision Bible', 'SKILL', 'story-architecture scene-development adaptation-boundary', 'cinematic_interpretation narrative_emphasis film_grammar visual_hierarchy performance_philosophy rhythm_philosophy restraint_principles climax_philosophy ending_philosophy editorial_intent'),
     ('character-art', 'Character Art Bible', 'SKILL', 'director adaptation-boundary character-dramaturgy', 'character_ref historical_status visual_archetype apparent_age height_impression body_proportion body_mass shoulder_waist_ratio face_structure jaw eyes brows nose skin hair facial_hair silhouette dominant_visual_traits secondary_traits screen_presence realistic_route cg_route camera_readable_features continuity_anchors forbidden_appearance phase_ii_reference_requirements'),
@@ -255,6 +255,11 @@ def validate_bible(bible: CreativeBible, artifacts: Mapping[str, Any], current: 
             if record.values != department_values(asset_bible, record.id, bible.created_by_capability, artifacts, current):
                 raise ValueError('SPECIALIZED_ASSET_VIEW_CHANGED')
         keys = _nested_keys(record.values)
+        if bible.created_by_capability == 'scene-development' and 'dramaturgy' in record.values:
+            from drama_plugin.contracts.scene_dramaturgy import SceneDramaturgy
+            # Authoring shape only. Formal handoff separately verifies source
+            # locators, ordering and current Scene hash; this is not approval.
+            SceneDramaturgy.model_validate(record.values['dramaturgy'])
         if bible.created_by_capability not in ('video-model-selection', 'prompt-compiler') and keys & _PROVIDER_KEYS:
             raise ValueError('PROVIDER_CONTROLS_IN_CREATIVE_BIBLE')
         if bible.created_by_capability == 'environment-design' and keys & _FORBIDDEN_ENVIRONMENT_KEYS:

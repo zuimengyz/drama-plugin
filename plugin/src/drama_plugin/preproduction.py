@@ -324,7 +324,7 @@ def complete_production_book(packet: DirectorDepartmentPacket, review: Screenpla
     try:
         from drama_plugin.hosts.formal_performance import FormalSourceWitness
         from drama_plugin.performance_coverage import full_performance_coverage_gate
-        from drama_plugin.performance_direction import validate_projection
+        from drama_plugin.performance_direction import validate_projection, validate_turn_direction
         from drama_plugin.contracts.performance_direction import DirectorPerformanceIntent, PerformanceProjection
         from drama_plugin.contracts.dpd import DPDSnapshot
         from drama_plugin.contracts.visual_route import RouteContext
@@ -337,13 +337,33 @@ def complete_production_book(packet: DirectorDepartmentPacket, review: Screenpla
             raise ValueError('FULL_BOOK_SCENE_INVENTORY_MISMATCH')
         coverage=full_performance_coverage_gate(performance['inventory'],performance['directions'],
             current_source_hash=witness.fingerprint,contexts=performance['contexts'],dpds=performance['dpds'],
-            formal_source=witness,scene_dpds=performance['scene_dpds'])
-        if coverage['status']!='FULL_PERFORMANCE_COVERAGE_READY':raise ValueError('FULL_PERFORMANCE_COVERAGE_INCOMPLETE')
+            formal_source=witness,scene_dpds=performance['scene_dpds'],
+            dramaturgy_reviews=performance.get('dramaturgy_reviews'))
+        if coverage['status']!='FULL_PERFORMANCE_COVERAGE_READY':
+            for receipt in coverage['dramaturgy'].values():
+                missing.extend('RETURN_TO_OWNER:' + f['repairOwner'] + ':' + f['finding']
+                               for f in receipt['findings'] if f['status'] != 'PASS')
+            raise ValueError('FULL_PERFORMANCE_COVERAGE_INCOMPLETE')
+        current = {**current, **{'dramaturgy:' + sid: receipt['fingerprint'] for sid, receipt in coverage['dramaturgy'].items()}}
         intents={k:DirectorPerformanceIntent.model_validate(v) for k,v in performance['intents'].items()}
         if set(intents)!=set(packet.scene_ids):raise ValueError('DIRECTOR_PERFORMANCE_INTENT_INCOMPLETE')
         route=RouteContext.model_validate(artifacts[packet.route_ref.key])
         route_name=route.sequence.visual_route or route.project.visual_route
         expected=witness.obligations()['spoken']
+        scenes = {s['id']: s for s in witness.tree['scenes']}
+        for sid, intent in intents.items():
+            scoped_dpds = [d for d in performance['dpds'].values()
+                           if (d.scene.scene_id if isinstance(d, DPDSnapshot) else d.scene_id) == sid]
+            expected_dpds = {d.fingerprint if isinstance(d, DPDSnapshot) else sha256_canonical(d) for d in scoped_dpds}
+            expected_beats = {d.beat.beat_id if isinstance(d, DPDSnapshot) else d.beat_id for d in scoped_dpds}
+            if (intent.review_basis != 'SOURCE_BOUND_DESIGN'
+                    or intent.source_fingerprints.get('scenes:' + sid) != sha256_canonical(scenes[sid])
+                    or any(current.get(k) != v for k, v in intent.source_fingerprints.items())
+                    or intent.dramaturgy_fingerprint != coverage['dramaturgy'][sid]['fingerprint']
+                    or set(intent.dpd_fingerprints) != expected_dpds or set(intent.beat_ids) != expected_beats):
+                raise ValueError('STALE_DIRECTOR_SCENE_OR_INTERACTION_SCOPE')
+            if set(intent.turn_fingerprints) != {x['id'] for x in scenes[sid]['content'].get('spokenContent', [])}:
+                raise ValueError('EXACT_DIRECTOR_TURN_SCOPE_MISMATCH')
         if set(performance['projections'])!=set(expected):raise ValueError('FULL_VISUAL_VOICE_PROJECTION_REQUIRED')
         for ref,item in expected.items():
             d=performance['directions'][ref];dpd=performance['dpds'][d['objective_ref']]
@@ -351,6 +371,8 @@ def complete_production_book(packet: DirectorDepartmentPacket, review: Screenpla
             intent=intents[item['scene']]
             if intent.review_basis!='SOURCE_BOUND_DESIGN':raise ValueError('PROPOSAL_DPD_NOT_FORMAL')
             if any(current.get(k)!=v for k,v in intent.source_fingerprints.items()):raise ValueError('STALE_PERFORMANCE_INTENT')
+            validate_turn_direction(scenes[item['scene']], item['line']['id'], dpd, intent,
+                                    performance['projections'][ref], current)
             for channel in ('VISUAL','VOICE'):
                 projection=PerformanceProjection.model_validate(performance['projections'][ref][channel])
                 validate_projection(intent,dpd,projection,current,channel)
@@ -372,6 +394,7 @@ def complete_production_book(packet: DirectorDepartmentPacket, review: Screenpla
         reviewed={'score_plan':dump_contract(score),'inventory':performance['inventory'],'directions':performance['directions'],
                   'scene_dpds':{k:dump_contract(v) for k,v in performance['scene_dpds'].items()},'dpds':{k:dump_contract(v) for k,v in performance['dpds'].items()},
                   'intents':{k:dump_contract(v) for k,v in intents.items()},'projections':{k:{channel:dump_contract(PerformanceProjection.model_validate(v)) for channel,v in pair.items()} for k,pair in performance['projections'].items()}}
+        reviewed['dramaturgy_reviews'] = performance['dramaturgy_reviews']
         self_review=performance.get('self_review',{})
         if (self_review.get('verdict')!='PASS' or self_review.get('reviewedFingerprint')!=sha256_canonical(reviewed)
                 or self_review.get('sourcePins')!=witness.pins or self_review.get('routeRef')!=dump_contract(packet.route_ref)):

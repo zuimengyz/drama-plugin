@@ -1,0 +1,216 @@
+{
+  "audit_date": "2026-09-26",
+  "local_head": "bb83843074ae685a5fdd53ed94b1a27bd863a014",
+  "classification": "NO_VALIDATED_EXTERNAL",
+  "execution": "READ_ONLY_SOURCE_FETCH; NO_INSTALL; NO_EXTERNAL_WORKFLOW_RUN",
+  "repositories": [
+    {
+      "repository": "gaojesse999/ai-scripts",
+      "commit": "73e8ebaa85199dc14cf73d8c46610dd87ac87a66",
+      "license": "UNRESOLVED_FOR_TARGET_SKILL",
+      "files": [
+        {
+          "path": "README.md",
+          "url": "https://github.com/gaojesse999/ai-scripts/blob/73e8ebaa85199dc14cf73d8c46610dd87ac87a66/README.md",
+          "sha256": "372a9a2f623208025eb6b597ec1a7bf32c98b745983c4f3f4a5b55223e4d2a8a",
+          "bytes": 6090
+        },
+        {
+          "path": "skills/screenwriter-skill/SKILL.md",
+          "url": "https://github.com/gaojesse999/ai-scripts/blob/73e8ebaa85199dc14cf73d8c46610dd87ac87a66/skills/screenwriter-skill/SKILL.md",
+          "sha256": "a8116b00f17a6e5905daefdda137a755e179d591bc2f7558dbdc880c7e7107d1",
+          "bytes": 7967
+        },
+        {
+          "path": "skills/screenwriter-skill/methodology.md",
+          "url": "https://github.com/gaojesse999/ai-scripts/blob/73e8ebaa85199dc14cf73d8c46610dd87ac87a66/skills/screenwriter-skill/methodology.md",
+          "sha256": "81db7cd43fd9cf63ea999c3fea75f6551c790f8b068388b639a3189da16d7e34",
+          "bytes": 6215
+        },
+        {
+          "path": "skills/screenwriter-skill/workflow.md",
+          "url": "https://github.com/gaojesse999/ai-scripts/blob/73e8ebaa85199dc14cf73d8c46610dd87ac87a66/skills/screenwriter-skill/workflow.md",
+          "sha256": "61a29a19d59ed38ae8730229119dbd8a20c31d8c63384273c15512e35677c472",
+          "bytes": 5025
+        },
+        {
+          "path": "skills/screenwriter-skill/timing-and-cutting.md",
+          "url": "https://github.com/gaojesse999/ai-scripts/blob/73e8ebaa85199dc14cf73d8c46610dd87ac87a66/skills/screenwriter-skill/timing-and-cutting.md",
+          "sha256": "a08f587d0dbdc557e9133d481e1a7610b82669b044e7120cfa5efb1b0838cfdb",
+          "bytes": 4190
+        },
+        {
+          "path": "skills/screenwriter-skill/templates/treatment.template.md",
+          "url": "https://github.com/gaojesse999/ai-scripts/blob/73e8ebaa85199dc14cf73d8c46610dd87ac87a66/skills/screenwriter-skill/templates/treatment.template.md",
+          "sha256": "e7c7748b7b3c470c1cde23f23a6bf5e97a74abd0de5844a1ce4f0dcf419ecfa1",
+          "bytes": 2136
+        }
+      ]
+    },
+    {
+      "repository": "62656456/ai-film-skills",
+      "commit": "f680c2ed0ba4d3b5692bd779ca8707e47b770d98",
+      "license": "Apache-2.0",
+      "files": [
+        {
+          "path": "LICENSE",
+          "url": "https://github.com/62656456/ai-film-skills/blob/f680c2ed0ba4d3b5692bd779ca8707e47b770d98/LICENSE",
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+          "bytes": 10174
+        },
+        {
+          "path": "skills/director-agent/SKILL.md",
+          "url": "https://github.com/62656456/ai-film-skills/blob/f680c2ed0ba4d3b5692bd779ca8707e47b770d98/skills/director-agent/SKILL.md",
+          "sha256": "6c0341cdbd6b90610d224ff130ea93852495224e5ef4387a54e1c2d887842102",
+          "bytes": 27697
+        },
+        {
+          "path": "skills/director-agent/references/screenplay-state-engine.md",
+          "url": "https://github.com/62656456/ai-film-skills/blob/f680c2ed0ba4d3b5692bd779ca8707e47b770d98/skills/director-agent/references/screenplay-state-engine.md",
+          "sha256": "8ffa836f096e866a7652c71d8019d667b355b76a42e47f1a54ed5a2e44225332",
+          "bytes": 14583
+        },
+        {
+          "path": "skills/director-agent/references/screenplay-writing-core.md",
+          "url": "https://github.com/62656456/ai-film-skills/blob/f680c2ed0ba4d3b5692bd779ca8707e47b770d98/skills/director-agent/references/screenplay-writing-core.md",
+          "sha256": "9f59bc2c30d02cbaa85affe6a75c3cc0c764dc4c0e8c9f37ebd66f983d4080d1",
+          "bytes": 11195
+        },
+        {
+          "path": "skills/director-agent/references/screenplay-cold-read-protocol.md",
+          "url": "https://github.com/62656456/ai-film-skills/blob/f680c2ed0ba4d3b5692bd779ca8707e47b770d98/skills/director-agent/references/screenplay-cold-read-protocol.md",
+          "sha256": "db7c432d04c935de73658df9381f92824dc9a489f08d7ce79d7981e3367d2f0c",
+          "bytes": 14488
+        },
+        {
+          "path": "skills/director-agent/references/director-thinking-spine.md",
+          "url": "https://github.com/62656456/ai-film-skills/blob/f680c2ed0ba4d3b5692bd779ca8707e47b770d98/skills/director-agent/references/director-thinking-spine.md",
+          "sha256": "c304b3e8eca5f836ad66d8a01db86c94649594d7787b12aaf83c858980a4981b",
+          "bytes": 2779
+        },
+        {
+          "path": "skills/director-agent/references/screenplay-ai-execution-compiler.md",
+          "url": "https://github.com/62656456/ai-film-skills/blob/f680c2ed0ba4d3b5692bd779ca8707e47b770d98/skills/director-agent/references/screenplay-ai-execution-compiler.md",
+          "sha256": "633059e1366c0e815732f42bc3069d951c4310ee7e2716f8cdad24a53a6e69a5",
+          "bytes": 9101
+        },
+        {
+          "path": "examples/director-agent-before-after.md",
+          "url": "https://github.com/62656456/ai-film-skills/blob/f680c2ed0ba4d3b5692bd779ca8707e47b770d98/examples/director-agent-before-after.md",
+          "sha256": "fc2df5bfaf90ad509c544e7c002d44727e64b7a198272d8bd0041cf668c22214",
+          "bytes": 6341
+        },
+        {
+          "path": "tests/test_function_conservation.py",
+          "url": "https://github.com/62656456/ai-film-skills/blob/f680c2ed0ba4d3b5692bd779ca8707e47b770d98/tests/test_function_conservation.py",
+          "sha256": "e94bcfbb532af2f74b93d42c2ce5334a88bb754fba14ea967b3ad9fb0b7f209f",
+          "bytes": 6058
+        },
+        {
+          "path": "tests/test_public_contracts.py",
+          "url": "https://github.com/62656456/ai-film-skills/blob/f680c2ed0ba4d3b5692bd779ca8707e47b770d98/tests/test_public_contracts.py",
+          "sha256": "fd93d3c58de5a5c684fc847140327eec246298e82d00c8c20cdf99a933a335f4",
+          "bytes": 9841
+        }
+      ]
+    },
+    {
+      "repository": "OSideMedia/higgsfield-ai-prompt-skill",
+      "commit": "c0b73ab946df6658cca513db78bdc3909a655bfd",
+      "license": "MIT",
+      "files": [
+        {
+          "path": "LICENSE",
+          "url": "https://github.com/OSideMedia/higgsfield-ai-prompt-skill/blob/c0b73ab946df6658cca513db78bdc3909a655bfd/LICENSE",
+          "sha256": "e6e9bc83882789dc73f010553e36a138289b4ad6e8cf01ef8a063bc99e0dd4e7",
+          "bytes": 1069
+        },
+        {
+          "path": "skills/higgsfield-acting/SKILL.md",
+          "url": "https://github.com/OSideMedia/higgsfield-ai-prompt-skill/blob/c0b73ab946df6658cca513db78bdc3909a655bfd/skills/higgsfield-acting/SKILL.md",
+          "sha256": "e76afce5b10f5488b8a2e8a9e2adcace699f39e4f79a02c37c9091021a37da17",
+          "bytes": 37255
+        },
+        {
+          "path": "evals/cases/cinema.json",
+          "url": "https://github.com/OSideMedia/higgsfield-ai-prompt-skill/blob/c0b73ab946df6658cca513db78bdc3909a655bfd/evals/cases/cinema.json",
+          "sha256": "cb30aba6499c353f9e45e344fa2f2750edd49b77dc81ff69eba1da4519a4eaf5",
+          "bytes": 8112
+        },
+        {
+          "path": "tests/test_lint_rules.py",
+          "url": "https://github.com/OSideMedia/higgsfield-ai-prompt-skill/blob/c0b73ab946df6658cca513db78bdc3909a655bfd/tests/test_lint_rules.py",
+          "sha256": "61ece3b799ef546741e341a5f06d7d159e505aa1be53752bb790484c18d7cb25",
+          "bytes": 8934
+        }
+      ]
+    },
+    {
+      "repository": "0xhughs/director-skills",
+      "commit": "35ca0a2b4cd55b0668aa9ea0f40273324b774bb4",
+      "license": "MIT",
+      "files": [
+        {
+          "path": "LICENSE",
+          "url": "https://github.com/0xhughs/director-skills/blob/35ca0a2b4cd55b0668aa9ea0f40273324b774bb4/LICENSE",
+          "sha256": "5c609a7d9174ac54756c1cf35d486920618adb9a0a9ee8688121ea9a0d80ee70",
+          "bytes": 1064
+        },
+        {
+          "path": "skills/screenplay-and-scene-writing/SKILL.md",
+          "url": "https://github.com/0xhughs/director-skills/blob/35ca0a2b4cd55b0668aa9ea0f40273324b774bb4/skills/screenplay-and-scene-writing/SKILL.md",
+          "sha256": "0004c3cd66ba59c305bd8bc7fffb44c1f38174e8dd2fdfc25e0118049dfd96a6",
+          "bytes": 3378
+        },
+        {
+          "path": "skills/screenplay-and-scene-writing/references/scene_construction.md",
+          "url": "https://github.com/0xhughs/director-skills/blob/35ca0a2b4cd55b0668aa9ea0f40273324b774bb4/skills/screenplay-and-scene-writing/references/scene_construction.md",
+          "sha256": "28a7562bdb9cd4a0d208c625868ec0515bced0aeee4182029a2772c2c1fd1992",
+          "bytes": 554
+        },
+        {
+          "path": "skills/screenplay-and-scene-writing/references/dialogue_and_subtext.md",
+          "url": "https://github.com/0xhughs/director-skills/blob/35ca0a2b4cd55b0668aa9ea0f40273324b774bb4/skills/screenplay-and-scene-writing/references/dialogue_and_subtext.md",
+          "sha256": "a3af375eb9a96a8b728de03447111c50839d3cec3349c407fa6dc3db42e2ca0b",
+          "bytes": 467
+        },
+        {
+          "path": "skills/screenplay-and-scene-writing/tests/screenplay_scene_tests.md",
+          "url": "https://github.com/0xhughs/director-skills/blob/35ca0a2b4cd55b0668aa9ea0f40273324b774bb4/skills/screenplay-and-scene-writing/tests/screenplay_scene_tests.md",
+          "sha256": "dc7b0407ebcfbdaa028eae0326cb33b2857d135107dec9d88ce8f0bb49946db1",
+          "bytes": 251
+        },
+        {
+          "path": "skills/short-film-development/SKILL.md",
+          "url": "https://github.com/0xhughs/director-skills/blob/35ca0a2b4cd55b0668aa9ea0f40273324b774bb4/skills/short-film-development/SKILL.md",
+          "sha256": "7092c4c43c286ba125822d7d912fa538f8651e0cd3fb279d91923d9d2867c661",
+          "bytes": 3804
+        },
+        {
+          "path": "skills/short-film-development/references/story_development_workflow.md",
+          "url": "https://github.com/0xhughs/director-skills/blob/35ca0a2b4cd55b0668aa9ea0f40273324b774bb4/skills/short-film-development/references/story_development_workflow.md",
+          "sha256": "64a44a44d053eb62b1f4a76e1905ff5f704c4d033e04f4b74c69b06e408a263e",
+          "bytes": 1022
+        },
+        {
+          "path": "skills/short-film-development/examples/logline_to_outline.md",
+          "url": "https://github.com/0xhughs/director-skills/blob/35ca0a2b4cd55b0668aa9ea0f40273324b774bb4/skills/short-film-development/examples/logline_to_outline.md",
+          "sha256": "b35b0660c5a16e5007dbd245e1b98a171233bdc95dad91dbf9690b15fa1b7028",
+          "bytes": 614
+        },
+        {
+          "path": "skills/model-adaptation/SKILL.md",
+          "url": "https://github.com/0xhughs/director-skills/blob/35ca0a2b4cd55b0668aa9ea0f40273324b774bb4/skills/model-adaptation/SKILL.md",
+          "sha256": "98fba9bef326e49262797024137e34d7365cf44bbb47ff779035772945c2a228",
+          "bytes": 4139
+        },
+        {
+          "path": "skills/model-adaptation/tests/prompt_translation_tests.md",
+          "url": "https://github.com/0xhughs/director-skills/blob/35ca0a2b4cd55b0668aa9ea0f40273324b774bb4/skills/model-adaptation/tests/prompt_translation_tests.md",
+          "sha256": "02c706fd456674927b10ef3ee72aa7914fc493ef37cccf5a0315dce0e482335a",
+          "bytes": 322
+        }
+      ]
+    }
+  ]
+}

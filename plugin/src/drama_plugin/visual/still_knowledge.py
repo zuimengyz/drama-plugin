@@ -109,7 +109,8 @@ def fact_paths(value: Any, prefix: str = '') -> dict[str, dict[str, Any]]:
     return {}
 
 
-def validate_imaging(style: GlobalVisualStyle, originals: Mapping[str, Any], current: Mapping[str, str]) -> None:
+def validate_imaging(style: GlobalVisualStyle, originals: Mapping[str, Any], current: Mapping[str, str], *,
+                     approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> None:
     if style.imaging_character is None:
         return
     medium = resolve(style.runtime_ref, originals, current)
@@ -120,7 +121,7 @@ def validate_imaging(style: GlobalVisualStyle, originals: Mapping[str, Any], cur
         if (bible.work_ref != style.work_id or bible.status != 'APPROVED'
                 or bible.created_by_capability not in {'director', 'cinematography', 'color-grading'}):
             raise ValueError('IMAGING_CHARACTER_APPROVED_BASIS_REQUIRED')
-        validate_bible(bible, originals, current)
+        validate_bible(bible, originals, current, approved_interpretation_refs=approved_interpretation_refs)
 
 
 # Exact source fields, no caller-selected owner -> arbitrary destination permission.

@@ -254,7 +254,31 @@ def review_scene_dramaturgy(scene: Mapping[str, Any], dpds: Mapping[str, DPDSnap
                 flag('STRATEGY_CHANGE', action.ref, 'RESPONSE_TO_NEXT_TACTIC_REQUIRED', (action.ref, response.ref), 'dramatic-performance-direction')
     for c in facet.carriers:
         if c.important and c.role == 'ACTION' and c.target and not any(e.action_ref == c.ref for e in facet.interactions):
-            flag('ACTION_RESPONSE_CHAIN', c.ref, 'IMPORTANT_ACTION_RESPONSE_MISSING', (c.ref,))
+            # Existing reflexive target labels are identities, not inferred from
+            # speech. A real character using such a key takes precedence.
+            self_targets = {c.actor, *({'自己', 'SELF'} - set(scene['content'].get('characters', [])))}
+            if c.actor is not None and c.target in self_targets:
+                continuations = []
+                for beat in beats.values():
+                    witness = beat.playability
+                    if (beat.actor != c.actor or not witness or c.ref not in witness.action_carrier_refs
+                            or beat.direction.interaction_target != c.target
+                            or not beat.direction.objective or not beat.direction.tactic):
+                        continue
+                    continuation = carriers[witness.reaction_carrier_ref or '']
+                    if (order[continuation.ref] > order[c.ref] and continuation.actor == c.actor
+                            and witness.reaction.actor == c.actor and continuation.target in self_targets
+                            and continuation.cause_ref in (None, c.ref)
+                            and continuation.role in ('AFTERMATH', 'REACTION', 'SILENCE')
+                            and continuation.silence_function != 'ENVIRONMENTAL'
+                            and any(f.axis == 'ACTION_RESPONSE_CHAIN' and f.status == 'PASS'
+                                    and f.scope in ('SCENE', c.ref)
+                                    and {c.ref, continuation.ref} <= set(f.evidence_refs) for f in review.findings)):
+                        continuations.append(continuation.ref)
+                if not continuations:
+                    flag('ACTION_RESPONSE_CHAIN', c.ref, 'SELF_DIRECTED_CONTINUATION_REQUIRED', (c.ref,), 'dramatic-performance-direction')
+            else:
+                flag('ACTION_RESPONSE_CHAIN', c.ref, 'IMPORTANT_ACTION_RESPONSE_MISSING', (c.ref,))
         if c.important and c.role == 'SILENCE' and c.silence_function != 'ENVIRONMENTAL':
             if not any(e.response_ref == c.ref for e in facet.interactions) and not any(x.cause_ref == c.ref for x in facet.carriers):
                 flag('SILENCE_FUNCTION', c.ref, 'SILENCE_CAUSAL_LINK_REQUIRED', (c.ref,))

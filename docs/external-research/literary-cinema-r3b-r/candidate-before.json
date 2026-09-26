@@ -1,0 +1,1622 @@
+{
+  "scope": "CANDIDATE_ONLY / NOT_ADOPTED",
+  "scenes": {
+    "S01": {
+      "source": {
+        "status": "PASS"
+      },
+      "dramaturgy": {
+        "status": "PASS",
+        "value": {
+          "sourceHash": "cb034954de8621d7e41805b9174f38e32ada8b9e8f256d12f3755b8f334aa7d7",
+          "subjectHash": "7cee54e403861e269dd54d7c31ce5a769359d6a7e2f1e587791705870adeb128",
+          "reviewHash": "33072777593f8de446f60e0015dcae528f6465267bd809c8c69a671e215b6ce6",
+          "status": "PASS",
+          "findings": [
+            {
+              "axis": "ACTION_RESPONSE_CHAIN",
+              "scope": "SCENE",
+              "status": "PASS",
+              "finding": "SOURCE_BOUND_SELF_AUDIT",
+              "reason": "反问和男人未答离席均见正文；不虚构挽留。",
+              "evidenceRefs": [
+                "spoken:S01-L1",
+                "spoken:S01-L2",
+                "action:65:72",
+                "action:73:78",
+                "spoken:S01-L3",
+                "action:123:133",
+                "action:133:138",
+                "spoken:S01-L4",
+                "action:147:154",
+                "spoken:S01-L5",
+                "action:155:168",
+                "action:168:175",
+                "action:176:193",
+                "action:272:280",
+                "action:293:299",
+                "action:300:307"
+              ],
+              "repairOwner": "scene-development"
+            },
+            {
+              "axis": "STRATEGY_CHANGE",
+              "scope": "SCENE",
+              "status": "PASS",
+              "finding": "SOURCE_BOUND_SELF_AUDIT",
+              "reason": "男人由判词转为不答离开；朋友不需更强争吵。",
+              "evidenceRefs": [
+                "spoken:S01-L1",
+                "spoken:S01-L2",
+                "action:65:72",
+                "action:73:78",
+                "spoken:S01-L3",
+                "action:123:133",
+                "action:133:138",
+                "spoken:S01-L4",
+                "action:147:154",
+                "spoken:S01-L5",
+                "action:155:168",
+                "action:168:175",
+                "action:176:193",
+                "action:272:280",
+                "action:293:299",
+                "action:300:307"
+              ],
+              "repairOwner": "scene-development"
+            },
+            {
+              "axis": "INFORMATION_RELEASE",
+              "scope": "SCENE",
+              "status": "PASS",
+              "finding": "SOURCE_BOUND_SELF_AUDIT",
+              "reason": "不揭枪与自杀计划；不把争论内容扩写成观众教程。",
+              "evidenceRefs": [
+                "spoken:S01-L1",
+                "spoken:S01-L2",
+                "action:65:72",
+                "action:73:78",
+                "spoken:S01-L3",
+                "action:123:133",
+                "action:133:138",
+                "spoken:S01-L4",
+                "action:147:154",
+                "spoken:S01-L5",
+                "action:155:168",
+                "action:168:175",
+                "action:176:193",
+                "action:272:280",
+                "action:293:299",
+                "action:300:307"
+              ],
+              "repairOwner": "scene-development"
+            },
+            {
+              "axis": "LISTENER_CAUSALITY",
+              "scope": "SCENE",
+              "status": "PASS",
+              "finding": "SOURCE_BOUND_SELF_AUDIT",
+              "reason": "工程师等、朋友等和男人不答都在正文；非 generic audience。",
+              "evidenceRefs": [
+                "spoken:S01-L1",
+                "spoken:S01-L2",
+                "action:65:72",
+                "action:73:78",
+                "spoken:S01-L3",
+                "action:123:133",
+                "action:133:138",
+                "spoken:S01-L4",
+                "action:147:154",
+                "spoken:S01-L5",
+                "action:155:168",
+                "action:168:175",
+                "action:176:193",
+                "action:272:280",
+                "action:293:299",
+                "action:300:307"
+              ],
+              "repairOwner": "scene-development"
+            },
+            {
+              "axis": "SILENCE_FUNCTION",
+              "scope": "SCENE",
+              "status": "PASS",
+              "finding": "SOURCE_BOUND_SELF_AUDIT",
+              "reason": "楼梯停听和无人叫住导致继续离开，不补挽留台词。",
+              "evidenceRefs": [
+                "spoken:S01-L1",
+                "spoken:S01-L2",
+                "action:65:72",
+                "action:73:78",
+                "spoken:S01-L3",
+                "action:123:133",
+                "action:133:138",
+                "spoken:S01-L4",
+                "action:147:154",
+                "spoken:S01-L5",
+                "action:155:168",
+                "action:168:175",
+                "action:176:193",
+                "action:272:280",
+                "action:293:299",
+                "action:300:307"
+              ],
+              "repairOwner": "scene-development"
+            },
+            {
+              "axis": "ENTRY_EXIT_DELTA",
+              "scope": "SCENE",
+              "status": "PASS",
+              "finding": "SOURCE_BOUND_SELF_AUDIT",
+              "reason": "从桌边参与机会走向楼梯独自离开",
+              "evidenceRefs": [
+                "spoken:S01-L1",
+                "spoken:S01-L2",
+                "action:65:72",
+                "action:73:78",
+                "spoken:S01-L3",
+                "action:123:133",
+                "action:133:138",
+                "spoken:S01-L4",
+                "action:147:154",
+                "spoken:S01-L5",
+                "action:155:168",
+                "action:168:175",
+                "action:176:193",
+                "action:272:280",
+                "action:293:299",
+                "action:300:307"
+              ],
+              "repairOwner": "scene-development"
+            }
+          ],
+          "informationCoverage": [],
+          "causalCoverage": [
+            {
+              "actionRef": "spoken:S01-L1",
+              "actualResponseRef": "spoken:S01-L2",
+              "expectedResponse": "朋友先承认纸上的一点",
+              "interpretation": "对方反问，争论并未获得共同前提",
+              "previousTactic": "压住具体一点让对方先表态",
+              "transitionReason": null,
+              "nextActionRef": null,
+              "nextTactic": null,
+              "dpdRef": "S01:S01-L1",
+              "listenerDpdRefs": [
+                "S01:S01-L2"
+              ]
+            },
+            {
+              "actionRef": "spoken:S01-L3",
+              "actualResponseRef": "spoken:S01-L4",
+              "expectedResponse": "男人对纸上问题作出表态",
+              "interpretation": "男人否定了讨论本身，而非支持任何一边",
+              "previousTactic": "把纸和问题交给他",
+              "transitionReason": null,
+              "nextActionRef": null,
+              "nextTactic": null,
+              "dpdRef": "S01:S01-L3",
+              "listenerDpdRefs": [
+                "S01:S01-L4"
+              ]
+            },
+            {
+              "actionRef": "spoken:S01-L5",
+              "actualResponseRef": "action:155:168",
+              "expectedResponse": "男人说出自己在乎的事",
+              "interpretation": "没有得到答案；男人用离开结束参与",
+              "previousTactic": "把问题还给他并等一下",
+              "transitionReason": null,
+              "nextActionRef": null,
+              "nextTactic": null,
+              "dpdRef": "S01:S01-L5",
+              "listenerDpdRefs": [
+                "S01:refusal"
+              ]
+            }
+          ],
+          "productionAuthorized": false,
+          "fingerprint": "6f966687844bbb77ed4d2932ce24906d2bbe7a5a360b9b6a96d27cb902658ce6"
+        }
+      },
+      "turns": {
+        "S01-L1": {
+          "text": "你得先承认这一点。",
+          "speaker": "工程师",
+          "target": "朋友",
+          "exactTurn": {
+            "status": "PASS"
+          },
+          "directionOriginalPinsReplay": {
+            "status": "PASS",
+            "value": null
+          },
+          "directionCurrentReceipt": {
+            "status": "PASS",
+            "value": null
+          },
+          "directorIntentCurrentReceipt": {
+            "status": "PASS",
+            "value": "director-performance-intent-v1"
+          }
+        },
+        "S01-L2": {
+          "text": "我为什么得先承认？",
+          "speaker": "朋友",
+          "target": "工程师",
+          "exactTurn": {
+            "status": "PASS"
+          },
+          "directionOriginalPinsReplay": {
+            "status": "PASS",
+            "value": null
+          },
+          "directionCurrentReceipt": {
+            "status": "PASS",
+            "value": null
+          },
+          "directorIntentCurrentReceipt": {
+            "status": "PASS",
+            "value": "director-performance-intent-v1"
+          }
+        },
+        "S01-L3": {
+          "text": "你呢？你听了半天。",
+          "speaker": "工程师",
+          "target": "男人",
+          "exactTurn": {
+            "status": "PASS"
+          },
+          "directionOriginalPinsReplay": {
+            "status": "PASS",
+            "value": null
+          },
+          "directionCurrentReceipt": {
+            "status": "PASS",
+            "value": null
+          },
+          "directorIntentCurrentReceipt": {
+            "status": "PASS",
+            "value": "director-performance-intent-v1"
+          }
+        },
+        "S01-L4": {
+          "text": "你们其实都不在乎。",
+          "speaker": "男人",
+          "target": "朋友",
+          "exactTurn": {
+            "status": "PASS"
+          },
+          "directionOriginalPinsReplay": {
+            "status": "PASS",
+            "value": null
+          },
+          "directionCurrentReceipt": {
+            "status": "PASS",
+            "value": null
+          },
+          "directorIntentCurrentReceipt": {
+            "status": "PASS",
+            "value": "director-performance-intent-v1"
+          }
+        },
+        "S01-L5": {
+          "text": "你倒在乎什么？",
+          "speaker": "朋友",
+          "target": "男人",
+          "exactTurn": {
+            "status": "PASS"
+          },
+          "directionOriginalPinsReplay": {
+            "status": "PASS",
+            "value": null
+          },
+          "directionCurrentReceipt": {
+            "status": "PASS",
+            "value": null
+          },
+          "directorIntentCurrentReceipt": {
+            "status": "PASS",
+            "value": "director-performance-intent-v1"
+          }
+        }
+      },
+      "mapper": {
+        "status": "PASS",
+        "value": {
+          "readyForDirection": true
+        }
+      },
+      "listenerSilenceLocal": {
+        "LISTENER_CAUSALITY": [
+          {
+            "axis": "LISTENER_CAUSALITY",
+            "scope": "SCENE",
+            "status": "PASS",
+            "finding": "SOURCE_BOUND_SELF_AUDIT",
+            "reason": "工程师等、朋友等和男人不答都在正文；非 generic audience。",
+            "evidenceRefs": [
+              "spoken:S01-L1",
+              "spoken:S01-L2",
+              "action:65:72",
+              "action:73:78",
+              "spoken:S01-L3",
+              "action:123:133",
+              "action:133:138",
+              "spoken:S01-L4",
+              "action:147:154",
+              "spoken:S01-L5",
+              "action:155:168",
+              "action:168:175",
+              "action:176:193",
+              "action:272:280",
+              "action:293:299",
+              "action:300:307"
+            ],
+            "repairOwner": "scene-development"
+          }
+        ],
+        "SILENCE_FUNCTION": [
+          {
+            "axis": "SILENCE_FUNCTION",
+            "scope": "SCENE",
+            "status": "PASS",
+            "finding": "SOURCE_BOUND_SELF_AUDIT",
+            "reason": "楼梯停听和无人叫住导致继续离开，不补挽留台词。",
+            "evidenceRefs": [
+              "spoken:S01-L1",
+              "spoken:S01-L2",
+              "action:65:72",
+              "action:73:78",
+              "spoken:S01-L3",
+              "action:123:133",
+              "action:133:138",
+              "spoken:S01-L4",
+              "action:147:154",
+              "spoken:S01-L5",
+              "action:155:168",
+              "action:168:175",
+              "action:176:193",
+              "action:272:280",
+              "action:293:299",
+              "action:300:307"
+            ],
+            "repairOwner": "scene-development"
+          }
+        ]
+      },
+      "receiptBinding": {
+        "originalDirectorPin": "6f966687844bbb77ed4d2932ce24906d2bbe7a5a360b9b6a96d27cb902658ce6",
+        "recomputedReceipt": "6f966687844bbb77ed4d2932ce24906d2bbe7a5a360b9b6a96d27cb902658ce6"
+      }
+    },
+    "S02": {
+      "source": {
+        "status": "PASS"
+      },
+      "dramaturgy": {
+        "status": "PASS",
+        "value": {
+          "sourceHash": "85001711ff3c6bce702eb96059608bf418814e3e9f0745152f4fc659c6effff6",
+          "subjectHash": "52ceaeba264f81db782294f9c2f6e2e6e07a741b6eed7d67cf100202cad59f03",
+          "reviewHash": "d4ae1ed12b0befeee527616b38af2b7d69b963c5c8ae2f99e67a249152feac1f",
+          "status": "PASS",
+          "findings": [
+            {
+              "axis": "ACTION_RESPONSE_CHAIN",
+              "scope": "SCENE",
+              "status": "PASS",
+              "finding": "SOURCE_BOUND_SELF_AUDIT",
+              "reason": "停脚不跟随、问路后先行、抽袖后再抓、跺脚后退开均可逐项定位。",
+              "evidenceRefs": [
+                "spoken:S02-L1a",
+                "action:119:147",
+                "action:148:157",
+                "action:157:163",
+                "action:163:176",
+                "spoken:S02-L1b",
+                "action:177:196",
+                "spoken:S02-L5-new",
+                "action:197:206",
+                "spoken:S02-L6-new",
+                "action:207:218",
+                "action:218:231",
+                "action:232:246",
+                "action:246:250",
+                "action:250:258",
+                "action:259:277",
+                "spoken:S02-L3",
+                "action:278:287",
+                "action:287:298",
+                "spoken:S02-L2",
+                "action:299:305",
+                "action:305:323",
+                "spoken:S02-L4",
+                "action:324:332",
+                "action:332:351",
+                "action:362:367",
+                "action:368:379",
+                "spoken:S02-L7-new",
+                "action:380:400",
+                "action:401:419"
+              ],
+              "repairOwner": "scene-development"
+            },
+            {
+              "axis": "STRATEGY_CHANGE",
+              "scope": "SCENE",
+              "status": "PASS",
+              "finding": "SOURCE_BOUND_SELF_AUDIT",
+              "reason": "拉不动才面对面说所求；方向被问才先行；推辞被抵抗才威慑。",
+              "evidenceRefs": [
+                "spoken:S02-L1a",
+                "action:119:147",
+                "action:148:157",
+                "action:157:163",
+                "action:163:176",
+                "spoken:S02-L1b",
+                "action:177:196",
+                "spoken:S02-L5-new",
+                "action:197:206",
+                "spoken:S02-L6-new",
+                "action:207:218",
+                "action:218:231",
+                "action:232:246",
+                "action:246:250",
+                "action:250:258",
+                "action:259:277",
+                "spoken:S02-L3",
+                "action:278:287",
+                "action:287:298",
+                "spoken:S02-L2",
+                "action:299:305",
+                "action:305:323",
+                "spoken:S02-L4",
+                "action:324:332",
+                "action:332:351",
+                "action:362:367",
+                "action:368:379",
+                "spoken:S02-L7-new",
+                "action:380:400",
+                "action:401:419"
+              ],
+              "repairOwner": "scene-development"
+            },
+            {
+              "axis": "INFORMATION_RELEASE",
+              "scope": "SCENE",
+              "status": "PASS",
+              "finding": "SOURCE_BOUND_SELF_AUDIT",
+              "reason": "求助在停步未参与后明确；方向回答引出误判，母亲实际结局保持未知。",
+              "evidenceRefs": [
+                "spoken:S02-L1a",
+                "action:119:147",
+                "action:148:157",
+                "action:157:163",
+                "action:163:176",
+                "spoken:S02-L1b",
+                "action:177:196",
+                "spoken:S02-L5-new",
+                "action:197:206",
+                "spoken:S02-L6-new",
+                "action:207:218",
+                "action:218:231",
+                "action:232:246",
+                "action:246:250",
+                "action:250:258",
+                "action:259:277",
+                "spoken:S02-L3",
+                "action:278:287",
+                "action:287:298",
+                "spoken:S02-L2",
+                "action:299:305",
+                "action:305:323",
+                "spoken:S02-L4",
+                "action:324:332",
+                "action:332:351",
+                "action:362:367",
+                "action:368:379",
+                "spoken:S02-L7-new",
+                "action:380:400",
+                "action:401:419"
+              ],
+              "repairOwner": "scene-development"
+            },
+            {
+              "axis": "LISTENER_CAUSALITY",
+              "scope": "SCENE",
+              "status": "PASS",
+              "finding": "SOURCE_BOUND_SELF_AUDIT",
+              "reason": "男人仅停步与女孩把问路当机会分开；新人回应故意不在当前视点中。",
+              "evidenceRefs": [
+                "spoken:S02-L1a",
+                "action:119:147",
+                "action:148:157",
+                "action:157:163",
+                "action:163:176",
+                "spoken:S02-L1b",
+                "action:177:196",
+                "spoken:S02-L5-new",
+                "action:197:206",
+                "spoken:S02-L6-new",
+                "action:207:218",
+                "action:218:231",
+                "action:232:246",
+                "action:246:250",
+                "action:250:258",
+                "action:259:277",
+                "spoken:S02-L3",
+                "action:278:287",
+                "action:287:298",
+                "spoken:S02-L2",
+                "action:299:305",
+                "action:305:323",
+                "spoken:S02-L4",
+                "action:324:332",
+                "action:332:351",
+                "action:362:367",
+                "action:368:379",
+                "spoken:S02-L7-new",
+                "action:380:400",
+                "action:401:419"
+              ],
+              "repairOwner": "scene-development"
+            },
+            {
+              "axis": "SILENCE_FUNCTION",
+              "scope": "SCENE",
+              "status": "PASS",
+              "finding": "SOURCE_BOUND_SELF_AUDIT",
+              "reason": "脚未迈步、收手具有可见差别；不用全场抽象冷漠替代。",
+              "evidenceRefs": [
+                "spoken:S02-L1a",
+                "action:119:147",
+                "action:148:157",
+                "action:157:163",
+                "action:163:176",
+                "spoken:S02-L1b",
+                "action:177:196",
+                "spoken:S02-L5-new",
+                "action:197:206",
+                "spoken:S02-L6-new",
+                "action:207:218",
+                "action:218:231",
+                "action:232:246",
+                "action:246:250",
+                "action:250:258",
+                "action:259:277",
+                "spoken:S02-L3",
+                "action:278:287",
+                "action:287:298",
+                "spoken:S02-L2",
+                "action:299:305",
+                "action:305:323",
+                "spoken:S02-L4",
+                "action:324:332",
+                "action:332:351",
+                "action:362:367",
+                "action:368:379",
+                "spoken:S02-L7-new",
+                "action:380:400",
+                "action:401:419"
+              ],
+              "repairOwner": "scene-development"
+            },
+            {
+              "axis": "ENTRY_EXIT_DELTA",
+              "scope": "SCENE",
+              "status": "PASS",
+              "finding": "SOURCE_BOUND_SELF_AUDIT",
+              "reason": "星后的封闭行走变成拒绝后仍留痕迹",
+              "evidenceRefs": [
+                "spoken:S02-L1a",
+                "action:119:147",
+                "action:148:157",
+                "action:157:163",
+                "action:163:176",
+                "spoken:S02-L1b",
+                "action:177:196",
+                "spoken:S02-L5-new",
+                "action:197:206",
+                "spoken:S02-L6-new",
+                "action:207:218",
+                "action:218:231",
+                "action:232:246",
+                "action:246:250",
+                "action:250:258",
+                "action:259:277",
+                "spoken:S02-L3",
+                "action:278:287",
+                "action:287:298",
+                "spoken:S02-L2",
+                "action:299:305",
+                "action:305:323",
+                "spoken:S02-L4",
+                "action:324:332",
+                "action:332:351",
+                "action:362:367",
+                "action:368:379",
+                "spoken:S02-L7-new",
+                "action:380:400",
+                "action:401:419"
+              ],
+              "repairOwner": "scene-development"
+            },
+            {
+              "axis": "INFORMATION_RELEASE",
+              "scope": "mother-help",
+              "status": "PASS",
+              "finding": "SOURCE_BOUND_INFORMATION_REVIEW",
+              "reason": "求助在停步未参与后明确；方向回答引出误判，母亲实际结局保持未知。",
+              "evidenceRefs": [
+                "spoken:S02-L1b"
+              ],
+              "repairOwner": "scene-development"
+            },
+            {
+              "axis": "INFORMATION_RELEASE",
+              "scope": "direction-urgency",
+              "status": "PASS",
+              "finding": "SOURCE_BOUND_INFORMATION_REVIEW",
+              "reason": "求助在停步未参与后明确；方向回答引出误判，母亲实际结局保持未知。",
+              "evidenceRefs": [
+                "spoken:S02-L6-new"
+              ],
+              "repairOwner": "scene-development"
+            }
+          ],
+          "informationCoverage": [
+            {
+              "informationRef": "mother-help",
+              "firstRelease": "spoken:S02-L1b",
+              "firstReleasePosition": 5,
+              "firstReleaseParts": [
+                "mother",
+                "help",
+                "follow"
+              ],
+              "totalParts": 3,
+              "releases": [
+                {
+                  "carrierRef": "spoken:S02-L1b",
+                  "parts": [
+                    "mother",
+                    "help",
+                    "follow"
+                  ],
+                  "audience": true,
+                  "characters": [
+                    "男人"
+                  ],
+                  "afterResponseRef": "action:157:163"
+                }
+              ],
+              "directStatementReason": null
+            },
+            {
+              "informationRef": "direction-urgency",
+              "firstRelease": "spoken:S02-L6-new",
+              "firstReleasePosition": 9,
+              "firstReleaseParts": [
+                "direction",
+                "urgent"
+              ],
+              "totalParts": 2,
+              "releases": [
+                {
+                  "carrierRef": "spoken:S02-L6-new",
+                  "parts": [
+                    "direction",
+                    "urgent"
+                  ],
+                  "audience": true,
+                  "characters": [
+                    "男人"
+                  ],
+                  "afterResponseRef": "spoken:S02-L5-new"
+                }
+              ],
+              "directStatementReason": null
+            }
+          ],
+          "causalCoverage": [
+            {
+              "actionRef": "spoken:S02-L1a",
+              "actualResponseRef": "action:119:147",
+              "expectedResponse": "男人停步并注意她",
+              "interpretation": "脚停了，但他只看被拉住的地方",
+              "previousTactic": "抓着手肘叫停",
+              "transitionReason": null,
+              "nextActionRef": null,
+              "nextTactic": null,
+              "dpdRef": "S02:S02-L1a",
+              "listenerDpdRefs": [
+                "S02:stop-listener"
+              ]
+            },
+            {
+              "actionRef": "action:148:157",
+              "actualResponseRef": "action:157:163",
+              "expectedResponse": "男人随拉动走向街口",
+              "interpretation": "身体停止没有变成跟随",
+              "previousTactic": "抓着手肘叫停",
+              "transitionReason": "拉不动，改为来到面前说明所求",
+              "nextActionRef": "spoken:S02-L1b",
+              "nextTactic": "移到面前把求助说具体",
+              "dpdRef": "S02:S02-L1a",
+              "listenerDpdRefs": [
+                "S02:resist-listener"
+              ]
+            },
+            {
+              "actionRef": "spoken:S02-L1b",
+              "actualResponseRef": "spoken:S02-L5-new",
+              "expectedResponse": "男人跟她去帮母亲",
+              "interpretation": "他问去处，可理解为参与机会，但不是已答应",
+              "previousTactic": "移到面前把求助说具体",
+              "transitionReason": "对方问了方向，女孩从解释求助转为指路先行",
+              "nextActionRef": "spoken:S02-L6-new",
+              "nextTactic": "指路并先行",
+              "dpdRef": "S02:S02-L1b",
+              "listenerDpdRefs": [
+                "S02:S02-L5-new"
+              ]
+            },
+            {
+              "actionRef": "spoken:S02-L5-new",
+              "actualResponseRef": "action:197:206",
+              "expectedResponse": "女孩指出去处",
+              "interpretation": "方向已经给出，男人没有立即跟随",
+              "previousTactic": "直接问方向",
+              "transitionReason": null,
+              "nextActionRef": null,
+              "nextTactic": null,
+              "dpdRef": "S02:S02-L5-new",
+              "listenerDpdRefs": [
+                "S02:S02-L6-new"
+              ]
+            },
+            {
+              "actionRef": "spoken:S02-L6-new",
+              "actualResponseRef": "action:250:258",
+              "expectedResponse": "男人随她迈步",
+              "interpretation": "袖子绷紧，他的脚未动，先行没有带来同行",
+              "previousTactic": "指路并先行",
+              "transitionReason": null,
+              "nextActionRef": null,
+              "nextTactic": null,
+              "dpdRef": "S02:S02-L6-new",
+              "listenerDpdRefs": [
+                "S02:feet-listener"
+              ]
+            },
+            {
+              "actionRef": "spoken:S02-L3",
+              "actualResponseRef": "action:287:298",
+              "expectedResponse": "女孩放开并转找警察",
+              "interpretation": "她反而再次抓住他",
+              "previousTactic": "提供另一个去向后抽袖",
+              "transitionReason": "普通推辞和抽身没有终止接触，改以跺脚斥退",
+              "nextActionRef": "spoken:S02-L4",
+              "nextTactic": "跺脚斥退",
+              "dpdRef": "S02:S02-L3",
+              "listenerDpdRefs": [
+                "S02:S02-L2"
+              ]
+            },
+            {
+              "actionRef": "spoken:S02-L2",
+              "actualResponseRef": "action:305:323",
+              "expectedResponse": "男人接受再次请求并跟随",
+              "interpretation": "请求遇到身体威慑而非帮助",
+              "previousTactic": "再抓住并直接请求跟随",
+              "transitionReason": null,
+              "nextActionRef": null,
+              "nextTactic": null,
+              "dpdRef": "S02:S02-L2",
+              "listenerDpdRefs": [
+                "S02:S02-L4"
+              ]
+            },
+            {
+              "actionRef": "spoken:S02-L4",
+              "actualResponseRef": "action:324:332",
+              "expectedResponse": "女孩松手退开",
+              "interpretation": "接触确实断开，但她继续找别人",
+              "previousTactic": "跺脚斥退",
+              "transitionReason": null,
+              "nextActionRef": null,
+              "nextTactic": null,
+              "dpdRef": "S02:S02-L4",
+              "listenerDpdRefs": [
+                "S02:recoil-listener"
+              ]
+            }
+          ],
+          "productionAuthorized": false,
+          "fingerprint": "2efc3e59707ccdaae58835561b5f8b15b70914daea2188814e8312f28caad7f5"
+        }
+      },
+      "turns": {
+        "S02-L1a": {
+          "text": "先生，等等！",
+          "speaker": "女孩",
+          "target": "男人",
+          "exactTurn": {
+            "status": "PASS"
+          },
+          "directionOriginalPinsReplay": {
+            "status": "PASS",
+            "value": null
+          },
+          "directionCurrentReceipt": {
+            "status": "PASS",
+            "value": null
+          },
+          "directorIntentCurrentReceipt": {
+            "status": "PASS",
+            "value": "director-performance-intent-v1"
+          }
+        },
+        "S02-L1b": {
+          "text": "我妈妈出事了。您跟我去看看。",
+          "speaker": "女孩",
+          "target": "男人",
+          "exactTurn": {
+            "status": "PASS"
+          },
+          "directionOriginalPinsReplay": {
+            "status": "PASS",
+            "value": null
+          },
+          "directionCurrentReceipt": {
+            "status": "PASS",
+            "value": null
+          },
+          "directorIntentCurrentReceipt": {
+            "status": "PASS",
+            "value": "director-performance-intent-v1"
+          }
+        },
+        "S02-L5-new": {
+          "text": "在哪儿？",
+          "speaker": "男人",
+          "target": "女孩",
+          "exactTurn": {
+            "status": "PASS"
+          },
+          "directionOriginalPinsReplay": {
+            "status": "PASS",
+            "value": null
+          },
+          "directionCurrentReceipt": {
+            "status": "PASS",
+            "value": null
+          },
+          "directorIntentCurrentReceipt": {
+            "status": "PASS",
+            "value": "director-performance-intent-v1"
+          }
+        },
+        "S02-L6-new": {
+          "text": "那边。快！",
+          "speaker": "女孩",
+          "target": "男人",
+          "exactTurn": {
+            "status": "PASS"
+          },
+          "directionOriginalPinsReplay": {
+            "status": "PASS",
+            "value": null
+          },
+          "directionCurrentReceipt": {
+            "status": "PASS",
+            "value": null
+          },
+          "directorIntentCurrentReceipt": {
+            "status": "PASS",
+            "value": "director-performance-intent-v1"
+          }
+        },
+        "S02-L3": {
+          "text": "找警察去。",
+          "speaker": "男人",
+          "target": "女孩",
+          "exactTurn": {
+            "status": "PASS"
+          },
+          "directionOriginalPinsReplay": {
+            "status": "PASS",
+            "value": null
+          },
+          "directionCurrentReceipt": {
+            "status": "PASS",
+            "value": null
+          },
+          "directorIntentCurrentReceipt": {
+            "status": "PASS",
+            "value": "director-performance-intent-v1"
+          }
+        },
+        "S02-L2": {
+          "text": "求您了，跟我来！",
+          "speaker": "女孩",
+          "target": "男人",
+          "exactTurn": {
+            "status": "PASS"
+          },
+          "directionOriginalPinsReplay": {
+            "status": "PASS",
+            "value": null
+          },
+          "directionCurrentReceipt": {
+            "status": "PASS",
+            "value": null
+          },
+          "directorIntentCurrentReceipt": {
+            "status": "PASS",
+            "value": "director-performance-intent-v1"
+          }
+        },
+        "S02-L4": {
+          "text": "走开！",
+          "speaker": "男人",
+          "target": "女孩",
+          "exactTurn": {
+            "status": "PASS"
+          },
+          "directionOriginalPinsReplay": {
+            "status": "PASS",
+            "value": null
+          },
+          "directionCurrentReceipt": {
+            "status": "PASS",
+            "value": null
+          },
+          "directorIntentCurrentReceipt": {
+            "status": "PASS",
+            "value": "director-performance-intent-v1"
+          }
+        },
+        "S02-L7-new": {
+          "text": "先生！",
+          "speaker": "女孩",
+          "target": "另一行人",
+          "exactTurn": {
+            "status": "FAIL",
+            "finding": "AMBIGUOUS_DIALOGUE: vocatives do not convey the requested action"
+          },
+          "directionOriginalPinsReplay": {
+            "status": "FAIL",
+            "finding": "AMBIGUOUS_DIALOGUE: vocatives do not convey the requested action"
+          },
+          "directionCurrentReceipt": {
+            "status": "FAIL",
+            "finding": "AMBIGUOUS_DIALOGUE: vocatives do not convey the requested action"
+          },
+          "directorIntentCurrentReceipt": {
+            "status": "PASS",
+            "value": "director-performance-intent-v1"
+          }
+        }
+      },
+      "mapper": {
+        "status": "FAIL",
+        "finding": "AMBIGUOUS_DIALOGUE: vocatives do not convey the requested action"
+      },
+      "listenerSilenceLocal": {
+        "LISTENER_CAUSALITY": [
+          {
+            "axis": "LISTENER_CAUSALITY",
+            "scope": "SCENE",
+            "status": "PASS",
+            "finding": "SOURCE_BOUND_SELF_AUDIT",
+            "reason": "男人仅停步与女孩把问路当机会分开；新人回应故意不在当前视点中。",
+            "evidenceRefs": [
+              "spoken:S02-L1a",
+              "action:119:147",
+              "action:148:157",
+              "action:157:163",
+              "action:163:176",
+              "spoken:S02-L1b",
+              "action:177:196",
+              "spoken:S02-L5-new",
+              "action:197:206",
+              "spoken:S02-L6-new",
+              "action:207:218",
+              "action:218:231",
+              "action:232:246",
+              "action:246:250",
+              "action:250:258",
+              "action:259:277",
+              "spoken:S02-L3",
+              "action:278:287",
+              "action:287:298",
+              "spoken:S02-L2",
+              "action:299:305",
+              "action:305:323",
+              "spoken:S02-L4",
+              "action:324:332",
+              "action:332:351",
+              "action:362:367",
+              "action:368:379",
+              "spoken:S02-L7-new",
+              "action:380:400",
+              "action:401:419"
+            ],
+            "repairOwner": "scene-development"
+          }
+        ],
+        "SILENCE_FUNCTION": [
+          {
+            "axis": "SILENCE_FUNCTION",
+            "scope": "SCENE",
+            "status": "PASS",
+            "finding": "SOURCE_BOUND_SELF_AUDIT",
+            "reason": "脚未迈步、收手具有可见差别；不用全场抽象冷漠替代。",
+            "evidenceRefs": [
+              "spoken:S02-L1a",
+              "action:119:147",
+              "action:148:157",
+              "action:157:163",
+              "action:163:176",
+              "spoken:S02-L1b",
+              "action:177:196",
+              "spoken:S02-L5-new",
+              "action:197:206",
+              "spoken:S02-L6-new",
+              "action:207:218",
+              "action:218:231",
+              "action:232:246",
+              "action:246:250",
+              "action:250:258",
+              "action:259:277",
+              "spoken:S02-L3",
+              "action:278:287",
+              "action:287:298",
+              "spoken:S02-L2",
+              "action:299:305",
+              "action:305:323",
+              "spoken:S02-L4",
+              "action:324:332",
+              "action:332:351",
+              "action:362:367",
+              "action:368:379",
+              "spoken:S02-L7-new",
+              "action:380:400",
+              "action:401:419"
+            ],
+            "repairOwner": "scene-development"
+          }
+        ]
+      },
+      "receiptBinding": {
+        "originalDirectorPin": "2efc3e59707ccdaae58835561b5f8b15b70914daea2188814e8312f28caad7f5",
+        "recomputedReceipt": "2efc3e59707ccdaae58835561b5f8b15b70914daea2188814e8312f28caad7f5"
+      }
+    },
+    "S03": {
+      "source": {
+        "status": "PASS"
+      },
+      "dramaturgy": {
+        "status": "PASS",
+        "value": {
+          "sourceHash": "c2ba3611ec5f5bead0a199b5f59f2570fe527e102913692e43dea7bebd96d489",
+          "subjectHash": "4f21edc353815028c495c96cc18cedc49bdbd7c20960d7efee9ee60465e627f6",
+          "reviewHash": "2c797a4bd0a87bac81fbad04bb7d86699f3b6710b3e7ce92d3a88b2a06cdd3b3",
+          "status": "CONCERN",
+          "findings": [
+            {
+              "axis": "ACTION_RESPONSE_CHAIN",
+              "scope": "SCENE",
+              "status": "PASS",
+              "finding": "SOURCE_BOUND_SELF_AUDIT",
+              "reason": "独处自语与环境刺激，不是相互会话；不为自我确认编造第二个回答者。",
+              "evidenceRefs": [
+                "spoken:S03-L1",
+                "action:156:163",
+                "action:180:191",
+                "action:207:221",
+                "action:236:241",
+                "action:241:248",
+                "spoken:S03-L3",
+                "action:249:257",
+                "action:257:265",
+                "action:266:283",
+                "action:293:302",
+                "action:326:331",
+                "action:353:359",
+                "action:367:384"
+              ],
+              "repairOwner": "scene-development"
+            },
+            {
+              "axis": "STRATEGY_CHANGE",
+              "scope": "SCENE",
+              "status": "PASS",
+              "finding": "SOURCE_BOUND_SELF_AUDIT",
+              "reason": "不将每次身体迟疑命名为新策略；保留未解决的延期。",
+              "evidenceRefs": [
+                "spoken:S03-L1",
+                "action:156:163",
+                "action:180:191",
+                "action:207:221",
+                "action:236:241",
+                "action:241:248",
+                "spoken:S03-L3",
+                "action:249:257",
+                "action:257:265",
+                "action:266:283",
+                "action:293:302",
+                "action:326:331",
+                "action:353:359",
+                "action:367:384"
+              ],
+              "repairOwner": "scene-development"
+            },
+            {
+              "axis": "INFORMATION_RELEASE",
+              "scope": "SCENE",
+              "status": "PASS",
+              "finding": "SOURCE_BOUND_SELF_AUDIT",
+              "reason": "枪与当晚确认给观众必要信息；咳嗽不是女孩母亲的病情证明。",
+              "evidenceRefs": [
+                "spoken:S03-L1",
+                "action:156:163",
+                "action:180:191",
+                "action:207:221",
+                "action:236:241",
+                "action:241:248",
+                "spoken:S03-L3",
+                "action:249:257",
+                "action:257:265",
+                "action:266:283",
+                "action:293:302",
+                "action:326:331",
+                "action:353:359",
+                "action:367:384"
+              ],
+              "repairOwner": "scene-development"
+            },
+            {
+              "axis": "LISTENER_CAUSALITY",
+              "scope": "SCENE",
+              "status": "PASS",
+              "finding": "SOURCE_BOUND_SELF_AUDIT",
+              "reason": "自语不假装邻人能听见；门外声音保留自己的生活来源。",
+              "evidenceRefs": [
+                "spoken:S03-L1",
+                "action:156:163",
+                "action:180:191",
+                "action:207:221",
+                "action:236:241",
+                "action:241:248",
+                "spoken:S03-L3",
+                "action:249:257",
+                "action:257:265",
+                "action:266:283",
+                "action:293:302",
+                "action:326:331",
+                "action:353:359",
+                "action:367:384"
+              ],
+              "repairOwner": "scene-development"
+            },
+            {
+              "axis": "SILENCE_FUNCTION",
+              "scope": "SCENE",
+              "status": "PASS",
+              "finding": "SOURCE_BOUND_SELF_AUDIT",
+              "reason": "握门把不打开与松手回桌保留接近后退缩，不变为助人。",
+              "evidenceRefs": [
+                "spoken:S03-L1",
+                "action:156:163",
+                "action:180:191",
+                "action:207:221",
+                "action:236:241",
+                "action:241:248",
+                "spoken:S03-L3",
+                "action:249:257",
+                "action:257:265",
+                "action:266:283",
+                "action:293:302",
+                "action:326:331",
+                "action:353:359",
+                "action:367:384"
+              ],
+              "repairOwner": "scene-development"
+            },
+            {
+              "axis": "ENTRY_EXIT_DELTA",
+              "scope": "SCENE",
+              "status": "PASS",
+              "finding": "SOURCE_BOUND_SELF_AUDIT",
+              "reason": "枪摆好但未使用，门未开，椅中入睡",
+              "evidenceRefs": [
+                "spoken:S03-L1",
+                "action:156:163",
+                "action:180:191",
+                "action:207:221",
+                "action:236:241",
+                "action:241:248",
+                "spoken:S03-L3",
+                "action:249:257",
+                "action:257:265",
+                "action:266:283",
+                "action:293:302",
+                "action:326:331",
+                "action:353:359",
+                "action:367:384"
+              ],
+              "repairOwner": "scene-development"
+            },
+            {
+              "axis": "INFORMATION_RELEASE",
+              "scope": "tonight-decision",
+              "status": "PASS",
+              "finding": "SOURCE_BOUND_INFORMATION_REVIEW",
+              "reason": "枪与当晚确认给观众必要信息；咳嗽不是女孩母亲的病情证明。",
+              "evidenceRefs": [
+                "spoken:S03-L1"
+              ],
+              "repairOwner": "scene-development"
+            },
+            {
+              "axis": "ACTION_RESPONSE_CHAIN",
+              "scope": "spoken:S03-L1",
+              "status": "CONCERN",
+              "finding": "IMPORTANT_ACTION_RESPONSE_MISSING",
+              "reason": "IMPORTANT_ACTION_RESPONSE_MISSING",
+              "evidenceRefs": [
+                "spoken:S03-L1"
+              ],
+              "repairOwner": "scene-development"
+            }
+          ],
+          "informationCoverage": [
+            {
+              "informationRef": "tonight-decision",
+              "firstRelease": "spoken:S03-L1",
+              "firstReleasePosition": 0,
+              "firstReleaseParts": [
+                "tonight"
+              ],
+              "totalParts": 1,
+              "releases": [
+                {
+                  "carrierRef": "spoken:S03-L1",
+                  "parts": [
+                    "tonight"
+                  ],
+                  "audience": true,
+                  "characters": [
+                    "男人"
+                  ],
+                  "afterResponseRef": null
+                }
+              ],
+              "directStatementReason": "对自己的短确认，不需要先与第二人争论；枪已在桌上。"
+            }
+          ],
+          "causalCoverage": [],
+          "productionAuthorized": false,
+          "fingerprint": "d2810ccf3a4af75d6e1886d21270f25931a95be8e4272f542670b798e307186d"
+        }
+      },
+      "turns": {
+        "S03-L1": {
+          "text": "就是今天。",
+          "speaker": "男人",
+          "target": "自己",
+          "exactTurn": {
+            "status": "PASS"
+          },
+          "directionOriginalPinsReplay": {
+            "status": "PASS",
+            "value": null
+          },
+          "directionCurrentReceipt": {
+            "status": "PASS",
+            "value": null
+          },
+          "directorIntentCurrentReceipt": {
+            "status": "PASS",
+            "value": "director-performance-intent-v1"
+          }
+        },
+        "S03-L3": {
+          "text": "我又不在了。",
+          "speaker": "男人",
+          "target": "自己",
+          "exactTurn": {
+            "status": "PASS"
+          },
+          "directionOriginalPinsReplay": {
+            "status": "PASS",
+            "value": null
+          },
+          "directionCurrentReceipt": {
+            "status": "PASS",
+            "value": null
+          },
+          "directorIntentCurrentReceipt": {
+            "status": "PASS",
+            "value": "director-performance-intent-v1"
+          }
+        }
+      },
+      "mapper": {
+        "status": "PASS",
+        "value": {
+          "readyForDirection": false
+        }
+      },
+      "listenerSilenceLocal": {
+        "LISTENER_CAUSALITY": [
+          {
+            "axis": "LISTENER_CAUSALITY",
+            "scope": "SCENE",
+            "status": "PASS",
+            "finding": "SOURCE_BOUND_SELF_AUDIT",
+            "reason": "自语不假装邻人能听见；门外声音保留自己的生活来源。",
+            "evidenceRefs": [
+              "spoken:S03-L1",
+              "action:156:163",
+              "action:180:191",
+              "action:207:221",
+              "action:236:241",
+              "action:241:248",
+              "spoken:S03-L3",
+              "action:249:257",
+              "action:257:265",
+              "action:266:283",
+              "action:293:302",
+              "action:326:331",
+              "action:353:359",
+              "action:367:384"
+            ],
+            "repairOwner": "scene-development"
+          }
+        ],
+        "SILENCE_FUNCTION": [
+          {
+            "axis": "SILENCE_FUNCTION",
+            "scope": "SCENE",
+            "status": "PASS",
+            "finding": "SOURCE_BOUND_SELF_AUDIT",
+            "reason": "握门把不打开与松手回桌保留接近后退缩，不变为助人。",
+            "evidenceRefs": [
+              "spoken:S03-L1",
+              "action:156:163",
+              "action:180:191",
+              "action:207:221",
+              "action:236:241",
+              "action:241:248",
+              "spoken:S03-L3",
+              "action:249:257",
+              "action:257:265",
+              "action:266:283",
+              "action:293:302",
+              "action:326:331",
+              "action:353:359",
+              "action:367:384"
+            ],
+            "repairOwner": "scene-development"
+          }
+        ]
+      },
+      "receiptBinding": {
+        "originalDirectorPin": "d2810ccf3a4af75d6e1886d21270f25931a95be8e4272f542670b798e307186d",
+        "recomputedReceipt": "d2810ccf3a4af75d6e1886d21270f25931a95be8e4272f542670b798e307186d"
+      }
+    }
+  },
+  "inputsUnmodifiedInMemory": true,
+  "productionAuthorized": false,
+  "boundaryMatrix": {
+    "old ambiguous dialogue": {
+      "status": "FAIL",
+      "finding": "AMBIGUOUS_DIALOGUE: vocatives do not convey the requested action"
+    },
+    "empty medical request": {
+      "status": "FAIL",
+      "finding": "AMBIGUOUS_DIALOGUE: vocatives do not convey the requested action"
+    },
+    "empty follow request": {
+      "status": "FAIL",
+      "finding": "AMBIGUOUS_DIALOGUE: vocatives do not convey the requested action"
+    },
+    "missing target": {
+      "status": "FAIL",
+      "finding": "UNRESOLVED: action actor / target"
+    },
+    "wrong target": {
+      "status": "FAIL",
+      "finding": "DIALOGUE_TARGET_MISMATCH"
+    },
+    "exact-turn binding": {
+      "status": "FAIL",
+      "finding": "EXACT_DIALOGUE_TURN_MISMATCH"
+    },
+    "interpersonal missing response": {
+      "status": "PASS",
+      "value": {
+        "status": "CONCERN",
+        "findings": [
+          {
+            "axis": "ACTION_RESPONSE_CHAIN",
+            "scope": "SCENE",
+            "status": "PASS",
+            "finding": "SOURCE_BOUND_SELF_AUDIT",
+            "reason": "独处自语与环境刺激，不是相互会话；不为自我确认编造第二个回答者。",
+            "evidenceRefs": [
+              "spoken:S03-L1",
+              "action:156:163",
+              "action:180:191",
+              "action:207:221",
+              "action:236:241",
+              "action:241:248",
+              "spoken:S03-L3",
+              "action:249:257",
+              "action:257:265",
+              "action:266:283",
+              "action:293:302",
+              "action:326:331",
+              "action:353:359",
+              "action:367:384"
+            ],
+            "repairOwner": "scene-development"
+          },
+          {
+            "axis": "STRATEGY_CHANGE",
+            "scope": "SCENE",
+            "status": "PASS",
+            "finding": "SOURCE_BOUND_SELF_AUDIT",
+            "reason": "不将每次身体迟疑命名为新策略；保留未解决的延期。",
+            "evidenceRefs": [
+              "spoken:S03-L1",
+              "action:156:163",
+              "action:180:191",
+              "action:207:221",
+              "action:236:241",
+              "action:241:248",
+              "spoken:S03-L3",
+              "action:249:257",
+              "action:257:265",
+              "action:266:283",
+              "action:293:302",
+              "action:326:331",
+              "action:353:359",
+              "action:367:384"
+            ],
+            "repairOwner": "scene-development"
+          },
+          {
+            "axis": "INFORMATION_RELEASE",
+            "scope": "SCENE",
+            "status": "PASS",
+            "finding": "SOURCE_BOUND_SELF_AUDIT",
+            "reason": "枪与当晚确认给观众必要信息；咳嗽不是女孩母亲的病情证明。",
+            "evidenceRefs": [
+              "spoken:S03-L1",
+              "action:156:163",
+              "action:180:191",
+              "action:207:221",
+              "action:236:241",
+              "action:241:248",
+              "spoken:S03-L3",
+              "action:249:257",
+              "action:257:265",
+              "action:266:283",
+              "action:293:302",
+              "action:326:331",
+              "action:353:359",
+              "action:367:384"
+            ],
+            "repairOwner": "scene-development"
+          },
+          {
+            "axis": "LISTENER_CAUSALITY",
+            "scope": "SCENE",
+            "status": "PASS",
+            "finding": "SOURCE_BOUND_SELF_AUDIT",
+            "reason": "自语不假装邻人能听见；门外声音保留自己的生活来源。",
+            "evidenceRefs": [
+              "spoken:S03-L1",
+              "action:156:163",
+              "action:180:191",
+              "action:207:221",
+              "action:236:241",
+              "action:241:248",
+              "spoken:S03-L3",
+              "action:249:257",
+              "action:257:265",
+              "action:266:283",
+              "action:293:302",
+              "action:326:331",
+              "action:353:359",
+              "action:367:384"
+            ],
+            "repairOwner": "scene-development"
+          },
+          {
+            "axis": "SILENCE_FUNCTION",
+            "scope": "SCENE",
+            "status": "PASS",
+            "finding": "SOURCE_BOUND_SELF_AUDIT",
+            "reason": "握门把不打开与松手回桌保留接近后退缩，不变为助人。",
+            "evidenceRefs": [
+              "spoken:S03-L1",
+              "action:156:163",
+              "action:180:191",
+              "action:207:221",
+              "action:236:241",
+              "action:241:248",
+              "spoken:S03-L3",
+              "action:249:257",
+              "action:257:265",
+              "action:266:283",
+              "action:293:302",
+              "action:326:331",
+              "action:353:359",
+              "action:367:384"
+            ],
+            "repairOwner": "scene-development"
+          },
+          {
+            "axis": "ENTRY_EXIT_DELTA",
+            "scope": "SCENE",
+            "status": "PASS",
+            "finding": "SOURCE_BOUND_SELF_AUDIT",
+            "reason": "枪摆好但未使用，门未开，椅中入睡",
+            "evidenceRefs": [
+              "spoken:S03-L1",
+              "action:156:163",
+              "action:180:191",
+              "action:207:221",
+              "action:236:241",
+              "action:241:248",
+              "spoken:S03-L3",
+              "action:249:257",
+              "action:257:265",
+              "action:266:283",
+              "action:293:302",
+              "action:326:331",
+              "action:353:359",
+              "action:367:384"
+            ],
+            "repairOwner": "scene-development"
+          },
+          {
+            "axis": "INFORMATION_RELEASE",
+            "scope": "tonight-decision",
+            "status": "PASS",
+            "finding": "SOURCE_BOUND_INFORMATION_REVIEW",
+            "reason": "枪与当晚确认给观众必要信息；咳嗽不是女孩母亲的病情证明。",
+            "evidenceRefs": [
+              "spoken:S03-L1"
+            ],
+            "repairOwner": "scene-development"
+          },
+          {
+            "axis": "ACTION_RESPONSE_CHAIN",
+            "scope": "spoken:S03-L1",
+            "status": "CONCERN",
+            "finding": "IMPORTANT_ACTION_RESPONSE_MISSING",
+            "reason": "IMPORTANT_ACTION_RESPONSE_MISSING",
+            "evidenceRefs": [
+              "spoken:S03-L1"
+            ],
+            "repairOwner": "scene-development"
+          }
+        ]
+      }
+    },
+    "fake environmental response": {
+      "status": "FAIL",
+      "finding": "STIMULUS_IS_NOT_ACTUAL_RESPONSE"
+    }
+  },
+  "runtime": "BASELINE df625f9d01cc62c3f1ffed2774e88166ab37bae5"
+}

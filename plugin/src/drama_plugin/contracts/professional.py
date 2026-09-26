@@ -11,6 +11,7 @@ from pydantic import Field, model_validator, model_serializer, SerializerFunctio
 from drama_plugin.contracts.base import ContractModel
 from drama_plugin.contracts.creative_asset import Text
 from drama_plugin.contracts.source_pin import SourcePin
+from drama_plugin.contracts.interpretation import InterpretationUse
 
 ArtifactStatus = Literal['DRAFT', 'READY_FOR_REVIEW', 'APPROVED', 'NOT_REQUIRED']
 
@@ -43,6 +44,15 @@ class CreativeRecord(ContractModel):
     source_refs: tuple[SourcePin, ...] = Field(min_length=1)
     status: Literal['DECIDED', 'UNRESOLVED', 'NOT_REQUIRED'] = 'DECIDED'
     limitations: tuple[Text, ...] = ()
+    interpretation_uses: tuple[InterpretationUse, ...] = ()
+
+    @model_serializer(mode='wrap')
+    def legacy_interpretation(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data: dict[str, Any] = handler(self)
+        if not self.interpretation_uses:
+            data.pop('interpretationUses', None)
+            data.pop('interpretation_uses', None)
+        return data
 
     @model_validator(mode='after')
     def honest_record(self) -> Self:

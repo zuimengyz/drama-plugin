@@ -1,0 +1,18 @@
+{
+  "role": "audit deliverable checksums, not approval",
+  "files": {
+    "Evidence-Index.md": "9f86026a9a095e8c608cf600787cead87210cbe0006662448c7e26ed944f7ff2",
+    "Literary-Cinema-R3D-A-Character-World-State-Audit.md": "9834e6c2ffc6c7ea677ac3dcd9130ca70132484855993a765a87c3a47fa82ee6",
+    "Literary-Cinema-R3D-A-Conflict-Authority-Reconciliation.md": "0d9e2459dbcc4e6af0f13b8d89dfcd69b48f96cf7aec1ca257a80c4dabd7c55f",
+    "Literary-Cinema-R3D-A-Cross-Department-Interpretation-Mapping.md": "c03a96c1e797dc818c503d276b31d10fbf1ffb71bb813f9dea93ae25130913aa",
+    "Literary-Cinema-R3D-A-Current-Interpretive-Authority-Map.md": "fae0bb9ef56cfb0d7a4f38e2ea46f5431bf87d3e01da9d5e8bc03576b851ea39",
+    "Literary-Cinema-R3D-A-Evidence-Bound-Interpretation-Gap-Audit.md": "762684316a03106d533e3b72ba114dd73dd10a6782b79ab0cd09561d794eb174",
+    "Literary-Cinema-R3D-A-Film-Interpretation-Board-Design.md": "d106ea47c7408d2c44b68031dfabc34509697ce744e896a7817390b30d749860",
+    "Literary-Cinema-R3D-A-Final-Findings.md": "d16539c87b40c33c8207dd6b0810432ede5deda23e9063d9589158386336621d",
+    "Literary-Cinema-R3D-A-Motif-And-Cinematic-Carrier-Audit.md": "367836b5b16fe59d82a904d6f5a1163ad680cd7d0bffb8219a2400f8e681bd41",
+    "Literary-Cinema-R3D-A-Star-Interpretation-Trace.md": "28c85475b539405c4c8a5e4e6100bf415a9e45362b83f529dba67801bb657c85",
+    "audit-verification.json": "4466c3e2c36db519ae14cec5dcd9896e02b0e5ed91c79dacc81354d181dfedbd",
+    "baseline-integrity.json": "3b71c0efbf19118b02940242e353b870a40baf977891dfa385c77b2fd95432fa",
+    "source-anchor-ledger.json": "fef053c47542d58f266074330ca23dd595014e792a54e31721e2d5869303ab29"
+  }
+}

@@ -163,6 +163,26 @@ class DirectorArtifactStore:
                                                                'checkpoint': 'WAITING_APPROVAL'})
                     self._commit(paused)
                     raise DirectorError('USER_APPROVAL_REQUIRED', 'Original scope/branch approval required')
+                from drama_plugin.interpretation import facet as interpretation_facet, approved_interpretation, validate_approved_selection
+                interpretation_items = []
+                interpretation_receipts = {}
+                for intent_ref in request.intent_refs:
+                    if not intent_ref.key.startswith('interpretation:') and not self._path('objects', intent_ref.fingerprint).exists():
+                        continue  # Legacy externally witnessed intent without a retained facet.
+                    original = self.read_ref(intent_ref)
+                    if not intent_ref.key.startswith('interpretation:') and not original.get('interpretation'):
+                        continue
+                    f = interpretation_facet(original)
+                    originals = {p.key:self.read_ref(p) for p in (intent_ref, f.source_ref, *f.thesis_refs, *request.approval_refs)}
+                    matches = [p for p in request.approval_refs if originals[p.key].get('subjectFingerprint') == intent_ref.fingerprint]
+                    if len(matches) != 1:
+                        raise DirectorError('USER_APPROVAL_REQUIRED', 'Current interpretation approval required')
+                    item, interpretation_receipt = approved_interpretation(intent_ref, matches[0], originals, current, approved_refs)
+                    if f.work_ref != request.scope_id or f.branch_id != request.branch_id:
+                        raise DirectorError('INVALID_SOURCE', 'Interpretation work/branch mismatch')
+                    interpretation_items.append(item)
+                    interpretation_receipts[str(item['id'])] = interpretation_receipt
+                validate_approved_selection(interpretation_items, interpretation_receipts)
                 data['checkpoint'] = 'DISPATCHED'  # Commit before any Host side effect.
             elif event == 'FEEDBACK':
                 if request is None or payload_ref is None or old.review_ref:

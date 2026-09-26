@@ -1,0 +1,5 @@
+{
+  "direct": "PASS",
+  "host_missing": "ValueError:USER_INTERPRETATION_APPROVAL_REQUIRED",
+  "host_trusted": "TypeError:SpecializedAssetHost.submit() got an unexpected keyword argument 'approved_interpretation_refs'"
+}

@@ -1,0 +1,67 @@
+{
+  "authority": "Current user explicitly states Board USER APPROVED and authorizes read-only reuse without new approval. Exact pre-existing receipt allowlist for diagnostic caller only; never candidate-inferred Runtime trust.",
+  "approvedInputSha256": "7f9b2123848e7cd776fee88466676e15e7685120f926695285f57c209779f5ab",
+  "authorizationEvidenceRef": {
+    "key": "user-instruction:r3c-r",
+    "kind": "DIRECTION",
+    "fingerprint": "8a69f130ad9ce73fe27dfd544152bf030ab2ae9a1658bc631ae18d32e8ab7159"
+  },
+  "authorizationFileSha256": "9130b04966e6b3a664bcba2de91226ebc135dc26bc63bc23667419ef52207617",
+  "approvedRefs": [
+    {
+      "key": "interpretation-approval:interpretation:flagship-literary-film-01:r3d-candidate:I-CORE",
+      "kind": "DIRECTION",
+      "fingerprint": "f4f0b9bd80c4dcaa3a1b72c0cb8bd451d1ffd282f94f462ef46b84a4094abf34"
+    },
+    {
+      "key": "interpretation-approval:interpretation:flagship-literary-film-01:r3d-candidate:I-CHARACTER",
+      "kind": "DIRECTION",
+      "fingerprint": "7eb0ef1b4cee6159ac64fc341bb087213ab67c0d3efe8c3a2954301a66cbd93a"
+    },
+    {
+      "key": "interpretation-approval:interpretation:flagship-literary-film-01:r3d-candidate:I-RELATION",
+      "kind": "DIRECTION",
+      "fingerprint": "570e2443449809904c4754d2d979f44f5c753fad489d9b933cd3e1ed0529abb2"
+    },
+    {
+      "key": "interpretation-approval:interpretation:flagship-literary-film-01:r3d-candidate:I-MOTIFS",
+      "kind": "DIRECTION",
+      "fingerprint": "7dc41c219a955e0940c3bc0920ca59ceffe4f882d9dccb7fe5458e632522951f"
+    },
+    {
+      "key": "interpretation-approval:interpretation:flagship-literary-film-01:r3d-candidate:I-DREAM",
+      "kind": "DIRECTION",
+      "fingerprint": "1f27da42e96c04d2ea5a04fa0b5e8b74a0a77f997e3eebeebd258c95824b2699"
+    },
+    {
+      "key": "interpretation-approval:interpretation:flagship-literary-film-01:r3d-candidate:I-WORLD",
+      "kind": "DIRECTION",
+      "fingerprint": "0094f86a6e291a17005569017613c329e42f47e243fb9f96123c5e14050f6a6e"
+    },
+    {
+      "key": "interpretation-approval:interpretation:flagship-literary-film-01:r3d-candidate:I-BOUNDARIES",
+      "kind": "DIRECTION",
+      "fingerprint": "fcc7589437954d8c0c98944d76b5d88143b5bd999a83bfe46af5bbd52c446ee6"
+    },
+    {
+      "key": "interpretation-approval:interpretation:flagship-literary-film-01:r3d-candidate:I-OPEN",
+      "kind": "DIRECTION",
+      "fingerprint": "2114237ad239ad478c0027d50171f1235c5728eb45e6ae5c317b4f6d7c9f8f17"
+    },
+    {
+      "key": "interpretation-approval:interpretation:flagship-literary-film-01:r3d-candidate:H-S1",
+      "kind": "DIRECTION",
+      "fingerprint": "ee85098d9dd6ec7f855c887c819d7ceaec1fae45d88e6eaced788e1b1041df3b"
+    },
+    {
+      "key": "interpretation-approval:interpretation:flagship-literary-film-01:r3d-candidate:H-S2",
+      "kind": "DIRECTION",
+      "fingerprint": "4e774333b2c18996e231291ccb80452c8b165e4a831e7b4fb2e92efa7d8f7336"
+    },
+    {
+      "key": "interpretation-approval:interpretation:flagship-literary-film-01:r3d-candidate:H-S5",
+      "kind": "DIRECTION",
+      "fingerprint": "bfa52716ed8ba5066384ffa41b15ddbb800c12d9384f36124e9de481204d0573"
+    }
+  ]
+}

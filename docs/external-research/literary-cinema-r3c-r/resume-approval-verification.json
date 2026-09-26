@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "existingReceiptsVerified": 11,
+  "newReceipts": 0,
+  "authorityContext": "/Users/zy/historical-plugin/drama-plugin/docs/external-research/literary-cinema-r3d-r/authorized-context.json",
+  "preservedUnapproved": {
+    "H-S3": "OPEN",
+    "H-S4": "OPEN",
+    "H-S6": "UNSUPPORTED",
+    "H-S7": "REJECTED"
+  },
+  "approvedInputSha256": "7f9b2123848e7cd776fee88466676e15e7685120f926695285f57c209779f5ab"
+}

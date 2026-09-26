@@ -1,0 +1,22 @@
+{
+  "checkedFiles": 1062,
+  "unchangedFiles": 1060,
+  "changedFiles": [
+    "drama-plugin/plugin/src/drama_plugin/scene_dramaturgy.py",
+    "drama-plugin/plugin/src/drama_plugin/screenplay_playability.py"
+  ],
+  "unexpectedChanges": [],
+  "mypyBaselineErrors": 40,
+  "mypyAfterErrors": 40,
+  "mypyAddedErrors": [],
+  "mypyRemovedErrors": [],
+  "creativeHashes": {
+    "artifacts/flagship-literary-film-01/creative/screenplay-r3/04-screenplay-r3-candidate.md": "39a1f9fa35d1e1becbeac667b911dfb9ab2e0dbaef6fb10e8335044fc0aadb3f",
+    "artifacts/flagship-literary-film-01/creative/screenplay-r3/director-performance-candidate.json": "4f1033e73234c5ae5dddbbb630694502e24250f4f9e4d1798c2debe6c94187ef",
+    "artifacts/flagship-literary-film-01/creative/screenplay-r3/screenplay-r3-dramaturgy-sidecar.json": "90ceeda49fee4542c1cb08b482bc9deb23fc6d4945690fdaddd26c876356a1a6"
+  },
+  "frozenFixtureBytesMatch": {
+    "director-performance-candidate.json": true,
+    "screenplay-r3-dramaturgy-sidecar.json": true
+  }
+}

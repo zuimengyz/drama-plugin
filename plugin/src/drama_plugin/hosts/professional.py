@@ -41,6 +41,14 @@ class ProfessionalDepartmentHost:
                 bible = CreativeBible.model_validate(value)
                 queue.extend(bible.depends_on)
                 queue.extend(bible.approval_refs)
+                for record in bible.content:
+                    queue.extend(ref for ref in record.source_refs if ref.key.startswith('specialized-assets:'))
+                    for use in record.interpretation_uses:
+                        queue.extend((use.interpretation_ref, use.approval_ref, *use.independent_source_refs))
+            elif value.get('interpretation'):
+                from drama_plugin.interpretation import facet
+                f = facet(value)
+                queue.extend((f.source_ref, *f.thesis_refs))
             elif value.get('schemaVersion') == 'specialized-asset-bible-v1':
                 from drama_plugin.contracts.specialized_asset import SpecializedAssetBible
                 asset_bible = SpecializedAssetBible.model_validate(value)
@@ -49,11 +57,17 @@ class ProfessionalDepartmentHost:
                     queue.append(asset_bible.approval_ref)
                 for asset in asset_bible.assets:
                     queue.extend((asset.dramaturgy.bible_ref, asset.director.bible_ref, asset.world.bible_ref))
+            elif value.get('schemaVersion') == 'global-visual-style-v1':
+                from drama_plugin.contracts.specialized_asset import GlobalVisualStyle
+                style = GlobalVisualStyle.model_validate(value)
+                if style.imaging_character is not None:
+                    queue.extend(style.imaging_character.source_refs)
             elif value.get('schemaVersion') in ('scene-assembly-v1', 'shot-assembly-v1'):
                 queue.append(SourcePin.model_validate(value['sourceRef']))
         return result
 
-    def task(self, department: str, *, task: str, available: Mapping[str, SourcePin], current: Mapping[str, str]) -> dict[str, Any]:
+    def task(self, department: str, *, task: str, available: Mapping[str, SourcePin], current: Mapping[str, str],
+             approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
         definition = registry(self.source_type)[department]
         if definition.skill_code and self.skill_lookup:
             self.skill_lookup(definition.skill_code)
@@ -84,6 +98,12 @@ class ProfessionalDepartmentHost:
                             stale.append(ref.key)
                         else:
                             queue.append(CreativeBible.model_validate(self.store.read_ref(ref)))
+        from drama_plugin.interpretation import check_consumer_dependencies
+        try:
+            refs = tuple(available[k] for k in definition.depends_on if k in available)
+            check_consumer_dependencies(refs, self._artifacts(refs), current, approved_interpretation_refs)
+        except ValueError as error:
+            stale.append(str(error))
         return {'department': department, 'task': task, 'status': 'BLOCKED' if missing or stale or unresolved or failed_reviews else 'READY',
             'dependency': list(definition.depends_on), 'missing': missing, 'stale': stale, 'unresolved': unresolved,
             'failedReviews': failed_reviews,
@@ -97,7 +117,8 @@ class ProfessionalDepartmentHost:
             r.values.get('deterministic_status') in ('FAIL', 'BLOCKED') or r.values.get('semantic_review_status') == 'FAIL'
             for r in bible.content)
 
-    def submit(self, department: str, bible: CreativeBible, *, current: Mapping[str, str]) -> dict[str, Any]:
+    def submit(self, department: str, bible: CreativeBible, *, current: Mapping[str, str],
+               approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
         if bible.source_type != self.source_type:
             raise ValueError('HOST_SOURCE_TYPE_MISMATCH')
         if bible.created_by_capability != department:
@@ -111,8 +132,10 @@ class ProfessionalDepartmentHost:
         if department in {'runtime-visual-medium', 'global-visual-style', 'specialized-asset-design'} and bible.status != 'NOT_REQUIRED':
             raise ValueError('TYPED_VISUAL_CONTRACT_REQUIRED: use specialized_asset_host')
         artifacts = self._artifacts((*bible.depends_on, *bible.approval_refs,
+            *(ref for record in bible.content for use in record.interpretation_uses
+              for ref in (use.interpretation_ref, use.approval_ref, *use.independent_source_refs)),
             *(ref for record in bible.content for ref in record.source_refs if ref.key.startswith('specialized-assets:'))))
-        result = validate_bible(bible, artifacts, current)
+        result = validate_bible(bible, artifacts, current, approved_interpretation_refs=approved_interpretation_refs)
         ref = bible_pin(bible)
         self.store.put(ref.key, dump_contract(bible))
         return {**result, 'outputRef': dump_contract(ref), 'task': 'Review professional output',
@@ -123,26 +146,28 @@ class ProfessionalDepartmentHost:
         key = ('scene-assembly:' + assembly.scene_id if isinstance(assembly, SceneAssembly) else 'shot-assembly:' + assembly.shot_id)
         return self.store.put(key, dump_contract(assembly))
 
-    def retain_package(self, package: DirectorPackage, *, current: Mapping[str, str]) -> dict[str, Any]:
+    def retain_package(self, package: DirectorPackage, *, current: Mapping[str, str],
+                       approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
         if package.source_type != self.source_type:
             raise ValueError('HOST_SOURCE_TYPE_MISMATCH')
         refs = (*package.bible_refs.values(), *package.scene_assembly_refs, *package.shot_assembly_refs, *package.approval_refs)
         artifacts = self._artifacts(refs)
-        result = validate_package(package, artifacts, current)
+        result = validate_package(package, artifacts, current, approved_interpretation_refs=approved_interpretation_refs)
         ref = self.store.put('director-package:' + package.id, dump_contract(package))
         return {**result, 'directorPackageRef': dump_contract(ref)}
 
-    def dashboard(self, package: DirectorPackage, *, current: Mapping[str, str]) -> list[dict[str, Any]]:
+    def dashboard(self, package: DirectorPackage, *, current: Mapping[str, str],
+                  approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> list[dict[str, Any]]:
         rows = []
         for department in dependency_order(package.source_type):
-            task = self.task(department, task='Maintain owned professional Bible', available=package.bible_refs, current=current)
+            task = self.task(department, task='Maintain owned professional Bible', available=package.bible_refs, current=current, approved_interpretation_refs=approved_interpretation_refs)
             ref = package.bible_refs.get(department)
             if ref:
                 try:
                     if current.get(ref.key) != ref.fingerprint:
                         raise ValueError('STALE_OUTPUT')
                     bible = CreativeBible.model_validate(self.store.read_ref(ref))
-                    result = validate_bible(bible, self._artifacts((*bible.depends_on, *bible.approval_refs)), current)
+                    result = validate_bible(bible, self._artifacts((ref,)), current, approved_interpretation_refs=approved_interpretation_refs)
                     own_failure = self._failed_review(bible)
                     semantic = sorted({str(r.values.get('semantic_review_status')) for r in bible.content if 'semantic_review_status' in r.values})
                     task.update(status='FAILED_REVIEW' if own_failure else 'BLOCKED' if task['status'] == 'BLOCKED' else bible.status,

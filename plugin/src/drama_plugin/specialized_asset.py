@@ -35,7 +35,8 @@ VIEW_FIELDS = {
 
 
 def department_values(bible: SpecializedAssetBible, asset_id: str, department: str,
-                      originals: Mapping[str, Any] | None = None, current: Mapping[str, str] | None = None) -> dict[str, Any]:
+                      originals: Mapping[str, Any] | None = None, current: Mapping[str, str] | None = None, *,
+                      approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
     kind, fields = VIEW_FIELDS[department]
     asset = next((a for a in bible.assets if a.id == asset_id and a.kind == kind), None)
     if asset is None:
@@ -52,7 +53,7 @@ def department_values(bible: SpecializedAssetBible, asset_id: str, department: s
     if department == 'character-art' and originals is not None and current is not None:
         original = resolve(asset.dramaturgy.bible_ref, originals, current)
         if original.get('sourceType') == 'LITERARY':
-            narrative = upstream(asset.dramaturgy, {'character-dramaturgy'}, bible.work_id, originals, current)
+            narrative = upstream(asset.dramaturgy, {'character-dramaturgy'}, bible.work_id, originals, current, approved_interpretation_refs=approved_interpretation_refs)
             states = narrative.get('character_arc')
             if not isinstance(states, list) or not states:
                 raise ValueError('UPSTREAM_INFORMATION_REQUIRED: literary character arc')
@@ -70,12 +71,13 @@ def resolve(ref: SourcePin, originals: Mapping[str, Any], current: Mapping[str, 
 
 
 def upstream(link: DramaturgyInput, owners: set[str], work_id: str,
-             originals: Mapping[str, Any], current: Mapping[str, str]) -> dict[str, Any]:
+             originals: Mapping[str, Any], current: Mapping[str, str], *,
+             approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
     bible = CreativeBible.model_validate(resolve(link.bible_ref, originals, current))
     if bible.work_ref != work_id or bible.created_by_capability not in owners or bible.status != 'APPROVED':
         raise ValueError('UPSTREAM_INFORMATION_REQUIRED: approved scoped authority required')
     from .professional import validate_bible
-    validate_bible(bible, originals, current)
+    validate_bible(bible, originals, current, approved_interpretation_refs=approved_interpretation_refs)
     rows = [row for row in bible.content if row.id == link.record_id and row.status == 'DECIDED']
     if len(rows) != 1 or any(field not in rows[0].values or not rows[0].values[field] for field in link.constraint_fields):
         raise ValueError('UPSTREAM_INFORMATION_REQUIRED: original constraint fields required')
@@ -83,7 +85,8 @@ def upstream(link: DramaturgyInput, owners: set[str], work_id: str,
 
 
 def validate_assets(bible: SpecializedAssetBible, originals: Mapping[str, Any],
-                    current: Mapping[str, str]) -> tuple[MovieVisualMedium, GlobalVisualStyle]:
+                    current: Mapping[str, str], *,
+                    approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> tuple[MovieVisualMedium, GlobalVisualStyle]:
     # Revalidate even model_copy / mutable model objects at every public boundary.
     bible = SpecializedAssetBible.model_validate(dump_contract(bible))
     source_types = {CreativeBible.model_validate(resolve(link.bible_ref, originals, current)).source_type
@@ -108,13 +111,13 @@ def validate_assets(bible: SpecializedAssetBible, originals: Mapping[str, Any],
         raise ValueError('LIVE_ACTION_REQUIRES_NATURALISTIC_BOUNDARY')
     if style.imaging_character is not None:
         from .visual.still_knowledge import validate_imaging
-        validate_imaging(style, originals, current)
+        validate_imaging(style, originals, current, approved_interpretation_refs=approved_interpretation_refs)
     for asset in bible.assets:
-        upstream(asset.director, {'director'}, bible.work_id, originals, current)
+        upstream(asset.director, {'director'}, bible.work_id, originals, current, approved_interpretation_refs=approved_interpretation_refs)
         upstream(asset.world, {'adaptation-boundary', 'historical-research', 'literary-source-input'},
-                 bible.work_id, originals, current)
+                 bible.work_id, originals, current, approved_interpretation_refs=approved_interpretation_refs)
         owners = {'scene-development', 'story-architecture'} if isinstance(asset, SceneAsset) else {'character-dramaturgy'}
-        values = upstream(asset.dramaturgy, owners, bible.work_id, originals, current)
+        values = upstream(asset.dramaturgy, owners, bible.work_id, originals, current, approved_interpretation_refs=approved_interpretation_refs)
         if isinstance(asset, (CharacterAsset, CostumeAsset)):
             if values.get('character_ref') != asset.character_id or values.get('arc_stage') != asset.arc_stage:
                 raise ValueError('CHARACTER_DRAMATURGY_STAGE_MISMATCH')
@@ -133,8 +136,9 @@ def validate_assets(bible: SpecializedAssetBible, originals: Mapping[str, Any],
 
 
 def compile_asset(bible: SpecializedAssetBible, asset_id: str, originals: Mapping[str, Any],
-                  current: Mapping[str, str], *, casting_mode: str = 'DESIGN_NEUTRAL') -> dict[str, Any]:
-    medium, style = validate_assets(bible, originals, current)
+                  current: Mapping[str, str], *, casting_mode: str = 'DESIGN_NEUTRAL',
+                  approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
+    medium, style = validate_assets(bible, originals, current, approved_interpretation_refs=approved_interpretation_refs)
     asset = next((a for a in bible.assets if a.id == asset_id), None)
     if asset is None:
         raise ValueError('UNKNOWN_SPECIALIZED_ASSET')
@@ -164,7 +168,7 @@ def compile_asset(bible: SpecializedAssetBible, asset_id: str, originals: Mappin
     global_text = ('Material behavior remains physically credible. ' +
         ('Light follows motivated sources. ' if style.lighting_philosophy == 'MOTIVATED' else 'Light serves the approved expressive intent. ') +
         'Preserve authored identity and cross-asset visual consistency.')
-    director_values = upstream(asset.director, {'director'}, bible.work_id, originals, current)
+    director_values = upstream(asset.director, {'director'}, bible.work_id, originals, current, approved_interpretation_refs=approved_interpretation_refs)
     director_text = '\n'.join(str(director_values[field]) for field in asset.director.constraint_fields)
     if any(pattern.search(director_text) for pattern in (DECLARATION, LIVE, CG)):
         raise ValueError('DIRECTOR_CANNOT_OVERRIDE_RUNTIME_MEDIUM')
@@ -186,10 +190,11 @@ def compile_asset(bible: SpecializedAssetBible, asset_id: str, originals: Mappin
         'creativeAuthority': 'specialized-asset-design', 'productionAuthorized': False}
 
 
-def provider_projection(receipt: dict[str, Any], originals: Mapping[str, Any], current: Mapping[str, str]) -> dict[str, Any]:
+def provider_projection(receipt: dict[str, Any], originals: Mapping[str, Any], current: Mapping[str, str], *,
+                        approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
     """No provider default, enhancer or style appendix. Replay before projecting."""
     expected = compile_asset(SpecializedAssetBible.model_validate(receipt['assetBible']),
-        receipt['assetId'], originals, current, casting_mode=receipt['castingMode'])
+        receipt['assetId'], originals, current, casting_mode=receipt['castingMode'], approved_interpretation_refs=approved_interpretation_refs)
     if receipt != expected:
         raise ValueError('SPECIALIZED_ASSET_COMPILATION_CHANGED')
     style = GlobalVisualStyle.model_validate(resolve(SpecializedAssetBible.model_validate(receipt['assetBible']).style_ref, originals, current))

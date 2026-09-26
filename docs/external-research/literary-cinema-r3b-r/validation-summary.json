@@ -1,0 +1,34 @@
+{
+  "fullPytest": "2835 passed in 146.16s (0:02:26)",
+  "focusedTests": "140 passed in 1.55s",
+  "newFocusedCases": 53,
+  "r3bAndOriginalScreenplayCases": 87,
+  "mypyChangedAndNew": "Success: no issues found in 7 source files",
+  "mypyFullBefore": 40,
+  "mypyFullAfter": 40,
+  "mypyAddedErrors": 0,
+  "gitDiffCheck": "PASS",
+  "newFileWhitespaceCheck": "PASS",
+  "reportLinks": "PASS",
+  "protectedFiles": 1062,
+  "unexpectedChanges": 0,
+  "candidateRecheck": {
+    "sourceAndDramaturgy": "3/3 PASS",
+    "mapperReady": "3/3",
+    "exactTurn": "15/15",
+    "directorOriginalPinsReplay": "15/15",
+    "directorCurrentReceipt": "13/15; S03 2/2 STALE_DIRECTOR_DRAMATURGY (expected; original candidate unchanged)",
+    "listenerSilenceLocal": "6/6 axes PASS",
+    "formalBookRun": false
+  },
+  "commands": {
+    "fullPytest": "cd plugin && python -m pytest -q",
+    "focusedTests": "python -m pytest plugin/tests/test_r3b_r_dialogue_vocative.py plugin/tests/test_r3b_r_self_directed_action.py plugin/tests/test_r3b_r_candidate_recheck.py plugin/tests/test_literary_cinema_r3b.py plugin/tests/test_screenplay_playability.py -q",
+    "mypyFull": "cd plugin && python -m mypy src/drama_plugin",
+    "mypyChanged": "cd plugin && python -m mypy --follow-imports=silent src/drama_plugin/screenplay_playability.py src/drama_plugin/scene_dramaturgy.py tests/r3b_r_helpers.py tests/r3b_r_recheck.py tests/test_r3b_r_dialogue_vocative.py tests/test_r3b_r_self_directed_action.py tests/test_r3b_r_candidate_recheck.py",
+    "candidate": "python plugin/tests/r3b_r_recheck.py --candidate /Users/zy/historical-plugin/artifacts/flagship-literary-film-01/creative/screenplay-r3 --output <new-report-output.json> [--baseline]"
+  },
+  "python": "/Users/zy/historical-plugin/drama-mcp-service/.venv/bin/python",
+  "productionAuthorized": false,
+  "paidGeneration": 0
+}

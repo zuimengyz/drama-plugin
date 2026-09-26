@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "baselineHead": "df625f9d01cc62c3f1ffed2774e88166ab37bae5",
+  "frozenFilesChecked": 309,
+  "changedFrozenFiles": [],
+  "runtimeChanged": 0,
+  "originalR3ScreenplaySha256": "39a1f9fa35d1e1becbeac667b911dfb9ab2e0dbaef6fb10e8335044fc0aadb3f",
+  "candidateSha256": "aebfdbea2cb7ee8db5b0cea0f1f0a2dea79b9a64d085fcd3aef37f45219342ac",
+  "S04S16ByteIdentical": true,
+  "approvalClaimChanged": false,
+  "providerChanged": false,
+  "promptGeneratorChanged": false,
+  "baselineManifest": "/Users/zy/historical-plugin/artifacts/flagship-literary-film-01/creative/screenplay-r3c-r/resume-baseline.json",
+  "runtimeFileSetUnchanged": true,
+  "gitDiffCheck": "PASS"
+}

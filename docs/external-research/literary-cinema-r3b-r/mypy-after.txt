@@ -1,0 +1,51 @@
+src/drama_plugin/characters/source_guard.py:8: error: Function is missing a type annotation  [no-untyped-def]
+src/drama_plugin/characters/source_guard.py:24: error: Function is missing a type annotation  [no-untyped-def]
+src/drama_plugin/characters/source_guard.py:25: error: Need type annotation for "events" (hint: "events: list[<type>] = ...")  [var-annotated]
+src/drama_plugin/characters/source_guard.py:25: error: Argument 1 to "set" of "ContextVar" has incompatible type "dict[str, list[Any] | list[Path] | Path | None]"; expected "None"  [arg-type]
+src/drama_plugin/visual/history.py:11: error: Returning Any from function declared to return "dict[str, Any]"  [no-any-return]
+src/drama_plugin/visual/history.py:15: error: Returning Any from function declared to return "dict[str, Any]"  [no-any-return]
+src/drama_plugin/visual_medium.py:320: error: No overload variant of "update" of "MutableMapping" matches argument types "int", "int", "str"  [call-overload]
+src/drama_plugin/visual_medium.py:320: note: Possible overload variants:
+src/drama_plugin/visual_medium.py:320: note:     def update(self, SupportsKeysAndGetItem[str, Sequence[str]], /) -> None
+src/drama_plugin/visual_medium.py:320: note:     def update(self, SupportsKeysAndGetItem[str, Sequence[str]], /, **kwargs: Sequence[str]) -> None
+src/drama_plugin/visual_medium.py:320: note:     def update(self, Iterable[tuple[str, Sequence[str]]], /) -> None
+src/drama_plugin/visual_medium.py:320: note:     def update(self, Iterable[tuple[str, Sequence[str]]], /, **kwargs: Sequence[str]) -> None
+src/drama_plugin/visual_medium.py:320: note:     def update(self, **kwargs: Sequence[str]) -> None
+src/drama_plugin/visual_medium.py:321: error: Unsupported operand types for + ("Sequence[str]" and "int")  [operator]
+src/drama_plugin/visual_medium.py:328: error: Generator has incompatible item type "Sequence[str]"; expected "str"  [misc]
+src/drama_plugin/visual_medium.py:344: error: "Sequence[str]" has no attribute "startswith"  [attr-defined]
+src/drama_plugin/visual_medium.py:346: error: "Sequence[str]" has no attribute "startswith"  [attr-defined]
+src/drama_plugin/render_stylization.py:141: error: Argument 1 to "len" has incompatible type "list[str] | list[Any] | str | None"; expected "Sized"  [arg-type]
+src/drama_plugin/render_stylization.py:143: error: Argument 1 to "len" has incompatible type "list[str] | list[Any] | str | None"; expected "Sized"  [arg-type]
+src/drama_plugin/contracts/character_package.py:197: error: Function is missing a type annotation  [no-untyped-def]
+src/drama_plugin/visual/payload_scope.py:53: error: Call to untyped function (unknown) in typed context  [no-untyped-call]
+src/drama_plugin/visual/payload_scope.py:57: error: Call to untyped function (unknown) in typed context  [no-untyped-call]
+src/drama_plugin/contracts/performance_casting.py:165: error: Returning Any from function declared to return "dict[str, Any]"  [no-any-return]
+src/drama_plugin/characters/repository.py:9: error: Library stubs not installed for "yaml"  [import-untyped]
+src/drama_plugin/characters/repository.py:23: error: Class cannot subclass "SafeLoader" (has type "Any")  [misc]
+src/drama_plugin/characters/repository.py:26: error: Missing type arguments for generic type "dict"  [type-arg]
+src/drama_plugin/characters/repository.py:62: error: Missing type arguments for generic type "dict"  [type-arg]
+src/drama_plugin/characters/repository.py:141: error: Missing type arguments for generic type "dict"  [type-arg]
+src/drama_plugin/characters/repository.py:148: error: Missing type arguments for generic type "dict"  [type-arg]
+src/drama_plugin/characters/repository.py:165: error: Missing type arguments for generic type "dict"  [type-arg]
+src/drama_plugin/characters/embodiment.py:10: error: Function is missing a return type annotation  [no-untyped-def]
+src/drama_plugin/characters/embodiment.py:10: error: Missing type arguments for generic type "dict"  [type-arg]
+src/drama_plugin/characters/embodiment.py:49: error: Missing type arguments for generic type "dict"  [type-arg]
+src/drama_plugin/characters/screenplay.py:5: error: Missing type arguments for generic type "dict"  [type-arg]
+src/drama_plugin/characters/screenplay.py:12: error: Need type annotation for "current"  [var-annotated]
+src/drama_plugin/characters/screenplay.py:19: error: Item "int" of "list[Any] | int | str | Any" has no attribute "append"  [union-attr]
+src/drama_plugin/characters/screenplay.py:19: error: Item "str" of "list[Any] | int | str | Any" has no attribute "append"  [union-attr]
+src/drama_plugin/characters/screenplay.py:20: error: Item "int" of "list[Any] | int | str | Any" has no attribute "append"  [union-attr]
+src/drama_plugin/characters/screenplay.py:20: error: Item "str" of "list[Any] | int | str | Any" has no attribute "append"  [union-attr]
+src/drama_plugin/characters/authoring.py:4: error: Library stubs not installed for "yaml"  [import-untyped]
+src/drama_plugin/characters/authoring.py:4: note: Hint: "python3 -m pip install types-PyYAML"
+src/drama_plugin/characters/authoring.py:4: note: (or run "mypy --install-types" to install all missing stub packages)
+src/drama_plugin/characters/authoring.py:4: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
+src/drama_plugin/characters/authoring.py:9: error: Missing type arguments for generic type "dict"  [type-arg]
+src/drama_plugin/characters/consumption.py:6: error: Missing type arguments for generic type "dict"  [type-arg]
+src/drama_plugin/characters/consumption.py:12: error: Function is missing a type annotation for one or more parameters  [no-untyped-def]
+src/drama_plugin/characters/consumption.py:12: error: Missing type arguments for generic type "dict"  [type-arg]
+src/drama_plugin/characters/__main__.py:8: error: Function is missing a return type annotation  [no-untyped-def]
+src/drama_plugin/characters/__main__.py:8: note: Use "-> None" if function does not return a value
+src/drama_plugin/characters/__main__.py:14: error: Call to untyped function "main" in typed context  [no-untyped-call]
+Found 40 errors in 13 files (checked 203 source files)

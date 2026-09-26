@@ -1,0 +1,166 @@
+{
+  "blocker": "R3CR-RT01",
+  "resolved": true,
+  "currentApprovalRecheck": [
+    {
+      "id": "I-CORE",
+      "version": 2,
+      "status": "PASS"
+    },
+    {
+      "id": "I-CHARACTER",
+      "version": 1,
+      "status": "PASS"
+    },
+    {
+      "id": "I-RELATION",
+      "version": 2,
+      "status": "PASS"
+    },
+    {
+      "id": "I-MOTIFS",
+      "version": 1,
+      "status": "PASS"
+    },
+    {
+      "id": "I-DREAM",
+      "version": 1,
+      "status": "PASS"
+    },
+    {
+      "id": "I-WORLD",
+      "version": 2,
+      "status": "PASS"
+    },
+    {
+      "id": "I-BOUNDARIES",
+      "version": 1,
+      "status": "PASS"
+    },
+    {
+      "id": "I-OPEN",
+      "version": 1,
+      "status": "PASS"
+    },
+    {
+      "id": "H-S1",
+      "version": 1,
+      "status": "PASS"
+    },
+    {
+      "id": "H-S2",
+      "version": 1,
+      "status": "PASS"
+    },
+    {
+      "id": "H-S5",
+      "version": 1,
+      "status": "PASS"
+    }
+  ],
+  "unchangedDepartmentHandoffs": [
+    {
+      "department": "story-architecture",
+      "status": "PASS",
+      "unchanged": true
+    },
+    {
+      "department": "scene-development",
+      "status": "PASS",
+      "unchanged": true
+    },
+    {
+      "department": "character-dramaturgy",
+      "status": "PASS",
+      "unchanged": true
+    },
+    {
+      "department": "director",
+      "status": "PASS",
+      "unchanged": true
+    },
+    {
+      "department": "dramatic-performance-direction",
+      "status": "PASS",
+      "unchanged": true
+    },
+    {
+      "department": "costume-design",
+      "status": "PASS",
+      "unchanged": true
+    },
+    {
+      "department": "specialized-asset-design",
+      "status": "PASS",
+      "unchanged": true
+    },
+    {
+      "department": "production-design",
+      "status": "PASS",
+      "unchanged": true
+    },
+    {
+      "department": "cinematography",
+      "status": "PASS",
+      "unchanged": true
+    },
+    {
+      "department": "lighting-design",
+      "status": "PASS",
+      "unchanged": true
+    },
+    {
+      "department": "color-design",
+      "status": "PASS",
+      "unchanged": true
+    },
+    {
+      "department": "sound-design",
+      "status": "PASS",
+      "unchanged": true
+    },
+    {
+      "department": "music-direction",
+      "status": "PASS",
+      "unchanged": true
+    },
+    {
+      "department": "editorial-design",
+      "status": "PASS",
+      "unchanged": true
+    },
+    {
+      "department": "shot-design",
+      "status": "PASS",
+      "unchanged": true
+    }
+  ],
+  "sameOfflineBlockerFixture": {
+    "direct": {
+      "status": "PASS"
+    },
+    "missingContext": {
+      "status": "FAIL",
+      "error": "USER_INTERPRETATION_APPROVAL_REQUIRED"
+    },
+    "approvedHostSubmit": {
+      "status": "PASS"
+    },
+    "character-artCompile": {
+      "status": "PASS"
+    },
+    "character-artRecords": {
+      "status": "PASS"
+    },
+    "costume-designCompile": {
+      "status": "PASS"
+    },
+    "costume-designRecords": {
+      "status": "PASS"
+    }
+  },
+  "currentWorkCreativeArtifactsWritten": false,
+  "paidCalls": 0,
+  "readyToResumeR3CR": true,
+  "creativeRewriteResumed": false
+}

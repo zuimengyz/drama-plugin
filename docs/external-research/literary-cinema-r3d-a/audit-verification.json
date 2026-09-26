@@ -1,0 +1,27 @@
+{
+  "status": "AUDIT_ARTIFACTS_VERIFIED",
+  "verificationScope": "file integrity, anchors, report links and artifact inventory only; not artistic/runtime approval",
+  "protectedFilesChecked": 1203,
+  "changedProtectedFiles": [],
+  "missingProtectedFiles": [],
+  "sourceTextSha256": "463482d6047e5b1a8169ad3f672970ace0098daa3bc84d5beffe5949505c6f64",
+  "sourceEqualsDesignatedArtifact": true,
+  "anchorQuoteChecks": 42,
+  "r2_r3_s04_s16_identical": true,
+  "formalReports": 7,
+  "starReports": 1,
+  "finalFindings": 1,
+  "markdownLinksInvalid": [],
+  "currentGitStatus": {
+    "drama-plugin": "?? docs/external-research/.DS_Store\n?? docs/external-research/literary-cinema-r3d-a/\n",
+    "drama-mcp-service": "",
+    "drama-service": ""
+  },
+  "runtimeChanges": 0,
+  "screenplayChanges": 0,
+  "r3bRChanges": 0,
+  "paidGeneration": 0,
+  "runtimeTestsRun": false,
+  "userInterpretationApproval": "NOT_REQUESTED_NOT_GRANTED",
+  "newTopLevelSkills": 0
+}

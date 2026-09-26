@@ -10,6 +10,10 @@ from .director_artifacts import DirectorArtifactStore
 
 
 class SpecializedAssetHost:
+    """Approval refs are caller-owned execution context, never stored authority.
+
+    Every validating entry must receive them again, including immutable replay.
+    """
     def __init__(self, config: DramaPluginConfig):
         if not config.visual_authority_root or not Path(config.visual_authority_root).is_absolute():
             raise ValueError('VISUAL_AUTHORITY_ROOT_REQUIRED: configure one absolute movie authority store')
@@ -39,7 +43,8 @@ class SpecializedAssetHost:
             raise ValueError('MOVIE_VISUAL_AUTHORITY_MISMATCH')
         return SourcePin(key='runtime-medium:' + work_id, kind='DIRECTION', fingerprint=sha256_canonical(value))
 
-    def save_style(self, style: GlobalVisualStyle, *, current: Mapping[str, str] | None = None) -> SourcePin:
+    def save_style(self, style: GlobalVisualStyle, *, current: Mapping[str, str] | None = None,
+                   approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> SourcePin:
         style = GlobalVisualStyle.model_validate(dump_contract(style))
         if style.runtime_ref != self.movie(style.work_id):
             raise ValueError('MOVIE_VISUAL_AUTHORITY_MISMATCH')
@@ -52,7 +57,8 @@ class SpecializedAssetHost:
             from ..visual.still_knowledge import validate_imaging
             originals = ProfessionalDepartmentHost(self.store.root)._artifacts(style.imaging_character.source_refs)
             originals[style.runtime_ref.key] = dump_contract(medium)
-            validate_imaging(style, originals, {**(current or {}), style.runtime_ref.key: style.runtime_ref.fingerprint})
+            validate_imaging(style, originals, {**(current or {}), style.runtime_ref.key: style.runtime_ref.fingerprint},
+                             approved_interpretation_refs=approved_interpretation_refs)
         return self.store.put('global-style:' + style.work_id, dump_contract(style))
 
     def _inputs(self, bible: SpecializedAssetBible, current: Mapping[str, str]) -> tuple[dict[str, Any], dict[str, str]]:
@@ -70,24 +76,28 @@ class SpecializedAssetHost:
         originals = ProfessionalDepartmentHost(self.store.root)._artifacts(tuple(refs))
         return originals, {**current, bible.runtime_ref.key: bible.runtime_ref.fingerprint}
 
-    def submit(self, bible: SpecializedAssetBible, *, current: Mapping[str, str]) -> SourcePin:
+    def submit(self, bible: SpecializedAssetBible, *, current: Mapping[str, str],
+               approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> SourcePin:
         originals, resolved = self._inputs(bible, current)
-        validate_assets(bible, originals, resolved)
+        validate_assets(bible, originals, resolved, approved_interpretation_refs=approved_interpretation_refs)
         return self.store.put('specialized-assets:' + bible.work_id, dump_contract(bible))
 
     def compile(self, ref: SourcePin, asset_id: str, *, current: Mapping[str, str],
-                casting_mode: str = 'DESIGN_NEUTRAL') -> dict[str, Any]:
+                casting_mode: str = 'DESIGN_NEUTRAL',
+                approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
         if current.get(ref.key) != ref.fingerprint:
             raise ValueError('STALE_SPECIALIZED_ASSET')
         bible = SpecializedAssetBible.model_validate(self.store.read_ref(ref))
         originals, resolved = self._inputs(bible, current)
-        receipt = compile_asset(bible, asset_id, originals, resolved, casting_mode=casting_mode)
-        projection = provider_projection(receipt, originals, resolved)
+        receipt = compile_asset(bible, asset_id, originals, resolved, casting_mode=casting_mode,
+                                approved_interpretation_refs=approved_interpretation_refs)
+        projection = provider_projection(receipt, originals, resolved, approved_interpretation_refs=approved_interpretation_refs)
         retained = self.store.put('asset-compilation:' + bible.work_id + ':' + asset_id, receipt)
         return {'compilationRef': dump_contract(retained), 'compilation': receipt, 'projection': projection}
 
     def department_records(self, ref: SourcePin, asset_ids: tuple[str, ...], department: str,
-                           *, current: Mapping[str, str]) -> tuple[Any, ...]:
+                           *, current: Mapping[str, str],
+                           approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> tuple[Any, ...]:
         """Project into existing department consumers without a second design author.
 
         The caller retains the usual Bible scope/dependencies and review procedure;
@@ -99,13 +109,14 @@ class SpecializedAssetHost:
             raise ValueError('STALE_SPECIALIZED_ASSET')
         bible = SpecializedAssetBible.model_validate(self.store.read_ref(ref))
         originals, resolved = self._inputs(bible, current)
-        validate_assets(bible, originals, resolved)
+        validate_assets(bible, originals, resolved, approved_interpretation_refs=approved_interpretation_refs)
         return tuple(CreativeRecord(id=identity, scope_refs=(bible.work_id,),
-            values=department_values(bible, identity, department, originals, resolved),
+            values=department_values(bible, identity, department, originals, resolved, approved_interpretation_refs=approved_interpretation_refs),
             provenance='SPECIALIZED_ASSET_PROJECTION', source_refs=(ref,)) for identity in asset_ids)
 
 
-def require_production_visual_authority(work: Any) -> list[dict[str, Any]]:
+def require_production_visual_authority(work: Any, *,
+                                        approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> list[dict[str, Any]]:
     """Called before paid reservation/submission, including legacy entry points.
 
     Compilation proves design lineage only. Existing creative/spend authorization
@@ -129,7 +140,7 @@ def require_production_visual_authority(work: Any) -> list[dict[str, Any]]:
         if bible.work_id != work.id or current.get('specialized-assets:' + work.id) != sha256_canonical(bible):
             raise ValueError('STALE_SPECIALIZED_ASSET')
         originals, resolved = host._inputs(bible, current)
-        provider_projection(receipt, originals, resolved)
+        provider_projection(receipt, originals, resolved, approved_interpretation_refs=approved_interpretation_refs)
         result.append(receipt)
     for key in ('visualMedium', 'visualRoute'):
         if key in work.content:
@@ -137,11 +148,12 @@ def require_production_visual_authority(work: Any) -> list[dict[str, Any]]:
     return result
 
 
-def bind_video_request(work: Any, request: Any) -> Any:
+def bind_video_request(work: Any, request: Any, *,
+                       approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> Any:
     """Existing VideoRequest consumes exact compiler output and pins; no new provider."""
     from ..contracts.video import VideoRequest
     request = VideoRequest.model_validate(dump_contract(request))
-    receipts = require_production_visual_authority(work)
+    receipts = require_production_visual_authority(work, approved_interpretation_refs=approved_interpretation_refs)
     if request.continuity.work_id != work.id:
         raise ValueError('MOVIE_VISUAL_AUTHORITY_MISMATCH')
     _check_request_medium(receipts[0]['medium'], dump_contract(request.continuity.style))
@@ -149,20 +161,21 @@ def bind_video_request(work: Any, request: Any) -> Any:
     values = dump_contract(request)
     values['continuity']['sources'] = [dump_contract(ref) for ref in (*request.continuity.sources, *refs)]
     values.pop('authority_context', None)
-    context = compile_authority_context(work, values)
+    context = compile_authority_context(work, values, approved_interpretation_refs=approved_interpretation_refs)
     values['prompt'] = request.prompt + '\n' + authority_semantics(context)
     values['authority_context'] = context
     return VideoRequest.model_validate(values)
 
 
-def compile_authority_context(work: Any, creative_intent: dict[str, Any]) -> dict[str, Any]:
+def compile_authority_context(work: Any, creative_intent: dict[str, Any], *,
+                              approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
     """Replay approved assets internally; compile only continuity instructions.
 
     The complete receipt/source map is evidence, not model text. All Work-required
     compilations remain required. Selection is deterministic and source-addressed.
     """
     from copy import deepcopy
-    receipts = require_production_visual_authority(work)
+    receipts = require_production_visual_authority(work, approved_interpretation_refs=approved_interpretation_refs)
     if creative_intent.get('state') == 'CINEMATIC_DIRECTION_FROZEN':
         from ..visual.cinematic import verify_frozen
         spec = verify_frozen(creative_intent)
@@ -192,12 +205,13 @@ def compile_authority_context(work: Any, creative_intent: dict[str, Any]) -> dic
     return {**material, 'fingerprint': sha256_canonical(material)}
 
 
-def validate_authority_context(context: dict[str, Any], creative_intent: dict[str, Any], work: Any = None) -> None:
+def validate_authority_context(context: dict[str, Any], creative_intent: dict[str, Any], work: Any = None, *,
+                               approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> None:
     from types import SimpleNamespace
     if not context:
         raise ValueError('ASSET_AUTHORITY_CONTEXT_REQUIRED')
     owner = work or SimpleNamespace(id=context['workId'], content=context['workAuthority'])
-    if context != compile_authority_context(owner, creative_intent):
+    if context != compile_authority_context(owner, creative_intent, approved_interpretation_refs=approved_interpretation_refs):
         raise ValueError('ASSET_AUTHORITY_CONTEXT_CHANGED')
 
 
@@ -227,15 +241,16 @@ def _check_request_medium(medium: str, value: Any) -> None:
 
 
 def validate_visual_submission(work: Any, request: dict[str, Any], *, authority_context: dict[str, Any] | None = None,
-                               creative_intent: dict[str, Any] | None = None) -> None:
+                               creative_intent: dict[str, Any] | None = None,
+                               approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> None:
     """Video uses replayable compilation evidence; legacy asset images stay valid."""
     if isinstance(request.get('videoRequest'), dict):
         # HTTP transport envelopes retain the typed request internally; adapters
         # serialize only provider fields. Validate its evidence at the same gate.
         validate_visual_submission(work, request['videoRequest'], authority_context=authority_context,
-                                   creative_intent=creative_intent)
+                                   creative_intent=creative_intent, approved_interpretation_refs=approved_interpretation_refs)
         return
-    receipts = require_production_visual_authority(work)
+    receipts = require_production_visual_authority(work, approved_interpretation_refs=approved_interpretation_refs)
     payload = {k: v for k, v in request.items() if k != 'authority_context'}
     _check_request_medium(receipts[0]['medium'], payload)
     prompts: list[str] = []
@@ -258,7 +273,7 @@ def validate_visual_submission(work: Any, request: dict[str, Any], *, authority_
         if not context:
             raise ValueError('SUBMISSION_DOES_NOT_CONSUME_SPECIALIZED_ASSETS: ASSET_AUTHORITY_CONTEXT_REQUIRED')
         intent = creative_intent if creative_intent is not None else context['creativeIntent']
-        validate_authority_context(context, intent, work)
+        validate_authority_context(context, intent, work, approved_interpretation_refs=approved_interpretation_refs)
         if is_video_intent and intent.get('state') != 'CINEMATIC_DIRECTION_FROZEN':
             expected = dict(intent)
             expected['prompt'] = intent['prompt'] + '\n' + authority_semantics(context)

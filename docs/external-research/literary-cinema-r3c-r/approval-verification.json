@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "approvedReceiptsVerified": 11,
+  "actualQuestionHandoffs": 15,
+  "preservedUnapproved": {
+    "H-S3": "OPEN",
+    "H-S4": "OPEN",
+    "H-S6": "UNSUPPORTED",
+    "H-S7": "REJECTED"
+  },
+  "screenplayEdited": false,
+  "runtimeChanged": false,
+  "allFrozenInputsUnchanged": true
+}

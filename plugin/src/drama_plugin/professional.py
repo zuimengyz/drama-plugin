@@ -203,9 +203,12 @@ def _inherited_entity(identity: str, dependencies: Sequence[CreativeBible], arti
     return next(iter(matches.values()))
 
 
-def validate_bible(bible: CreativeBible, artifacts: Mapping[str, Any], current: Mapping[str, str]) -> dict[str, Any]:
+def validate_bible(bible: CreativeBible, artifacts: Mapping[str, Any], current: Mapping[str, str], *,
+                   approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
     """Validate one department's ownership and pinned upstreams, never fill gaps."""
     bible = CreativeBible.model_validate(dump_contract(bible))
+    from drama_plugin.interpretation import require_record_consumption, check_consumer_dependencies, validate_record_selection
+    check_consumer_dependencies(bible.depends_on, artifacts, current, approved_interpretation_refs)
     definitions = registry(bible.source_type)
     if bible.created_by_capability not in definitions:
         raise ValueError('UNKNOWN_PROFESSIONAL_DEPARTMENT')
@@ -233,9 +236,17 @@ def validate_bible(bible: CreativeBible, artifacts: Mapping[str, Any], current: 
         raise ValueError('DEPARTMENT_DEPENDENCY_SET_MISMATCH:' + bible.created_by_capability)
     if bible.source_type == 'LITERARY':
         _validate_literary_department(bible, artifacts, current)
+    validate_record_selection(bible.content, artifacts, current)
+    consumed_interpretations = {(u.interpretation_ref.key, u.interpretation_ref.fingerprint)
+        for record in bible.content for u in record.interpretation_uses}
+    if any((p.key, p.fingerprint) not in consumed_interpretations for p in bible.source_refs
+           if p.key.startswith('interpretation:') or isinstance(artifacts.get(p.key), dict) and artifacts[p.key].get('interpretation')):
+        raise ValueError('EXPLICIT_INTERPRETATION_CONSUMPTION_REQUIRED')
     scopes = {bible.work_ref, *bible.scene_refs, *bible.shot_refs}
     scopes.update(x for x in (bible.script_ref, bible.episode_ref) if x)
     for record in bible.content:
+        require_record_consumption(record, bible.created_by_capability, bible.work_ref,
+                                   artifacts, current, approved_interpretation_refs)
         allowed_fields = (definition.authority_scope if bible.created_by_capability in FORWARDED_DEPARTMENTS
                           and record.provenance in {'MIGRATED_FROM_R1', 'SPECIALIZED_ASSET_PROJECTION'} else definition.can_create)
         if not set(record.values) <= set(allowed_fields):
@@ -251,8 +262,8 @@ def validate_bible(bible: CreativeBible, artifacts: Mapping[str, Any], current: 
             if len(source) != 1 or bible.created_by_capability not in FORWARDED_DEPARTMENTS:
                 raise ValueError('SPECIALIZED_ASSET_VIEW_SOURCE_REQUIRED')
             asset_bible = SpecializedAssetBible.model_validate(_read(source[0], artifacts, current))
-            validate_assets(asset_bible, artifacts, current)
-            if record.values != department_values(asset_bible, record.id, bible.created_by_capability, artifacts, current):
+            validate_assets(asset_bible, artifacts, current, approved_interpretation_refs=approved_interpretation_refs)
+            if record.values != department_values(asset_bible, record.id, bible.created_by_capability, artifacts, current, approved_interpretation_refs=approved_interpretation_refs):
                 raise ValueError('SPECIALIZED_ASSET_VIEW_CHANGED')
         keys = _nested_keys(record.values)
         if bible.created_by_capability == 'scene-development' and 'dramaturgy' in record.values:
@@ -466,7 +477,8 @@ def decompose_clip_intervals(total_seconds: float, *, verified_max_seconds: floa
     return {'status': 'PLANNED_NOT_EXECUTABLE', 'clips': clips, 'providerCalls': 0}
 
 
-def validate_package(package: DirectorPackage, artifacts: Mapping[str, Any], current: Mapping[str, str]) -> dict[str, Any]:
+def validate_package(package: DirectorPackage, artifacts: Mapping[str, Any], current: Mapping[str, str], *,
+                     approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
     package = DirectorPackage.model_validate(dump_contract(package))
     if set(package.bible_refs) != set(registry(package.source_type)):
         raise ValueError('DIRECTOR_PACKAGE_DEPARTMENT_SET_MISMATCH')
@@ -484,7 +496,7 @@ def validate_package(package: DirectorPackage, artifacts: Mapping[str, Any], cur
             raise ValueError('DIRECTOR_PACKAGE_WRONG_OWNER_OR_WORK')
         if (package.script_ref is not None and bible.script_ref != package.script_ref) or (package.episode_ref is not None and bible.episode_ref != package.episode_ref):
             raise ValueError('DIRECTOR_PACKAGE_SCRIPT_OR_EPISODE_MISMATCH')
-        rows.append(validate_bible(bible, artifacts, current))
+        rows.append(validate_bible(bible, artifacts, current, approved_interpretation_refs=approved_interpretation_refs))
         if bible.status == 'DRAFT':
             blockers.append('DEPARTMENT_DRAFT:' + department)
         if registry(package.source_type)[department].capability_type == 'VALIDATOR':
@@ -549,9 +561,10 @@ def _validate_assembly(assembly: SceneAssembly | ShotAssembly, package: Director
             raise ValueError('ASSEMBLY_BIBLE_SCOPE_MISMATCH')
 
 
-def compile_prompt_projection(package: DirectorPackage, shot: ShotAssembly, artifacts: Mapping[str, Any], current: Mapping[str, str], *, adapter: str) -> dict[str, Any]:
+def compile_prompt_projection(package: DirectorPackage, shot: ShotAssembly, artifacts: Mapping[str, Any], current: Mapping[str, str], *, adapter: str,
+                              approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
     """Pure projection of approved exact refs. No creative text or provider calls."""
-    review = validate_package(package, artifacts, current)
+    review = validate_package(package, artifacts, current, approved_interpretation_refs=approved_interpretation_refs)
     if review['blockers']:
         raise ValueError('CREATIVE_PACKAGE_QA_BLOCKED')
     if package.status != 'APPROVED':
@@ -570,7 +583,12 @@ def compile_prompt_projection(package: DirectorPackage, shot: ShotAssembly, arti
         for record in bible.content:
             explicit_shots = set(record.scope_refs) & set(bible.shot_refs)
             if (shot.shot_id in explicit_shots if explicit_shots else shot.scene_ref in record.scope_refs or bible.work_ref in record.scope_refs):
-                selected.append(dump_contract(record))
+                projected_record = dump_contract(record)
+                if record.interpretation_uses:
+                    projected_record.pop('interpretationUses', None)
+                    projected_record['sourceRefs'] = [dump_contract(p) for p in record.source_refs
+                        if not p.key.startswith(('interpretation:', 'interpretation-approval:'))]
+                selected.append(projected_record)
         projected[department] = selected
     return {'adapter': adapter, 'shotId': shot.shot_id, 'sourceRefs': {k: dump_contract(v) for k, v in shot.department_refs.items()},
             'projection': projected, 'executable': False, 'providerCalls': 0,

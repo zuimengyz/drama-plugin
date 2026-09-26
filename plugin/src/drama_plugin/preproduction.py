@@ -305,12 +305,26 @@ def department_integration(packet: DirectorDepartmentPacket, review: ScreenplayR
 def complete_production_book(packet: DirectorDepartmentPacket, review: ScreenplayReadinessReview,
                              current: Mapping[str,str], artifacts: Mapping[str,dict[str,Any]], *,
                              performance: Mapping[str,Any] | None = None,
-                             score_plan: Any = None) -> dict[str,Any]:
+                             score_plan: Any = None,
+                             interpretation_approvals: Mapping[str,SourcePin] | None = None,
+                             approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str,Any]:
     """Unique full-book completion entry; R0 department readiness is insufficient.
 
     Performance evidence is recomputed from an ephemeral Host canonical witness.
     A JSON status, label or proposal manifest cannot replace formal evidence.
     """
+    from drama_plugin.interpretation import check_consumer_dependencies, approved_interpretation
+    try:
+        check_consumer_dependencies((packet.intent_ref, *(e.artifact_ref for e in packet.entries)),
+                                    artifacts,current,approved_interpretation_refs)
+        intent_original = artifacts.get(packet.intent_ref.key, {})
+        if intent_original.get('interpretation'):
+            approval_ref = (interpretation_approvals or {}).get(packet.intent_ref.key)
+            if approval_ref is None:
+                raise ValueError('USER_INTERPRETATION_APPROVAL_REQUIRED')
+            approved_interpretation(packet.intent_ref, approval_ref, artifacts, current, approved_interpretation_refs)
+    except ValueError as exc:
+        return {'status':'DIRECTOR_PRODUCTION_BOOK_NOT_READY','missing':[str(exc)],'productionAuthorized':False}
     departments=department_integration(packet,review,current,artifacts)
     missing: list[str]=[]
     from drama_plugin.director_runtime import review_runtime

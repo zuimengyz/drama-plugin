@@ -1,0 +1,35 @@
+{
+  "classification": "R3C_R_BLOCKED_BY_RUNTIME",
+  "blockerId": "R3CR-RT01",
+  "fixtureOnly": true,
+  "currentWorkCreativeDesignCreated": false,
+  "runtimeChanges": 0,
+  "paidCalls": 0,
+  "controlBeforeOptIn": {
+    "status": "PASS",
+    "result": "(MovieVisualMedium(schema_version='movie-visual-medium-v1', work_id='work', medium='LIVE_ACTION', configuration_source='environment:DRAMA_PLUGIN_VISUAL_MEDIUM'), GlobalVisualStyle(schema_version='global-visual-style-v1', work_id='work', runtime_ref=SourcePin(key='runtime-medium:work', kind='DIRECTION', fingerprint='451fafdd9305bcefee02bdb14c20a0b2b08dd9d9949df5b417ca4d66caab0b9c'), imaging_character=None, realism='NATURALISTIC', render_stylization=None, material_philosophy='PHYSICALLY_CREDIBLE', lighting_philosophy='MOTIVATED', readability='IDENTITY_WITHOUT_BEAUTIFICATION', consistency='PRESERVE_AUTHORED_IDENTITY'))"
+  },
+  "directApprovedProfessionalValidation": {
+    "status": "PASS",
+    "result": "{'department': 'character-dramaturgy', 'validationStatus': 'PASS', 'status': 'APPROVED', 'outputRef': {'key': 'bible:character-dramaturgy', 'kind': 'DESIGN', 'fingerprint': '8559f49e700a55722cac8fa61bed97587296f4d79ce6f9de5e346cd1bb598c22'}, 'artisticApproval': 'APPROVED', 'providerCalls': 0}"
+  },
+  "actualSpecializedAssetHostSubmit": {
+    "status": "FAIL",
+    "type": "ValueError",
+    "error": "USER_INTERPRETATION_APPROVAL_REQUIRED"
+  },
+  "passingTrustedContextToHost": {
+    "status": "FAIL",
+    "type": "TypeError",
+    "error": "SpecializedAssetHost.submit() got an unexpected keyword argument 'approved_interpretation_refs'"
+  },
+  "signatures": {
+    "SpecializedAssetHost.submit": "(self, bible: drama_plugin.contracts.specialized_asset.SpecializedAssetBible, *, current: Mapping[str, str]) -> drama_plugin.contracts.source_pin.SourcePin",
+    "validate_assets": "(bible: drama_plugin.contracts.specialized_asset.SpecializedAssetBible, originals: Mapping[str, Any], current: Mapping[str, str]) -> tuple[drama_plugin.contracts.specialized_asset.MovieVisualMedium, drama_plugin.contracts.specialized_asset.GlobalVisualStyle]",
+    "upstream": "(link: drama_plugin.contracts.specialized_asset.DramaturgyInput, owners: set[str], work_id: str, originals: Mapping[str, Any], current: Mapping[str, str]) -> dict[str, typing.Any]",
+    "validate_bible": "(bible: 'CreativeBible', artifacts: 'Mapping[str, Any]', current: 'Mapping[str, str]', *, approved_interpretation_refs: 'tuple[SourcePin, ...]' = ()) -> 'dict[str, Any]'"
+  },
+  "cause": "SpecializedAssetHost.submit -> validate_assets -> upstream invokes validate_bible without approved_interpretation_refs; no public parameter transports trusted refs.",
+  "repairOwner": "Runtime integration owner: Specialized Asset / professional approval-context propagation",
+  "noBypass": "Did not strip interpretationUses, forge currentness, reinterpret approval JSON as trust, or change screenplay/Runtime."
+}

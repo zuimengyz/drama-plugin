@@ -1,0 +1,25 @@
+ M plugin/src/drama_plugin/contracts/professional.py
+ M plugin/src/drama_plugin/hosts/creative_source.py
+ M plugin/src/drama_plugin/hosts/director_artifacts.py
+ M plugin/src/drama_plugin/hosts/professional.py
+ M plugin/src/drama_plugin/preproduction.py
+ M plugin/src/drama_plugin/professional.py
+ M plugin/src/drama_plugin/scene_dramaturgy.py
+ M plugin/src/drama_plugin/screenplay_playability.py
+?? docs/external-research/.DS_Store
+?? docs/external-research/literary-cinema-r3b-r/
+?? docs/external-research/literary-cinema-r3c-r/
+?? docs/external-research/literary-cinema-r3d-a/
+?? docs/external-research/literary-cinema-r3d/
+?? plugin/src/drama_plugin/contracts/interpretation.py
+?? plugin/src/drama_plugin/interpretation.py
+?? plugin/tests/fixtures/r3b_r/
+?? plugin/tests/fixtures/r3d/
+?? plugin/tests/r3b_r_helpers.py
+?? plugin/tests/r3b_r_recheck.py
+?? plugin/tests/r3d_helpers.py
+?? plugin/tests/test_r3b_r_candidate_recheck.py
+?? plugin/tests/test_r3b_r_dialogue_vocative.py
+?? plugin/tests/test_r3b_r_self_directed_action.py
+?? plugin/tests/test_r3d_integration.py
+?? plugin/tests/test_r3d_interpretation.py

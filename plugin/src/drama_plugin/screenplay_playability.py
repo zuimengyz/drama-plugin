@@ -17,6 +17,41 @@ from drama_plugin.dpd import compose_dpd
 _ABSTRACT = {"sad", "frightened", "alienated", "angry", "lonely", "desperate",
              "悲伤", "恐惧", "孤独", "绝望", "感动", "冷漠", "愤怒", "哲学思考"}
 _VOCATIVES = re.compile(r"^(?:(?:妈妈|爸爸|先生|女士|小姐|妈|爸)[\s，,。.!！?？…—、]*)+$")
+# Exact action vocabulary, not substring/NLP classification of objectives. The
+# Chinese value is the existing authored call action, retained for source replay.
+# Unknown/free-form actions do not receive the vocative exception.
+_CALL_ACTIONS = frozenset({"get_attention", "call_to_target", "call_after_target",
+                           "interrupt_target", "identify_addressee", "叫住新出现的求助对象"})
+_SINGLE_CALL = re.compile(r"[^\s，,。.!！?？…—、;；:：]+[!！?？。.]?")
+
+
+def _contextual_call(scene: Mapping[str, Any], dpd: DPDSnapshot, text: str) -> bool:
+    """Accept only a source-bound immediate call, never an implied help request."""
+    if dpd.line.dramatic_action not in _CALL_ACTIONS or not _SINGLE_CALL.fullmatch(text.strip()):
+        return False
+    receipt = dpd.line.playability
+    witness = dpd.beat.playability
+    target = dpd.effective.interaction_target
+    if (receipt is None or receipt.fragmentation != "CONTINUOUS"
+            or receipt.literal_meaning != dpd.line.dramatic_action or witness is None
+            or target == dpd.line.speaker or target not in scene["content"].get("characters", [])
+            or not scene["content"].get("dramaturgy")):
+        return False
+    from drama_plugin.scene_dramaturgy import source_dramaturgy
+    carriers = source_dramaturgy(scene).carriers
+    by_ref = {c.ref: c for c in carriers}
+    turn_ref = "spoken:" + dpd.line.spoken_content_id
+    turn = by_ref[turn_ref]
+    # The same current Beat must contain the call and its preceding encounter
+    # action. Merely listing a possible listener elsewhere in the Scene is not
+    # enough, nor is another occurrence of identical spoken text.
+    if turn_ref not in witness.action_carrier_refs or turn.cause_ref not in witness.action_carrier_refs:
+        return False
+    encounter = by_ref.get(turn.cause_ref or "")
+    return (encounter is not None and encounter.ref.startswith("action:")
+            and encounter.role in ("ACTION", "TRIGGER", "STIMULUS")
+            and (encounter.actor, encounter.target) == (dpd.line.speaker, target)
+            and (turn.actor, turn.target) == (dpd.line.speaker, target))
 
 
 def exact_text_hash(text: str) -> str:
@@ -86,8 +121,11 @@ def validate_line_playability(scene: Mapping[str, Any], dpd: DPDSnapshot) -> dic
     _concrete(dpd.effective.tactic, "effective playable tactic")
     if not dpd.effective.subtext:
         raise ValueError("UNRESOLVED: dialogue subtext (including explicit literal intention)")
-    if _VOCATIVES.fullmatch(text.strip()) and receipt.fragmentation != "INTENTIONALLY_UNINTELLIGIBLE":
-        raise ValueError("AMBIGUOUS_DIALOGUE: vocatives do not convey the requested action")
+    named_call = text.strip().rstrip("!！?？。.") == dpd.effective.interaction_target
+    if (_VOCATIVES.fullmatch(text.strip()) or named_call
+            or dpd.line.dramatic_action in _CALL_ACTIONS and _SINGLE_CALL.fullmatch(text.strip())):
+        if receipt.fragmentation != "INTENTIONALLY_UNINTELLIGIBLE" and not _contextual_call(scene, dpd, text):
+            raise ValueError("AMBIGUOUS_DIALOGUE: vocative requires a source-bound call action and target")
     if ("…" in text or "..." in text or "—" in text) and receipt.fragmentation == "CONTINUOUS":
         raise ValueError("UNRESOLVED: fragmentation must be reviewed")
     return deepcopy(line)

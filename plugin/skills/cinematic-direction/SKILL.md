@@ -44,3 +44,8 @@ Use supplied current originals first. For missing scoped context, read `work.get
 ## Route-owned expression
 
 Project the approved envelope as CinematicShotSpec.expressionDirection when supplied. Verify exact Work route, character/core revision, Director scope and source beat fingerprint. Preserve all canonical facts. Read [expression route contract](../../docs/expression-route-contract.md) when using character or action expression profiles.
+
+
+## Actor-playable screenplay handoff (Screenplay R2)
+
+Read [screenplay playability and exact dialogue](../../docs/screenplay-playability.md). Consume mapped DPD and reviewed ObservableAction/Blocking. Project the same meaning into existing CinematicShotSpec; absent objective/action fails upstream, never requests creative repair from a Prompt Generator.

@@ -105,3 +105,8 @@ For full-film/episode direction, produce the source-bound [Screenplay Readiness 
 Every new full Director Screenplay and Production Book must supply expected_runtime using the nested DirectorRuntimeEstimate facet. See [creative runtime accounting](../../docs/director-runtime.md). Derive target and range from actual scene obligations, never from provider clip limits or a fixed example length. Dialogue, action, silent performance and transition form one non-overlapping duration partition; music-bearing, intentional no-music and unresolved music form a separate overlay partition. Report Scene, Sequence and Act totals. A proposal estimate is not measured media or a mandate to fill time.
 
 Performance architecture validation is not screenplay artistic approval. A user-authorized upstream rewrite may change scenes, relationships, action and rhythm; preserve prior revisions and explicitly mark downstream mappings pending. Keep historical attestation, reconstruction and invention separate; source-based words spoken by a character are not automatically the author's historical conclusion. All work-specific choices and runtime values belong to the work's artifacts. Stop at the requested review boundary.
+
+
+## Actor-playable screenplay handoff (Screenplay R2)
+
+Read [screenplay playability and exact dialogue](../../docs/screenplay-playability.md). Audit every Scene/important Beat using PLAYABLE, LITERARY_ONLY, INTERNAL_STATE, AMBIGUOUS_DIALOGUE, EXPLANATORY_PROSE, OVERDIRECTED and ABSTRACT_EMOTION. Author the clean screenplay plus the existing-DPD playability sidecar; review dialogue in its body state before downstream handoff.

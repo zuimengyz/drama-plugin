@@ -122,3 +122,8 @@ remain pending, and a wording change does not itself invalidate images/videos.
 ## Pressure, release and first appearance
 
 Use the [peak/editorial contract](../../docs/dramatic-peak-editorial-contract.md) for PressureRelease and Scene-level DramaticPeakMap. State starting pressure, escalation, turn, release (or purposeful deferral) and aftermath, so equal tension at entry/exit is not mistaken for progression. Scene decides how a character enters; production-design decides visual importance; shot-design chooses the exact view. A core FirstAppearanceContract checks silhouette, costume/space/light priority, surrounding reactions and the first readable action/attitude. A name caption cannot replace these. Equal treatment with extras requires a hidden-identity story purpose. Do not write recommended peak changes over approved Canon merely to obtain intensity.
+
+
+## Actor-playable screenplay handoff (Screenplay R2)
+
+Read [screenplay playability and exact dialogue](../../docs/screenplay-playability.md). For each important actor/Beat, author objective, obstacle, playable action, current state, turn and reaction. Resolve explanatory prose to a visible/audible carrier or intent metadata. Preserve exact approved Dialogue and explicit targets.

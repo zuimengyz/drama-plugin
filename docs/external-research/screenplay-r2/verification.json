@@ -1,0 +1,20 @@
+{
+  "baselineHead": "287493c6bb1099eb6d70f4cfe1a5bc1b9bbb43cd",
+  "screenplayR1Sha256": "11d0f82f18f7defa31a9a4abe0de12e061cdc62183e3744c2b607dc1c19428e1",
+  "screenplayR2Sha256": "dae155c1d27e6091d8277e773fa22e1ca20b549e6a3e936322256a246b425c08",
+  "protectedS04S16Sha256": "5708e651b5a1557b9426f346526e5fd15ecdcd3480d63119713f0dafa02ca713",
+  "fullSuite": {
+    "passed": 2725,
+    "seconds": 139.28,
+    "stage": "before final nested revalidation and five extra targeted cases"
+  },
+  "finalTargetedSuite": {
+    "passed": 143,
+    "seconds": 1.39
+  },
+  "strictMypyFiles": 5,
+  "skillValidationPassed": 12,
+  "paidGeneration": 0,
+  "adopted": false,
+  "candidateStatus": "CREATIVE_REVIEW_CANDIDATE"
+}

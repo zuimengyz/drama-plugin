@@ -67,3 +67,8 @@ revises character meaning. Director owns intent and arbitration, not asset autho
 For an asset handoff, record `character_ref`, `arc_stage`, `behavior_pattern` and
 `social_position`, with applicable emotional/performance states and source pins.
 Assets must quote the specific approved record and stage, not infer them from art.
+
+
+## Actor-playable screenplay handoff (Screenplay R2)
+
+Read [screenplay playability and exact dialogue](../../docs/screenplay-playability.md). Stable identity and evolving relationship supply reasons, not current-beat gestures. Never let a temporary performance state overwrite a Character Package.

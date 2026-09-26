@@ -38,3 +38,8 @@ Author through the explicitly authorized Character External Driver create-versio
 Read back through the unified Reader; use embodiment_handoff for Art, Casting, Director, Action and Performance. They consume READ ONLY: Art chooses actual appearance, Casting evaluates, Expression controls independently authored route amplitude, Director selects a scene facet, Action combines script + intent + embodiment + signature. Missing embodiment returns here; missing identity returns to Driver. Do not invent either downstream.
 
 Present the source-traced summary, theses, comparison, counterfactual and body-independence findings for review. No final image prompt. This Skill never generates images, casting media, video or audio; technical validity is not artistic approval.
+
+
+## Actor-playable screenplay handoff (Screenplay R2)
+
+Read [screenplay playability and exact dialogue](../../docs/screenplay-playability.md). Use established embodiment as a constraint on present behavior, not as a replacement for the current Beat objective. CURRENT_BEAT state does not revise stable appearance, identity or habitual character facts.

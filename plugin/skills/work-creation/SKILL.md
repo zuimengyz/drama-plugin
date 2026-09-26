@@ -63,3 +63,8 @@ Organize persistence as **Stable Envelope + Domain Content**. Keep title and opt
 ## Historical causality and dramatic invention
 
 The historical-spine/deletion safeguard protects attested actors, events and causal attribution. It does not require every invented personal event to be dramatically removable. A fictional household conflict, relationship change or peripheral viewpoint may drive its own labeled D-layer story. Apply historical evidence requirements to historical claims and compatibility requirements to invention; never present either as the other. No war, heroic protagonist, tragic ending or revelation arc is mandatory.
+
+
+## Actor-playable screenplay handoff (Screenplay R2)
+
+Read [screenplay playability and exact dialogue](../../docs/screenplay-playability.md). Retain literary meaning and source boundaries; do not turn Work into acting instructions. Route missing observable carriers to Screenplay.

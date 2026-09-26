@@ -109,6 +109,18 @@ class FormalSourceWitness:
                 if (dpd.scene!=scene_dpds[beat.scene_id] or not line or line['speakerKey']!=dpd.line.speaker
                         or compose_dpd(dpd.scene,dpd.beat,dpd.line)!=dpd):
                     raise ValueError('FORMAL_LINE_DPD_SOURCE_BINDING_REQUIRED')
+        # Legacy snapshots remain readable; new formal review requires R2 witnesses.
+        from drama_plugin.screenplay_playability import validate_beat_playability, validate_line_playability
+        for dpd in dpds.values():
+            beat = dpd.beat if isinstance(dpd, DPDSnapshot) else dpd
+            validate_beat_playability(scenes[beat.scene_id], beat)
+            if isinstance(dpd, DPDSnapshot):
+                validate_line_playability(scenes[beat.scene_id], dpd)
+        covered_lines = {(d.scene.scene_id, d.line.spoken_content_id)
+                         for d in dpds.values() if isinstance(d, DPDSnapshot)}
+        if any((s['id'], line['id']) not in covered_lines
+               for s in scenes.values() for line in s['content'].get('spokenContent', [])):
+            raise ValueError('UNRESOLVED: screenplay dialogue performance coverage')
         for category in inventory:
             if category not in ('scenes','characters','shots','spoken','silent','interactions','ensemble','continuity','voice','av_plan'):continue
             for item in inventory[category]:

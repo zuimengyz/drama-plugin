@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Any
 
-from pydantic import Field, StringConstraints, model_validator
+from pydantic import Field, StringConstraints, model_validator, model_serializer, SerializerFunctionWrapHandler
 
 from drama_plugin.contracts.base import ContractModel
+from drama_plugin.contracts.screenplay_playability import BeatPlayability, LinePlayability
 
 
 NonBlankText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
@@ -59,7 +60,17 @@ class SceneDPD(ContractModel):
         return self
 
 
-class BeatDPD(ContractModel):
+class _PlayabilityCompatible(ContractModel):
+    @model_serializer(mode="wrap")
+    def serialize_legacy(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data: dict[str, Any] = handler(self)
+        if data.get("playability") is None:
+            data.pop("playability", None)
+        return data
+
+
+class BeatDPD(_PlayabilityCompatible):
+    playability: BeatPlayability | None = None
     schema_version: Literal["dpd-v1"] = "dpd-v1"
     scope: Literal["BEAT"] = "BEAT"
     scene_id: NonBlankText
@@ -70,7 +81,8 @@ class BeatDPD(ContractModel):
     direction: DPDLayerState
 
 
-class LineDPD(ContractModel):
+class LineDPD(_PlayabilityCompatible):
+    playability: LinePlayability | None = None
     schema_version: Literal["dpd-v1"] = "dpd-v1"
     scope: Literal["LINE"] = "LINE"
     scene_id: NonBlankText

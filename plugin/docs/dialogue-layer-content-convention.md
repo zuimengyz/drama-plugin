@@ -86,3 +86,8 @@ Estimate speech duration before Shot planning with a language-appropriate charac
 Every Shot has positive integer `plannedDurationMs`. For a standalone Shot, the sum of distinct bound item estimates must fit its planned duration. For one spoken item covered continuously by multiple Shots, evaluate the contiguous coverage group: deduplicate item IDs and compare total spoken estimate with total planned duration, then check that action, reaction, and silence still have playable room. Passing the arithmetic lower bound is necessary but not sufficient.
 
 On conflict, fail `DURATION_FEASIBILITY` before physical visual production. Resolve it through reviewed Scene/Shot changes such as compressing non-`mustKeep` content, extending or splitting coverage, using a reaction Shot, or choosing another approved expression. A visual or audio Provider may not delete, create, or rewrite spoken content.
+
+
+## Screenplay R2 formal performance gate
+
+For new formal performance review, each important spokenContent also declares `target`. Existing `intent` and `performanceIntent` supply dramatic action and source delivery. [Playability witnesses](screenplay-playability.md) bind the line id, speaker, target and exact text hash to existing DPD. Missing legacy fields remain readable but unresolved for new formal review; no automatic defaults or dialogue completion.

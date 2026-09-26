@@ -1,0 +1,1064 @@
+{
+  "status": "DESIGN_FIXTURE_ONLY",
+  "adopted": false,
+  "sourceR1Sha256": "11d0f82f18f7defa31a9a4abe0de12e061cdc62183e3744c2b607dc1c19428e1",
+  "screenplaySha256": "dae155c1d27e6091d8277e773fa22e1ca20b549e6a3e936322256a246b425c08",
+  "protectedS04S16Sha256": "5708e651b5a1557b9426f346526e5fd15ecdcd3480d63119713f0dafa02ca713",
+  "identityScope": "Local source role labels only; not formal Speaker identity adoption",
+  "scenes": [
+    {
+      "source": {
+        "id": "S01",
+        "content": {
+          "revisionId": "F01-R2-CANDIDATE",
+          "screenplayAction": "三个人围着桌子说话。茶已经冷了。\n工程师把一张纸移到桌中央。朋友刚要开口，他便用指头压住纸上的一个地方。\n另一个朋友笑。两个人越说越快，话挤在一处。坐在旁边的男人始终没碰自己的杯子。他的衣袖蹭到杯柄，扶正，却没看桌上那张纸。\n男人看向他。又看向另一个人。桌上的话停下来，他才开口。\n男人没回答。他把杯子往桌里推，起身去取外衣。\n朋友笑出声。工程师也笑了，把纸收回来，继续刚才的争论。没有人赶男人走。\n男人穿错了一个袖口。他重新穿。朋友替他推开挡路的椅子，他等椅子让开便出去，没有道谢，也没有表示不满。\n楼梯上传来房间里的笑声。他停住，回头听。屋里又争起那张纸上的事，没有人叫他。\n他继续往下走。",
+          "spokenContent": [
+            {
+              "id": "S01-L1",
+              "speakerKey": "工程师",
+              "target": "朋友",
+              "text": "你得先承认这一点。",
+              "intent": "要求对方先承认纸上的论点",
+              "performanceIntent": "争论中坚持先决条件，话短而顶住对方",
+              "mustKeep": true
+            },
+            {
+              "id": "S01-L2",
+              "speakerKey": "朋友",
+              "target": "工程师",
+              "text": "我为什么得先承认？",
+              "intent": "拒绝接受对方设定的先决条件",
+              "performanceIntent": "紧接对方反问，没有向观众说明理论",
+              "mustKeep": true
+            },
+            {
+              "id": "S01-L3",
+              "speakerKey": "工程师",
+              "target": "男人",
+              "text": "你呢？你听了半天。",
+              "intent": "要求旁听的男人表态",
+              "performanceIntent": "点名等答，不带审判或恶意",
+              "mustKeep": true
+            },
+            {
+              "id": "S01-L4",
+              "speakerKey": "男人",
+              "target": "桌边朋友",
+              "text": "你们其实都不在乎。",
+              "intent": "否定争论以结束自己的参与",
+              "performanceIntent": "平直地说，不咆哮，不解释自己的世界观",
+              "mustKeep": true
+            },
+            {
+              "id": "S01-L5",
+              "speakerKey": "朋友",
+              "target": "男人",
+              "text": "你倒在乎什么？",
+              "intent": "反问男人究竟在乎什么",
+              "performanceIntent": "接住他的断言往回问，等待回答",
+              "mustKeep": true
+            }
+          ]
+        }
+      },
+      "sceneDpd": {
+        "schemaVersion": "dpd-v1",
+        "scope": "SCENE",
+        "sceneId": "S01",
+        "sourceFingerprint": "ca1b60808571cdf8f0a81be5e03b4b874864e6c6d3efb907a611cec55650ba9a",
+        "dramaticPurpose": "宣判他人的漠不关心并未让男人脱离关系；退出时仍听屋里的反应",
+        "conflictCondition": "人物想结束或推进的接触受到对方行动阻碍",
+        "powerStructure": "保留原剧本人物关系，不创造地位变化",
+        "emotionalClimate": null,
+        "urgencyContext": null,
+        "informationAsymmetry": null,
+        "socialConstraints": [],
+        "direction": {
+          "objective": null,
+          "interactionTarget": null,
+          "tactic": null,
+          "authorityPosition": "当前情境中的行动者",
+          "relationshipStance": "依本场对方实际回应调整",
+          "internalActivation": "MEDIUM",
+          "externalControl": "HIGH",
+          "publicPrivateContext": "朋友之间",
+          "subtext": null,
+          "performanceBoundaries": null
+        }
+      },
+      "beats": [
+        {
+          "playability": {
+            "sourceSceneHash": "ca1b60808571cdf8f0a81be5e03b4b874864e6c6d3efb907a611cec55650ba9a",
+            "sourceExcerpt": "你呢？你听了半天。",
+            "playableActions": [
+              {
+                "actor": "工程师",
+                "behavior": "你呢？你听了半天。",
+                "target": "男人",
+                "trigger": null,
+                "prop": null
+              }
+            ],
+            "performanceState": "争得投入，直接把问题交给一直没说话的人",
+            "stateScope": "CURRENT_BEAT",
+            "reaction": {
+              "actor": "工程师",
+              "behavior": "工程师也笑了，把纸收回来",
+              "target": "男人",
+              "trigger": null,
+              "prop": null
+            },
+            "reviewEvidence": "以本场原文动作/当场话语为载体，目标是对当前对象的可执行任务；没有用情绪代替行动。创作效果待人工审阅。"
+          },
+          "schemaVersion": "dpd-v1",
+          "scope": "BEAT",
+          "sceneId": "S01",
+          "beatId": "S01-ask",
+          "actor": "工程师",
+          "obstacle": "男人不看纸也不发言",
+          "transitionTrigger": "男人否定整场争论",
+          "direction": {
+            "objective": "让旁听的人表态加入争论",
+            "interactionTarget": "男人",
+            "tactic": "点名向他要一个回答",
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": "你也得说说自己的立场",
+            "performanceBoundaries": null
+          }
+        },
+        {
+          "playability": {
+            "sourceSceneHash": "ca1b60808571cdf8f0a81be5e03b4b874864e6c6d3efb907a611cec55650ba9a",
+            "sourceExcerpt": "你倒在乎什么？",
+            "playableActions": [
+              {
+                "actor": "朋友",
+                "behavior": "你倒在乎什么？",
+                "target": "男人",
+                "trigger": null,
+                "prop": null
+              }
+            ],
+            "performanceState": "先当作争论中的一句挑衅，等不到回答便笑",
+            "stateScope": "CURRENT_BEAT",
+            "reaction": {
+              "actor": "朋友",
+              "behavior": "朋友笑出声",
+              "target": "男人",
+              "trigger": null,
+              "prop": null
+            },
+            "reviewEvidence": "以本场原文动作/当场话语为载体，目标是对当前对象的可执行任务；没有用情绪代替行动。创作效果待人工审阅。"
+          },
+          "schemaVersion": "dpd-v1",
+          "scope": "BEAT",
+          "sceneId": "S01",
+          "beatId": "S01-counter",
+          "actor": "朋友",
+          "obstacle": "他用一句判词否定大家却不说明自己",
+          "transitionTrigger": "男人不答而去取外衣",
+          "direction": {
+            "objective": "逼他说明自己究竟在乎什么",
+            "interactionTarget": "男人",
+            "tactic": "反问，把问题退还给他",
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": "别光否定我们，你呢",
+            "performanceBoundaries": null
+          }
+        },
+        {
+          "playability": {
+            "sourceSceneHash": "ca1b60808571cdf8f0a81be5e03b4b874864e6c6d3efb907a611cec55650ba9a",
+            "sourceExcerpt": "他把杯子往桌里推，起身去取外衣。",
+            "playableActions": [
+              {
+                "actor": "男人",
+                "behavior": "他把杯子往桌里推，起身去取外衣。",
+                "target": "桌边朋友",
+                "trigger": null,
+                "prop": null
+              }
+            ],
+            "performanceState": "起初说得平，没有胜利感；穿错袖口仍要离开",
+            "stateScope": "CURRENT_BEAT",
+            "reaction": {
+              "actor": "男人",
+              "behavior": "他停住，回头听",
+              "target": "桌边朋友",
+              "trigger": null,
+              "prop": null
+            },
+            "reviewEvidence": "以本场原文动作/当场话语为载体，目标是对当前对象的可执行任务；没有用情绪代替行动。创作效果待人工审阅。"
+          },
+          "schemaVersion": "dpd-v1",
+          "scope": "BEAT",
+          "sceneId": "S01",
+          "beatId": "S01-exit",
+          "actor": "男人",
+          "obstacle": "朋友反问他在乎什么",
+          "transitionTrigger": "屋里恢复争论而没有挽留他",
+          "direction": {
+            "objective": "让他们停止向自己要立场，退出这场谈话",
+            "interactionTarget": "桌边朋友",
+            "tactic": "否定争论，再以收杯取衣结束参与",
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": "我不必再向你们交代自己",
+            "performanceBoundaries": null
+          }
+        }
+      ],
+      "lines": [
+        {
+          "playability": {
+            "sourceTextHash": "a59db9b6f579f78310ed220e14640d10dc8bffc949aa01559708d33db20c7664",
+            "literalMeaning": "要求朋友承认这一点",
+            "speakabilityReview": "称谓及施受者由当前对象明确；本句完成要求对方先承认纸上的论点。争论中坚持先决条件，话短而顶住对方。潜台词只供表演，不增入台词；短句的省略由当前接触和前句承接，未拼接别人的话。",
+            "fragmentation": "CONTINUOUS",
+            "dramaticPurpose": null
+          },
+          "schemaVersion": "dpd-v1",
+          "scope": "LINE",
+          "sceneId": "S01",
+          "beatId": "S01-ask",
+          "spokenContentId": "S01-L1",
+          "speaker": "工程师",
+          "dramaticAction": "要求对方先承认纸上的论点",
+          "observableIntent": "要求朋友承认这一点",
+          "continuity": "接续本场对方当下的回应",
+          "changeFromPrevious": "由本句意图和所绑定 Beat 的转折限定",
+          "direction": {
+            "objective": null,
+            "interactionTarget": "朋友",
+            "tactic": null,
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": "你必须从我的前提出发",
+            "performanceBoundaries": null
+          }
+        },
+        {
+          "playability": {
+            "sourceTextHash": "c0ae8844cae52201f401f42e1dc65acd7b48e00cb616caa64d6e222bad9eba95",
+            "literalMeaning": "为什么自己必须先承认",
+            "speakabilityReview": "称谓及施受者由当前对象明确；本句完成拒绝接受对方设定的先决条件。紧接对方反问，没有向观众说明理论。潜台词只供表演，不增入台词；短句的省略由当前接触和前句承接，未拼接别人的话。",
+            "fragmentation": "CONTINUOUS",
+            "dramaticPurpose": null
+          },
+          "schemaVersion": "dpd-v1",
+          "scope": "LINE",
+          "sceneId": "S01",
+          "beatId": "S01-counter",
+          "spokenContentId": "S01-L2",
+          "speaker": "朋友",
+          "dramaticAction": "拒绝接受对方设定的先决条件",
+          "observableIntent": "为什么自己必须先承认",
+          "continuity": "接续本场对方当下的回应",
+          "changeFromPrevious": "由本句意图和所绑定 Beat 的转折限定",
+          "direction": {
+            "objective": null,
+            "interactionTarget": "工程师",
+            "tactic": null,
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": "凭什么由你定前提",
+            "performanceBoundaries": null
+          }
+        },
+        {
+          "playability": {
+            "sourceTextHash": "f831e5fcf32f08247e160e379351abbfb413b5290a0df3237cf68155134d8e00",
+            "literalMeaning": "请一直听着的人说出意见",
+            "speakabilityReview": "称谓及施受者由当前对象明确；本句完成要求旁听的男人表态。点名等答，不带审判或恶意。潜台词只供表演，不增入台词；短句的省略由当前接触和前句承接，未拼接别人的话。",
+            "fragmentation": "CONTINUOUS",
+            "dramaticPurpose": null
+          },
+          "schemaVersion": "dpd-v1",
+          "scope": "LINE",
+          "sceneId": "S01",
+          "beatId": "S01-ask",
+          "spokenContentId": "S01-L3",
+          "speaker": "工程师",
+          "dramaticAction": "要求旁听的男人表态",
+          "observableIntent": "请一直听着的人说出意见",
+          "continuity": "接续本场对方当下的回应",
+          "changeFromPrevious": "由本句意图和所绑定 Beat 的转折限定",
+          "direction": {
+            "objective": null,
+            "interactionTarget": "男人",
+            "tactic": null,
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": "你也得说说自己的立场",
+            "performanceBoundaries": null
+          }
+        },
+        {
+          "playability": {
+            "sourceTextHash": "e56d0ff9fa869e37377af72e93a4c5bda2e4e258d240b586dfe2baaf72944246",
+            "literalMeaning": "你们并不真正在乎刚刚争的事",
+            "speakabilityReview": "称谓及施受者由当前对象明确；本句完成否定争论以结束自己的参与。平直地说，不咆哮，不解释自己的世界观。潜台词只供表演，不增入台词；短句的省略由当前接触和前句承接，未拼接别人的话。",
+            "fragmentation": "CONTINUOUS",
+            "dramaticPurpose": null
+          },
+          "schemaVersion": "dpd-v1",
+          "scope": "LINE",
+          "sceneId": "S01",
+          "beatId": "S01-exit",
+          "spokenContentId": "S01-L4",
+          "speaker": "男人",
+          "dramaticAction": "否定争论以结束自己的参与",
+          "observableIntent": "你们并不真正在乎刚刚争的事",
+          "continuity": "接续本场对方当下的回应",
+          "changeFromPrevious": "由本句意图和所绑定 Beat 的转折限定",
+          "direction": {
+            "objective": null,
+            "interactionTarget": "桌边朋友",
+            "tactic": null,
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": "我不必再向你们交代自己",
+            "performanceBoundaries": null
+          }
+        },
+        {
+          "playability": {
+            "sourceTextHash": "a12069a14ea7050e22a38cdb3459e81655754fad5dae847ec3c3cd4851f95d93",
+            "literalMeaning": "请他说出自己在乎的东西",
+            "speakabilityReview": "称谓及施受者由当前对象明确；本句完成反问男人究竟在乎什么。接住他的断言往回问，等待回答。潜台词只供表演，不增入台词；短句的省略由当前接触和前句承接，未拼接别人的话。",
+            "fragmentation": "CONTINUOUS",
+            "dramaticPurpose": null
+          },
+          "schemaVersion": "dpd-v1",
+          "scope": "LINE",
+          "sceneId": "S01",
+          "beatId": "S01-counter",
+          "spokenContentId": "S01-L5",
+          "speaker": "朋友",
+          "dramaticAction": "反问男人究竟在乎什么",
+          "observableIntent": "请他说出自己在乎的东西",
+          "continuity": "接续本场对方当下的回应",
+          "changeFromPrevious": "由本句意图和所绑定 Beat 的转折限定",
+          "direction": {
+            "objective": null,
+            "interactionTarget": "男人",
+            "tactic": null,
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": "别光否定我们，你呢",
+            "performanceBoundaries": null
+          }
+        }
+      ]
+    },
+    {
+      "source": {
+        "id": "S02",
+        "content": {
+          "revisionId": "F01-R2-CANDIDATE",
+          "screenplayAction": "雨停了，路面仍湿。远处有一辆停着的马车。\n男人走得并不快。迎面的人侧身让他，他仍擦到对方的肩。那人回头，他没有回头。\n他仰起脸。云间露出一颗星。\n他停下，望着那颗星。低下头后，他朝自己住处的方向走。\n一只小手拉住他的手肘。他停住脚，身体还朝着原来的方向。\n她拉着他的手肘，往另一条街退。鞋已湿透，一只鞋的裂口随脚步张开。她急着吸气，没松手。\n男人这才转过脸，听她说。她以为他要跟来，先走出一步。他的手抬起一点，停在她肩旁。\n他收回手，身体仍朝着自己要走的方向。\n声音不高。他抽出袖子，迈步要走。女孩又抓住他，拉向另一条街。\n男人猛地跺了一下脚。\n女孩松手，往后缩了一步。\n男人喘了一口气。女孩看见街对面的行人，立刻绕开他跑过去，继续叫先生。行人停不停，男人没有看完。\n他走进自己的楼门。抬起手时，袖子上留着被她攥紧的褶。",
+          "spokenContent": [
+            {
+              "id": "S02-L1",
+              "speakerKey": "女孩",
+              "target": "男人",
+              "text": "先生……我妈妈出事了。跟我来，快！",
+              "intent": "请求男人立刻跟自己去帮助妈妈",
+              "performanceIntent": "急促换气但说清妈妈出事和跟我来，不哭成长句",
+              "mustKeep": true
+            },
+            {
+              "id": "S02-L2",
+              "speakerKey": "女孩",
+              "target": "男人",
+              "text": "来呀……求您了！",
+              "intent": "再次催男人跟自己走",
+              "performanceIntent": "以为他肯来便催促；断开是换气，不更换对象",
+              "mustKeep": true
+            },
+            {
+              "id": "S02-L3",
+              "speakerKey": "男人",
+              "target": "女孩",
+              "text": "找警察去。",
+              "intent": "让女孩转向警察以结束纠缠",
+              "performanceIntent": "声音不高，急于把自己抽离；尚未喝斥",
+              "mustKeep": true
+            },
+            {
+              "id": "S02-L4",
+              "speakerKey": "男人",
+              "target": "女孩",
+              "text": "走开！",
+              "intent": "喝止女孩继续拉住自己",
+              "performanceIntent": "跺脚后才突然提高声音，不从第一句就凶狠",
+              "mustKeep": true
+            }
+          ]
+        }
+      },
+      "sceneDpd": {
+        "schemaVersion": "dpd-v1",
+        "scope": "SCENE",
+        "sceneId": "S02",
+        "sourceFingerprint": "75ba517237a29eb5d03bbe8331a0b2ba09c63e677dd772e72e0a2fdd60cb79d2",
+        "dramaticPurpose": "女孩的求助触动了男人；他选择加重拒绝，女孩继续寻找现实帮助",
+        "conflictCondition": "人物想结束或推进的接触受到对方行动阻碍",
+        "powerStructure": "保留原剧本人物关系，不创造地位变化",
+        "emotionalClimate": null,
+        "urgencyContext": null,
+        "informationAsymmetry": null,
+        "socialConstraints": [],
+        "direction": {
+          "objective": null,
+          "interactionTarget": null,
+          "tactic": null,
+          "authorityPosition": "当前情境中的行动者",
+          "relationshipStance": "依本场对方实际回应调整",
+          "internalActivation": "MEDIUM",
+          "externalControl": "HIGH",
+          "publicPrivateContext": "街上陌生人之间",
+          "subtext": null,
+          "performanceBoundaries": null
+        }
+      },
+      "beats": [
+        {
+          "playability": {
+            "sourceSceneHash": "75ba517237a29eb5d03bbe8331a0b2ba09c63e677dd772e72e0a2fdd60cb79d2",
+            "sourceExcerpt": "她拉着他的手肘，往另一条街退。",
+            "playableActions": [
+              {
+                "actor": "女孩",
+                "behavior": "她拉着他的手肘，往另一条街退。",
+                "target": "男人",
+                "trigger": null,
+                "prop": null
+              }
+            ],
+            "performanceState": "急得顾不上长句，换气也不松手；不是撒娇",
+            "stateScope": "CURRENT_BEAT",
+            "reaction": {
+              "actor": "女孩",
+              "behavior": "女孩松手，往后缩了一步。",
+              "target": "男人",
+              "trigger": null,
+              "prop": null
+            },
+            "reviewEvidence": "以本场原文动作/当场话语为载体，目标是对当前对象的可执行任务；没有用情绪代替行动。创作效果待人工审阅。"
+          },
+          "schemaVersion": "dpd-v1",
+          "scope": "BEAT",
+          "sceneId": "S02",
+          "beatId": "S02-appeal",
+          "actor": "女孩",
+          "obstacle": "他停住脚却仍朝离开的方向",
+          "transitionTrigger": "他抽袖要走，又突然喝斥",
+          "direction": {
+            "objective": "让这个成年人马上跟自己去妈妈那里",
+            "interactionTarget": "男人",
+            "tactic": "拉住他的手肘，用短句催他跟来",
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": "别让我一个人回去，快跟我走",
+            "performanceBoundaries": null
+          }
+        },
+        {
+          "playability": {
+            "sourceSceneHash": "75ba517237a29eb5d03bbe8331a0b2ba09c63e677dd772e72e0a2fdd60cb79d2",
+            "sourceExcerpt": "他收回手，身体仍朝着自己要走的方向。",
+            "playableActions": [
+              {
+                "actor": "男人",
+                "behavior": "他收回手，身体仍朝着自己要走的方向。",
+                "target": "女孩",
+                "trigger": null,
+                "prop": null
+              },
+              {
+                "actor": "男人",
+                "behavior": "他的手抬起一点，停在她肩旁。",
+                "target": "女孩的肩",
+                "trigger": null,
+                "prop": null
+              }
+            ],
+            "performanceState": "开始麻木而非发怒，听见请求后仍不肯跟走",
+            "stateScope": "CURRENT_BEAT",
+            "reaction": {
+              "actor": "男人",
+              "behavior": "他抽出袖子，迈步要走。",
+              "target": "女孩",
+              "trigger": null,
+              "prop": null
+            },
+            "reviewEvidence": "以本场原文动作/当场话语为载体，目标是对当前对象的可执行任务；没有用情绪代替行动。创作效果待人工审阅。听她说话时手已经伸向肩旁，但仍收回；拒绝是此刻做出的选择，不是从入场就以吓人取乐。"
+          },
+          "schemaVersion": "dpd-v1",
+          "scope": "BEAT",
+          "sceneId": "S02",
+          "beatId": "S02-deflect",
+          "actor": "男人",
+          "obstacle": "她拉着他不松手，误以为他会跟来",
+          "transitionTrigger": "女孩再次抓住他",
+          "direction": {
+            "objective": "让女孩放开自己，结束这次接触",
+            "interactionTarget": "女孩",
+            "tactic": "把求助推给警察，抽袖离开",
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": "不要把这件事交给我",
+            "performanceBoundaries": null
+          }
+        },
+        {
+          "playability": {
+            "sourceSceneHash": "75ba517237a29eb5d03bbe8331a0b2ba09c63e677dd772e72e0a2fdd60cb79d2",
+            "sourceExcerpt": "男人猛地跺了一下脚。",
+            "playableActions": [
+              {
+                "actor": "男人",
+                "behavior": "男人猛地跺了一下脚。",
+                "target": "女孩",
+                "trigger": null,
+                "prop": null
+              }
+            ],
+            "performanceState": "第一次失去耐心，爆发在走开这一句；之后要喘口气",
+            "stateScope": "CURRENT_BEAT",
+            "reaction": {
+              "actor": "男人",
+              "behavior": "男人喘了一口气。",
+              "target": "女孩",
+              "trigger": null,
+              "prop": null
+            },
+            "reviewEvidence": "以本场原文动作/当场话语为载体，目标是对当前对象的可执行任务；没有用情绪代替行动。创作效果待人工审阅。"
+          },
+          "schemaVersion": "dpd-v1",
+          "scope": "BEAT",
+          "sceneId": "S02",
+          "beatId": "S02-repel",
+          "actor": "男人",
+          "obstacle": "抽袖离开仍被她拉住",
+          "transitionTrigger": "女孩松手退开并寻找别人",
+          "direction": {
+            "objective": "逼女孩立刻松手",
+            "interactionTarget": "女孩",
+            "tactic": "跺脚喝斥，把她吓退",
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": "我不肯承担你的请求",
+            "performanceBoundaries": null
+          }
+        },
+        {
+          "playability": {
+            "sourceSceneHash": "75ba517237a29eb5d03bbe8331a0b2ba09c63e677dd772e72e0a2fdd60cb79d2",
+            "sourceExcerpt": "立刻绕开他跑过去，继续叫先生",
+            "playableActions": [
+              {
+                "actor": "女孩",
+                "behavior": "立刻绕开他跑过去，继续叫先生",
+                "target": "街对面的行人",
+                "trigger": null,
+                "prop": null
+              }
+            ],
+            "performanceState": "被吓退之后仍急着找帮助，不停在原地哭诉",
+            "stateScope": "CURRENT_BEAT",
+            "reaction": {
+              "actor": "女孩",
+              "behavior": "女孩看见街对面的行人",
+              "target": "街对面的行人",
+              "trigger": null,
+              "prop": null
+            },
+            "reviewEvidence": "以本场原文动作/当场话语为载体，目标是对当前对象的可执行任务；没有用情绪代替行动。创作效果待人工审阅。"
+          },
+          "schemaVersion": "dpd-v1",
+          "scope": "BEAT",
+          "sceneId": "S02",
+          "beatId": "S02-seek",
+          "actor": "女孩",
+          "obstacle": "眼前的人拒绝并吓退自己",
+          "transitionTrigger": "发现街对面的行人",
+          "direction": {
+            "objective": "找另一个成年人随自己去救助妈妈",
+            "interactionTarget": "街对面的行人",
+            "tactic": "转向另一个行人继续求助",
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": "这个人不肯去，我还得找人",
+            "performanceBoundaries": null
+          }
+        }
+      ],
+      "lines": [
+        {
+          "playability": {
+            "sourceTextHash": "2da157245f0beeed7262b4634312f2bc9d4ea390ef7e2a8d3d4dcbcb828359c3",
+            "literalMeaning": "妈妈遇到麻烦，请这个男人马上跟我去",
+            "speakabilityReview": "称谓及施受者由当前对象明确；本句完成请求男人立刻跟自己去帮助妈妈。急促换气但说清妈妈出事和跟我来，不哭成长句。潜台词只供表演，不增入台词；短句的省略由当前接触和前句承接，未拼接别人的话。",
+            "fragmentation": "INTENTIONAL",
+            "dramaticPurpose": "着急换气使起句/催促断开；妈妈出事、跟我来与当前对象仍可辨认"
+          },
+          "schemaVersion": "dpd-v1",
+          "scope": "LINE",
+          "sceneId": "S02",
+          "beatId": "S02-appeal",
+          "spokenContentId": "S02-L1",
+          "speaker": "女孩",
+          "dramaticAction": "请求男人立刻跟自己去帮助妈妈",
+          "observableIntent": "妈妈遇到麻烦，请这个男人马上跟我去",
+          "continuity": "接续本场对方当下的回应",
+          "changeFromPrevious": "由本句意图和所绑定 Beat 的转折限定",
+          "direction": {
+            "objective": null,
+            "interactionTarget": "男人",
+            "tactic": null,
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": "别让我一个人回去，快跟我走",
+            "performanceBoundaries": null
+          }
+        },
+        {
+          "playability": {
+            "sourceTextHash": "4d8df2eae341cbda9fd4db6a84d45955a6080a8d533f549e2c28c242b736bf7b",
+            "literalMeaning": "再次请求同一个男人随自己去",
+            "speakabilityReview": "称谓及施受者由当前对象明确；本句完成再次催男人跟自己走。以为他肯来便催促；断开是换气，不更换对象。潜台词只供表演，不增入台词；短句的省略由当前接触和前句承接，未拼接别人的话。",
+            "fragmentation": "INTENTIONAL",
+            "dramaticPurpose": "着急换气使起句/催促断开；妈妈出事、跟我来与当前对象仍可辨认"
+          },
+          "schemaVersion": "dpd-v1",
+          "scope": "LINE",
+          "sceneId": "S02",
+          "beatId": "S02-appeal",
+          "spokenContentId": "S02-L2",
+          "speaker": "女孩",
+          "dramaticAction": "再次催男人跟自己走",
+          "observableIntent": "再次请求同一个男人随自己去",
+          "continuity": "接续本场对方当下的回应",
+          "changeFromPrevious": "由本句意图和所绑定 Beat 的转折限定",
+          "direction": {
+            "objective": null,
+            "interactionTarget": "男人",
+            "tactic": null,
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": "别停在这里，跟我走",
+            "performanceBoundaries": null
+          }
+        },
+        {
+          "playability": {
+            "sourceTextHash": "ec906d81c8f4456a8687c54a6e557030741dbcf4c7d28753f5933df6a1d69858",
+            "literalMeaning": "去找警察帮忙",
+            "speakabilityReview": "称谓及施受者由当前对象明确；本句完成让女孩转向警察以结束纠缠。声音不高，急于把自己抽离；尚未喝斥。潜台词只供表演，不增入台词；短句的省略由当前接触和前句承接，未拼接别人的话。",
+            "fragmentation": "CONTINUOUS",
+            "dramaticPurpose": null
+          },
+          "schemaVersion": "dpd-v1",
+          "scope": "LINE",
+          "sceneId": "S02",
+          "beatId": "S02-deflect",
+          "spokenContentId": "S02-L3",
+          "speaker": "男人",
+          "dramaticAction": "让女孩转向警察以结束纠缠",
+          "observableIntent": "去找警察帮忙",
+          "continuity": "接续本场对方当下的回应",
+          "changeFromPrevious": "由本句意图和所绑定 Beat 的转折限定",
+          "direction": {
+            "objective": null,
+            "interactionTarget": "女孩",
+            "tactic": null,
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": "不要把这件事交给我",
+            "performanceBoundaries": null
+          }
+        },
+        {
+          "playability": {
+            "sourceTextHash": "fbc2406cdc9e6d93d493d42f614803315f6ddff1f08582a27c5e0bb29ef5beec",
+            "literalMeaning": "立刻离开我，别再抓住我",
+            "speakabilityReview": "称谓及施受者由当前对象明确；本句完成喝止女孩继续拉住自己。跺脚后才突然提高声音，不从第一句就凶狠。潜台词只供表演，不增入台词；短句的省略由当前接触和前句承接，未拼接别人的话。",
+            "fragmentation": "CONTINUOUS",
+            "dramaticPurpose": null
+          },
+          "schemaVersion": "dpd-v1",
+          "scope": "LINE",
+          "sceneId": "S02",
+          "beatId": "S02-repel",
+          "spokenContentId": "S02-L4",
+          "speaker": "男人",
+          "dramaticAction": "喝止女孩继续拉住自己",
+          "observableIntent": "立刻离开我，别再抓住我",
+          "continuity": "接续本场对方当下的回应",
+          "changeFromPrevious": "由本句意图和所绑定 Beat 的转折限定",
+          "direction": {
+            "objective": null,
+            "interactionTarget": "女孩",
+            "tactic": null,
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": "我不肯承担你的请求",
+            "performanceBoundaries": null
+          }
+        }
+      ]
+    },
+    {
+      "source": {
+        "id": "S03",
+        "content": {
+          "revisionId": "F01-R2-CANDIDATE",
+          "screenplayAction": "五楼。男人开门，穿过窄走廊。\n上尉房里有人拍桌，嚷着还钱。一位母亲站在另一扇门后，怀里抱着孩子；门内另有两个孩子的声音。她向男人看了一眼，嘴唇动了动。拍桌声再次响起，她把门关小。\n男人进入自己的房间，点起蜡烛。桌上有书。他把书移开，取出抽屉里的枪，放在空处，坐进旧扶手椅。\n隔壁有人拖动椅子，笑着骂了一句。男人坐着。\n他看见自己衣袖上的褶，用手掌抹平。那只手抬到身前，手掌朝下，停住。他看着自己的手，把它收回膝上。\n他向桌前靠了一点，又退回去。\n走廊里传来母亲压低的安抚声。孩子咳嗽。他的目光从桌面移向门。\n说完，孩子又咳了一次。\n他起身，走到门前。手放上门把，却没开。隔壁的吵声渐渐断续，只剩算账和含混的埋怨。\n他回到桌前，把椅子拉近。枪还在原处。他没有拿起。\n烛火小了一些。他仍朝门的方向坐着，眼睛慢慢合上。",
+          "spokenContent": [
+            {
+              "id": "S03-L1",
+              "speakerKey": "男人",
+              "target": "自己",
+              "text": "就是今天。",
+              "intent": "催自己执行今夜结束生命的决定",
+              "performanceIntent": "对自己确认，不向观众宣告主题",
+              "mustKeep": true
+            },
+            {
+              "id": "S03-L2",
+              "speakerKey": "男人",
+              "target": "自己",
+              "text": "有什么关系。",
+              "intent": "压回刚才触手动作带来的迟疑",
+              "performanceIntent": "试图把自己说服，话落后仍退回椅里",
+              "mustKeep": true
+            },
+            {
+              "id": "S03-L3",
+              "speakerKey": "男人",
+              "target": "自己",
+              "text": "我又不在了。",
+              "intent": "以即将不存在为由拒绝回应门外",
+              "performanceIntent": "对自己辩解，孩子再次咳嗽打断这层自我说服",
+              "mustKeep": true
+            }
+          ]
+        }
+      },
+      "sceneDpd": {
+        "schemaVersion": "dpd-v1",
+        "scope": "SCENE",
+        "sceneId": "S03",
+        "sourceFingerprint": "3c11e5698cafbd6ee231024771f2924c87bda0179a98517189f930f0e8551af9",
+        "dramaticPurpose": "结束生命的准备被未完成的接触与门外孩子打断，延宕进入睡眠",
+        "conflictCondition": "人物想结束或推进的接触受到对方行动阻碍",
+        "powerStructure": "保留原剧本人物关系，不创造地位变化",
+        "emotionalClimate": null,
+        "urgencyContext": null,
+        "informationAsymmetry": null,
+        "socialConstraints": [],
+        "direction": {
+          "objective": null,
+          "interactionTarget": null,
+          "tactic": null,
+          "authorityPosition": "当前情境中的行动者",
+          "relationshipStance": "依本场对方实际回应调整",
+          "internalActivation": "MEDIUM",
+          "externalControl": "HIGH",
+          "publicPrivateContext": "租屋内独处，能听见邻人",
+          "subtext": null,
+          "performanceBoundaries": null
+        }
+      },
+      "beats": [
+        {
+          "playability": {
+            "sourceSceneHash": "3c11e5698cafbd6ee231024771f2924c87bda0179a98517189f930f0e8551af9",
+            "sourceExcerpt": "取出抽屉里的枪，放在空处",
+            "playableActions": [
+              {
+                "actor": "男人",
+                "behavior": "取出抽屉里的枪，放在空处",
+                "target": "自己",
+                "trigger": null,
+                "prop": null
+              },
+              {
+                "actor": "男人",
+                "behavior": "那只手抬到身前，手掌朝下，停住。",
+                "target": "身前的空处",
+                "trigger": null,
+                "prop": null
+              }
+            ],
+            "performanceState": "努力把事情当作已经决定，但手和目光仍被别处牵住",
+            "stateScope": "CURRENT_BEAT",
+            "reaction": {
+              "actor": "男人",
+              "behavior": "他向桌前靠了一点，又退回去。",
+              "target": "自己",
+              "trigger": null,
+              "prop": null
+            },
+            "reviewEvidence": "以本场原文动作/当场话语为载体，目标是对当前对象的可执行任务；没有用情绪代替行动。创作效果待人工审阅。手沿用 S02 停在女孩肩旁的那只手；这是未完成接触的回声，不是无对象的象征手势，也不是把解释变成画外旁白。"
+          },
+          "schemaVersion": "dpd-v1",
+          "scope": "BEAT",
+          "sceneId": "S03",
+          "beatId": "S03-prepare",
+          "actor": "男人",
+          "obstacle": "袖褶和走廊里的孩子不断打断准备",
+          "transitionTrigger": "孩子咳嗽使目光离开桌面",
+          "direction": {
+            "objective": "让自己在今夜完成结束生命的决定",
+            "interactionTarget": "自己",
+            "tactic": "摆出枪，再用话压回自己的迟疑",
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": "我已经不必再管这些事",
+            "performanceBoundaries": null
+          }
+        },
+        {
+          "playability": {
+            "sourceSceneHash": "3c11e5698cafbd6ee231024771f2924c87bda0179a98517189f930f0e8551af9",
+            "sourceExcerpt": "他起身，走到门前。手放上门把，却没开。",
+            "playableActions": [
+              {
+                "actor": "男人",
+                "behavior": "他起身，走到门前。手放上门把，却没开。",
+                "target": "门外的孩子",
+                "trigger": null,
+                "prop": null
+              }
+            ],
+            "performanceState": "心思还想退回原决定，身体已经走到门前；不是悔过宣言",
+            "stateScope": "CURRENT_BEAT",
+            "reaction": {
+              "actor": "男人",
+              "behavior": "他回到桌前，把椅子拉近。",
+              "target": "门外的孩子",
+              "trigger": null,
+              "prop": null
+            },
+            "reviewEvidence": "以本场原文动作/当场话语为载体，目标是对当前对象的可执行任务；没有用情绪代替行动。创作效果待人工审阅。"
+          },
+          "schemaVersion": "dpd-v1",
+          "scope": "BEAT",
+          "sceneId": "S03",
+          "beatId": "S03-respond",
+          "actor": "男人",
+          "obstacle": "自己刚刚坚持不再和人发生关系",
+          "transitionTrigger": "第二声咳嗽后起身，握住门把仍不开",
+          "direction": {
+            "objective": "确认门外孩子的动静，却不愿真的走出去接触",
+            "interactionTarget": "门外的孩子",
+            "tactic": "走到门边握住门把，再退回桌前",
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": "我说了不管，却还在听",
+            "performanceBoundaries": null
+          }
+        },
+        {
+          "playability": {
+            "sourceSceneHash": "3c11e5698cafbd6ee231024771f2924c87bda0179a98517189f930f0e8551af9",
+            "sourceExcerpt": "枪还在原处。他没有拿起。",
+            "playableActions": [
+              {
+                "actor": "男人",
+                "behavior": "枪还在原处。他没有拿起。",
+                "target": "桌上的枪",
+                "trigger": null,
+                "prop": null
+              }
+            ],
+            "performanceState": "疲惫地搁住动作，不是已获得救赎或放弃原决定",
+            "stateScope": "CURRENT_BEAT",
+            "reaction": {
+              "actor": "男人",
+              "behavior": "他仍朝门的方向坐着，眼睛慢慢合上。",
+              "target": "桌上的枪",
+              "trigger": null,
+              "prop": null
+            },
+            "reviewEvidence": "以本场原文动作/当场话语为载体，目标是对当前对象的可执行任务；没有用情绪代替行动。创作效果待人工审阅。"
+          },
+          "schemaVersion": "dpd-v1",
+          "scope": "BEAT",
+          "sceneId": "S03",
+          "beatId": "S03-delay",
+          "actor": "男人",
+          "obstacle": "注意仍留在门外的声音上",
+          "transitionTrigger": "迟迟不拿枪，眼睛合上",
+          "direction": {
+            "objective": "重新坐回枪前把决定做完",
+            "interactionTarget": "桌上的枪",
+            "tactic": "把椅子拉近后继续等着听",
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": "先等等；没有说出口，也没有变成新的对白",
+            "performanceBoundaries": null
+          }
+        }
+      ],
+      "lines": [
+        {
+          "playability": {
+            "sourceTextHash": "26dfd5c6e7d46c8a4fdaf9c6aa9cc9527049d26c6be8210bbd88a19b00af5d63",
+            "literalMeaning": "决定就是今天执行",
+            "speakabilityReview": "称谓及施受者由当前对象明确；本句完成催自己执行今夜结束生命的决定。对自己确认，不向观众宣告主题。潜台词只供表演，不增入台词；短句的省略由当前接触和前句承接，未拼接别人的话。",
+            "fragmentation": "CONTINUOUS",
+            "dramaticPurpose": null
+          },
+          "schemaVersion": "dpd-v1",
+          "scope": "LINE",
+          "sceneId": "S03",
+          "beatId": "S03-prepare",
+          "spokenContentId": "S03-L1",
+          "speaker": "男人",
+          "dramaticAction": "催自己执行今夜结束生命的决定",
+          "observableIntent": "决定就是今天执行",
+          "continuity": "接续本场对方当下的回应",
+          "changeFromPrevious": "由本句意图和所绑定 Beat 的转折限定",
+          "direction": {
+            "objective": null,
+            "interactionTarget": "自己",
+            "tactic": null,
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": "不能再拖下去",
+            "performanceBoundaries": null
+          }
+        },
+        {
+          "playability": {
+            "sourceTextHash": "900d2606c8d9041545e99f562d07d2d393075e9cdd21cabc48da1a2e07ebbf59",
+            "literalMeaning": "试图告诉自己那件事没有关系",
+            "speakabilityReview": "称谓及施受者由当前对象明确；本句完成压回刚才触手动作带来的迟疑。试图把自己说服，话落后仍退回椅里。潜台词只供表演，不增入台词；短句的省略由当前接触和前句承接，未拼接别人的话。",
+            "fragmentation": "CONTINUOUS",
+            "dramaticPurpose": null
+          },
+          "schemaVersion": "dpd-v1",
+          "scope": "LINE",
+          "sceneId": "S03",
+          "beatId": "S03-prepare",
+          "spokenContentId": "S03-L2",
+          "speaker": "男人",
+          "dramaticAction": "压回刚才触手动作带来的迟疑",
+          "observableIntent": "试图告诉自己那件事没有关系",
+          "continuity": "接续本场对方当下的回应",
+          "changeFromPrevious": "由本句意图和所绑定 Beat 的转折限定",
+          "direction": {
+            "objective": null,
+            "interactionTarget": "自己",
+            "tactic": null,
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": "不必为刚才没帮女孩而停下来",
+            "performanceBoundaries": null
+          }
+        },
+        {
+          "playability": {
+            "sourceTextHash": "b9f78438cacf56e34d90ad8d73e2dd29f385d9fc4897bc3950574ace0148728c",
+            "literalMeaning": "以自己将不在人世为理由切断义务",
+            "speakabilityReview": "称谓及施受者由当前对象明确；本句完成以即将不存在为由拒绝回应门外。对自己辩解，孩子再次咳嗽打断这层自我说服。潜台词只供表演，不增入台词；短句的省略由当前接触和前句承接，未拼接别人的话。",
+            "fragmentation": "CONTINUOUS",
+            "dramaticPurpose": null
+          },
+          "schemaVersion": "dpd-v1",
+          "scope": "LINE",
+          "sceneId": "S03",
+          "beatId": "S03-prepare",
+          "spokenContentId": "S03-L3",
+          "speaker": "男人",
+          "dramaticAction": "以即将不存在为由拒绝回应门外",
+          "observableIntent": "以自己将不在人世为理由切断义务",
+          "continuity": "接续本场对方当下的回应",
+          "changeFromPrevious": "由本句意图和所绑定 Beat 的转折限定",
+          "direction": {
+            "objective": null,
+            "interactionTarget": "自己",
+            "tactic": null,
+            "authorityPosition": null,
+            "relationshipStance": null,
+            "internalActivation": null,
+            "externalControl": null,
+            "publicPrivateContext": null,
+            "subtext": "我既然要走了，就不必再回应别人",
+            "performanceBoundaries": null
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -157,6 +157,11 @@ def attach_cinematic_performance(spec: Any, *, dpd: DPDSnapshot, intent: Directo
     lines = [d for d in spec.dialogue if d.spoken_content_id == audio.spoken_content_id]
     if len(lines) != 1 or lines[0].speaker_key != audio.speaker_key or text_hash(lines[0].text) != audio.text_fingerprint:
         raise ValueError('CANONICAL_VOICE_BINDING_MISMATCH')
+    if dpd.line.playability:
+        from drama_plugin.screenplay_playability import exact_text_hash
+        if (exact_text_hash(lines[0].text) != dpd.line.playability.source_text_hash
+                or lines[0].target != dpd.effective.interaction_target):
+            raise ValueError('SCREENPLAY_DIALOGUE_AUTHORITY_MISMATCH')
     payload = dump_contract(spec)
     payload['performance']['directorPerformance'] = dump_contract(v)
     for d in payload['dialogue']:

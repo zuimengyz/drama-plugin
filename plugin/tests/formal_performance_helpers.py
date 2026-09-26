@@ -8,6 +8,8 @@ from drama_plugin.contracts.dpd import SceneDPD,BeatDPD,LineDPD,DPDLayerState
 from drama_plugin.contracts.performance_direction import DirectorPerformanceIntent,PerformanceProjection
 from drama_plugin.providers.base import MemoryProvider
 from drama_plugin.dpd import compose_dpd
+from drama_plugin.contracts.screenplay_playability import BeatPlayability, LinePlayability
+from drama_plugin.screenplay_playability import exact_text_hash
 from drama_plugin.hosts.formal_performance import read_formal_performance_source
 from drama_plugin.performance_coverage import CATEGORIES
 from performance_direction_helpers import make_case
@@ -29,7 +31,7 @@ async def formal_case(path:Path):
       'scenes':[],'shots':[]}
     for i in range(1,4):
         sid='war'+str(i)
-        tree['scenes'].append(dump_contract(Scene(id=sid,episode_id='episode',order=i,title='exchange '+str(i),content={'revisionId':'test-r1','characters':['speaker:repairer','partner'],'screenplayAction':'The repairer stops sorting. The partner listens.','spokenContent':[{'id':'L'+str(i),'speakerKey':'speaker:repairer','text':'Finish your account.'}]})))
+        tree['scenes'].append(dump_contract(Scene(id=sid,episode_id='episode',order=i,title='exchange '+str(i),content={'revisionId':'test-r1','characters':['speaker:repairer','partner'],'screenplayAction':'The repairer stops sorting. The partner listens.','spokenContent':[{'id':'L'+str(i),'speakerKey':'speaker:repairer','text':'Finish your account.','target':base['dpd'].effective.interaction_target,'intent':base['dpd'].line.dramatic_action,'performanceIntent':'An invitation to finish, spoken at close range.'}]})))
         for suffix in ('a','b'):tree['shots'].append(dump_contract(Shot(id=sid+'-'+suffix,scene_id=sid,shot_no=str(i)+suffix,content={'revisionId':'test-r1'})))
     path.write_text(json.dumps(tree))
     witness=await read_formal_performance_source(cast(MemoryProvider,PersistedReader(path)),'war')
@@ -40,8 +42,15 @@ async def formal_case(path:Path):
         sd=base['dpd'].scene.model_copy(update={'scene_id':sid,'source_fingerprint':fp(s)})
         bd=base['dpd'].beat.model_copy(update={'scene_id':sid,'beat_id':beat})
         ld=base['dpd'].line.model_copy(update={'scene_id':sid,'beat_id':beat,'spoken_content_id':line['id']})
+        bd = bd.model_copy(update={'direction': bd.direction.model_copy(update={'interaction_target': base['dpd'].effective.interaction_target, 'tactic': base['dpd'].effective.tactic})})
+        bd = bd.model_copy(update={'playability': BeatPlayability(source_scene_hash=fp(s),
+            source_excerpt='The repairer stops sorting.', playable_actions=({'actor':bd.actor,'behavior':'The repairer stops sorting.','target':bd.direction.interaction_target},),
+            performance_state='Stops the hand task to listen without collapsing', reaction={'actor':bd.actor,'behavior':'The repairer stops sorting.','target':bd.direction.interaction_target},
+            review_evidence='The visible interruption of sorting gives the partner the floor.')})
+        ld = ld.model_copy(update={'playability': LinePlayability(source_text_hash=exact_text_hash(line['text']),
+            literal_meaning='Invite the partner to finish speaking', speakability_review='A short direct invitation with an explicit listener; no exposition or ambiguous referent.', fragmentation='CONTINUOUS')})
         dpd=compose_dpd(sd,bd,ld);scene_dpds[sid]=sd;dpds[beat]=dpd
-        dpds[sid+':partner']=BeatDPD(scene_id=sid,beat_id=sid,actor='partner',obstacle='The repairer is still sorting',transition_trigger='Sorting stops',direction=DPDLayerState(objective='Finish the account',interaction_target='speaker:repairer',tactic='Wait for attention then finish'))
+        dpds[sid+':partner']=BeatDPD(scene_id=sid,beat_id=sid,actor='partner',obstacle='The repairer is still sorting',transition_trigger='Sorting stops',direction=DPDLayerState(objective='Finish the account',interaction_target='speaker:repairer',tactic='Wait for attention then finish'),playability=BeatPlayability(source_scene_hash=fp(s),source_excerpt='The partner listens.',playable_actions=({'actor':'partner','behavior':'The partner listens.','target':'speaker:repairer'},),performance_state='Waits for the invitation before replying',reaction={'actor':'partner','behavior':'The partner listens.','target':'speaker:repairer'},review_evidence='The listener remains active in the exchange.'))
         contexts[sid]={'scope':sid,'entities':{'partner':{'scope':sid,'kind':'partner','display':'partner','source_ref':'scenes:'+sid,'evidence':'The partner listens.'}}}
         intent=base['intent'].model_copy(update={'scene_id':sid,'source_fingerprints':{'scenes:'+sid:fp(s)},'dpd_fingerprints':(dpd.fingerprint,), 'beat_ids':(beat,), 'coordination':(), 'review_basis':'SOURCE_BOUND_DESIGN'})
         intents[sid]=intent

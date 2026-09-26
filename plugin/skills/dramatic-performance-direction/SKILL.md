@@ -61,7 +61,7 @@ Compose `Scene → Beat → Line` with the typed Core. Missing and null fields i
 
 Use action and relationship language, not moral labels or a single emotion label. Keep internal activation distinct from external control: high activation may remain highly controlled. `speakerKey` references identity; it does not duplicate age, rank, biography, personality, or Voice Profile.
 
-Do not add speech speed, pitch, loudness, pause milliseconds, articulation, voice identity, provider prompt, model settings, camera or framing to DPD. Keep the existing DPD schema unchanged. The separately owned Performance Bible may author gaze, posture, gesture, breath behavior and physical-state expression; Blocking owns paths/positions and Action owns physical mechanics. Voice Direction consumes that common performance truth for vocal delivery. Do not generate Audio/Visual Media, persist a new business entity, or invent a DPD-specific Tool.
+Do not add speech speed, pitch, loudness, pause milliseconds, articulation, voice identity, provider prompt, model settings, camera or framing to DPD. Reuse the existing DPD fields; the R2 nested playability witnesses add source/carrier evidence without a second psychological authority. The separately owned Performance Bible may author gaze, posture, gesture, breath behavior and physical-state expression; Blocking owns paths/positions and Action owns physical mechanics. Voice Direction consumes that common performance truth for vocal delivery. Do not generate Audio/Visual Media, persist a new business entity, or invent a DPD-specific Tool.
 
 Finish when the three contracts validate, the effective direction is materially playable and distinct from character identity, and the canonical fingerprint is recorded. If essential objective, target, relationship, or historical/social constraint is unsupported or contradictory, report the missing input instead of filling it with stereotype or provider detail.
 
@@ -89,3 +89,8 @@ to the existing owner. A dry-run never authorizes production or media adoption.
 Use embodiment for stable physical tendencies and pressure/social transformations; author only scene/beat realization. Do not replace packaged character meaning with new psychology.
 
 Read [Embodiment contract](../../docs/character-embodiment.md). Use the unified read-only `characters.embodiment.embodiment_handoff` with exact ref/version/checksum and route. Never create or overwrite embodiment in downstream execution. Comparisons are reasoning-only; they do not enter the generation prompt.
+
+
+## Actor-playable screenplay handoff (Screenplay R2)
+
+Read [screenplay playability and exact dialogue](../../docs/screenplay-playability.md). Consume the source-authored playable task and its line intent. Bind BeatDPD/LineDPD playability witnesses and exact dialogue hashes; do not infer a new objective from abstract emotion. Keep actor and listener tasks distinct.

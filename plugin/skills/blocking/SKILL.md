@@ -46,3 +46,8 @@ Use supplied current originals first. For missing scoped context, read `work.get
 For opt-in STILL/LIVE_ACTION, current actor positions, eye_lines, orientation and physical relations come from this approved record. A portrait supplies no pose/gaze permission. State the visible contact slice; Action owns its causal mechanics and Lighting owns illumination at contact. Preserve the approved expression owner; camera readability cannot silently relocate the actor.
 
 Read [mapping and evidence profile](../../docs/still-professional-mapping.md) when preparing these still records. Knowledge remains LOCAL_EXPERIMENTAL until scoped A5 media evidence.
+
+
+## Actor-playable screenplay handoff (Screenplay R2)
+
+Read [screenplay playability and exact dialogue](../../docs/screenplay-playability.md). Translate the approved actor task into spatial behavior without inventing a new objective. Missing source action or target returns to Scene/Performance; do not rewrite dialogue.

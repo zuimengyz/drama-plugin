@@ -62,3 +62,8 @@ Read [Embodiment contract](../../docs/character-embodiment.md). Use the unified 
 For opt-in STILL/LIVE_ACTION, project only the approved current body_mechanics or contact_constraints slice into existing action/contact facts. Ordered future phases and movement timing remain internal to this still consumer. Identity references cannot create an action. Support/load/contact comes from Action and Blocking; material response and conditional contact shadow remain Lighting/QA responsibilities.
 
 Read [mapping and evidence profile](../../docs/still-professional-mapping.md) when preparing these still records. Knowledge remains LOCAL_EXPERIMENTAL until scoped A5 media evidence.
+
+
+## Actor-playable screenplay handoff (Screenplay R2)
+
+Read [screenplay playability and exact dialogue](../../docs/screenplay-playability.md). Resolve causal mechanics for the approved playable action, preserving actor/target/negation/contact. Missing action meaning returns to its owner rather than being created for model convenience.

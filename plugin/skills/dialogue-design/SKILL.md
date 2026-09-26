@@ -57,3 +57,8 @@ relationship state and period/register in `SemanticDialogueIntent`. Produce a se
 Prefer original source dialogue over back-translation of review text. Meaning conflicts emit
 `UPSTREAM_LOCALIZATION_CONFLICT`; do not rewrite upstream intent. Compile with
 `compile_localization` against the pinned upstream context before requesting review.
+
+
+## Actor-playable screenplay handoff (Screenplay R2)
+
+Read [screenplay playability and exact dialogue](../../docs/screenplay-playability.md). Review each important line for literal meaning, speaker, target, exact text, intent, delivery and DPD subtext. Fragmented speech must still communicate its request unless unintelligibility itself has a documented dramatic purpose. No downstream owner may repair its words.

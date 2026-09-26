@@ -244,3 +244,8 @@ transitions, continuity and department handoffs. Do not specify lenses, exact ca
 coordinates, shot/edit durations or concrete assets. Pending narration upstream
 requests block that variant; recommend only as USER_APPROVAL_PENDING. NONE still
 requires a reasoned silence policy per scene. This candidate is not P2 authorization.
+
+
+## Actor-playable screenplay handoff (Screenplay R2)
+
+Read [screenplay playability and exact dialogue](../../docs/screenplay-playability.md). Retain global expression, emphasis and arbitration. Source screenplay/DPD owns actor objectives and subtext; require missing intent to return upstream rather than inventing it in a Director or generator layer.

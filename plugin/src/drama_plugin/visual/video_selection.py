@@ -6,13 +6,14 @@ from collections.abc import Callable
 from typing import Any, Literal
 
 from pydantic import Field
-from drama_plugin.config.video_route import VideoRoutePolicy, RouteMode, resolve_policy, canonical_model_key
+from drama_plugin.config.video_route import VideoRoutePolicy, RouteMode, resolve_policy, canonical_model_key, runtime_policy, provider_allowed
 
 from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.visual.frame_request import Hash, Record, Text
 from drama_plugin.visual.reference_duties import ReferenceDuty, validate_duties, validate_endpoint
 from drama_plugin.visual.execution import ExecutionRoute, require_execution
 from drama_plugin.contracts.video import VideoRequest
+from drama_plugin.contracts.production_language import SpeechLanguageAuthorization
 
 
 class Evidence(Record):
@@ -56,6 +57,7 @@ class Requirements(Record):
     aspect_ratio: Text
     sound: Text
     language: Text | None = None
+    production_dialogue: tuple[SpeechLanguageAuthorization, ...] = ()
     frozen_creative: dict[str, Any] = Field(min_length=1)
     authority_context: dict[str, Any] | None = None
     prompt_normalization: dict[str, Any] | None = None
@@ -72,6 +74,8 @@ def validate_requirements(r: Requirements) -> None:
         raise ValueError('LEGACY_VIDEO_REFERENCE_LIMIT')
     if r.video_request:
         v = r.video_request
+        if v.production_dialogue != r.production_dialogue:
+            raise ValueError('NATIVE_VIDEO_LANGUAGE_BINDING_MISMATCH')
         expected_mode = {'text_to_video':'TEXT_TO_VIDEO', 'image_to_video':'SINGLE_IMAGE', 'first_last_frame':'START_END'}.get(v.input_mode, 'MULTIMODAL')
         if v.first_frame and (v.reference_images or v.reference_videos or v.reference_audios):
             expected_mode = 'MULTIMODAL'
@@ -357,18 +361,31 @@ def _select_qualified(candidates: list[Candidate], results: list[dict[str, Any]]
 
 def _policy_candidates(candidates: list[Candidate], policy: VideoRoutePolicy | None,
                        task_policy: VideoRoutePolicy | None) -> list[Candidate]:
-    effective = resolve_policy(policy or VideoRoutePolicy(), task_policy)
+    effective = resolve_policy(runtime_policy(policy), task_policy)
     # Check identities even for inactive entries; typos never silently disappear.
     for c in candidates:
         model_key(c)
+    candidates = [c for c in candidates if provider_allowed(effective, candidate_provider(c))]
+    if effective.provider not in {'auto', 'comfy_cloud'}:
+        from drama_plugin.providers.video.registry import settings
+        configured = settings()
+        candidates = [c for c in candidates if candidate_provider(c) in configured
+                      and configured[candidate_provider(c)].status(candidate_provider(c)) == 'READY']
     if effective.mode == RouteMode.AUTO:
         return candidates
     return [c for key in effective.sequence() for c in candidates if model_key(c) == key]
 
 
+def candidate_provider(c: Candidate) -> str:
+    # Official candidates carry the registry fingerprint checked by qualification.
+    # A legacy MCP node must never masquerade as HTTP just because names overlap.
+    return c.capability.get('provider', 'comfy_cloud')
+
+
 def choose(r: Requirements, candidates: list[Candidate], *, now: datetime | None = None,
            trial: bool = True, policy: VideoRoutePolicy | None = None,
            task_policy: VideoRoutePolicy | None = None, dry_run: bool = False) -> dict[str, Any]:
+    policy = runtime_policy(policy)
     if len({c.candidate_id for c in candidates}) != len(candidates):
         raise ValueError('DUPLICATE_CANDIDATE')
     # Invalid shared references/script fail before ordering; no preference can repair them.
@@ -385,7 +402,7 @@ def verify_policy_resolution(resolution: dict[str, Any], c: Candidate,
     task = effective if effective.source == 'TASK_OVERRIDE' else None
     if resolve_policy(configured, task) != effective:
         raise ValueError('POLICY_SOURCE_MISMATCH')
-    if (resolution['policy_fingerprint'] != sha256_canonical(effective.model_dump(mode='json'))
+    if (resolution['policy_fingerprint'] != sha256_canonical(resolution['effective_policy'])
             or resolution['source'] != effective.source
             or resolution['selected_model'] != model_key(c)
             or resolution['selected_candidate'] != c.candidate_id
@@ -673,6 +690,13 @@ def route_input_gate(route: ProductionRoute, target_id: str, purpose: str) -> Pl
 def choose_routes(routes: list[ProductionRoute], *, policy: VideoRoutePolicy | None = None,
                   task_policy: VideoRoutePolicy | None = None, now: datetime | None = None) -> dict[str, Any]:
     """Planning uses the existing planned-input qualifier, never fake Media."""
+    policy = runtime_policy(policy)
+    for route in routes:
+        if route.execution is not None:
+            provider = candidate_provider(route.candidate)
+            if ((route.execution.transport == 'HTTP') != (provider != 'comfy_cloud')
+                    or provider != 'comfy_cloud' and route.execution.backend.provider != provider):
+                raise ValueError('MODEL_PROVIDER_MISMATCH')
     allowed = _policy_candidates([r.candidate for r in routes], policy, task_policy)
     routes = [r for c in allowed for r in routes if r.candidate == c]
     results = [{**qualify_route(route, now=now), 'candidate_id': route.candidate.candidate_id}

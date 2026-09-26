@@ -56,14 +56,14 @@ async def save_route(memory: MemoryProvider, work_id: str, raw: dict[str, Any], 
     work = await memory.get_work(work_id)
     await validate_route_direction_sources(memory, work, route)
     existing = work.content.get('productionRoute')
+    choice = choose_routes([route], policy=policy, task_policy=task_policy)
+    if not choice['selected']:
+        raise ValueError('NO_EXECUTABLE_CANDIDATE:' + str(choice['route_policy_resolution']))
     if existing == raw and policy is None and task_policy is None:
         return qualify_route(route)
     stage = work.content.get('productionStage')
     if stage and any(a['status'] in {'RESERVED', 'UNKNOWN'} for a in stage['attempts']):
         raise ValueError('RECOVER_OR_REVIEW_BEFORE_ROUTE_CHANGE')
-    choice = choose_routes([route], policy=policy, task_policy=task_policy)
-    if not choice['selected']:
-        raise ValueError('NO_EXECUTABLE_CANDIDATE:' + str(choice['route_policy_resolution']))
     result = qualify_route(route)
     result['route_policy_resolution'] = choice['route_policy_resolution']
     if not result['eligible']:
@@ -126,6 +126,13 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
         attempt = next(a for a in work.content.get('productionStage', {}).get('attempts', [])
                        if a['attempt_id'] == payload['attempt_id'])
         snapshot = attempt_frame(work.content['productionStage'], attempt)
+        if snapshot.get('schema') == 'video-decision-v1':
+            from drama_plugin.config.video_route import require_runtime_route
+            from drama_plugin.production_language import require_native_video_submission
+            execution = snapshot['execution']
+            provider = execution['backend']['provider'] if execution['transport'] == 'HTTP' else 'comfy_cloud'
+            require_runtime_route(provider, execution['capability']['model_key'])
+            require_native_video_submission(work, snapshot)
         requirements = snapshot.get('requirements', {})
         intent = requirements.get('frozen_creative', {}).get('cinematic_direction')
         frame_context = snapshot.get('spec', {}).get('scope_context') or {}

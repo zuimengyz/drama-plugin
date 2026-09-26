@@ -8,6 +8,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[3]/'src'))
 from drama_plugin.visual.video_selection import Requirements,Candidate,ProductionRoute,seal_decision,qualify,choose
 from drama_plugin.config import load_config, VideoRoutePolicy
 from drama_plugin.hosts.comfy_video import compile_request,verify_execution
+from drama_plugin.hosts import http_video
 
 def main():
  p=argparse.ArgumentParser(description=__doc__)
@@ -23,11 +24,15 @@ def main():
  if not choice['selected']:raise ValueError('NO_EXECUTABLE_CANDIDATE')
  c=next(c for c in candidates if c.candidate_id==choice['selected'])
  host=data['host_adapters'][c.candidate_id] if 'host_adapters' in data else data['host_adapter']
- graph=json.loads(Path(host['graph_path']).read_text());schema=json.loads(Path(host['schema_path']).read_text())
- request=compile_request(r,c,graph,schema,host['bindings'],r.frozen_creative['motion_prompt'])
+ official=c.capability.get('provider') is not None
+ if official:
+  request=http_video.compile_request(r,c)
+ else:
+  graph=json.loads(Path(host['graph_path']).read_text());schema=json.loads(Path(host['schema_path']).read_text())
+  request=compile_request(r,c,graph,schema,host['bindings'],r.frozen_creative['motion_prompt'])
  route=ProductionRoute.model_validate(data['production_route']) if data.get('production_route') else None
  sealed=seal_decision(r,c,request,stage_id=data['stage_id'],rationale=data['rationale'],comparisons=data.get('comparisons',[]),fallback=data['fallback'],host_adapter=host,dry_run=True,production_route=route,policy_resolution=choice['route_policy_resolution'])
- verify_execution(sealed,allow_dry_run=True)
+ (http_video.verify_execution if official else verify_execution)(sealed,allow_dry_run=True)
  a.output.mkdir(parents=True,exist_ok=True)
  for name,value in [('sealed-request',sealed),('request',request),('qualification',qualify(r,c)),('provider-semantic-projection',sealed.get('execution_contract',{}).get('semantic_projection',{}))]:
   (a.output/(name+'.json')).write_text(json.dumps(value,ensure_ascii=False,indent=2))

@@ -154,8 +154,14 @@ def validate_speech_authorization(auth: SpeechLanguageAuthorization, *, work_id:
 def require_work_speech_language(work: Any, request: Any) -> None:
     """Called at the existing real speech entry before Voice or HTTP side effects."""
     if work.content.get('creativeSourceType','HISTORICAL')!='LITERARY':return
-    raw=work.content.get('productionLanguageProfile')
     auth=request.production_language_authorization
+    require_work_language_authorization(work, auth)
+    validate_speech_authorization(auth,work_id=work.id,scene_id=request.scene_id,line_id=request.spoken_content_id,speaker=request.speaker_key,exact_text=request.exact_text,voice_language=request.voice_profile.creative_profile.language)
+
+
+def require_work_language_authorization(work: Any, auth: SpeechLanguageAuthorization | None) -> None:
+    """Shared exact-text authority for TTS and video-native speech."""
+    raw=work.content.get('productionLanguageProfile')
     if not raw or auth is None:raise ValueError('APPROVED_PRODUCTION_DIALOGUE_REQUIRED')
     profile=ProductionLanguageProfile.model_validate(raw)
     if dump_contract(profile)!=dump_contract(auth.profile):raise ValueError('WORK_LANGUAGE_BINDING_MISMATCH')
@@ -164,7 +170,121 @@ def require_work_speech_language(work: Any, request: Any) -> None:
     resolve_source_language(package.artifacts,[profile.source_language_metadata],package.source_artifact_id)
     approved=work.content.get('productionDialogueApprovals',{})
     if approved.get(auth.line.line_id)!=sha256_canonical(auth.line):raise ValueError('CURRENT_WORK_DIALOGUE_APPROVAL_REQUIRED')
-    validate_speech_authorization(auth,work_id=work.id,scene_id=request.scene_id,line_id=request.spoken_content_id,speaker=request.speaker_key,exact_text=request.exact_text,voice_language=request.voice_profile.creative_profile.language)
+    if profile.work_id != work.id:
+        raise ValueError('WORK_LANGUAGE_BINDING_MISMATCH')
+    validate_localization(auth.line, auth.intent, profile, for_speech=True)
+
+
+def native_dialogue_spec(spec: Any, authorizations: Sequence[SpeechLanguageAuthorization], *, required: bool = False) -> Any:
+    """Project approved production text without changing frozen review/canon text.
+
+    Unbound legacy specs remain readable for offline diagnostics only. The live
+    submission gate always uses required=True. Character offsets in review text
+    cannot be reused as offsets in a translation.
+    """
+    if not authorizations and not required:
+        return spec
+    by_id = {a.line.line_id: a for a in authorizations}
+    if len(by_id) != len(authorizations) or set(by_id) != {d.spoken_content_id for d in spec.dialogue}:
+        raise ValueError('APPROVED_PRODUCTION_DIALOGUE_REQUIRED')
+    languages = {a.profile.resolved_production_language for a in authorizations}
+    if len(languages) > 1:
+        raise ValueError('NATIVE_VIDEO_LANGUAGE_BINDING_MISMATCH')
+    projected = []
+    for d in spec.dialogue:
+        a = by_id[d.spoken_content_id]
+        validate_localization(a.line, a.intent, a.profile, for_speech=True)
+        if (a.profile.work_id != spec.work_id or a.line.scene_id != spec.scene_id
+                or a.line.character_id != d.speaker_key or a.line.review_text != d.text):
+            raise ValueError('NATIVE_VIDEO_DIALOGUE_SOURCE_MISMATCH')
+        if d.text_range is not None:
+            raise ValueError('LOCALIZED_DIALOGUE_COVERAGE_REQUIRED')
+        projected.append(d.model_copy(update={'text': a.line.production_text}))
+    return spec.model_copy(update={'dialogue': tuple(projected)})
+
+
+def prepare_native_video_language(work: Any, requirements: Any,
+                                  authorizations: Sequence[SpeechLanguageAuthorization]) -> Any:
+    """Existing language owner prepares binding before provider/IR projection.
+
+    resolve_profile / bind_work owns source_original -> ru. This consumes that
+    immutable Work decision and reviewed ProductionDialogueLine, never translates.
+    """
+    from drama_plugin.visual.cinematic import verify_frozen
+    spec = verify_frozen(requirements.frozen_creative['cinematic_direction'])
+    native_dialogue_spec(spec, authorizations, required=True)
+    for auth in authorizations:
+        require_work_language_authorization(work, auth)
+        require_native_runtime_language(work, auth.profile)
+    if not authorizations:
+        return requirements
+    language = authorizations[0].profile.resolved_production_language
+    changes: dict[str, Any] = {'language': language, 'production_dialogue': tuple(authorizations)}
+    if requirements.video_request is not None:
+        changes['video_request'] = requirements.video_request.model_copy(update={'production_dialogue': tuple(authorizations)})
+    return requirements.model_copy(update=changes)
+
+
+def require_video_request_language(request: Any) -> None:
+    """Adapter-side exact IR audio binding, before URLs or HTTP submission."""
+    bindings = [b for b in request.prompt_projection.audio if b.kind == 'DIALOGUE'] if request.prompt_projection else []
+    auths = request.production_dialogue
+    facts = (request.prompt_ir or {}).get('video_temporal', {}).get('audio_requirements', [])
+    annotated = {b.path for b in request.prompt_projection.audio} if request.prompt_projection else set()
+    if any(f'video.audio_requirements[{i}]' not in annotated for i in range(len(facts))):
+        raise ValueError('NATIVE_VIDEO_AUDIO_CLASSIFICATION_REQUIRED')
+    if not bindings and not auths:
+        return
+    if not request.native_audio or len(bindings) != len(auths):
+        raise ValueError('APPROVED_PRODUCTION_DIALOGUE_REQUIRED')
+    remaining = list(bindings)
+    for a in auths:
+        validate_localization(a.line, a.intent, a.profile, for_speech=True)
+        if a.profile.work_id != request.continuity.work_id:
+            raise ValueError('WORK_LANGUAGE_BINDING_MISMATCH')
+        matches = [b for b in remaining if b.speaker == a.line.character_id
+                   and b.language == a.profile.resolved_production_language
+                   and b.text_hash == sha256_canonical(a.line.production_text)
+                   and any(b.path == f'video.audio_requirements[{i}]' and f['text'] == a.line.production_text
+                           for i, f in enumerate(facts))]
+        if len(matches) != 1:
+            raise ValueError('NATIVE_VIDEO_PRODUCTION_TEXT_REQUIRED')
+        remaining.remove(matches[0])
+
+
+def require_native_runtime_language(work: Any, profile: ProductionLanguageProfile) -> None:
+    from drama_plugin.config.loader import load_config
+    from drama_plugin.contracts.creative_source import LiteraryPackage
+    package = LiteraryPackage.model_validate(work.content['literaryPackage'])
+    current = resolve_profile(work.id, load_config(), package.artifacts,
+                              [profile.source_language_metadata], package.source_artifact_id)
+    if current.resolved_production_language != profile.resolved_production_language:
+        raise ValueError('RUNTIME_SPOKEN_LANGUAGE_CONFLICT')
+
+
+def require_native_video_submission(work: Any, decision: dict[str, Any]) -> None:
+    """Live Work gate shared by formal HTTP and MCP begin-submission."""
+    from drama_plugin.visual.video_selection import Requirements
+    from drama_plugin.visual.cinematic import verify_frozen
+    r = Requirements.model_validate(decision['requirements'])
+    frozen = r.frozen_creative.get('cinematic_direction')
+    if frozen:
+        spec = verify_frozen(frozen)
+        if spec.dialogue:
+            native_dialogue_spec(spec, r.production_dialogue, required=True)
+            if r.sound == 'SILENT':
+                raise ValueError('CANONICAL_DIALOGUE_CANNOT_BE_SILENCED')
+    elif r.sound != 'SILENT' and work.content.get('creativeSourceType') == 'LITERARY':
+        raise ValueError('NATIVE_VIDEO_DIALOGUE_SCOPE_REQUIRED')
+    for a in r.production_dialogue:
+        require_work_language_authorization(work, a)
+        require_native_runtime_language(work, a.profile)
+        if r.language != a.profile.resolved_production_language:
+            raise ValueError('NATIVE_VIDEO_LANGUAGE_BINDING_MISMATCH')
+    if r.video_request:
+        if r.video_request.production_dialogue != r.production_dialogue:
+            raise ValueError('NATIVE_VIDEO_LANGUAGE_BINDING_MISMATCH')
+        require_video_request_language(r.video_request)
 
 
 def validate_work_language(content: dict[str,Any], previous: dict[str,Any] | None=None) -> None:

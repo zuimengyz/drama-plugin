@@ -66,6 +66,9 @@ An ambiguous call leaves the original reservation for task/billing recovery.
         raise ValueError('PERSISTED_UNUSED_RESERVATION_REQUIRED')
     from drama_plugin.visual.history import attempt_frame
     decision = attempt_frame(state, attempt)
+    if decision.get('schema') == 'video-decision-v1':
+        from drama_plugin.config.video_route import require_runtime_route
+        require_runtime_route('comfy_cloud', decision['execution']['capability']['model_key'])
     verify_request(decision)
     if (attempt['frame_fingerprint'] != decision['fingerprint']
             or attempt['request'] != decision['request']

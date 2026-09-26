@@ -10,6 +10,10 @@ def verify_cinematic(r: Any, compilation: dict[str, Any]) -> None:
     v = r.video_request
     if source_audio(spec, r.sound) != v.native_audio:
         raise ValueError('DIRECTOR_AUDIO_INTENT_CHANGED')
+    from drama_plugin.production_language import native_dialogue_spec, require_video_request_language
+    spec = native_dialogue_spec(spec, r.production_dialogue)
+    if r.production_dialogue:
+        require_video_request_language(v)
     ir = compilation['ir']
     if ir['task']['clip_id'] != r.target_id:
         raise ValueError('VISUAL_PROMPT_IR_CLIP_CHANGED')

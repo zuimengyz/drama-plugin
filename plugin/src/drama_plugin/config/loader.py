@@ -50,6 +50,7 @@ def _environment_overrides(environment: Mapping[str, str]) -> dict[str, Any]:
             raise ConfigurationError("Invalid rhythm_speed in environment: expected work_defined, slow, medium or fast")
         overrides["rhythm_speed"] = rhythm_value
     route = {field: environment[key].strip() for field, key in {
+        "provider": "DRAMA_PLUGIN_VIDEO_PROVIDER",
         "mode": "DRAMA_PLUGIN_VIDEO_ROUTE_MODE",
         "preferred_model": "DRAMA_PLUGIN_VIDEO_MODEL_PREFERRED",
         "fallbacks": "DRAMA_PLUGIN_VIDEO_MODEL_FALLBACKS",
@@ -125,6 +126,8 @@ def load_config(
     path: Path | str | None = None,
     environment: Mapping[str, str] | None = None,
 ) -> DramaPluginConfig:
+    source_environment = environment if environment is not None else os.environ
+    path = path or source_environment.get('DRAMA_PLUGIN_CONFIG_FILE') or None
     payload: dict[str, Any] = {}
     if path is not None:
         config_path = Path(path)
@@ -137,7 +140,6 @@ def load_config(
         payload = raw
         if isinstance(payload.get("video_route_policy"), dict):
             payload["video_route_policy"] = {**payload["video_route_policy"], "source": "PLUGIN_CONFIG"}
-    source_environment = environment if environment is not None else os.environ
     merged = _deep_merge(payload, _environment_overrides(source_environment))
     try:
         config = DramaPluginConfig.model_validate(merged)

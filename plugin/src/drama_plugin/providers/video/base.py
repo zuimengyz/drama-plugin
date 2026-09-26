@@ -135,6 +135,10 @@ class HttpVideoProvider:
         return str(path).format(model=self.model_spec['vendor_model'])
 
     async def create_task(self, request: VideoRequest, *, client_request_id: str) -> ProviderTask:
+        from drama_plugin.config.video_route import require_runtime_route
+        require_runtime_route(self.provider, self.model)
+        from drama_plugin.production_language import require_video_request_language
+        require_video_request_language(request)
         from drama_plugin.visual.video_prompt import compile_request_ir
         if self.provider == 'seedance':
             compile_request_ir(request, provider=self.provider, model=self.model)

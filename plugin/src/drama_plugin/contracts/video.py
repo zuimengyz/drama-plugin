@@ -9,6 +9,7 @@ from drama_plugin.contracts.creative_asset import Text, Hash
 from drama_plugin.contracts.source_pin import SourcePin
 from drama_plugin.contracts.visual_route import RouteStyleContract
 from drama_plugin.prompt_generators.contracts import ReferenceBinding, ProjectionAnnotations
+from drama_plugin.contracts.production_language import SpeechLanguageAuthorization
 
 InputMode = Literal['text_to_video', 'image_to_video', 'first_last_frame', 'reference', 'motion_transfer', 'edit', 'extend']
 
@@ -100,6 +101,7 @@ class VideoRequest(ContractModel):
     resolution: Text
     aspect_ratio: Text
     native_audio: bool
+    production_dialogue: tuple[SpeechLanguageAuthorization, ...] = ()
     seed: int | None = Field(default=None, ge=0, le=2147483647)
     character_references: tuple[Text, ...] = ()
     scene_references: tuple[Text, ...] = ()
@@ -111,6 +113,9 @@ class VideoRequest(ContractModel):
     @model_serializer(mode='wrap')
     def preserve_legacy_shape(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
         value = handler(self)
+        if not self.production_dialogue:
+            value.pop('productionDialogue', None)
+            value.pop('production_dialogue', None)
         if self.prompt_ir is None:
             value.pop('prompt_ir', None)
         if self.prompt_projection is None:

@@ -2,6 +2,12 @@
 
 本 Contract 扩展现有 `visual.video_selection → ProductionRoute → productionStage`，没有另建选择器、审批链或剧情状态机。图片继续使用现有 Comfy Cloud MCP。HTTP 与 MCP 的差别止于 Host 执行层。
 
+Seedance 标准版已在本项目原有 Registry（提交 `292d855`）注册为独立键
+`seedance-2-standard`，API model 为 `doubao-seedance-2-0-260128`。本次明确其显示名称为
+`Seedance 2.0`，与 `Seedance 2.0 Fast` / `Seedance 2.0 Mini` 一同枚举；保留现有三个
+独立键、API ID、启用开关和共用 SeedanceProvider，不新建 alias 或猜测新的官方 ID。
+这里沿用项目已有接入定义，mock 不证明账号具有该模型权限，也不宣称本轮做过官方在线验证。
+
 ## 代码与职责
 
 | 层 | 入口 | 职责 |

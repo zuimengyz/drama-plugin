@@ -1,5 +1,24 @@
 # Video route preference
 
+Provider authority is part of this same policy: `DRAMA_PLUGIN_VIDEO_PROVIDER`
+(`video_route_policy.provider` in YAML) accepts `auto`, `official`, `comfy_cloud`,
+or an exact official provider (`seedance`, `vidu`, `minimax`, `wan`, `kling`).
+`official` admits only registered HTTP candidates; an exact provider admits only
+that provider. `comfy_cloud` preserves the inspected MCP path. `auto` preserves
+existing qualification and ranking. A trimmed list with no allowed candidate
+blocks; no cross-provider fallback is inferred from credentials or an unavailable
+provider. Model fallbacks stay inside the allowed provider scope. Changing that
+scope requires external configuration.
+
+`choose` / `choose_routes` reload external configuration even when the caller omits
+policy or supplies a temporary default/PIN. Formal begin-submission, MCP dispatch and
+HTTP create recheck the current provider/model policy; historical seals remain readable
+and paid-task polling does not use current routing restrictions. For YAML shared across
+planning and execution, set `DRAMA_PLUGIN_CONFIG_FILE` to the same external file.
+Environment fields override YAML. No process automatically sources a shell `.env` file.
+`compile_video.py` dispatches registered HTTP candidates to the existing HTTP compiler
+and legacy MCP candidates to the existing Comfy compiler; it never submits.
+
 The Plugin Config loader parses `DRAMA_PLUGIN_VIDEO_ROUTE_MODE`,
 `DRAMA_PLUGIN_VIDEO_MODEL_PREFERRED`, `DRAMA_PLUGIN_VIDEO_MODEL_FALLBACKS` into
 `VideoRoutePolicy`. No settings means AUTO / DEFAULT_AUTO. YAML can use

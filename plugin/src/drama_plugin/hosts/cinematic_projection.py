@@ -65,6 +65,8 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
         validate_authority_context(authority, r.frozen_creative['cinematic_direction'])
         if authority['workId'] != spec.work_id:
             raise ValueError('MOVIE_VISUAL_AUTHORITY_MISMATCH')
+    from drama_plugin.production_language import native_dialogue_spec
+    spec = native_dialogue_spec(spec, r.production_dialogue)
     raw = dump_contract(spec); all_fields = leaves(raw)
     manifest: dict[str, Any] = {}; sections: list[str] = []; compact_sections: list[str] = []
     missing_references: list[str] = []
@@ -128,6 +130,8 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
         text = d.text if d.text_range is None else d.text[d.text_range[0]:d.text_range[1]]
         dialogue = (f'[{d.start:g}–{d.end:g}s] {d.coverage_intent} '
                     f'{d.speaker_key} → {d.target}: "{text}"；{d.delivery}；after: {d.after_line}')
+        if r.production_dialogue:
+            dialogue = f'language={r.production_dialogue[0].profile.resolved_production_language} ' + dialogue
         append('AUDIO / DIALOGUE ' + dialogue, '对白' + dialogue)
         if d.voice_performance:
             append('NATIVE VOICE DIRECTION / SAME PERFORMANCE: ' + prose(executable(dump_contract(d.voice_performance))),
@@ -188,6 +192,8 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
               # Map iteration order is not a creative instruction. Formal JSON
               # storage may reorder object keys; the audit manifest must not drift.
               'generate_audio':audio,'manifest':[manifest[k] for k in sorted(manifest)]}
+    if r.production_dialogue:
+        result['resolvedSpokenLanguage'] = r.production_dialogue[0].profile.resolved_production_language
     if authority is not None:
         result['authority_context_fingerprint'] = authority['fingerprint']
     capability = getattr(c, 'capability', {})

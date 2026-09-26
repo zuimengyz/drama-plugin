@@ -36,7 +36,10 @@ def model_enabled(model: str, environ: Mapping[str, str] | None = None) -> bool:
 def model_availability(environ: Mapping[str, str] | None = None) -> dict[str, Any]:
     configuration = settings(environ)
     models = registry()['models']
-    return {key: {'enabled': model_enabled(key, environ), 'enabled_env': model_enabled_env(key),
+    return {key: {'display_name': models.get(key, {}).get('display_name', key),
+                  'provider': models.get(key, {}).get('provider', 'comfy_cloud'),
+                  'vendor_model': models.get(key, {}).get('vendor_model'),
+                  'enabled': model_enabled(key, environ), 'enabled_env': model_enabled_env(key),
                   'status': ('DISABLED' if not model_enabled(key, environ) else
                              configuration[models[key]['provider']].status(models[key]['provider']) if key in models else 'MCP_DISCOVERY_REQUIRED')}
             for key in sorted(model_keys())}

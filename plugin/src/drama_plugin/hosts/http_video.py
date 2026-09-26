@@ -70,8 +70,8 @@ def seal_execution(r: Requirements, c: Candidate, request: dict[str, Any], host:
     return {**material, 'fingerprint':sha256_canonical(material)}
 
 
-def verify_execution(decision: dict[str, Any]) -> None:
-    verify_decision(decision)
+def verify_execution(decision: dict[str, Any], *, allow_dry_run: bool = False) -> None:
+    verify_decision(decision, allow_dry_run=allow_dry_run)
     r, c = Requirements.model_validate(decision['requirements']), Candidate.model_validate(decision['candidate'])
     if (decision['execution']['transport'] != 'HTTP' or decision['execution']['backend']['provider'] != c.capability['provider']
             or decision['execution_contract'] != seal_execution(r,c,decision['request'],{})):
@@ -161,6 +161,10 @@ class VideoProviderHost:
         if a['status'] != 'RESERVED' or a.get('job_id'):
             raise ValueError('RECOVER_ORIGINAL_SUBMISSION')
         verify_execution(a['frame_snapshot'])
+        from drama_plugin.config.video_route import require_runtime_route
+        from drama_plugin.production_language import require_native_video_submission
+        require_runtime_route(a['request']['provider'], a['request']['model'])
+        require_native_video_submission(await self.memory.get_work(work_id), a['frame_snapshot'])
         binding = await self.bind(work_id, a['frame_snapshot'])
         if any(binding[k] != a['execution_binding'][k] for k in ('execution','endpoint_fingerprint','provider_schema_fingerprint','operation')):
             raise ValueError('HTTP_BINDING_CHANGED')

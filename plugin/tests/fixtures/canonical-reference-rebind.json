@@ -1,0 +1,527 @@
+{
+  "workId": "work_b845f54e03954997b7a97942b046240d",
+  "oldPack": {
+    "style": {
+      "medium": "PHOTOGRAPHIC",
+      "revision": "F01-R3C-R",
+      "rendering": "Live-action cinematic still.",
+      "visualRoute": "live_action_realist",
+      "cameraGrammar": "保留共同桌面与接话者关系",
+      "shapeLanguage": "自然比例",
+      "visualLanguage": "LIVE_ACTION_REALIST",
+      "castingCriteria": [
+        "成年男性自然面部比例，不以病理消瘦表达心理"
+      ],
+      "forbiddenDrifts": [
+        "CG游戏人物质感",
+        "把男人单独拍成肖像"
+      ],
+      "materialPalette": "羊毛、亚麻、木、纸、普通衣料",
+      "historicalBoundary": "十九世纪彼得堡，无现代器物",
+      "performanceGrammar": "三人保持独立注意，男人在座"
+    },
+    "workId": "work_b845f54e03954997b7a97942b046240d",
+    "sources": [
+      {
+        "key": "screenplay:F01-R3C-R",
+        "kind": "CANON",
+        "fingerprint": "aebfdbea2cb7ee8db5b0cea0f1f0a2dea79b9a64d085fcd3aef37f45219342ac"
+      },
+      {
+        "key": "asset-compilation:work_b845f54e03954997b7a97942b046240d:MAN-S01-appearance",
+        "kind": "DIRECTION",
+        "fingerprint": "910662be8d93845af99d675086855a324d87e869ec7c04074d9bc0cfd11ccfc8"
+      },
+      {
+        "key": "asset-compilation:work_b845f54e03954997b7a97942b046240d:MAN-S01-costume",
+        "kind": "DIRECTION",
+        "fingerprint": "84984c673f35409ab3323641a29cdeae10c3658a3614d6051b3886c485a007f5"
+      },
+      {
+        "key": "asset-compilation:work_b845f54e03954997b7a97942b046240d:FRIENDS-appearance",
+        "kind": "DIRECTION",
+        "fingerprint": "673e0b69dfe0bacebc19c76ee1378d0c3ba10ae154d9bb8302b71a6017dc326a"
+      },
+      {
+        "key": "asset-compilation:work_b845f54e03954997b7a97942b046240d:FRIENDS-costume",
+        "kind": "DIRECTION",
+        "fingerprint": "a06518ad39c716debcdc75b12a4bfa42aa7761afa63bba2c6f9f355009a6d5f3"
+      },
+      {
+        "key": "asset-compilation:work_b845f54e03954997b7a97942b046240d:S01-space",
+        "kind": "DIRECTION",
+        "fingerprint": "0dab4f99c063aa3752c033d4d296efb586afa991078b4a4f2d7ddcaf0a6325ee"
+      }
+    ],
+    "weather": "室内",
+    "lighting": "共同桌边普通室内灯，可辨手与脸",
+    "revision": "F01-R3C-R",
+    "segmentId": "A5-L1-S01",
+    "timeOfDay": "夜",
+    "characters": [],
+    "references": [
+      {
+        "kind": "image",
+        "width": 1280,
+        "height": 720,
+        "mediaId": "media_a4c7f6efdfa644d79361f1e49898cda5",
+        "version": "ed45f9e753cccb309a95d59fd2a4875b0f393c9c8ae87009390d46c9bcc5da99",
+        "duration": null,
+        "reviewRef": "production-review:2fef708adef9d28624471f2df34593edaedb96a3027c1f18448a4fee99a100fe@325b8261e5e5f1ad567a628a6202704c8178778d00fbe8776d562a204e0efb01",
+        "semantics": [
+          "identity",
+          "costume",
+          "environment",
+          "style"
+        ],
+        "contentHash": "ed45f9e753cccb309a95d59fd2a4875b0f393c9c8ae87009390d46c9bcc5da99",
+        "prompt_binding": {
+          "coverage": [
+            {
+              "duty": "FACE_IDENTITY",
+              "path": "subject.C_MAN.face",
+              "source": "specialized-asset:MAN-S01-appearance/decisions/face",
+              "text_hash": "39c06bc76439153ac6bd99c13a3d89dda417b9910905b31b2c9613b5fbfc6818"
+            },
+            {
+              "duty": "HAIR",
+              "path": "subject.C_MAN.hair",
+              "source": "specialized-asset:MAN-S01-appearance/decisions/hair",
+              "text_hash": "4ad762ab2ca98a5d31038c9fd5567c11ce69083ee1139d41f2ba0fd4795060e0"
+            },
+            {
+              "duty": "BODY",
+              "path": "subject.C_MAN.body_proportions",
+              "source": "specialized-asset:MAN-S01-appearance/decisions/body",
+              "text_hash": "69d306035cddd3c0553e1e44c243b7872ec63d053fc683a5519c02b434e43bf1"
+            },
+            {
+              "duty": "COSTUME",
+              "path": "subject.C_MAN.costume",
+              "source": "specialized-asset:MAN-S01-costume/decisions/garment_structure",
+              "text_hash": "7230f70487dc9a70223611899fdfd49532ae81e4cad661021d9d46ee5e9de057"
+            },
+            {
+              "duty": "SCENE",
+              "path": "environment.architecture",
+              "source": "specialized-asset:S01-space/decisions/architecture",
+              "text_hash": "f681f96fc5cb8610d6bae64b31277195d299e1030376a25ce58bccd48d91f6ac"
+            }
+          ],
+          "subject_id": "C_MAN",
+          "must_not_carry": []
+        }
+      }
+    ],
+    "lensLanguage": "正常空间关系，纸、手及接话者同一关系",
+    "primaryModel": "seedance-2-fast",
+    "colorLanguage": "木色、纸色、旧衣本色；桌区不以暖色等同善。",
+    "primaryProvider": "seedance",
+    "identityCritical": true,
+    "locationIdentity": "彼得堡工程师房间，共同桌面，门接楼梯",
+    "acceptedPreviousShot": null,
+    "requiredReferenceIds": [
+      "media_a4c7f6efdfa644d79361f1e49898cda5"
+    ],
+    "acceptedPreviousLastFrame": null
+  },
+  "newPack": {
+    "workId": "work_b845f54e03954997b7a97942b046240d",
+    "segmentId": "A5-L1-S01",
+    "revision": "F01-R3C-R",
+    "sources": [
+      {
+        "key": "screenplay:F01-R3C-R",
+        "kind": "CANON",
+        "fingerprint": "aebfdbea2cb7ee8db5b0cea0f1f0a2dea79b9a64d085fcd3aef37f45219342ac"
+      },
+      {
+        "key": "asset-compilation:work_b845f54e03954997b7a97942b046240d:MAN-S01-appearance",
+        "kind": "DIRECTION",
+        "fingerprint": "910662be8d93845af99d675086855a324d87e869ec7c04074d9bc0cfd11ccfc8"
+      },
+      {
+        "key": "asset-compilation:work_b845f54e03954997b7a97942b046240d:MAN-S01-costume",
+        "kind": "DIRECTION",
+        "fingerprint": "84984c673f35409ab3323641a29cdeae10c3658a3614d6051b3886c485a007f5"
+      },
+      {
+        "key": "asset-compilation:work_b845f54e03954997b7a97942b046240d:FRIENDS-appearance",
+        "kind": "DIRECTION",
+        "fingerprint": "673e0b69dfe0bacebc19c76ee1378d0c3ba10ae154d9bb8302b71a6017dc326a"
+      },
+      {
+        "key": "asset-compilation:work_b845f54e03954997b7a97942b046240d:FRIENDS-costume",
+        "kind": "DIRECTION",
+        "fingerprint": "a06518ad39c716debcdc75b12a4bfa42aa7761afa63bba2c6f9f355009a6d5f3"
+      },
+      {
+        "key": "asset-compilation:work_b845f54e03954997b7a97942b046240d:S01-space",
+        "kind": "DIRECTION",
+        "fingerprint": "0dab4f99c063aa3752c033d4d296efb586afa991078b4a4f2d7ddcaf0a6325ee"
+      }
+    ],
+    "characters": [],
+    "locationIdentity": "彼得堡工程师房间，共同桌面，门接楼梯",
+    "timeOfDay": "夜",
+    "weather": "室内",
+    "lighting": "共同桌边普通室内灯，可辨手与脸",
+    "style": {
+      "visualRoute": "live_action_realist",
+      "revision": "F01-R3C-R",
+      "medium": "PHOTOGRAPHIC",
+      "visualLanguage": "LIVE_ACTION_REALIST",
+      "rendering": "Live-action cinematic still.",
+      "castingCriteria": [
+        "成年男性自然面部比例，不以病理消瘦表达心理"
+      ],
+      "shapeLanguage": "自然比例",
+      "materialPalette": "羊毛、亚麻、木、纸、普通衣料",
+      "cameraGrammar": "保留共同桌面与接话者关系",
+      "performanceGrammar": "三人保持独立注意，男人在座",
+      "historicalBoundary": "十九世纪彼得堡，无现代器物",
+      "forbiddenDrifts": [
+        "CG游戏人物质感",
+        "把男人单独拍成肖像"
+      ]
+    },
+    "colorLanguage": "木色、纸色、旧衣本色；桌区不以暖色等同善。",
+    "lensLanguage": "正常空间关系，纸、手及接话者同一关系",
+    "references": [
+      {
+        "mediaId": "media_046bff6b0ed04bf2807735f51eeb63bf",
+        "version": "e966fcc2def50904cefde5081b17ee044c264622860ddb9720b8a1275b04bd71",
+        "contentHash": "e966fcc2def50904cefde5081b17ee044c264622860ddb9720b8a1275b04bd71",
+        "kind": "image",
+        "semantics": [
+          "identity",
+          "costume",
+          "environment",
+          "style"
+        ],
+        "duration": null,
+        "width": 2560,
+        "height": 1440,
+        "reviewRef": "production-review:1661ac50fe78b03b36306d546fde7e2b18869d0b5ccd7723272f95ef44d9276f@25fc51c5f03826b1bb36459b935dbd18666742e7c5789b7cace55558ec5473a5",
+        "prompt_binding": {
+          "subject_id": "C_MAN",
+          "coverage": [
+            {
+              "path": "subject.C_MAN.face",
+              "source": "specialized-asset:MAN-S01-appearance/decisions/face",
+              "text_hash": "39c06bc76439153ac6bd99c13a3d89dda417b9910905b31b2c9613b5fbfc6818",
+              "duty": "FACE_IDENTITY"
+            },
+            {
+              "path": "subject.C_MAN.hair",
+              "source": "specialized-asset:MAN-S01-appearance/decisions/hair",
+              "text_hash": "4ad762ab2ca98a5d31038c9fd5567c11ce69083ee1139d41f2ba0fd4795060e0",
+              "duty": "HAIR"
+            },
+            {
+              "path": "subject.C_MAN.body_proportions",
+              "source": "specialized-asset:MAN-S01-appearance/decisions/body",
+              "text_hash": "69d306035cddd3c0553e1e44c243b7872ec63d053fc683a5519c02b434e43bf1",
+              "duty": "BODY"
+            },
+            {
+              "path": "subject.C_MAN.costume",
+              "source": "specialized-asset:MAN-S01-costume/decisions/garment_structure",
+              "text_hash": "7230f70487dc9a70223611899fdfd49532ae81e4cad661021d9d46ee5e9de057",
+              "duty": "COSTUME"
+            },
+            {
+              "path": "environment.architecture",
+              "source": "specialized-asset:S01-space/decisions/architecture",
+              "text_hash": "f681f96fc5cb8610d6bae64b31277195d299e1030376a25ce58bccd48d91f6ac",
+              "duty": "SCENE"
+            }
+          ],
+          "must_not_carry": []
+        }
+      }
+    ],
+    "requiredReferenceIds": [
+      "media_046bff6b0ed04bf2807735f51eeb63bf"
+    ],
+    "acceptedPreviousShot": null,
+    "acceptedPreviousLastFrame": null,
+    "primaryProvider": "seedance",
+    "primaryModel": "seedance-2-fast",
+    "identityCritical": true
+  },
+  "stage": {
+    "attempts": [
+      {
+        "quote": {
+          "unit": "CNY",
+          "evidence": {
+            "source": "User-authorized single Seedream period correction; existing conservative 11 CNY reservation within 350 CNY shared cap; actual price and balance unknown.",
+            "verified": true,
+            "checked_at": "2026-09-27T11:50:26.122808+00:00",
+            "expires_at": "2026-09-27T12:50:26.122808+00:00"
+          },
+          "uncertainty": [],
+          "request_fingerprint": "e079b4fd1bcb2819c30b95a5c02fdea54b98be845ce25c583e956253ea4ed3dc",
+          "conservative_credits": 11
+        },
+        "copies": [
+          {
+            "job_id": "0217905098793188da07b58b0e27c4ddc87ce60198aebfc7853d6",
+            "media_id": null,
+            "local_path": "/Users/zy/historical-plugin/artifacts/flagship-literary-film-01/a5-l1/scoped-persistence/provider-cache/1661ac50fe78b03b36306d546fde7e2b18869d0b5ccd7723272f95ef44d9276f.png",
+            "upload_name": null,
+            "content_hash": "e966fcc2def50904cefde5081b17ee044c264622860ddb9720b8a1275b04bd71",
+            "storage_object": null
+          }
+        ],
+        "job_id": "0217905098793188da07b58b0e27c4ddc87ce60198aebfc7853d6",
+        "review": {
+          "checks": {
+            "CROP": "PASS",
+            "SCENE": "PASS",
+            "ANATOMY": "PASS",
+            "COSTUME": "PASS",
+            "BLOCKING": "PASS",
+            "IDENTITY": "PASS",
+            "PROP_STATE": "PASS",
+            "PROP_STRUCTURE": "PASS",
+            "MODERN_ARTIFACT": "PASS",
+            "required:live-action": "PASS",
+            "required:四人同桌": "PASS",
+            "forbidden:现代物件": "PASS",
+            "forbidden:CG游戏人物质感": "PASS",
+            "required:男人面前的冷茶杯": "PASS",
+            "forbidden:把男人单独拍成肖像": "PASS",
+            "required:工程师与两个朋友在谈论纸": "PASS",
+            "forbidden:No modern electrical switch or switch plate; no electrical outlet or socket; no modern wall control panel; no exposed modern electrical fitting; no modern plastic wall hardware; no modern cable conduit or other visibly modern electrical wall fixtures.": "PASS",
+            "required:Exactly four visible adult men simultaneously at the same table: MAN, the engineer, friend A, friend B. Four distinct faces, four distinct seated bodies and four seats must be readable; no cropped or hidden fourth participant. 男人、工程师、朋友A、朋友B共四人，四张脸同时可见，均在同一桌边，不能合并人物或把第四人藏在画外。": "PASS"
+          },
+          "evidence": "Actual 2560x1440 original Ark PNG: exactly four visible adults and distinct seated bodies. MAN left at cup; engineer second points at shared paper; smoke-blue friend engaged; brown-coated friend right faces group. Four faces readable. Photographic skin and wool, shared lamp and door-to-stair relation. No visible modern switch plate, outlet/socket, wall control panel, plastic electrical hardware, cable conduit or exposed modern electrical fitting at full-image review. Night interior lighting plausible; bright cool stair landing is a minor ambiguity rather than proof of daytime. Cold tea temperature, motion, waiting and sound cannot be proven by this still. Suitable fresh bootstrap; cross-shot identity not yet established. Identity PASS means suitable bootstrap, not cross-shot continuity already proven. Cold cup requirement checked as cup placement; temperature remains source-only.",
+          "findings": [
+            {
+              "remedy": "ACCEPT",
+              "category": "SCENE",
+              "evidence": "Cool bright stair landing contrasts with warm interior; no explicit daylight source visible. Preserve nighttime intention in video review.",
+              "severity": "MINOR"
+            }
+          ],
+          "reviewer": "Codex full-image visual QC",
+          "attempt_id": "1661ac50fe78b03b36306d546fde7e2b18869d0b5ccd7723272f95ef44d9276f",
+          "output_hash": "e966fcc2def50904cefde5081b17ee044c264622860ddb9720b8a1275b04bd71"
+        },
+        "status": "COMPLETED",
+        "balance": {
+          "unit": "CNY",
+          "evidence": {
+            "source": "User-authorized single Seedream period correction; existing conservative 11 CNY reservation within 350 CNY shared cap; actual price and balance unknown.",
+            "verified": true,
+            "checked_at": "2026-09-27T11:50:26.122808+00:00",
+            "expires_at": "2026-09-27T12:50:26.122808+00:00"
+          },
+          "margin_credits": 1,
+          "available_credits": null
+        },
+        "call_id": "1661ac50fe78b03b36306d546fde7e2b18869d0b5ccd7723272f95ef44d9276f",
+        "credits": null,
+        "ordinal": 4,
+        "request": {
+          "body": {
+            "seed": 270901,
+            "size": "2560x1440",
+            "model": "doubao-seedream-5-0-260128",
+            "prompt": "TARGET WORLD\n十九世纪 彼得堡，工程师的房间 普通室内聚谈 当时日常衣物、桌椅、纸和茶杯；无现代器物 No modern electrical switch or switch plate; no electrical outlet or socket; no modern wall control panel; no exposed modern electrical fitting; no modern plastic wall hardware; no modern cable conduit or other visibly modern electrical wall fixtures.\n\nSUBJECTS\n男人: 成年人; 成年男性的自然面部比例，不另设黑眼圈、泪痕或病理消瘦。; 头发有整理痕迹，少量自然散发；不按心理标签故意蓬乱。; 遵守现有人物年龄与行动能力，保持可坐、站、转身和行走的自然比例。; 灰褐羊毛外衣，领口平整；里层亚麻衬衣领边有使用痕迹而无破洞。; 肘部和袖口轻微磨亮，扣件齐全；穿上后可正常行走。 工程师和两个朋友，共三名成年人: 成年人; 桌边成年人保持个体差别，不以统一冷笑或蜡白皮肤做群像。; 日常整理，各自发线自然。; 遵守现有人物年龄与行动能力，保持可坐、站、转身和行走的自然比例。; 工程师穿普通棕灰室内外套，两位朋友用烟蓝与褐色旧呢外套区分；不加制服或阶级徽章。; 衣服整洁程度略有差异，手肘有使用磨损；不以精致度裁判人性。\n\nCURRENT BLOCKING\n男人和三人同桌而非被排除到角落 男人看桌面与说话的人；工程师和两个朋友的注意在纸与彼此之间 工程师的指头压住桌上纸的一处；男人坐在自己的冷茶杯前 共同桌面上有四人的位置；工程师和两个朋友正在交流，男人仍在座 Exactly four visible adult men simultaneously at the same table: MAN, the engineer, friend A, friend B. Four distinct faces, four distinct seated bodies and four seats must be readable; no cropped or hidden fourth participant. 男人、工程师、朋友A、朋友B共四人，四张脸同时可见，均在同一桌边，不能合并人物或把第四人藏在画外。 工程师和两个朋友围桌说话，纸在桌中央；男人坐在冷茶杯前。 另一个朋友在笑，其余人保持各自当下的注意；男人不表演统一的悲伤面具。\n\nENVIRONMENT\n可容四人围桌的工程师房间，门接楼梯。 共同桌面，门接楼梯，男人的外衣尚在旁边，尚未穿上。 纸、冷茶杯、外衣。\n\nCAMERA\n先与桌边人同处，不先把男人孤立成肖像 桌缘外能同时看见等待与未接话的距离 正常空间关系，保留纸、手及接话者同一关系 四名参与者的脸与各自坐姿均在构图内可读，保留共同桌面关系。 坐者眼线附近\n\nLIGHTING\n夜 桌上普通室内灯的照明设计；无额外象征灯 可辨所有人的手和脸；男人不单独降为黑影 室内灯照亮同一桌边的人、纸、杯与衣物；自然摄影的皮肤和材料响应。\n\nTARGET LOOK\nLive-action cinematic still.",
+            "stream": false,
+            "watermark": false,
+            "output_format": "png",
+            "response_format": "b64_json",
+            "sequential_image_generation": "disabled"
+          },
+          "tool": "image.create",
+          "provider": "ark"
+        },
+        "shot_id": "S01-01-FRESH-REF",
+        "delivery": {
+          "shotId": "shot_92827689a8834d4386ca27b677a4fb2a",
+          "workId": "work_b845f54e03954997b7a97942b046240d",
+          "assetId": null,
+          "binding": {
+            "mediaId": "media_046bff6b0ed04bf2807735f51eeb63bf",
+            "purpose": "VIDEO_INPUT",
+            "targetId": "S01-01-FRESH-REF",
+            "mediaType": "IMAGE",
+            "retention": "CANDIDATE",
+            "sourceRef": "A5-L1-S01-S02-FRESH:S01-01-FRESH-REF:1661ac50fe78b03b36306d546fde7e2b18869d0b5ccd7723272f95ef44d9276f",
+            "contentHash": "e966fcc2def50904cefde5081b17ee044c264622860ddb9720b8a1275b04bd71",
+            "userAdoption": "PENDING",
+            "contentReview": "PASS_WITH_NOTES"
+          },
+          "mediaId": "media_046bff6b0ed04bf2807735f51eeb63bf",
+          "purpose": "VIDEO_INPUT",
+          "cachePath": "/Users/zy/historical-plugin/artifacts/flagship-literary-film-01/a5-l1/scoped-persistence/media-cache/media_046bff6b0ed04bf2807735f51eeb63bf-e966fcc2def50904cefde5081b17ee044c264622860ddb9720b8a1275b04bd71.img",
+          "mediaType": "IMAGE",
+          "sizeBytes": 5011279,
+          "sourceRef": "A5-L1-S01-S02-FRESH:S01-01-FRESH-REF:1661ac50fe78b03b36306d546fde7e2b18869d0b5ccd7723272f95ef44d9276f",
+          "technical": {
+            "streams": [
+              {
+                "width": 2560,
+                "height": 1440,
+                "codec_type": "video"
+              }
+            ],
+            "implementation": "ffprobe+ffmpeg-image-decode"
+          },
+          "toolCalls": [
+            "media.list_media",
+            "media.import_media",
+            "media.list_media",
+            "media.get_media",
+            "media.resolve_media",
+            "shot.get_shot",
+            "scene.get_scene",
+            "episode.get_episode",
+            "script.get_script",
+            "shot.save_shot",
+            "shot.get_shot"
+          ],
+          "contentHash": "e966fcc2def50904cefde5081b17ee044c264622860ddb9720b8a1275b04bd71",
+          "bindingStatus": "VERIFIED",
+          "deliveryStatus": "CANDIDATE_SAVED",
+          "bindingEntityId": "shot_92827689a8834d4386ca27b677a4fb2a",
+          "storageDelivery": {
+            "host": "localhost",
+            "path": "/api/content/media/media_046bff6b0ed04bf2807735f51eeb63bf",
+            "scheme": "http",
+            "signedQuerySaved": false
+          },
+          "persistenceStatus": "VERIFIED"
+        },
+        "stage_id": "A5-L1-S01-S02-FRESH",
+        "frame_ref": "69ee41a2bb452570d636b6ca4d10799f31b06a8725b3d546b1f02c213ae4fbbc",
+        "target_id": "S01-01-FRESH-REF",
+        "technical": {
+          "probe": {
+            "streams": [
+              {
+                "width": 2560,
+                "height": 1440,
+                "codec_type": "video"
+              }
+            ],
+            "implementation": "ffprobe+ffmpeg-image-decode"
+          },
+          "checks": {
+            "fps": "PASS",
+            "audio": "PASS",
+            "linkage": "PASS",
+            "duration": "PASS",
+            "integrity": "PASS",
+            "dimensions": "PASS"
+          },
+          "evidence": "Full PNG decode and hash; owned provider completed task. duration/fps/audio N/A for still."
+        },
+        "attempt_id": "1661ac50fe78b03b36306d546fde7e2b18869d0b5ccd7723272f95ef44d9276f",
+        "media_kind": "IMAGE",
+        "call_reason": "CONTENT_REWORK",
+        "output_hash": "e966fcc2def50904cefde5081b17ee044c264622860ddb9720b8a1275b04bd71",
+        "review_status": "PASS_WITH_NOTES",
+        "user_adoption": "PENDING",
+        "content_status": "PASS_WITH_NOTES",
+        "delivery_status": "CANDIDATE_SAVED",
+        "billing_event_id": null,
+        "production_layer": "LIMITED_TRIAL",
+        "reserved_credits": 11.0,
+        "technical_status": "PASS",
+        "execution_binding": {
+          "evidence": {
+            "source": "User-authorized single Seedream period correction; existing conservative 11 CNY reservation within 350 CNY shared cap; actual price and balance unknown.",
+            "verified": true,
+            "checked_at": "2026-09-27T11:50:26.122808+00:00",
+            "expires_at": "2026-09-27T12:50:26.122808+00:00"
+          },
+          "execution": {
+            "mcp": null,
+            "backend": {
+              "provider": "ark",
+              "backend_key": "ark"
+            },
+            "transport": "HTTP",
+            "capability": {
+              "kind": "image_generation",
+              "model_key": "doubao-seedream-5-0-260128"
+            }
+          },
+          "operation": "image.create",
+          "provider_schema": {
+            "input": "text_to_image",
+            "models": {
+              "Doubao-Seedream-5.0-pro": "doubao-seedream-5-0-pro-260628",
+              "Doubao-Seedream-5.0-lite": "doubao-seedream-5-0-260128",
+              "Doubao-Seedream-5.0-flash": "doubao-seedream-5-0-flash-260915"
+            },
+            "endpoint": "/images/generations",
+            "provider": "ark",
+            "pixel_ranges": {
+              "doubao-seedream-5-0-260128": [
+                3686400,
+                16777216
+              ],
+              "doubao-seedream-5-0-pro-260628": [
+                921600,
+                4624220
+              ],
+              "doubao-seedream-5-0-flash-260915": [
+                921600,
+                4624220
+              ]
+            },
+            "output_format": "png",
+            "response_format": "b64_json"
+          },
+          "request_fingerprint": "e079b4fd1bcb2819c30b95a5c02fdea54b98be845ce25c583e956253ea4ed3dc",
+          "endpoint_fingerprint": "2376a06a5693a3277adda59b4028d7ef25269ed8e1ae73cd4b80ff7036fa9c58",
+          "authentication_status": "CONFIGURED_NOT_VERIFIED",
+          "provider_schema_fingerprint": "6014a91d72477ab591006c864ca86f6d2cc628be0eaf46af40f53328defe8ed1"
+        },
+        "execution_receipt": {
+          "task_id": "0217905098793188da07b58b0e27c4ddc87ce60198aebfc7853d6",
+          "execution": {
+            "mcp": null,
+            "backend": {
+              "provider": "ark",
+              "backend_key": "ark"
+            },
+            "transport": "HTTP",
+            "capability": {
+              "kind": "image_generation",
+              "model_key": "doubao-seedream-5-0-260128"
+            }
+          },
+          "operation": "image.create",
+          "attempt_id": "1661ac50fe78b03b36306d546fde7e2b18869d0b5ccd7723272f95ef44d9276f",
+          "request_fingerprint": "e079b4fd1bcb2819c30b95a5c02fdea54b98be845ce25c583e956253ea4ed3dc",
+          "endpoint_fingerprint": "2376a06a5693a3277adda59b4028d7ef25269ed8e1ae73cd4b80ff7036fa9c58",
+          "provider_schema_fingerprint": "6014a91d72477ab591006c864ca86f6d2cc628be0eaf46af40f53328defe8ed1"
+        },
+        "frame_fingerprint": "59ac410bda172caf82fb9e394f2b4cd52caf1c7d94c154129635549be9d08957",
+        "provider_evidence": "Ark official image HTTP 200; original PNG retained",
+        "persistence_status": "VERIFIED",
+        "submission_started": true,
+        "content_observation": "Actual 2560x1440 original Ark PNG: exactly four visible adults and distinct seated bodies. MAN left at cup; engineer second points at shared paper; smoke-blue friend engaged; brown-coated friend right faces group. Four faces readable. Photographic skin and wool, shared lamp and door-to-stair relation. No visible modern switch plate, outlet/socket, wall control panel, plastic electrical hardware, cable conduit or exposed modern electrical fitting at full-image review. Night interior lighting plausible; bright cool stair landing is a minor ambiguity rather than proof of daytime. Cold tea temperature, motion, waiting and sound cannot be proven by this still. Suitable fresh bootstrap; cross-shot identity not yet established.",
+        "request_fingerprint": "e079b4fd1bcb2819c30b95a5c02fdea54b98be845ce25c583e956253ea4ed3dc"
+      }
+    ],
+    "input_selections": {
+      "S01-01-FRESH-REF": {
+        "reason": "Actual four-person live-action ensemble QC passed; new shared identity/costume/space bootstrap; no user adoption implied.",
+        "purpose": "FIRST_FRAME",
+        "media_id": "media_046bff6b0ed04bf2807735f51eeb63bf",
+        "authority": "HOST_WORKING_INPUT",
+        "attempt_id": "1661ac50fe78b03b36306d546fde7e2b18869d0b5ccd7723272f95ef44d9276f",
+        "review_hash": "25fc51c5f03826b1bb36459b935dbd18666742e7c5789b7cace55558ec5473a5",
+        "content_hash": "e966fcc2def50904cefde5081b17ee044c264622860ddb9720b8a1275b04bd71"
+      }
+    }
+  }
+}

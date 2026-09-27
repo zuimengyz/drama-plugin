@@ -30,6 +30,7 @@ services:
       create_work: /api/tool/work/create
       get_work: /api/tool/work/get
       save_work: /api/tool/work/save
+      patch_work: /api/tool/work/patch-content
       list_works: /api/tool/work/list
       search_works: /api/tool/work/search
       bind_work_voice: /api/tool/work/bind-voice

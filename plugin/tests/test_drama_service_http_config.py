@@ -11,7 +11,7 @@ CONFIG = ROOT / "config" / "drama-service-http.example.yaml"
 SERVICE_MAPPING = ROOT.parents[1] / "drama-service" / "docs" / "plugin-http-operations.yaml"
 
 POST_OPERATIONS = {
-    "create_work", "save_work", "create_script", "save_script",
+    "create_work", "save_work", "patch_work", "create_script", "save_script",
     "create_episode", "save_episode", "create_scene", "save_scene",
     "create_shot", "save_shot", "create_asset", "save_asset",
     "create_media", "save_media", "bind_work_voice",
@@ -30,7 +30,7 @@ def _configured_operations() -> dict[str, str]:
 
 def test_41_long_term_memory_operations_match_service_mapping_when_sibling_is_available() -> None:
     configured = _configured_operations()
-    assert len(configured) == 41
+    assert len(configured) == 42
     plugin = DramaPlugin.load(ROOT)
     expected_codes = {
         tool.code for tool in plugin.tools.list()
@@ -41,7 +41,7 @@ def test_41_long_term_memory_operations_match_service_mapping_when_sibling_is_av
     configured_tools.add("save_voice")
     assert {code.split(".", 1)[1] for code in expected_codes} == configured_tools
     assert all(path.startswith("/api/tool/") and not path.startswith("http") for path in configured.values())
-    assert len(POST_OPERATIONS) == 19
+    assert len(POST_OPERATIONS) == 20
     if SERVICE_MAPPING.exists():
         service_operations = yaml.safe_load(SERVICE_MAPPING.read_text(encoding="utf-8"))["operations"]
         assert configured == service_operations

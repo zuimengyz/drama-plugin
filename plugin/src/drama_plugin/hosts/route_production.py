@@ -345,8 +345,13 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
     compact(state)
     content = {**current.content, 'productionStage': state}
     try:
-        await memory.save_work(work.id, work.title, content, work.description)
-    except Exception:
+        from drama_plugin.work_patch import validate_patch
+        changes = {"productionStage": state}
+        validate_patch(current, current.version, changes)
+        await memory.patch_work(work.id, current.version, changes)
+    except Exception as exc:
+        if getattr(exc, "error_code", None) == "CONFLICT":
+            raise
         fresh = await memory.get_work(work_id)
         if fresh.content.get('productionStage') != state:
             raise

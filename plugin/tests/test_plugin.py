@@ -19,7 +19,7 @@ def test_plugin_initializes_agent_driven_capabilities() -> None:
     assert plugin.manifest.name == "drama-plugin"
     assert len(plugin.skills.list()) == 57
     codes = {tool.code for tool in plugin.tools.list()}
-    assert len(codes) == 51
+    assert len(codes) == 52
     assert {"work.search_works", "scene.search_scenes", "shot.search_shots", "asset.search_assets", "voice.get_voice", "production.generate_role_dubbing", "production.generate_video", "context.build_context"} <= codes
     assert not any("plan" in code or "compile" in code or "binding" in code for code in codes)
 

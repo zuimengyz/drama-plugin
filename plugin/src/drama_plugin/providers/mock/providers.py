@@ -27,6 +27,12 @@ class MockMemoryProvider:
         existing = self._get(self.data.work, work_id, "work")
         self.data.work = Work(id=work_id, title=title, description=description, content=content, version=existing.version + 1)
         return self.data.work
+    async def patch_work(self, work_id: str, expected_version: int, changes: dict[str, Any]) -> Work:
+        from drama_plugin.work_patch import validate_patch
+        work = self._get(self.data.work, work_id, "work")
+        validate_patch(work, expected_version, changes)
+        self.data.work = Work(**{**work.model_dump(), "content": {**work.content, **changes}, "version": work.version + 1})
+        return self.data.work
     async def bind_work_voice(self, work_id: str, speaker_key: str, voice_id: str, expected_version: int) -> Work:
         work = self._get(self.data.work, work_id, "work")
         if work.version != expected_version: raise ProviderError("Mock work version changed")

@@ -54,6 +54,12 @@ def build_tool_registry(memory: MemoryProvider, asset: AssetProvider, research: 
         validate_work_content(content, previous.content)
         return await memory.save_work(work_id, title, content, description)
 
+    async def patch_work(work_id: str, expected_version: int, changes: dict[str, Any]) -> Work:
+        previous = await memory.get_work(work_id)
+        from drama_plugin.work_patch import validate_patch
+        validate_patch(previous, expected_version, changes)
+        return await memory.patch_work(work_id, expected_version, changes)
+
     async def create_script(work_id: str, title: str, content: dict[str, Any]) -> Script:
         work = await memory.get_work(work_id)
         validate_script_content(work.content, content)
@@ -76,6 +82,7 @@ def build_tool_registry(memory: MemoryProvider, asset: AssetProvider, research: 
         _domain_tool("source.prepare_screenplay", "Validate reviewed Historical or Literary upstream decisions and compile a source-pinned Screenplay Input; never generate text or media.", prepare_screenplay, ScreenplayInput, required={"request": CompileSourceRequest}),
         _domain_tool("work.create_work", "Create a complete initial work as persistent memory.", create_work, Work, required={"title": str, "content": dict[str, Any]}, optional={"description": str | None}),
         _domain_tool("work.get_work", "Read a work by stable ID.", memory.get_work, Work, required={"work_id": str}),
+        _domain_tool("work.patch_work", "CAS update of productionStage or reference-only continuityPacks; retains other Work fields.", patch_work, Work, required={"work_id": str, "expected_version": int, "changes": dict[str, Any]}),
         _domain_tool("work.save_work", "Replace the formal state of an existing work revision.", save_work, Work, required={"work_id": str, "title": str, "content": dict[str, Any]}, optional={"description": str | None}),
         _domain_tool("work.list_works", "List works in the available structural scope.", memory.list_works, list[Work]),
         _domain_tool("work.search_works", "Discover works when the stable ID is unknown, using a natural-language query.", memory.search_works, list[Work], required={"query": str}),

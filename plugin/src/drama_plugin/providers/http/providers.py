@@ -42,6 +42,7 @@ class HttpMemoryProvider:
     async def create_work(self, title: str, content: dict[str, Any], description: str | None = None) -> Work: return await self._create("create_work", Work, {"title": title, "description": description, "content": content})
     async def get_work(self, work_id: str) -> Work: return _one(Work, await self.http.request("get_work", params={"work_id": work_id}))
     async def save_work(self, work_id: str, title: str, content: dict[str, Any], description: str | None = None) -> Work: return await self._create("save_work", Work, {"work_id": work_id, "title": title, "description": description, "content": content})
+    async def patch_work(self, work_id: str, expected_version: int, changes: dict[str, Any]) -> Work: return await self._create("patch_work", Work, {"work_id": work_id, "expected_version": expected_version, "changes": changes})
     async def bind_work_voice(self, work_id: str, speaker_key: str, voice_id: str, expected_version: int) -> Work: return await self._create("bind_work_voice", Work, {"work_id": work_id, "speaker_key": speaker_key, "voice_id": voice_id, "expected_version": expected_version})
     async def list_works(self) -> list[Work]: return _many(Work, await self.http.request("list_works"))
     async def search_works(self, query: str) -> list[Work]: return _many(Work, await self.http.request("search_works", params={"query": query}))

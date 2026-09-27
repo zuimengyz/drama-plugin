@@ -71,7 +71,7 @@ def test_registry_preserves_cinematic_skill_with_departments_and_no_new_domain_t
     from drama_plugin.professional import registry
     department_skills = {d.skill_code for d in registry().values() if d.skill_code}
     assert {s.code for s in p.skills.list()} == expected | department_skills | {'character-art', 'costume-design', 'environment-design', 'environment-art', 'set-decoration'} | {'character-embodiment', 'character-external-driver', 'cinematic-direction', 'production-design', 'performance-casting', 'authorial-voice', 'director', 'music-direction', 'literary-source-analysis', 'philosophical-core', 'literary-adaptation', 'literature-to-cinema', 'narration-line'}
-    assert len(p.tools.list()) == 51
+    assert len(p.tools.list()) == 52
 
 
 def test_inherited_override_effective_and_input_immutable():
@@ -261,7 +261,11 @@ async def test_actual_host_refreshes_canon_before_route_and_submission_boundary(
                 entity=entities[name[4:]];assert entity.id==identity;return deepcopy(entity)
             return get
         async def save_work(self,wid,title,content,description):
-            self.writes+=1;entities['work'].content=deepcopy(content)
+            self.writes+=1;entities['work'].content=deepcopy(content);entities['work'].version+=1
+        async def patch_work(self,wid,expected_version,changes):
+            assert entities['work'].version==expected_version
+            self.writes+=1;entities['work'].content.update(deepcopy(changes));entities['work'].version+=1
+            return deepcopy(entities['work'])
     memory=Memory();raw=route_fixture(tmp_path).model_dump(mode='json')
     raw['execution']=execution_contract('flux-3')
     raw['requirements'].update(creative_schema='cinematic-shot-v1',cinematic_directions={'S1':frozen},shots={'S1':'SHOT'})

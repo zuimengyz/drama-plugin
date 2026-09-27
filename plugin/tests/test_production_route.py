@@ -41,9 +41,13 @@ def test_extra_generation_is_not_one_workflow(tmp_path):
  assert not qualify_route(ProductionRoute.model_validate(d))['eligible']
 
 class Memory:
- def __init__(self):self.work=SimpleNamespace(id='W',title='Offline',description='',content={'creative':'do not replace'})
+ def __init__(self):self.work=SimpleNamespace(id='W',title='Offline',description='',version=1,content={'creative':'do not replace'})
  async def get_work(self,wid):assert wid=='W';return deepcopy(self.work)
- async def save_work(self,wid,title,content,description):assert wid=='W';self.work.content=deepcopy(content)
+ async def save_work(self,wid,title,content,description):assert wid=='W';self.work.content=deepcopy(content);self.work.version+=1
+ async def patch_work(self,wid,expected_version,changes):
+  assert expected_version==self.work.version
+  self.work.content.update(deepcopy(changes));self.work.version+=1
+  return deepcopy(self.work)
 
 @pytest.mark.asyncio
 async def test_new_monetary_stage_accepts_continuous_scope_without_legacy_caps(tmp_path):

@@ -72,7 +72,7 @@ def adopt(store, w, q, f, delta, current, disposition='APPROVE', approved_refs=(
 def test_registry_and_readonly_director_surface():
     plugin = DramaPlugin.load(ROOT)
     assert len(plugin.skills.list()) == 57
-    assert len(plugin.tools.list()) == 51
+    assert len(plugin.tools.list()) == 52
     assert all('director' not in t.code for t in plugin.tools.list())
     skill = plugin.skills.get('director')
     assert all('.get_' in name or name == 'context.build_context'

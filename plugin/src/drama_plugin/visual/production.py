@@ -122,9 +122,16 @@ def _route_frame_gate(state: dict[str, Any], frame: dict[str, Any]) -> None:
     route = ProductionRoute.model_validate(state['production_route'])
     continuation_baseline(state, route)
     target = frame['spec']['shot_id']
-    execution_target = target if frame.get('schema') == 'video-decision-v1' else None
-    if not qualify_route(route, execution_target=execution_target)['eligible']:
-        raise ValueError('ROUTE_EXPIRED_OR_INCOMPLETE')
+    video = frame.get('schema') == 'video-decision-v1'
+    duty = next((i for i in route.inputs if i.target_id == target), None) if not video else None
+    if not video and (duty is None or not duty.for_targets):
+        raise ValueError('PAID_IMAGE_NOT_A_NECESSARY_ROUTE_INPUT')
+    # Input IDs are not video target IDs. Resolve through the existing planned
+    # duty; a shared input must qualify every consumer it actually declares.
+    targets = (target,) if video else duty.for_targets if duty else ()
+    for execution_target in targets:
+        if not qualify_route(route, execution_target=execution_target)['eligible']:
+            raise ValueError('ROUTE_EXPIRED_OR_INCOMPLETE')
     if frame.get('schema') == 'video-decision-v1':
         if frame.get('execution') is not None or route.execution is not None:
             if (frame.get('execution') != (route.execution.model_dump(mode='json') if route.execution else None)
@@ -162,7 +169,8 @@ def _route_frame_gate(state: dict[str, Any], frame: dict[str, Any]) -> None:
         duty = next((i for i in route.inputs if i.target_id == target), None)
         if duty is None:
             raise ValueError('PAID_IMAGE_NOT_A_NECESSARY_ROUTE_INPUT')
-        route_input_gate(route, target, duty.purpose)
+        for execution_target in targets:
+            route_input_gate(route, target, duty.purpose, execution_target=execution_target)
         passed = {a['shot_id'] for a in state['attempts'] if a.get('review_status', '').startswith('PASS')}
         if not set(duty.requires_pass_targets) <= passed:
             raise ValueError('REQUIRED_INPUT_OR_VIDEO_REVIEW_NOT_PASSED')
@@ -688,6 +696,43 @@ def metrics(state: dict[str, Any]) -> dict[str, Any]:
             'pause': state['pause']}
 
 
+def _same_still_after_canonical_binding(state: dict[str, Any], old: dict[str, Any],
+                                       frame: dict[str, Any]) -> bool:
+    """Permit derived input pin refresh after a journaled canonical route binding.
+
+    All creative facts and professional pins must remain byte-equivalent as JSON.
+    The Host has already re-read current canonical source/authority before replan.
+    """
+    from drama_plugin.visual.history import resolve
+    from drama_plugin.visual.cinematic import verify_frozen
+    route = state.get('production_route', {})
+    duty = next((d for d in route.get('inputs', []) if d['target_id'] == frame['spec']['shot_id']), None)
+    if not duty or frame['spec']['shot_fingerprint'] != route.get('creative_fingerprint'):
+        return False
+    for target in duty['for_targets']:
+        frozen = route.get('requirements', {}).get('cinematic_directions', {}).get(target)
+        if not frozen:
+            return False
+        spec = verify_frozen(frozen)
+        if spec.work_id != route['work_id'] or spec.source_fingerprint != route['creative_fingerprint']:
+            return False
+    def facts(f: dict[str, Any]) -> dict[str, Any]:
+        value = deepcopy(f['spec']);value.pop('shot_fingerprint', None)
+        if value.get('prompt_ir'):
+            value['prompt_ir'].pop('source_fingerprint', None)
+            value['prompt_ir']['task'].pop('provider_family', None)
+        return value
+    if facts(old) != facts(frame):
+        return False
+    for revision in state.get('route_revisions', []):
+        previous = (resolve(state, revision['previous_route_ref'], 'route') if revision.get('previous_route_ref')
+                    else revision.get('previous_route', {}))
+        if (previous.get('creative_fingerprint') == old['spec']['shot_fingerprint']
+                and all(previous.get(k) == route.get(k) for k in ('work_id','route_id','stage_id','video_targets','inputs'))):
+            return True
+    return False
+
+
 def replan(state: dict[str, Any], *, frame: dict[str, Any], reason: str,
            incremental_credits: float = 0, work: Any = None,
            approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> None:
@@ -739,7 +784,8 @@ def replan(state: dict[str, Any], *, frame: dict[str, Any], reason: str,
         else:
             for key in ('shot_id','shot_fingerprint'):
                 if old['spec'][key] != frame['spec'][key]:
-                    raise ValueError('IMAGE_CREATIVE_SOURCE_CHANGED')
+                    if key != 'shot_fingerprint' or not _same_still_after_canonical_binding(state, old, frame):
+                        raise ValueError('IMAGE_CREATIVE_SOURCE_CHANGED')
     if not math.isfinite(incremental_credits) or incremental_credits < 0:
         raise ValueError('INVALID_REPLAN_COST')
     proposed = {**state['frames'], sid: frame}

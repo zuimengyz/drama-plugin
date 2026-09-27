@@ -73,6 +73,9 @@ def candidates(content: dict[str, Any]) -> Iterator[tuple[dict[str, Any], str]]:
         (str(a.get('quote', {}).get('evidence', {}).get('checked_at', '')) for a in s['attempts']), default=''))
     for stage in ordered:
         selected = {v.get('attempt_id') for v in stage.get('input_selections', {}).values()}
+        # A retained selection event is historical after an explicit failed
+        # reassessment; keep the event/attempt, but its old frame is not live input.
+        selected -= {a.get('attempt_id') for a in stage['attempts'] if a.get('review_status') == 'FAIL'}
         protected = {a.get('frame_ref') for a in stage['attempts']
                      if a.get('status') != 'COMPLETED' or a.get('attempt_id') in selected}
         protected.add(stage['attempts'][-1].get('frame_ref') if stage['attempts'] else None)
@@ -83,14 +86,19 @@ def candidates(content: dict[str, Any]) -> Iterator[tuple[dict[str, Any], str]]:
             if ref in archive and ref not in protected and ref not in seen and attempt.get('status') == 'COMPLETED':
                 seen.add(ref)
                 yield archive, ref
-        # Historical route revisions can only compact in terminal stages, never
-        # while any attempt still needs outcome/recovery. Selected inputs stay raw.
-        if stage['attempts'] and all(a.get('status') == 'COMPLETED' or
+        # A known current route stays raw even while a new reservation is being
+        # saved. Older immutable revisions may encode losslessly; no attempt,
+        # active request or current route is replaced by an archive marker.
+        terminal = bool(stage['attempts']) and all(a.get('status') == 'COMPLETED' or
                 (a.get('status') == 'FAILED' and a.get('review_status') == 'NOT_APPLICABLE_NO_MEDIA')
-                for a in stage['attempts']):
-            protected_routes = set()
+                or (a.get('status') == 'NOT_CREATED' and not a.get('job_id')
+                    and a.get('video_task', {}).get('status') == 'NOT_CREATED')
+                for a in stage['attempts'])
+        current_route = stage.get('production_route')
+        if terminal or isinstance(current_route, dict) and current_route.get('route_id'):
+            protected_routes = {sha256_canonical(current_route)} if current_route else set()
             for a in stage['attempts']:
-                if a.get('attempt_id') in selected:
+                if a.get('attempt_id') in selected or a.get('status') in {'RESERVED','UNKNOWN'}:
                     frame = archive.get(a.get('frame_ref'))
                     if frame is None:
                         frame = next((f for f in stage['frames'].values() if sha256_canonical(f) == a.get('frame_ref')), None)

@@ -2,6 +2,9 @@
 from pathlib import Path
 from types import SimpleNamespace
 import pytest
+
+# Retained provider contracts; active Ark admission has a separate test suite.
+pytestmark = pytest.mark.usefixtures("retained_production_policy")
 from pydantic import ValidationError
 from drama_plugin.config import load_config
 from drama_plugin.config.video_route import resolve_policy, VideoRoutePolicy

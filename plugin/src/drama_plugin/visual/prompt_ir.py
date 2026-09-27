@@ -195,6 +195,12 @@ def require_submission_ir(snapshot: dict[str, Any], request: dict[str, Any]) -> 
         raise ValueError('VISUAL_PROMPT_IR_PAYLOAD_MISMATCH')
     verify_compilation(record, prompts[0])
     if snapshot.get('schema') == 'visual-frame-preflight-v1':
+        if snapshot.get('template', {}).get('http_provider') == 'ark':
+            from drama_plugin.config.production_routes import require_image
+            from drama_plugin.visual.frame_request import verify_compiled
+            verify_compiled(snapshot)
+            require_image('ark', snapshot['template']['model'])
+            return
         # Historical frame compilations remain replayable, but new formal frame
         # dispatch must follow the selected default rather than an old Flux template.
         nodes = list(request.get('workflow', {}).values())

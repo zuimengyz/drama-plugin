@@ -6,6 +6,9 @@ import json
 import httpx
 import pytest
 
+# Retained provider contracts; active Ark admission has a separate test suite.
+pytestmark = pytest.mark.usefixtures("retained_production_policy")
+
 from drama_plugin.config import load_config, VideoRoutePolicy
 from drama_plugin.config.video_route import require_runtime_route
 from drama_plugin.contracts.base import dump_contract, sha256_canonical as fp

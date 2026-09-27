@@ -7,6 +7,9 @@ import subprocess
 import sys
 
 import pytest
+
+# Retained provider contracts; active Ark admission has a separate test suite.
+pytestmark = pytest.mark.usefixtures("retained_production_policy")
 from pydantic import ValidationError
 
 from drama_plugin.contracts.base import dump_contract, sha256_canonical as fp

@@ -694,11 +694,14 @@ def qualify_route(route: ProductionRoute, *, now: datetime | None = None,
             **({'cinematic_directions': directions} if directions else {})}
 
 
-def route_input_gate(route: ProductionRoute, target_id: str, purpose: str) -> PlannedInput:
-    result = qualify_route(route)
+def route_input_gate(route: ProductionRoute, target_id: str, purpose: str, *,
+                     execution_target: str | None = None) -> PlannedInput:
+    matches = [i for i in route.inputs if i.target_id == target_id and i.purpose == purpose]
+    if execution_target is not None and (len(matches) != 1 or execution_target not in matches[0].for_targets):
+        raise ValueError('STILL_EXECUTION_TARGET_OUTSIDE_INPUT_DUTY')
+    result = qualify_route(route, execution_target=execution_target)
     if not result['eligible']:
         raise ValueError('ROUTE_NOT_EXECUTABLE:' + ','.join(result['exclusions']))
-    matches = [i for i in route.inputs if i.target_id == target_id and i.purpose == purpose]
     if len(matches) != 1 or not matches[0].active or matches[0].preparation == 'REUSE':
         raise ValueError('PAID_IMAGE_NOT_A_NECESSARY_ROUTE_INPUT')
     return matches[0]

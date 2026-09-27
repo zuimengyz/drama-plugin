@@ -127,6 +127,7 @@ class Template(Record):
     # Capability evidence is distinct from an artistic PASS on this task.
     supported_types: tuple[Text, ...] = Field(min_length=1)
     api_workflow: dict[str, Any] | None = None
+    http_provider: str | None = None
 
 
 def _unique(values: list[str], error: str) -> None:
@@ -135,6 +136,14 @@ def _unique(values: list[str], error: str) -> None:
 
 
 def _verify_graph(spec: FrameSpec, template: Template) -> None:
+    if template.http_provider is not None:
+        from drama_plugin.providers.ark_image import CAPABILITY, image_payload
+        if (template.http_provider != 'ark' or template.graph_hash != sha256_canonical(CAPABILITY)
+                or template.graph_path != 'ark:image-generation-v1' or template.api_workflow is not None
+                or template.image_slots or spec.references or spec.edit_source or template.settings):
+            raise ValueError('ARK_IMAGE_CAPABILITY_MISMATCH')
+        image_payload(template.model, 'capability validation', template.output_size, spec.seed)
+        return
     graph = json.loads(Path(template.graph_path).read_text())
     if sha256_canonical(graph) != template.graph_hash:
         raise ValueError("TEMPLATE_GRAPH_CHANGED")
@@ -328,6 +337,10 @@ def compile_frame(spec: FrameSpec, template: Template | None = None) -> dict[str
     overrides: dict[str, Any] = {slot: {"image": ref.upload_name} for slot, ref in zip(template.image_slots, inputs)}
     overrides[template.prompt_node] = {**template.settings, template.prompt_key: prompt, template.seed_key: spec.seed}
     request = {"tool": "run_template", "name": template.name, "description": spec.shot_id + "-frame", "input_overrides": overrides}
+    if template.http_provider == 'ark':
+        from drama_plugin.providers.ark_image import image_payload
+        request = {'tool': 'image.create', 'provider': 'ark',
+                   'body': image_payload(template.model, prompt, template.output_size, spec.seed)}
     if template.api_workflow is not None:
         from copy import deepcopy
         api = deepcopy(template.api_workflow)
@@ -373,6 +386,7 @@ def compile_frame(spec: FrameSpec, template: Template | None = None) -> dict[str
     if spec.prompt_normalization is None: spec_data.pop('prompt_normalization')
     if spec.prompt_ir is None: spec_data.pop('prompt_ir')
     if template.api_workflow is None: template_data.pop('api_workflow')
+    if template.http_provider is None: template_data.pop('http_provider')
     material = {"schema": "visual-frame-preflight-v1", "spec": spec_data,
                 "template": template_data, "request": request, "risks": sorted(risks)}
     if scope_review is not None:

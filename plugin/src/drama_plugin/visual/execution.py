@@ -71,13 +71,17 @@ def still_execution(decision: dict[str, Any]) -> dict[str, Any]:
     """Derive still execution identity without changing the compiled artifact."""
     from drama_plugin.visual.frame_request import verify_compiled
     verify_compiled(decision)
-    if decision['request']['tool'] != 'submit_workflow':
+    if decision['request']['tool'] not in {'submit_workflow', 'image.create'}:
         raise ValueError('STILL_MCP_OPERATION_UNSUPPORTED')
     from drama_plugin.visual.image_route import execution_identity
     return ExecutionRoute.model_validate(execution_identity(decision)).model_dump(mode='json')
 
 
 def validate_still_binding(decision: dict[str, Any], binding: dict[str, Any] | None) -> None:
+    if decision.get('template', {}).get('http_provider') == 'ark':
+        from drama_plugin.providers.ark_image import validate_binding as validate_ark
+        validate_ark(decision, binding)
+        return
     from drama_plugin.visual.video_selection import Evidence
     from datetime import datetime, timezone
     required = still_execution(decision)

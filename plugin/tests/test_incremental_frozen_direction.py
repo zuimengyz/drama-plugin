@@ -1,5 +1,8 @@
 from copy import deepcopy
 import pytest
+
+# Retained provider contracts; active Ark admission has a separate test suite.
+pytestmark = pytest.mark.usefixtures("retained_production_policy")
 from drama_plugin.visual.video_selection import ProductionRoute,qualify_route
 from drama_plugin.contracts.base import sha256_canonical
 from test_production_route import route

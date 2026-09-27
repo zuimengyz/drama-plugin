@@ -4,6 +4,9 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 import pytest
+
+# Retained provider contracts; active Ark admission has a separate test suite.
+pytestmark = pytest.mark.usefixtures("retained_production_policy")
 from pydantic import ValidationError
 from test_specialized_asset import fixture as asset_fixture
 from test_visual_prompt_ir import visual_ir
@@ -350,7 +353,7 @@ def test_rule_catalog_never_introduces_new_authority():
     assert r['character-art'].deprecated_forward_to=='specialized-asset-design'
 
 
-def test_current_default_adapter_consumes_exact_existing_serializer(tmp_path,monkeypatch):
+def test_retained_gpt_adapter_consumes_exact_existing_serializer(tmp_path,monkeypatch):
     f=scene(tmp_path,monkeypatch);bound=f['prepare']();compiled=compile_frame(bound)
     assert compiled['template']['model']=='gpt-image-2'
     assert compiled['request']['workflow'][compiled['template']['prompt_node']]['inputs']['prompt']==compiled['prompt_ir_compilation']['prompt']

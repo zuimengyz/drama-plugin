@@ -1,6 +1,9 @@
 """Model disable flags block new spending, but do not strand paid tasks."""
 import httpx
 import pytest
+
+# Retained provider contracts; active Ark admission has a separate test suite.
+pytestmark = pytest.mark.usefixtures("retained_production_policy")
 from drama_plugin.providers.video.registry import model_keys, model_enabled_env, model_enabled, model_availability
 from drama_plugin.visual.video_selection import choose, verify_decision, qualify_route, ProductionRoute
 from test_video_route_policy import candidates, policy

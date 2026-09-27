@@ -101,6 +101,8 @@ async def save_route(memory: MemoryProvider, work_id: str, raw: dict[str, Any], 
                      execution_target: str | None = None, canonical_requirements: Requirements | None = None,
                      approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
     route = ProductionRoute.model_validate(raw)
+    from drama_plugin.config.production_routes import require_video
+    require_video(route.execution.backend.provider if route.execution else 'comfy_cloud', route.candidate.model)
     if route.work_id != work_id:
         raise ValueError('ROUTE_WORK_MISMATCH')
     work = await memory.get_work(work_id)
@@ -180,11 +182,17 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
         attempt = next(a for a in work.content.get('productionStage', {}).get('attempts', [])
                        if a['attempt_id'] == payload['attempt_id'])
         snapshot = attempt_frame(work.content['productionStage'], attempt)
+        if snapshot.get('schema') == 'visual-frame-preflight-v1':
+            from drama_plugin.config.production_routes import require_image
+            template = snapshot['template']
+            require_image(template.get('http_provider') or 'comfy_cloud', template['model'])
         if snapshot.get('schema') == 'video-decision-v1':
+            from drama_plugin.config.production_routes import require_video
             from drama_plugin.config.video_route import require_runtime_route
             from drama_plugin.production_language import require_native_video_submission
             execution = snapshot['execution']
             provider = execution['backend']['provider'] if execution['transport'] == 'HTTP' else 'comfy_cloud'
+            require_video(provider, execution['capability']['model_key'])
             require_runtime_route(provider, execution['capability']['model_key'])
             require_native_video_submission(work, snapshot)
         requirements = snapshot.get('requirements', {})

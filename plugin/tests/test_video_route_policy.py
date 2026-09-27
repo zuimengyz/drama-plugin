@@ -3,6 +3,9 @@ import json, os, subprocess, sys
 from pathlib import Path
 from copy import deepcopy
 import pytest
+
+# Retained provider contracts; active Ark admission has a separate test suite.
+pytestmark = pytest.mark.usefixtures("retained_production_policy")
 from drama_plugin.config import load_config, VideoRoutePolicy as Policy
 from drama_plugin.config.video_route import MODEL_KEYS, canonical_model_key
 from drama_plugin.exceptions import ConfigurationError

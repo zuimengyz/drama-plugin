@@ -57,6 +57,16 @@ def test_no_safe_history_fails_before_send(monkeypatch,reason):
     with pytest.raises(ValueError,match='NO_SAFE_HISTORY'):p.prepare(envelope(c),serialize)
 
 
+def test_rejected_old_selection_is_encoded_without_deleting_event(monkeypatch):
+    monkeypatch.setattr(p,'MAX_WORK_SAVE_REQUEST_BYTES',12000)
+    c=fixture();s=c['productionStage'];s['input_selections']={'old':{'attempt_id':'old'}}
+    s['attempts'][0]['review_status']='FAIL'
+    raw,_=p.prepare(envelope(c),serialize)
+    decoded=json.loads(raw)['params']['arguments']['content']
+    assert hydrate(decoded)==c
+    assert decoded['productionStage']['input_selections']==s['input_selections']
+
+
 def test_envelope_overhead_counts(monkeypatch):
     env=envelope({'small':'x'});size=len(serialize(env))
     monkeypatch.setattr(p,'MAX_WORK_SAVE_REQUEST_BYTES',size)
@@ -69,6 +79,39 @@ def test_corrupt_archive_and_size_bomb_fail():
     v=encode({'x':'x'*100});assert decode(v)=={'x':'x'*100}
     for key,value in [('sha256','0'*64),('decoded_bytes',5),('decoded_bytes',0),('data','INVALID!')]:
         with pytest.raises(ValueError):decode({**v,key:value})
+
+
+@pytest.mark.parametrize('status,job,proof,allowed',[
+    ('NOT_CREATED',None,'NOT_CREATED',True),('UNKNOWN',None,'NOT_CREATED',False),
+    ('NOT_CREATED','job','NOT_CREATED',False),('NOT_CREATED',None,'UNKNOWN',False)])
+def test_confirmed_noncreation_allows_lossless_old_route_only(monkeypatch,status,job,proof,allowed):
+    monkeypatch.setattr(p,'MAX_WORK_SAVE_REQUEST_BYTES',12000)
+    c=fixture();s=c['productionStage'];s['history_frames']={}
+    old={'route_id':'old','evidence':'archived '*4000};ref=digest(old)
+    s['history_routes']={ref:old};s['route_revisions']=[{'previous_route_ref':ref}]
+    s['attempts'][-1].update(status=status,job_id=job,video_task={'status':proof})
+    if allowed:
+        raw,_=p.prepare(envelope(c),serialize);decoded=json.loads(raw)['params']['arguments']['content']
+        assert hydrate(decoded)==c
+        assert decoded['productionStage']['attempts']==s['attempts']
+        assert decoded['productionStage']['frames']==s['frames']
+    else:
+        with pytest.raises(ValueError,match='NO_SAFE_HISTORY'):p.prepare(envelope(c),serialize)
+
+
+def test_pending_reservation_preserves_current_route_and_encodes_only_past(monkeypatch):
+    monkeypatch.setattr(p,'MAX_WORK_SAVE_REQUEST_BYTES',12000)
+    c=fixture();s=c['productionStage'];s['history_frames']={}
+    old={'route_id':'R','revision':1,'evidence':'archive '*4000};ref=digest(old)
+    current={'route_id':'R','revision':2};s['production_route']=current
+    s['history_routes']={ref:old,digest(current):current}
+    s['route_revisions']=[{'previous_route_ref':ref},{'previous_route_ref':digest(current)}]
+    s['attempts'][-1]['status']='RESERVED'
+    raw,_=p.prepare(envelope(c),serialize);encoded=json.loads(raw)['params']['arguments']['content']
+    assert hydrate(encoded)==c
+    assert encoded['productionStage']['production_route']==current
+    assert encoded['productionStage']['history_routes'][digest(current)]==current
+    assert encoded['productionStage']['attempts']==s['attempts']
 
 
 @pytest.mark.asyncio

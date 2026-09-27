@@ -16,6 +16,12 @@ from test_media_delivery import setup
 from test_performance_native_mix import sounds
 
 MODELS={'seedance':'seedance-2-mini','minimax':'minimax-h3','vidu':'vidu-q3-turbo','wan':'wan-3-video-prime','kling':'kling-3'}
+
+
+@pytest.fixture(autouse=True)
+def selected_formal_seedance_model(monkeypatch):
+    # This lifecycle fixture explicitly selects Mini within the enabled Ark route.
+    monkeypatch.setenv('DRAMA_PLUGIN_ROUTE_VIDEO_MODEL', MODELS['seedance'])
 BASES={'wan':'https://test-workspace.ap-southeast-1.maas.aliyuncs.com/api/v1','kling':'https://api-singapore.klingai.com'}
 
 

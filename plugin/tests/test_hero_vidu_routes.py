@@ -1,5 +1,8 @@
 from copy import deepcopy
 import pytest
+
+# Retained provider contracts; active Ark admission has a separate test suite.
+pytestmark = pytest.mark.usefixtures("retained_production_policy")
 from test_route_image_inputs import image_input
 from test_visual_prompt_ir import visual_ir, fact
 from drama_plugin.contracts.base import sha256_canonical as fp
@@ -8,7 +11,7 @@ from drama_plugin.visual.prompt_ir import compile_ir, require_submission_ir
 
 
 @pytest.mark.parametrize('task', ['TEXT_TO_IMAGE', 'FIRST_FRAME', 'KEY_FRAME', 'REFERENCE_EDIT'])
-def test_default_formal_frame_route_is_gpt_image2_without_fallback(tmp_path, task):
+def test_retained_gpt_frame_route_replays_without_fallback(tmp_path, task):
     spec, old_template = image_input(tmp_path, shared=task == 'REFERENCE_EDIT')
     ir = visual_ir(task)
     ir['subjects'] = [{**deepcopy(ir['subjects'][0]), 'id': a.entity_key} for a in spec.actors]

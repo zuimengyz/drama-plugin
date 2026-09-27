@@ -3,6 +3,7 @@ from typing import Literal, Self, Annotated, Any
 from pydantic import Field, model_validator, model_serializer
 from drama_plugin.contracts.base import ContractModel
 from drama_plugin.contracts.creative_asset import Text, Hash
+from .visual_medium import medium_compatible
 
 VisualRoute = Literal['live_action_realist', 'stylized_cinematic_cg', 'stylized_animation', 'hybrid'] | Annotated[str, Field(pattern=r'^provider:[a-z][a-z0-9_.-]+$')]
 
@@ -67,8 +68,7 @@ class RouteStyleContract(ContractModel):
 
     @model_validator(mode='after')
     def medium_matches(self) -> Self:
-        expected = {'live_action_realist':'PHOTOGRAPHIC', 'stylized_cinematic_cg':'DESIGNED_CG', 'stylized_animation':'DESIGNED_ANIMATION', 'hybrid':'HYBRID'}.get(self.visual_route, 'PROVIDER_DEFINED')
-        if self.medium != expected:
+        if not medium_compatible(self.visual_route, self.medium):
             raise ValueError('VISUAL_ROUTE_MEDIUM_MISMATCH')
         if self.visual_language is not None:
             allowed = {'live_action_realist': ('LIVE_ACTION_REALIST',),

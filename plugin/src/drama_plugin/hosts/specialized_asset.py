@@ -223,12 +223,12 @@ def authority_semantics(context: dict[str, Any]) -> str:
 
 def _check_request_medium(medium: str, value: Any) -> None:
     from ..visual_medium import positive_matches, LIVE, CG
+    from ..contracts.visual_medium import medium_compatible
     if isinstance(value, dict):
         for key, child in value.items():
             if key in {'visualMedium', 'visual_medium', 'medium', 'visualRoute', 'visual_route'}:
-                allowed = ({'CG', 'CINEMATIC_CG', 'DESIGNED_CG', 'stylized_cinematic_cg'} if medium == 'CG'
-                    else {'LIVE_ACTION', 'LIVE_ACTION_PHOTOREAL', 'live_action_realist'})
-                if child not in allowed:
+                route = 'stylized_cinematic_cg' if medium == 'CG' else 'live_action_realist'
+                if not medium_compatible(route, child):
                     raise ValueError('MOVIE_MEDIUM_OVERRIDE_FORBIDDEN')
             if key in {'model.prompt_optimization', 'promptEnhancement'} and child not in {'DISABLED', 'disabled', False}:
                 raise ValueError('PROVIDER_ENHANCEMENT_NOT_AUTHORIZED')

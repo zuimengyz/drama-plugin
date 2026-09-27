@@ -12,7 +12,7 @@ class ExecutionBackend(Record):
 
 
 class ExecutionCapability(Record):
-    kind: Literal['video_generation']
+    kind: Literal['video_generation', 'image_generation']
     model_key: Text
 
 
@@ -46,6 +46,9 @@ def require_execution(raw: Any, model_key: str) -> ExecutionRoute:
 
 
 def validate_binding(decision: dict[str, Any], binding: dict[str, Any] | None) -> None:
+    if decision.get('schema') == 'visual-frame-preflight-v1':
+        validate_still_binding(decision, binding)
+        return
     if decision.get('execution', {}).get('transport') == 'HTTP':
         validate_http_binding(decision, binding)
         return
@@ -58,6 +61,45 @@ def validate_binding(decision: dict[str, Any], binding: dict[str, Any] | None) -
         raise ValueError('EXECUTION_ROUTE_MISMATCH: MCP binding')
     from drama_plugin.visual.video_selection import Evidence
     from datetime import datetime, timezone
+    if not Evidence.model_validate(binding['evidence']).current(datetime.now(timezone.utc)):
+        raise ValueError('MCP_CAPABILITY_UNAVAILABLE: discovery expired')
+    if binding.get('authenticated') is not True:
+        raise ValueError('MCP_AUTHENTICATION_REQUIRED')
+
+
+def still_execution(decision: dict[str, Any]) -> dict[str, Any]:
+    """Derive still execution identity without changing the compiled artifact."""
+    from drama_plugin.visual.frame_request import verify_compiled
+    verify_compiled(decision)
+    if decision['request']['tool'] != 'submit_workflow':
+        raise ValueError('STILL_MCP_OPERATION_UNSUPPORTED')
+    from drama_plugin.visual.image_route import execution_identity
+    return ExecutionRoute.model_validate(execution_identity(decision)).model_dump(mode='json')
+
+
+def validate_still_binding(decision: dict[str, Any], binding: dict[str, Any] | None) -> None:
+    from drama_plugin.visual.video_selection import Evidence
+    from datetime import datetime, timezone
+    required = still_execution(decision)
+    if not binding:
+        raise ValueError('MCP_CAPABILITY_UNAVAILABLE: still discovery required')
+    schema = binding.get('provider_schema')
+    if (binding.get('execution') != required or not isinstance(schema, dict)
+            or binding.get('provider_schema_fingerprint') != sha256_canonical(schema)
+            or binding.get('request_fingerprint') != sha256_canonical(decision['request'])
+            or binding.get('operation') != decision['request']['tool']
+            or not binding.get('server_id') or not binding.get('tool_name')):
+        raise ValueError('STILL_EXECUTION_BINDING_MISMATCH')
+    nodes = {n['name']: n for n in schema.get('nodes', [])}
+    for node in decision['request']['workflow'].values():
+        meta = nodes.get(node['class_type'])
+        if not meta or meta.get('deprecated'):
+            raise ValueError('STILL_PROVIDER_NODE_UNAVAILABLE')
+        fields = {f['name']: f for f in meta.get('input_details', [])}
+        for key, value in node['inputs'].items():
+            field = fields.get(key) or next((f for f in fields.values() if key in f.get('auto_grow_slots', [])), None)
+            if field is None or (field.get('options') and value not in field['options']):
+                raise ValueError('STILL_PROVIDER_INPUT_UNSUPPORTED')
     if not Evidence.model_validate(binding['evidence']).current(datetime.now(timezone.utc)):
         raise ValueError('MCP_CAPABILITY_UNAVAILABLE: discovery expired')
     if binding.get('authenticated') is not True:

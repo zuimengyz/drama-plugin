@@ -180,6 +180,7 @@ class ProviderTask(ContractModel):
     currency: str | None = None
     error_code: str | None = None
     error_message: str | None = None
+    error_details: dict[str, str | int] = Field(default_factory=dict)
     retryable: bool = False
 
     def durable(self) -> dict[str, Any]:

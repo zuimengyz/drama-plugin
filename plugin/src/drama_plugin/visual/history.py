@@ -2,6 +2,7 @@
 from copy import deepcopy
 from typing import Any
 from drama_plugin.contracts.base import sha256_canonical as digest
+from drama_plugin.visual.history_encoding import decode
 
 
 def resolve(state: dict[str, Any], ref: str, kind: str = 'frame') -> dict[str, Any]:
@@ -10,6 +11,8 @@ def resolve(state: dict[str, Any], ref: str, kind: str = 'frame') -> dict[str, A
         if value is not None and digest(value) == ref:
             return value
     value = state.get('history_' + kind + 's', {}).get(ref)
+    if value is not None:
+        value = decode(value)
     if value is None or digest(value) != ref:
         raise ValueError('PRODUCTION_HISTORY_REFERENCE_MISSING_OR_CHANGED:' + ref)
     return value
@@ -39,7 +42,7 @@ def remember(state: dict[str, Any], value: dict[str, Any], kind: str = 'frame') 
     archive = state.setdefault('history_' + kind + 's', {})
     if ref not in archive:
         archive[ref] = deepcopy(value)
-    elif archive[ref] != value:
+    elif decode(archive[ref]) != value:
         raise ValueError('PRODUCTION_HISTORY_ARCHIVE_CHANGED')
     return ref
 
@@ -80,7 +83,7 @@ def compact(state: dict[str, Any]) -> None:
         hashes = {digest(v) for v in current if v is not None}
         archive = result.get('history_' + kind + 's', {})
         for key, value in archive.items():
-            if digest(value) != key:
+            if digest(decode(value)) != key:
                 raise ValueError('PRODUCTION_HISTORY_ARCHIVE_CHANGED')
         archive = {key: value for key, value in archive.items() if key not in hashes}
         if archive:

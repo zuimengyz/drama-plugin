@@ -22,11 +22,16 @@ T = TypeVar("T", bound=BaseModel)
 
 
 def _one(model: type[T], payload: Any) -> T:
+    if model is Work and isinstance(payload, dict) and isinstance(payload.get('content'), dict):
+        from drama_plugin.visual.history_encoding import hydrate
+        payload = {**payload, 'content': hydrate(payload['content'])}
     try: return model.model_validate(payload)
     except Exception as exc: raise ContractValidationError(f"Remote payload does not match {model.__name__}") from exc
 
 
 def _many(model: type[T], payload: Any) -> list[T]:
+    if model is Work:
+        return [_one(model, item) for item in payload]
     try: return TypeAdapter(list[model]).validate_python(payload)  # type: ignore[valid-type]
     except Exception as exc: raise ContractValidationError(f"Remote payload does not match list[{model.__name__}]") from exc
 

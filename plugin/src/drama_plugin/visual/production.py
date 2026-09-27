@@ -19,6 +19,7 @@ from typing import Any, Callable, Literal
 from pydantic import Field
 
 from drama_plugin.contracts.base import sha256_canonical
+from drama_plugin.contracts.source_pin import SourcePin
 from drama_plugin.visual.frame_request import Hash, Record, Text, verify_compiled
 from drama_plugin.visual.history import attempt_frame, remember, compact
 
@@ -29,15 +30,16 @@ CATEGORIES = Literal["IDENTITY", "COSTUME", "BLOCKING", "PROP_STRUCTURE", "PROP_
 
 
 video_verifier: Callable[[dict[str, Any]], None] | None = None
-transport_verifiers: dict[str, Callable[[dict[str, Any]], None]] = {}
+transport_verifiers: dict[str, Callable[..., None]] = {}
 
 
-def verify_visual(frame: dict[str, Any]) -> None:
+def verify_visual(frame: dict[str, Any], *, work: Any = None,
+                  approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> None:
     if frame.get('schema') == 'video-decision-v1':
         from drama_plugin.visual.video_selection import verify_decision
         verify_decision(frame)
         if frame.get('execution', {}).get('transport') == 'HTTP':
-            transport_verifiers['HTTP'](frame)
+            transport_verifiers['HTTP'](frame, work=work, approved_interpretation_refs=approved_interpretation_refs)
             return
         if video_verifier is None:
             raise ValueError('HOST_VIDEO_VERIFIER_REQUIRED')
@@ -49,7 +51,8 @@ def verify_visual(frame: dict[str, Any]) -> None:
 def new_stage(*, stage_id: str, authorization_ref: str, budget_credits: float | None,
               frames: list[dict[str, Any]], protected_targets: list[str],
               production_route: dict[str, Any] | None = None,
-              no_monetary_cap: bool = False, budget_unit: str = 'credits') -> dict[str, Any]:
+              no_monetary_cap: bool = False, budget_unit: str = 'credits', work: Any = None,
+              approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
     if budget_unit not in {'credits','CNY','USD'}:
         raise ValueError('BUDGET_UNIT_UNSUPPORTED')
     unlimited = no_monetary_cap and budget_credits is None and production_route is not None
@@ -69,7 +72,7 @@ def new_stage(*, stage_id: str, authorization_ref: str, budget_credits: float | 
         if budget_credits is not None and qualify_route(route)['incremental_credits'] > budget_credits:
             raise ValueError('COMPLETE_ROUTE_EXCEEDS_AUTHORIZATION')
     for f in frames:
-        verify_visual(f)
+        verify_visual(f, work=work, approved_interpretation_refs=approved_interpretation_refs)
         if f.get('schema') == 'video-decision-v1' and f['stage_id'] != stage_id:
             raise ValueError('DECISION_BUDGET_SCOPE_MISMATCH')
         if f['spec']['shot_id'] in protected_targets:
@@ -118,9 +121,10 @@ def _route_frame_gate(state: dict[str, Any], frame: dict[str, Any]) -> None:
     from drama_plugin.visual.video_selection import ProductionRoute, qualify_route, route_input_gate
     route = ProductionRoute.model_validate(state['production_route'])
     continuation_baseline(state, route)
-    if not qualify_route(route)['eligible']:
-        raise ValueError('ROUTE_EXPIRED_OR_INCOMPLETE')
     target = frame['spec']['shot_id']
+    execution_target = target if frame.get('schema') == 'video-decision-v1' else None
+    if not qualify_route(route, execution_target=execution_target)['eligible']:
+        raise ValueError('ROUTE_EXPIRED_OR_INCOMPLETE')
     if frame.get('schema') == 'video-decision-v1':
         if frame.get('execution') is not None or route.execution is not None:
             if (frame.get('execution') != (route.execution.model_dump(mode='json') if route.execution else None)
@@ -181,10 +185,11 @@ def _route_frame_gate(state: dict[str, Any], frame: dict[str, Any]) -> None:
                 raise ValueError('EDIT_SOURCE_CURRENT_REVIEW_MISMATCH')
 
 
-def add_route_frame(state: dict[str, Any], frame: dict[str, Any]) -> None:
+def add_route_frame(state: dict[str, Any], frame: dict[str, Any], *, work: Any = None,
+                    approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> None:
     """Materialize a planned duty after inputs exist without a second campaign."""
     check_campaign(state)
-    verify_visual(frame)
+    verify_visual(frame, work=work, approved_interpretation_refs=approved_interpretation_refs)
     _route_frame_gate(state, frame)
     target = frame['spec']['shot_id']
     if target in state['frames']:
@@ -389,7 +394,8 @@ def reseal_plan(state: dict[str, Any], *, sealed_frames: list[dict[str, Any]]) -
     check_campaign(state)
 
 
-def check_campaign(state: dict[str, Any], *, verify_inputs: bool = False) -> None:
+def check_campaign(state: dict[str, Any], *, verify_inputs: bool = False, work: Any = None,
+                   approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> None:
     frames = list(state['frames'].values())
     if state['plan_fingerprint'] not in (sha256_canonical(state['frames']), sha256_canonical(frames)):
         raise ValueError("CAMPAIGN_PLAN_CHANGED")
@@ -397,7 +403,7 @@ def check_campaign(state: dict[str, Any], *, verify_inputs: bool = False) -> Non
         if frame['fingerprint'] != sha256_canonical({k: v for k, v in frame.items() if k != 'fingerprint'}):
             raise ValueError("COMPILED_FRAME_CHANGED")
         if verify_inputs:
-            verify_visual(frame)
+            verify_visual(frame, work=work, approved_interpretation_refs=approved_interpretation_refs)
 
 
 def _confirmed_no_media(attempt: dict[str, Any], receipt: dict[str, Any] | None = None) -> bool:
@@ -416,15 +422,16 @@ def _confirmed_no_media(attempt: dict[str, Any], receipt: dict[str, Any] | None 
 
 def reserve(state: dict[str, Any], shot_id: str, *, quote: dict[str, Any] | None = None,
             balance: dict[str, Any] | None = None,
-            execution_binding: dict[str, Any] | None = None) -> dict[str, Any]:
+            execution_binding: dict[str, Any] | None = None, work: Any = None,
+            approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
     check_campaign(state)
-    verify_visual(state['frames'][shot_id])
+    verify_visual(state['frames'][shot_id], work=work, approved_interpretation_refs=approved_interpretation_refs)
     if state['pause']:
         raise ValueError("CAMPAIGN_PAUSED:" + state['pause'])
     if any(a['status'] in {'RESERVED', 'UNKNOWN'} for a in state['attempts']):
         raise ValueError("PREVIOUS_ATTEMPT_NEEDS_OUTCOME_OR_REVIEW")
     frame = state['frames'][shot_id]
-    if frame.get('execution') is not None:
+    if frame.get('execution') is not None or execution_binding is not None:
         from drama_plugin.visual.execution import validate_binding
         validate_binding(frame, execution_binding)
     prior = [a for a in state['attempts'] if a['shot_id'] == shot_id]
@@ -485,7 +492,7 @@ def reserve(state: dict[str, Any], shot_id: str, *, quote: dict[str, Any] | None
         attempt.update(reserved_credits=reserved_credits, quote=deepcopy(quote), balance=deepcopy(balance),
                        media_kind='VIDEO' if is_video else 'IMAGE', stage_id=state['stage']['id'],
                        technical_status='PENDING', content_status='PENDING_REVIEW', user_adoption='PENDING', copies=[], persistence_status='PERSISTENCE_PENDING', delivery_status='PENDING')
-    if frame.get('execution') is not None:
+    if frame.get('execution') is not None or execution_binding is not None:
         attempt['execution_binding'] = deepcopy(execution_binding)
     if continuation:
         attempt['continuation_authorization'] = deepcopy(continuation)
@@ -493,13 +500,34 @@ def reserve(state: dict[str, Any], shot_id: str, *, quote: dict[str, Any] | None
     return attempt
 
 
-def begin_submission(state: dict[str, Any], *, attempt_id: str) -> dict[str, Any]:
+def bind_still_execution(state: dict[str, Any], *, attempt_id: str,
+                         execution_binding: dict[str, Any]) -> dict[str, Any]:
+    """Bind an existing unused still reservation; never recreate its request."""
+    attempt: dict[str, Any] = next(a for a in state['attempts'] if a['attempt_id'] == attempt_id)
+    frame = attempt_frame(state, attempt)
+    if (frame.get('schema') != 'visual-frame-preflight-v1' or attempt['status'] != 'RESERVED'
+            or attempt.get('job_id') or attempt.get('submission_started')):
+        raise ValueError('UNUSED_STILL_RESERVATION_REQUIRED')
+    if attempt['request'] != frame['request'] or attempt['request_fingerprint'] != sha256_canonical(frame['request']):
+        raise ValueError('STILL_RESERVED_REQUEST_CHANGED')
+    from drama_plugin.visual.execution import validate_binding
+    validate_binding(frame, execution_binding)
+    old = attempt.get('execution_binding')
+    if old and any(old.get(k) != execution_binding.get(k) for k in
+                   ('execution', 'server_id', 'tool_name', 'operation', 'provider_schema_fingerprint', 'request_fingerprint')):
+        raise ValueError('STILL_RESERVED_BINDING_CHANGED')
+    attempt['execution_binding'] = deepcopy(execution_binding)
+    return attempt
+
+
+def begin_submission(state: dict[str, Any], *, attempt_id: str, work: Any = None,
+                     approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
     """Persist the existing UNKNOWN state before external dispatch, never retry it."""
     attempt: dict[str, Any] = next(a for a in state['attempts'] if a['attempt_id'] == attempt_id)
     if attempt['status'] != 'RESERVED' or attempt.get('job_id') or attempt.get('submission_started'):
         raise ValueError('RECOVER_ORIGINAL_MCP_SUBMISSION')
     frame = attempt_frame(state, attempt)
-    verify_visual(frame)
+    verify_visual(frame, work=work, approved_interpretation_refs=approved_interpretation_refs)
     from drama_plugin.visual.prompt_ir import require_submission_ir
     require_submission_ir(frame, attempt['request'])
     if 'production_route' in state:
@@ -527,7 +555,7 @@ def record_result(state: dict[str, Any], *, attempt_id: str, status: str, job_id
     if job_id and any(a is not attempt and a['job_id'] == job_id for a in state['attempts']):
         raise ValueError("JOB_ALREADY_BOUND")
     if status == 'COMPLETED':
-        if attempt_frame(state, attempt).get('execution') is not None:
+        if attempt_frame(state, attempt).get('execution') is not None or attempt.get('execution_binding') is not None:
             from drama_plugin.visual.execution import validate_result_identity
             validate_result_identity(attempt, execution_receipt, job_id)
         from pydantic import TypeAdapter
@@ -661,11 +689,12 @@ def metrics(state: dict[str, Any]) -> dict[str, Any]:
 
 
 def replan(state: dict[str, Any], *, frame: dict[str, Any], reason: str,
-           incremental_credits: float = 0) -> None:
+           incremental_credits: float = 0, work: Any = None,
+           approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> None:
     """Replace one path in the same stage, retaining all failure and spending history."""
     if 'stage' not in state or not reason.strip():
         raise ValueError('SHARED_STAGE_AND_REPLAN_EVIDENCE_REQUIRED')
-    verify_visual(frame)
+    verify_visual(frame, work=work, approved_interpretation_refs=approved_interpretation_refs)
     sid = frame['spec']['shot_id']
     if sid in state['stage']['protected_targets']:
         raise ValueError('PROTECTED_TARGET')
@@ -758,7 +787,8 @@ def inspect_output(state: dict[str, Any], *, attempt_id: str, technical: dict[st
 
 def retry_not_created(state: dict[str, Any], *, attempt_id: str, evidence: str,
                       quote: dict[str, Any], balance: dict[str, Any],
-                      no_charge_evidence: str | None = None) -> dict[str, Any]:
+                      no_charge_evidence: str | None = None, work: Any = None,
+                      approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
     """Retry the same request only after proof it never created a provider job."""
     a: dict[str, Any] = next(a for a in state['attempts'] if a['attempt_id'] == attempt_id)
     if a.get('continuation_authorization') and not (no_charge_evidence or '').strip():
@@ -767,7 +797,7 @@ def retry_not_created(state: dict[str, Any], *, attempt_id: str, evidence: str,
             or not evidence.strip() or a.get('technical_retry_count', 0) >= (1 if a.get('continuation_authorization') else 2)):
         raise ValueError('NOT_CREATED_PROOF_REQUIRED_OR_RETRIES_EXHAUSTED')
     frame = state['frames'][a['shot_id']]
-    verify_visual(frame)
+    verify_visual(frame, work=work, approved_interpretation_refs=approved_interpretation_refs)
     if frame['fingerprint'] != a['frame_fingerprint']:
         raise ValueError('RETRY_REQUEST_CHANGED')
     if 'production_route' in state:

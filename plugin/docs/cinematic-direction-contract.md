@@ -48,6 +48,14 @@ and `requirements.cinematic_directions[target]` to the frozen artifact; existing
 `shots[target]` still names the formal Shot. `qualify_route` checks all target
 directions before input preparation. `save_route` refreshes formal canon.
 
+Incremental execution passes an explicit `execution_target` through `save_route` /
+`choose_routes` into `qualify_route`. It requires the selected target’s frozen
+direction, scope and capabilities; future route targets may remain pending.
+Unknown direction keys outside the route still fail. Omitting `execution_target`
+retains complete-route validation and requires all target directions. Target
+qualification does not replace current canon, `verify_cinematic`, reference,
+execution sealing or reservation checks, and does not mark pending targets ready.
+
 After actual mode/inputs have been selected, place `selection_handoff(frozen)`
 in the existing `Requirements.frozen_creative`. `validate_requirements` checks
 the frozen spec, scope/duration and exact projection. `qualify` exposes director

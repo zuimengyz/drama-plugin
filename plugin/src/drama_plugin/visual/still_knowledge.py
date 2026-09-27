@@ -142,7 +142,8 @@ def _target(path: str) -> str:
 
 
 def _leaf(leaf: Leaf, row: MappingRow, scope: Scope, originals: Mapping[str, Any],
-          current: Mapping[str, str], subject_ids: list[str]) -> str:
+          current: Mapping[str, str], subject_ids: list[str], *,
+          approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> str:
     raw = resolve(leaf.pin, originals, current)
     value = pointer(raw, leaf.pointer)
     if not isinstance(value, str) or not value.strip() or '\n' in value:
@@ -154,7 +155,7 @@ def _leaf(leaf: Leaf, row: MappingRow, scope: Scope, originals: Mapping[str, Any
         bible = CreativeBible.model_validate(raw)
         if bible.status != 'APPROVED' or bible.work_ref != scope.work_id or bible.created_by_capability != row.owner:
             raise ValueError('STILL_SOURCE_OWNER_OR_APPROVAL')
-        validate_bible(bible, originals, current)
+        validate_bible(bible, originals, current, approved_interpretation_refs=approved_interpretation_refs)
         if (bible.scene_refs and scope.scene_id not in bible.scene_refs or
                 bible.shot_refs and scope.shot_id not in bible.shot_refs):
             raise ValueError('STILL_SOURCE_SCOPE')
@@ -215,7 +216,7 @@ def _leaf(leaf: Leaf, row: MappingRow, scope: Scope, originals: Mapping[str, Any
         asset_bible = SpecializedAssetBible.model_validate(raw)
         if row.owner != 'specialized-asset-design' or asset_bible.work_id != scope.work_id or asset_bible.approval_ref is None:
             raise ValueError('STILL_ASSET_APPROVAL_REQUIRED')
-        validate_assets(asset_bible, originals, current)
+        validate_assets(asset_bible, originals, current, approved_interpretation_refs=approved_interpretation_refs)
         match = re.fullmatch(r'/assets/(\d+)/decisions/([^/]+)/text', leaf.pointer)
         if not match:
             raise ValueError('STILL_ASSET_TEXT_REQUIRED')
@@ -232,7 +233,7 @@ def _leaf(leaf: Leaf, row: MappingRow, scope: Scope, originals: Mapping[str, Any
             raise ValueError('STILL_SCENE_BINDING')
     elif raw.get('schemaVersion') == 'global-visual-style-v1':
         style = GlobalVisualStyle.model_validate(raw)
-        validate_imaging(style, originals, current)
+        validate_imaging(style, originals, current, approved_interpretation_refs=approved_interpretation_refs)
         if (style.work_id != scope.work_id or row.owner != 'global-visual-style'
                 or target not in {'/preserve/*', '/secondary_details/*'}
                 or not re.fullmatch(r'/imagingCharacter/(photographicGenre|captureCharacter|opticalTexture/\d+/(intent|preservationConstraints/\d+))', leaf.pointer)):
@@ -244,7 +245,7 @@ def _leaf(leaf: Leaf, row: MappingRow, scope: Scope, originals: Mapping[str, Any
 
 def make_receipt(*, scope: Scope, source_pins: tuple[SourcePin, ...], rows: tuple[MappingRow, ...],
                  originals: Mapping[str, Any], current: Mapping[str, str], subject_ids: list[str],
-                 rule_catalog: dict[str, Any]) -> dict[str, Any]:
+                 rule_catalog: dict[str, Any], approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
     scope = Scope.model_validate(scope.model_dump())
     rows = tuple(MappingRow.model_validate(r.model_dump()) for r in rows)
     if len({p.key for p in source_pins}) != len(source_pins):
@@ -269,7 +270,7 @@ def make_receipt(*, scope: Scope, source_pins: tuple[SourcePin, ...], rows: tupl
             atoms.add(atom)
         if set(row.capability_ids) & ({'C17', 'C35', 'C36'} | {f'F{i:02d}' for i in range(30, 41)}):
             raise ValueError('STILL_QC_KNOWLEDGE_NOT_PROVIDER_FACT')
-        text = ' '.join(_leaf(l, row, scope, originals, current, subject_ids) for l in row.inputs)
+        text = ' '.join(_leaf(l, row, scope, originals, current, subject_ids, approved_interpretation_refs=approved_interpretation_refs) for l in row.inputs)
         if _target(row.target) == '/subjects/*/face':
             fields = [l.pointer.split('/')[-2] for l in row.inputs]
             if fields != sorted(fields, key=lambda f: ['face', 'surface_state', 'physical_identity'].index(f)):
@@ -284,7 +285,8 @@ def make_receipt(*, scope: Scope, source_pins: tuple[SourcePin, ...], rows: tupl
 
 
 def project_ir(base: dict[str, Any], receipt: dict[str, Any], receipt_pin: SourcePin,
-               originals: Mapping[str, Any], current: Mapping[str, str]) -> dict[str, Any]:
+               originals: Mapping[str, Any], current: Mapping[str, str], *,
+               approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
     if receipt_pin.fingerprint != sha256_canonical(receipt) or not receipt_pin.key.startswith('still-professional-map:'):
         raise ValueError('STILL_RECEIPT_PIN')
     ir = deepcopy(base)
@@ -295,7 +297,7 @@ def project_ir(base: dict[str, Any], receipt: dict[str, Any], receipt_pin: Sourc
     scope = Scope.model_validate(receipt['scope'])
     for raw in receipt['rows']:
         row = MappingRow.model_validate({k: v for k, v in raw.items() if k not in {'text_hash', 'rule_refs'}})
-        text = ' '.join(_leaf(l, row, scope, originals, current, receipt['subject_ids']) for l in row.inputs)
+        text = ' '.join(_leaf(l, row, scope, originals, current, receipt['subject_ids'], approved_interpretation_refs=approved_interpretation_refs) for l in row.inputs)
         if sha256_canonical(text) != raw['text_hash']:
             raise ValueError('STILL_MAPPING_TEXT_CHANGED')
         source = receipt_pin.key + '@' + receipt_pin.fingerprint + '#rows/' + row.mapping_id
@@ -326,7 +328,8 @@ def check_binding(spec: Any) -> None:
         raise ValueError('STILL_ACTOR_IDENTITY_DIVERGES')
 
 
-def validate_reference_plan(spec: Any, receipt: dict[str, Any], originals: Mapping[str, Any], current: Mapping[str, str]) -> None:
+def validate_reference_plan(spec: Any, receipt: dict[str, Any], originals: Mapping[str, Any], current: Mapping[str, str], *,
+                            approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> None:
     scope = Scope.model_validate(receipt['scope'])
     duties: list[tuple[ReferenceDuty, str, str]] = []
     coverage: list[Coverage] = []
@@ -338,7 +341,7 @@ def validate_reference_plan(spec: Any, receipt: dict[str, Any], originals: Mappi
         bible = CreativeBible.model_validate(data)
         if bible.status != 'APPROVED' or bible.work_ref != scope.work_id:
             raise ValueError('STILL_REFERENCE_APPROVAL')
-        validate_bible(bible, originals, current)
+        validate_bible(bible, originals, current, approved_interpretation_refs=approved_interpretation_refs)
         for i, record in enumerate(bible.content):
             if record.status != 'DECIDED' or scope.shot_id not in record.scope_refs:
                 continue
@@ -413,7 +416,7 @@ def validate_reference_plan(spec: Any, receipt: dict[str, Any], originals: Mappi
 
 
 def replay(spec: Any, receipt: dict[str, Any], originals: Mapping[str, Any], current: Mapping[str, str],
-           rule_catalog: dict[str, Any]) -> None:
+           rule_catalog: dict[str, Any], *, approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> None:
     check_binding(spec)
     pins = tuple(SourcePin.model_validate(p) for p in receipt['source_pins'])
     receipt_pin = next(p for p in spec.professional_sources if p.key.startswith('still-professional-map:'))
@@ -423,12 +426,12 @@ def replay(spec: Any, receipt: dict[str, Any], originals: Mapping[str, Any], cur
         raise ValueError('STILL_SHOT_SCOPE')
     rows = tuple(MappingRow.model_validate({k: v for k, v in r.items() if k not in {'text_hash', 'rule_refs'}}) for r in receipt['rows'])
     expected = make_receipt(scope=Scope.model_validate(receipt['scope']), source_pins=pins, rows=rows,
-        originals=originals, current=current, subject_ids=receipt['subject_ids'], rule_catalog=rule_catalog)
+        originals=originals, current=current, subject_ids=receipt['subject_ids'], rule_catalog=rule_catalog, approved_interpretation_refs=approved_interpretation_refs)
     if expected != receipt:
         raise ValueError('STILL_RECEIPT_CHANGED')
-    if project_ir(spec.prompt_ir, receipt, receipt_pin, originals, current) != spec.prompt_ir:
+    if project_ir(spec.prompt_ir, receipt, receipt_pin, originals, current, approved_interpretation_refs=approved_interpretation_refs) != spec.prompt_ir:
         raise ValueError('STILL_IR_FACT_CHANGED')
-    validate_reference_plan(spec, receipt, originals, current)
+    validate_reference_plan(spec, receipt, originals, current, approved_interpretation_refs=approved_interpretation_refs)
     # Every explicitly required atom must actually survive the unchanged serializer.
     from drama_plugin.visual.prompt_ir import compile_ir
     compiled = compile_ir(spec.prompt_ir, provider_family=spec.prompt_ir['task']['provider_family'])
@@ -493,7 +496,7 @@ class Observation(Metadata):
 
 def observation_review(*, attempt_id: str, output_hash: str, reviewer: str, evidence_ref: str,
                        observations: tuple[Observation, ...], originals: Mapping[str, Any],
-                       current: Mapping[str, str]) -> dict[str, Any]:
+                       current: Mapping[str, str], approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
     """Validate manual observations and project into existing Review and QA values.
 
     No image classifier, subjective CG score, new disposition or retry executor.
@@ -514,7 +517,7 @@ def observation_review(*, attempt_id: str, output_hash: str, reviewer: str, evid
             asset_bible = SpecializedAssetBible.model_validate(requirement)
             if asset_bible.approval_ref is None:
                 raise ValueError('STILL_QC_APPROVED_REQUIREMENT')
-            validate_assets(asset_bible, originals, current)
+            validate_assets(asset_bible, originals, current, approved_interpretation_refs=approved_interpretation_refs)
             match = re.match(r'/assets/(\d+)/', item.requirement.pointer)
             if not match:
                 raise ValueError('STILL_QC_ASSET_REQUIREMENT')
@@ -525,7 +528,7 @@ def observation_review(*, attempt_id: str, output_hash: str, reviewer: str, evid
             bible = CreativeBible.model_validate(requirement)
             if bible.status != 'APPROVED':
                 raise ValueError('STILL_QC_APPROVED_REQUIREMENT')
-            validate_bible(bible, originals, current)
+            validate_bible(bible, originals, current, approved_interpretation_refs=approved_interpretation_refs)
         else:
             raise ValueError('STILL_QC_APPROVED_REQUIREMENT')
         if item.repair_owner not in {QC[item.criterion_id][1], 'shot-production', 'prompt-compiler',

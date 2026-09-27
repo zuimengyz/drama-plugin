@@ -63,3 +63,30 @@ def legacy_medium_intent(language: str, mode: CastingMode = 'DESIGN_NEUTRAL') ->
 
 def medium_route(intent: VisualMediumIntent) -> str:
     return 'stylized_cinematic_cg' if intent.visual_medium == 'CINEMATIC_CG' else 'live_action_realist'
+
+
+_ROUTE_MEDIA = {
+    'live_action_realist': 'PHOTOGRAPHIC',
+    'stylized_cinematic_cg': 'DESIGNED_CG',
+    'stylized_animation': 'DESIGNED_ANIMATION',
+    'hybrid': 'HYBRID',
+}
+_MEDIUM_ALIASES = {
+    'LIVE_ACTION': 'PHOTOGRAPHIC',
+    'LIVE_ACTION_PHOTOREAL': 'PHOTOGRAPHIC',
+    'CG': 'DESIGNED_CG',
+    'CINEMATIC_CG': 'DESIGNED_CG',
+}
+
+
+def route_medium(route: str) -> str:
+    """Canonical medium for a typed visual route; provider routes retain their contract."""
+    return _ROUTE_MEDIA.get(route, 'PROVIDER_DEFINED')
+
+
+def medium_compatible(route: str, value: object) -> bool:
+    """Compare explicit medium/route tokens, never infer authority from prose."""
+    if not isinstance(value, str):
+        return False
+    normalized = _MEDIUM_ALIASES.get(value, _ROUTE_MEDIA.get(value, value))
+    return normalized == route_medium(route)

@@ -27,9 +27,10 @@ class VideoProvider(Protocol):
 
 class SafeProviderError(Exception):
     """Never retain raw response, request, auth headers or HTTP exception context."""
-    def __init__(self, code: str, *, ambiguous: bool = False, retryable: bool = False):
+    def __init__(self, code: str, *, ambiguous: bool = False, retryable: bool = False, diagnostics: dict[str, str | int] | None = None):
         super().__init__(code)
         self.code, self.ambiguous, self.retryable = code, ambiguous, retryable
+        self.diagnostics = diagnostics or {}
 
 
 def timestamp(value: Any, *, milliseconds: bool = False, china: bool = False) -> datetime | None:
@@ -99,8 +100,12 @@ class HttpVideoProvider:
                     await asyncio.sleep(min(5, float(response.headers.get('Retry-After', '1'))) if response.headers.get('Retry-After', '1').isdigit() else 1)
                     continue
             if status >= 300:
+                diagnostics = {}
+                if self.provider == 'seedance':
+                    from .diagnostics import seedance_error
+                    diagnostics = seedance_error(response, self.settings.api_key.get_secret_value())
                 raise SafeProviderError('HTTP_' + str(status), ambiguous=method != 'GET' and (status >= 500 or status == 408),
-                                        retryable=status in {429, 502, 503, 504}) from None
+                                        retryable=status in {429, 502, 503, 504}, diagnostics=diagnostics) from None
             try:
                 value = response.json()
                 if not isinstance(value, dict):
@@ -117,7 +122,12 @@ class HttpVideoProvider:
         urls = {}
         for ref in r.references():
             url = await self.resolve(ref)
-            if not url.startswith('https://'):
+            if self.provider == 'seedance' and ref.kind == 'image' and url.startswith('data:'):
+                from .image_delivery import decode_image_url
+                import hashlib
+                if hashlib.sha256(decode_image_url(url)).hexdigest() != ref.content_hash:
+                    raise ValueError('REFERENCE_DATA_URL_HASH_MISMATCH')
+            elif not url.startswith('https://'):
                 raise ValueError('REFERENCE_REQUIRES_RESOLVED_HTTPS_URL')
             urls[ref.media_id] = url
         return r, urls
@@ -161,7 +171,8 @@ class HttpVideoProvider:
                 task.error_code = 'CREATE_WITHOUT_TASK_ID'
         except SafeProviderError as e:
             task.status = 'UNKNOWN' if e.ambiguous else 'NOT_CREATED'
-            task.error_code, task.error_message, task.retryable = e.code, e.code, e.retryable and not e.ambiguous
+            task.error_code, task.error_message, task.retryable = e.code, str(e.diagnostics.get('official_error_message', e.code)), e.retryable and not e.ambiguous
+            task.error_details = e.diagnostics
         except (TypeError, ValueError, KeyError):
             task.status, task.error_code = 'UNKNOWN', 'INVALID_PROVIDER_RESPONSE'
         # Only a documented external-ID lookup can resolve an ambiguous create.

@@ -11,6 +11,7 @@ import httpx
 from drama_plugin.contracts.base import sha256_canonical, canonical_json
 from drama_plugin.contracts.video import VideoRequest, ProviderTask, request_fingerprint
 from drama_plugin.contracts.media import MediaType
+from drama_plugin.contracts.source_pin import SourcePin
 from drama_plugin.providers.video.registry import registry, fingerprint, settings, validate_request, ProviderSettings
 from drama_plugin.providers.video.adapters import ADAPTERS
 from drama_plugin.providers.video.base import SafeProviderError, HttpVideoProvider
@@ -21,7 +22,8 @@ from drama_plugin.hosts.route_production import operate
 from drama_plugin.media_delivery import MediaIdentity, complete_retained_media, inspect_bytes
 
 
-def compile_request(r: Requirements, c: Candidate) -> dict[str, Any]:
+def compile_request(r: Requirements, c: Candidate, *, work: Any = None,
+                    approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
     validate_requirements(r)
     if r.video_request is None:
         raise ValueError('UNIFIED_VIDEO_REQUEST_REQUIRED')
@@ -41,7 +43,7 @@ def compile_request(r: Requirements, c: Candidate) -> dict[str, Any]:
     if r.frozen_creative.get('creative_schema') == 'cinematic-shot-v1':
         if is_seedance2(c.model):
             from drama_plugin.prompt_generators.seedance_2.canonical import verify_cinematic
-            verify_cinematic(r, compilation)
+            verify_cinematic(r, compilation, work=work, approved_interpretation_refs=approved_interpretation_refs)
         else:
             from drama_plugin.hosts.cinematic_projection import project
             projected = project(r, c, {'class_type':'OfficialHTTP'})
@@ -54,8 +56,9 @@ def compile_request(r: Requirements, c: Candidate) -> dict[str, Any]:
             'promptCompilation':compilation}
 
 
-def seal_execution(r: Requirements, c: Candidate, request: dict[str, Any], host: dict[str, Any]) -> dict[str, Any]:
-    expected = compile_request(r,c)
+def seal_execution(r: Requirements, c: Candidate, request: dict[str, Any], host: dict[str, Any], *,
+                   work: Any = None, approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
+    expected = compile_request(r,c, work=work, approved_interpretation_refs=approved_interpretation_refs)
     if 'promptCompilation' not in request:
         # Old seals used this exact prompt composition but had no receipt field.
         # Replay the current compiler; never label the historical snapshot as run.
@@ -70,11 +73,12 @@ def seal_execution(r: Requirements, c: Candidate, request: dict[str, Any], host:
     return {**material, 'fingerprint':sha256_canonical(material)}
 
 
-def verify_execution(decision: dict[str, Any], *, allow_dry_run: bool = False) -> None:
+def verify_execution(decision: dict[str, Any], *, allow_dry_run: bool = False, work: Any = None,
+                     approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> None:
     verify_decision(decision, allow_dry_run=allow_dry_run)
     r, c = Requirements.model_validate(decision['requirements']), Candidate.model_validate(decision['candidate'])
     if (decision['execution']['transport'] != 'HTTP' or decision['execution']['backend']['provider'] != c.capability['provider']
-            or decision['execution_contract'] != seal_execution(r,c,decision['request'],{})):
+            or decision['execution_contract'] != seal_execution(r,c,decision['request'],{}, work=work, approved_interpretation_refs=approved_interpretation_refs)):
         raise ValueError('HTTP_EXECUTION_CONTRACT_CHANGED')
 
 
@@ -131,16 +135,33 @@ class VideoProviderHost:
             await self._validate_canon(work_id, r)
         async def resolve(ref: Any) -> str:
             record = await self.media.get_media(ref.media_id)
-            if record.work_id != work_id or record.content_hash != ref.content_hash or record.media_type.value.lower() != ref.kind:
+            if record.id != ref.media_id or record.work_id != work_id or record.content_hash != ref.content_hash or record.media_type.value.lower() != ref.kind:
                 raise ValueError('CANONICAL_REFERENCE_MEDIA_CHANGED')
+            if record.content.get('reviewStatus') in {'FAIL', 'REJECTED'}:
+                raise ValueError('REFERENCE_CONTENT_REVIEW_FAILED')
             resolved = await self.media.resolve_media(ref.media_id)
+            if resolved.media_id != ref.media_id:
+                raise ValueError('CANONICAL_REFERENCE_MEDIA_CHANGED')
+            from drama_plugin.providers.video.image_delivery import external_https, image_data_url
+            if item['provider'] == 'seedance' and ref.kind == 'image' and not external_https(str(resolved.url)):
+                if record.content.get('reviewStatus') not in {'PASS', 'PASS_WITH_NOTES', 'ACCEPTABLE_INTERPRETATION'}:
+                    raise ValueError('REFERENCE_CONTENT_REVIEW_REQUIRED')
+                from drama_plugin.media_delivery import verify_media
+                # Always download by the formal ID. Never encode a caller's local artifact.
+                verified = await verify_media(self.media, MediaIdentity.from_media(record), self.cache / 'reference-inputs')
+                data = Path(verified['cachePath']).read_bytes()
+                if hashlib.sha256(data).hexdigest() != ref.content_hash:
+                    raise ValueError('CANONICAL_REFERENCE_MEDIA_CHANGED')
+                return image_data_url(data, record.mime_type or '')
             # Uses the existing Media Provider's typed resolution, not vendor assets.
             return str(resolved.url)
         cls = ADAPTERS[item['provider']]
         return cls(item['model'], self.configuration[item['provider']], resolve=resolve, client=self.http_client)
 
-    async def bind(self, work_id: str, decision: dict[str, Any]) -> dict[str, Any]:
-        verify_execution(decision)
+    async def bind(self, work_id: str, decision: dict[str, Any], *,
+                   approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
+        work = await self.memory.get_work(work_id)
+        verify_execution(decision, work=work, approved_interpretation_refs=approved_interpretation_refs)
         item = decision['request']; config = self.configuration[item['provider']]
         if config.status(item['provider']) != 'READY':
             raise ValueError('PROVIDER_NOT_CONFIGURED')
@@ -156,16 +177,18 @@ class VideoProviderHost:
         return {**a['execution_binding'], 'attempt_id':a['attempt_id'], 'task_id':task.provider_task_id,
                 'request_fingerprint':a['request_fingerprint']}
 
-    async def submit(self, work_id: str, attempt_id: str) -> ProviderTask:
+    async def submit(self, work_id: str, attempt_id: str, *,
+                     approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> ProviderTask:
         a = await self._attempt(work_id, attempt_id)
         if a['status'] != 'RESERVED' or a.get('job_id'):
             raise ValueError('RECOVER_ORIGINAL_SUBMISSION')
-        verify_execution(a['frame_snapshot'])
+        work = await self.memory.get_work(work_id)
+        verify_execution(a['frame_snapshot'], work=work, approved_interpretation_refs=approved_interpretation_refs)
         from drama_plugin.config.video_route import require_runtime_route
         from drama_plugin.production_language import require_native_video_submission
         require_runtime_route(a['request']['provider'], a['request']['model'])
         require_native_video_submission(await self.memory.get_work(work_id), a['frame_snapshot'])
-        binding = await self.bind(work_id, a['frame_snapshot'])
+        binding = await self.bind(work_id, a['frame_snapshot'], approved_interpretation_refs=approved_interpretation_refs)
         if any(binding[k] != a['execution_binding'][k] for k in ('execution','endpoint_fingerprint','provider_schema_fingerprint','operation')):
             raise ValueError('HTTP_BINDING_CHANGED')
         p = await self._provider(work_id, a['request'])
@@ -173,7 +196,8 @@ class VideoProviderHost:
             r = VideoRequest.model_validate(a['request']['videoRequest'])
             # Resolve/read canonical inputs before durably claiming the paid call.
             await p.materialize(r)
-            result = await operate(self.memory, work_id, 'begin-submission', {'attempt_id':attempt_id}, media=self.media)
+            result = await operate(self.memory, work_id, 'begin-submission', {'attempt_id':attempt_id}, media=self.media,
+                                   approved_interpretation_refs=approved_interpretation_refs)
             claimed = next(x for x in result['state']['attempts'] if x['attempt_id'] == attempt_id)
             if claimed['status'] != 'UNKNOWN' or claimed['request'] != a['request']:
                 raise ValueError('FORMAL_SUBMISSION_CLAIM_NOT_VERIFIED')

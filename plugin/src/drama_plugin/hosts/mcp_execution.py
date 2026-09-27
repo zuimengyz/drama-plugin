@@ -7,6 +7,7 @@ This module neither generates prompts nor chooses a model/backend.
 from collections.abc import Awaitable, Callable, Sequence
 from copy import deepcopy
 from typing import Any, Protocol
+from pydantic import model_serializer, SerializerFunctionWrapHandler
 
 from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.visual.execution import ExecutionRoute, validate_binding, validate_result_identity
@@ -22,6 +23,16 @@ class MCPBinding(Record):
     provider_schema_fingerprint: Hash
     evidence: Evidence
     authenticated: bool
+    request_fingerprint: Hash | None = None
+    provider_schema: dict[str, Any] | None = None
+
+    @model_serializer(mode='wrap')
+    def compatible_dump(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        value: dict[str, Any] = handler(self)
+        for key in ('request_fingerprint', 'provider_schema'):
+            if getattr(self, key) is None:
+                value.pop(key, None)
+        return value
 
 
 class MCPRegistry(Protocol):
@@ -33,8 +44,13 @@ class MCPRegistry(Protocol):
 
 async def resolve_mcp(decision: dict[str, Any], registry: MCPRegistry, *,
                       allow_dry_run: bool = False) -> MCPBinding:
-    verify_decision(decision, allow_dry_run=allow_dry_run)
-    required = decision.get('execution')
+    required: dict[str, Any] | None
+    if decision.get('schema') == 'visual-frame-preflight-v1':
+        from drama_plugin.visual.execution import still_execution
+        required = still_execution(decision)
+    else:
+        verify_decision(decision, allow_dry_run=allow_dry_run)
+        required = decision.get('execution')
     if required is None:
         raise ValueError('MCP_CAPABILITY_UNAVAILABLE: sealed execution required')
     matches = []

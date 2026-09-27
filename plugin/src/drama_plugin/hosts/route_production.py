@@ -11,9 +11,10 @@ from typing import Any
 
 from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.contracts.creation import Work
+from drama_plugin.contracts.source_pin import SourcePin
 from drama_plugin.exceptions import ContractValidationError
 from drama_plugin.providers.base import MemoryProvider, MediaProvider
-from drama_plugin.visual.video_selection import ProductionRoute, qualify_route, route_input_gate, choose_routes
+from drama_plugin.visual.video_selection import ProductionRoute, Requirements, qualify_route, route_input_gate, choose_routes
 from drama_plugin.config.video_route import VideoRoutePolicy
 from drama_plugin.visual import production
 from drama_plugin.visual.history import attempt_frame, remember, compact, resolve
@@ -48,23 +49,72 @@ async def validate_route_direction_sources(memory: MemoryProvider, work: Work, r
             validate_canon(spec, context)
 
 
+async def validate_canonical_source_binding(memory: MemoryProvider, work: Work,
+        old: ProductionRoute, route: ProductionRoute, target: str | None,
+        requirements: Requirements | None, refs: tuple[SourcePin, ...]) -> None:
+    """One-way planning admission through the existing route revision journal.
+
+    Requirements and approval pins are execution context, never route provenance.
+    Re-read source entities before accepting a fingerprint supplied by a caller.
+    """
+    if ((old.work_id, old.route_id, old.stage_id, old.video_targets, old.execution,
+         old.candidate.candidate_id, old.candidate.model, old.candidate.variant, old.candidate.mode)
+            != (route.work_id, route.route_id, route.stage_id, route.video_targets, route.execution,
+                route.candidate.candidate_id, route.candidate.model, route.candidate.variant, route.candidate.mode)
+            or old.work_id != work.id or target not in old.video_targets):
+        raise ValueError('CANONICAL_BINDING_IDENTITY_CHANGED')
+    from drama_plugin.visual.video_selection import same_route_parameters
+    if not same_route_parameters(old.candidate, route.candidate) or old.inputs != route.inputs:
+        raise ValueError('CANONICAL_BINDING_PROVIDER_INTENT_CHANGED')
+    if old.requirements.get('cinematic_directions') or old.requirements.get('creative_schema') == 'cinematic-shot-v1':
+        raise ValueError('CANONICAL_SOURCE_REBIND_FORBIDDEN')
+    if requirements is None or requirements.video_request is None:
+        raise ValueError('VERIFIED_CANONICAL_REQUIREMENTS_REQUIRED')
+    r = requirements
+    assert r.video_request is not None
+    from drama_plugin.visual.cinematic import verify_frozen
+    frozen = route.requirements.get('cinematic_directions', {}).get(target)
+    if frozen != r.frozen_creative.get('cinematic_direction') or not frozen:
+        raise ValueError('CANONICAL_BINDING_DIRECTION_CHANGED')
+    spec = verify_frozen(frozen)
+    if ((r.work_id, r.target_id, r.shot_id, r.source_fingerprint)
+            != (work.id, target, spec.shot_id, spec.source_fingerprint)
+            or route.creative_fingerprint != spec.source_fingerprint
+            or route.requirements.get('shots', {}).get(target) != r.shot_id
+            or route.requirements.get('video_requests', {}).get(target) != r.video_request.model_dump(mode='json', by_alias=True)):
+        raise ValueError('CANONICAL_BINDING_SOURCE_MISMATCH')
+    for key, shot in old.requirements.get('shots', {}).items():
+        if route.requirements.get('shots', {}).get(key) != shot:
+            raise ValueError('CANONICAL_BINDING_SHOT_CHANGED')
+    await validate_route_direction_sources(memory, work, route)
+    shot = await memory.get_shot(r.shot_id)
+    if shot.content.get('creativeArtifacts', {}).get('cinematicDirection') != frozen:
+        raise ValueError('CANONICAL_BINDING_FROZEN_DIRECTION_NOT_CURRENT')
+    from drama_plugin.hosts.http_video import VideoProviderHost, compile_request
+    from pathlib import Path
+    await VideoProviderHost(memory, None, None, Path('.'), configuration={})._validate_canon(work.id, r.video_request)
+    compile_request(r, route.candidate, work=work, approved_interpretation_refs=refs)
+
+
 async def save_route(memory: MemoryProvider, work_id: str, raw: dict[str, Any], *,
-                     policy: VideoRoutePolicy | None = None, task_policy: VideoRoutePolicy | None = None) -> dict[str, Any]:
+                     policy: VideoRoutePolicy | None = None, task_policy: VideoRoutePolicy | None = None,
+                     execution_target: str | None = None, canonical_requirements: Requirements | None = None,
+                     approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
     route = ProductionRoute.model_validate(raw)
     if route.work_id != work_id:
         raise ValueError('ROUTE_WORK_MISMATCH')
     work = await memory.get_work(work_id)
     await validate_route_direction_sources(memory, work, route)
     existing = work.content.get('productionRoute')
-    choice = choose_routes([route], policy=policy, task_policy=task_policy)
+    choice = choose_routes([route], policy=policy, task_policy=task_policy, execution_target=execution_target)
     if not choice['selected']:
         raise ValueError('NO_EXECUTABLE_CANDIDATE:' + str(choice['route_policy_resolution']))
     if existing == raw and policy is None and task_policy is None:
-        return qualify_route(route)
+        return qualify_route(route, execution_target=execution_target)
     stage = work.content.get('productionStage')
     if stage and any(a['status'] in {'RESERVED', 'UNKNOWN'} for a in stage['attempts']):
         raise ValueError('RECOVER_OR_REVIEW_BEFORE_ROUTE_CHANGE')
-    result = qualify_route(route)
+    result = qualify_route(route, execution_target=execution_target)
     result['route_policy_resolution'] = choice['route_policy_resolution']
     if not result['eligible']:
         raise ValueError('INCOMPLETE_OR_INELIGIBLE_PRODUCTION_ROUTE')
@@ -86,9 +136,10 @@ async def save_route(memory: MemoryProvider, work_id: str, raw: dict[str, Any], 
                     or target not in old.video_targets
                     or route.requirements.get('shots', {}).get(target) != old.requirements.get('shots', {}).get(target)):
                 raise ValueError('CONTINUATION_CANNOT_CHANGE_FORMAL_TARGET_OR_STAGE')
-        elif (route.work_id, route.stage_id, route.video_targets, route.creative_fingerprint) != (
-                old.work_id, old.stage_id, old.video_targets, old.creative_fingerprint):
-            raise ValueError('ROUTE_CHANGE_CANNOT_RESET_TARGET_OR_STAGE')
+        elif (route.work_id, route.route_id, route.stage_id, route.video_targets, route.creative_fingerprint) != (
+                old.work_id, old.route_id, old.stage_id, old.video_targets, old.creative_fingerprint):
+            await validate_canonical_source_binding(memory, work, old, route, execution_target,
+                                                    canonical_requirements, approved_interpretation_refs)
         if stage['stage']['budget_credits'] is not None and result['incremental_credits'] > stage['stage']['budget_credits']:
             raise ValueError('ROUTE_CHANGE_EXCEEDS_AUTHORIZATION')
         stage = deepcopy(stage)
@@ -111,7 +162,10 @@ async def save_route(memory: MemoryProvider, work_id: str, raw: dict[str, Any], 
 
 
 async def operate(memory: MemoryProvider, work_id: str, command: str,
-                  payload: dict[str, Any], *, media: MediaProvider | None = None) -> dict[str, Any]:
+                  payload: dict[str, Any], *, media: MediaProvider | None = None,
+                  approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
+    # Trusted caller context only: never derive execution authority from payload,
+    # persisted Work provenance, FrameSpec, or the provider request.
     work = await memory.get_work(work_id)
     raw_route = work.content.get('productionRoute')
     if not raw_route:
@@ -137,8 +191,8 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
         intent = requirements.get('frozen_creative', {}).get('cinematic_direction')
         frame_context = snapshot.get('spec', {}).get('scope_context') or {}
         authority = requirements.get('authority_context') or frame_context.get('authority_context')
-        if not validate_still_professional_sources(work, snapshot):
-            validate_visual_submission(work, attempt['request'], authority_context=authority, creative_intent=intent)
+        if not validate_still_professional_sources(work, snapshot, approved_interpretation_refs=approved_interpretation_refs):
+            validate_visual_submission(work, attempt['request'], authority_context=authority, creative_intent=intent, approved_interpretation_refs=approved_interpretation_refs)
     if command == 'check-input':
         duty = route_input_gate(route, payload['target_id'], payload['purpose'])
         if not work.content.get('productionStage'):
@@ -179,12 +233,14 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
         if command == 'reseal-plan':
             result = {'resealed': True}
         elif command == 'add-frame':
-            production.add_route_frame(state, payload['frame']); result = {'added': True}
+            production.add_route_frame(state, payload['frame'], work=work, approved_interpretation_refs=approved_interpretation_refs); result = {'added': True}
         elif command == 'reserve':
-            validate_still_professional_sources(work, state['frames'][payload['shot_id']])
-            result = production.reserve(state, **payload)
+            validate_still_professional_sources(work, state['frames'][payload['shot_id']], approved_interpretation_refs=approved_interpretation_refs)
+            result = production.reserve(state, **payload, work=work, approved_interpretation_refs=approved_interpretation_refs)
         elif command == 'begin-submission':
-            result = production.begin_submission(state, **payload)
+            result = production.begin_submission(state, **payload, work=work, approved_interpretation_refs=approved_interpretation_refs)
+        elif command == 'bind-still-execution':
+            result = production.bind_still_execution(state, **payload)
         elif command == 'result':
             production.record_result(state, **payload); result = production.metrics(state)
         elif command in {'video-task', 'video-delivery'}:
@@ -241,7 +297,7 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
                 attempt['submitted_at'] = payload['submission_ack_at']
             result = {'usageRecorded': True, 'invoiceSettlement': 'UNKNOWN'}
         elif command == 'review':
-            review_payload = still_observation_payload(work, payload)
+            review_payload = still_observation_payload(work, payload, approved_interpretation_refs=approved_interpretation_refs)
             result = {'review': production.record_review(state, production.Review.model_validate(review_payload))}
         elif command == 'revise-review':
             result = {'review': production.revise_review(state, **payload)}
@@ -266,9 +322,9 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
                 raise ValueError('PERSISTENCE_OUTSIDE_PLANNED_SHOTS')
             result = await complete_attempt(state, **payload)
         elif command == 'replan':
-            production.replan(state, **payload); result = production.metrics(state)
+            production.replan(state, **payload, work=work, approved_interpretation_refs=approved_interpretation_refs); result = production.metrics(state)
         elif command == 'retry-not-created':
-            result = production.retry_not_created(state, **payload)
+            result = production.retry_not_created(state, **payload, work=work, approved_interpretation_refs=approved_interpretation_refs)
         else:
             raise ValueError('UNKNOWN_ROUTE_OPERATION')
     # Detect a changed full-replacement owner before saving. The CLI serializes
@@ -328,7 +384,8 @@ def _still_originals(store: Any, pins: tuple[Any, ...], current: dict[str, str])
     return originals
 
 
-def validate_still_professional_sources(work: Work, snapshot: dict[str, Any]) -> bool:
+def validate_still_professional_sources(work: Work, snapshot: dict[str, Any], *,
+                                        approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> bool:
     """Re-read Work-owned current pins and immutable approvals at each spend gate."""
     from drama_plugin.visual.frame_request import FrameSpec, verify_compiled
     from drama_plugin.contracts.source_pin import SourcePin
@@ -359,13 +416,14 @@ def validate_still_professional_sources(work: Work, snapshot: dict[str, Any]) ->
         raise ValueError('STILL_GLOBAL_STYLE_PIN_REQUIRED')
     if spec.actors and not any(v.get('schemaVersion') == 'specialized-asset-bible-v1' for v in originals.values()):
         raise ValueError('STILL_APPROVED_IDENTITY_REQUIRED')
-    replay(spec, receipt, originals, current, still_rule_catalog())
+    replay(spec, receipt, originals, current, still_rule_catalog(), approved_interpretation_refs=approved_interpretation_refs)
     verify_compiled(snapshot)
     return True
 
 
 def prepare_still_projection(work: Work, spec: Any, base_ir: dict[str, Any], *,
-                             scope: Any, source_pins: tuple[Any, ...], rows: tuple[Any, ...]) -> Any:
+                             scope: Any, source_pins: tuple[Any, ...], rows: tuple[Any, ...],
+                             approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> Any:
     """Freeze receipt before FrameSpec fingerprint; no request or provider side effects."""
     from drama_plugin.config import load_config
     from drama_plugin.contracts.source_pin import SourcePin
@@ -380,9 +438,10 @@ def prepare_still_projection(work: Work, spec: Any, base_ir: dict[str, Any], *,
     current = {**work.content.get('visualSourceCurrent', {}), runtime.key: runtime.fingerprint}
     originals = _still_originals(host.store, source_pins, current)
     receipt = make_receipt(scope=scope, source_pins=source_pins, rows=rows, originals=originals,
-        current=current, subject_ids=[s['id'] for s in base_ir['subjects']], rule_catalog=still_rule_catalog())
+        current=current, subject_ids=[s['id'] for s in base_ir['subjects']], rule_catalog=still_rule_catalog(),
+        approved_interpretation_refs=approved_interpretation_refs)
     pin = host.store.put('still-professional-map:' + scope.work_id + ':' + scope.shot_id, receipt)
-    ir = project_ir(base_ir, receipt, pin, originals, current)
+    ir = project_ir(base_ir, receipt, pin, originals, current, approved_interpretation_refs=approved_interpretation_refs)
     data = spec.model_dump(mode='json')
     data['professional_sources'] = [p.model_dump(mode='json') for p in (*source_pins, pin)]
     for actor in data['actors']:
@@ -391,11 +450,12 @@ def prepare_still_projection(work: Work, spec: Any, base_ir: dict[str, Any], *,
     bound = FrameSpec.model_validate(data)
     ir['source_fingerprint'] = sha256_canonical(bound.model_dump(mode='json', exclude={'prompt_ir'}))
     bound = bound.model_copy(update={'prompt_ir': ir})
-    replay(bound, receipt, originals, current, still_rule_catalog())
+    replay(bound, receipt, originals, current, still_rule_catalog(), approved_interpretation_refs=approved_interpretation_refs)
     return bound
 
 
-def still_observation_payload(work: Work, payload: dict[str, Any]) -> dict[str, Any]:
+def still_observation_payload(work: Work, payload: dict[str, Any], *,
+                              approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
     """Optional evidence sidecar -> existing Review; cannot mutate creative sources."""
     if 'still_observation_ref' not in payload:
         return payload
@@ -417,5 +477,5 @@ def still_observation_payload(work: Work, payload: dict[str, Any]) -> dict[str, 
         raise ValueError('STILL_QC_REQUIREMENT_WORK')
     result = observation_review(attempt_id=payload['attempt_id'], output_hash=payload['output_hash'],
         reviewer=payload['reviewer'], evidence_ref=ref.key + '@' + ref.fingerprint,
-        observations=observations, originals=originals, current=current)
+        observations=observations, originals=originals, current=current, approved_interpretation_refs=approved_interpretation_refs)
     return dict(result['review'])

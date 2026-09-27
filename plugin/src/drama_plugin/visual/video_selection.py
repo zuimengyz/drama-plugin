@@ -9,6 +9,7 @@ from pydantic import Field
 from drama_plugin.config.video_route import VideoRoutePolicy, RouteMode, resolve_policy, canonical_model_key, runtime_policy, provider_allowed
 
 from drama_plugin.contracts.base import sha256_canonical
+from drama_plugin.contracts.source_pin import SourcePin
 from drama_plugin.visual.frame_request import Hash, Record, Text
 from drama_plugin.visual.reference_duties import ReferenceDuty, validate_duties, validate_endpoint
 from drama_plugin.visual.execution import ExecutionRoute, require_execution
@@ -422,7 +423,8 @@ def seal_decision(r: Requirements, c: Candidate, request: dict[str, Any], *, sta
                   host_adapter: dict[str, Any] | None = None,
                   now: datetime | None = None, dry_run: bool = False,
                   production_route: ProductionRoute | None = None,
-                  policy_resolution: dict[str, Any] | None = None) -> dict[str, Any]:
+                  policy_resolution: dict[str, Any] | None = None, work: Any = None,
+                  approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> dict[str, Any]:
     r = Requirements.model_validate(r.model_dump())
     c = Candidate.model_validate(c.model_dump())
     result = qualify(r, c, now=now)
@@ -459,13 +461,13 @@ def seal_decision(r: Requirements, c: Candidate, request: dict[str, Any], *, sta
         if host_adapter is None:
             raise ValueError('INSPECTED_HOST_ADAPTER_REQUIRED')
         if material.get('execution', {}).get('transport') == 'HTTP':
-            material['execution_contract'] = transport_sealers['HTTP'](r,c,request,host_adapter)
+            material['execution_contract'] = transport_sealers['HTTP'](r,c,request,host_adapter, work=work, approved_interpretation_refs=approved_interpretation_refs)
         elif execution_sealer is None:
             raise ValueError('HOST_EXECUTION_SEALER_REQUIRED')
         else:
             material['execution_contract'] = execution_sealer(r,c,request,host_adapter)
     elif material.get('execution', {}).get('transport') == 'HTTP':
-        material['execution_contract'] = transport_sealers['HTTP'](r,c,request,host_adapter or {})
+        material['execution_contract'] = transport_sealers['HTTP'](r,c,request,host_adapter or {}, work=work, approved_interpretation_refs=approved_interpretation_refs)
     return {**material, 'fingerprint': sha256_canonical(material)}
 
 
@@ -575,7 +577,8 @@ class ProductionRoute(Record):
     video_request_credits: float = Field(gt=0, allow_inf_nan=False)
 
 
-def qualify_route(route: ProductionRoute, *, now: datetime | None = None) -> dict[str, Any]:
+def qualify_route(route: ProductionRoute, *, now: datetime | None = None,
+                  execution_target: str | None = None) -> dict[str, Any]:
     """Jointly qualify capability, planned inputs and all preparation costs.
 
     Existing image compatibility is a priced planning choice, not a model veto.
@@ -587,11 +590,22 @@ def qualify_route(route: ProductionRoute, *, now: datetime | None = None) -> dic
     now = now or datetime.now(timezone.utc)
     from drama_plugin.providers.video.registry import model_enabled
     reasons: list[str] = [] if model_enabled(c.model) else ['MODEL_DISABLED']
+    if execution_target is not None and execution_target not in route.video_targets:
+        reasons.append('VIDEO_OUTSIDE_ROUTE_SCOPE')
     if route.execution and route.execution.transport == 'HTTP':
         from drama_plugin.providers.video.registry import validate_request
         requests = r.get('video_requests', {})
-        if set(requests) != set(route.video_targets):
+        if set(requests) - set(route.video_targets):
             reasons.append('COMPLETE_UNIFIED_REQUESTS_REQUIRED')
+        for target in set(route.video_targets) - set(requests):
+            duties = [i for i in route.inputs if i.active and target in i.for_targets]
+            # A NEW opening-image duty admits preparation, never a video call.
+            # Reuse and all other modes still require their complete requests.
+            fresh_first_frame = (c.mode == 'SINGLE_IMAGE' and len(duties) == 1
+                and duties[0].preparation == 'NEW' and duties[0].source_media_id is None
+                and duties[0].roles_by_target.get(target, duties[0].role) == 'FIRST_FRAME')
+            if target == execution_target or not fresh_first_frame:
+                reasons.append('COMPLETE_UNIFIED_REQUESTS_REQUIRED')
         for raw in requests.values():
             try:
                 validate_request(VideoRequest.model_validate(raw), route.execution.backend.provider, c.model)
@@ -605,9 +619,12 @@ def qualify_route(route: ProductionRoute, *, now: datetime | None = None) -> dic
         require_execution(route.execution, model_key(c))
         from drama_plugin.visual.cinematic import verify_frozen
         raw_directions = r.get('cinematic_directions', {})
-        if set(raw_directions) != set(route.video_targets):
+        required_targets = set(route.video_targets) if execution_target is None else {execution_target}
+        if (set(raw_directions) - set(route.video_targets)
+                or not required_targets <= set(raw_directions)):
             raise ValueError('COMPLETE_FROZEN_CINEMATIC_DIRECTIONS_REQUIRED')
-        for target, raw in raw_directions.items():
+        for target in sorted(required_targets):
+            raw = raw_directions[target]
             spec = verify_frozen(raw)
             if spec.work_id != route.work_id or spec.shot_id != r.get('shots', {}).get(target):
                 raise ValueError('ROUTE_CINEMATIC_SCOPE_OR_DURATION_CHANGED')
@@ -688,7 +705,8 @@ def route_input_gate(route: ProductionRoute, target_id: str, purpose: str) -> Pl
 
 
 def choose_routes(routes: list[ProductionRoute], *, policy: VideoRoutePolicy | None = None,
-                  task_policy: VideoRoutePolicy | None = None, now: datetime | None = None) -> dict[str, Any]:
+                  task_policy: VideoRoutePolicy | None = None, now: datetime | None = None,
+                  execution_target: str | None = None) -> dict[str, Any]:
     """Planning uses the existing planned-input qualifier, never fake Media."""
     policy = runtime_policy(policy)
     for route in routes:
@@ -699,6 +717,6 @@ def choose_routes(routes: list[ProductionRoute], *, policy: VideoRoutePolicy | N
                 raise ValueError('MODEL_PROVIDER_MISMATCH')
     allowed = _policy_candidates([r.candidate for r in routes], policy, task_policy)
     routes = [r for c in allowed for r in routes if r.candidate == c]
-    results = [{**qualify_route(route, now=now), 'candidate_id': route.candidate.candidate_id}
+    results = [{**qualify_route(route, now=now, execution_target=execution_target), 'candidate_id': route.candidate.candidate_id}
                for route in routes]
     return _select_qualified([r.candidate for r in routes], results, policy=policy, task_policy=task_policy)

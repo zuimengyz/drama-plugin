@@ -55,8 +55,16 @@ class McpMediaSession:
 
     async def rpc(self, method: str, params: dict[str, Any]) -> dict[str, Any]:
         self.sequence += 1
-        response = await self.client.post(self.url, headers=self.headers,
-            json={'jsonrpc':'2.0','id':self.sequence,'method':method,'params':params})
+        envelope = {'jsonrpc':'2.0','id':self.sequence,'method':method,'params':params}
+        if method == 'tools/call' and params.get('name') == 'work.save_work':
+            from drama_plugin.hosts.work_save_preflight import prepare
+            raw, self.last_work_save_preflight = prepare(envelope, lambda data:
+                self.client.build_request('POST', self.url, json=data).content)
+            request = self.client.build_request('POST', self.url,
+                headers={**self.headers, 'Content-Type':'application/json'}, content=raw)
+            response = await self.client.send(request)
+        else:
+            response = await self.client.post(self.url, headers=self.headers, json=envelope)
         return cast(dict[str, Any], self.parse(response)['result'])
 
     async def call(self, name: str, arguments: dict[str, Any]) -> Any:

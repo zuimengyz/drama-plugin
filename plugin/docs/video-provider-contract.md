@@ -29,6 +29,8 @@ Python 属性为 snake_case，JSON 为 camelCase。请求包含 prompt、negativ
 
 Reference 是稳定 Media ID、version、contentHash、kind、semantics、reviewRef 以及必要的尺寸/时长。禁止用临时 URL 作为参考身份。身份、服饰、道具、环境、风格、动作、摄影机和连续性语义都能分别标记。Host 读取 Media 校验 Work、hash、类型，执行时才 resolve URL。厂商不支持必需字段/组合时拒绝请求，不静默删除。
 
+Seedance 图片输入优先使用合法 external HTTPS；内部 delivery locator 仅用于正式 Media 下载。Host 下载 exact Media ID、回读校验 hash/bytes/类型和 PASS 审阅后，按真实图片 MIME 编码 `data:image/...;base64,...`，仅作为 Provider wire projection。Media 和 VideoReference 身份不变，内部 URL/interpretation authority 不进入 payload。其它 Provider 仍使用原 HTTPS 规则；不支持的 MIME、失败审阅或 hash/ownership 不符仍拒绝。
+
 统一生命周期：
 
 ```python
@@ -66,7 +68,7 @@ Registry strengths 是待验证路由假设，不是艺术排名。Standard 不�
 ## Host 使用顺序
 
 1. 将审阅后的 ContinuityPack 写入原 Work，并读回。构造统一 VideoRequest 和既有 Requirements；`inputs` 与实际参考 ID/hash、ReferenceDuty provider slot 一致。
-2. 使用 `hosts.http_video.candidate` 建立候选，再经原 `choose` / `qualify_route` 比较。ProductionRoute 的 `requirements.video_requests` 必须为每个 target 保存完整请求。
+2. 使用 `hosts.http_video.candidate` 建立候选，再经原 `choose` / `qualify_route` 比较。HTTP SINGLE_IMAGE 的 target 若恰有一个 active、NEW、FIRST_FRAME 的既有 PlannedInput，且尚无 source_media_id，可在规划阶段暂缺该 target 的 `requirements.video_requests`，先准入必要首帧生成；不得填写假的 VideoReference。其它路径仍要求完整请求。首帧生成、审核并保存为真实 Media 后，通过既有 route revision 绑定完整请求；`qualify_route(..., execution_target=target)` 和 production video frame gate 强制该目标的完整执行请求。其它目标可继续处于 planned 状态，逐镜生成不要求提前生成全场参考。规划 PASS 不是视频提交权限，执行仍校验真实 Media 的 Work、hash、类型及既有参考/审核约束。
 3. 沿既有 `save_route` / `init-stage` / `seal_decision` / `add-frame` 保存批准路线与预算。HTTP transport sealer 注册在 Host；Core 不导入厂商 Host。
 4. `VideoProviderHost.bind` 验证配置、Registry/adapter/schema 指纹和 Canonical Pack。这里 authenticated 表示凭据已配置且绑定了官方 endpoint，不表示已向厂商验证密钥或余额。
 5. 经既有 `operate(..., 'reserve', ...)` 持久化带新鲜报价、余额、execution_binding 的一次 attempt。

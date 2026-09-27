@@ -8,6 +8,14 @@ if TYPE_CHECKING:
     from drama_plugin.visual.frame_request import FrameSpec, Template, EditSource, Reference
 
 
+def execution_identity(compiled: dict[str, Any]) -> dict[str, Any]:
+    """Existing image adapter identity; does not mutate or reseal the frame."""
+    model = compiled['template']['model']
+    return {'transport': 'MCP', 'backend': {'provider': 'comfy_cloud', 'backend_key': 'comfy_cloud'},
+            'capability': {'kind': 'image_generation', 'model_key': model},
+            'mcp': {'capability_key': 'image_generation:' + model}}
+
+
 def select_frame_template(spec: FrameSpec) -> Template:
     from drama_plugin.visual.frame_request import Template
     width, height = spec.target_size

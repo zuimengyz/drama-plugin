@@ -1,11 +1,13 @@
 """HTTP cinematic source gate. Checks source facts; never writes a prompt."""
 from typing import Any
 from drama_plugin.contracts.base import dump_contract
+from drama_plugin.contracts.source_pin import SourcePin
 from drama_plugin.visual.cinematic import verify_frozen
 from drama_plugin.hosts.cinematic_projection import executable, prose, source_audio
 
 
-def verify_cinematic(r: Any, compilation: dict[str, Any]) -> None:
+def verify_cinematic(r: Any, compilation: dict[str, Any], *, work: Any = None,
+                     approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> None:
     spec = verify_frozen(r.frozen_creative['cinematic_direction'])
     v = r.video_request
     if source_audio(spec, r.sound) != v.native_audio:
@@ -26,7 +28,12 @@ def verify_cinematic(r: Any, compilation: dict[str, Any]) -> None:
     facts = [a['text'] for a in compilation['atoms'] if a['obligation_id'] in covered]
     if r.authority_context is not None:
         from drama_plugin.hosts.specialized_asset import validate_authority_context
-        validate_authority_context(r.authority_context, r.frozen_creative['cinematic_direction'])
+        if work is not None and work.id != spec.work_id:
+            raise ValueError('MOVIE_VISUAL_AUTHORITY_MISMATCH')
+        if approved_interpretation_refs and work is None:
+            raise ValueError('CURRENT_WORK_CONTEXT_REQUIRED')
+        validate_authority_context(r.authority_context, r.frozen_creative['cinematic_direction'], work,
+                                   approved_interpretation_refs=approved_interpretation_refs)
         if r.authority_context['workId'] != spec.work_id:
             raise ValueError('MOVIE_VISUAL_AUTHORITY_MISMATCH')
         if any(row['executableSemantic'] not in '\n'.join(facts) for row in r.authority_context['assets']):

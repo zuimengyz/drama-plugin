@@ -64,11 +64,10 @@ class McpMediaSession:
                 headers={**self.headers, 'Content-Type':'application/json'}, content=raw)
             response = await self.client.send(request)
         elif method == 'tools/call' and params.get('name') == 'work.patch_work':
-            from drama_plugin.hosts.work_save_preflight import MAX_WORK_SAVE_REQUEST_BYTES
-            raw = self.client.build_request('POST', self.url, json=envelope).content
+            from drama_plugin.hosts.work_save_preflight import prepare
+            raw, self.last_work_patch_preflight = prepare(envelope, lambda data:
+                self.client.build_request('POST', self.url, json=data).content)
             self.last_work_patch_bytes = len(raw)
-            if len(raw) > MAX_WORK_SAVE_REQUEST_BYTES:
-                raise ValueError('WORK_PATCH_REQUEST_TOO_LARGE')
             response = await self.client.post(self.url, headers={**self.headers, 'Content-Type':'application/json'}, content=raw)
         else:
             response = await self.client.post(self.url, headers=self.headers, json=envelope)

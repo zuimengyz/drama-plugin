@@ -118,14 +118,13 @@ def test_multiref_cannot_claim_timed_frames(tmp_path):
     assert not qualify(r,c)['eligible']
 
 
-def test_independent_layers_and_expiry(tmp_path):
+def test_independent_layers_and_time_independent_attestation(tmp_path):
     r,c,*_=fixture(tmp_path)
     for layer in ['official','interface','template','project']:
         data=c.model_dump();data['layers'][layer]['verified']=False
         assert not qualify(r,Candidate.model_validate(data))['eligible']
     d=decision(tmp_path)
-    with pytest.raises(ValueError,match='EXPIRED'):
-        verify_decision(d,now=datetime.now(timezone.utc)+timedelta(days=1))
+    verify_decision(d,now=datetime.now(timezone.utc)+timedelta(days=36500))
 
 
 def test_unknown_can_trial_never_expand_or_fabricate(tmp_path):

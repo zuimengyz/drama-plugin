@@ -23,6 +23,11 @@ class Evidence(Record):
     expires_at: datetime
     verified: bool
 
+    def content_verified(self) -> bool:
+        """Attestation metadata remains valid; route consumers check content pins."""
+        return (self.verified and self.checked_at.tzinfo is not None
+                and self.expires_at.tzinfo is not None and self.checked_at < self.expires_at)
+
     def current(self, now: datetime) -> bool:
         return (self.verified and self.checked_at.tzinfo is not None
                 and self.expires_at.tzinfo is not None
@@ -157,7 +162,7 @@ class Cost(Record):
         for key, value in self.components.items():
             resolution = self.resolutions.get(key)
             if resolution:
-                if not resolution.evidence.current(now) or resolution.authority == 'EXTERNAL_METERED_UNKNOWN':
+                if not resolution.evidence.content_verified() or resolution.authority == 'EXTERNAL_METERED_UNKNOWN':
                     return None
                 if resolution.authority == 'INTERNAL_UNMETERED':
                     # No per-task amount, not a fabricated provider quote of zero.
@@ -173,7 +178,7 @@ class Cost(Record):
 
     def breakdown(self, now: datetime | None = None) -> dict[str, Any]:
         now = now or datetime.now(timezone.utc)
-        return {'resolved': not self.uncertainty and self.evidence.current(now) and self.total(now) is not None,
+        return {'resolved': not self.uncertainty and self.evidence.content_verified() and self.total(now) is not None,
                 'unit': self.unit,
                 'provider_quoted_components': {k: self.components.get(k) for k, r in self.resolutions.items()
                                                if r.authority == 'PROVIDER_QUOTE'},
@@ -232,6 +237,37 @@ class Candidate(Record):
 execution_sealer: Callable[[Requirements, Candidate, dict[str, Any], dict[str, Any]], dict[str, Any]] | None = None
 transport_sealers: dict[str, Callable[..., dict[str, Any]]] = {}
 
+def content_binding_errors(c: Candidate) -> list[str]:
+    """Use existing official schema/adapter pins; never refresh timestamps."""
+    if c.template != 'official-http-v1' and not c.capability.get('registry_fingerprint'):
+        # MCP templates retain their existing discovery/seal checks at execution.
+        return []
+    from drama_plugin.providers.video.registry import registry, fingerprint, settings
+    from drama_plugin.config.production_routes import require_video
+    model = registry()['models'].get(c.model)
+    if model is None:
+        return ['OFFICIAL_CAPABILITY_CHANGED']
+    current = fingerprint(c.model)
+    errors = []
+    if c.adapter_fingerprint != current:
+        errors.append('INTERFACE_FINGERPRINT_CHANGED')
+    if c.graph_hash != current or c.template != 'official-http-v1':
+        errors.append('TEMPLATE_FINGERPRINT_CHANGED')
+    if (c.capability.get('registry_fingerprint') != current or c.capability.get('model_key') != c.model
+            or c.capability.get('provider') != model['provider'] or c.variant != model['vendor_model']):
+        errors.append('OFFICIAL_CAPABILITY_CHANGED')
+    try:
+        require_video(model['provider'], c.model)
+    except ValueError:
+        errors.append('PROJECT_CONFIG_CHANGED')
+    config = settings().get(model['provider'])
+    # Credentials remain owned by the same ProviderSettings/env abstraction;
+    # never persist a key or claim an account identity from a model name.
+    if config and config.base_url != registry()['providers'][model['provider']]['base_url'].rstrip('/'):
+        errors.append('OFFICIAL_CONFIG_CHANGED')
+    return errors
+
+
 def qualify(r: Requirements, c: Candidate, *, now: datetime | None = None,
             trial: bool = True) -> dict[str, Any]:
     r = Requirements.model_validate(r.model_dump())
@@ -240,6 +276,7 @@ def qualify(r: Requirements, c: Candidate, *, now: datetime | None = None,
     now = now or datetime.now(timezone.utc)
     from drama_plugin.providers.video.registry import model_enabled
     reasons = [] if model_enabled(c.model) else ['MODEL_DISABLED']
+    reasons.extend(content_binding_errors(c))
     if r.video_request:
         from drama_plugin.providers.video.registry import capability_errors, continuity_errors, fingerprint
         provider = c.capability.get('provider')
@@ -250,8 +287,8 @@ def qualify(r: Requirements, c: Candidate, *, now: datetime | None = None,
     layers: tuple[Literal['official', 'interface', 'template', 'project'], ...] = ('official', 'interface', 'template', 'project')
     for layer in layers:
         e = c.layers.get(layer)
-        if e is None or not e.current(now):
-            reasons.append('UNVERIFIED_OR_EXPIRED:' + layer)
+        if e is None or not e.content_verified():
+            reasons.append('UNVERIFIED:' + layer)
     if c.mode != r.mode:
         reasons.append('MODE_MISMATCH')
     if not set(r.controls) <= set(c.controls):
@@ -280,12 +317,12 @@ def qualify(r: Requirements, c: Candidate, *, now: datetime | None = None,
         reasons.append('PROJECT_QUALITY_FAILED')
     if not trial and not scoped_pass:
         reasons.append('LIMITED_TRIAL_ONLY')
-    if not c.cost.evidence.current(now) or c.cost.uncertainty or c.cost.total(now) is None:
+    if not c.cost.evidence.content_verified() or c.cost.uncertainty or c.cost.total(now) is None:
         reasons.append('COST_UNRESOLVED_OR_EXPIRED')
     total = c.cost.total(now)
     history = c.accepted_cost_history
     accepted_cost = None
-    if (history and r.video_request and history.evidence.current(now) and history.attempts >= history.accepted_shots
+    if (history and r.video_request and history.evidence.content_verified() and history.attempts >= history.accepted_shots
             and history.work_id == r.work_id and history.shot_type == r.shot_type and history.model == c.model
             and history.provider == c.capability.get('provider') and history.unit == c.cost.unit
             and history.style_fingerprint == sha256_canonical(r.video_request.continuity.style)):
@@ -590,6 +627,7 @@ def qualify_route(route: ProductionRoute, *, now: datetime | None = None,
     now = now or datetime.now(timezone.utc)
     from drama_plugin.providers.video.registry import model_enabled
     reasons: list[str] = [] if model_enabled(c.model) else ['MODEL_DISABLED']
+    reasons.extend(content_binding_errors(c))
     if execution_target is not None and execution_target not in route.video_targets:
         reasons.append('VIDEO_OUTSIDE_ROUTE_SCOPE')
     if route.execution and route.execution.transport == 'HTTP':
@@ -632,14 +670,14 @@ def qualify_route(route: ProductionRoute, *, now: datetime | None = None,
                 raise ValueError('CLIP_DURATION_OUT_OF_ROUTE_CAPABILITY')
             directions[target] = direction_quality(raw, c, r['shot_type'])
             reasons.extend('DIRECTOR_REQUIREMENT_FAILED:' + key for key in directions[target]['failed'])
-    if route.generations_per_video_request != 1 or not route.generation_count_evidence.current(now):
+    if route.generations_per_video_request != 1 or not route.generation_count_evidence.content_verified():
         reasons.append('UNVERIFIED_OR_MULTI_GENERATION_REQUEST')
     if len(set(route.video_targets)) != len(route.video_targets):
         reasons.append('DUPLICATE_VIDEO_TARGET')
     for layer in ('official', 'interface', 'template', 'project'):
         evidence = c.layers.get(layer)
-        if evidence is None or not evidence.current(now):
-            reasons.append('UNVERIFIED_OR_EXPIRED:' + layer)
+        if evidence is None or not evidence.content_verified():
+            reasons.append('UNVERIFIED:' + layer)
     controls = set(r['controls'])
     if not controls <= set(c.controls) or not any(controls <= set(x) for x in c.combinations):
         reasons.append('CREATIVE_CONTROL_COMBINATION_UNSUPPORTED')
@@ -671,7 +709,7 @@ def qualify_route(route: ProductionRoute, *, now: datetime | None = None,
     calls = 1 if route.continuation else max(2, len(route.video_targets))
     if (c.cost.components.get('video') or 0) < calls * route.video_request_credits:
         reasons.append('SHARED_TWO_REQUEST_VIDEO_ENVELOPE_MISSING')
-    if not required_costs <= set(c.cost.components) or c.cost.uncertainty or not c.cost.evidence.current(now) or c.cost.total(now) is None:
+    if not required_costs <= set(c.cost.components) or c.cost.uncertainty or not c.cost.evidence.content_verified() or c.cost.total(now) is None:
         reasons.append('COMPLETE_ROUTE_COST_UNRESOLVED')
     if any(i.preparation == 'REUSE' and c.cost.components.get(i.cost_key) != 0 for i in route.inputs):
         reasons.append('REUSE_INCREMENTAL_COST_MUST_BE_ZERO')

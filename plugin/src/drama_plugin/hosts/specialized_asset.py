@@ -159,10 +159,27 @@ def bind_video_request(work: Any, request: Any, *,
     _check_request_medium(receipts[0]['medium'], dump_contract(request.continuity.style))
     refs = [SourcePin.model_validate(value) for value in work.content['specializedAssetCompilationRefs']]
     values = dump_contract(request)
-    values['continuity']['sources'] = [dump_contract(ref) for ref in (*request.continuity.sources, *refs)]
+    values['continuity']['sources'] = []
+    for ref in (*request.continuity.sources, *refs):
+        pin = dump_contract(ref)
+        if pin not in values['continuity']['sources']:
+            values['continuity']['sources'].append(pin)
     values.pop('authority_context', None)
+    # Rebinding an already-bound request must not append the same owned block.
+    # Only remove exact terminal copies proven by its retained authority context;
+    # similar prose or other departments' instructions remain untouched.
+    if request.authority_context:
+        validate_authority_context(request.authority_context,
+            request.authority_context['creativeIntent'], work,
+            approved_interpretation_refs=approved_interpretation_refs)
+        suffix = '\n' + authority_semantics(request.authority_context)
+        while values['prompt'].endswith(suffix):
+            values['prompt'] = values['prompt'][:-len(suffix)]
+    if values.get('prompt_ir') is not None:
+        from ..visual.video_prompt import ir_source_fingerprint
+        values['prompt_ir']['source_fingerprint'] = ir_source_fingerprint(VideoRequest.model_validate(values))
     context = compile_authority_context(work, values, approved_interpretation_refs=approved_interpretation_refs)
-    values['prompt'] = request.prompt + '\n' + authority_semantics(context)
+    values['prompt'] += '\n' + authority_semantics(context)
     values['authority_context'] = context
     return VideoRequest.model_validate(values)
 

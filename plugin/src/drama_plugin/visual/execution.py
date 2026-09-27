@@ -121,9 +121,12 @@ def validate_http_binding(decision: dict[str, Any], binding: dict[str, Any] | No
             or auth != 'CONFIGURED_NOT_VERIFIED'):
         raise ValueError('HTTP_PROVIDER_BINDING_REQUIRED')
     from drama_plugin.visual.video_selection import Evidence
-    from datetime import datetime, timezone
-    if not Evidence.model_validate(binding['evidence']).current(datetime.now(timezone.utc)):
-        raise ValueError('HTTP_BINDING_EXPIRED')
+    # This is Host-owned static adapter/config evidence, not a provider-issued
+    # token, URL, balance or live quote. The formal Host replays current schema,
+    # endpoint, provider/model and sealed request identity before dispatch.
+    # Preserve the original attestation timestamps; only content drift invalidates it.
+    if not Evidence.model_validate(binding['evidence']).content_verified():
+        raise ValueError('HTTP_BINDING_UNVERIFIED')
 
 
 def validate_result_identity(attempt: dict[str, Any], receipt: dict[str, Any] | None,

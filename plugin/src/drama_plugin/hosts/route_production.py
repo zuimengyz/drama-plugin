@@ -344,22 +344,50 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
         raise ValueError('WORK_CHANGED_RELOAD_BEFORE_RESERVING')
     compact(state)
     content = {**current.content, 'productionStage': state}
-    try:
-        from drama_plugin.work_patch import validate_patch
-        changes = {"productionStage": state}
-        validate_patch(current, current.version, changes)
-        await memory.patch_work(work.id, current.version, changes)
-    except Exception as exc:
-        if getattr(exc, "error_code", None) == "CONFLICT":
-            raise
-        fresh = await memory.get_work(work_id)
-        if fresh.content.get('productionStage') != state:
-            raise
-    fresh = await memory.get_work(work_id)
-    if fresh.content.get('productionStage') != state:
-        raise ValueError('FORMAL_RESERVATION_NOT_VERIFIED_DO_NOT_SUBMIT')
+    persistence = await persist_stage(memory, current, state)
     return {'result': result, 'state': state, 'formalOwner': work_id,
-            'stateFingerprint': sha256_canonical(state), 'localRole': 'REBUILDABLE_AUDIT_VIEW'}
+            'stateFingerprint': sha256_canonical(state), 'localRole': 'REBUILDABLE_AUDIT_VIEW',
+            **persistence}
+
+
+async def persist_stage(memory: MemoryProvider, current: Work, state: dict[str, Any]) -> dict[str, Any]:
+    """A single CAS write; ACK loss is resolved only by exact whole-Work readback.
+
+    Brief bounded read-only recovery also covers a response timing out just before
+    commit. Never repeat the write, accept a later revision, or infer success from
+    one matching attempt inside otherwise changed content.
+    """
+    import asyncio
+    from drama_plugin.work_patch import validate_patch
+    changes = {'productionStage': state}
+    validate_patch(current, current.version, changes)
+    expected = {**current.content, **changes}
+    error: Exception | None = None
+    try:
+        await memory.patch_work(current.id, current.version, changes)
+    except Exception as exc:
+        if getattr(exc, 'error_code', None) == 'CONFLICT':
+            raise
+        error = exc
+    for index in range(3):
+        try:
+            fresh = await memory.get_work(current.id)
+        except Exception:
+            if index == 2:
+                raise
+            await asyncio.sleep(1)
+            continue
+        if (fresh.id == current.id and fresh.version == current.version + 1
+                and fresh.content == expected):
+            return {'persistenceStatus': 'ACK_LOST_BUT_COMMIT_CONFIRMED' if error else 'COMMIT_CONFIRMED',
+                    'workVersion': fresh.version}
+        if fresh.version != current.version or fresh.content != current.content:
+            raise ValueError('DURABLE_MUTATION_READBACK_MISMATCH') from error
+        if index < 2:
+            await asyncio.sleep(1)
+    if error:
+        raise error
+    raise ValueError('FORMAL_RESERVATION_NOT_VERIFIED_DO_NOT_SUBMIT')
 
 
 def still_rule_catalog() -> dict[str, Any]:

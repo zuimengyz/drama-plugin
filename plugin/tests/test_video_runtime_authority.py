@@ -129,6 +129,8 @@ def test_unified_compile_cli_dispatches_official_without_comfy_graph(tmp_path,mo
         production_route=route.model_dump(mode='json'),stage_id='offline',rationale='offline',fallback='stop')
     source=tmp_path/'input.json';source.write_text(json.dumps(data));output=tmp_path/'compiled'
     configured(monkeypatch,'official')
+    # A subprocess cannot inherit the retained-policy monkeypatch; select its actual model.
+    monkeypatch.setenv('DRAMA_PLUGIN_ROUTE_VIDEO_MODEL', c.model)
     script=Path(__file__).parents[1]/'skills/shot-production/scripts/compile_video.py'
     result=subprocess.run([sys.executable,str(script),'--input',str(source),'--output',str(output)],
                           env=os.environ.copy(),capture_output=True,text=True)

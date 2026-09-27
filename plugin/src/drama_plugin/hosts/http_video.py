@@ -201,16 +201,85 @@ class VideoProviderHost:
             claimed = next(x for x in result['state']['attempts'] if x['attempt_id'] == attempt_id)
             if claimed['status'] != 'UNKNOWN' or claimed['request'] != a['request']:
                 raise ValueError('FORMAL_SUBMISSION_CLAIM_NOT_VERIFIED')
-            task = await p.create_task(r, client_request_id=attempt_id)
-            # Recoverable provider receipt, not a second canonical stage. A
-            # failed Work write must not lose the only acknowledged task ID.
-            self.cache.mkdir(parents=True, exist_ok=True)
-            journal = self.cache / (attempt_id + '.receipt.json')
-            journal.write_text(json.dumps(task.durable(), ensure_ascii=False))
-            await self._record(work_id, a, task)
-            return task
+            expected = work.model_copy(update={'version':result['workVersion'],
+                'content':{**work.content, 'productionStage':result['state']}})
+            return await self._dispatch_claimed(work_id, a, p, r, expected)
         finally:
             await p.aclose()
+
+    async def resume_claimed_submission(self, before_claim: Any, attempt_id: str, *,
+                                        claim_error: dict[str, Any],
+                                        approved_interpretation_refs: tuple[SourcePin, ...] = ()) -> ProviderTask:
+        """Trusted orchestration recovery of a proved pre-POST interruption.
+
+        A missing task alone is never proof. The caller supplies the retained
+        pre-claim Work and Host exception from before create_task was reached.
+        This entry is not a candidate field or a public MCP submission shortcut.
+        """
+        from copy import deepcopy
+        from drama_plugin.visual.history import attempt_frame, compact
+        trace = claim_error.get('trace', '')
+        if (not str(claim_error.get('error', '')).startswith('Formal tool work.patch_work failed')
+                or "await operate(self.memory, work_id, 'begin-submission'" not in trace
+                or 'await p.create_task(' in trace):
+            raise ValueError('PROVIDER_NOT_DISPATCHED_EVIDENCE_REQUIRED')
+        state = deepcopy(before_claim.content['productionStage'])
+        a = next(x for x in state['attempts'] if x['attempt_id'] == attempt_id)
+        if a['status'] != 'RESERVED' or a.get('job_id') or a.get('submission_started'):
+            raise ValueError('ORIGINAL_UNUSED_RESERVATION_REQUIRED')
+        frame = attempt_frame(state, a)
+        verify_execution(frame, work=before_claim, approved_interpretation_refs=approved_interpretation_refs)
+        from drama_plugin.config.video_route import require_runtime_route
+        from drama_plugin.production_language import require_native_video_submission
+        require_runtime_route(a['request']['provider'], a['request']['model'])
+        require_native_video_submission(before_claim, frame)
+        a.update(status='UNKNOWN', submission_started=True,
+                 provider_evidence='MCP dispatch claimed; recover original task before another submit')
+        compact(state)
+        expected = before_claim.model_copy(update={'version':before_claim.version+1,
+            'content':{**before_claim.content, 'productionStage':state}})
+        binding = await self.bind(before_claim.id, frame, approved_interpretation_refs=approved_interpretation_refs)
+        if any(binding[k] != a['execution_binding'][k] for k in
+               ('execution','endpoint_fingerprint','provider_schema_fingerprint','operation')):
+            raise ValueError('HTTP_BINDING_CHANGED')
+        p = await self._provider(before_claim.id, a['request'])
+        try:
+            r = VideoRequest.model_validate(a['request']['videoRequest'])
+            await p.materialize(r)  # exact formal Media ownership/hash/review
+            return await self._dispatch_claimed(before_claim.id, a, p, r, expected)
+        finally:
+            await p.aclose()
+
+    async def _dispatch_claimed(self, work_id: str, a: dict[str, Any], p: HttpVideoProvider,
+                                r: VideoRequest, expected: Any) -> ProviderTask:
+        """Final exact readback, then one dispatch; never create another claim."""
+        fresh = await self.memory.get_work(work_id)
+        if fresh.id != expected.id or fresh.version != expected.version or fresh.content != expected.content:
+            raise ValueError('DURABLE_CLAIM_CHANGED_DO_NOT_DISPATCH')
+        current = next(x for x in fresh.content['productionStage']['attempts'] if x['attempt_id'] == a['attempt_id'])
+        if (current['status'] != 'UNKNOWN' or not current.get('submission_started')
+                or any(current.get(k) for k in ('job_id','video_task','output_hash','delivery'))
+                or current['request'] != a['request']
+                or current['request_fingerprint'] != sha256_canonical(a['request'])):
+            raise ValueError('RECOVER_ORIGINAL_SUBMISSION')
+        self.cache.mkdir(parents=True, exist_ok=True)
+        journal = self.cache / (a['attempt_id'] + '.receipt.json')
+        marker = self.cache / (a['attempt_id'] + '.dispatch.json')
+        if journal.exists():
+            raise ValueError('RECOVER_PROVIDER_RECEIPT_DO_NOT_REPOST')
+        # A crash after this marker is genuinely ambiguous: poll/recover, never
+        # treat a null job ID as permission to POST again.
+        with marker.open('x') as stream:
+            json.dump({'attempt_id':a['attempt_id'], 'work_id':work_id,
+                'claim_version':fresh.version, 'request_fingerprint':a['request_fingerprint'],
+                'phase':'PROVIDER_DISPATCH_ENTERED'}, stream)
+            stream.flush()
+            import os
+            os.fsync(stream.fileno())
+        task = await p.create_task(r, client_request_id=a['attempt_id'])
+        journal.write_text(json.dumps(task.durable(), ensure_ascii=False))
+        await self._record(work_id, a, task)
+        return task
 
     async def _record(self, work_id: str, a: dict[str, Any], task: ProviderTask) -> None:
         await operate(self.memory, work_id, 'video-task', {'attempt_id':a['attempt_id'], 'task':task.durable(),

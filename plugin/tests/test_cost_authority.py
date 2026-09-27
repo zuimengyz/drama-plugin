@@ -39,7 +39,7 @@ def test_resolved_internal_authorities_and_provider_quote_integrity(tmp_path):
     assert r.candidate.cost.total() == sum(v for v in serialized['components'].values() if v is not None)
 
 
-@pytest.mark.parametrize('fault', ['external', 'unverified', 'expired', 'missing', 'missing_component'])
+@pytest.mark.parametrize('fault', ['external', 'unverified', 'invalid_interval', 'missing', 'missing_component'])
 def test_unresolved_cost_still_blocks(tmp_path, fault):
     raw = route(tmp_path).model_dump(mode='json')
     cost = classified(raw['candidate']['cost'])
@@ -48,7 +48,7 @@ def test_unresolved_cost_still_blocks(tmp_path, fault):
         cost['components']['storage'] = 0  # Cannot launder unknown into zero.
     elif fault == 'unverified':
         cost['resolutions']['storage']['evidence']['verified'] = False
-    elif fault == 'expired':
+    elif fault == 'invalid_interval':
         cost['resolutions']['storage']['evidence']['expires_at'] = '2000-01-01T00:00:00Z'
     elif fault == 'missing':
         del cost['resolutions']['storage']

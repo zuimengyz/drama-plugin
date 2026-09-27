@@ -273,7 +273,13 @@ def _stage_gate(state: dict[str, Any], frame: dict[str, Any], request: dict[str,
         from drama_plugin.visual.video_selection import Cost
         cost = Cost.model_validate(frame['candidate']['cost'])
         resolved = cost.total()
-        if cost.resolutions and (resolved is None or cost.uncertainty or not cost.evidence.current(datetime.now().astimezone())):
+        fixed = bool(cost.resolutions) and all(r.authority in {'INTERNAL_FIXED', 'INTERNAL_UNMETERED'}
+                                             for r in cost.resolutions.values())
+        valid = cost.evidence.content_verified() if fixed else cost.evidence.current(datetime.now().astimezone())
+        # External quotes remain time-bound, independently of internal policy attestations.
+        valid = valid and all(r.authority != 'PROVIDER_QUOTE' or r.evidence.current(datetime.now().astimezone())
+                              for r in cost.resolutions.values())
+        if cost.resolutions and (resolved is None or cost.uncertainty or not valid):
             raise ValueError('COMPLETE_ROUTE_COST_UNRESOLVED')
         if cost.resolutions and (cost.unit != quote['unit'] or amount < resolved):
             raise ValueError('RESERVATION_MUST_COVER_RESOLVED_COST')
@@ -428,6 +434,50 @@ def _confirmed_no_media(attempt: dict[str, Any], receipt: dict[str, Any] | None 
         and not attempt.get('video_task', {}).get('output_media_id'))
 
 
+def _not_created_replan_lineage(state: dict[str, Any], old: dict[str, Any],
+                               frame: dict[str, Any]) -> dict[str, Any] | None:
+    """Recognize a journaled new request, never reinterpret a submission outcome."""
+    if old.get('status') != 'NOT_CREATED' or old.get('job_id') or old.get('superseded_by'):
+        return None
+    from drama_plugin.contracts.video import ProviderTask, VideoRequest, request_fingerprint
+    from drama_plugin.visual.history import resolve
+    try:
+        task = ProviderTask.model_validate(old.get('video_task'))
+        prior = attempt_frame(state, old)
+    except (ValueError, KeyError):
+        return None
+    if (task.status != 'NOT_CREATED' or task.provider_task_id or task.output_media_id
+            or task.client_request_id != old['attempt_id'] or task.output_url
+            or old.get('output_hash') or old.get('copies') or old.get('delivery')
+            or old.get('output_media_id') or old.get('outputMediaId')
+            or old.get('media_id') or old.get('mediaId')):
+        return None
+    if (prior['fingerprint'] != sha256_canonical({k:v for k,v in prior.items() if k != 'fingerprint'})
+            or old.get('request_fingerprint') != sha256_canonical(prior['request'])
+            or task.request_fingerprint != request_fingerprint(VideoRequest.model_validate(prior['request']['videoRequest']))
+            or old['request_fingerprint'] == sha256_canonical(frame['request'])):
+        return None
+    if frame.get('schema') != 'video-decision-v1' or 'production_route' not in state:
+        return None
+    for kind in ('remediations', 'route_revisions'):
+        for index, entry in enumerate(state.get(kind, [])):
+            ref = entry.get('previous_frame_ref')
+            if (not ref or not entry.get('reason') or not isinstance(entry.get('after_attempt'), int)
+                    or not state['attempts'].index(old) < entry['after_attempt'] <= len(state['attempts'])):
+                continue
+            if resolve(state, ref) != prior:
+                continue
+            if kind == 'remediations':
+                current = entry.get('target') == old['shot_id'] and entry.get('frame_fingerprint') == frame['fingerprint']
+            else:
+                current = (entry.get('next_route_id') == state['production_route']['route_id']
+                    and entry.get('current_reference') == frame['request']['videoRequest'].get('firstFrame'))
+            if current:
+                return {'journal': kind, 'index': index, 'fingerprint': sha256_canonical(entry),
+                        'previous_frame_ref': ref, 'previous_request_fingerprint': old['request_fingerprint']}
+    return None
+
+
 def reserve(state: dict[str, Any], shot_id: str, *, quote: dict[str, Any] | None = None,
             balance: dict[str, Any] | None = None,
             execution_binding: dict[str, Any] | None = None, work: Any = None,
@@ -458,7 +508,8 @@ def reserve(state: dict[str, Any], shot_id: str, *, quote: dict[str, Any] | None
                     and _confirmed_no_media(prior[-1]))
     if no_media and prior[-1].get('technical_retry_count', 0) >= (1 if continuation else 2):
         raise ValueError('TECHNICAL_RETRIES_EXHAUSTED')
-    if prior and prior[-1].get('review_status') != 'FAIL' and not no_media:
+    replan_lineage = _not_created_replan_lineage(state, prior[-1], frame) if prior else None
+    if prior and prior[-1].get('review_status') != 'FAIL' and not no_media and not replan_lineage:
         raise ValueError('TECHNICAL_FAILURE_REQUIRES_OUTCOME_RECOVERY_NOT_VISUAL_REVISION')
     passed = {a['shot_id'] for a in state['attempts'] if a.get('review_status', '').startswith('PASS')}
     if shot_id not in state['pilots'] and not set(state['pilots']) <= passed:
@@ -504,6 +555,11 @@ def reserve(state: dict[str, Any], shot_id: str, *, quote: dict[str, Any] | None
         attempt['execution_binding'] = deepcopy(execution_binding)
     if continuation:
         attempt['continuation_authorization'] = deepcopy(continuation)
+    if replan_lineage:
+        attempt.update(call_reason='REPLAN_AFTER_NOT_CREATED', supersedes_attempt_id=prior[-1]['attempt_id'],
+                       replan_lineage=replan_lineage)
+        # Preserve NOT_CREATED, receipts and all financial fields; this is a separate lifecycle marker.
+        prior[-1].update(replan_status='SUPERSEDED_BY_REPLAN', superseded_by=attempt_id)
     state['attempts'].append(attempt)
     return attempt
 

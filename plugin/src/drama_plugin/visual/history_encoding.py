@@ -109,3 +109,47 @@ def candidates(content: dict[str, Any]) -> Iterator[tuple[dict[str, Any], str]]:
                 ref = revision.get('previous_route_ref')
                 if ref in routes and ref not in protected_routes:
                     yield routes, ref
+
+
+def materialization_candidates(content: dict[str, Any]) -> list[tuple[dict[str, Any], str]]:
+    """Newest superseded archives first; live/recovery snapshots stay materialized.
+
+    Existing archive hashes and journals supply identity/order. Only these two
+    content-addressed archive maps participate; attempts and arbitrary evidence
+    fields never do. Encoding retains the full bytes behind each existing ref.
+    """
+    result = []
+    eligible = {(id(archive), key) for archive, key in candidates(content)}
+    ordered = sorted(stages(content), key=lambda s: max(
+        (str(a.get('quote', {}).get('evidence', {}).get('checked_at', ''))
+         for a in s['attempts']), default=''), reverse=True)
+    for stage in ordered:
+        protected_frames = {sha256_canonical(f) for f in stage['frames'].values()}
+        protected_frames.update(a.get('frame_ref') for a in stage['attempts'])
+        # A departing pre-dispatch repair frame is no longer an attempt's live
+        # frame. Its existing revision journal proves that it is superseded.
+        for event in stage.get('route_revisions', []) + stage.get('remediations', []):
+            key = event.get('previous_frame_ref')
+            archive = stage.get('history_frames', {})
+            if key in archive and key not in protected_frames:
+                eligible.add((id(archive), key))
+        # Map insertion order is the retained creation order; journal references
+        # explicitly identify later replacements, without inventing timestamps.
+        order = [('frame', k) for k in stage.get('history_frames', {})]
+        order += [('route', k) for k in stage.get('history_routes', {})]
+        events = stage.get('remediations', []) + stage.get('route_revisions', [])
+        for event in sorted(events, key=lambda e: e.get('after_attempt', -1)):
+            for kind in ('frame', 'route'):
+                key = event.get('previous_' + kind + '_ref')
+                if key:
+                    pair = (kind, key)
+                    if pair in order:
+                        order.remove(pair)
+                    order.append(pair)
+        for kind, key in reversed(order):
+            archive = stage.get('history_' + kind + 's', {})
+            if key in archive and (id(archive), key) in eligible:
+                if sha256_canonical(decode(archive[key])) != key:
+                    raise ValueError('PRODUCTION_HISTORY_ARCHIVE_CHANGED')
+                result.append((archive, key))
+    return result

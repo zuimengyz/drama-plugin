@@ -18,9 +18,11 @@ if TYPE_CHECKING:
 class ShotAssembler:
     role = "ASSEMBLER"
 
-    def __init__(self, sources: AssemblySources, professional_design: ProfessionalDesignResolver) -> None:
+    def __init__(self, sources: AssemblySources, professional_design: ProfessionalDesignResolver,
+                 reference_sources=None) -> None:
         self.sources = sources
         self.professional_design = professional_design
+        self.reference_sources = reference_sources
 
     async def assemble(self, scope: RuntimeScope, *, mode: RunMode,
                        policy_ref: ArtifactReference) -> AssemblyResult:
@@ -60,6 +62,9 @@ class ShotAssembler:
         professional = await self.professional_design.resolve(ProfessionalDesignRequest(scope=package_scope))
         selected.extend(professional.sources)
         issues.extend(item for item in professional.issues if item not in issues)
+        if self.reference_sources is not None:
+            for source in self.reference_sources.select(scope):
+                add(D.REFERENCE, source)
         spoken = {binding.get("spokenContentId") for binding in content.get("spokenContentBindings", ())}
         requirements = set(content.get("referenceRequirements", ()))
         for index, line in enumerate(sc.get("spokenContent", ())):
@@ -101,14 +106,14 @@ class ShotAssembler:
         issues: list[AssemblyIssue] = []
         professional_refs = tuple(s for s in package.sources if s.reference.owner in {
             SourceOwner.DIRECTION, SourceOwner.PROFESSIONAL,
-        })
+        } and not s.reference.artifact_ref.startswith("execution-reference:"))
         if professional_refs:
             from drama_plugin.professional_design.contracts import ProfessionalReferenceCheck
             checked = await self.professional_design.validate(ProfessionalReferenceCheck(
                 scope=package.scope, sources=professional_refs))
             issues.extend(checked.issues)
         for ref in refs:
-            if ref.owner in {SourceOwner.DIRECTION, SourceOwner.PROFESSIONAL}:
+            if ref.owner in {SourceOwner.DIRECTION, SourceOwner.PROFESSIONAL} and not ref.artifact_ref.startswith("execution-reference:"):
                 continue
             try:
                 await self.sources.resolve(ref)

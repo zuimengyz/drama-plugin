@@ -7,6 +7,9 @@ from typing import Any, TYPE_CHECKING
 if TYPE_CHECKING:
     from drama_plugin.production.store import ProductionPackageStore
     from drama_plugin.governance.store import GateFindingStore
+    from drama_plugin.generation.store import GenerationArtifactStore
+    from drama_plugin.production.references import ReferenceExecutionStore
+    from drama_plugin.generation.contracts import GenerationTask
     from drama_plugin.runtime.contracts import ArtifactReference, RunMode, RuntimeRun
 
 import yaml  # type: ignore[import-untyped]
@@ -48,7 +51,7 @@ class DramaPlugin:
     inside the Plugin and do not depend on a host choosing each next tool.
     """
 
-    def __init__(self, root: Path, config: DramaPluginConfig, manifest: PluginManifest, providers: ProviderBundle, skills: SkillRegistry, tools: ToolRegistry, http_clients: list[HttpProviderClient] | None = None, *, production_artifact_roots: tuple[Path, ...] = (), production_package_store: ProductionPackageStore | None = None, gate_finding_store: GateFindingStore | None = None) -> None:
+    def __init__(self, root: Path, config: DramaPluginConfig, manifest: PluginManifest, providers: ProviderBundle, skills: SkillRegistry, tools: ToolRegistry, http_clients: list[HttpProviderClient] | None = None, *, production_artifact_roots: tuple[Path, ...] = (), production_package_store: ProductionPackageStore | None = None, gate_finding_store: GateFindingStore | None = None, generation_artifact_store: GenerationArtifactStore | None = None, reference_execution_store: ReferenceExecutionStore | None = None) -> None:
         self.root = root
         self.config = config
         from drama_plugin.characters import CharacterRepository
@@ -66,25 +69,38 @@ class DramaPlugin:
         self.production_packages = production_package_store if production_package_store is not None else ProductionPackageStore()
         from drama_plugin.professional_design import ProfessionalDesignResolver
         from drama_plugin.professional_design.legacy import LegacyProfessionalDesignSources
-        assembly_sources = LegacyAssemblySources(tools, production_artifact_roots)
+        from drama_plugin.production.references import ReferenceExecutionStore, ReferenceBoundSources, BoundMediaReader
+        self.execution_references = reference_execution_store if reference_execution_store is not None else ReferenceExecutionStore()
+        assembly_sources = ReferenceBoundSources(LegacyAssemblySources(tools, production_artifact_roots), self.execution_references)
         self.professional_design = ProfessionalDesignResolver(LegacyProfessionalDesignSources(assembly_sources))
-        self.shot_assembler = ShotAssembler(assembly_sources, self.professional_design)
+        self.shot_assembler = ShotAssembler(assembly_sources, self.professional_design, self.execution_references)
         package_capability = ProductionPackageCapability(self.shot_assembler, self.production_packages, runs)
         workflow = assembly_workflow()
         from drama_plugin.governance import GateFindingStore, GateGovernor
         from drama_plugin.governance.capability import GateGovernanceCapability
-        from drama_plugin.governance.policy import GovernedPolicy, governed_workflow
+        from drama_plugin.governance.policy import governed_workflow
         self.gate_findings = gate_finding_store if gate_finding_store is not None else GateFindingStore()
         self.gate_governor = GateGovernor(self.gate_findings)
         self.gate_governance = GateGovernanceCapability(self.gate_governor, self.gate_findings,
             self.production_packages, self.shot_assembler, runs)
         governance_workflow = governed_workflow()
+        from drama_plugin.generation.store import GenerationArtifactStore
+        from drama_plugin.generation.sources import PackageReader, LegacyExecutionReferences
+        from drama_plugin.generation.compiler import PromptCompiler
+        from drama_plugin.generation.capability import GenerationCapability
+        from drama_plugin.generation.policy import GenerationPolicy, generation_workflow
+        self.generation_artifacts = generation_artifact_store if generation_artifact_store is not None else GenerationArtifactStore()
+        self.prompt_compiler = PromptCompiler(self.production_packages, self.generation_artifacts,
+            PackageReader(assembly_sources, LegacyExecutionReferences(production_artifact_roots)),
+            media_reader=BoundMediaReader(tools))
+        self.generation_capability = GenerationCapability(self.prompt_compiler, self.generation_artifacts, self.gate_governance)
+        generation_flow = generation_workflow()
         self.runtime = RuntimeEngine(TargetCapabilityRouter({**package_capability.registrations(),
-            **self.gate_governance.registrations()},
+            **self.gate_governance.registrations(), **self.generation_capability.registrations()},
             LegacyCapabilityBridge.from_tools(tools)), store=runs,
             workflows={**foundation_workflows(), workflow.workflow_id: workflow,
-                governance_workflow.workflow_id: governance_workflow},
-            policies={mode: GovernedPolicy(mode, self.gate_findings) for mode in RunMode})
+                governance_workflow.workflow_id: governance_workflow, generation_flow.workflow_id: generation_flow},
+            policies={mode: GenerationPolicy(mode, self.gate_findings) for mode in RunMode})
         self.context = ContextBuilder(providers.context)
         self._http_clients = http_clients or []
         self._fish_client = (
@@ -94,7 +110,7 @@ class DramaPlugin:
         )
 
     @classmethod
-    def load(cls, root: Path | str | None = None, config_path: Path | str | None = None, *, mock_data: MockDramaData | None = None, production_artifact_roots: tuple[Path, ...] = (), production_package_store: ProductionPackageStore | None = None, gate_finding_store: GateFindingStore | None = None) -> "DramaPlugin":
+    def load(cls, root: Path | str | None = None, config_path: Path | str | None = None, *, mock_data: MockDramaData | None = None, production_artifact_roots: tuple[Path, ...] = (), production_package_store: ProductionPackageStore | None = None, gate_finding_store: GateFindingStore | None = None, generation_artifact_store: GenerationArtifactStore | None = None, reference_execution_store: ReferenceExecutionStore | None = None) -> "DramaPlugin":
         plugin_root = Path(root) if root is not None else Path(__file__).resolve().parents[2]
         manifest = cls._load_manifest(plugin_root / "plugin.yaml")
         config = load_config(config_path)
@@ -107,7 +123,8 @@ class DramaPlugin:
         SkillToolReferenceValidator.validate(skills, tools)
         return cls(plugin_root, config, manifest, providers, skills, tools, clients,
                    production_artifact_roots=production_artifact_roots, production_package_store=production_package_store,
-                   gate_finding_store=gate_finding_store)
+                   gate_finding_store=gate_finding_store, generation_artifact_store=generation_artifact_store,
+                   reference_execution_store=reference_execution_store)
 
     @staticmethod
     def _load_manifest(path: Path) -> PluginManifest:
@@ -168,6 +185,23 @@ class DramaPlugin:
         run = self.runtime.create_run(work_id=work_id, scene_id=scene_id, shot_id=shot_id,
             mode=mode, workflow_id=WORKFLOW, run_id=run_id)
         self.gate_findings.bind(run.run_id, inputs)
+        return run
+
+    def create_generation_run(self, *, work_id: str, scene_id: str, shot_id: str,
+                              mode: RunMode, run_id: str | None = None,
+                              task: GenerationTask | None = None,
+                              package_ref: ArtifactReference | None = None,
+                              cached_preparation_ref: ArtifactReference | None = None) -> RuntimeRun:
+        """T5 package-only preparation; the Plugin owns every step and stops before transport."""
+        from drama_plugin.generation.contracts import GenerationInput, GenerationTask
+        from drama_plugin.generation.policy import WORKFLOW
+        from drama_plugin.governance.contracts import GovernanceInput
+        run = self.runtime.create_run(work_id=work_id, scene_id=scene_id, shot_id=shot_id,
+            mode=mode, workflow_id=WORKFLOW, run_id=run_id)
+        self.gate_findings.bind(run.run_id, GovernanceInput(package_ref=package_ref))
+        self.generation_artifacts.bind(run.run_id, GenerationInput(
+            task=task if task is not None else GenerationTask(input_mode=self.execution_references.mode(run.scope)),
+            cached_preparation_ref=cached_preparation_ref))
         return run
 
     def capabilities(self) -> dict[str, Any]:

@@ -63,6 +63,12 @@ class LegacyAssemblySources:
             raise SourceReadError(AssemblyIssueCode.MISSING_REQUIRED_SOURCE, owner, identity) from error
         if body.get("id") != identity:
             raise SourceReadError(AssemblyIssueCode.SCOPE_MISMATCH, owner, identity)
+        if owner == SourceOwner.WORK:
+            # These four known Legacy execution stores are not creative Work facts.
+            # Normalize both identity and resolve reads; never mutate the owner.
+            # Actual creative fields/version still participate in the source hash.
+            for field in ("productionHistory", "promptHistory", "productionStage", "productionRoute"):
+                body.get("content", {}).pop(field, None)
         return body
 
     async def scope_sources(self, scope: RuntimeScope) -> tuple[OwnedSource, OwnedSource, OwnedSource]:

@@ -124,10 +124,14 @@ class Seedance2PromptGenerator:
             slots.append(dict(tag=tag, media_id=ref['media_id'], version=ref['version'], content_hash=ref['content_hash'], slot=ref['slot']))
             binding = ref.get('prompt_binding') or {}
             actor = binding.get('subject_id')
+            joint = tuple(binding.get('subject_ids', ()))
+            if (joint and actor is not None or len(joint) != len(set(joint)) or
+                    any(identity not in subjects for identity in joint)):
+                raise ValueError('UNRESOLVED:reference-strategy:UNKNOWN_SUBJECT')
             if actor is not None and actor not in subjects: raise ValueError('UNRESOLVED:reference-strategy:UNKNOWN_SUBJECT')
-            if ir.subjects and set(ref['semantics']) & {'identity', 'costume'} and actor is None:
+            if ir.subjects and set(ref['semantics']) & {'identity', 'costume'} and actor is None and not joint:
                 raise ValueError('UNRESOLVED:reference-strategy:SUBJECT_BINDING_REQUIRED')
-            prefix = subjects.get(actor, '') if actor is not None else ''
+            prefix = '与'.join(subjects[s] for s in joint) if joint else subjects.get(actor, '') if actor is not None else ''
             duties = '、'.join(ROLE[x] for x in ref['semantics'])
             preamble.append(f'{prefix}仅参考 {tag} 的{duties}。')
             if ref['slot'] in {'first_frame', 'last_frame'}:

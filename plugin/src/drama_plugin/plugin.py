@@ -37,7 +37,11 @@ class ProviderBundle:
 
 
 class DramaPlugin:
-    """Composition root only; the host remains the decision-maker and agent loop owner."""
+    """Composition root with an opt-in Plugin-owned T1 runtime foundation.
+
+    Legacy production entry points stay intact; new runtime workflows advance
+    inside the Plugin and do not depend on a host choosing each next tool.
+    """
 
     def __init__(self, root: Path, config: DramaPluginConfig, manifest: PluginManifest, providers: ProviderBundle, skills: SkillRegistry, tools: ToolRegistry, http_clients: list[HttpProviderClient] | None = None) -> None:
         self.root = root
@@ -48,6 +52,8 @@ class DramaPlugin:
         self.providers = providers
         self.skills = skills
         self.tools = tools
+        from drama_plugin.runtime import LegacyCapabilityBridge, RuntimeEngine
+        self.runtime = RuntimeEngine(LegacyCapabilityBridge.from_tools(tools))
         self.context = ContextBuilder(providers.context)
         self._http_clients = http_clients or []
         self._fish_client = (

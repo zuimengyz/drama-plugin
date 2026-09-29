@@ -1,0 +1,17 @@
+# T0：当前架构维护约束
+
+`master` 是 Current Architecture 的正式代码基线。迁移目标以工作区
+`未来架构/` 中的已批准设计为准；旧实现不能反向改写目标原则。
+
+旧 Runtime 允许严重 bug 修复、兼容当前正式 Work、查询与恢复历史生产。
+禁止新增顶级 Host、顶级 Gate、第二套生产主循环，或给旧 Host 增加长期编排职责。
+不得因迁移重写稳定 Provider / Storage；已有在途任务继续由原执行路径恢复。
+
+新的流程推进职责集中到 `plugin/src/drama_plugin/runtime/`。
+迁移桥必须标为 `MIGRATION_ONLY`，通过显式注册调用旧能力，不复制旧能力实现。
+Runtime 只保存身份、运行状态和必要引用，不保存 Work、Script、Scene、Bible、
+Director package 或 Prompt IR 正文，也不产生创作意义。
+
+T0–T1 只建立主循环 Foundation、双模式与策略接口、离线验证及恢复契约。
+不得顺手实现 ProductionPackage / ShotAssembler，不迁移全套 Gate policy，
+不删旧 Host / Gate / Skill / Provider，不新增数据库表，不调用付费生成。

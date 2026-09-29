@@ -64,7 +64,11 @@ class DramaPlugin:
             ProductionPackageStore, ShotAssembler, assembly_workflow)
         runs = InMemoryRunStore()
         self.production_packages = production_package_store if production_package_store is not None else ProductionPackageStore()
-        self.shot_assembler = ShotAssembler(LegacyAssemblySources(tools, production_artifact_roots))
+        from drama_plugin.professional_design import ProfessionalDesignResolver
+        from drama_plugin.professional_design.legacy import LegacyProfessionalDesignSources
+        assembly_sources = LegacyAssemblySources(tools, production_artifact_roots)
+        self.professional_design = ProfessionalDesignResolver(LegacyProfessionalDesignSources(assembly_sources))
+        self.shot_assembler = ShotAssembler(assembly_sources, self.professional_design)
         package_capability = ProductionPackageCapability(self.shot_assembler, self.production_packages, runs)
         workflow = assembly_workflow()
         from drama_plugin.governance import GateFindingStore, GateGovernor

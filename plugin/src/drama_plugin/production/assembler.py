@@ -1,9 +1,8 @@
 """One ASSEMBLER: select owner-authored references, never fill creative meaning."""
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING
 
-from drama_plugin.contracts.source_pin import SourcePin
 from drama_plugin.production.contracts import (
     AssemblyBoundary, AssemblyIssue, AssemblyIssueCode, AssemblyResult, AssemblyValidation,
     DomainReference, GenerationIntent, PackageContent, PackageScope, ProductionPackage,
@@ -12,30 +11,16 @@ from drama_plugin.production.contracts import (
 from drama_plugin.production.sources import AssemblySources, OwnedSource, SourceReadError
 from drama_plugin.runtime.contracts import ArtifactReference, RunMode, RuntimeScope
 
-# Migration read selection, not the Professional registry/DAG or a list of mandatory departments.
-DEPARTMENT_DOMAINS = {
-    "director": D.DIRECTION, "shot-design": D.DIRECTION, "editorial-design": D.EDITORIAL,
-    "cinematography": D.CAMERA, "lighting-design": D.LIGHTING, "color-design": D.COLOR,
-    "color-grading": D.COLOR, "dramatic-performance-direction": D.PERFORMANCE,
-    "blocking": D.PERFORMANCE, "action-choreography": D.ACTION,
-    "character-art": D.SUBJECTS, "costume-design": D.SUBJECTS, "look-continuity": D.SUBJECTS,
-    "environment-design": D.WORLD, "environment-art": D.WORLD, "scene-layout": D.WORLD,
-    "set-decoration": D.WORLD, "prop-design": D.WORLD, "animal-design": D.SUBJECTS,
-    "battle-crowd-choreography": D.ACTION, "vfx-planning": D.WORLD,
-    "sound-design": D.SOUND, "music-direction": D.SOUND, "dialogue-design": D.SOUND,
-    "voice-direction": D.SOUND, "reference-strategy": D.REFERENCE, "clip-decomposition": D.EDITORIAL,
-}
-
-
-def _owner(domain: D) -> SourceOwner:
-    return SourceOwner.DIRECTION if domain in {D.DIRECTION, D.EDITORIAL} else SourceOwner.PROFESSIONAL
+if TYPE_CHECKING:
+    from drama_plugin.professional_design.resolver import ProfessionalDesignResolver
 
 
 class ShotAssembler:
     role = "ASSEMBLER"
 
-    def __init__(self, sources: AssemblySources) -> None:
+    def __init__(self, sources: AssemblySources, professional_design: ProfessionalDesignResolver) -> None:
         self.sources = sources
+        self.professional_design = professional_design
 
     async def assemble(self, scope: RuntimeScope, *, mode: RunMode,
                        policy_ref: ArtifactReference) -> AssemblyResult:
@@ -70,85 +55,13 @@ class ShotAssembler:
         duration = content.get("plannedDurationMs")
         if type(duration) is not int or not 0 < duration <= 3_600_000:
             issue(AssemblyIssueCode.MISSING_REQUIRED_SOURCE, D.DIRECTION, SourceOwner.SHOT, shot.artifact_ref)
-        pins = content.get("departmentRefs", {})
-        if not isinstance(pins, dict):
-            pins = {}
-        for required in ("director", "shot-design", "cinematography"):
-            if required not in pins:
-                domain = DEPARTMENT_DOMAINS[required]
-                issue(AssemblyIssueCode.MISSING_REQUIRED_SOURCE, domain, _owner(domain), required)
-        bodies: dict[str, OwnedSource] = {}
-        for department in sorted(set(pins) & DEPARTMENT_DOMAINS.keys()):
-            domain = DEPARTMENT_DOMAINS[department]
-            try:
-                source = await self.sources.professional(department, SourcePin.model_validate(pins[department]))
-            except SourceReadError as error:
-                issue(error.code, domain, _owner(domain), error.artifact_ref)
-                continue
-            except ValueError:
-                issue(AssemblyIssueCode.AUTHORITY_MISMATCH, domain, _owner(domain), department)
-                continue
-            bible = source.body
-            if bible["workRef"] != scope.work_id or (
-                bible.get("sceneRefs") and scope.scene_id not in bible["sceneRefs"]
-            ) or (bible.get("shotRefs") and scope.shot_id not in bible["shotRefs"]):
-                issue(AssemblyIssueCode.SCOPE_MISMATCH, domain, _owner(domain), source.artifact_ref)
-                continue
-            if bible["status"] == "NOT_REQUIRED":
-                if department in {"director", "shot-design", "cinematography"}:
-                    issue(AssemblyIssueCode.MISSING_REQUIRED_SOURCE, domain, _owner(domain), source.artifact_ref)
-                continue
-            bodies[department] = source
-        shot_record: dict[str, Any] | None = None
-        design = bodies.get("shot-design")
-        if design:
-            matches = [r for r in design.body["content"] if r["id"] in {
-                scope.shot_id, content.get("coverageCandidateId")
-            } or r["values"].get("shot_ref") == scope.shot_id]
-            if len(matches) == 1:
-                shot_record = matches[0]
-            else:
-                issue(AssemblyIssueCode.MISSING_REQUIRED_SOURCE, D.DIRECTION, SourceOwner.DIRECTION, design.artifact_ref)
-        subjects = set(shot_record["values"].get("subjects", ())) if shot_record else set()
+        from drama_plugin.professional_design.contracts import ProfessionalDesignRequest
+        package_scope = PackageScope(work=work.reference(), scene=scene.reference(), shot=shot.reference())
+        professional = await self.professional_design.resolve(ProfessionalDesignRequest(scope=package_scope))
+        selected.extend(professional.sources)
+        issues.extend(item for item in professional.issues if item not in issues)
         spoken = {binding.get("spokenContentId") for binding in content.get("spokenContentBindings", ())}
         requirements = set(content.get("referenceRequirements", ()))
-        for department, source in bodies.items():
-            domain = DEPARTMENT_DOMAINS[department]
-            count = 0
-            for index, record in enumerate(source.body["content"]):
-                values = record["values"]
-                scopes = record["scopeRefs"]
-                if not {scope.work_id, scope.scene_id, scope.shot_id} & set(scopes):
-                    continue
-                if values.get("shot_ref") and values["shot_ref"] not in {scope.shot_id, content.get("coverageCandidateId")}:
-                    continue
-                if values.get("beat_ref") and values["beat_ref"] != content.get("beatRef"):
-                    continue
-                if department == "cinematography" and record["id"] != content.get("cameraRecord"):
-                    continue
-                if department == "shot-design" and record is not shot_record:
-                    continue
-                if values.get("character_ref") and values["character_ref"] not in subjects:
-                    continue
-                if department == "dialogue-design" and record["id"] not in spoken:
-                    continue
-                if department in {"prop-design", "animal-design"} and not (
-                    {record["id"], values.get("prop_id"), values.get("animal_id")} & requirements
-                ):
-                    continue
-                # No action-to-beat relation exists in this legacy Bible. Preserve its explicitly
-                # referenced scene constraints, never pretend all its actions execute in this Shot.
-                if department == "action-choreography" and not values.get("beat_ref") and not values.get("shot_ref"):
-                    continue
-                add(domain, source, "content", str(index), "values",
-                    shared=scope.shot_id not in scopes and not values.get("beat_ref")
-                           and not values.get("shot_ref") and department != "cinematography")
-                count += 1
-            if department == "action-choreography" and source.body["content"]:
-                add(domain, source, "content", shared=True)
-                count += 1
-            if department in {"director", "shot-design", "cinematography", "dramatic-performance-direction", "blocking"} and not count:
-                issue(AssemblyIssueCode.MISSING_REQUIRED_SOURCE, domain, _owner(domain), source.artifact_ref)
         for index, line in enumerate(sc.get("spokenContent", ())):
             if line.get("id") in spoken:
                 add(D.SOUND, scene, "content", "spokenContent", str(index))
@@ -172,7 +85,7 @@ class ShotAssembler:
         unique = {tuple((s.domain, s.reference.owner, s.reference.artifact_ref, s.reference.path, s.use)): s
                   for s in selected}
         package = ProductionPackage.freeze(PackageContent(
-            scope=PackageScope(work=work.reference(), scene=scene.reference(), shot=shot.reference()),
+            scope=package_scope,
             sources=tuple(unique[key] for key in sorted(unique)), obligations=tuple(obligations),
             generation_intent=GenerationIntent(duration_ms=duration,
                 duration_ref=shot.reference("content", "plannedDurationMs")),
@@ -186,7 +99,17 @@ class ShotAssembler:
         domains = {(s.reference.owner, s.reference.artifact_ref, s.reference.path): s.domain
                    for s in package.sources}
         issues: list[AssemblyIssue] = []
+        professional_refs = tuple(s for s in package.sources if s.reference.owner in {
+            SourceOwner.DIRECTION, SourceOwner.PROFESSIONAL,
+        })
+        if professional_refs:
+            from drama_plugin.professional_design.contracts import ProfessionalReferenceCheck
+            checked = await self.professional_design.validate(ProfessionalReferenceCheck(
+                scope=package.scope, sources=professional_refs))
+            issues.extend(checked.issues)
         for ref in refs:
+            if ref.owner in {SourceOwner.DIRECTION, SourceOwner.PROFESSIONAL}:
+                continue
             try:
                 await self.sources.resolve(ref)
             except SourceReadError as error:

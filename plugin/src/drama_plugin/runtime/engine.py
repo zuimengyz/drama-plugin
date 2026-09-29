@@ -161,7 +161,8 @@ class RuntimeEngine:
                         last_result=CapabilityResult(status=ResultStatus.FAILED, code="RETRY_LIMIT_REACHED"))
                 executing = self._transition(run, RuntimeState.RUNNING, step_attempts=run.step_attempts + 1)
                 inputs = CapabilityInput(run_id=run.run_id, operation_id=f"{run.run_id}:{run.cursor}",
-                    scope=run.scope, input_refs=action.input_refs)
+                    scope=run.scope, input_refs=(run.last_result.artifact_refs
+                        if action.input_from_previous and run.last_result is not None else action.input_refs))
                 try:
                     result = CapabilityResult.model_validate(await self.executor.execute(action.capability_key, inputs))
                 except Exception:

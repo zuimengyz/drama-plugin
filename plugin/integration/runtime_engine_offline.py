@@ -84,7 +84,7 @@ async def run() -> dict[str, Any]:
                     "状态轨迹": initial_store.trace + restored_store.trace[1:],
                     "实际调用": calls, "最终运行状态": json.loads(plugin.runtime.serialize(initial.run_id)),
                     "持久化边界": restored_store.durability,
-                    "迁移桥": plugin.runtime.executor.lifecycle,
+                    "迁移桥": plugin.runtime.executor.legacy.lifecycle,
                     "Provider付费调用": 0, "媒体生成": 0, "正式数据写入": 0}
 
 

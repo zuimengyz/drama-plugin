@@ -4,7 +4,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Annotated, Self
 
-from pydantic import ConfigDict, Field, StringConstraints, model_validator
+from pydantic import ConfigDict, Field, SerializerFunctionWrapHandler, StringConstraints, model_serializer, model_validator
 
 from drama_plugin.contracts.base import ContractModel
 
@@ -70,9 +70,18 @@ class RuntimeAction(RuntimeContract):
     kind: ActionKind
     capability_key: Identifier | None = None
     input_refs: tuple[ArtifactReference, ...] = Field(default=(), max_length=32)
+    input_from_previous: bool = False
     decision: UserDecisionRequest | None = None
     external_ref: ArtifactReference | None = None
     reason: Identifier | None = None
+
+    @model_serializer(mode="wrap")
+    def preserve_t1_workflow_identity(self, handler: SerializerFunctionWrapHandler) -> dict[str, object]:
+        data: dict[str, object] = handler(self)
+        if not self.input_from_previous:
+            data.pop("inputFromPrevious", None)
+            data.pop("input_from_previous", None)
+        return data
 
     @model_validator(mode="after")
     def action_shape(self) -> Self:
@@ -81,6 +90,8 @@ class RuntimeAction(RuntimeContract):
             raise ValueError("Only capability/maintenance actions require a capability_key")
         if not calls and self.input_refs:
             raise ValueError("Only capability actions accept input references")
+        if self.input_from_previous and (not calls or self.input_refs):
+            raise ValueError("Previous-result input requires a capability action without static inputs")
         if (self.kind == ActionKind.REQUEST_USER_DECISION) != (self.decision is not None):
             raise ValueError("Only user-decision actions require a decision")
         if (self.kind == ActionKind.WAIT_EXTERNAL) != (self.external_ref is not None):

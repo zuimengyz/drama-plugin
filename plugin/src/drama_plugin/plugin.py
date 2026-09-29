@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from drama_plugin.production.store import ProductionPackageStore
 
 import yaml  # type: ignore[import-untyped]
 from pydantic import ValidationError
@@ -43,7 +46,7 @@ class DramaPlugin:
     inside the Plugin and do not depend on a host choosing each next tool.
     """
 
-    def __init__(self, root: Path, config: DramaPluginConfig, manifest: PluginManifest, providers: ProviderBundle, skills: SkillRegistry, tools: ToolRegistry, http_clients: list[HttpProviderClient] | None = None) -> None:
+    def __init__(self, root: Path, config: DramaPluginConfig, manifest: PluginManifest, providers: ProviderBundle, skills: SkillRegistry, tools: ToolRegistry, http_clients: list[HttpProviderClient] | None = None, *, production_artifact_roots: tuple[Path, ...] = (), production_package_store: ProductionPackageStore | None = None) -> None:
         self.root = root
         self.config = config
         from drama_plugin.characters import CharacterRepository
@@ -52,8 +55,19 @@ class DramaPlugin:
         self.providers = providers
         self.skills = skills
         self.tools = tools
-        from drama_plugin.runtime import LegacyCapabilityBridge, RuntimeEngine
-        self.runtime = RuntimeEngine(LegacyCapabilityBridge.from_tools(tools))
+        from drama_plugin.runtime import InMemoryRunStore, LegacyCapabilityBridge, RuntimeEngine
+        from drama_plugin.runtime.capabilities import TargetCapabilityRouter
+        from drama_plugin.runtime.engine import foundation_workflows
+        from drama_plugin.production import (LegacyAssemblySources, ProductionPackageCapability,
+            ProductionPackageStore, ShotAssembler, assembly_workflow)
+        runs = InMemoryRunStore()
+        self.production_packages = production_package_store if production_package_store is not None else ProductionPackageStore()
+        self.shot_assembler = ShotAssembler(LegacyAssemblySources(tools, production_artifact_roots))
+        package_capability = ProductionPackageCapability(self.shot_assembler, self.production_packages, runs)
+        workflow = assembly_workflow()
+        self.runtime = RuntimeEngine(TargetCapabilityRouter(package_capability.registrations(),
+            LegacyCapabilityBridge.from_tools(tools)), store=runs,
+            workflows={**foundation_workflows(), workflow.workflow_id: workflow})
         self.context = ContextBuilder(providers.context)
         self._http_clients = http_clients or []
         self._fish_client = (
@@ -63,7 +77,7 @@ class DramaPlugin:
         )
 
     @classmethod
-    def load(cls, root: Path | str | None = None, config_path: Path | str | None = None, *, mock_data: MockDramaData | None = None) -> "DramaPlugin":
+    def load(cls, root: Path | str | None = None, config_path: Path | str | None = None, *, mock_data: MockDramaData | None = None, production_artifact_roots: tuple[Path, ...] = (), production_package_store: ProductionPackageStore | None = None) -> "DramaPlugin":
         plugin_root = Path(root) if root is not None else Path(__file__).resolve().parents[2]
         manifest = cls._load_manifest(plugin_root / "plugin.yaml")
         config = load_config(config_path)
@@ -74,7 +88,8 @@ class DramaPlugin:
             raise ConfigurationError("Voice and Role Dubbing providers must be configured")
         tools = build_tool_registry(providers.memory, providers.asset, providers.research, providers.production, providers.media, providers.context, providers.voice, providers.role_dubbing)
         SkillToolReferenceValidator.validate(skills, tools)
-        return cls(plugin_root, config, manifest, providers, skills, tools, clients)
+        return cls(plugin_root, config, manifest, providers, skills, tools, clients,
+                   production_artifact_roots=production_artifact_roots, production_package_store=production_package_store)
 
     @staticmethod
     def _load_manifest(path: Path) -> PluginManifest:

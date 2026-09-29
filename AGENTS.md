@@ -12,6 +12,7 @@
 Runtime 只保存身份、运行状态和必要引用，不保存 Work、Script、Scene、Bible、
 Director package 或 Prompt IR 正文，也不产生创作意义。
 
-T0–T1 只建立主循环 Foundation、双模式与策略接口、离线验证及恢复契约。
-不得顺手实现 ProductionPackage / ShotAssembler，不迁移全套 Gate policy，
-不删旧 Host / Gate / Skill / Provider，不新增数据库表，不调用付费生成。
+T1 已合入 master。当前明确授权阶段为 T2：唯一 ShotAssembler、shot-scoped
+ref-only ProductionPackage、Target native capability、内存 Store 与只读影子验证。
+STOP AT T2：不迁移 Gate / Prompt / Professional DAG，不删旧 Host / Gate / Skill /
+Provider，不新增数据库表，不提交 Provider，不生成媒体，不 commit / push / merge。

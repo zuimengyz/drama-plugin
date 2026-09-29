@@ -85,7 +85,7 @@ class RuntimeEngine:
             } or run.step_attempts < 1:
                 raise ValueError("In-flight/blocked run must identify a capability step")
         if run.state == RuntimeState.WAITING_USER:
-            if run.cursor == len(workflow.steps) or workflow.steps[run.cursor].kind != ActionKind.REQUEST_USER_DECISION:
+            if run.cursor == len(workflow.steps) or policy.next_action(run, workflow).kind != ActionKind.REQUEST_USER_DECISION:
                 raise ValueError("User wait must identify its decision step")
         if run.state == RuntimeState.WAITING_EXTERNAL:
             if run.cursor == len(workflow.steps) or workflow.steps[run.cursor].kind not in {

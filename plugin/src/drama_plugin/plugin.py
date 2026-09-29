@@ -6,6 +6,8 @@ from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from drama_plugin.production.store import ProductionPackageStore
+    from drama_plugin.governance.store import GateFindingStore
+    from drama_plugin.runtime.contracts import ArtifactReference, RunMode, RuntimeRun
 
 import yaml  # type: ignore[import-untyped]
 from pydantic import ValidationError
@@ -46,7 +48,7 @@ class DramaPlugin:
     inside the Plugin and do not depend on a host choosing each next tool.
     """
 
-    def __init__(self, root: Path, config: DramaPluginConfig, manifest: PluginManifest, providers: ProviderBundle, skills: SkillRegistry, tools: ToolRegistry, http_clients: list[HttpProviderClient] | None = None, *, production_artifact_roots: tuple[Path, ...] = (), production_package_store: ProductionPackageStore | None = None) -> None:
+    def __init__(self, root: Path, config: DramaPluginConfig, manifest: PluginManifest, providers: ProviderBundle, skills: SkillRegistry, tools: ToolRegistry, http_clients: list[HttpProviderClient] | None = None, *, production_artifact_roots: tuple[Path, ...] = (), production_package_store: ProductionPackageStore | None = None, gate_finding_store: GateFindingStore | None = None) -> None:
         self.root = root
         self.config = config
         from drama_plugin.characters import CharacterRepository
@@ -55,7 +57,7 @@ class DramaPlugin:
         self.providers = providers
         self.skills = skills
         self.tools = tools
-        from drama_plugin.runtime import InMemoryRunStore, LegacyCapabilityBridge, RuntimeEngine
+        from drama_plugin.runtime import InMemoryRunStore, LegacyCapabilityBridge, RunMode, RuntimeEngine
         from drama_plugin.runtime.capabilities import TargetCapabilityRouter
         from drama_plugin.runtime.engine import foundation_workflows
         from drama_plugin.production import (LegacyAssemblySources, ProductionPackageCapability,
@@ -65,9 +67,20 @@ class DramaPlugin:
         self.shot_assembler = ShotAssembler(LegacyAssemblySources(tools, production_artifact_roots))
         package_capability = ProductionPackageCapability(self.shot_assembler, self.production_packages, runs)
         workflow = assembly_workflow()
-        self.runtime = RuntimeEngine(TargetCapabilityRouter(package_capability.registrations(),
+        from drama_plugin.governance import GateFindingStore, GateGovernor
+        from drama_plugin.governance.capability import GateGovernanceCapability
+        from drama_plugin.governance.policy import GovernedPolicy, governed_workflow
+        self.gate_findings = gate_finding_store if gate_finding_store is not None else GateFindingStore()
+        self.gate_governor = GateGovernor(self.gate_findings)
+        self.gate_governance = GateGovernanceCapability(self.gate_governor, self.gate_findings,
+            self.production_packages, self.shot_assembler, runs)
+        governance_workflow = governed_workflow()
+        self.runtime = RuntimeEngine(TargetCapabilityRouter({**package_capability.registrations(),
+            **self.gate_governance.registrations()},
             LegacyCapabilityBridge.from_tools(tools)), store=runs,
-            workflows={**foundation_workflows(), workflow.workflow_id: workflow})
+            workflows={**foundation_workflows(), workflow.workflow_id: workflow,
+                governance_workflow.workflow_id: governance_workflow},
+            policies={mode: GovernedPolicy(mode, self.gate_findings) for mode in RunMode})
         self.context = ContextBuilder(providers.context)
         self._http_clients = http_clients or []
         self._fish_client = (
@@ -77,7 +90,7 @@ class DramaPlugin:
         )
 
     @classmethod
-    def load(cls, root: Path | str | None = None, config_path: Path | str | None = None, *, mock_data: MockDramaData | None = None, production_artifact_roots: tuple[Path, ...] = (), production_package_store: ProductionPackageStore | None = None) -> "DramaPlugin":
+    def load(cls, root: Path | str | None = None, config_path: Path | str | None = None, *, mock_data: MockDramaData | None = None, production_artifact_roots: tuple[Path, ...] = (), production_package_store: ProductionPackageStore | None = None, gate_finding_store: GateFindingStore | None = None) -> "DramaPlugin":
         plugin_root = Path(root) if root is not None else Path(__file__).resolve().parents[2]
         manifest = cls._load_manifest(plugin_root / "plugin.yaml")
         config = load_config(config_path)
@@ -89,7 +102,8 @@ class DramaPlugin:
         tools = build_tool_registry(providers.memory, providers.asset, providers.research, providers.production, providers.media, providers.context, providers.voice, providers.role_dubbing)
         SkillToolReferenceValidator.validate(skills, tools)
         return cls(plugin_root, config, manifest, providers, skills, tools, clients,
-                   production_artifact_roots=production_artifact_roots, production_package_store=production_package_store)
+                   production_artifact_roots=production_artifact_roots, production_package_store=production_package_store,
+                   gate_finding_store=gate_finding_store)
 
     @staticmethod
     def _load_manifest(path: Path) -> PluginManifest:
@@ -138,6 +152,19 @@ class DramaPlugin:
         if selections.audio_semantic.mode == 'bailian_qwen_omni':
             audio_semantic = BailianQwenOmniAudioSemanticProvider(services.qwen_omni)
         return ProviderBundle(memory, asset, research, production, media, context, voice, role_dubbing, audio_semantic), clients
+
+    def create_governed_run(self, *, work_id: str, scene_id: str, shot_id: str,
+                            mode: RunMode, run_id: str | None = None,
+                            package_ref: ArtifactReference | None = None,
+                            finding_refs: tuple[ArtifactReference, ...] = ()) -> RuntimeRun:
+        """New Shot preparation enters T3 policy; T1/T2 versioned workflows remain readable."""
+        from drama_plugin.governance.contracts import GovernanceInput
+        from drama_plugin.governance.policy import WORKFLOW
+        inputs = GovernanceInput(package_ref=package_ref, finding_refs=finding_refs)
+        run = self.runtime.create_run(work_id=work_id, scene_id=scene_id, shot_id=shot_id,
+            mode=mode, workflow_id=WORKFLOW, run_id=run_id)
+        self.gate_findings.bind(run.run_id, inputs)
+        return run
 
     def capabilities(self) -> dict[str, Any]:
         from drama_plugin.professional import registry, dependency_order

@@ -12,7 +12,7 @@
 Runtime 只保存身份、运行状态和必要引用，不保存 Work、Script、Scene、Bible、
 Director package 或 Prompt IR 正文，也不产生创作意义。
 
-T1 已合入 master。当前明确授权阶段为 T2：唯一 ShotAssembler、shot-scoped
-ref-only ProductionPackage、Target native capability、内存 Store 与只读影子验证。
-STOP AT T2：不迁移 Gate / Prompt / Professional DAG，不删旧 Host / Gate / Skill /
+T1 / T2 已合入 master。当前明确授权阶段为 T3：六类 Gate Governance、四类
+硬阻断风险、双模式政策、内部 stale 重组、只读源码盘点与离线影子验证。
+STOP AT T3：不删除旧 Gate，不迁移 Prompt / Professional DAG，不删旧 Host / Skill /
 Provider，不新增数据库表，不提交 Provider，不生成媒体，不 commit / push / merge。

@@ -11,10 +11,10 @@ from enum import Enum
 import json
 from pathlib import Path
 import sqlite3
-from typing import Iterator
+from typing import Iterator, cast
 
 from drama_plugin.contracts.base import canonical_json, sha256_canonical
-from drama_plugin.runtime.contracts import ArtifactReference, RuntimeRun, RuntimeScope, RuntimeState
+from drama_plugin.runtime.contracts import ArtifactReference, RuntimeContract, RuntimeRun, RuntimeScope, RuntimeState
 
 
 class RetentionClass(str, Enum):
@@ -217,14 +217,14 @@ class ProductionLedger:
         # Revalidate at the storage boundary. A caller cannot use this generic
         # table as an arbitrary JSON/Canon payload sink by supplying a known tag.
         from drama_plugin.generation.contracts import (
-            AudioExecutionPlan, ExecutionDiagnostic, FinalPromptArtifact,
+            AudioExecutionPlan, DerivedArtifact, ExecutionDiagnostic, FinalPromptArtifact,
             GenerationPreparation, PromptCoverage, PromptIR,
         )
         from drama_plugin.governance.contracts import GateDecision, GateFinding
         from drama_plugin.production.contracts import AssemblyValidation, ProductionPackage
         from drama_plugin.production.references import ReferenceExecutionBinding
         from drama_plugin.persistence.review import UserDecisionRecord
-        models = {
+        models: dict[str, type[RuntimeContract]] = {
             "production-package": ProductionPackage,
             "assembly-validation": AssemblyValidation,
             "reference-execution-binding": ReferenceExecutionBinding,
@@ -249,31 +249,36 @@ class ProductionLedger:
             checked = model.model_validate(body.model_dump() if hasattr(body, "model_dump") else body)
             body = checked
             if artifact_type == "production-package":
-                content_fingerprint = checked.fingerprint
-                actual_scope = RuntimeScope(work_id=checked.scope.work.artifact_ref,
-                    scene_id=checked.scope.scene.artifact_ref, shot_id=checked.scope.shot.artifact_ref)
+                package = cast(ProductionPackage, checked)
+                content_fingerprint = package.fingerprint
+                actual_scope = RuntimeScope(work_id=package.scope.work.artifact_ref,
+                    scene_id=package.scope.scene.artifact_ref, shot_id=package.scope.shot.artifact_ref)
             elif artifact_type == "reference-execution-binding":
-                content_fingerprint = sha256_canonical(checked.source().body)
-                actual_scope = checked.scope
+                binding = cast(ReferenceExecutionBinding, checked)
+                content_fingerprint = sha256_canonical(binding.source().body)
+                actual_scope = binding.scope
             elif artifact_type in {"gate-finding", "gate-decision"}:
                 content_fingerprint = sha256_canonical(checked)
-                actual_scope = checked.scope
+                actual_scope = cast(GateFinding | GateDecision, checked).scope
             elif artifact_type == "user-decision":
-                content_fingerprint = checked.fingerprint
-                actual_scope = checked.scope
+                decision = cast(UserDecisionRecord, checked)
+                content_fingerprint = decision.fingerprint
+                actual_scope = decision.scope
             elif artifact_type == "assembly-validation":
                 content_fingerprint = sha256_canonical(checked)
                 actual_scope = scope
             else:
-                content_fingerprint = checked.fingerprint
-                actual_scope = getattr(checked, "scope", scope)
+                derived = cast(DerivedArtifact, checked)
+                content_fingerprint = derived.fingerprint
+                actual_scope = getattr(derived, "scope", scope)
             if actual_scope != scope:
                 raise ValueError("Artifact Shot scope mismatch")
             if artifact_type in {"prompt-ir", "prompt-coverage", "final-prompt",
                                  "audio-plan", "generation-preparation"}:
+                derived = cast(DerivedArtifact, checked)
                 source = db.execute("""SELECT work_id,scene_id,shot_id FROM immutable_artifact
                     WHERE artifact_id=? AND version=? AND artifact_type='production-package'""",
-                    (checked.source_package_ref.artifact_ref, checked.source_package_ref.version)).fetchone()
+                    (derived.source_package_ref.artifact_ref, derived.source_package_ref.version)).fetchone()
                 if source is None or (source["work_id"], source["scene_id"], source["shot_id"]) != (
                         scope.work_id, scope.scene_id, scope.shot_id):
                     raise ValueError("Derived artifact requires an existing same-Shot ProductionPackage")
@@ -282,11 +287,13 @@ class ProductionLedger:
         if ref.owner != expected_owner or not ref.artifact_ref.startswith(prefix) or content_fingerprint != fingerprint:
             raise ValueError("Artifact type/owner/fingerprint mismatch")
         if artifact_type == "reference-execution-binding":
-            if (ref.artifact_ref, ref.version) != (checked.source().artifact_ref, checked.version):
+            binding = cast(ReferenceExecutionBinding, checked)
+            if (ref.artifact_ref, ref.version) != (binding.source().artifact_ref, binding.version):
                 raise ValueError("Reference Binding identity/version mismatch")
         elif artifact_type in {"assembly-validation", "execution-diagnostic"}:
             scoped = sha256_canonical([scope.model_dump(mode="json", by_alias=True),
-                body if artifact_type == "execution-diagnostic" else body.model_dump(mode="json", by_alias=True)])
+                body if artifact_type == "execution-diagnostic" else
+                cast(AssemblyValidation, body).model_dump(mode="json", by_alias=True)])
             if ref.artifact_ref != prefix + scoped or ref.version != 1:
                 raise ValueError("Scoped diagnostic identity mismatch")
         elif ref.artifact_ref != prefix + fingerprint or ref.version != 1:

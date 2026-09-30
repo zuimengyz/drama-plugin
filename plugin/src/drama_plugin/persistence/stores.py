@@ -184,9 +184,12 @@ class DurableGateFindingStore:
 
     def maintenance_count(self, run_id: str) -> int:
         try:
-            return int(self.ledger.get_index("governance-maintenance", run_id))
+            value = self.ledger.get_index("governance-maintenance", run_id)
         except KeyError:
             return 0
+        if type(value) is not int:
+            raise ValueError("Stored maintenance claim must be an integer")
+        return value
 
 
 class DurableReviewStore:

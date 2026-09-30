@@ -5,7 +5,7 @@ from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.generation.contracts import (
     DerivedArtifact, ExecutionDiagnostic, GenerationInput, GenerationPreparation,
 )
-from drama_plugin.runtime.contracts import ArtifactReference
+from drama_plugin.runtime.contracts import ArtifactReference, RuntimeScope
 
 
 class GenerationArtifactStore:
@@ -35,7 +35,8 @@ class GenerationArtifactStore:
             raise ValueError("Wrong derived artifact reference/type")
         return item
 
-    def retain_diagnostics(self, diagnostics: tuple[ExecutionDiagnostic, ...]) -> ArtifactReference:
+    def retain_diagnostics(self, diagnostics: tuple[ExecutionDiagnostic, ...],
+                           *, scope: RuntimeScope | None = None) -> ArtifactReference:
         if len(diagnostics) > 128:
             raise ValueError("Execution diagnostic budget exceeded")
         checked = tuple(ExecutionDiagnostic.model_validate(d.model_dump()) for d in diagnostics)

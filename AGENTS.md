@@ -12,9 +12,8 @@
 Runtime 只保存身份、运行状态和必要引用，不保存 Work、Script、Scene、Bible、
 Director package 或 Prompt IR 正文，也不产生创作意义。
 
-T1–T4 已合入 master。当前明确授权阶段为 T5：ProductionPackage-only Prompt
-编译、复用 Seedance 2 生成器、独立分层音频执行计划、离线影子与复杂度验证。
-T5R 仅修正式义务来源绑定：复用 VideoReference/ReferenceRequirement，绑定已审核媒体；
-一次性审计旧时窗和 Visual/Voice 来源，排除 Legacy derived；同输入模式验证。STOP AT T5R，不进入 T6。
-STOP AT T5：不改创作正文/Authority，不删除旧部门/Bible/Gate/Prompt/Audio，不删旧 Host / Skill /
-Provider，不新增数据库表，不提交 Provider，不生成媒体，不 commit / push / merge。
+T1–T5R 已合入 master。当前明确授权阶段为 T6：仅将新 Target Runtime 的 checkpoint、
+不可变执行工件、Reference Binding 与 Review/Finding 持久化，并验证跨进程恢复、CAS、去重和
+Work 大小边界。目标设计仍以 `未来架构/` 为 Authority；Canon、Media 和旧在途任务继续由原 owner 持有。
+STOP AT T6：不迁旧 productionHistory，不删除旧部门/Bible/Gate/Prompt/Audio/Host/Skill，
+不接 Provider、不生成媒体，不 commit / push / merge。不得向 Work 无限追加新 Target 生产历史。

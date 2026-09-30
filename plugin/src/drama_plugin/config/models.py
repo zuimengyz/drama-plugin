@@ -85,6 +85,7 @@ class DramaPluginConfig(ProductionLanguageSettings):
         return dict(self._language_sources)
 
     character_repository_root: str = ""
+    production_ledger_path: str = ""
     visual_medium: Literal["live_action", "cg"] | None = None
     visual_authority_root: str = ""
     _visual_medium_source: str = PrivateAttr(default="UNCONFIGURED")

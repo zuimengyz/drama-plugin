@@ -44,6 +44,8 @@ def _environment_overrides(environment: Mapping[str, str]) -> dict[str, Any]:
 
     if "DRAMA_CHARACTER_REPOSITORY_ROOT" in environment:
         overrides["character_repository_root"] = environment["DRAMA_CHARACTER_REPOSITORY_ROOT"].strip()
+    if "DRAMA_PLUGIN_PRODUCTION_LEDGER_PATH" in environment:
+        overrides["production_ledger_path"] = environment["DRAMA_PLUGIN_PRODUCTION_LEDGER_PATH"].strip()
     if "rhythm_speed" in environment:
         rhythm_value = environment["rhythm_speed"].strip()
         if rhythm_value not in {"work_defined", "slow", "medium", "fast"}:

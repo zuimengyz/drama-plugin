@@ -29,7 +29,7 @@ class ProductionPackageCapability:
             policy_ref=ArtifactReference(owner="runtime-policy", artifact_ref=run.policy_id, version=1))
         if assembled.package is None:
             return CapabilityResult(status=ResultStatus.RETRYABLE_FAILURE, code="ASSEMBLY_UNRESOLVED",
-                artifact_refs=(self.packages.retain_validation(assembled.validation),))
+                artifact_refs=(self.packages.retain_validation(assembled.validation, scope=run.scope),))
         return CapabilityResult(status=ResultStatus.SUCCEEDED,
             artifact_refs=(self.packages.put(assembled.package),))
 

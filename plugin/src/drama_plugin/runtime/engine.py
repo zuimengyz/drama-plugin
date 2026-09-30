@@ -56,15 +56,21 @@ class RuntimeEngine:
         if any(key != p.mode or p.max_step_attempts < 1 for key, p in self._policies.items()):
             raise ValueError("Policy registry identity mismatch")
 
-    def create_run(self, *, work_id: str, mode: RunMode,
+    def draft_run(self, *, work_id: str, mode: RunMode,
                    workflow_id: str = "inspect-work:v1", run_id: str | None = None,
                    scene_id: str | None = None, shot_id: str | None = None) -> RuntimeRun:
         policy = self._policies[mode]
         workflow = self._workflows[workflow_id]
-        return self.store.create(RuntimeRun(run_id=run_id or str(uuid4()),
+        return RuntimeRun(run_id=run_id or str(uuid4()),
             scope=RuntimeScope(work_id=work_id, scene_id=scene_id, shot_id=shot_id),
             mode=mode, policy_id=policy.policy_id, workflow_id=workflow_id,
-            workflow_fingerprint=sha256_canonical(workflow)))
+            workflow_fingerprint=sha256_canonical(workflow))
+
+    def create_run(self, *, work_id: str, mode: RunMode,
+                   workflow_id: str = "inspect-work:v1", run_id: str | None = None,
+                   scene_id: str | None = None, shot_id: str | None = None) -> RuntimeRun:
+        return self.store.create(self.draft_run(work_id=work_id, mode=mode,
+            workflow_id=workflow_id, run_id=run_id, scene_id=scene_id, shot_id=shot_id))
 
     def _context(self, run: RuntimeRun) -> tuple[RuntimePolicy, RuntimeWorkflow]:
         policy, workflow = self._policies[run.mode], self._workflows[run.workflow_id]
@@ -125,8 +131,8 @@ class RuntimeEngine:
     async def run(self, run_id: str, *, max_ticks: int = 64) -> RuntimeRun:
         """Advance internally; return on genuine waits, failures or terminal state.
 
-        max_ticks bounds one turn, not a new production state. Multiple callers
-        sharing this memory store cannot invoke the same step concurrently.
+        max_ticks bounds one turn, not a new production state. The injected
+        store serializes callers advancing the same Run.
         """
         if max_ticks < 1:
             raise ValueError("max_ticks must be positive")
@@ -183,6 +189,15 @@ class RuntimeEngine:
         if run.state == RuntimeState.RUNNING:
             return self._transition(run, RuntimeState.BLOCKED, wait_reason="INTERRUPTED_CAPABILITY")
         return run
+
+    async def recover_run(self, run_id: str) -> RuntimeRun:
+        """Open the same durable checkpoint after restart, without recreating it."""
+        async with self.store.lock(run_id):
+            run = self.store.load(run_id)
+            self._context(run)
+            if run.state == RuntimeState.RUNNING:
+                return self._transition(run, RuntimeState.BLOCKED, wait_reason="INTERRUPTED_CAPABILITY")
+            return run
 
     async def retry(self, run_id: str) -> RuntimeRun:
         """Internal retry routing, never an artificial user approval of bookkeeping."""

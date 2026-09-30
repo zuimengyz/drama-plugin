@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.production.contracts import AssemblyValidation, ProductionPackage
-from drama_plugin.runtime.contracts import ArtifactReference
+from drama_plugin.runtime.contracts import ArtifactReference, RuntimeScope
 
 
 class ProductionPackageStore:
@@ -27,7 +27,7 @@ class ProductionPackageStore:
             raise ValueError("Not a production package reference")
         return self._packages[reference.artifact_ref]
 
-    def retain_validation(self, validation: AssemblyValidation) -> ArtifactReference:
+    def retain_validation(self, validation: AssemblyValidation, *, scope: RuntimeScope | None = None) -> ArtifactReference:
         validation = AssemblyValidation.model_validate(validation.model_dump())
         identity = "assembly-validation:" + sha256_canonical(validation)
         self._validations[identity] = validation

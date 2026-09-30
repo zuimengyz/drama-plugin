@@ -4,7 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from drama_plugin.contracts.base import sha256_canonical
-from drama_plugin.generation.audio import AudioPerformanceAssembler
+from drama_plugin.generation.audio import AudioPerformanceAssembler, package_scope
 from drama_plugin.generation.contracts import (
     AudioExecutionPlan, CoverageEntry, CoverageStatus as S, ExecutionDiagnostic, FinalPromptArtifact,
     GenerationPreparation, GenerationTask, Obligation as O, PromptCoverage, PromptIR,
@@ -47,7 +47,8 @@ class PromptCompiler:
         diagnostics: list[ExecutionDiagnostic] = []
 
         def result(prepared=None, ir=None, audio=None):
-            return CompilationResult(prepared, self.artifacts.retain_diagnostics(tuple(diagnostics)), ir, audio)
+            return CompilationResult(prepared, self.artifacts.retain_diagnostics(tuple(diagnostics),
+                scope=package_scope(package)), ir, audio)
 
         policy = self.catalog.policy(task.target_model)
         if policy is None:

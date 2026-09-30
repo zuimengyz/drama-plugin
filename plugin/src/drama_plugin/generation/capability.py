@@ -18,7 +18,7 @@ class GenerationCapability:
         self.compiler, self.artifacts, self.governance = compiler, artifacts, governance
 
     def _decision_result(self, run, diagnostics, package_ref):
-        evidence = self.artifacts.retain_diagnostics(tuple(diagnostics))
+        evidence = self.artifacts.retain_diagnostics(tuple(diagnostics), scope=run.scope)
         findings = execution_findings(tuple(diagnostics), scope=run.scope, evidence_ref=evidence)
         decision = self.governance.governor.govern(findings, scope=run.scope, mode=run.mode, package_ref=package_ref)
         return CapabilityResult(status=ResultStatus.SUCCEEDED,
@@ -78,10 +78,10 @@ class GenerationCapability:
         prepared = self.artifacts.get(ref, GenerationPreparation)
         validation = await self.governance.assembler.validate_sources(self.compiler.packages.get(decision.package_ref))
         findings = assembly_findings(validation, scope=run.scope,
-            evidence_ref=self.compiler.packages.retain_validation(validation))
+            evidence_ref=self.compiler.packages.retain_validation(validation, scope=run.scope))
         if not findings:
             diagnostics = await self.compiler.validate_execution_sources(ref)
-            evidence = self.artifacts.retain_diagnostics(diagnostics)
+            evidence = self.artifacts.retain_diagnostics(diagnostics, scope=run.scope)
             findings = execution_findings(diagnostics, scope=run.scope, evidence_ref=evidence)
         if findings:
             # Do not skip a pending maintenance or hard stop at the last boundary.

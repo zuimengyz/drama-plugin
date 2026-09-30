@@ -33,7 +33,7 @@ class GateGovernanceCapability:
                 package_ref = self.packages.put(assembled.package)
                 self.findings.set_package(run.run_id, package_ref)
             else:
-                validation_ref = self.packages.retain_validation(assembled.validation)
+                validation_ref = self.packages.retain_validation(assembled.validation, scope=run.scope)
                 found.extend(assembly_findings(assembled.validation, scope=run.scope, evidence_ref=validation_ref))
         if package_ref is not None:
             try:
@@ -46,7 +46,7 @@ class GateGovernanceCapability:
                 else:
                     validation = await self.assembler.validate_sources(package)
                     found.extend(assembly_findings(validation, scope=run.scope,
-                        evidence_ref=self.packages.retain_validation(validation)))
+                        evidence_ref=self.packages.retain_validation(validation, scope=run.scope)))
             except (KeyError, ValueError):
                 found.append(GateFinding.classified(GateCode.REQUEST_INPUT_MISSING,
                     owner="production-package-store", scope=run.scope, evidence_ref=package_ref, required=True))
@@ -108,7 +108,7 @@ class GateGovernanceCapability:
         assembled = await self.assembler.assemble(run.scope, mode=run.mode,
             policy_ref=ArtifactReference(owner="runtime-policy", artifact_ref=run.policy_id, version=1))
         if assembled.package is None:
-            validation_ref = self.packages.retain_validation(assembled.validation)
+            validation_ref = self.packages.retain_validation(assembled.validation, scope=run.scope)
             found = assembly_findings(assembled.validation, scope=run.scope, evidence_ref=validation_ref)
             new = self.governor.govern(found, scope=run.scope, mode=run.mode, package_ref=decision.package_ref)
             return CapabilityResult(status=ResultStatus.SUCCEEDED,

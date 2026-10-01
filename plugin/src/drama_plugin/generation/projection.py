@@ -60,7 +60,8 @@ class ExecutionProjection:
 
     async def project(self, package: ProductionPackage, task: GenerationTask, plan: AudioExecutionPlan,
                       selected: tuple[SelectedValue, ...]) -> PromptProjection:
-        facts, internal, diagnostics, aliases = [], [], [], []
+        facts: list[ExecutableFact] = []
+        internal, diagnostics, aliases = [], [], []
 
         def add(domain: D, slot: str, text, ref: SourceReference, required=True, subject=None):
             if not isinstance(text, str) or not text.strip():
@@ -159,9 +160,12 @@ class ExecutionProjection:
             # speaker should dominate, interrupt or overlap.
             for event in plan.speech_events:
                 if event.spoken_content_id and len(plan.speech_events) > 1:
+                    speaker_ref = event.speaker_ref
+                    if speaker_ref is None:
+                        raise ValueError("Exact speech requires Scene dialogue and speaker references")
                     layer = {"PRIMARY": "主对白", "SECONDARY": "次对白", "BACKGROUND": "背景人声"}[event.layer.value]
                     priority = {"MUST_UNDERSTAND": "必须听清", "BRIEFLY_CLEAR": "允许短暂听清", "TEXTURE": "作为声音织体"}[event.intelligibility.value]
-                    add(D.SOUND, "preserve.audio_layer", f"{event.speaker_ref.artifact_ref}为{layer}，{priority}。",
+                    add(D.SOUND, "preserve.audio_layer", f"{speaker_ref.artifact_ref}为{layer}，{priority}。",
                         event.execution_ref)
                 elif event.spoken_content_id is None:
                     for item in selected:

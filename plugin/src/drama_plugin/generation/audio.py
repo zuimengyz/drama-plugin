@@ -37,7 +37,7 @@ class AudioPerformanceAssembler:
         lines: dict[str, SelectedValue] = {}
         bindings = []
         declarations: list[tuple[SelectedValue, int, dict[str, Any]]] = []
-        relation_rows = []
+        relation_rows: list[tuple[SelectedValue, int, dict[str, Any]]] = []
         refs: dict[str, list] = {key: [] for key in ("ambience", "foley", "music", "silence", "mix")}
         delivery: dict[str, list] = {}
         def language(line):
@@ -92,7 +92,7 @@ class AudioPerformanceAssembler:
                     line_id = row.get("spoken_content_id")
                     if line_id is not None:
                         line = lines.get(line_id)
-                        if line is None or row.get("speaker_key") != line.value["speakerKey"]:
+                        if not isinstance(line_id, str) or line is None or row.get("speaker_key") != line.value["speakerKey"]:
                             diagnostics.append(ExecutionDiagnostic(code="DIALOGUE_IDENTITY_MISMATCH", owner="screenplay-dialogue",
                                 domain=D.SOUND, source_ref=source, required=True))
                             continue
@@ -109,7 +109,7 @@ class AudioPerformanceAssembler:
                     events.append(SpeechEvent(event_id=row["event_id"], source_ref=line_ref,
                         spoken_content_id=line_id, speaker_ref=speaker, layer=row["layer"],
                         intelligibility=row["intelligibility"], mix_priority=row["mix_priority"],
-                        execution_ref=source, delivery_refs=tuple(delivery.get(line_id, ())),
+                        execution_ref=source, delivery_refs=tuple(delivery.get(line_id, ())) if line_id is not None else (),
                         language=lang, language_ref=lang_ref,
                         window_ms=row.get("window_ms")))
                 if {e.spoken_content_id for e in events if e.spoken_content_id} != set(lines):

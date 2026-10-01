@@ -234,10 +234,10 @@ class AudioExecutionPlan(DerivedArtifact):
         edges: set[tuple[str, str, TemporalRelation]] = set()
         precedes: dict[str, set[str]] = {key: set() for key in events}
         for relation in self.relations:
-            key = (relation.event_id, relation.target_event_id, relation.relation)
-            if key in edges or relation.event_id not in events or relation.target_event_id not in events:
+            relation_key = (relation.event_id, relation.target_event_id, relation.relation)
+            if relation_key in edges or relation.event_id not in events or relation.target_event_id not in events:
                 raise ValueError("Duplicate or dangling speech relation")
-            edges.add(key)
+            edges.add(relation_key)
             a, b = events[relation.event_id].window_ms, events[relation.target_event_id].window_ms
             if relation.relation in {TemporalRelation.BEFORE, TemporalRelation.AFTER}:
                 first, second = (relation.event_id, relation.target_event_id) if relation.relation == TemporalRelation.BEFORE else (relation.target_event_id, relation.event_id)

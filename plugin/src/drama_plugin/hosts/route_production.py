@@ -6,6 +6,8 @@ An uncertain return is inspected through the Work before any external submission
 """
 from __future__ import annotations
 
+lifecycle = "LEGACY_RECOVERY_ONLY"
+
 from copy import deepcopy
 from typing import Any
 
@@ -18,6 +20,11 @@ from drama_plugin.visual.video_selection import ProductionRoute, Requirements, q
 from drama_plugin.config.video_route import VideoRoutePolicy
 from drama_plugin.visual import production
 from drama_plugin.visual.history import attempt_frame, remember, compact, resolve
+from drama_plugin.runtime.legacy_boundary import require_legacy_recovery
+
+
+def _legacy_admission(work_id: str, stage: object) -> None:
+    require_legacy_recovery(work_id, stage)
 
 
 async def guard_direct_generation(memory: MemoryProvider, parameters: dict[str, Any] | None) -> None:
@@ -106,6 +113,7 @@ async def save_route(memory: MemoryProvider, work_id: str, raw: dict[str, Any], 
     if route.work_id != work_id:
         raise ValueError('ROUTE_WORK_MISMATCH')
     work = await memory.get_work(work_id)
+    _legacy_admission(work_id, work.content.get('productionStage'))
     await validate_route_direction_sources(memory, work, route)
     existing = work.content.get('productionRoute')
     choice = choose_routes([route], policy=policy, task_policy=task_policy, execution_target=execution_target)
@@ -207,6 +215,7 @@ async def operate(memory: MemoryProvider, work_id: str, command: str,
             raise ValueError('EXPLICIT_V2_STAGE_BUDGET_REQUIRED')
         return {'duty': duty.model_dump(mode='json'), 'submissionAllowed': False,
                 'next': 'compile actual inputs and reserve the exact request'}
+    _legacy_admission(work_id, work.content.get('productionStage'))
     original_stage = work.content.get('productionStage')
     if command in {'reserve', 'begin-submission', 'retry-not-created', 'add-frame', 'replan'}:
         from drama_plugin.visual.video_selection import Requirements

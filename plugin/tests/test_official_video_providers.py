@@ -19,7 +19,7 @@ MODELS={'seedance':'seedance-2-mini','minimax':'minimax-h3','vidu':'vidu-q3-turb
 
 
 @pytest.fixture(autouse=True)
-def selected_formal_seedance_model(monkeypatch):
+def selected_formal_seedance_model(monkeypatch, legacy_contract_admission):
     # This lifecycle fixture explicitly selects Mini within the enabled Ark route.
     monkeypatch.setenv('DRAMA_PLUGIN_ROUTE_VIDEO_MODEL', MODELS['seedance'])
 BASES={'wan':'https://test-workspace.ap-southeast-1.maas.aliyuncs.com/api/v1','kling':'https://api-singapore.klingai.com'}

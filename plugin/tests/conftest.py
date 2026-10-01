@@ -3,7 +3,13 @@ import pytest
 
 
 @pytest.fixture
-def retained_production_policy(monkeypatch):
+def legacy_contract_admission(monkeypatch):
+    """Old unit contracts exercise their internals; T7 admission has its own tests."""
+    monkeypatch.setattr('drama_plugin.hosts.route_production._legacy_admission', lambda *a: None)
+
+
+@pytest.fixture
+def retained_production_policy(monkeypatch, legacy_contract_admission):
     """Isolate retained adapter/contract tests from the new deployment selection.
 
     These suites exercise old Comfy/GPT/other model contracts, not admission of

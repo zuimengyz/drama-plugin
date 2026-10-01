@@ -4,6 +4,7 @@ Explicit prose sections consume the frozen beats verbatim. The manifest covers
 every present leaf; critical omissions fail before request sealing. No truncation.
 """
 from __future__ import annotations
+lifecycle = "LEGACY_COMPATIBILITY"
 from typing import Any
 from drama_plugin.contracts.base import dump_contract, sha256_canonical
 from drama_plugin.visual.cinematic import verify_frozen

@@ -45,6 +45,7 @@ async def test_one_patch_exact_commit_only(mode,monkeypatch):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('mode',['normal','job','version','request','receipt','marker'])
+@pytest.mark.usefixtures("legacy_contract_admission")
 async def test_dispatch_boundary_never_reclaims_or_reposts(tmp_path,mode):
  w=work();request={'exact':'request'}
  a={'attempt_id':'a','status':'UNKNOWN','submission_started':True,'job_id':None,'request':request,'request_fingerprint':fp(request),'reserved_credits':13}

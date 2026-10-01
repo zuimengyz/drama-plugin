@@ -104,6 +104,7 @@ def candidate(r: Requirements, model: str, *, cost: Any, evidence: Evidence,
 
 
 class VideoProviderHost:
+    lifecycle = "LEGACY_RECOVERY_ONLY"
     def __init__(self, memory: Any, media: Any, asset: Any, cache: Path, *,
                  configuration: dict[str, ProviderSettings] | None = None,
                  http_client: httpx.AsyncClient | None = None, download_client: httpx.AsyncClient | None = None):
@@ -216,6 +217,8 @@ class VideoProviderHost:
         pre-claim Work and Host exception from before create_task was reached.
         This entry is not a candidate field or a public MCP submission shortcut.
         """
+        from drama_plugin.hosts import route_production
+        route_production._legacy_admission(before_claim.id, before_claim.content.get('productionStage'))
         from copy import deepcopy
         from drama_plugin.visual.history import attempt_frame, compact
         trace = claim_error.get('trace', '')
@@ -254,6 +257,8 @@ class VideoProviderHost:
                                 r: VideoRequest, expected: Any) -> ProviderTask:
         """Final exact readback, then one dispatch; never create another claim."""
         fresh = await self.memory.get_work(work_id)
+        from drama_plugin.hosts import route_production
+        route_production._legacy_admission(work_id, fresh.content.get('productionStage'))
         if fresh.id != expected.id or fresh.version != expected.version or fresh.content != expected.content:
             raise ValueError('DURABLE_CLAIM_CHANGED_DO_NOT_DISPATCH')
         current = next(x for x in fresh.content['productionStage']['attempts'] if x['attempt_id'] == a['attempt_id'])

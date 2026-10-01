@@ -16,6 +16,7 @@ from test_production_route import route
 
 
 @pytest.mark.asyncio
+@pytest.mark.usefixtures("legacy_contract_admission")
 async def test_http_submit_forwards_trust_to_real_formal_gate(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     x=blocker_case(tmp_path,medium='cg'); h=x['host']; b=x['candidate']; cur=x['current']; refs=(x['trusted'],)
     review=h.store.put('asset-review:rt04',dict(kind='SPECIALIZED_ASSET_REVIEW',decision='APPROVE',workId='work',reviewer='offline',

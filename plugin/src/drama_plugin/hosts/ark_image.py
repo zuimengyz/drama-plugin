@@ -16,6 +16,7 @@ from drama_plugin.visual.history import attempt_frame
 
 
 class ArkImageHost:
+    lifecycle = "LEGACY_RECOVERY_ONLY"
     def __init__(self, memory: Any, cache: Path, *, client: httpx.AsyncClient | None = None):
         self.memory, self.cache, self.client = memory, cache, client
 

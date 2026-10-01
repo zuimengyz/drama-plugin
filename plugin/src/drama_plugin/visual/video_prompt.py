@@ -1,4 +1,5 @@
 """Compile authored video facts and constraints without inventing creative decisions."""
+lifecycle = "LEGACY_COMPATIBILITY"
 from typing import Any, cast
 from drama_plugin.contracts.base import canonical_json, sha256_canonical
 from drama_plugin.contracts.video import VideoRequest

@@ -1,4 +1,4 @@
-"""MIGRATION_ONLY: explicitly opt safe legacy capabilities into the new loop."""
+"""MIGRATION_ONLY: explicitly opt one safe Canon read into the new loop."""
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable, Mapping
@@ -33,6 +33,10 @@ class LegacyCapabilityBridge:
 
     def __init__(self, capabilities: Mapping[str, LegacyCapability]) -> None:
         self._capabilities = dict(capabilities)
+
+    @property
+    def registered_keys(self) -> frozenset[str]:
+        return frozenset(self._capabilities)
 
     def replay_safe(self, capability_key: str) -> bool:
         capability = self._capabilities.get(capability_key)

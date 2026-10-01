@@ -1,4 +1,5 @@
 """Sequence entry before the existing MCP reservation submission, with no fallback."""
+lifecycle = "LEGACY_RECOVERY_ONLY"
 from collections.abc import Awaitable, Callable
 from typing import Any
 from drama_plugin.contracts.base import sha256_canonical

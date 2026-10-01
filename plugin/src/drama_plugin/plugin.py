@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from contextlib import asynccontextmanager
+from collections.abc import AsyncIterator
 from pathlib import Path
 from typing import Any, TYPE_CHECKING
 
@@ -47,8 +49,8 @@ class ProviderBundle:
 class DramaPlugin:
     """Composition root for the Plugin-owned Target Runtime and stores.
 
-    Legacy production entry points stay intact; new runtime workflows advance
-    inside the Plugin and do not depend on a host choosing each next tool.
+    Legacy production remains a separate recovery island. Target workflows
+    advance inside the Plugin through native capabilities and named Canon reads.
     """
 
     def __init__(self, root: Path, config: DramaPluginConfig, manifest: PluginManifest, providers: ProviderBundle, skills: SkillRegistry, tools: ToolRegistry, http_clients: list[HttpProviderClient] | None = None, *, production_artifact_roots: tuple[Path, ...] = (), production_package_store: ProductionPackageStore | None = None, gate_finding_store: GateFindingStore | None = None, generation_artifact_store: GenerationArtifactStore | None = None, reference_execution_store: ReferenceExecutionStore | None = None, ledger_path: Path | str | None = None, test_foundation: bool = False) -> None:
@@ -62,6 +64,8 @@ class DramaPlugin:
         self.tools = tools
         from drama_plugin.runtime import InMemoryRunStore, LegacyCapabilityBridge, RunMode, RuntimeEngine
         from drama_plugin.runtime.capabilities import TargetCapabilityRouter
+        from drama_plugin.runtime.legacy_boundary import LegacyBoundary
+        from drama_plugin.runtime.legacy_recovery import LegacyRecovery
         from drama_plugin.runtime.engine import foundation_workflows
         from drama_plugin.production import (LegacyAssemblySources, ProductionPackageCapability,
             ProductionPackageStore, ShotAssembler, assembly_workflow)
@@ -116,9 +120,11 @@ class DramaPlugin:
             media_reader=BoundMediaReader(tools))
         self.generation_capability = GenerationCapability(self.prompt_compiler, self.generation_artifacts, self.gate_governance)
         generation_flow = generation_workflow()
+        self.legacy_boundary = LegacyBoundary()
+        self.legacy_recovery = LegacyRecovery(providers.memory, self.legacy_boundary)
         self.runtime = RuntimeEngine(TargetCapabilityRouter({**package_capability.registrations(),
             **self.gate_governance.registrations(), **self.generation_capability.registrations()},
-            LegacyCapabilityBridge.from_tools(tools)), store=runs,
+            LegacyCapabilityBridge.from_tools(tools), self.legacy_boundary), store=runs,
             workflows={**foundation_workflows(), workflow.workflow_id: workflow,
                 governance_workflow.workflow_id: governance_workflow, generation_flow.workflow_id: generation_flow},
             policies={mode: GenerationPolicy(mode, self.gate_findings) for mode in RunMode})
@@ -262,6 +268,25 @@ class DramaPlugin:
         ref = self.reviews.put_user_decision(record)
         return await self.runtime.decide(run_id, decision_id=decision_id,
             accepted=accepted, decision_ref=ref)
+
+    async def resume_legacy_run(self, *, work_id: str, attempt_id: str) -> dict[str, Any]:
+        """Explicit historical handoff; never imports old history into Target Ledger."""
+        if self.ledger is not None:
+            try:
+                self.ledger.load_run(attempt_id)
+            except KeyError:
+                pass
+            else:
+                raise ValueError("LEGACY_GUARD: Target run identity")
+        return await self.legacy_recovery.resume_legacy_run(work_id=work_id, attempt_id=attempt_id)
+
+    @asynccontextmanager
+    async def legacy_recovery_session(self, *, work_id: str,
+                                      attempt_id: str) -> AsyncIterator[dict[str, Any]]:
+        """The only formal grant for retained Work-stage mutation/recovery."""
+        await self.resume_legacy_run(work_id=work_id, attempt_id=attempt_id)
+        async with self.legacy_recovery.session(work_id=work_id, attempt_id=attempt_id) as snapshot:
+            yield snapshot
 
     def capabilities(self) -> dict[str, Any]:
         from drama_plugin.professional import registry, dependency_order

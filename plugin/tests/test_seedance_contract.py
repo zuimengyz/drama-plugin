@@ -171,6 +171,7 @@ def test_architecture_does_not_add_skills_or_provider_core_dialects():
 
 
 @pytest.mark.asyncio
+@pytest.mark.usefixtures("legacy_contract_admission")
 async def test_formal_entry_refreshes_media_before_any_write(tmp_path):
  from drama_plugin.hosts.route_production import operate
  from drama_plugin.contracts.creation import Work,Script,Episode,Scene,Shot

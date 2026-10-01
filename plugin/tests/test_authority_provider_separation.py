@@ -13,6 +13,7 @@ from drama_plugin.hosts.cinematic_projection import project, validate_projection
 from drama_plugin.hosts.prompt_budget import budget_prompt
 from test_specialized_asset import fixture
 from test_official_video_providers import request
+from cinematic_projection_helpers import projection_requirements
 
 ROOT = Path(__file__).parent / 'fixtures'
 
@@ -32,7 +33,7 @@ def real_authority(tmp_path, monkeypatch):
 
 def diagnostic(frozen, context):
     node = json.loads((ROOT / 'prompt-budget/vidu-current-node.json').read_text())['data'][0]
-    r = NS(frozen_creative={'cinematic_direction': frozen}, sound='NATIVE_AUDIO', reference_duties=(), authority_context=context)
+    r = projection_requirements(frozen, sound='NATIVE_AUDIO', authority_context=context)
     c = NS(parameters={'model.audio': True}, model='Vidu Q3 Turbo', variant='viduq3-turbo', capability={'node_schema': node})
     with pytest.raises(ValueError, match='REQUIRED_REFERENCE_UNFULFILLED') as failure:
         project(r, c, {'class_type': 'Vidu3ImageToVideoNode'})

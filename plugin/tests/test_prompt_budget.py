@@ -12,6 +12,7 @@ from drama_plugin.hosts.cinematic_projection import project, validate_projection
 from drama_plugin.hosts.comfy_video import NODES
 from drama_plugin.visual.cinematic import selection_handoff
 from test_video_reconciliation import current_fixture, compile_all
+from cinematic_projection_helpers import projection_requirements
 
 ROOT = Path(__file__).parent / 'fixtures/prompt-budget'
 
@@ -84,7 +85,7 @@ def test_current_s02_k02_budget_passes_but_missing_media_still_blocks():
     frozen = json.loads((ROOT / 'S02-K02-frozen.json').read_text())
     original = deepcopy(frozen)
     node = json.loads((ROOT / 'vidu-current-node.json').read_text())['data'][0]
-    r = NS(frozen_creative={'cinematic_direction': frozen}, sound='NATIVE_AUDIO', reference_duties=())
+    r = projection_requirements(frozen, sound='NATIVE_AUDIO')
     c = NS(parameters={'model.audio': True}, capability={'node_schema': node}, model='Vidu Q3 Pro', variant='viduq3-pro')
     with pytest.raises(ValueError, match='REQUIRED_REFERENCE_UNFULFILLED') as failure:
         project(r, c, {'class_type': 'Vidu3ImageToVideoNode'})

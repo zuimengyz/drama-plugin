@@ -10,6 +10,7 @@ from drama_plugin.contracts.cinematic import CinematicShotSpec
 from drama_plugin.visual.cinematic import execution_brief, validate_canon, narrative_source, freeze_direction
 from test_full_body_casting import fixture
 from test_cinematic_direction import example
+from cinematic_projection_helpers import projection_requirements
 
 
 def bundle(character='A'):
@@ -104,7 +105,7 @@ def test_cinematic_canon_and_provider_projection():
     spec.reference_requirements=();spec.execution_requirements.reference_roles=()
     frozen=freeze_direction(spec,context=ctx,visual_resolution=visual,host_review='offline mechanics checked')
     from drama_plugin.hosts.cinematic_projection import project
-    r=SimpleNamespace(frozen_creative={'cinematic_direction':frozen},sound='NATIVE_AV',reference_duties=[])
+    r=projection_requirements(frozen,sound='NATIVE_AV',mode='TEXT_TO_VIDEO')
     result=project(r,SimpleNamespace(parameters={'model.generate_audio':True}),{'class_type':'ByteDance2TextToVideoNode'})
     assert 'ONLY A' in result['prompt'] and 'POWER MOMENTUM DOMINANCE' in result['prompt']
     assert any(x['canonical_field'].startswith('expressionDirection') for x in result['manifest'])

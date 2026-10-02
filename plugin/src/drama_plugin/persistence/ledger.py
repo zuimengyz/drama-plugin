@@ -42,10 +42,16 @@ ARTIFACT_TYPES: dict[str, tuple[str, str, RetentionClass]] = {
     "user-decision": ("user-decision-v1", "review", RetentionClass.REVIEW),
 }
 
+# E1 extends the same typed immutable store; Media bytes stay with Media Store.
+from drama_plugin.execution.contracts import EXECUTION_TYPES
+ARTIFACT_TYPES.update({name: (name + "-v1", "target-execution", RetentionClass.REVIEW
+    if name.endswith("review") else RetentionClass.PRODUCTION_REQUIRED) for name in EXECUTION_TYPES})
+
 INDEX_TYPES = frozenset({
     "governance-input", "generation-input", "latest-decision", "prepared",
     "governance-maintenance", "generation-rebuild", "final-prompt-key",
     "execution-reference-current",
+    "execution-input",
 })
 
 
@@ -100,6 +106,17 @@ class ProductionLedger:
                     PRIMARY KEY (operation_id, attempt_identity)
                 );
             """)
+            db.execute("BEGIN IMMEDIATE")
+            # Additive migration of the Foundation operation table. Old LOCAL_ONLY
+            # rows and historical runs are never rewritten or migrated.
+            columns = {row[1] for row in db.execute("PRAGMA table_info(production_operation)")}
+            for name, declaration in (("operation_ref_json", "TEXT"), ("attempt_ref_json", "TEXT"),
+                                      ("receipt_ref_json", "TEXT"), ("progress_json", "TEXT")):
+                if name not in columns:
+                    db.execute(f"ALTER TABLE production_operation ADD COLUMN {name} {declaration}")
+            db.execute("""CREATE UNIQUE INDEX IF NOT EXISTS target_dispatch_operation
+                ON production_operation(operation_id) WHERE operation_ref_json IS NOT NULL""")
+            db.commit()
 
     @contextmanager
     def transaction(self, *, write: bool = False) -> Iterator[sqlite3.Connection]:
@@ -237,6 +254,7 @@ class ProductionLedger:
             "gate-decision": GateDecision,
             "user-decision": UserDecisionRecord,
         }
+        models.update(EXECUTION_TYPES)
         if artifact_type == "execution-diagnostic":
             if not isinstance(body, (list, tuple)) or len(body) > 128:
                 raise ValueError("Execution diagnostics must be a bounded typed sequence")
@@ -273,8 +291,23 @@ class ProductionLedger:
                 actual_scope = getattr(derived, "scope", scope)
             if actual_scope != scope:
                 raise ValueError("Artifact Shot scope mismatch")
+            if artifact_type in EXECUTION_TYPES:
+                from drama_plugin.execution.contracts import ExecutionArtifact
+                from drama_plugin.execution.validation import validate_links
+                execution = cast(ExecutionArtifact, checked)
+                parent_run = db.execute("SELECT work_id,scene_id,shot_id FROM production_run WHERE run_id=?",
+                                        (execution.run_id,)).fetchone()
+                if parent_run is None or tuple(parent_run) != (scope.work_id, scope.scene_id, scope.shot_id):
+                    raise ValueError("Execution artifact Run scope mismatch")
+                def resolve_link(link: ArtifactReference) -> RuntimeContract:
+                    row = db.execute("SELECT artifact_type,body_json FROM immutable_artifact WHERE artifact_id=? AND version=?",
+                                     (link.artifact_ref, link.version)).fetchone()
+                    if row is None or link.owner != row["artifact_type"] or row["artifact_type"] not in models:
+                        raise ValueError("Missing or wrong execution lineage reference")
+                    return models[row["artifact_type"]].model_validate_json(row["body_json"])
+                validate_links(execution, resolve_link)
             if artifact_type in {"prompt-ir", "prompt-coverage", "final-prompt",
-                                 "audio-plan", "generation-preparation"}:
+                                 "audio-plan", "generation-preparation"} or artifact_type in EXECUTION_TYPES:
                 derived = cast(DerivedArtifact, checked)
                 source = db.execute("""SELECT work_id,scene_id,shot_id FROM immutable_artifact
                     WHERE artifact_id=? AND version=? AND artifact_type='production-package'""",
@@ -343,6 +376,9 @@ class ProductionLedger:
             value = GovernanceInput.model_validate(value.model_dump() if hasattr(value, "model_dump") else value)
         elif index_type == "generation-input":
             value = GenerationInput.model_validate(value.model_dump() if hasattr(value, "model_dump") else value)
+        elif index_type == "execution-input":
+            from drama_plugin.execution.contracts import ExecutionInput
+            value = ExecutionInput.model_validate(value.model_dump() if hasattr(value, "model_dump") else value)
         elif index_type in {"latest-decision", "prepared", "final-prompt-key"}:
             value = ArtifactReference.model_validate(value.model_dump() if hasattr(value, "model_dump") else value)
             expected = {"latest-decision": "gate-decision", "prepared": "generation-preparation",
@@ -359,6 +395,8 @@ class ProductionLedger:
                 if old["value_json"] != encoded:
                     raise ValueError("Ledger binding already set")
                 return False
+            if old is not None and index_type == "execution-input" and old["value_json"] != encoded:
+                raise ValueError("Execution input binding is immutable")
             if old is not None and old["value_json"] == encoded:
                 return False
             db.execute("""INSERT INTO ledger_index VALUES (?,?,?,?,?,?)

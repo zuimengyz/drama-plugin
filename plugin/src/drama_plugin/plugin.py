@@ -13,6 +13,10 @@ if TYPE_CHECKING:
     from drama_plugin.production.references import ReferenceExecutionStore
     from drama_plugin.generation.contracts import GenerationTask
     from drama_plugin.runtime.contracts import ArtifactReference, RunMode, RuntimeRun
+    from drama_plugin.execution.transport import ProviderTransport
+    from drama_plugin.execution.review import CreativeReviewer
+    from drama_plugin.execution.audio import AudioConsumer
+    from drama_plugin.execution.contracts import Authorization, FinishingRecipe
 
 import yaml  # type: ignore[import-untyped]
 from pydantic import ValidationError
@@ -53,7 +57,7 @@ class DramaPlugin:
     advance inside the Plugin through native capabilities and named Canon reads.
     """
 
-    def __init__(self, root: Path, config: DramaPluginConfig, manifest: PluginManifest, providers: ProviderBundle, skills: SkillRegistry, tools: ToolRegistry, http_clients: list[HttpProviderClient] | None = None, *, production_artifact_roots: tuple[Path, ...] = (), production_package_store: ProductionPackageStore | None = None, gate_finding_store: GateFindingStore | None = None, generation_artifact_store: GenerationArtifactStore | None = None, reference_execution_store: ReferenceExecutionStore | None = None, ledger_path: Path | str | None = None, test_foundation: bool = False) -> None:
+    def __init__(self, root: Path, config: DramaPluginConfig, manifest: PluginManifest, providers: ProviderBundle, skills: SkillRegistry, tools: ToolRegistry, http_clients: list[HttpProviderClient] | None = None, *, production_artifact_roots: tuple[Path, ...] = (), production_package_store: ProductionPackageStore | None = None, gate_finding_store: GateFindingStore | None = None, generation_artifact_store: GenerationArtifactStore | None = None, reference_execution_store: ReferenceExecutionStore | None = None, ledger_path: Path | str | None = None, test_foundation: bool = False, target_transports: dict[str, ProviderTransport] | None = None, target_reviewer: CreativeReviewer | None = None, target_audio: AudioConsumer | None = None, target_media_root: Path | None = None) -> None:
         self.root = root
         self.config = config
         from drama_plugin.characters import CharacterRepository
@@ -120,13 +124,28 @@ class DramaPlugin:
             media_reader=BoundMediaReader(tools))
         self.generation_capability = GenerationCapability(self.prompt_compiler, self.generation_artifacts, self.gate_governance)
         generation_flow = generation_workflow()
+        from drama_plugin.execution.capability import TargetExecution
+        from drama_plugin.execution.store import ExecutionStore
+        from drama_plugin.execution.media import LocalMediaStore
+        from drama_plugin.execution.policy import execution_workflow
+        self.execution = None
+        execution_native = {}
+        execution_flow = execution_workflow()
+        if self.ledger is not None:
+            self.execution = TargetExecution(ExecutionStore(self.ledger),
+                LocalMediaStore(target_media_root if target_media_root is not None else
+                    self.ledger.path.parent / (self.ledger.path.name + ".media")),
+                self.gate_governor, self.gate_findings, transports=target_transports,
+                reviewer=target_reviewer, audio=target_audio)
+            execution_native = self.execution.registrations()
         self.legacy_boundary = LegacyBoundary()
         self.legacy_recovery = LegacyRecovery(providers.memory, self.legacy_boundary)
         self.runtime = RuntimeEngine(TargetCapabilityRouter({**package_capability.registrations(),
-            **self.gate_governance.registrations(), **self.generation_capability.registrations()},
+            **self.gate_governance.registrations(), **self.generation_capability.registrations(), **execution_native},
             LegacyCapabilityBridge.from_tools(tools), self.legacy_boundary), store=runs,
             workflows={**foundation_workflows(), workflow.workflow_id: workflow,
-                governance_workflow.workflow_id: governance_workflow, generation_flow.workflow_id: generation_flow},
+                governance_workflow.workflow_id: governance_workflow, generation_flow.workflow_id: generation_flow,
+                execution_flow.workflow_id: execution_flow},
             policies={mode: GenerationPolicy(mode, self.gate_findings) for mode in RunMode})
         self.context = ContextBuilder(providers.context)
         self._http_clients = http_clients or []
@@ -137,7 +156,7 @@ class DramaPlugin:
         )
 
     @classmethod
-    def load(cls, root: Path | str | None = None, config_path: Path | str | None = None, *, mock_data: MockDramaData | None = None, production_artifact_roots: tuple[Path, ...] = (), production_package_store: ProductionPackageStore | None = None, gate_finding_store: GateFindingStore | None = None, generation_artifact_store: GenerationArtifactStore | None = None, reference_execution_store: ReferenceExecutionStore | None = None, ledger_path: Path | str | None = None) -> "DramaPlugin":
+    def load(cls, root: Path | str | None = None, config_path: Path | str | None = None, *, mock_data: MockDramaData | None = None, production_artifact_roots: tuple[Path, ...] = (), production_package_store: ProductionPackageStore | None = None, gate_finding_store: GateFindingStore | None = None, generation_artifact_store: GenerationArtifactStore | None = None, reference_execution_store: ReferenceExecutionStore | None = None, ledger_path: Path | str | None = None, target_transports: dict[str, ProviderTransport] | None = None, target_reviewer: CreativeReviewer | None = None, target_audio: AudioConsumer | None = None, target_media_root: Path | None = None) -> "DramaPlugin":
         plugin_root = Path(root) if root is not None else Path(__file__).resolve().parents[2]
         manifest = cls._load_manifest(plugin_root / "plugin.yaml")
         config = load_config(config_path)
@@ -152,7 +171,8 @@ class DramaPlugin:
                    production_artifact_roots=production_artifact_roots, production_package_store=production_package_store,
                    gate_finding_store=gate_finding_store, generation_artifact_store=generation_artifact_store,
                    reference_execution_store=reference_execution_store, ledger_path=ledger_path,
-                   test_foundation=mock_data is not None)
+                   test_foundation=mock_data is not None, target_transports=target_transports,
+                   target_reviewer=target_reviewer, target_audio=target_audio, target_media_root=target_media_root)
 
     @staticmethod
     def _load_manifest(path: Path) -> PluginManifest:
@@ -248,6 +268,46 @@ class DramaPlugin:
             task=task if task is not None else GenerationTask(input_mode=self.execution_references.mode(run.scope)),
             cached_preparation_ref=cached_preparation_ref))
         return run
+
+    def create_execution_run(self, *, run_id: str, mode: RunMode,
+                             preparation_ref: ArtifactReference, authorization: Authorization,
+                             recipe: FinishingRecipe, route: str) -> RuntimeRun:
+        """E1 starts from approved preparation; never recompiles or adopts Canon."""
+        if self.execution is None:
+            raise ConfigurationError("Target execution requires durable ProductionLedger")
+        from drama_plugin.execution.contracts import ExecutionInput
+        from drama_plugin.execution.policy import WORKFLOW
+        from drama_plugin.generation.contracts import GenerationPreparation
+        prepared = self.execution.derived(preparation_ref, GenerationPreparation)
+        scope = self.production_packages.get(prepared.source_package_ref).scope
+        run = self.runtime.draft_run(work_id=scope.work.artifact_ref,
+            scene_id=scope.scene.artifact_ref, shot_id=scope.shot.artifact_ref,
+            mode=mode, workflow_id=WORKFLOW, run_id=run_id)
+        if recipe.preparation_ref != preparation_ref or recipe.audio_plan_ref != prepared.audio_plan_ref:
+            raise ValueError("Finishing recipe must pin the selected preparation/audio plan")
+        return self.execution.store.create_run(run, ExecutionInput(preparation_ref=preparation_ref,
+            authorization=authorization, recipe_ref=recipe.artifact_reference(), route=route), recipe)
+
+    async def resume_execution_run(self, run_id: str) -> RuntimeRun:
+        """Reconcile a pending domain capability; Runtime still owns state progression."""
+        if self.execution is None:
+            raise ConfigurationError("Target execution requires durable ProductionLedger")
+        from drama_plugin.execution.policy import WORKFLOW, execution_workflow
+        from drama_plugin.runtime.contracts import CapabilityInput, ResultStatus, RuntimeState
+        run = await self.runtime.recover_run(run_id)
+        if run.workflow_id != WORKFLOW:
+            raise ValueError("Only E1 execution runs can use execution reconciliation")
+        if run.state == RuntimeState.WAITING_EXTERNAL:
+            key = execution_workflow().steps[run.cursor].capability_key
+            assert key and run.last_result and run.last_result.external_ref
+            result = await self.runtime.executor.execute(key, CapabilityInput(run_id=run_id,
+                operation_id=f"{run_id}:{run.cursor}", scope=run.scope))
+            if result.status in {ResultStatus.WAITING_EXTERNAL, ResultStatus.RETRYABLE_FAILURE}:
+                return run
+            await self.runtime.record_external_result(run_id, external_ref=run.last_result.external_ref, result=result)
+        elif run.state == RuntimeState.BLOCKED and run.wait_reason == "INTERRUPTED_CAPABILITY":
+            await self.runtime.retry(run_id)
+        return await self.runtime.run(run_id)
 
     async def decide_target_run(self, run_id: str, *, decision_id: str, accepted: bool,
                                 source_ref: ArtifactReference | None = None) -> RuntimeRun:

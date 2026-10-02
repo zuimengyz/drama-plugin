@@ -44,7 +44,8 @@ async def test_one_facade_and_ref_only_immutable_selection_preserves_owners(fixt
     assert plugin.professional_design is plugin.shot_assembler.professional_design
     assert type(plugin.professional_design) is ProfessionalDesignResolver
     assert not plugin.professional_design.creative_authority and plugin.professional_design.durability == "EPHEMERAL"
-    assert plugin.professional_design.backend.lifecycle == "MIGRATION_ONLY"
+    assert plugin.professional_design.backend.legacy.lifecycle == "MIGRATION_ONLY"
+    assert plugin.professional_design.backend.lifecycle == "TARGET_VERSION_RESOLVER_WITH_MIGRATION_ONLY_READ_BACKEND"
     assert selection.status == "RESOLVED"
     assert selection.domains == (D.CAMERA, D.DIRECTION)
     assert len(selection.sources) == 3

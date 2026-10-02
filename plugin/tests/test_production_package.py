@@ -115,7 +115,8 @@ async def test_plugin_native_e2e_has_one_assembler_no_legacy_dispatch_or_canon_c
     assert all("CANON TEXT" not in text and "KEEP ME" not in text for text in envelopes)
     snapshot = plugin.runtime.serialize(result.run_id)
     assert "sources" not in json.loads(snapshot) and package.fingerprint in snapshot
-    assert plugin.shot_assembler.sources.lifecycle == "MIGRATION_ONLY"
+    assert plugin.shot_assembler.sources.legacy.lifecycle == "MIGRATION_ONLY"
+    assert plugin.shot_assembler.sources.lifecycle == "TARGET_VERSION_RESOLVER_WITH_MIGRATION_ONLY_READ_BACKEND"
     await plugin.aclose()
 
 

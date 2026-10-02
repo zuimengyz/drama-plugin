@@ -51,7 +51,7 @@ INDEX_TYPES = frozenset({
     "governance-input", "generation-input", "latest-decision", "prepared",
     "governance-maintenance", "generation-rebuild", "final-prompt-key",
     "execution-reference-current",
-    "execution-input",
+    "execution-input", "creative-input", "creative-checkpoint",
 })
 
 
@@ -376,6 +376,10 @@ class ProductionLedger:
             value = GovernanceInput.model_validate(value.model_dump() if hasattr(value, "model_dump") else value)
         elif index_type == "generation-input":
             value = GenerationInput.model_validate(value.model_dump() if hasattr(value, "model_dump") else value)
+        elif index_type in {"creative-input", "creative-checkpoint"}:
+            from drama_plugin.creative_engine.contracts import FilmInput, CreativeCheckpoint
+            model = FilmInput if index_type == "creative-input" else CreativeCheckpoint
+            value = model.model_validate(value.model_dump() if hasattr(value, "model_dump") else value)
         elif index_type == "execution-input":
             from drama_plugin.execution.contracts import ExecutionInput
             value = ExecutionInput.model_validate(value.model_dump() if hasattr(value, "model_dump") else value)

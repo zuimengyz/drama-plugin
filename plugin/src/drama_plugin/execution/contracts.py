@@ -28,7 +28,7 @@ class Authorization(RuntimeContract):
     authorized: bool
     budget_microunits: Annotated[StrictInt, Field(ge=0)]
     estimated_cost_microunits: Annotated[StrictInt, Field(ge=0)]
-    execution_mode: Literal["OFFLINE_ONLY"] = "OFFLINE_ONLY"
+    execution_mode: Literal["OFFLINE_ONLY", "CONTROLLED_LIVE"] = "OFFLINE_ONLY"
 
 
 class ExecutionArtifact(DerivedArtifact):

@@ -124,7 +124,7 @@ async def test_goal_to_package_single_runtime_and_e1_preparation(tmp_path, mode)
         assert SOURCE.text not in indexes and "Indifference conceals responsibility" not in indexes
         assert len(list(db.execute("SELECT name FROM sqlite_master WHERE type='table'"))) == 4
     assert SOURCE.text not in p.runtime.serialize(run.run_id)
-    assert len(p.runtime.executor.native_keys) == 25
+    assert len({key for key in p.runtime.executor.native_keys if not key.startswith("film.")}) == 25
 
 
 @pytest.mark.parametrize("owner,cursor", [("canon_author", 1), ("direction_author", 2), ("professional_author", 3)])
@@ -224,8 +224,20 @@ async def test_wrong_object_or_version_uses_hs1(tmp_path, violation):
             scene_id="wrong" if violation == "scene" else "film:scene",
             shot_id="wrong" if violation in {"shot", "professional"} else "film:shot")
         artifact = p.creative_versions.resolve(cp.refs[-1] if violation == "professional" else target)
+        body = artifact.body
+        if violation == "professional":
+            # Cross-scope provenance is now rejected at the owner write boundary.
+            # A legitimately scoped OTHER object's design still exercises HS1.
+            from drama_plugin.professional_design.provenance import creative_facts
+            with pytest.raises(ValueError, match="AUTHORITY_MISMATCH"):
+                p.creative_versions.write(writer=artifact.authority, kind=artifact.kind, scope=scope,
+                    body=body, sources=(), operation="bad-provenance")
+            assert isinstance(body, DesignBody)
+            facts = creative_facts(body.facts)
+            assert isinstance(facts, dict)
+            body = DesignBody(domain=body.domain, facts=facts)
         bad = p.creative_versions.write(writer=artifact.authority, kind=artifact.kind, scope=scope,
-            body=artifact.body, sources=(), operation="bad-scope")
+            body=body, sources=(), operation="bad-scope")
         new = p.create_film_run(work_id="film", source_ref=p.creative.state.input(run.run_id).source_ref,
             mode=RunMode.EXPERIMENT, base_refs=(*cp.refs[:-1], bad))
     done = await p.runtime.run(new.run_id)

@@ -44,7 +44,11 @@ class ProfessionalDesignResolver:
         if self.author is None:
             raise ValueError("CAPABILITY_ABSENT")
         checked = AuthorRequest.model_validate(request.model_dump())
-        return tuple(DesignBody.model_validate(item.model_dump()) for item in await self.author.design(checked))
+        from drama_plugin.professional_design.provenance import reject_model_metadata
+        designs = tuple(DesignBody.model_validate(item.model_dump()) for item in await self.author.design(checked))
+        for item in designs:
+            reject_model_metadata(item.facts)
+        return designs
 
     async def revise(self, request: AuthorRequest) -> tuple[DesignBody, ...]:
         if request.revision is None:
@@ -54,6 +58,8 @@ class ProfessionalDesignResolver:
     def persist(self, versions: CreativeVersionStore, request: AuthorRequest,
                 design: DesignBody, *, operation: str) -> VersionRef:
         from drama_plugin.creative_engine.contracts import Authority, Kind
+        from drama_plugin.professional_design.provenance import reject_model_metadata
+        reject_model_metadata(design.facts)
         return versions.write(writer=Authority.PROFESSIONAL, kind=Kind.PROFESSIONAL,
             scope=request.scope, body=design, sources=request.source_refs, operation=operation)
 

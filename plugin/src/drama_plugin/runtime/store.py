@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import asyncio
 
-from drama_plugin.runtime.contracts import RuntimeRun
+from drama_plugin.runtime.contracts import RuntimeRun, validate_repair_history
 
 
 class InMemoryRunStore:
@@ -36,5 +36,6 @@ class InMemoryRunStore:
             if getattr(previous, field) != getattr(run, field):
                 raise ValueError("Runtime identity is immutable")
         validated = RuntimeRun.model_validate(run.model_dump())
+        validate_repair_history(previous, validated)
         self._runs[run.run_id] = validated
         return validated

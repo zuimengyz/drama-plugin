@@ -1,0 +1,16 @@
+"""Film extensions of the existing author families, plus consumer-only review/recipe ports."""
+from typing import Protocol
+from drama_plugin.film.contracts import FilmAuthorRequest, FilmCanon, FilmDirection, FinalFilmCandidate, FinalCreativeReview
+from drama_plugin.execution.contracts import FinishingRecipe, Authorization
+from drama_plugin.runtime.contracts import ArtifactReference, RuntimeScope
+
+class FilmCanonAuthor(Protocol):
+    async def author_film(self, request: FilmAuthorRequest) -> FilmCanon: ...
+class FilmDirectionAuthor(Protocol):
+    async def direct_film(self, request: FilmAuthorRequest) -> FilmDirection: ...
+class FilmReviewer(Protocol):
+    async def review_film(self, candidate: FinalFilmCandidate) -> FinalCreativeReview: ...
+class ExecutionRecipeSource(Protocol):
+    def recipe(self, *, run_id: str, scope: RuntimeScope, preparation_ref: ArtifactReference,
+               package_ref: ArtifactReference, audio_plan_ref: ArtifactReference) -> FinishingRecipe: ...
+    def authorization(self, package_ref: ArtifactReference) -> Authorization: ...

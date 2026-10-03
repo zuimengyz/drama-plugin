@@ -6,10 +6,11 @@ from typing import Any
 from uuid import uuid4
 
 from drama_plugin.contracts.base import sha256_canonical
-from drama_plugin.runtime.bridge import CapabilityExecutor
+from drama_plugin.runtime.bridge import CapabilityExecutor, ExecutionInspector
 from drama_plugin.runtime.contracts import (
     ActionKind, ArtifactReference, CapabilityInput, CapabilityResult, ResultStatus,
     RunMode, RuntimeAction, RuntimeRun, RuntimeScope, RuntimeState, RuntimeWorkflow,
+    ExecutionInspection, ExhaustedExecutionEvidence, RepairResumeRecord,
 )
 from drama_plugin.runtime.policy import RuntimePolicy, default_policies
 from drama_plugin.runtime.store import InMemoryRunStore
@@ -120,13 +121,60 @@ class RuntimeEngine:
     def _record_result(self, run: RuntimeRun, result: CapabilityResult) -> RuntimeRun:
         if result.status == ResultStatus.SUCCEEDED:
             return self._transition(run, RuntimeState.READY, cursor=run.cursor + 1,
-                step_attempts=0, wait_reason=None, last_result=result)
+                step_attempts=0, wait_reason=None, last_result=result, execution_revision=None)
         if result.status == ResultStatus.WAITING_EXTERNAL:
             return self._transition(run, RuntimeState.WAITING_EXTERNAL,
                 wait_reason="EXTERNAL_RESULT_PENDING", last_result=result)
-        state = RuntimeState.BLOCKED if result.status == ResultStatus.RETRYABLE_FAILURE else RuntimeState.FAILED
+        state = RuntimeState.BLOCKED if result.status == ResultStatus.RETRYABLE_FAILURE and run.active_repair() is None else RuntimeState.FAILED
         return self._transition(run, state, last_result=result,
             wait_reason=result.code if state == RuntimeState.BLOCKED else None)
+
+    def _inspection(self, run: RuntimeRun, key: str) -> ExecutionInspection | None:
+        if not isinstance(self.executor, ExecutionInspector):
+            return None
+        return self.executor.inspect_execution(key, CapabilityInput(run_id=run.run_id,
+            operation_id=f"{run.run_id}:{run.cursor}", scope=run.scope))
+
+    async def repair_resume(self, run_id: str, *, cursor: int, capability_key: str,
+                            exhausted: ExhaustedExecutionEvidence) -> RuntimeRun:
+        """One explicitly authorized repair per step; ordinary retry is unchanged.
+
+        Pre-revision checkpoints require audited historical evidence from the
+        recovery caller. Later checkpoints must also match their captured revision.
+        No artifact contents or secrets enter this metadata.
+        """
+        async with self.store.lock(run_id):
+            run = self.store.load(run_id)
+            policy, workflow = self._context(run)
+            if (run.state != RuntimeState.FAILED or run.last_result is None
+                    or run.last_result.status != ResultStatus.FAILED or run.last_result.code != "RETRY_LIMIT_REACHED"):
+                raise ValueError("REPAIR_REQUIRES_EXHAUSTED_FAILURE")
+            if (cursor != run.cursor or cursor >= len(workflow.steps)
+                    or workflow.steps[cursor].capability_key != capability_key):
+                raise ValueError("REPAIR_STEP_MISMATCH")
+            if run.active_repair() is not None:
+                raise ValueError("REPAIR_OPPORTUNITY_ALREADY_USED")
+            if (run.step_attempts != policy.max_step_attempts
+                    or exhausted.historical_attempts != run.step_attempts):
+                raise ValueError("REPAIR_ATTEMPT_HISTORY_MISMATCH")
+            inspection = self._inspection(run, capability_key)
+            if inspection is None or inspection.completed:
+                raise ValueError("REPAIR_UNSUPPORTED_OR_STEP_COMPLETED")
+            if run.execution_revision is not None and run.execution_revision != exhausted.revision:
+                raise ValueError("REPAIR_EXHAUSTED_REVISION_MISMATCH")
+            if inspection.revision.input_fingerprint != exhausted.revision.input_fingerprint:
+                raise ValueError("REPAIR_AUTHORITY_INPUT_CHANGED")
+            if inspection.revision.fingerprint == exhausted.revision.fingerprint:
+                raise ValueError("RETRY_LIMIT_REACHED")
+            record = RepairResumeRecord(cursor=cursor, capability_key=capability_key,
+                exhausted=exhausted, current=inspection.revision)
+            # Deliberately do not widen FAILED's general transition table.
+            following = RuntimeRun.model_validate({**run.model_dump(), "state": RuntimeState.READY,
+                "revision": run.revision + 1, "wait_reason": None,
+                "execution_revision": inspection.revision,
+                "repair_resumes": (*run.repair_resumes, record)})
+            self._context(following)
+            return self.store.save(following, expected_revision=run.revision)
 
     async def run(self, run_id: str, *, max_ticks: int = 64) -> RuntimeRun:
         """Advance internally; return on genuine waits, failures or terminal state.
@@ -162,10 +210,30 @@ class RuntimeEngine:
                         wait_reason="EXTERNAL_RESULT_PENDING", last_result=CapabilityResult(
                             status=ResultStatus.WAITING_EXTERNAL, external_ref=action.external_ref))
                 assert action.capability_key is not None
-                if run.step_attempts >= self._policies[run.mode].max_step_attempts:
+                repair = run.active_repair()
+                try:
+                    inspection = self._inspection(run, action.capability_key)
+                except Exception:
+                    return self._transition(run, RuntimeState.FAILED,
+                        last_result=CapabilityResult(status=ResultStatus.FAILED, code="EXECUTION_IDENTITY_UNAVAILABLE"))
+                if repair is not None:
+                    if (repair.attempts >= repair.limit or inspection is None or inspection.completed
+                            or inspection.revision != repair.current):
+                        return self._transition(run, RuntimeState.FAILED,
+                            last_result=CapabilityResult(status=ResultStatus.FAILED, code="REPAIR_EXECUTION_DENIED"))
+                    consumed = RepairResumeRecord.model_validate({**repair.model_dump(), "attempts": 1})
+                    executing = self._transition(run, RuntimeState.RUNNING,
+                        repair_resumes=tuple(consumed if r.cursor == run.cursor else r for r in run.repair_resumes))
+                elif run.step_attempts >= self._policies[run.mode].max_step_attempts:
                     return self._transition(run, RuntimeState.FAILED,
                         last_result=CapabilityResult(status=ResultStatus.FAILED, code="RETRY_LIMIT_REACHED"))
-                executing = self._transition(run, RuntimeState.RUNNING, step_attempts=run.step_attempts + 1)
+                else:
+                    revision = inspection.revision if inspection is not None else None
+                    if run.execution_revision is not None and run.execution_revision != revision:
+                        return self._transition(run, RuntimeState.FAILED,
+                            last_result=CapabilityResult(status=ResultStatus.FAILED, code="EXECUTION_REVISION_CHANGED"))
+                    executing = self._transition(run, RuntimeState.RUNNING,
+                        step_attempts=run.step_attempts + 1, execution_revision=revision)
                 inputs = CapabilityInput(run_id=run.run_id, operation_id=f"{run.run_id}:{run.cursor}",
                     scope=run.scope, input_refs=(run.last_result.artifact_refs
                         if action.input_from_previous and run.last_result is not None else action.input_refs))

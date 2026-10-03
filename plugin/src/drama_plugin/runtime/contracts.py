@@ -146,6 +146,37 @@ class CapabilityResult(RuntimeContract):
         return self
 
 
+class ExecutionRevision(RuntimeContract):
+    """Contract identity and authoritative input identity, without author text."""
+    fingerprint: str = Field(pattern=r"^[a-f0-9]{64}$")
+    input_fingerprint: str = Field(pattern=r"^[a-f0-9]{64}$")
+
+
+class ExecutionInspection(RuntimeContract):
+    revision: ExecutionRevision
+    completed: bool
+
+
+class ExhaustedExecutionEvidence(RuntimeContract):
+    """Explicit audited attestation for checkpoints predating revision capture.
+
+    This is supplied by the authorized recovery caller, never by model output.
+    It remains in the durable checkpoint and does not rewrite historical rows.
+    """
+    revision: ExecutionRevision
+    evidence_ref: ArtifactReference
+    historical_attempts: int = Field(ge=1)
+
+
+class RepairResumeRecord(RuntimeContract):
+    cursor: int = Field(ge=0, lt=32)
+    capability_key: Identifier
+    exhausted: ExhaustedExecutionEvidence
+    current: ExecutionRevision
+    attempts: int = Field(default=0, ge=0, le=1)
+    limit: int = Field(default=1, ge=1, le=1)
+
+
 class RuntimeRun(RuntimeContract):
     schema_version: int = Field(default=1, ge=1, le=1)
     run_id: Identifier
@@ -160,9 +191,36 @@ class RuntimeRun(RuntimeContract):
     revision: int = Field(default=0, ge=0)
     last_result: CapabilityResult | None = None
     wait_reason: Identifier | None = None
+    execution_revision: ExecutionRevision | None = None
+    repair_resumes: tuple[RepairResumeRecord, ...] = Field(default=(), max_length=32)
+
+    @model_serializer(mode="wrap")
+    def preserve_existing_checkpoint_shape(self, handler: SerializerFunctionWrapHandler) -> dict[str, object]:
+        data: dict[str, object] = handler(self)
+        for field, alias, absent in (("execution_revision", "executionRevision", self.execution_revision is None),
+                                     ("repair_resumes", "repairResumes", not self.repair_resumes)):
+            if absent:
+                data.pop(field, None)
+                data.pop(alias, None)
+        return data
+
+    def active_repair(self) -> RepairResumeRecord | None:
+        return next((r for r in self.repair_resumes if r.cursor == self.cursor), None)
+
+    def attempt_identity(self) -> str:
+        operation = f"{self.run_id}:{self.cursor}"
+        repair = self.active_repair()
+        if repair is not None and repair.attempts:
+            return f"{operation}:repair:{repair.current.fingerprint}:{repair.attempts}"
+        return f"{operation}:{self.step_attempts}"
 
     @model_validator(mode="after")
     def wait_shape(self) -> Self:
+        if len({r.cursor for r in self.repair_resumes}) != len(self.repair_resumes):
+            raise ValueError("Only one repair opportunity per step")
+        if any(r.cursor > self.cursor or r.current.input_fingerprint != r.exhausted.revision.input_fingerprint
+               or r.current.fingerprint == r.exhausted.revision.fingerprint for r in self.repair_resumes):
+            raise ValueError("Repair revision/input identity invalid")
         waiting = self.state in {
             RuntimeState.WAITING_USER, RuntimeState.WAITING_EXTERNAL, RuntimeState.BLOCKED,
         }
@@ -172,3 +230,12 @@ class RuntimeRun(RuntimeContract):
             if self.last_result is None or self.last_result.status != ResultStatus.WAITING_EXTERNAL:
                 raise ValueError("External wait requires its reference-only result")
         return self
+
+
+def validate_repair_history(previous: RuntimeRun, following: RuntimeRun) -> None:
+    """Append-only repair provenance; consumption may only advance once."""
+    if len(following.repair_resumes) < len(previous.repair_resumes):
+        raise ValueError("Repair history cannot be removed")
+    for old, new in zip(previous.repair_resumes, following.repair_resumes):
+        if old.model_dump(exclude={"attempts"}) != new.model_dump(exclude={"attempts"}) or new.attempts < old.attempts:
+            raise ValueError("Repair history is immutable")

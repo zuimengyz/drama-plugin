@@ -151,7 +151,7 @@ async def test_complete_offline_candidate_exact_transfer_and_identity(generation
         plugin.execution.derived(prompt_ir_ref, PromptIR).fingerprint,
         plugin.execution.derived(preparation.audio_plan_ref, AudioExecutionPlan).fingerprint)
     assert generation_fixture[0].work.model_dump_json() == before
-    assert len({key for key in plugin.runtime.executor.native_keys if not key.startswith("creative.")}) == 16
+    assert len({key for key in plugin.runtime.executor.native_keys if not key.startswith(("creative.", "film."))}) == 16
     assert plugin.execution.store.get(candidate.av_creative_ref, CreativeMediaReview).media == candidate.media
     assert plugin.execution.store.get(candidate.av_technical_ref, TechnicalMediaReview).media == candidate.media
     assert plugin.execution.store.get(candidate.video_creative_ref, CreativeMediaReview).media != candidate.media

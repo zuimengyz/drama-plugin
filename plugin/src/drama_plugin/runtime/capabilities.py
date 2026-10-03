@@ -5,7 +5,7 @@ from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass
 
 from drama_plugin.runtime.bridge import CapabilityExecutor
-from drama_plugin.runtime.contracts import CapabilityInput, CapabilityResult, ResultStatus
+from drama_plugin.runtime.contracts import CapabilityInput, CapabilityResult, ExecutionInspection, ResultStatus
 from drama_plugin.runtime.legacy_boundary import (
     LegacyAccessDecision, LegacyAccessRequest, LegacyBoundary, LegacyOrigin, LegacyPurpose,
 )
@@ -15,6 +15,7 @@ from drama_plugin.runtime.legacy_boundary import (
 class TargetCapability:
     handler: Callable[[CapabilityInput], Awaitable[CapabilityResult]]
     replay_safe: bool = False
+    inspect_execution: Callable[[CapabilityInput], ExecutionInspection | None] | None = None
 
 
 class TargetCapabilityRouter:
@@ -50,3 +51,10 @@ class TargetCapabilityRouter:
         if capability is not None:
             return capability.replay_safe
         return capability_key in self.migration_keys and self.legacy.replay_safe(capability_key)
+
+    def inspect_execution(self, capability_key: str, inputs: CapabilityInput) -> ExecutionInspection | None:
+        capability = self._native.get(capability_key)
+        if capability is None or capability.inspect_execution is None:
+            return None
+        inspection = capability.inspect_execution(inputs)
+        return ExecutionInspection.model_validate(inspection) if inspection is not None else None

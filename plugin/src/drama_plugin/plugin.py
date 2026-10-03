@@ -18,6 +18,8 @@ if TYPE_CHECKING:
     from drama_plugin.execution.review import CreativeReviewer
     from drama_plugin.execution.audio import AudioConsumer
     from drama_plugin.execution.contracts import Authorization, FinishingRecipe
+    from drama_plugin.film.ports import FilmCanonAuthor, FilmDirectionAuthor, FilmReviewer, ExecutionRecipeSource
+    from drama_plugin.film.contracts import LanguageMetadata, DeliveryProfile
     from drama_plugin.creative_engine.authors import CanonAuthor, CreativeDirectionAuthor, ProfessionalAuthor
     from drama_plugin.creative_engine.contracts import SourceBody, VersionRef, RouteRequest, RevisionRequest
 
@@ -60,7 +62,7 @@ class DramaPlugin:
     advance inside the Plugin through native capabilities and named Canon reads.
     """
 
-    def __init__(self, root: Path, config: DramaPluginConfig, manifest: PluginManifest, providers: ProviderBundle, skills: SkillRegistry, tools: ToolRegistry, http_clients: list[HttpProviderClient] | None = None, *, production_artifact_roots: tuple[Path, ...] = (), production_package_store: ProductionPackageStore | None = None, gate_finding_store: GateFindingStore | None = None, generation_artifact_store: GenerationArtifactStore | None = None, reference_execution_store: ReferenceExecutionStore | None = None, ledger_path: Path | str | None = None, test_foundation: bool = False, target_transports: dict[str, ProviderTransport] | None = None, target_reviewer: CreativeReviewer | None = None, target_audio: AudioConsumer | None = None, target_media_root: Path | None = None, creative_root: Path | None = None, canon_author: CanonAuthor | None = None, direction_author: CreativeDirectionAuthor | None = None, professional_author: ProfessionalAuthor | None = None) -> None:
+    def __init__(self, root: Path, config: DramaPluginConfig, manifest: PluginManifest, providers: ProviderBundle, skills: SkillRegistry, tools: ToolRegistry, http_clients: list[HttpProviderClient] | None = None, *, production_artifact_roots: tuple[Path, ...] = (), production_package_store: ProductionPackageStore | None = None, gate_finding_store: GateFindingStore | None = None, generation_artifact_store: GenerationArtifactStore | None = None, reference_execution_store: ReferenceExecutionStore | None = None, ledger_path: Path | str | None = None, test_foundation: bool = False, target_transports: dict[str, ProviderTransport] | None = None, target_reviewer: CreativeReviewer | None = None, target_audio: AudioConsumer | None = None, target_media_root: Path | None = None, creative_root: Path | None = None, canon_author: CanonAuthor | None = None, direction_author: CreativeDirectionAuthor | None = None, professional_author: ProfessionalAuthor | None = None, film_canon_author: FilmCanonAuthor | None = None, film_direction_author: FilmDirectionAuthor | None = None, film_reviewer: FilmReviewer | None = None, film_recipes: ExecutionRecipeSource | None = None, target_formal_media: bool = False) -> None:
         self.root = root
         self.config = config
         from drama_plugin.characters import CharacterRepository
@@ -147,6 +149,9 @@ class DramaPlugin:
                     self.ledger.path.parent / (self.ledger.path.name + ".media")),
                 self.gate_governor, self.gate_findings, transports=target_transports,
                 reviewer=target_reviewer, audio=target_audio)
+            if target_formal_media:
+                from drama_plugin.execution.formal_media import FormalMediaStore
+                self.execution.media = FormalMediaStore(self.execution.media.directory, providers.media, self.execution.store)
             execution_native = self.execution.registrations()
         self.legacy_boundary = LegacyBoundary()
         self.legacy_recovery = LegacyRecovery(providers.memory, self.legacy_boundary)
@@ -156,14 +161,21 @@ class DramaPlugin:
             self.production_packages, self.gate_governor, self.gate_findings,
             canon_author, direction_author, self.professional_design)
         creative_flow, dependency_flow = creative_workflow(), dependency_workflow()
+        from drama_plugin.film.store import FilmStore
+        from drama_plugin.film.capability import FilmCapabilities
+        from drama_plugin.film.policy import FilmPolicy, film_workflow, film_revision_workflow
+        self.film = FilmCapabilities(self, FilmStore(self.ledger, self.creative_versions),
+            canon=film_canon_author, direction=film_direction_author, reviewer=film_reviewer, recipes=film_recipes) if self.ledger else None
+        film_native = self.film.registrations() if self.film else {}
+        film_flows = {film_workflow().workflow_id: film_workflow(), film_revision_workflow().workflow_id: film_revision_workflow()} if self.film else {}
         self.runtime = RuntimeEngine(TargetCapabilityRouter({**package_capability.registrations(),
-            **self.gate_governance.registrations(), **self.generation_capability.registrations(), **execution_native, **self.creative.registrations()},
+            **self.gate_governance.registrations(), **self.generation_capability.registrations(), **execution_native, **self.creative.registrations(), **film_native},
             LegacyCapabilityBridge.from_tools(tools), self.legacy_boundary), store=runs,
             workflows={**foundation_workflows(), workflow.workflow_id: workflow,
                 governance_workflow.workflow_id: governance_workflow, generation_flow.workflow_id: generation_flow,
                 execution_flow.workflow_id: execution_flow, creative_flow.workflow_id: creative_flow,
-                dependency_flow.workflow_id: dependency_flow},
-            policies={mode: CreativePolicy(mode, self.gate_findings) for mode in RunMode})
+                dependency_flow.workflow_id: dependency_flow, **film_flows},
+            policies={mode: FilmPolicy(mode, self.gate_findings, self.film.store, self.gate_governor) if self.film else CreativePolicy(mode, self.gate_findings) for mode in RunMode})
         self.creative.runtime = self.runtime
         self.context = ContextBuilder(providers.context)
         self._http_clients = http_clients or []
@@ -174,7 +186,7 @@ class DramaPlugin:
         )
 
     @classmethod
-    def load(cls, root: Path | str | None = None, config_path: Path | str | None = None, *, mock_data: MockDramaData | None = None, production_artifact_roots: tuple[Path, ...] = (), production_package_store: ProductionPackageStore | None = None, gate_finding_store: GateFindingStore | None = None, generation_artifact_store: GenerationArtifactStore | None = None, reference_execution_store: ReferenceExecutionStore | None = None, ledger_path: Path | str | None = None, target_transports: dict[str, ProviderTransport] | None = None, target_reviewer: CreativeReviewer | None = None, target_audio: AudioConsumer | None = None, target_media_root: Path | None = None, creative_root: Path | None = None, canon_author: CanonAuthor | None = None, direction_author: CreativeDirectionAuthor | None = None, professional_author: ProfessionalAuthor | None = None) -> "DramaPlugin":
+    def load(cls, root: Path | str | None = None, config_path: Path | str | None = None, *, mock_data: MockDramaData | None = None, production_artifact_roots: tuple[Path, ...] = (), production_package_store: ProductionPackageStore | None = None, gate_finding_store: GateFindingStore | None = None, generation_artifact_store: GenerationArtifactStore | None = None, reference_execution_store: ReferenceExecutionStore | None = None, ledger_path: Path | str | None = None, target_transports: dict[str, ProviderTransport] | None = None, target_reviewer: CreativeReviewer | None = None, target_audio: AudioConsumer | None = None, target_media_root: Path | None = None, creative_root: Path | None = None, canon_author: CanonAuthor | None = None, direction_author: CreativeDirectionAuthor | None = None, professional_author: ProfessionalAuthor | None = None, film_canon_author: FilmCanonAuthor | None = None, film_direction_author: FilmDirectionAuthor | None = None, film_reviewer: FilmReviewer | None = None, film_recipes: ExecutionRecipeSource | None = None, target_formal_media: bool = False) -> "DramaPlugin":
         plugin_root = Path(root) if root is not None else Path(__file__).resolve().parents[2]
         manifest = cls._load_manifest(plugin_root / "plugin.yaml")
         config = load_config(config_path)
@@ -185,6 +197,15 @@ class DramaPlugin:
             raise ConfigurationError("Voice and Role Dubbing providers must be configured")
         tools = build_tool_registry(providers.memory, providers.asset, providers.research, providers.production, providers.media, providers.context, providers.voice, providers.role_dubbing)
         SkillToolReferenceValidator.validate(skills, tools)
+        from drama_plugin.creative_engine.backends import compose_authors
+        formal_canon, formal_direction, formal_professional = compose_authors(
+            config.text_composition, plugin_root / manifest.skills_directory)
+        if canon_author is None:
+            canon_author = formal_canon
+        if direction_author is None:
+            direction_author = formal_direction
+        if professional_author is None:
+            professional_author = formal_professional
         return cls(plugin_root, config, manifest, providers, skills, tools, clients,
                    production_artifact_roots=production_artifact_roots, production_package_store=production_package_store,
                    gate_finding_store=gate_finding_store, generation_artifact_store=generation_artifact_store,
@@ -192,7 +213,7 @@ class DramaPlugin:
                    test_foundation=mock_data is not None, target_transports=target_transports,
                    target_reviewer=target_reviewer, target_audio=target_audio, target_media_root=target_media_root,
                    creative_root=creative_root, canon_author=canon_author, direction_author=direction_author,
-                   professional_author=professional_author)
+                   professional_author=professional_author, film_canon_author=film_canon_author, film_direction_author=film_direction_author, film_reviewer=film_reviewer, film_recipes=film_recipes, target_formal_media=target_formal_media)
 
     @staticmethod
     def _load_manifest(path: Path) -> PluginManifest:
@@ -242,7 +263,73 @@ class DramaPlugin:
             audio_semantic = BailianQwenOmniAudioSemanticProvider(services.qwen_omni)
         return ProviderBundle(memory, asset, research, production, media, context, voice, role_dubbing, audio_semantic), clients
 
-    def create_film_run(self, *, work_id: str, mode: RunMode,
+    def create_source_film_run(self, *, work_id: str, source: SourceBody,
+                               languages: LanguageMetadata | None = None, profile: DeliveryProfile,
+                               rights_refs: tuple[ArtifactReference, ...], route: str, model: str,
+                               run_id: str, max_cost_microunits: int = 0,
+                               estimated_shot_cost_microunits: int = 0) -> RuntimeRun:
+        """Film scope entry: only goal/source, owner metadata and execution policy."""
+        if self.film is None:
+            raise ConfigurationError("Film production requires durable ProductionLedger")
+        if languages is None:
+            from drama_plugin.execution.transport import CapabilityAbsent
+            raise CapabilityAbsent("SOURCE_ORIGINAL_WORK_LANGUAGE_METADATA_ABSENT")
+        from drama_plugin.film.contracts import FilmInput
+        from drama_plugin.runtime.contracts import RunMode
+        from drama_plugin.film.capability import WORKFLOW
+        from drama_plugin.creative_engine.contracts import Authority, Kind
+        if source.spoken_language != languages.spoken_language:
+            raise ValueError("Source/Canon metadata must explicitly resolve spoken language")
+        run = self.runtime.draft_run(work_id=work_id,mode=RunMode.PRODUCTION,workflow_id=WORKFLOW,run_id=run_id)
+        source = type(source).model_validate({**source.model_dump(),
+            "source_document_language":languages.source_document_language,
+            "original_work_language":languages.original_work_language,
+            "language_metadata_ref":languages.authority_ref,
+            "spoken_language_policy":languages.spoken_language_policy})
+        source_ref = self.creative_versions.write(writer=Authority.SOURCE,kind=Kind.SOURCE,
+            scope=run.scope,body=source,sources=(),operation=run_id+":film-source")
+        self.film.store.bind(run_id,run.scope,FilmInput(source_ref=source_ref,languages=languages,
+            profile=profile,rights_refs=rights_refs,route=route,model=model,
+            max_cost_microunits=max_cost_microunits,estimated_shot_cost_microunits=estimated_shot_cost_microunits))
+        return self.runtime.store.create(run)
+
+    async def resume_source_film_run(self, run_id: str) -> RuntimeRun:
+        """One parent action reconciles child waits; callers never select internal tools."""
+        if self.film is None:
+            raise ConfigurationError("Film production requires durable ProductionLedger")
+        from drama_plugin.film.policy import film_workflow, film_revision_workflow
+        from drama_plugin.runtime.contracts import CapabilityInput, ResultStatus, RuntimeState
+        run = await self.runtime.recover_run(run_id)
+        flow = film_workflow() if run.workflow_id == film_workflow().workflow_id else film_revision_workflow()
+        if run.workflow_id != flow.workflow_id:
+            raise ValueError("Wrong Film workflow")
+        if run.state == RuntimeState.WAITING_EXTERNAL:
+            key = flow.steps[run.cursor].capability_key
+            assert key and run.last_result and run.last_result.external_ref
+            result = await self.runtime.executor.execute(key,CapabilityInput(run_id=run_id,
+                operation_id=f"{run_id}:{run.cursor}",scope=run.scope))
+            if result.status == ResultStatus.WAITING_EXTERNAL:
+                return run
+            await self.runtime.record_external_result(run_id,external_ref=run.last_result.external_ref,result=result)
+        elif run.state == RuntimeState.BLOCKED and run.wait_reason == "INTERRUPTED_CAPABILITY":
+            await self.runtime.retry(run_id)
+        return await self.runtime.run(run_id)
+
+    def pending_film_decisions(self, run_id: str) -> tuple[RuntimeRun, ...]:
+        """Expose genuine decisions only; owner/tool selection remains internal."""
+        from drama_plugin.runtime.contracts import RuntimeState
+        if self.film is None:
+            raise ConfigurationError("Film domain unavailable")
+        cp = self.film.store.checkpoint(run_id)
+        if cp.revision_child_run_id:
+            return self.pending_film_decisions(cp.revision_child_run_id)
+        parent = self.runtime.store.load(run_id)
+        if parent.state == RuntimeState.WAITING_USER:
+            return (parent,)
+        children = tuple(self.runtime.store.load(u.production_run_id) for u in cp.units if u.production_run_id)
+        return tuple(child for child in children if child.state == RuntimeState.WAITING_USER)
+
+    def create_film_run(self, *, work_id: str, mode: RunMode, scene_id: str | None = None, shot_id: str | None = None,
                         source: SourceBody | None = None, source_ref: VersionRef | None = None,
                         approved_canon_refs: tuple[VersionRef, ...] = (),
                         route: RouteRequest | None = None, run_id: str | None = None,
@@ -254,8 +341,8 @@ class DramaPlugin:
             raise ConfigurationError("Target creative production requires ProductionLedger")
         from drama_plugin.creative_engine.contracts import Authority, FilmInput, Kind, RouteRequest
         from drama_plugin.creative_engine.policy import WORKFLOW
-        run = self.runtime.draft_run(work_id=work_id, scene_id=work_id + ":scene",
-            shot_id=work_id + ":shot", mode=mode, workflow_id=WORKFLOW, run_id=run_id)
+        run = self.runtime.draft_run(work_id=work_id, scene_id=scene_id or work_id + ":scene",
+            shot_id=shot_id or work_id + ":shot", mode=mode, workflow_id=WORKFLOW, run_id=run_id)
         if (source is None) == (source_ref is None):
             raise ValueError("Select source text/reference or an existing source artifact")
         if source is not None:
@@ -267,6 +354,10 @@ class DramaPlugin:
             prior_revision_signatures=prior_revision_signatures)
         self.creative.state.bind(run.run_id, run.scope, inputs)
         return self.runtime.store.create(run)
+
+    async def reconcile_creative_candidate(self, run_id: str, *, candidate_ref: ArtifactReference) -> RuntimeRun:
+        """Explicit system provenance revision only; remain at the same ADOPTION wait."""
+        return await self.creative.reconcile_candidate_integrity(run_id, candidate_ref)
 
     def create_adoption_run(self, candidate_run_id: str, *, run_id: str | None = None) -> RuntimeRun:
         """Experiment remains isolated until a separate Production ADOPTION decision."""
@@ -293,7 +384,7 @@ class DramaPlugin:
         expected_depth = 1 if prior.revision is None else prior.revision.depth + 1
         if request.depth != expected_depth:
             raise ValueError("Revision depth must advance from its parent")
-        run = self.create_film_run(work_id=parent.scope.work_id, mode=parent.mode,
+        run = self.create_film_run(work_id=parent.scope.work_id, scene_id=parent.scope.scene_id, shot_id=parent.scope.shot_id, mode=parent.mode,
             source_ref=prior.source_ref, route=prior.route, revision=request, base_refs=cp.refs,
             prior_revision_signatures=history, run_id=run_id)
         from drama_plugin.creative_engine.contracts import CreativeCheckpoint
@@ -438,6 +529,11 @@ class DramaPlugin:
         if decision_id != self.runtime.decision_id(run_id):
             raise ValueError("Decision identity mismatch")
         from drama_plugin.creative_engine.policy import WORKFLOW as CREATIVE_WORKFLOW
+        if self.film and run.workflow_id in {"source-to-final-film:v1", "final-film-revision:v1"}:
+            cp = self.film.store.checkpoint(run_id)
+            expected = cp.plan_ref if run.workflow_id == "source-to-final-film:v1" and run.cursor == 3 else cp.final_ref
+            if source_ref != expected:
+                raise ValueError("Film decision must bind exact immutable candidate/hash")
         if run.workflow_id == CREATIVE_WORKFLOW:
             candidate = self.creative.state.checkpoint(run_id).candidate_ref
             if source_ref != candidate:

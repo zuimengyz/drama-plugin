@@ -87,6 +87,20 @@ The fingerprint is calculated from compact, Unicode-preserving canonical JSON wi
 
 ## 5. Character separation
 
+### Performance target role
+
+`PerformanceTargetRole` distinguishes `INTERACTIVE_PARTNER` and
+`NON_INTERACTIVE_DESTINATION` in a separate composed Performance projection scope.
+It does not change `DPDSnapshot` or the Scene/Beat/Line composition rules. A
+destination has no authored exchange obligation and must never receive invented
+psychology or dialogue merely to satisfy a partner validator. Declaration bytes
+reuse the immutable creative owner store; the exact adopted Scene/Shot/Performance
+refs and evidence locators are checked by an ephemeral owner-issued witness.
+Caller-supplied role strings or deserialized declarations cannot grant exemptions.
+Any upstream revision invalidates the scope; newly authored interaction requires
+DPD. Presence remains in Shot coverage, and the existing interactive/full Book/AV
+coverage validators remain strict.
+
 Character Understanding answers who a person generally is and how they usually decide, relate, and regulate. DPD references the actor/speaker key and directs only the current dramatic moment. Age, biography, office, long-term temperament, Voice Profile, Creative Voice Casting, and Provider voice mapping are never copied into Line DPD.
 
 Historical facts and social rank may constrain power, control, relationship, or tactic, but Research remains upstream. DPD does not retrieve evidence or decide historical truth.

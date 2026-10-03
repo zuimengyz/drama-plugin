@@ -22,6 +22,18 @@ R2 generic fixture inheritance imported historical props, partners and spaces. I
 
 `validate_interaction` requires speaker and listener source DPD refs, each side's action/attention, targets, gaze/voice/physical handoff, partner cue, response timing and next Beat owner. Missing important listener DPD returns PARTNER_DPD_REQUIRED. Background participants can be group-directed.
 
+A presence-only destination is a different obligation from a listener or response
+partner. The Target Shot prerequisite validator consumes an owner-issued
+`PerformanceScopeWitness` with exact adopted Scene/Shot/Performance refs and source
+locators. Only an explicit composed Performance scope may declare
+`NON_INTERACTIVE_DESTINATION`: no speech, reciprocal action, authored response,
+listener task or objective/obstacle/tactic requirement, and expansion is forbidden
+by the approved authority. It remains in coverage as a spatial subject, with
+`PARTNER_DPD_NOT_REQUIRED`; it is not a no-actor exemption. A caller enum or missing
+DPD never grants that status. All current authored actors and SpokenContent remain
+required, and new or stale upstream content invalidates the declaration. This DPD
+prerequisite result does not replace full Book craft, modality direction or AV QA.
+
 `validate_ensemble` reuses BeatDPD tasks. Each layer has attention, a received trigger, response, relative latency, task persistence and individual variation. Default synchronized emotional response is rejected unless a script reason permits uniform action. No Crowd Psychology, no extra spoken content. All military/background sound stays under Script/SourceSoundIntent authority.
 
 ## Observable continuity

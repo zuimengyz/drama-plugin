@@ -4,6 +4,7 @@ No Director workspace/transition or legacy author workflow is called. Ledger kee
 only typed refs/checkpoints; the objects here remain outside execution persistence.
 """
 from __future__ import annotations
+from drama_plugin.creative_engine.contracts import scope_contains
 
 import json
 from pathlib import Path
@@ -17,7 +18,7 @@ from drama_plugin.runtime.contracts import ArtifactReference, RunMode, RuntimeSc
 from pydantic import TypeAdapter
 
 from drama_plugin.creative_engine.contracts import (
-    AUTHORITY, Authority, Body, CreativeCheckpoint, CreativeVersion, FilmInput, Kind, VersionRef,
+    AUTHORITY, Authority, Body, CreativeCheckpoint, CreativeVersion, DesignBody, FilmInput, Kind, VersionRef,
 )
 
 if TYPE_CHECKING:
@@ -66,14 +67,25 @@ class CreativeVersionStore:
             raise ValueError("CANON_AUTHORITY_MISMATCH")
         for source in sources:
             prior = self.resolve(source)
-            if prior.scope != scope:
+            if not scope_contains(prior.scope, scope):
                 raise ValueError("PACKAGE_SCOPE_MISMATCH")
         if adoption_decision:
             if candidate_origin is None:
                 raise ValueError("Adoption needs its exact candidate origin")
             candidate = self.resolve(candidate_origin)
-            if candidate.state != "REVIEWED" or (candidate.kind, candidate.scope, candidate.body) != (kind, scope, body):
+            from drama_plugin.professional_design.provenance import creative_facts
+            same_body = (creative_facts(candidate.body.facts) == creative_facts(body.facts)
+                if isinstance(body, DesignBody) and isinstance(candidate.body, DesignBody) else candidate.body == body)
+            if candidate.state != "REVIEWED" or (candidate.kind, candidate.scope) != (kind, scope) or not same_body:
                 raise ValueError("Adoption cannot rewrite its candidate content")
+        if isinstance(body, DesignBody):
+            from drama_plugin.professional_design.provenance import project_metadata, validate_metadata
+            if adoption_decision:
+                assert isinstance(candidate.body, DesignBody)
+                validate_metadata(candidate.body, self, candidate.scope, candidate.source_refs)
+            else:
+                validate_metadata(body, self, scope, sources, required=False)
+            body = project_metadata(body, self, scope, sources)
         phase = "production" if adoption_decision else "candidate"
         domain = getattr(body, "domain", "")
         identity = "creative-" + kind.value.lower() + ":" + sha256_canonical([scope.model_dump(mode="json", by_alias=True), phase, domain])

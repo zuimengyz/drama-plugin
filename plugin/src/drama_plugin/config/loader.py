@@ -25,6 +25,18 @@ _SERVICE_NAMES = ("memory", "asset", "research", "production", "media", "context
 
 def _environment_overrides(environment: Mapping[str, str]) -> dict[str, Any]:
     overrides: dict[str, Any] = {}
+    author_values = {field: environment[key].strip() for field, key in {
+        "provider": "DRAMA_PLUGIN_TEXT_COMPOSITION_PROVIDER",
+        "base_url": "DRAMA_PLUGIN_TEXT_COMPOSITION_BASE_URL",
+        "api_key": "DRAMA_PLUGIN_TEXT_COMPOSITION_API_KEY",
+        "canon_model": "DRAMA_PLUGIN_CANON_AUTHOR_MODEL",
+        "direction_model": "DRAMA_PLUGIN_DIRECTION_AUTHOR_MODEL",
+        "professional_model": "DRAMA_PLUGIN_PROFESSIONAL_AUTHOR_MODEL",
+        "max_output_tokens": "DRAMA_PLUGIN_TEXT_COMPOSITION_MAX_TOKENS",
+        "reasoning_effort": "DRAMA_PLUGIN_TEXT_COMPOSITION_REASONING_EFFORT",
+    }.items() if key in environment}
+    if author_values:
+        overrides["text_composition"] = author_values
     for field, key in LANGUAGE_ENV.items():
         if key in environment:
             value = environment[key].strip()

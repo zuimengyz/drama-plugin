@@ -22,7 +22,7 @@ class DerivedArtifact(RuntimeContract):
     fingerprint: Hash
 
     @classmethod
-    def seal(cls, **values):
+    def seal(cls, **values: object) -> Self:
         # Hash the validated content, including defaults; no clock/random/host data.
         candidate = cls.model_validate({**values, "fingerprint": "0" * 64}, context=_SEAL_CONTEXT)
         content = candidate.model_dump(mode="json", by_alias=True, exclude={"fingerprint"})

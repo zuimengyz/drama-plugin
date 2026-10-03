@@ -19,6 +19,11 @@ class PerformanceLevel(StrEnum):
     HIGH = "HIGH"
 
 
+class PerformanceTargetRole(StrEnum):
+    INTERACTIVE_PARTNER = "INTERACTIVE_PARTNER"
+    NON_INTERACTIVE_DESTINATION = "NON_INTERACTIVE_DESTINATION"
+
+
 class DPDLayerState(ContractModel):
     """Sparse inheritable direction values; missing and null both inherit."""
 

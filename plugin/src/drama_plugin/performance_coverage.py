@@ -13,6 +13,7 @@ from drama_plugin.contracts.sequence import FilmReview, SourcePin
 
 if TYPE_CHECKING:
     from drama_plugin.hosts.formal_performance import FormalSourceWitness
+    from drama_plugin.professional_design.performance_scope import PerformanceScopeWitness
 
 CATEGORIES = ('scenes', 'characters', 'shots', 'spoken', 'silent', 'interactions', 'ensemble', 'continuity', 'voice', 'av_plan')
 STANDARD = frozenset({'core','objective_ref','target_ref','expression','physical','partner','continuity_in','continuity_out','do_not'})
@@ -87,6 +88,70 @@ def validate_interaction(direction: Mapping[str, Any], dpds: Mapping[str, DPDSna
         else:actor=dpd.actor
         if actor!=direction[side+'_ref']:raise ValueError('PARTNER_DPD_SCOPE_MISMATCH')
     if direction['next_beat_owner'] not in (direction['speaker_ref'],direction['listener_ref']):raise ValueError('UNBOUND_NEXT_BEAT_OWNER')
+
+
+def validate_performance_target(subject_ref: str, dpds: Mapping[str, DPDSnapshot | BeatDPD], *,
+                                projection_scope: PerformanceScopeWitness) -> dict[str, object]:
+    """Presence is not an exchange; only the current owner witness can say so."""
+    from drama_plugin.contracts.dpd import PerformanceTargetRole
+    from drama_plugin.professional_design.performance_scope import PerformanceScopeWitness
+    if not isinstance(projection_scope, PerformanceScopeWitness):
+        raise ValueError('TRUSTED_PERFORMANCE_SCOPE_REQUIRED')
+    declaration = projection_scope.current()
+    subject = next((s for s in declaration.subjects if s.subject_ref == subject_ref), None)
+    if subject is None:
+        raise ValueError('PARTNER_DPD_REQUIRED: unbound target')
+    required = subject.role == PerformanceTargetRole.INTERACTIVE_PARTNER
+    if required and not any((d.effective.actor if isinstance(d, DPDSnapshot) else d.actor) == subject_ref
+                            for d in dpds.values()):
+        raise ValueError('PARTNER_DPD_REQUIRED: ' + subject_ref)
+    return {'role': subject.role.value, 'partnerDPDRequired': required,
+            'status': 'PARTNER_DPD_PRESENT' if required else 'PARTNER_DPD_NOT_REQUIRED'}
+
+
+def validate_shot_dpd_coverage(*, projection_scope: PerformanceScopeWitness,
+                               snapshots: Mapping[str, DPDSnapshot], beats: Mapping[str, BeatDPD]) -> dict[str, object]:
+    """Target Shot DPD prerequisite coverage, not Film/AV/creative-media QA.
+
+    Silent BeatDPD remains sparse; no fake SpokenContent is manufactured to make
+    it a LineDPD. The existing full Book/AV coverage gates remain unchanged.
+    """
+    from drama_plugin.creative_engine.contracts import DesignBody, SceneBody, ShotBody
+    from drama_plugin.professional_design.performance_scope import PerformanceScopeWitness
+    if not isinstance(projection_scope, PerformanceScopeWitness):
+        raise ValueError('TRUSTED_PERFORMANCE_SCOPE_REQUIRED')
+    declaration = projection_scope.current()
+    versions = projection_scope._versions
+    scene = versions.resolve(declaration.scene_ref).body
+    shot = versions.resolve(declaration.shot_ref).body
+    performance = versions.resolve(declaration.performance_ref).body
+    assert isinstance(scene, SceneBody) and isinstance(shot, ShotBody) and isinstance(performance, DesignBody)
+    if set(snapshots) != set(shot.spoken_ids):
+        raise ValueError('SHOT_SPOKEN_DPD_COVERAGE_MISMATCH')
+    dialogue = {line.id: line for line in scene.dialogue}
+    for key, snapshot in snapshots.items():
+        line = dialogue[key]
+        if (compose_dpd(snapshot.scene, snapshot.beat, snapshot.line) != snapshot
+                or snapshot.scene.scene_id != declaration.scope.scene_id
+                or snapshot.scene.source_fingerprint != sha256_canonical(scene)
+                or snapshot.line.spoken_content_id != key or snapshot.line.speaker != line.speaker
+                or snapshot.effective.actor != line.speaker):
+            raise ValueError('SHOT_DPD_SOURCE_BINDING_MISMATCH')
+    authored = performance.facts.get('beats')
+    if not isinstance(authored, list):
+        raise ValueError('PERFORMANCE_BEAT_INVENTORY_REQUIRED')
+    actual = {b['id']: b for b in authored if isinstance(b, dict)}
+    if set(beats) != set(actual):
+        raise ValueError('SHOT_BEAT_DPD_COVERAGE_MISMATCH')
+    for key, beat in beats.items():
+        if beat.beat_id != key or beat.scene_id != declaration.scope.scene_id or beat.actor != actual[key]['actor']:
+            raise ValueError('SHOT_BEAT_DPD_SOURCE_BINDING_MISMATCH')
+    all_dpds: dict[str, DPDSnapshot | BeatDPD] = {**beats, **snapshots}
+    targets = {s.subject_ref: validate_performance_target(s.subject_ref, all_dpds, projection_scope=projection_scope)
+               for s in declaration.subjects}
+    return {'status': 'PASS', 'spokenCount': len(snapshots), 'beatCount': len(beats),
+            'targetRequirements': targets, 'productionAuthorized': False,
+            'scope': 'SHOT_DPD_PREREQUISITES_ONLY'}
 
 
 def validate_ensemble(direction: Mapping[str, Any], dpds: Mapping[str, DPDSnapshot | BeatDPD]) -> None:

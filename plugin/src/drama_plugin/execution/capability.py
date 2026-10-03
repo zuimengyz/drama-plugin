@@ -165,7 +165,7 @@ class TargetExecution:
             if checkpoint.state == OperationState.FAILED:
                 return CapabilityResult(status=ResultStatus.FAILED, code="PROVIDER_DEFINITE_FAILURE", artifact_refs=(op_ref,))
             transport = self.transports.get(operation.route)
-            if transport is None or not transport.offline:
+            if transport is None or (not transport.offline and operation.authorization.execution_mode == "OFFLINE_ONLY"):
                 return self._absence(inputs, op_ref, "provider-capability")
             if transport.provider != attempt.provider:
                 mismatch = self._govern(inputs, (GateCode.OPERATION_IDENTITY_MISMATCH,), op_ref,
@@ -180,8 +180,27 @@ class TargetExecution:
                 if auth.estimated_cost_microunits > auth.budget_microunits:
                     codes.append(GateCode.BUDGET_EXCEEDED)
                 # All E1 proof transports are costless, even with live env keys.
-                if auth.estimated_cost_microunits != 0:
+                if transport.offline and auth.estimated_cost_microunits != 0:
                     codes.append(GateCode.REQUEST_UNSUPPORTED)
+                if not transport.offline:
+                    from drama_plugin.execution.live_transport import TargetHttpTransport
+                    if not isinstance(transport, TargetHttpTransport) or auth.execution_mode != "CONTROLLED_LIVE":
+                        codes.append(GateCode.COST_UNAUTHORIZED)
+                    else:
+                        try:
+                            transport._grant(operation, request)
+                            assert transport.grant
+                            # TargetExecution persists financial authorization; the
+                            # transport remains a serializer/submit/query primitive.
+                            grant = transport.grant
+                            self.store.ledger.put_artifact(grant.owner, grant.artifact_reference(),
+                                operation.scope, grant.fingerprint, grant)
+                            # One human cost receipt cannot authorize a second
+                            # operation, including concurrent dispatchers.
+                            self.store.ledger.put_index("execution-live-grant", grant.decision_ref.artifact_ref,
+                                grant.artifact_reference(), scope=operation.scope, once=True)
+                        except (CapabilityAbsent, ValueError, KeyError):
+                            codes.append(GateCode.COST_UNAUTHORIZED)
                 governed = self._govern(inputs, tuple(codes), op_ref)
                 if governed is not None:
                     return governed
@@ -242,7 +261,7 @@ class TargetExecution:
             receipt = self.store.get(checkpoint.receipt_ref, ProviderReceipt)
             assert receipt.result is not None
             transport = self.transports.get(operation.route)
-            if transport is None or not transport.offline:
+            if transport is None:
                 return self._absence(inputs, checkpoint.receipt_ref, "media-intake")
             if checkpoint.progress.intake_attempts >= 3:
                 return self._absence(inputs, checkpoint.receipt_ref, "media-intake-recovery")
@@ -258,6 +277,8 @@ class TargetExecution:
                 return CapabilityResult(status=ResultStatus.RETRYABLE_FAILURE, code="MEDIA_INTAKE_TRANSIENT")
             except ValueError:
                 return self._absence(inputs, checkpoint.receipt_ref, "media-result-repair")
+            if not await self._register_media(operation, checkpoint, media):
+                return self._absence(inputs, checkpoint.operation_ref, "formal-media-reconciliation")
             binding = MediaBinding.seal(scope=operation.scope, run_id=operation.run_id,
                 source_package_ref=operation.source_package_ref, operation_ref=checkpoint.operation_ref,
                 attempt_ref=checkpoint.attempt_ref, receipt_ref=checkpoint.receipt_ref,
@@ -266,6 +287,18 @@ class TargetExecution:
             ref = self.store.put(binding)
             self.store.progress(checkpoint.operation_ref, video_ref=ref)
             return CapabilityResult(status=ResultStatus.SUCCEEDED, artifact_refs=(ref,))
+
+    async def _register_media(self, operation: ExecutionOperation, checkpoint: OperationCheckpoint,
+                              media: MediaIdentity, parents: tuple[MediaIdentity, ...] = ()) -> bool:
+        from drama_plugin.execution.formal_media import FormalMediaStore
+        if isinstance(self.media, FormalMediaStore):
+            from drama_plugin.exceptions import RemoteServiceError
+            try:
+                await self.media.register(media, scope=operation.scope, source_ref=checkpoint.operation_ref,
+                    attempt_ref=checkpoint.attempt_ref, package_ref=operation.source_package_ref, parents=parents)
+            except (CapabilityAbsent, RemoteServiceError):
+                return False
+        return True
 
     def _technical(self, operation: ExecutionOperation, checkpoint: OperationCheckpoint,
                    media: MediaIdentity, recipe: FinishingRecipe, *, audio_expected: bool) -> TechnicalMediaReview:
@@ -279,8 +312,13 @@ class TargetExecution:
 
     async def _creative(self, operation: ExecutionOperation, checkpoint: OperationCheckpoint,
                         media: MediaIdentity) -> CreativeMediaReview:
-        response = await self.reviewer.review(operation, media,
-            mode=self.store.ledger.load_run(operation.run_id).mode) if self.reviewer else None
+        from drama_plugin.execution.review import MockReviewer
+        if operation.authorization.execution_mode == "CONTROLLED_LIVE" and isinstance(self.reviewer, MockReviewer):
+            reviewer = None
+        else:
+            reviewer = self.reviewer
+        response = await reviewer.review(operation, media,
+            mode=self.store.ledger.load_run(operation.run_id).mode) if reviewer else None
         outcome = response.outcome if response else "CAPABILITY_ABSENT"
         return CreativeMediaReview.seal(scope=operation.scope, run_id=operation.run_id,
             source_package_ref=operation.source_package_ref, operation_ref=checkpoint.operation_ref,
@@ -341,6 +379,8 @@ class TargetExecution:
                     return self._absence(inputs, operation.audio_plan_ref, "target-audio-consumer")
                 except ValueError:
                     return self._absence(inputs, operation.audio_plan_ref, "audio-design-revision")
+                if not await self._register_media(operation, checkpoint, media, (video,)):
+                    return self._absence(inputs, checkpoint.operation_ref, "formal-media-reconciliation")
                 audio = AudioExecution.seal(scope=operation.scope, run_id=operation.run_id,
                     source_package_ref=operation.source_package_ref, operation_ref=checkpoint.operation_ref,
                     attempt_ref=checkpoint.attempt_ref, audio_plan_ref=operation.audio_plan_ref,
@@ -379,6 +419,8 @@ class TargetExecution:
                     media = finish_av(video, audio.media, self.media)
                 except CapabilityAbsent:
                     return self._absence(inputs, progress.audio_ref, "av-finishing")
+                if not await self._register_media(operation, checkpoint, media, (video, audio.media)):
+                    return self._absence(inputs, checkpoint.operation_ref, "formal-media-reconciliation")
                 derivative = AVDerivative.seal(scope=operation.scope, run_id=operation.run_id,
                     source_package_ref=operation.source_package_ref, operation_ref=checkpoint.operation_ref,
                     attempt_ref=checkpoint.attempt_ref, recipe_ref=recipe.artifact_reference(),

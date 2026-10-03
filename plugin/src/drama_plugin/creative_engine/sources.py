@@ -1,5 +1,6 @@
 """Exact-version projection into existing Assembler/Professional/Compiler interfaces."""
 from __future__ import annotations
+from drama_plugin.creative_engine.contracts import scope_contains
 
 from typing import cast
 from pydantic import JsonValue, TypeAdapter
@@ -82,7 +83,7 @@ class NativeCreativeSources:
 
     async def scope_sources(self, scope: RuntimeScope) -> tuple[OwnedSource, OwnedSource, OwnedSource]:
         artifacts = tuple(self.version(kind) for kind in (Kind.WORK, Kind.SCENE, Kind.SHOT))
-        if any(a.scope != scope for a in artifacts):
+        if any(not scope_contains(a.scope, scope) for a in artifacts):
             raise SourceReadError(I.SCOPE_MISMATCH, SourceOwner.SHOT, scope.shot_id or scope.work_id)
         return self.project(artifacts[0]), self.project(artifacts[1]), self.project(artifacts[2])
 

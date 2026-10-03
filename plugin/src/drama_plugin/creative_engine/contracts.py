@@ -4,7 +4,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Annotated, Literal, Self
 
-from pydantic import Field, JsonValue, model_validator
+from pydantic import Field, JsonValue, model_validator, model_serializer, SerializerFunctionWrapHandler
 
 from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.production.contracts import SourceDomain
@@ -35,14 +35,33 @@ class SourceBody(RuntimeContract):
     text: Text | None = None
     external_reference: Text | None = None
     spoken_language: str = Field(min_length=1, max_length=80)
-    spoken_language_policy: Literal["source_original"] = "source_original"
+    spoken_language_policy: Literal["source_original", "explicit"] = "source_original"
     subtitle_languages: tuple[str, ...] = Field(default=(), max_length=8)
     original_owner_ref: ArtifactReference | None = None
+    source_document_language: Identifier | None = None
+    original_work_language: Identifier | None = None
+    language_metadata_ref: ArtifactReference | None = None
+
+    @model_serializer(mode="wrap")
+    def compatible_source(self, handler: SerializerFunctionWrapHandler) -> dict[str, object]:
+        # E2 historical seals retain their original byte representation. E3 adds
+        # explicit Source owner metadata only when it is actually present.
+        from typing import cast
+        body = cast(dict[str, object], handler(self))
+        for field, alias in (("source_document_language", "sourceDocumentLanguage"),
+                             ("original_work_language", "originalWorkLanguage"),
+                             ("language_metadata_ref", "languageMetadataRef")):
+            if getattr(self, field) is None:
+                body.pop(field, None)
+                body.pop(alias, None)
+        return body
 
     @model_validator(mode="after")
     def source_required(self) -> Self:
         if self.text is None and self.external_reference is None:
             raise ValueError("Source text or designated reference required")
+        if self.original_work_language and self.spoken_language_policy == "source_original" and self.spoken_language != self.original_work_language:
+            raise ValueError("Source original language is explicit owner metadata")
         return self
 
 
@@ -232,7 +251,9 @@ class DependencyTask(RuntimeContract):
 
 class RoutePlan(RuntimeContract):
     route: str
-    tasks: tuple[DependencyTask, ...] = Field(min_length=1, max_length=16)
+    tasks: tuple[DependencyTask, ...] = Field(min_length=1, max_length=32)
+    max_tasks: int = Field(default=16, ge=1, le=32)
+    max_depth: int = Field(default=3, ge=1, le=16)
     capability_available: bool
     authorization_required: bool
     cost_limit: int = Field(ge=0)
@@ -240,12 +261,14 @@ class RoutePlan(RuntimeContract):
     @model_validator(mode="after")
     def bounded_acyclic(self) -> Self:
         nodes = {task.task_id: task for task in self.tasks}
+        if len(self.tasks) > self.max_tasks:
+            raise ValueError("Dependency child count exceeded")
         if len(nodes) != len(self.tasks):
             raise ValueError("Duplicate dependency task")
         def visit(identity: str, ancestors: tuple[str, ...]) -> None:
             if identity in ancestors or identity not in nodes:
                 raise ValueError("Dependency cycle or missing child")
-            if len(ancestors) > 3:
+            if len(ancestors) > self.max_depth:
                 raise ValueError("Dependency depth exceeded")
             for child in nodes[identity].requires:
                 visit(child, (*ancestors, identity))
@@ -266,6 +289,26 @@ class FilmInput(RuntimeContract):
     prior_revision_signatures: tuple[Hash, ...] = Field(default=(), max_length=3)
 
 
+class CreativeIntegrityReconciliation(RuntimeContract):
+    """One bounded reference-only publication journal per creative run."""
+    parent: ArtifactReference
+    original_refs: tuple[VersionRef, ...] = Field(min_length=1, max_length=16)
+    candidate: ArtifactReference | None = None
+    revised_refs: tuple[VersionRef, ...] = Field(default=(), max_length=16)
+
+    @model_validator(mode="after")
+    def publication_shape(self) -> Self:
+        if self.parent.owner != "creative-candidate" or self.parent.version != 1:
+            raise ValueError("Integrity parent must be an exact creative candidate")
+        if (self.candidate is None) != (not self.revised_refs):
+            raise ValueError("Integrity publication requires its exact version set")
+        if self.candidate is not None and (self.candidate.owner != "creative-candidate" or self.candidate.version != 1
+                or self.candidate.artifact_ref != "creative-candidate:" + sha256_canonical(
+                    [r.model_dump(mode="json", by_alias=True) for r in self.revised_refs])):
+            raise ValueError("Integrity candidate hash mismatch")
+        return self
+
+
 class CreativeCheckpoint(RuntimeContract):
     refs: tuple[VersionRef, ...] = Field(default=(), max_length=16)
     author_rounds: int = Field(default=0, ge=0, le=6)
@@ -279,3 +322,10 @@ class CreativeCheckpoint(RuntimeContract):
 
     def candidate_fingerprint(self) -> str:
         return sha256_canonical([r.model_dump(mode="json", by_alias=True) for r in self.refs])
+
+
+def scope_contains(author: RuntimeScope, consumer: RuntimeScope) -> bool:
+    """A Work/Scene Canon ancestor may be shared; a Shot cannot cross its scope."""
+    return (author.work_id == consumer.work_id and
+            (author.scene_id is None or author.scene_id == consumer.scene_id) and
+            (author.shot_id is None or author.shot_id == consumer.shot_id))

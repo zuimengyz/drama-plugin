@@ -14,7 +14,7 @@ import sqlite3
 from typing import Iterator, cast
 
 from drama_plugin.contracts.base import canonical_json, sha256_canonical
-from drama_plugin.runtime.contracts import ArtifactReference, RuntimeContract, RuntimeRun, RuntimeScope, RuntimeState
+from drama_plugin.runtime.contracts import ArtifactReference, RuntimeContract, RuntimeRun, RuntimeScope, RuntimeState, validate_repair_history
 
 
 class RetentionClass(str, Enum):
@@ -28,6 +28,8 @@ class RetentionClass(str, Enum):
 # This is an admission list, not a dynamic JSON warehouse. Each adapter also
 # validates the original contract before writing and after reading.
 ARTIFACT_TYPES: dict[str, tuple[str, str, RetentionClass]] = {
+    "controlled-live-grant": ("controlled-live-grant-v1", "target-execution", RetentionClass.PRODUCTION_REQUIRED),
+    "formal-media-registration": ("formal-media-registration-v1", "media-registration", RetentionClass.PRODUCTION_REQUIRED),
     "production-package": ("production-package-v1", "production-assembly", RetentionClass.PRODUCTION_REQUIRED),
     "assembly-validation": ("assembly-validation-v1", "production-assembly", RetentionClass.REVIEW),
     "reference-execution-binding": ("reference-execution-binding-v1", "production-assembly", RetentionClass.PRODUCTION_REQUIRED),
@@ -47,11 +49,16 @@ from drama_plugin.execution.contracts import EXECUTION_TYPES
 ARTIFACT_TYPES.update({name: (name + "-v1", "target-execution", RetentionClass.REVIEW
     if name.endswith("review") else RetentionClass.PRODUCTION_REQUIRED) for name in EXECUTION_TYPES})
 
+from drama_plugin.film.contracts import FILM_TYPES
+ARTIFACT_TYPES.update({name: (name + "-v1", "film", RetentionClass.REVIEW
+    if name.endswith("review") or name.endswith("qa") else RetentionClass.PRODUCTION_REQUIRED) for name in FILM_TYPES})
+
 INDEX_TYPES = frozenset({
     "governance-input", "generation-input", "latest-decision", "prepared",
     "governance-maintenance", "generation-rebuild", "final-prompt-key",
     "execution-reference-current",
-    "execution-input", "creative-input", "creative-checkpoint",
+    "creative-integrity-reconciliation",
+    "execution-input", "creative-input", "creative-checkpoint", "film-input", "film-checkpoint", "formal-media-current", "execution-live-grant",
 })
 
 
@@ -198,6 +205,7 @@ class ProductionLedger:
             old = RuntimeRun.model_validate_json(row["checkpoint_json"])
             if old.revision != expected_revision:
                 raise ValueError("Runtime revision conflict")
+            validate_repair_history(old, run)
             for field in ("scope", "mode", "policy_id", "workflow_id", "workflow_fingerprint", "schema_version"):
                 if getattr(old, field) != getattr(run, field):
                     raise ValueError("Runtime identity is immutable")
@@ -208,13 +216,13 @@ class ProductionLedger:
                 raise ValueError("Runtime revision conflict")
             if run.state == RuntimeState.RUNNING:
                 operation_id = f"{run.run_id}:{run.cursor}"
-                attempt = f"{operation_id}:{run.step_attempts}"
+                attempt = run.attempt_identity()
                 db.execute("""INSERT OR IGNORE INTO production_operation
                     (operation_id,attempt_identity,run_id,dispatch_state)
                     VALUES (?,?,?,'LOCAL_ONLY')""", (operation_id, attempt, run.run_id))
             elif old.state == RuntimeState.RUNNING and old.step_attempts:
                 operation_id = f"{old.run_id}:{old.cursor}"
-                attempt = f"{operation_id}:{old.step_attempts}"
+                attempt = old.attempt_identity()
                 result_identity = sha256_canonical(run.last_result) if run.last_result is not None else None
                 db.execute("""UPDATE production_operation SET result_identity=?
                     WHERE operation_id=? AND attempt_identity=? AND dispatch_state='LOCAL_ONLY'""",
@@ -255,6 +263,11 @@ class ProductionLedger:
             "user-decision": UserDecisionRecord,
         }
         models.update(EXECUTION_TYPES)
+        models.update(FILM_TYPES)
+        from drama_plugin.execution.formal_media import FormalRegistration
+        models["formal-media-registration"] = FormalRegistration
+        from drama_plugin.execution.live_transport import ControlledLiveGrant
+        models["controlled-live-grant"] = ControlledLiveGrant
         if artifact_type == "execution-diagnostic":
             if not isinstance(body, (list, tuple)) or len(body) > 128:
                 raise ValueError("Execution diagnostics must be a bounded typed sequence")
@@ -306,6 +319,19 @@ class ProductionLedger:
                         raise ValueError("Missing or wrong execution lineage reference")
                     return models[row["artifact_type"]].model_validate_json(row["body_json"])
                 validate_links(execution, resolve_link)
+            if artifact_type in FILM_TYPES:
+                from drama_plugin.film.contracts import FilmArtifact
+                from drama_plugin.film.validation import validate_links as validate_film_links
+                film = cast(FilmArtifact, checked)
+                parent_run = db.execute("SELECT work_id,scene_id,shot_id FROM production_run WHERE run_id=?", (film.run_id,)).fetchone()
+                if parent_run is None or tuple(parent_run) != (scope.work_id, scope.scene_id, scope.shot_id):
+                    raise ValueError("Film artifact Run scope mismatch")
+                def resolve_film_link(link: ArtifactReference) -> RuntimeContract:
+                    row = db.execute("SELECT artifact_type,body_json FROM immutable_artifact WHERE artifact_id=? AND version=?", (link.artifact_ref, link.version)).fetchone()
+                    if row is None or row["artifact_type"] != link.owner or link.owner not in models:
+                        raise ValueError("Missing immutable Film lineage")
+                    return models[link.owner].model_validate_json(row["body_json"])
+                validate_film_links(film, resolve_film_link)
             if artifact_type in {"prompt-ir", "prompt-coverage", "final-prompt",
                                  "audio-plan", "generation-preparation"} or artifact_type in EXECUTION_TYPES:
                 derived = cast(DerivedArtifact, checked)
@@ -380,13 +406,20 @@ class ProductionLedger:
             from drama_plugin.creative_engine.contracts import FilmInput, CreativeCheckpoint
             model = FilmInput if index_type == "creative-input" else CreativeCheckpoint
             value = model.model_validate(value.model_dump() if hasattr(value, "model_dump") else value)
+        elif index_type == "creative-integrity-reconciliation":
+            from drama_plugin.creative_engine.contracts import CreativeIntegrityReconciliation
+            value = CreativeIntegrityReconciliation.model_validate(value.model_dump() if hasattr(value, "model_dump") else value)
+        elif index_type in {"film-input", "film-checkpoint"}:
+            from drama_plugin.film.contracts import FilmInput as SourceFilmInput, FilmCheckpoint
+            film_model = SourceFilmInput if index_type == "film-input" else FilmCheckpoint
+            value = film_model.model_validate(value.model_dump() if hasattr(value, "model_dump") else value)
         elif index_type == "execution-input":
             from drama_plugin.execution.contracts import ExecutionInput
             value = ExecutionInput.model_validate(value.model_dump() if hasattr(value, "model_dump") else value)
-        elif index_type in {"latest-decision", "prepared", "final-prompt-key"}:
+        elif index_type in {"latest-decision", "prepared", "final-prompt-key", "formal-media-current", "execution-live-grant"}:
             value = ArtifactReference.model_validate(value.model_dump() if hasattr(value, "model_dump") else value)
             expected = {"latest-decision": "gate-decision", "prepared": "generation-preparation",
-                "final-prompt-key": "final-prompt"}[index_type]
+                "final-prompt-key": "final-prompt", "formal-media-current": "formal-media-registration", "execution-live-grant": "controlled-live-grant"}[index_type]
             if value.owner != expected or value.version != 1:
                 raise ValueError("Ledger index points to the wrong artifact owner")
         elif type(value) is not int or value != 1:

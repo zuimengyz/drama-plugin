@@ -4,6 +4,7 @@ from typing import Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, PrivateAttr, field_validator, model_validator
 from drama_plugin.config.audio_semantic import AudioSemanticProviderConfig, QwenOmniConfig
+from drama_plugin.config.text_composition import TextCompositionConfig
 
 from drama_plugin.config.video_route import VideoRoutePolicy
 from drama_plugin.config.language import ProductionLanguageSettings
@@ -85,6 +86,7 @@ class DramaPluginConfig(ProductionLanguageSettings):
         return dict(self._language_sources)
 
     character_repository_root: str = ""
+    text_composition: TextCompositionConfig = Field(default_factory=TextCompositionConfig)
     production_ledger_path: str = ""
     visual_medium: Literal["live_action", "cg"] | None = None
     visual_authority_root: str = ""

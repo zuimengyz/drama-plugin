@@ -36,6 +36,17 @@ Return path defects to Blocking, impossible mechanics to Action and source confl
 
 Read [full performance coverage and isolation](../../docs/full-performance-coverage.md). Every important listener needs its own sourced DPD task, obstacle and tactic, not a reaction label or a Director-invented psychology. Missing partner direction returns PARTNER_DPD_REQUIRED to this owner. Background listeners may use an existing BeatDPD group task; no Crowd Psychology. Candidate screenplay previews stay DESIGN_FIXTURE_ONLY, separately stored from formal DPD. Continuity summaries reference these DPDs without copying objective/subtext/knowledge/relationship truth.
 
+Distinguish INTERACTIVE_PARTNER from NON_INTERACTIVE_DESTINATION in the approved
+Performance projection scope. A destination is spatial presence only: no speech,
+reciprocal action, authored response, listener task, objective, obstacle, tactic,
+or dramatic exchange, with an explicit upstream prohibition on expanding its
+behavior. It does not require an invented partner DPD. Only the Performance owner
+may declare this scope against exact adopted Scene/Shot/Performance versions and
+source evidence; a consumer cannot downgrade a missing listener. Keep that subject
+in coverage as presence, and revalidate the declaration when any source changes.
+New response/action/speech restores the interactive DPD requirement. Existing
+interactive and full Book/AV gates continue to apply.
+
 ## One cross-modal performance truth (R2)
 
 Read the [shared performance contract](../../docs/cross-modal-performance-direction.md) when projecting into body and voice. Scene/Beat/Line DPD and the composed snapshot remain the only owners of objective, obstacle, tactic, subtext, knowledge, relationship, internal activation, external control and interaction target. Preserve the source and composition fingerprints; an inconsistent snapshot requires DPD review.

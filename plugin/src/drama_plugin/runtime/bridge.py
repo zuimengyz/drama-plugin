@@ -3,10 +3,10 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
 from drama_plugin.runtime.contracts import (
-    ArtifactReference, CapabilityInput, CapabilityResult, ResultStatus,
+    ArtifactReference, CapabilityInput, CapabilityResult, ExecutionInspection, ResultStatus,
 )
 from drama_plugin.tools.registry import ToolRegistry
 
@@ -15,6 +15,11 @@ class CapabilityExecutor(Protocol):
     async def execute(self, capability_key: str, inputs: CapabilityInput) -> CapabilityResult: ...
 
     def replay_safe(self, capability_key: str) -> bool: ...
+
+
+@runtime_checkable
+class ExecutionInspector(Protocol):
+    def inspect_execution(self, capability_key: str, inputs: CapabilityInput) -> ExecutionInspection | None: ...
 
 
 @dataclass(frozen=True)

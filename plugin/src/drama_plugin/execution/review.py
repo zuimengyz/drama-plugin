@@ -22,7 +22,17 @@ class CreativeReviewer(Protocol):
     @property
     def policy_version(self) -> str: ...
     async def review(self, operation: ExecutionOperation, media: MediaIdentity,
-                     *, mode: RunMode) -> ReviewResponse: ...
+                     *, mode: RunMode) -> ReviewResponse | None: ...
+
+
+class HumanReviewer:
+    """No automatic judgement. TargetExecution consumes an exact external receipt."""
+    identity = "USER"
+    policy_version = "human-operation-review-v1"
+
+    async def review(self, operation: ExecutionOperation, media: MediaIdentity,
+                    *, mode: RunMode) -> None:
+        return None
 
 
 class MockReviewer:

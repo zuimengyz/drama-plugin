@@ -5,7 +5,9 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 import re
-from typing import Any, Protocol
+from typing import Any, Protocol, TYPE_CHECKING
+if TYPE_CHECKING:
+    from drama_plugin.generation.operation import OperationResolver
 
 from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.production.contracts import (
@@ -78,8 +80,10 @@ class PackageReader:
     """The production consumer only resolves the selections granted by this Package."""
     creative_authority = False
 
-    def __init__(self, resolver: ReferenceResolver, dependencies: LegacyExecutionReferences):
+    def __init__(self, resolver: ReferenceResolver, dependencies: LegacyExecutionReferences,
+                 operations: OperationResolver | None = None):
         self.resolver, self.dependencies = resolver, dependencies
+        self.operations = operations
 
     async def selections(self, package: ProductionPackage) -> tuple[SelectedValue, ...]:
         values = []

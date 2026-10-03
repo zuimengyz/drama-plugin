@@ -7,7 +7,8 @@ from typing import Annotated, Literal, Self
 from pydantic import Field, StrictInt, model_validator
 
 from drama_plugin.contracts.creative_asset import Hash
-from drama_plugin.generation.contracts import DerivedArtifact
+from drama_plugin.generation.contracts import DerivedArtifact, ExecutionProfile
+from drama_plugin.runtime.contracts import ExtendedRuntimeContract
 from drama_plugin.production.contracts import SourceReference
 from drama_plugin.runtime.contracts import ArtifactReference, Identifier, RuntimeContract, RuntimeScope
 
@@ -78,14 +79,16 @@ class RequestReference(RuntimeContract):
     role: Literal["FIRST_FRAME", "LAST_FRAME", "REFERENCE"]
 
 
-class ProviderRequest(RuntimeContract):
-    operation_ref: ArtifactReference
+class ProviderRequest(ExtendedRuntimeContract):
+    extension_fields = ("profile",)
+    operation_ref: ArtifactReference | None = None
     model: Identifier
     input_mode: Literal["text_to_video", "reference", "image_to_video", "first_last_frame"]
     prompt_text: str = Field(min_length=1, max_length=20000)
     duration_ms: Annotated[StrictInt, Field(gt=0, le=3_600_000)]
     native_audio: Literal["OPTIONAL", "REQUIRED", "DISABLED"]
     references: tuple[RequestReference, ...] = Field(default=(), max_length=16)
+    profile: ExecutionProfile | None = None
 
 
 class ProviderResult(RuntimeContract):
@@ -135,6 +138,7 @@ class MediaIdentity(RuntimeContract):
 
 
 class MediaBinding(ExecutionArtifact):
+    extension_fields = ("canonical_media_ref",)
     owner = "media-binding"
     operation_ref: ArtifactReference
     attempt_ref: ArtifactReference
@@ -144,6 +148,7 @@ class MediaBinding(ExecutionArtifact):
     final_prompt_ref: ArtifactReference
     reference_bindings: tuple[SourceReference, ...] = Field(default=(), max_length=16)
     parent_media: tuple[MediaIdentity, ...] = Field(default=(), max_length=64)
+    canonical_media_ref: ArtifactReference | None = None
 
 
 class ProbeObservation(RuntimeContract):
@@ -182,6 +187,7 @@ class ReviewObservation(RuntimeContract):
 
 
 class CreativeMediaReview(ExecutionArtifact):
+    extension_fields = ("canonical_media_ref", "preparation_ref", "review_context_hash")
     owner = "creative-media-review"
     operation_ref: ArtifactReference
     attempt_ref: ArtifactReference
@@ -191,6 +197,9 @@ class CreativeMediaReview(ExecutionArtifact):
     outcome: Literal["PASS", "REVISE", "CAPABILITY_ABSENT"]
     observations: tuple[ReviewObservation, ...] = Field(default=(), max_length=16)
     adoption_recommendation: Literal["CANDIDATE_ONLY", "REVISION_REQUIRED", "UNASSESSED"]
+    canonical_media_ref: ArtifactReference | None = None
+    preparation_ref: ArtifactReference | None = None
+    review_context_hash: Hash | None = None
 
     @model_validator(mode="after")
     def revision_owner(self) -> Self:

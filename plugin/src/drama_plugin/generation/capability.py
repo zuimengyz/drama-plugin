@@ -1,4 +1,5 @@
 """Native offline preparation. T5 stops at exact artifacts, never transport."""
+from collections.abc import Callable
 from drama_plugin.generation.audio import package_scope
 from drama_plugin.generation.checks import execution_findings
 from drama_plugin.generation.compiler import PromptCompiler
@@ -10,12 +11,13 @@ from drama_plugin.governance.checks import assembly_findings
 from drama_plugin.governance.contracts import GateCode, GateEffect, GateFinding
 from drama_plugin.production.contracts import SourceDomain
 from drama_plugin.runtime.capabilities import TargetCapability
-from drama_plugin.runtime.contracts import CapabilityInput, CapabilityResult, ResultStatus
+from drama_plugin.runtime.contracts import ArtifactReference, CapabilityInput, CapabilityResult, ResultStatus
 
 
 class GenerationCapability:
     def __init__(self, compiler: PromptCompiler, artifacts: GenerationArtifactStore, governance: GateGovernanceCapability):
         self.compiler, self.artifacts, self.governance = compiler, artifacts, governance
+        self.on_ready: Callable[[str, ArtifactReference], None] | None = None
 
     def _decision_result(self, run, diagnostics, package_ref):
         evidence = self.artifacts.retain_diagnostics(tuple(diagnostics), scope=run.scope)
@@ -113,6 +115,8 @@ class GenerationCapability:
                 return CapabilityResult(status=ResultStatus.RETRYABLE_FAILURE, code="EXECUTION_INPUT_CHANGED", artifact_refs=rebuilt.artifact_refs)
             ref = self.artifacts.prepared(run.run_id)
             prepared = self.artifacts.get(ref, GenerationPreparation)
+        if run.workflow_id == "package-to-reviewed-media:v1" and self.on_ready:
+            self.on_ready(run.run_id,ref)
         return CapabilityResult(status=ResultStatus.SUCCEEDED,
             artifact_refs=(prepared.final_prompt_ref, prepared.audio_plan_ref, ref))
 

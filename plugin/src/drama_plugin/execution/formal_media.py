@@ -16,6 +16,29 @@ from drama_plugin.execution.store import ExecutionStore
 from drama_plugin.execution.transport import CapabilityAbsent
 from drama_plugin.providers.base.interfaces import MediaProvider
 from drama_plugin.runtime.contracts import ArtifactReference, RuntimeScope, RuntimeContract
+from drama_plugin.generation.contracts import OwnerBindings
+
+
+def native_scope_content(*, scope: RuntimeScope, owners: OwnerBindings, media: MediaIdentity,
+                         package_ref: ArtifactReference, operation_ref: ArtifactReference,
+                         attempt_ref: ArtifactReference, secret: str) -> dict[str, str]:
+    """Authenticated owner assertion after TargetExecution admission; no Canon copy.
+
+    Uses the existing Drama tool credential, not a new identity/approval system.
+    Service validates the MAC, exact scope, typed refs and received bytes.
+    """
+    import hmac
+    if not secret:
+        raise CapabilityAbsent('FORMAL_MEDIA_NATIVE_OWNER_AUTHENTICATION_ABSENT')
+    origin = canonical_json({'scope':scope.model_dump(mode='json',by_alias=True),
+        'adoptedRefs':[r.model_dump(mode='json',by_alias=True) for r in owners.adopted_refs],
+        'adoptionDecisionRef':owners.adoption_decision_ref.model_dump(mode='json',by_alias=True),
+        'packageRef':package_ref.model_dump(mode='json',by_alias=True),
+        'operationRef':operation_ref.model_dump(mode='json',by_alias=True),
+        'attemptRef':attempt_ref.model_dump(mode='json',by_alias=True),
+        'rightsFingerprint':owners.rights_pin.fingerprint,'contentSha256':media.content_hash})
+    return {'owner':'TARGET_CREATIVE_VERSION_OWNER','originJson':origin,
+        'signature':hmac.new(secret.encode(),origin.encode(),hashlib.sha256).hexdigest()}
 
 class FormalRegistration(RuntimeContract):
     owner: ClassVar[str] = 'formal-media-registration'
@@ -42,18 +65,18 @@ class FormalMediaStore(LocalMediaStore):
         root.mkdir(parents=True,exist_ok=True)
         return root/(key+'.registration.json')
     def _validate(self,item:Media,scope:RuntimeScope,media:MediaIdentity,source_ref:str)->None:
-        if (item.work_id,item.source_ref,item.content_hash)!=(scope.work_id,source_ref,media.content_hash) or item.media_type.value!=media.kind or item.file_size!=media.byte_count or item.mime_type!=media.mime:
+        if (item.work_id,item.shot_id,item.source_ref,item.content_hash)!=(scope.work_id,scope.shot_id,source_ref,media.content_hash) or item.media_type.value!=media.kind or item.file_size!=media.byte_count or item.mime_type!=media.mime:
             raise ValueError('Formal Media registration identity/hash/MIME/size mismatch')
     async def register(self,media:MediaIdentity,*,scope:RuntimeScope,source_ref:ArtifactReference,
                        attempt_ref:ArtifactReference|None=None,package_ref:ArtifactReference|None=None,
-                       parents:tuple[MediaIdentity,...]=())->ArtifactReference:
+                       parents:tuple[MediaIdentity,...]=(), owners:OwnerBindings|None=None)->ArtifactReference:
         identity=MediaIdentity.model_validate(media.model_dump())
         path=self._registration_path(scope,identity)
         logical='target-media:'+hashlib.sha256((scope.work_id+identity.content_hash).encode()).hexdigest()
         async with self.execution_store.lock(logical):
             if path.exists():
                 old=FormalRegistration.model_validate_json(path.read_bytes())
-                if old.identity!=identity or old.scope.work_id!=scope.work_id:
+                if old.identity!=identity or old.scope!=scope:
                     raise ValueError('Formal registration changed')
                 ledger=self.execution_store.ledger
                 ledger.put_artifact(old.owner,old.artifact_reference(),old.scope,old.fingerprint,old)
@@ -82,6 +105,12 @@ class FormalMediaStore(LocalMediaStore):
                 if isinstance(self.provider,HttpMediaProvider):
                     async with open_media_source(upload.as_uri()):
                         pass
+                native = None
+                if owners:
+                    if not isinstance(self.provider,HttpMediaProvider) or not attempt_ref or not package_ref:
+                        raise CapabilityAbsent('FORMAL_MEDIA_NATIVE_OWNER_ADAPTER_REQUIRED')
+                    native = native_scope_content(scope=scope,owners=owners,media=identity,package_ref=package_ref,
+                        operation_ref=source_ref,attempt_ref=attempt_ref,secret=self.provider.http.config.api_token or '')
                 from drama_plugin.execution.media import atomic_write
                 atomic_write(claim,b'SUBMITTING')
                 item=await self.provider.import_media(work_id=scope.work_id,media_type=MediaType(identity.kind),
@@ -91,6 +120,7 @@ class FormalMediaStore(LocalMediaStore):
                         'providerAttempt':attempt_ref.model_dump(mode='json',by_alias=True) if attempt_ref else None,
                         'packageRef':package_ref.model_dump(mode='json',by_alias=True) if package_ref else None,
                         'scope':scope.model_dump(mode='json',by_alias=True),
+                        **({'targetNativeScope':native} if native else {}),
                         'parentMediaRefs':[p.model_dump(mode='json',by_alias=True) for p in parents],
                         'technicalMetadata':observation.model_dump(mode='json',by_alias=True)})
             else:

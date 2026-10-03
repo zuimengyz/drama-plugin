@@ -10,9 +10,11 @@ from drama_plugin.contracts.creative_asset import Hash
 from drama_plugin.runtime.contracts import (
     ArtifactReference, DecisionCategory, Identifier, RuntimeContract, RuntimeScope,
 )
+from drama_plugin.runtime.contracts import ExtendedRuntimeContract
 
 
-class UserDecisionRecord(RuntimeContract):
+class UserDecisionRecord(ExtendedRuntimeContract):
+    extension_fields = ("terms_hash",)
     schema_version: Literal["user-decision-v1"] = "user-decision-v1"
     run_id: Identifier
     scope: RuntimeScope
@@ -21,13 +23,14 @@ class UserDecisionRecord(RuntimeContract):
     accepted: bool
     source_ref: ArtifactReference | None = None
     fingerprint: Hash
+    terms_hash: Hash | None = None
 
     @classmethod
     def seal(cls, *, run_id: str, scope: RuntimeScope, decision_id: str,
              category: DecisionCategory, accepted: bool,
-             source_ref: ArtifactReference | None = None) -> UserDecisionRecord:
+             source_ref: ArtifactReference | None = None, terms_hash: str | None = None) -> UserDecisionRecord:
         fields = dict(run_id=run_id, scope=scope, decision_id=decision_id,
-            category=category, accepted=accepted, source_ref=source_ref)
+            category=category, accepted=accepted, source_ref=source_ref, terms_hash=terms_hash)
         checked = cls.model_validate({**fields, "fingerprint": "0" * 64}, context="sealing")
         return cls.model_validate({**checked.model_dump(exclude={"fingerprint"}),
             "fingerprint": sha256_canonical(checked.model_dump(mode="json", by_alias=True,

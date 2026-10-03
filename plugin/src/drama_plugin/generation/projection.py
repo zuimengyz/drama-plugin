@@ -60,6 +60,8 @@ class ExecutionProjection:
 
     async def project(self, package: ProductionPackage, task: GenerationTask, plan: AudioExecutionPlan,
                       selected: tuple[SelectedValue, ...]) -> PromptProjection:
+        if task.unit is not None:
+            return await self._operation(package, task, selected)
         facts: list[ExecutableFact] = []
         internal, diagnostics, aliases = [], [], []
 
@@ -203,3 +205,74 @@ class ExecutionProjection:
         ir = PromptIR.seal(source_package_ref=package.artifact_reference(), scope=package_scope(package),
             duration_ms=package.generation_intent.duration_ms, facts=tuple(sorted(unique.values(), key=order)))
         return PromptProjection(ir, tuple(internal), tuple(diagnostics), tuple(aliases))
+
+    async def _operation(self, package: ProductionPackage, task: GenerationTask,
+                         selected: tuple[SelectedValue, ...]) -> PromptProjection:
+        """Explicit finite leaf projection, scoped by production selection and receipt."""
+        assert task.unit and task.profile
+        facts: list[ExecutableFact] = []
+        internal: list[CoverageEntry] = []
+        diagnostics: list[ExecutionDiagnostic] = []
+        slots = {D.ACTION: "video.action_progression", D.PERFORMANCE: "video.performance",
+            D.WORLD: "environment.architecture", D.CAMERA: "camera.perspective",
+            D.LIGHTING: "lighting.light_sources", D.COLOR: "secondary.color",
+            D.EDITORIAL: "preserve.time", D.SOUND: "video.audio_requirements", D.SUBJECTS: "subject.role"}
+        def add(domain: D, ref: SourceReference, text: object, slot: str, subject: str | None = None) -> None:
+            if not isinstance(text, str) or not text.strip() or len(text) > 3000 or "\n" in text:
+                raise ValueError("UNIT_EXECUTABLE_LEAF_REQUIRED")
+            facts.append(ExecutableFact(fact_id="execution:" + sha256_canonical([ref.model_dump(mode="json",by_alias=True), slot]), domain=domain,
+                slot=slot, text=text, source_ref=ref, obligation=O.QUALITY_SUPPORTING if domain == D.COLOR else O.EXECUTION_REQUIRED,
+                subject_id=subject))
+        for item in selected:
+            domain, ref = item.selection.domain, item.selection.reference
+            if domain == D.REFERENCE:
+                internal.append(CoverageEntry(fact_id="reference-plan:"+sha256_canonical(ref), domain=domain,
+                    source_ref=ref, obligation=O.EXECUTION_REQUIRED, status=S.NOT_APPLICABLE))
+                continue
+            slot = slots.get(domain)
+            if slot is None:
+                raise ValueError("UNIT_FIELD_NOT_EXECUTABLE")
+            if domain == D.CAMERA and ref.path[-2:] == ("movement", "policy"):
+                slot = "video.camera_motion"
+            subject = None
+            if domain == D.SUBJECTS:
+                parent = SourceReference(**{**ref.model_dump(), "path": ref.path[:-1] + ("id",)})
+                value = await self.reader.resolver.resolve(parent)
+                if not isinstance(value, str):
+                    raise ValueError("UNIT_SUBJECT_ID_REQUIRED")
+                subject = value
+            add(domain, ref, item.value, slot, subject)
+        for ref, slot in ((task.unit.start_ref, "video.start_state"), (task.unit.end_ref, "video.end_state")):
+            add(D.ACTION, ref, await self.reader.resolver.resolve(ref), slot)
+        for ref in task.unit.action_refs:
+            if ref not in {f.source_ref for f in facts}:
+                add(D.ACTION, ref, await self.reader.resolver.resolve(ref), "video.action_progression")
+        # Preserve every declared reference duty, including unresolved REQUIRED
+        # inputs; a bounded technical disposition is backed by its scope receipt.
+        dispositions = dict(task.unit.reference_disposition)
+        for item in await self.reader.selections(package):
+            if item.selection.domain != D.REFERENCE or not isinstance(item.value, dict):
+                continue
+            for index, row in enumerate(item.value.get("references", [])):
+                ref = child(item.selection.reference, "references", str(index))
+                disposition = dispositions[row["id"]]
+                internal.append(CoverageEntry(fact_id="reference-duty:"+sha256_canonical(ref),
+                    domain=D.REFERENCE, source_ref=ref,
+                    obligation=O.EXECUTION_REQUIRED if row["priority"] == "REQUIRED" else O.QUALITY_SUPPORTING,
+                    status=S.OUT_OF_UNIT if disposition == "OUT_OF_UNIT" else S.INTERNAL_ONLY,
+                    input_ref=task.unit.scope_decision_ref))
+        selected_refs = {f.source_ref for f in facts}
+        for item in await self.reader.selections(package):
+            if item.selection.reference not in selected_refs:
+                internal.append(CoverageEntry(fact_id="out:"+sha256_canonical(item.selection.reference),
+                    domain=item.selection.domain, source_ref=item.selection.reference,
+                    obligation=O.QUALITY_SUPPORTING, status=S.OUT_OF_UNIT))
+        required = {"video.start_state", "video.end_state", "video.action_progression", "video.camera_motion",
+            "environment.architecture", "subject.role", "video.performance", "video.audio_requirements"}
+        if not required <= {f.slot for f in facts}:
+            diagnostics.append(ExecutionDiagnostic(code="EXECUTION_REQUIRED_MISSING", owner="production-selection",
+                domain=D.DIRECTION, required=True))
+            return PromptProjection(None, tuple(internal), tuple(diagnostics))
+        ir = PromptIR.seal(source_package_ref=package.artifact_reference(), scope=package_scope(package),
+            duration_ms=task.profile.requested_duration_ms, facts=tuple(facts))
+        return PromptProjection(ir, tuple(internal), ())

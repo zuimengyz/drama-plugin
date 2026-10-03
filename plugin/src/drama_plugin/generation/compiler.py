@@ -62,11 +62,17 @@ class PromptCompiler:
         if model and task.input_mode not in model["input_modes"]:
             diagnostics.append(ExecutionDiagnostic(code="REQUEST_UNSUPPORTED", owner="model-capability", domain=D.REFERENCE, required=True))
             return result()
-        if model and package.generation_intent.duration_ms / 1000 not in model["durations"]:
+        duration = task.profile.requested_duration_ms if task.profile else package.generation_intent.duration_ms
+        if model and duration / 1000 not in model["durations"]:
             diagnostics.append(ExecutionDiagnostic(code="REQUEST_UNSUPPORTED", owner="model-capability", domain=D.DIRECTION, required=True))
             return result()
         try:
-            selected = await self.reader.selections(package)
+            if task.unit:
+                if self.reader.operations is None:
+                    raise ValueError("OPERATION_RESOLVER_ABSENT")
+                selected = await self.reader.operations.selected(package, task, self.reader)
+            else:
+                selected = await self.reader.selections(package)
             audio_result = self.audio.assemble(package, task, selected)
             diagnostics.extend(audio_result.diagnostics)
             if audio_result.plan is None:
@@ -104,6 +110,11 @@ class PromptCompiler:
             diagnostics.append(ExecutionDiagnostic(code="PACKAGE_STALE" if error.code.value == "VERSION_MISMATCH"
                 else "SCOPE_MISMATCH" if error.code.value in {"SCOPE_MISMATCH", "AUTHORITY_MISMATCH"}
                 else "EXECUTION_REQUIRED_MISSING", owner=error.owner.value, domain=D.CANON, required=True))
+            return result()
+        except ValueError as error:
+            diagnostics.append(ExecutionDiagnostic(code="SCOPE_DECISION_REQUIRED" if str(error) == "UNIT_SCOPE_DECISION_REQUIRED"
+                else "SCOPE_MISMATCH" if any(s in str(error) for s in ("SCOPE", "VERSION", "ADOPT", "RIGHTS", "DECISION", "PROFILE"))
+                else "EXECUTION_REQUIRED_MISSING", owner="production-selection", domain=D.DIRECTION, required=True))
             return result()
         key = sha256_canonical([package_ref.model_dump(mode="json"), task.model_dump(mode="json"), policy.fingerprint])
         final_ref = self.artifacts.final_for(key)
@@ -186,6 +197,13 @@ class PromptCompiler:
         prepared = self.artifacts.get(ref, GenerationPreparation)
         final = self.artifacts.get(prepared.final_prompt_ref, FinalPromptArtifact)
         ir = self.artifacts.get(ArtifactReference(owner="prompt-ir", artifact_ref="prompt-ir:" + final.prompt_ir_fingerprint, version=1), PromptIR)
+        if prepared.task.unit:
+            try:
+                if self.reader.operations is None:
+                    raise ValueError("OPERATION_RESOLVER_ABSENT")
+                await self.reader.operations.selected(self.packages.get(prepared.source_package_ref), prepared.task, self.reader)
+            except (KeyError, ValueError, OSError):
+                return (ExecutionDiagnostic(code="SCOPE_MISMATCH", owner="production-selection", domain=D.DIRECTION, required=True),)
         try:
             await self.reader.validate_execution_refs(tuple(f.source_ref for f in ir.facts) + ir.execution_reference_refs,
                 work_id=ir.scope.work_id)

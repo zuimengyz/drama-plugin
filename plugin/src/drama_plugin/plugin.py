@@ -13,11 +13,13 @@ if TYPE_CHECKING:
     from drama_plugin.generation.store import GenerationArtifactStore
     from drama_plugin.production.references import ReferenceExecutionStore
     from drama_plugin.generation.contracts import GenerationTask
-    from drama_plugin.runtime.contracts import ArtifactReference, RunMode, RuntimeRun
+    from drama_plugin.runtime.contracts import ArtifactReference, DecisionCategory, RunMode, RuntimeRun
     from drama_plugin.execution.transport import ProviderTransport
     from drama_plugin.execution.review import CreativeReviewer
     from drama_plugin.execution.audio import AudioConsumer
     from drama_plugin.execution.contracts import Authorization, FinishingRecipe
+    from drama_plugin.execution.live_transport import FinancialTerms
+    from drama_plugin.execution.review import ReviewResponse
     from drama_plugin.film.ports import FilmCanonAuthor, FilmDirectionAuthor, FilmReviewer, ExecutionRecipeSource
     from drama_plugin.film.contracts import LanguageMetadata, DeliveryProfile
     from drama_plugin.creative_engine.authors import CanonAuthor, CreativeDirectionAuthor, ProfessionalAuthor
@@ -128,11 +130,13 @@ class DramaPlugin:
             self.production_packages, self.shot_assembler, runs)
         governance_workflow = governed_workflow()
         from drama_plugin.generation.sources import PackageReader, LegacyExecutionReferences
+        from drama_plugin.generation.operation import OperationResolver
         from drama_plugin.generation.compiler import PromptCompiler
         from drama_plugin.generation.capability import GenerationCapability
-        from drama_plugin.generation.policy import GenerationPolicy, generation_workflow
+        from drama_plugin.generation.policy import GenerationPolicy, generation_workflow, media_review_workflow
+        self.operation_resolver = OperationResolver(self.creative_versions, self.ledger, config.video_route_policy) if self.ledger else None
         self.prompt_compiler = PromptCompiler(self.production_packages, self.generation_artifacts,
-            PackageReader(creative_sources, LegacyExecutionReferences(production_artifact_roots)),
+            PackageReader(creative_sources, LegacyExecutionReferences(production_artifact_roots), self.operation_resolver),
             media_reader=BoundMediaReader(tools))
         self.generation_capability = GenerationCapability(self.prompt_compiler, self.generation_artifacts, self.gate_governance)
         generation_flow = generation_workflow()
@@ -148,7 +152,7 @@ class DramaPlugin:
                 LocalMediaStore(target_media_root if target_media_root is not None else
                     self.ledger.path.parent / (self.ledger.path.name + ".media")),
                 self.gate_governor, self.gate_findings, transports=target_transports,
-                reviewer=target_reviewer, audio=target_audio)
+                reviewer=target_reviewer, audio=target_audio, operations=self.operation_resolver)
             if target_formal_media:
                 from drama_plugin.execution.formal_media import FormalMediaStore
                 self.execution.media = FormalMediaStore(self.execution.media.directory, providers.media, self.execution.store)
@@ -174,9 +178,14 @@ class DramaPlugin:
             workflows={**foundation_workflows(), workflow.workflow_id: workflow,
                 governance_workflow.workflow_id: governance_workflow, generation_flow.workflow_id: generation_flow,
                 execution_flow.workflow_id: execution_flow, creative_flow.workflow_id: creative_flow,
-                dependency_flow.workflow_id: dependency_flow, **film_flows},
+                dependency_flow.workflow_id: dependency_flow, **film_flows,
+                "package-to-reviewed-media:v1": media_review_workflow()},
             policies={mode: FilmPolicy(mode, self.gate_findings, self.film.store, self.gate_governor) if self.film else CreativePolicy(mode, self.gate_findings) for mode in RunMode})
         self.creative.runtime = self.runtime
+        for mode_policy in self.runtime._policies.values():
+            if isinstance(mode_policy, GenerationPolicy):
+                mode_policy.mainline_ledger = self.ledger
+        self.generation_capability.on_ready = self._bind_media_execution
         self.context = ContextBuilder(providers.context)
         self._http_clients = http_clients or []
         self._fish_client = (
@@ -475,6 +484,108 @@ class DramaPlugin:
             cached_preparation_ref=cached_preparation_ref))
         return run
 
+    def create_media_review_run(self, *, package_ref: ArtifactReference, task: GenerationTask,
+                                offline_authorization: Authorization | None = None) -> RuntimeRun:
+        """Package goal entry; the existing Runtime chooses every internal action."""
+        from drama_plugin.contracts.base import sha256_canonical
+        from drama_plugin.generation.policy import MEDIA_WORKFLOW
+        from drama_plugin.generation.contracts import GenerationInput
+        from drama_plugin.governance.contracts import GovernanceInput
+        from drama_plugin.generation.audio import package_scope
+        from drama_plugin.execution.review import HumanReviewer
+        from drama_plugin.execution.formal_media import FormalMediaStore
+        from drama_plugin.execution.live_transport import configured_http_transport
+        from drama_plugin.execution.transport import CapabilityAbsent
+        if not self.ledger or not self.execution or not self.operation_resolver or not task.profile or not task.unit or not task.owners:
+            raise ConfigurationError("Exact durable operation selection/profile/owner bindings required")
+        package = self.production_packages.get(package_ref)
+        self.operation_resolver.validate(package,task,require_scope=False)
+        scope = package_scope(package)
+        identity = "media-proof:" + sha256_canonical([package_ref.model_dump(mode="json",by_alias=True),
+            task.unit.model_dump(mode="json",by_alias=True,exclude={"scope_decision_ref"}), task.profile.model_dump(mode="json",by_alias=True), task.owners.model_dump(mode="json",by_alias=True)])
+        if offline_authorization and (offline_authorization.execution_mode != "OFFLINE_ONLY"
+                or offline_authorization.estimated_cost_microunits or offline_authorization.budget_microunits):
+            raise ValueError("Goal entry cannot accept a live authorization or paid fixture")
+        if not isinstance(self.providers.media,HttpMediaProvider):
+            raise CapabilityAbsent("FORMAL_MEDIA_PROVIDER_CONFIGURATION_REQUIRED")
+        if not isinstance(self.execution.media,FormalMediaStore):
+            self.execution.media = FormalMediaStore(self.execution.media.directory,self.providers.media,self.execution.store)
+        if self.execution.reviewer is None:
+            self.execution.reviewer = HumanReviewer()
+        if task.profile.provider not in self.execution.transports:
+            try:
+                self.execution.transports[task.profile.provider] = configured_http_transport(model=task.profile.model,
+                    receipt_root=self.ledger.path.parent/(self.ledger.path.name+".receipts"),ledger=self.ledger,
+                    resolution=task.profile.resolution,aspect_ratio=task.profile.aspect_ratio)
+            except CapabilityAbsent:
+                pass  # Failure remains an explicit unavailable capability; no fallback.
+        try:
+            existing = self.runtime.store.load(identity)
+            if self.generation_artifacts.inputs(identity).task != task:
+                raise ValueError("Goal identity/input conflict")
+            return existing
+        except KeyError:
+            run = self.runtime.draft_run(work_id=scope.work_id,scene_id=scope.scene_id,shot_id=scope.shot_id,
+                mode=package.boundary.mode,workflow_id=MEDIA_WORKFLOW,run_id=identity)
+            created = self.ledger.create_target_run(run,GovernanceInput(package_ref=package_ref),GenerationInput(task=task))
+            if offline_authorization:
+                self.ledger.put_index("media-proof-authorization",identity,offline_authorization,scope=scope,once=True)
+            return created
+
+    def _bind_media_execution(self, run_id: str, preparation_ref: ArtifactReference) -> None:
+        from drama_plugin.execution.contracts import Authorization, ExecutionInput, FinishingRecipe
+        from drama_plugin.generation.contracts import GenerationPreparation
+        if not self.ledger or not self.execution:
+            raise ConfigurationError("Durable execution owner required")
+        try:
+            auth = Authorization.model_validate(self.ledger.get_index("media-proof-authorization",run_id))
+        except KeyError:
+            return  # No accepted cost: no operation/grant/placeholder authorization.
+        prepared = self.generation_artifacts.get(preparation_ref,GenerationPreparation)
+        assert prepared.task.profile
+        run = self.runtime.store.load(run_id)
+        recipe = FinishingRecipe.seal(scope=run.scope,run_id=run_id,source_package_ref=prepared.source_package_ref,
+            preparation_ref=preparation_ref,audio_plan_ref=prepared.audio_plan_ref,approval_ref=auth.approval_ref,native_policy="PRESERVE")
+        self.execution.store.put(recipe)
+        self.ledger.put_index("execution-input",run_id,ExecutionInput(preparation_ref=preparation_ref,authorization=auth,
+            recipe_ref=recipe.artifact_reference(),route=prepared.task.profile.provider),scope=run.scope,once=True)
+
+    async def provide_media_cost_terms(self, run_id: str, terms: FinancialTerms) -> RuntimeRun:
+        from drama_plugin.generation.contracts import FinalPromptArtifact, GenerationPreparation
+        from drama_plugin.execution.live_transport import TargetHttpTransport
+        from drama_plugin.contracts.base import sha256_canonical
+        from drama_plugin.runtime.contracts import CapabilityResult, ResultStatus, RuntimeState
+        if not self.ledger:
+            raise ConfigurationError("Durable terms required")
+        run = await self.runtime.recover_run(run_id)
+        if run.workflow_id != "package-to-reviewed-media:v1" or run.cursor != 7 or run.state != RuntimeState.WAITING_EXTERNAL:
+            raise ValueError("No pending cost terms boundary")
+        prepared = self.generation_artifacts.get(self.generation_artifacts.prepared(run_id),GenerationPreparation)
+        final = self.generation_artifacts.get(prepared.final_prompt_ref,FinalPromptArtifact)
+        terms.validate_current()
+        if (terms.preparation_ref != prepared.artifact_reference() or terms.profile != prepared.task.profile
+                or terms.wire_payload_hash != sha256_canonical(TargetHttpTransport.preview(prepared,final))):
+            raise ValueError("Exact preparation/wire financial terms required")
+        self.ledger.put_index("media-proof-cost-terms",run_id,terms,scope=run.scope,once=True)
+        assert run.last_result and run.last_result.external_ref
+        await self.runtime.record_external_result(run_id,external_ref=run.last_result.external_ref,
+            result=CapabilityResult(status=ResultStatus.SUCCEEDED,artifact_refs=(terms.preparation_ref,)))
+        return await self.runtime.run(run_id)
+
+    async def provide_human_media_review(self, run_id: str, *, media_ref: ArtifactReference,
+                                        context_hash: str, response: ReviewResponse) -> RuntimeRun:
+        from drama_plugin.runtime.contracts import CapabilityResult, ResultStatus, RuntimeState
+        if not self.execution:
+            raise ConfigurationError("Execution owner required")
+        run = await self.runtime.recover_run(run_id)
+        if run.workflow_id != "package-to-reviewed-media:v1" or run.state != RuntimeState.WAITING_EXTERNAL or run.cursor != 11:
+            raise ValueError("No pending human operation review")
+        ref = self.execution.record_human_review(run_id,media_ref=media_ref,context_hash=context_hash,response=response)
+        assert run.last_result and run.last_result.external_ref
+        await self.runtime.record_external_result(run_id,external_ref=run.last_result.external_ref,
+            result=CapabilityResult(status=ResultStatus.SUCCEEDED,artifact_refs=(ref,)))
+        return await self.runtime.run(run_id)
+
     def create_execution_run(self, *, run_id: str, mode: RunMode,
                              preparation_ref: ArtifactReference, authorization: Authorization,
                              recipe: FinishingRecipe, route: str) -> RuntimeRun:
@@ -501,10 +612,19 @@ class DramaPlugin:
         from drama_plugin.execution.policy import WORKFLOW, execution_workflow
         from drama_plugin.runtime.contracts import CapabilityInput, ResultStatus, RuntimeState
         run = await self.runtime.recover_run(run_id)
-        if run.workflow_id != WORKFLOW:
+        from drama_plugin.generation.policy import MEDIA_WORKFLOW, media_review_workflow
+        if run.workflow_id not in {WORKFLOW,MEDIA_WORKFLOW}:
             raise ValueError("Only E1 execution runs can use execution reconciliation")
+        flow = media_review_workflow() if run.workflow_id == MEDIA_WORKFLOW else execution_workflow()
+        if run.workflow_id == MEDIA_WORKFLOW:
+            package_ref = self.gate_findings.inputs(run_id).package_ref
+            assert package_ref is not None
+            self.create_media_review_run(package_ref=package_ref,
+                task=self.generation_artifacts.inputs(run_id).task)
         if run.state == RuntimeState.WAITING_EXTERNAL:
-            key = execution_workflow().steps[run.cursor].capability_key
+            if run.workflow_id == MEDIA_WORKFLOW and run.cursor in {7,11}:
+                return run  # Needs actual quote or human result, never synthetic completion.
+            key = flow.steps[run.cursor].capability_key
             assert key and run.last_result and run.last_result.external_ref
             result = await self.runtime.executor.execute(key, CapabilityInput(run_id=run_id,
                 operation_id=f"{run_id}:{run.cursor}", scope=run.scope))
@@ -538,12 +658,65 @@ class DramaPlugin:
             candidate = self.creative.state.checkpoint(run_id).candidate_ref
             if source_ref != candidate:
                 raise ValueError("Adoption must bind the exact candidate version-set hash")
+        assert action.decision is not None
         record = UserDecisionRecord.seal(run_id=run_id, scope=run.scope,
             decision_id=decision_id, category=action.decision.category,
-            accepted=accepted, source_ref=source_ref)
+            accepted=accepted, source_ref=source_ref,
+            terms_hash=self._media_decision_terms(run_id,source_ref) if run.workflow_id == "package-to-reviewed-media:v1" else None)
         ref = self.reviews.put_user_decision(record)
+        if accepted and run.workflow_id == "package-to-reviewed-media:v1":
+            self._consume_media_decision(run_id,ref,record.category)
         return await self.runtime.decide(run_id, decision_id=decision_id,
             accepted=accepted, decision_ref=ref)
+
+    def _media_decision_terms(self, run_id: str, source_ref: ArtifactReference | None) -> str:
+        from drama_plugin.execution.live_transport import FinancialTerms
+        assert self.ledger
+        run = self.runtime.store.load(run_id)
+        if run.cursor == 4:
+            task = self.generation_artifacts.inputs(run_id).task
+            package = self.gate_findings.inputs(run_id).package_ref
+            if not task.unit or package is None or package != source_ref:
+                raise ValueError("Scope decision must bind exact Package/unit/duties")
+            return task.unit.terms_hash(package)
+        terms = FinancialTerms.model_validate(self.ledger.get_index("media-proof-cost-terms",run_id))
+        terms.validate_current()
+        if run.cursor != 8 or source_ref != terms.preparation_ref:
+            raise ValueError("Cost decision must bind exact preparation/terms")
+        from drama_plugin.generation.contracts import GenerationPreparation, FinalPromptArtifact
+        from drama_plugin.execution.live_transport import TargetHttpTransport
+        from drama_plugin.contracts.base import sha256_canonical
+        prepared = self.generation_artifacts.get(terms.preparation_ref,GenerationPreparation)
+        final = self.generation_artifacts.get(prepared.final_prompt_ref,FinalPromptArtifact)
+        if terms.profile != prepared.task.profile or terms.wire_payload_hash != sha256_canonical(TargetHttpTransport.preview(prepared,final)):
+            raise ValueError("APPROVED_FINANCIAL_TERMS_DRIFT")
+        assert self.operation_resolver
+        self.operation_resolver.validate(self.production_packages.get(prepared.source_package_ref),prepared.task)
+        return terms.fingerprint
+
+    def _consume_media_decision(self, run_id: str, ref: ArtifactReference, category: DecisionCategory) -> None:
+        from drama_plugin.generation.contracts import GenerationInput
+        from drama_plugin.execution.contracts import Authorization
+        from drama_plugin.execution.live_transport import FinancialTerms
+        from drama_plugin.runtime.contracts import DecisionCategory
+        from math import ceil
+        assert self.ledger and self.execution
+        run = self.runtime.store.load(run_id)
+        if category == DecisionCategory.ART_APPROVAL:
+            values = self.generation_artifacts.inputs(run_id)
+            assert values.task.unit
+            task = type(values.task).model_validate({**values.task.model_dump(),"unit":{
+                **values.task.unit.model_dump(),"scope_decision_ref":ref}})
+            self.ledger.put_index("generation-input",run_id,GenerationInput(task=task),scope=run.scope)
+            return
+        terms = FinancialTerms.model_validate(self.ledger.get_index("media-proof-cost-terms",run_id))
+        terms.validate_current()
+        authorization = Authorization(approval_ref=ref,authorized=True,budget_microunits=terms.budget_microunits,
+            estimated_cost_microunits=ceil(terms.cost_quote.amount*1000000),execution_mode="CONTROLLED_LIVE")
+        self.ledger.put_index("media-proof-authorization",run_id,authorization,scope=run.scope,once=True)
+        self._bind_media_execution(run_id,terms.preparation_ref)
+        # TargetExecution derives and validates the grant from this exact receipt
+        # only at dispatch. No operation is reserved by financial preview/approval.
 
     async def resume_legacy_run(self, *, work_id: str, attempt_id: str) -> dict[str, Any]:
         """Explicit historical handoff; never imports old history into Target Ledger."""

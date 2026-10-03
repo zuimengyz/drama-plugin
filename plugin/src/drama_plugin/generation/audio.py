@@ -32,6 +32,25 @@ class AudioPerformanceAssembler:
 
     def assemble(self, package: ProductionPackage, task: GenerationTask,
                  selected: tuple[SelectedValue, ...]) -> AudioAssembly:
+        if task.unit is not None:
+            # Selected exact spoken declarations must be authored, never inferred timing.
+            # Multiple lines require the existing authored ordering path.
+            assert task.profile
+            unit_lines = [i for i in selected if i.selection.reference.owner == "scene"
+                and isinstance(i.value, dict) and i.value.get("id") in task.unit.spoken_ids]
+            if {i.value["id"] for i in unit_lines} != set(task.unit.spoken_ids) or len(unit_lines) > 1:
+                return AudioAssembly(None, (ExecutionDiagnostic(code="CREATIVE_SOURCE_INSUFFICIENT",
+                    owner="sound-performance", domain=D.SOUND, required=True),))
+            speech = tuple(SpeechEvent(event_id=i.value["id"], spoken_content_id=i.value["id"],
+                source_ref=i.selection.reference, speaker_ref=ArtifactReference(owner="character",artifact_ref=i.value["speakerKey"]),
+                layer=SpeechLayer.PRIMARY, intelligibility=Intelligibility.MUST_UNDERSTAND, mix_priority=3,
+                execution_ref=i.selection.reference, language=i.value["language"],
+                language_ref=child(i.selection.reference,"language")) for i in unit_lines)
+            sound_refs = tuple(i.selection.reference for i in selected if i.selection.domain == D.SOUND)
+            plan = AudioExecutionPlan.seal(source_package_ref=package.artifact_reference(), scope=package_scope(package),
+                duration_ms=task.profile.requested_duration_ms, speech_events=speech, ambience_refs=sound_refs,
+                native_audio_policy=task.native_audio, source_roles=("NATIVE_VIDEO_AUDIO",))
+            return AudioAssembly(plan, ())
         diagnostics: list[ExecutionDiagnostic] = []
         events, relations = [], []
         lines: dict[str, SelectedValue] = {}

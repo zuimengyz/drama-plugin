@@ -8,14 +8,17 @@ from pydantic import Field, StrictInt, StringConstraints, ValidationInfo, model_
 
 from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.contracts.creative_asset import Hash
-from drama_plugin.production.contracts import SourceDomain, SourceReference
+from drama_plugin.production.contracts import DomainReference, SourceDomain, SourceReference
 from drama_plugin.runtime.contracts import ArtifactReference, Identifier, RuntimeContract, RuntimeScope
+from drama_plugin.runtime.contracts import ExtendedRuntimeContract
+from drama_plugin.contracts.source_pin import SourcePin
+from drama_plugin.creative_engine.contracts import VersionRef
 
 Text = Annotated[str, StringConstraints(min_length=1, max_length=3000)]
 _SEAL_CONTEXT = object()
 
 
-class DerivedArtifact(RuntimeContract):
+class DerivedArtifact(ExtendedRuntimeContract):
     creative_authority: ClassVar[bool] = False
     owner: ClassVar[str]
     source_package_ref: ArtifactReference
@@ -43,12 +46,68 @@ class DerivedArtifact(RuntimeContract):
         return ArtifactReference(owner=self.owner, artifact_ref=self.owner + ":" + self.fingerprint, version=1)
 
 
-class GenerationTask(RuntimeContract):
+class OperationSelection(RuntimeContract):
+    """A bounded production selection, never a new creative version."""
+    beat_ids: tuple[Identifier, ...] = Field(min_length=1, max_length=16)
+    action_refs: tuple[SourceReference, ...] = Field(min_length=1, max_length=16)
+    spoken_ids: tuple[Identifier, ...] = Field(default=(), max_length=16)
+    start_ref: SourceReference
+    end_ref: SourceReference
+    fact_refs: tuple[DomainReference, ...] = Field(min_length=1, max_length=64)
+    reference_disposition: tuple[tuple[Identifier, Literal["INPUT", "OUT_OF_UNIT", "TECHNICAL_RISK_ACCEPTED"]], ...] = Field(max_length=16)
+    scope_decision_ref: ArtifactReference | None = None
+
+    def terms_hash(self, package_ref: ArtifactReference) -> str:
+        return sha256_canonical([package_ref.model_dump(mode="json",by_alias=True), self.model_dump(mode="json", by_alias=True, exclude={"scope_decision_ref"})])
+
+
+class ExecutionProfile(RuntimeContract):
+    provider: Identifier
+    model: Identifier
+    vendor_model_id: Identifier
+    mode: Literal["text_to_video", "reference", "image_to_video", "first_last_frame"]
+    requested_duration_ms: Annotated[StrictInt, Field(gt=0, le=3_600_000)]
+    resolution: Literal["480p", "720p", "1080p"]
+    aspect_ratio: Literal["16:9", "9:16", "1:1", "4:3", "3:4", "21:9", "9:21", "adaptive"]
+    native_audio: bool
+    catalog_fingerprint: Hash
+    policy_fingerprint: Hash
+    paid_references: Literal[0] = 0
+    paid_retries: Literal[0] = 0
+    max_paid_operations: Literal[1] = 1
+
+
+class OwnerBindings(RuntimeContract):
+    adopted_refs: tuple[VersionRef, ...] = Field(min_length=5, max_length=32)
+    dpd_pin: SourcePin
+    performance_scope_pin: SourcePin
+    snapshot_pins: tuple[SourcePin, ...] = Field(min_length=1, max_length=16)
+    rights_pin: SourcePin
+    rights_request_ref: ArtifactReference
+    rights_decision_ref: ArtifactReference
+    adoption_decision_ref: ArtifactReference
+
+
+class GenerationTask(ExtendedRuntimeContract):
+    extension_fields = ("unit", "profile", "owners")
     kind: Literal["VIDEO"] = "VIDEO"
     target_model: Identifier = "seedance-2-standard"
     input_mode: Literal["text_to_video", "reference", "image_to_video", "first_last_frame"] = "text_to_video"
     native_audio: Literal["OPTIONAL", "REQUIRED", "DISABLED"] = "OPTIONAL"
     tts_required: bool = False
+    unit: OperationSelection | None = None
+    profile: ExecutionProfile | None = None
+    owners: OwnerBindings | None = None
+
+    @model_validator(mode="after")
+    def operation_boundary(self) -> Self:
+        if any((self.unit, self.profile, self.owners)) and not all((self.unit, self.profile, self.owners)):
+            raise ValueError("Operation selection/profile/owner refs must be fixed together")
+        if self.profile and (self.target_model != self.profile.model or self.input_mode != self.profile.mode
+                or self.native_audio == "DISABLED" and self.profile.native_audio
+                or self.native_audio == "REQUIRED" and not self.profile.native_audio):
+            raise ValueError("Task/profile conflict")
+        return self
 
 
 class Obligation(str, Enum):
@@ -92,6 +151,7 @@ class CoverageStatus(str, Enum):
     OPTIONAL_OMITTED = "OPTIONAL_OMITTED"
     UNRESOLVED = "UNRESOLVED"
     NOT_APPLICABLE = "NOT_APPLICABLE"
+    OUT_OF_UNIT = "OUT_OF_UNIT"
 
 
 class CoverageEntry(RuntimeContract):

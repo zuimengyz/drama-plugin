@@ -234,7 +234,7 @@ class AuthorRequest(RuntimeContract):
 
 class RouteRequest(RuntimeContract):
     output: Literal["video", "image", "audio"] = "video"
-    input_mode: Literal["text_to_video", "image_to_video", "reference_video", "audio"] = "text_to_video"
+    input_mode: Literal["text_to_video", "image_to_video", "reference", "reference_video", "audio"] = "text_to_video"
     available_inputs: tuple[Literal["first_frame", "character_reference", "environment_reference", "audio"], ...] = ()
     available_capabilities: tuple[str, ...] = Field(default=(), max_length=16)
     estimated_child_cost: int = Field(default=0, ge=0)

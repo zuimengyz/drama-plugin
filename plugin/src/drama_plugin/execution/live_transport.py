@@ -18,11 +18,73 @@ from drama_plugin.execution.transport import CapabilityAbsent, DefinitelyNotSubm
 from drama_plugin.execution.media import atomic_write
 from drama_plugin.providers.video.base import HttpVideoProvider, SafeProviderError
 from drama_plugin.providers.video.registry import registry
-from drama_plugin.runtime.contracts import ArtifactReference, RuntimeContract, DecisionCategory, RuntimeScope
+from drama_plugin.runtime.contracts import ArtifactReference, RuntimeContract, ExtendedRuntimeContract, DecisionCategory, RuntimeScope
+from drama_plugin.generation.contracts import ExecutionProfile, GenerationPreparation, FinalPromptArtifact
 from drama_plugin.persistence.review import UserDecisionRecord
 from drama_plugin.persistence.ledger import ProductionLedger
 
-class ControlledLiveGrant(RuntimeContract):
+def wire_payload(request: ProviderRequest, *, provider: str, resolution: str, aspect_ratio: str) -> dict[str, JsonValue]:
+    if request.input_mode!='text_to_video' or request.references:
+        raise CapabilityAbsent('TARGET_HTTP_REFERENCE_SERIALIZER_ABSENT')
+    spec=registry()['models'][request.model]
+    if request.duration_ms%1000 or request.duration_ms//1000 not in spec.get('durations',[request.duration_ms//1000]):
+        raise CapabilityAbsent('PROVIDER_DURATION_UNSUPPORTED')
+    if resolution not in spec['resolutions'] or aspect_ratio not in spec['aspect_ratios'] or len(request.prompt_text)>spec['prompt_limit']:
+        raise CapabilityAbsent('PROVIDER_PROFILE_OR_PROMPT_LIMIT_UNSUPPORTED')
+    if provider != spec['provider']:
+        raise ValueError('MODEL_PROVIDER_MISMATCH')
+    if request.profile and (request.profile.model != request.model or request.profile.provider != provider
+            or request.profile.requested_duration_ms != request.duration_ms
+            or request.profile.vendor_model_id != spec['vendor_model']
+            or request.profile.mode != request.input_mode or request.profile.resolution != resolution
+            or request.profile.aspect_ratio != aspect_ratio or request.profile.catalog_fingerprint != sha256_canonical(spec)):
+        raise ValueError('FROZEN_PROFILE_MISMATCH')
+    model=str(spec['vendor_model'])
+    seconds=request.duration_ms//1000
+    audio=request.profile.native_audio if request.profile else request.native_audio!='DISABLED' and True in spec['native_audio']
+    if request.native_audio=='REQUIRED' and not audio:
+        raise CapabilityAbsent('REQUIRED_NATIVE_AUDIO_UNSUPPORTED')
+    text=request.prompt_text  # PromptCompiler has already translated the package.
+    if provider in ('seedance','minimax'):
+        body:dict[str,JsonValue]={'model':model,'content':[{'type':'text','text':text}],
+            'duration':seconds,'resolution':resolution,'ratio':aspect_ratio}
+        if provider=='seedance':
+            body.update(generate_audio=audio,watermark=False)
+        elif audio:
+            raise CapabilityAbsent('PROVIDER_REQUIRED_NATIVE_AUDIO_UNSUPPORTED')
+        return body
+    if provider=='vidu':
+        return {'model':model,'prompt':text,'duration':seconds,'resolution':resolution,'aspect_ratio':aspect_ratio,'audio':audio}
+    if provider=='wan':
+        return {'model':model,'input':{'prompt':text},'parameters':{'duration':seconds,'resolution':resolution.upper(),'ratio':aspect_ratio,'audio':audio,'prompt_extend':False}}
+    raise CapabilityAbsent('TARGET_PROVIDER_SERIALIZER_ABSENT')
+
+
+class FinancialTerms(RuntimeContract):
+    preparation_ref: ArtifactReference
+    wire_payload_hash: str = Field(pattern=r'^[0-9a-f]{64}$')
+    profile: ExecutionProfile
+    cost_quote: CostEstimate
+    budget_microunits: int = Field(gt=0)
+    max_paid_operations: Literal[1] = 1
+
+    @property
+    def fingerprint(self) -> str:
+        return sha256_canonical(self)
+
+    def validate_current(self) -> None:
+        from datetime import datetime, timezone
+        from math import ceil
+        q = self.cost_quote
+        if (not q.checked_at.tzinfo or not q.expires_at.tzinfo
+                or not q.checked_at <= datetime.now(timezone.utc) < q.expires_at
+                or q.request_fingerprint != self.wire_payload_hash or q.amount <= 0
+                or ceil(q.amount * 1000000) > self.budget_microunits):
+            raise ValueError('INVALID_OR_EXPIRED_FINANCIAL_TERMS')
+
+
+class ControlledLiveGrant(ExtendedRuntimeContract):
+    extension_fields = ('terms',)
     owner: ClassVar[str] = 'controlled-live-grant'
     schema_version: Literal['controlled-live-grant-v1'] = 'controlled-live-grant-v1'
     scope: RuntimeScope
@@ -36,6 +98,7 @@ class ControlledLiveGrant(RuntimeContract):
     aspect_ratio: str
     currency: str = Field(min_length=1)
     max_paid_operations: Literal[1] = 1
+    terms: FinancialTerms | None = None
     @property
     def fingerprint(self) -> str:
         return sha256_canonical(self)
@@ -54,34 +117,23 @@ class TargetHttpTransport:
         if qualification_only and not isinstance(adapter.client._transport,httpx.MockTransport):
             raise ValueError('Offline qualification must use an in-process HTTP fake')
     def approved_payload(self, request: ProviderRequest) -> dict[str,JsonValue]:
-        if request.input_mode!='text_to_video' or request.references:
-            raise CapabilityAbsent('TARGET_HTTP_REFERENCE_SERIALIZER_ABSENT')
-        if request.model!=self.adapter.model:
+        if request.model != self.adapter.model:
             raise ValueError('Configured model differs from approved request')
-        spec=registry()['models'][request.model]
-        if request.duration_ms%1000 or request.duration_ms//1000 not in spec.get('durations',[request.duration_ms//1000]):
-            raise CapabilityAbsent('PROVIDER_DURATION_UNSUPPORTED')
-        if self.resolution not in spec['resolutions'] or self.aspect_ratio not in spec['aspect_ratios'] or len(request.prompt_text)>spec['prompt_limit']:
-            raise CapabilityAbsent('PROVIDER_PROFILE_OR_PROMPT_LIMIT_UNSUPPORTED')
-        model=str(spec['vendor_model'])
-        seconds=request.duration_ms//1000
-        audio=request.native_audio!='DISABLED' and True in spec['native_audio']
-        if request.native_audio=='REQUIRED' and not audio:
-            raise CapabilityAbsent('REQUIRED_NATIVE_AUDIO_UNSUPPORTED')
-        text=request.prompt_text  # PromptCompiler has already translated the package.
-        if self.provider in ('seedance','minimax'):
-            body:dict[str,JsonValue]={'model':model,'content':[{'type':'text','text':text}],
-                'duration':seconds,'resolution':self.resolution,'ratio':self.aspect_ratio}
-            if self.provider=='seedance':
-                body.update(generate_audio=audio,watermark=False)
-            elif audio:
-                raise CapabilityAbsent('PROVIDER_REQUIRED_NATIVE_AUDIO_UNSUPPORTED')
-            return body
-        if self.provider=='vidu':
-            return {'model':model,'prompt':text,'duration':seconds,'resolution':self.resolution,'aspect_ratio':self.aspect_ratio,'audio':audio}
-        if self.provider=='wan':
-            return {'model':model,'input':{'prompt':text},'parameters':{'duration':seconds,'resolution':self.resolution.upper(),'ratio':self.aspect_ratio,'audio':audio,'prompt_extend':False}}
-        raise CapabilityAbsent('TARGET_PROVIDER_SERIALIZER_ABSENT')
+        if request.profile and (request.profile.provider != self.provider or request.profile.model != self.adapter.model
+                or request.profile.resolution != self.resolution or request.profile.aspect_ratio != self.aspect_ratio):
+            raise ValueError('FROZEN_PROFILE_MISMATCH')
+        return wire_payload(request, provider=self.provider, resolution=self.resolution, aspect_ratio=self.aspect_ratio)
+
+    @staticmethod
+    def preview(prepared: GenerationPreparation, final: FinalPromptArtifact) -> dict[str, JsonValue]:
+        profile = prepared.task.profile
+        if profile is None or prepared.final_prompt_ref != final.artifact_reference() or prepared.task != final.task:
+            raise ValueError('EXACT_PREPARATION_REQUIRED')
+        return wire_payload(ProviderRequest(model=profile.model, input_mode=profile.mode, profile=profile,
+            prompt_text=final.prompt_text, duration_ms=profile.requested_duration_ms,
+            native_audio=prepared.task.native_audio), provider=profile.provider,
+            resolution=profile.resolution, aspect_ratio=profile.aspect_ratio)
+
     def _grant(self, operation:ExecutionOperation, request:ProviderRequest|None = None) -> None:
         from drama_plugin.config.video_route import require_runtime_route
         if self.offline:
@@ -102,6 +154,17 @@ class TargetHttpTransport:
         decision=UserDecisionRecord.model_validate(body)
         if not decision.accepted or decision.category!=DecisionCategory.COST_APPROVAL or scope!=operation.scope or decision.run_id!=operation.run_id or decision.source_ref!=operation.preparation_ref:
             raise ValueError('Exact cost decision required before live submission')
+        if request and request.profile:
+            terms = grant.terms
+            if terms is None:
+                raise ValueError('EXACT_FINANCIAL_TERMS_REQUIRED')
+            terms.validate_current()
+            if (decision.terms_hash != terms.fingerprint or terms.preparation_ref != operation.preparation_ref
+                    or terms.profile != request.profile or terms.cost_quote != grant.cost_quote
+                    or terms.budget_microunits != grant.budget_microunits
+                    or terms.budget_microunits != operation.authorization.budget_microunits
+                    or terms.wire_payload_hash != sha256_canonical(self.approved_payload(request))):
+                raise ValueError('APPROVED_FINANCIAL_TERMS_DRIFT')
         if grant.scope!=operation.scope or (grant.resolution,grant.aspect_ratio)!=(self.resolution,self.aspect_ratio):
             raise ValueError('Controlled proof scope/output profile differs from approval')
         from datetime import datetime, timezone

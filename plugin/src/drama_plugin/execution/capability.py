@@ -16,19 +16,20 @@ from drama_plugin.execution.contracts import (
     ProviderRequest, RequestReference, ReviewedAVCandidate, TechnicalMediaReview,
 )
 from drama_plugin.execution.media import LocalMediaStore, inspect, probe_intake_bytes
-from drama_plugin.execution.review import CreativeReviewer
+from drama_plugin.execution.review import CreativeReviewer, HumanReviewer, ReviewResponse
 from drama_plugin.execution.store import ExecutionStore, OperationCheckpoint
 from drama_plugin.execution.transport import (
     CapabilityAbsent, DefinitelyNotSubmitted, IntakeTransient, ProviderTransport, serialize_request,
 )
 from drama_plugin.generation.contracts import AudioExecutionPlan, DerivedArtifact, FinalPromptArtifact, GenerationPreparation
+from drama_plugin.generation.operation import OperationResolver
 from drama_plugin.governance.contracts import GateCode, GateEffect, GateFinding
 from drama_plugin.governance.governor import GateGovernor
 from drama_plugin.persistence.stores import DurableGateFindingStore
 from drama_plugin.production.references import ReferenceExecutionBinding
 from drama_plugin.production.contracts import ProductionPackage
 from drama_plugin.runtime.capabilities import TargetCapability
-from drama_plugin.runtime.contracts import ArtifactReference, CapabilityInput, CapabilityResult, ResultStatus
+from drama_plugin.runtime.contracts import ArtifactReference, CapabilityInput, CapabilityResult, ResultStatus, RuntimeState
 
 EXECUTE = "execution.provider:v1"
 INTAKE = "execution.media_intake:v1"
@@ -48,10 +49,12 @@ class TargetExecution:
     def __init__(self, store: ExecutionStore, media: LocalMediaStore,
                  governor: GateGovernor, findings: DurableGateFindingStore, *,
                  transports: Mapping[str, ProviderTransport] | None = None,
-                 reviewer: CreativeReviewer | None = None, audio: AudioConsumer | None = None):
+                 reviewer: CreativeReviewer | None = None, audio: AudioConsumer | None = None,
+                 operations: OperationResolver | None = None):
         self.store, self.media, self.governor, self.findings = store, media, governor, findings
         self.transports = dict(transports or {})
         self.reviewer, self.audio = reviewer, audio
+        self.operations = operations
 
     def derived(self, ref: ArtifactReference, model: type[D]) -> D:
         if ref.owner != model.owner or ref.version != 1:
@@ -93,6 +96,16 @@ class TargetExecution:
         recipe = self.store.get(bound.recipe_ref, FinishingRecipe)
         package_body, package_scope, _ = self.store.ledger.get_artifact("production-package", preparation.source_package_ref)
         package = ProductionPackage.model_validate(package_body)
+        if preparation.task.unit:
+            if self.operations is None:
+                raise ExecutionScopeMismatch("Formal operation owner resolver missing")
+            try:
+                self.operations.validate(package, preparation.task)
+            except (KeyError, ValueError, OSError) as error:
+                raise ExecutionScopeMismatch("Formal owner/profile/rights admission failed") from error
+            assert preparation.task.profile
+            if bound.route != preparation.task.profile.provider:
+                raise ExecutionScopeMismatch("Frozen provider differs from execution route")
         if (package_scope != run.scope or package.boundary.mode != run.mode or
                 plan.scope != run.scope or recipe.scope != run.scope or
                 recipe.run_id != run.run_id or recipe.preparation_ref != bound.preparation_ref or
@@ -124,7 +137,7 @@ class TargetExecution:
             route=bound.route, authorization=bound.authorization)
         request = ProviderRequest(operation_ref=operation.artifact_reference(), model=operation.model,
             input_mode=final.task.input_mode, prompt_text=final.prompt_text, duration_ms=plan.duration_ms,
-            native_audio=final.task.native_audio, references=tuple(references))
+            native_audio=final.task.native_audio, references=tuple(references), profile=preparation.task.profile)
         serialize_request(request)
         return operation, request, recipe
 
@@ -188,6 +201,18 @@ class TargetExecution:
                         codes.append(GateCode.COST_UNAUTHORIZED)
                     else:
                         try:
+                            if request.profile:
+                                from drama_plugin.execution.live_transport import FinancialTerms, ControlledLiveGrant
+                                terms = FinancialTerms.model_validate(self.store.ledger.get_index("media-proof-cost-terms",operation.run_id))
+                                terms.validate_current()
+                                projected = ControlledLiveGrant(scope=operation.scope,operation_ref=operation.artifact_reference(),
+                                    decision_ref=operation.authorization.approval_ref,provider=terms.profile.provider,
+                                    model=terms.profile.model,budget_microunits=terms.budget_microunits,
+                                    cost_quote=terms.cost_quote,currency=terms.cost_quote.currency,
+                                    resolution=terms.profile.resolution,aspect_ratio=terms.profile.aspect_ratio,terms=terms)
+                                if transport.grant and transport.grant != projected:
+                                    raise ValueError("Financial grant cannot override accepted terms")
+                                transport.grant = projected
                             transport._grant(operation, request)
                             assert transport.grant
                             # TargetExecution persists financial authorization; the
@@ -199,6 +224,14 @@ class TargetExecution:
                             # operation, including concurrent dispatchers.
                             self.store.ledger.put_index("execution-live-grant", grant.decision_ref.artifact_ref,
                                 grant.artifact_reference(), scope=operation.scope, once=True)
+                            if request.profile:
+                                owners = self.derived(operation.preparation_ref,GenerationPreparation).task.owners
+                                assert owners
+                                try:
+                                    self.store.ledger.put_index("execution-live-grant", "rights:"+owners.rights_decision_ref.artifact_ref,
+                                        grant.artifact_reference(),scope=operation.scope,once=True)
+                                except ValueError:
+                                    codes.append(GateCode.PACKAGE_SCOPE_MISMATCH)
                         except (CapabilityAbsent, ValueError, KeyError):
                             codes.append(GateCode.COST_UNAUTHORIZED)
                 governed = self._govern(inputs, tuple(codes), op_ref)
@@ -277,25 +310,29 @@ class TargetExecution:
                 return CapabilityResult(status=ResultStatus.RETRYABLE_FAILURE, code="MEDIA_INTAKE_TRANSIENT")
             except ValueError:
                 return self._absence(inputs, checkpoint.receipt_ref, "media-result-repair")
-            if not await self._register_media(operation, checkpoint, media):
+            canonical = await self._register_media(operation, checkpoint, media)
+            if not canonical:
                 return self._absence(inputs, checkpoint.operation_ref, "formal-media-reconciliation")
             binding = MediaBinding.seal(scope=operation.scope, run_id=operation.run_id,
                 source_package_ref=operation.source_package_ref, operation_ref=checkpoint.operation_ref,
                 attempt_ref=checkpoint.attempt_ref, receipt_ref=checkpoint.receipt_ref,
                 provider_result_id=receipt.result.result_id, media=media,
-                final_prompt_ref=operation.final_prompt_ref, reference_bindings=operation.reference_bindings)
+                final_prompt_ref=operation.final_prompt_ref, reference_bindings=operation.reference_bindings,
+                canonical_media_ref=canonical if isinstance(canonical, ArtifactReference) else None)
             ref = self.store.put(binding)
             self.store.progress(checkpoint.operation_ref, video_ref=ref)
             return CapabilityResult(status=ResultStatus.SUCCEEDED, artifact_refs=(ref,))
 
     async def _register_media(self, operation: ExecutionOperation, checkpoint: OperationCheckpoint,
-                              media: MediaIdentity, parents: tuple[MediaIdentity, ...] = ()) -> bool:
+                              media: MediaIdentity, parents: tuple[MediaIdentity, ...] = ()) -> ArtifactReference | bool:
         from drama_plugin.execution.formal_media import FormalMediaStore
         if isinstance(self.media, FormalMediaStore):
             from drama_plugin.exceptions import RemoteServiceError
             try:
-                await self.media.register(media, scope=operation.scope, source_ref=checkpoint.operation_ref,
-                    attempt_ref=checkpoint.attempt_ref, package_ref=operation.source_package_ref, parents=parents)
+                prepared = self.derived(operation.preparation_ref, GenerationPreparation)
+                return await self.media.register(media, scope=operation.scope, source_ref=checkpoint.operation_ref,
+                    attempt_ref=checkpoint.attempt_ref, package_ref=operation.source_package_ref, parents=parents,
+                    owners=prepared.task.owners)
             except (CapabilityAbsent, RemoteServiceError):
                 return False
         return True
@@ -303,8 +340,10 @@ class TargetExecution:
     def _technical(self, operation: ExecutionOperation, checkpoint: OperationCheckpoint,
                    media: MediaIdentity, recipe: FinishingRecipe, *, audio_expected: bool) -> TechnicalMediaReview:
         plan = self.derived(operation.audio_plan_ref, AudioExecutionPlan)
+        profile = self.derived(operation.preparation_ref, GenerationPreparation).task.profile
         observation, findings = inspect(self.media, media, duration_ms=plan.duration_ms,
-            tolerance_ms=recipe.duration_tolerance_ms, audio_expected=audio_expected)
+            tolerance_ms=recipe.duration_tolerance_ms, audio_expected=audio_expected,
+            resolution=profile.resolution if profile else None, aspect_ratio=profile.aspect_ratio if profile else None)
         return TechnicalMediaReview.seal(scope=operation.scope, run_id=operation.run_id,
             source_package_ref=operation.source_package_ref, operation_ref=checkpoint.operation_ref,
             attempt_ref=checkpoint.attempt_ref, media=media, outcome="FAIL" if findings else "PASS",
@@ -313,7 +352,20 @@ class TargetExecution:
     async def _creative(self, operation: ExecutionOperation, checkpoint: OperationCheckpoint,
                         media: MediaIdentity) -> CreativeMediaReview:
         from drama_plugin.execution.review import MockReviewer
-        if operation.authorization.execution_mode == "CONTROLLED_LIVE" and isinstance(self.reviewer, MockReviewer):
+        prepared = self.derived(operation.preparation_ref, GenerationPreparation)
+        key = operation.artifact_reference().artifact_ref + ":" + media.content_hash
+        if isinstance(self.reviewer, HumanReviewer):
+            try:
+                ref = ArtifactReference.model_validate(self.store.ledger.get_index("human-media-review", key))
+                review = self.store.get(ref, CreativeMediaReview)
+                binding = self.store.get(checkpoint.progress.video_ref, MediaBinding) if checkpoint.progress.video_ref else None
+                expected = self.review_context(operation, media, binding.canonical_media_ref if binding else None)
+                if review.review_context_hash != expected or review.preparation_ref != operation.preparation_ref or review.media != media:
+                    raise ValueError("HUMAN_REVIEW_CONTEXT_MISMATCH")
+                return review
+            except KeyError:
+                pass
+        if (operation.authorization.execution_mode == "CONTROLLED_LIVE" or prepared.task.unit) and isinstance(self.reviewer, MockReviewer):
             reviewer = None
         else:
             reviewer = self.reviewer
@@ -329,16 +381,58 @@ class TargetExecution:
             adoption_recommendation={"PASS": "CANDIDATE_ONLY", "REVISE": "REVISION_REQUIRED",
                                      "CAPABILITY_ABSENT": "UNASSESSED"}[outcome])
 
+    def review_context(self, operation: ExecutionOperation, media: MediaIdentity,
+                       canonical_ref: ArtifactReference | None) -> str:
+        prepared = self.derived(operation.preparation_ref, GenerationPreparation)
+        return sha256_canonical([v.model_dump(mode="json",by_alias=True) if v is not None else None for v in
+            (operation.artifact_reference(), media, canonical_ref, operation.source_package_ref,
+             operation.final_prompt_ref, operation.preparation_ref, prepared.task)])
+
+    def record_human_review(self, run_id: str, *, media_ref: ArtifactReference, context_hash: str,
+                            response: ReviewResponse) -> ArtifactReference:
+        from drama_plugin.execution.review import HumanReviewer
+        if not isinstance(self.reviewer, HumanReviewer):
+            raise ValueError("HUMAN_REVIEW_CONSUMER_REQUIRED")
+        inputs = self.store.inputs(run_id)
+        run = self.store.ledger.load_run(run_id)
+        if run.workflow_id != "package-to-reviewed-media:v1" or run.state != RuntimeState.WAITING_EXTERNAL or run.cursor != 11:
+            raise ValueError("NO_PENDING_HUMAN_OPERATION_REVIEW")
+        operation, _, _ = self._approved(CapabilityInput(run_id=run_id,operation_id=run_id+":review",scope=run.scope))
+        cp = self.store.checkpoint(operation.artifact_reference())
+        if cp.progress.video_ref != media_ref or not cp.progress.video_technical_ref:
+            raise ValueError("EXACT_TECHNICALLY_REVIEWED_MEDIA_REQUIRED")
+        if self.store.get(cp.progress.video_technical_ref, TechnicalMediaReview).outcome != "PASS":
+            raise ValueError("TECHNICAL_REVIEW_NOT_PASSED")
+        binding = self.store.get(media_ref, MediaBinding)
+        expected = self.review_context(operation, binding.media, binding.canonical_media_ref)
+        if context_hash != expected or self.derived(inputs.preparation_ref, GenerationPreparation).task.profile and binding.canonical_media_ref is None:
+            raise ValueError("HUMAN_REVIEW_CONTEXT_MISMATCH")
+        record = CreativeMediaReview.seal(scope=run.scope,run_id=run_id,source_package_ref=operation.source_package_ref,
+            operation_ref=operation.artifact_reference(),attempt_ref=cp.attempt_ref,media=binding.media,
+            reviewer=self.reviewer.identity,policy_version=self.reviewer.policy_version,outcome=response.outcome,
+            observations=response.observations,adoption_recommendation="CANDIDATE_ONLY" if response.outcome=="PASS" else "REVISION_REQUIRED",
+            preparation_ref=operation.preparation_ref,canonical_media_ref=binding.canonical_media_ref,review_context_hash=expected)
+        ref = self.store.put(record)
+        self.store.ledger.put_index("human-media-review", operation.artifact_reference().artifact_ref+":"+binding.media.content_hash,
+            ref,scope=run.scope,once=True)
+        self.store.progress(cp.operation_ref, video_creative_ref=ref)
+        return ref
+
     async def review(self, inputs: CapabilityInput) -> CapabilityResult:
         async with self.store.lock(inputs.run_id):
             operation, checkpoint, recipe = self._completed(inputs)
             progress = checkpoint.progress
             assert progress.video_ref is not None
             binding = self.store.get(progress.video_ref, MediaBinding)
+            from drama_plugin.execution.formal_media import FormalMediaStore
+            if isinstance(self.media, FormalMediaStore):
+                await self.media.restore(operation.scope, binding.media)
             try:
+                profile = self.derived(operation.preparation_ref, GenerationPreparation).task.profile
                 technical = self.store.get(progress.video_technical_ref, TechnicalMediaReview) if progress.video_technical_ref else self._technical(
                     operation, checkpoint, binding.media, recipe,
-                    audio_expected=self.derived(operation.audio_plan_ref, AudioExecutionPlan).native_audio_policy == "REQUIRED")
+                    audio_expected=(profile.native_audio if profile else
+                        self.derived(operation.audio_plan_ref, AudioExecutionPlan).native_audio_policy == "REQUIRED"))
                 if binding.media.kind != "VIDEO":
                     technical = TechnicalMediaReview.seal(**{**technical.model_dump(exclude={"fingerprint"}),
                         "outcome": "FAIL", "findings": (*technical.findings, "RESULT_VIDEO_INCOMPATIBLE")})
@@ -356,6 +450,11 @@ class TargetExecution:
             # Absence is retained evidence, but not a completed review checkpoint.
             if creative.outcome != "CAPABILITY_ABSENT":
                 self.store.progress(checkpoint.operation_ref, video_creative_ref=creative_ref)
+            elif isinstance(self.reviewer, HumanReviewer):
+                return CapabilityResult(status=ResultStatus.WAITING_EXTERNAL,artifact_refs=(technical_ref,progress.video_ref),
+                    external_ref=progress.video_ref)
+            if creative.outcome == "REVISE" and operation.preparation_ref and self.store.ledger.load_run(inputs.run_id).workflow_id == "package-to-reviewed-media:v1":
+                return CapabilityResult(status=ResultStatus.SUCCEEDED,artifact_refs=(technical_ref,creative_ref))
             if creative.outcome != "PASS":
                 owner = creative.observations[0].owner if creative.observations else "creative-media-review"
                 return self._absence(inputs, creative_ref, owner)

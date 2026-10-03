@@ -110,7 +110,8 @@ def probe_intake_bytes(content: bytes) -> ProbeObservation | None:
 
 
 def inspect(store: LocalMediaStore, media: MediaIdentity, *, duration_ms: int,
-            tolerance_ms: int, audio_expected: bool) -> tuple[ProbeObservation | None, tuple[str, ...]]:
+            tolerance_ms: int, audio_expected: bool, resolution: str | None = None,
+            aspect_ratio: str | None = None) -> tuple[ProbeObservation | None, tuple[str, ...]]:
     failures: list[str] = []
     try:
         observation = probe(store.path(media))
@@ -129,4 +130,11 @@ def inspect(store: LocalMediaStore, media: MediaIdentity, *, duration_ms: int,
         failures.append("RESULT_CONTAINER_MIME_MISMATCH")
     if audio_expected and not observation.audio_codec:
         failures.append("RESULT_AUDIO_MISSING")
+    if media.kind == "VIDEO" and observation.width and observation.height:
+        if resolution and min(observation.width, observation.height) != int(resolution.removesuffix("p")):
+            failures.append("RESULT_RESOLUTION_MISMATCH")
+        if aspect_ratio and aspect_ratio != "adaptive":
+            w, h = map(int, aspect_ratio.split(":"))
+            if abs(observation.width / observation.height - w / h) > 0.01:
+                failures.append("RESULT_ASPECT_RATIO_MISMATCH")
     return observation, tuple(failures)

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Annotated, Self
+from typing import Annotated, ClassVar, Self
 
 from pydantic import ConfigDict, Field, SerializerFunctionWrapHandler, StringConstraints, model_serializer, model_validator
 
@@ -13,6 +13,20 @@ Identifier = Annotated[str, StringConstraints(min_length=1, max_length=256, patt
 
 class RuntimeContract(ContractModel):
     model_config = ConfigDict(frozen=True, revalidate_instances="always")
+
+
+class ExtendedRuntimeContract(RuntimeContract):
+    """Absent optional extensions preserve the bytes/hash of historical contracts."""
+    extension_fields: ClassVar[tuple[str, ...]] = ()
+
+    @model_serializer(mode="wrap")
+    def preserve_historical_shape(self, handler: SerializerFunctionWrapHandler) -> dict[str, object]:
+        data: dict[str, object] = handler(self)
+        for field in self.extension_fields:
+            if getattr(self, field) is None:
+                data.pop(field, None)
+                data.pop(type(self).model_fields[field].alias or field, None)
+        return data
 
 
 class RunMode(str, Enum):

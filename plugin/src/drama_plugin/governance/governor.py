@@ -4,7 +4,7 @@ from __future__ import annotations
 from drama_plugin.governance.contracts import (
     GateCategory as C, GateCode, GateDecision, GateEffect as E, GateFinding, RULES,
 )
-from drama_plugin.governance.store import GateFindingStore
+from drama_plugin.governance.store import FindingStore
 from drama_plugin.runtime.contracts import ArtifactReference, RunMode, RuntimeScope, UserDecisionRequest
 
 QUESTIONS = {
@@ -37,7 +37,7 @@ class GateGovernor:
     role = "POLICY_VALIDATION_GOVERNANCE"
     hard_stop_risk_families = 4
 
-    def __init__(self, store: GateFindingStore):
+    def __init__(self, store: FindingStore):
         self.store = store
 
     def explain(self, decision: GateDecision) -> tuple[str, ...]:
@@ -63,21 +63,11 @@ class GateGovernor:
                             key=lambda ref: ref.artifact_ref))
         hard = [f for f in checked if f.category == C.HARD_STOP]
         user = [f for f in checked if f.category == C.USER_DECISION]
-        # T1 supports one genuine decision per step. Never treat approval of one
-        # category as approval of an unrelated fee/adoption/adaptation request.
-        multiple_decisions = len({f.code for f in user}) > 1
-        if multiple_decisions and not hard:
-            checked.append(GateFinding.classified(GateCode.CAPABILITY_NOT_IMPLEMENTED,
-                owner="multi-decision-coordinator", scope=scope,
-                evidence_ref=self.store.put_finding(user[0]), required=True))
-            refs = tuple(sorted({self.store.put_finding(f) for f in checked}, key=lambda ref: ref.artifact_ref))
         effect, request = E.CONTINUE, None
         if hard:
             effect = E.BLOCK
         elif any(f.category == C.LEGACY_GUARD for f in checked):
             effect = E.LEGACY_REJECT
-        elif multiple_decisions:
-            effect = E.CAPABILITY_ABSENT
         elif user:
             effect = E.WAIT_USER
             code = sorted(user, key=lambda f: f.code.value)[0].code

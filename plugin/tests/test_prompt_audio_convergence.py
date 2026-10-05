@@ -78,7 +78,7 @@ def generation_fixture(fixture):
 
 
 def load(fixture, **kwargs):
-    return DramaPlugin.load(ROOT, mock_data=fixture[0], production_artifact_roots=(fixture[1],), **kwargs)
+    return DramaPlugin.load(ROOT, mock_data=fixture[0], legacy_reads=True, production_artifact_roots=(fixture[1],), **kwargs)
 
 
 async def prepare(plugin, *, mode=RunMode.EXPERIMENT, run_id="t5", **kwargs):
@@ -224,7 +224,7 @@ async def test_warning_continues_and_required_overflow_hs4(generation_fixture, m
     policy = plugin.prompt_compiler.catalog.policy("seedance-2-standard")
     monkeypatch.setattr(plugin.prompt_compiler.catalog, "policy", lambda _: replace(policy, hard_limit=20, fingerprint="b" * 64))
     failed = await prepare(plugin, run_id="overflow")
-    assert failed.state == RuntimeState.BLOCKED
+    assert failed.state == RuntimeState.FAILED
     decision = plugin.gate_findings.decision(plugin.gate_findings.latest(failed.run_id))
     assert decision.risk_families == (HardStopFamily.HS4,)
 
@@ -247,7 +247,7 @@ async def test_generator_absent_and_required_tts_are_capability_absent(generatio
     for identity, task in (("unknown-generator", GenerationTask(target_model="vidu-reference-to-video")),
                            ("tts-required", GenerationTask(tts_required=True))):
         run = await prepare(plugin, run_id=identity, task=task)
-        assert run.state == RuntimeState.WAITING_EXTERNAL
+        assert run.state == RuntimeState.FAILED
         decision = plugin.gate_findings.decision(plugin.gate_findings.latest(run.run_id))
         assert decision.effect == GateEffect.CAPABILITY_ABSENT and not decision.risk_families
 
@@ -257,7 +257,7 @@ async def test_missing_required_and_dialogue_mismatch(generation_fixture):
     change_bible(generation_fixture, "dialogue-design", [("L1", {"line_id": "L1", "dialogue_text": "禁止改写", "speaker": "A"})])
     plugin = load(generation_fixture)
     run = await prepare(plugin)
-    assert run.state == RuntimeState.BLOCKED
+    assert run.state == RuntimeState.FAILED
     decision = plugin.gate_findings.decision(plugin.gate_findings.latest(run.run_id))
     assert decision.risk_families == (HardStopFamily.HS1,)
     assert data.scene.content["spokenContent"][0]["text"] == "机制测试的精确正文。"
@@ -270,7 +270,7 @@ async def test_wrong_package_scope_hs1(generation_fixture):
     run = plugin.create_generation_run(work_id="work", scene_id="scene", shot_id="other-shot",
         mode=RunMode.EXPERIMENT, run_id="wrong-shot", package_ref=package_ref)
     run = await plugin.runtime.run(run.run_id)
-    assert run.state == RuntimeState.BLOCKED
+    assert run.state == RuntimeState.FAILED
     decision = plugin.gate_findings.decision(plugin.gate_findings.latest(run.run_id))
     assert decision.risk_families == (HardStopFamily.HS1,)
 
@@ -367,7 +367,7 @@ async def test_many_lines_without_authored_relations_return_owner(generation_fix
     data.shot.content["spokenContentBindings"].append({"spokenContentId": "L2", "coverageIntent": "ON_SCREEN_SPEAKER"})
     plugin = load(generation_fixture)
     run = await prepare(plugin)
-    assert run.state == RuntimeState.BLOCKED
+    assert run.state == RuntimeState.FAILED
     decision = plugin.gate_findings.decision(plugin.gate_findings.latest(run.run_id))
     diagnostics = plugin.generation_artifacts.diagnostics(plugin.gate_findings.finding(decision.finding_refs[0]).evidence_ref)
     assert any(d.code == "CREATIVE_SOURCE_INSUFFICIENT" and d.owner == "screenplay-dialogue" for d in diagnostics)
@@ -431,7 +431,7 @@ async def test_optional_native_audio_unsupported_is_warning(generation_fixture, 
     final, _, _ = artifacts(plugin, run)
     assert "机制测试的精确正文。" not in final.prompt_text
     required = await prepare(plugin, run_id="native-required", task=GenerationTask(native_audio="REQUIRED"))
-    assert required.state == RuntimeState.BLOCKED
+    assert required.state == RuntimeState.FAILED
 
 
 async def test_final_boundary_stale_package_repairs_internally(generation_fixture):
@@ -489,7 +489,7 @@ async def test_missing_required_camera_returns_owner_and_hs4(generation_fixture)
     change_bible(generation_fixture, "cinematography", [("CAM-01", {"perspective": "双人同侧可见"})])
     plugin = load(generation_fixture)
     run = await prepare(plugin)
-    assert run.state == RuntimeState.BLOCKED
+    assert run.state == RuntimeState.FAILED
     decision = plugin.gate_findings.decision(plugin.gate_findings.latest(run.run_id))
     assert decision.risk_families == (HardStopFamily.HS4,)
     diagnostics = [d for ref in decision.finding_refs for d in plugin.generation_artifacts.diagnostics(
@@ -500,7 +500,7 @@ async def test_missing_required_camera_returns_owner_and_hs4(generation_fixture)
 async def test_design_pin_is_not_a_media_reference(generation_fixture):
     plugin = load(generation_fixture)
     run = await prepare(plugin, task=GenerationTask(input_mode="reference"))
-    assert run.state == RuntimeState.BLOCKED
+    assert run.state == RuntimeState.FAILED
     decision = plugin.gate_findings.decision(plugin.gate_findings.latest(run.run_id))
     assert decision.risk_families == (HardStopFamily.HS4,)
     with pytest.raises(KeyError):

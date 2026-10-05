@@ -4,15 +4,21 @@ if TYPE_CHECKING:
     from drama_plugin.persistence.ledger import ProductionLedger
 from drama_plugin.governance.contracts import GateEffect as E
 from drama_plugin.governance.policy import (
-    ASSESS, BLOCK, REJECT, GovernedPolicy, governed_workflow,
+    ASSESS, BLOCK, REJECT, RESOLVE, GovernedPolicy, governed_workflow,
 )
-from drama_plugin.governance.store import GateFindingStore
+from drama_plugin.governance.store import FindingStore
 from drama_plugin.runtime.contracts import (
     ActionKind as A, ArtifactReference, RunMode, RuntimeAction, RuntimeRun, RuntimeState, RuntimeWorkflow,
 )
 
 WORKFLOW = "prepare-generation:v1"
-MEDIA_WORKFLOW = "package-to-reviewed-media:v1"
+MEDIA_WORKFLOW = "package-to-reviewed-media:v2"
+HISTORICAL_MEDIA_WORKFLOW = "package-to-reviewed-media:v1"
+MEDIA_WORKFLOWS = frozenset({MEDIA_WORKFLOW, HISTORICAL_MEDIA_WORKFLOW})
+
+def media_cursor(workflow_id: str, cursor: int) -> int:
+    """Translate only immutable workflow positions, never stored Runtime state."""
+    return cursor if workflow_id != MEDIA_WORKFLOW or cursor == 0 else cursor + 2
 COMPILE = "generation.compile:v1"
 REBUILD = "generation.rebuild:v1"
 RELEASE = "generation.release:v1"
@@ -20,7 +26,7 @@ READY = "generation.ready:v1"
 
 
 class GenerationPolicy:
-    def __init__(self, mode: RunMode, findings: GateFindingStore):
+    def __init__(self, mode: RunMode, findings: FindingStore):
         self.governed = GovernedPolicy(mode, findings)
         self.findings = findings
         self.mainline_ledger: ProductionLedger | None = None
@@ -38,7 +44,24 @@ class GenerationPolicy:
         return self.governed.max_step_attempts
 
     def next_action(self, run: RuntimeRun, workflow: RuntimeWorkflow) -> RuntimeAction:
-        if workflow.workflow_id == MEDIA_WORKFLOW and run.cursor in {7, 8} and run.state in {RuntimeState.READY, RuntimeState.WAITING_USER}:
+        if workflow.workflow_id == MEDIA_WORKFLOW:
+            if run.cursor == 1 and run.state in {RuntimeState.READY, RuntimeState.WAITING_USER}:
+                decision = self.findings.decision(self.findings.latest(run.run_id))
+                if decision.effect != E.CONTINUE:
+                    return self.governed.next_action(run, governed_workflow())
+            if media_cursor(workflow.workflow_id,run.cursor) == 7 and self.mainline_ledger is not None:
+                for namespace in ("media-proof-authorization", "media-proof-cost-terms"):
+                    try:
+                        self.mainline_ledger.get_index(namespace,run.run_id)
+                        break
+                    except KeyError:
+                        continue
+                else:
+                    return RuntimeAction(kind=A.CALL_CAPABILITY,capability_key=RELEASE,input_refs=(self.findings.latest(run.run_id),))
+            historical_run = run.model_copy(update={"workflow_id": HISTORICAL_MEDIA_WORKFLOW,
+                "cursor": media_cursor(workflow.workflow_id, run.cursor)})
+            return self.next_action(historical_run, media_review_workflow(HISTORICAL_MEDIA_WORKFLOW))
+        if workflow.workflow_id == HISTORICAL_MEDIA_WORKFLOW and run.cursor in {7, 8} and run.state in {RuntimeState.READY, RuntimeState.WAITING_USER}:
             from drama_plugin.runtime.contracts import DecisionCategory, UserDecisionRequest
             if self.mainline_ledger is None:
                 raise ValueError("Durable production goal policy required")
@@ -52,14 +75,18 @@ class GenerationPolicy:
             terms = optional("media-proof-cost-terms")
             ref = self.mainline_ledger.get_index("prepared", run.run_id)
             if offline is None and terms is None:
-                return RuntimeAction(kind=A.WAIT_EXTERNAL, external_ref=ArtifactReference.model_validate(ref))
+                if workflow.workflow_id == HISTORICAL_MEDIA_WORKFLOW and run.workflow_id == HISTORICAL_MEDIA_WORKFLOW:
+                    # Existing historical wait checkpoints remain readable. New v2
+                    # runs report a missing price authority in the existing owner.
+                    return RuntimeAction(kind=A.WAIT_EXTERNAL, external_ref=ArtifactReference.model_validate(ref))
+                return RuntimeAction(kind=A.CALL_CAPABILITY,capability_key=RELEASE,input_refs=(self.findings.latest(run.run_id),))
             if run.cursor == 8 and (offline is None or run.state == RuntimeState.WAITING_USER):
                 return RuntimeAction(kind=A.REQUEST_USER_DECISION, decision=UserDecisionRequest(
                     category=DecisionCategory.COST_APPROVAL,question="Approve the exact preparation, wire payload, quote and one-operation budget terms?"))
             return RuntimeAction(kind=A.CALL_CAPABILITY,capability_key=RELEASE,input_refs=(self.findings.latest(run.run_id),))
-        if workflow.workflow_id not in {WORKFLOW, MEDIA_WORKFLOW}:
+        if workflow.workflow_id not in {WORKFLOW, HISTORICAL_MEDIA_WORKFLOW}:
             return self.governed.next_action(run, workflow)
-        if workflow.workflow_id == MEDIA_WORKFLOW and run.cursor >= 9:
+        if workflow.workflow_id == HISTORICAL_MEDIA_WORKFLOW and run.cursor >= 9:
             return self.governed.foundation.next_action(run, workflow)
         if run.cursor in {1, 2}:
             return self.governed.next_action(run, governed_workflow())
@@ -67,7 +94,7 @@ class GenerationPolicy:
             return self.governed.foundation.next_action(run, workflow)
         ref = self.findings.latest(run.run_id)
         decision = self.findings.decision(ref)
-        if workflow.workflow_id == MEDIA_WORKFLOW and run.cursor == 5 and decision.effect == E.WAIT_USER and run.last_result and run.last_result.artifact_refs != (ref,):
+        if workflow.workflow_id == HISTORICAL_MEDIA_WORKFLOW and run.cursor == 5 and decision.effect == E.WAIT_USER and run.last_result and run.last_result.artifact_refs != (ref,):
             return RuntimeAction(kind=A.CALL_CAPABILITY, capability_key=COMPILE)
         if decision.scope != run.scope or decision.mode != run.mode:
             raise ValueError("Execution governance scope/mode mismatch")
@@ -80,9 +107,7 @@ class GenerationPolicy:
         if decision.effect == E.WAIT_USER:
             return RuntimeAction(kind=A.REQUEST_USER_DECISION, decision=decision.user_decision)
         if decision.effect in {E.CAPABILITY_ABSENT, E.REVIEW_REQUIRED}:
-            return RuntimeAction(kind=A.WAIT_EXTERNAL, external_ref=ArtifactReference(
-                owner="capability-absence" if decision.effect == E.CAPABILITY_ABSENT else "quality-review",
-                artifact_ref=ref.artifact_ref, version=1))
+            return RuntimeAction(kind=A.CALL_CAPABILITY, capability_key=BLOCK, input_refs=(ref,))
         return RuntimeAction(kind=A.CALL_CAPABILITY, capability_key=READY if run.cursor == 6 else RELEASE,
                              input_refs=(ref,))
 
@@ -99,9 +124,16 @@ def generation_workflow() -> RuntimeWorkflow:
     ))
 
 
-def media_review_workflow() -> RuntimeWorkflow:
+def media_review_workflow(workflow_id: str = MEDIA_WORKFLOW) -> RuntimeWorkflow:
     from drama_plugin.execution.capability import EXECUTE, INTAKE, REVIEW
-    return RuntimeWorkflow(workflow_id=MEDIA_WORKFLOW, steps=(*generation_workflow().steps,
+    preparation = generation_workflow().steps
+    if workflow_id == MEDIA_WORKFLOW:
+        # ASSESS and COMPILE already consume exact Package inputs; resolver release
+        # and inspect were deterministic envelopes, not separate decisions.
+        preparation = (preparation[0], *preparation[3:])
+    elif workflow_id != HISTORICAL_MEDIA_WORKFLOW:
+        raise ValueError("Unknown immutable media workflow")
+    return RuntimeWorkflow(workflow_id=workflow_id, steps=(*preparation,
         RuntimeAction(kind=A.CALL_CAPABILITY,capability_key=RELEASE),
         RuntimeAction(kind=A.CALL_CAPABILITY,capability_key=RELEASE),
         *(RuntimeAction(kind=A.CALL_CAPABILITY,capability_key=k) for k in (EXECUTE,INTAKE,REVIEW))))

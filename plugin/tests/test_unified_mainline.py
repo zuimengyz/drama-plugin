@@ -161,12 +161,23 @@ def task_for(p,package):
     return GenerationTask(target_model=profile.model,input_mode=profile.mode,native_audio='REQUIRED',unit=unit,profile=profile,owners=owners)
 
 
-async def prepare_goal(p,package,task, *, offline=True):
+async def prepare_goal(p,package,task, *, offline=True, quote_available=True):
     auth=Authorization(approval_ref=ArtifactReference(owner='user-decision',artifact_ref='offline-proof-simulation'),
         authorized=True,budget_microunits=0,estimated_cost_microunits=0) if offline else None
     run=p.create_media_review_run(package_ref=package.artifact_reference(),task=task,offline_authorization=auth)
+    if not offline and quote_available:
+        def simulated_cost_owner(run_id, ref):
+            prepared=p.generation_artifacts.get(ref,GenerationPreparation)
+            final=p.generation_artifacts.get(prepared.final_prompt_ref,FinalPromptArtifact)
+            digest=sha256_canonical(TargetHttpTransport.preview(prepared,final));now=datetime.now(timezone.utc)
+            quote=CostEstimate(amount=1,currency='CNY',source='OFFLINE_CONTRACT_ONLY_NOT_REAL_QUOTE',checked_at=now,
+                expires_at=now+timedelta(minutes=10),request_fingerprint=digest)
+            terms=FinancialTerms(preparation_ref=ref,wire_payload_hash=digest,profile=prepared.task.profile,
+                cost_quote=quote,budget_microunits=1000000)
+            p.ledger.put_index('media-proof-cost-terms',run_id,terms,scope=p.runtime.store.load(run_id).scope,once=True)
+        p.generation_capability.on_ready=simulated_cost_owner
     waiting=await p.runtime.run(run.run_id)
-    assert waiting.state==RuntimeState.WAITING_USER and waiting.cursor==4
+    assert waiting.state==RuntimeState.WAITING_USER and waiting.cursor==2
     # This receipt exists solely in the temporary offline ledger.
     await p.decide_target_run(run.run_id,decision_id=p.runtime.decision_id(run.run_id),accepted=True,source_ref=package.artifact_reference())
     return await p.runtime.run(run.run_id)
@@ -177,12 +188,21 @@ async def test_unified_adopted_package_to_real_contract_media_and_human_boundary
     p,package,service,calls=load(tmp_path,monkeypatch,video);task=task_for(p,package)
     before=package.model_dump_json();versions={f:f.read_bytes() for f in (tmp_path/'owners/objects').glob('*.json')}
     run=await prepare_goal(p,package,task)
-    assert run.state==RuntimeState.WAITING_EXTERNAL and run.cursor==11,run.model_dump()
+    assert run.state==RuntimeState.WAITING_USER and run.cursor==9,run.model_dump()
     assert package.generation_intent.duration_ms==60000 and package.model_dump_json()==before
     prepared=p.generation_artifacts.get(p.generation_artifacts.prepared(run.run_id),GenerationPreparation)
     final=p.generation_artifacts.get(prepared.final_prompt_ref,FinalPromptArtifact)
     plan=p.generation_artifacts.get(prepared.audio_plan_ref,AudioExecutionPlan)
-    ir=p.generation_artifacts.get(ArtifactReference(owner='prompt-ir',artifact_ref='prompt-ir:'+final.prompt_ir_fingerprint,version=1),PromptIR)
+    ir=await p.prompt_compiler.prompt_ir(prepared)
+    assert final.task.unit is None and final.task.owners is None and final.task.profile is None
+    assert final.matches_task(prepared.task)
+    assert not final.matches_task(prepared.task.model_copy(update={"unit":prepared.task.unit.model_copy(update={"beat_ids":("drift",)})}))
+    assert p.execution.store.inputs(run.run_id).recipe_ref is None
+    with p.ledger.transaction() as db:
+        assert db.execute("SELECT count(*) FROM immutable_artifact WHERE artifact_type='finishing-recipe'").fetchone()[0] == 0
+    assert not list((tmp_path/'ledger.sqlite.formal-media-refs').glob('*.registration.json'))
+    with pytest.raises(KeyError):
+        p.generation_artifacts.get(ArtifactReference(owner="prompt-ir",artifact_ref="prompt-ir:"+ir.fingerprint,version=1),PromptIR)
     assert ir.duration_ms==plan.duration_ms==4000 and plan.speech_events==()
     assert {'ACTION','CAMERA','WORLD','SUBJECTS','PERFORMANCE','SOUND','LIGHTING','COLOR','EDITORIAL'} <= {f.domain for f in ir.facts}
     assert len(prepared.task.owners.snapshot_pins)==4
@@ -206,7 +226,7 @@ async def test_unified_adopted_package_to_real_contract_media_and_human_boundary
     p.execution.media.path(binding.media).unlink()
     restored,_,_,_=load(tmp_path,monkeypatch,video,restore=True,service=service,vendor_calls=calls)
     recovered=await restored.resume_execution_run(run.run_id)
-    assert recovered.state==RuntimeState.WAITING_EXTERNAL
+    assert recovered.state==RuntimeState.WAITING_USER
     await restored.execution.media.restore(run.scope,binding.media)
     assert service.downloads==1 and service.imports==1
     operation=restored.execution.store.get(cp.operation_ref,ExecutionOperation)
@@ -214,7 +234,7 @@ async def test_unified_adopted_package_to_real_contract_media_and_human_boundary
     with pytest.raises(ValueError,match='CONTEXT'):
         restored.execution.record_human_review(run.run_id,media_ref=cp.progress.video_ref,context_hash='0'*64,response=ReviewResponse('PASS'))
     completed=await restored.provide_human_media_review(run.run_id,media_ref=cp.progress.video_ref,context_hash=context,response=ReviewResponse('PASS'))
-    assert completed.state==RuntimeState.SUCCEEDED and completed.cursor==12
+    assert completed.state==RuntimeState.SUCCEEDED and completed.cursor==10
     cp=restored.execution.store.checkpoint(cp.operation_ref)
     review=restored.execution.store.get(cp.progress.video_creative_ref,CreativeMediaReview)
     assert review.reviewer=='USER' and review.review_context_hash==context
@@ -226,8 +246,9 @@ async def test_unified_adopted_package_to_real_contract_media_and_human_boundary
 @pytest.mark.asyncio
 async def test_no_scope_no_cost_no_paid_post(tmp_path,monkeypatch,video):
     p,package,service,calls=load(tmp_path,monkeypatch,video);task=task_for(p,package)
-    run=await prepare_goal(p,package,task,offline=False)
-    assert run.state==RuntimeState.WAITING_EXTERNAL and run.cursor==7
+    run=await prepare_goal(p,package,task,offline=False,quote_available=False)
+    assert run.state==RuntimeState.WAITING_EXTERNAL and run.cursor==5
+    assert run.last_result.external_ref.owner=='generation-preparation'
     prepared=p.generation_artifacts.get(p.generation_artifacts.prepared(run.run_id),GenerationPreparation)
     assert TargetHttpTransport.preview(prepared,p.generation_artifacts.get(prepared.final_prompt_ref,FinalPromptArtifact))
     assert calls==[] and service.imports==0
@@ -259,7 +280,8 @@ async def test_owner_and_selection_admission_rejects_before_post(tmp_path,monkey
 async def test_mock_cannot_formal_review_and_qa_uses_resolved_profile(tmp_path,monkeypatch,video):
     p,package,service,calls=load(tmp_path,monkeypatch,video);p.execution.reviewer=MockReviewer()
     run=await prepare_goal(p,package,task_for(p,package))
-    assert run.state==RuntimeState.WAITING_EXTERNAL
+    assert run.state==RuntimeState.FAILED
+    assert run.last_result.code=='FORMAL_MOCK_REVIEW_FORBIDDEN'
     op,_,_=p.execution._approved(CapabilityInput(run_id=run.run_id,scope=run.scope,operation_id=run.run_id+':check'))
     cp=p.execution.store.checkpoint(op.artifact_reference());binding=p.execution.store.get(cp.progress.video_ref,MediaBinding)
     assert p.execution.store.get(cp.progress.video_technical_ref,TechnicalMediaReview).outcome=='PASS'
@@ -294,6 +316,8 @@ async def test_cross_process_human_revise_cache_recovery_without_paid_retry(tmp_
     cp=p.execution.store.checkpoint(op.artifact_reference())
     binding=p.execution.store.get(cp.progress.video_ref,MediaBinding)
     p.execution.media.path(binding.media).unlink()
+    import shutil
+    shutil.rmtree(tmp_path/'ledger.sqlite.formal-media-refs')
     records=tmp_path/'canonical-records.json';records.write_text(json.dumps(service.records))
     script='''
 import asyncio, importlib.util, json, pathlib, sys, pytest
@@ -317,7 +341,7 @@ asyncio.run(main())
     child=subprocess.run([sys.executable,'-c',script,str(Path(__file__).resolve()),str(tmp_path),str(video),run.run_id],
         check=True,capture_output=True,text=True,timeout=45)
     result=json.loads(child.stdout.strip().splitlines()[-1])
-    assert result==dict(state='SUCCEEDED',cursor=12,post=0,imports=0,downloads=1)
+    assert result==dict(state='SUCCEEDED',cursor=10,post=0,imports=0,downloads=1)
     recovered=p.execution.store.checkpoint(cp.operation_ref)
     review=p.execution.store.get(recovered.progress.video_creative_ref,CreativeMediaReview)
     assert review.outcome=='REVISE' and review.media==binding.media
@@ -341,9 +365,9 @@ async def test_exact_financial_preview_and_drift_never_reserve_or_submit(tmp_pat
                 terms.model_copy(update={'cost_quote':quote.model_copy(update={'expires_at':now-timedelta(seconds=1)})}),
                 terms.model_copy(update={'budget_microunits':1})):
         with pytest.raises(ValueError):await p.provide_media_cost_terms(run.run_id,bad)
-        assert p.runtime.store.load(run.run_id).cursor==7
+        assert p.runtime.store.load(run.run_id).cursor==6
     waiting=await p.provide_media_cost_terms(run.run_id,terms)
-    assert waiting.state==RuntimeState.WAITING_USER and waiting.cursor==8
+    assert waiting.state==RuntimeState.WAITING_USER and waiting.cursor==6
     # No accepted cost, grant or reserved operation even with exact terms ready.
     assert calls==[] and service.imports==0
     with pytest.raises(KeyError):p.execution.store.inputs(run.run_id)
@@ -365,6 +389,31 @@ def test_reference_mode_has_one_execution_spelling_and_historical_input_remains_
     assert selector.plan(legacy)==selector.plan(modern)
     assert selector.plan(legacy).route=='reference' and legacy.input_mode=='reference_video'
 
+
+@pytest.mark.asyncio
+async def test_exact_derived_owner_indexes_recover_without_author_or_new_post(tmp_path,monkeypatch,video):
+    p,package,service,calls=load(tmp_path,monkeypatch,video)
+    run=await prepare_goal(p,package,task_for(p,package))
+    assert run.state==RuntimeState.WAITING_USER
+    prep_ref=p.generation_artifacts.prepared(run.run_id)
+    prepared=p.generation_artifacts.get(prep_ref,GenerationPreparation)
+    final=p.generation_artifacts.get(prepared.final_prompt_ref,FinalPromptArtifact)
+    gate_ref=p.gate_findings.latest(run.run_id)
+    key=sha256_canonical([prepared.source_package_ref.model_dump(mode='json'),
+        prepared.task.model_dump(mode='json'),final.generator_policy_fingerprint])
+    post_count=len([r for r in calls if r.method=='POST'])
+    with p.ledger.transaction(write=True) as db:
+        db.execute("DELETE FROM ledger_index WHERE index_type='prepared' AND index_key=?",(run.run_id,))
+        db.execute("DELETE FROM ledger_index WHERE index_type='latest-decision' AND index_key=?",(run.run_id,))
+        db.execute("DELETE FROM ledger_index WHERE index_type='final-prompt-key' AND index_key=?",(key,))
+    restored,_,_,_=load(tmp_path,monkeypatch,video,restore=True,service=service,vendor_calls=calls)
+    assert restored.gate_findings.latest(run.run_id)==gate_ref
+    assert restored.generation_artifacts.prepared(run.run_id)==prep_ref
+    assert restored.generation_artifacts.final_for(key)==prepared.final_prompt_ref
+    assert (await restored.resume_execution_run(run.run_id)).state==RuntimeState.WAITING_USER
+    assert len([r for r in calls if r.method=='POST'])==post_count==1
+    assert service.imports==1
+
 @pytest.mark.asyncio
 async def test_simulated_exact_cost_receipt_is_the_only_financial_authority(tmp_path,monkeypatch,video):
     """Live admission code with MockTransport only; no real decision/quote/grant."""
@@ -384,7 +433,7 @@ async def test_simulated_exact_cost_receipt_is_the_only_financial_authority(tmp_
     adapter=p.execution.transports['seedance'].adapter
     p.execution.transports['seedance']=TargetHttpTransport(adapter,tmp_path/'acks',ledger=p.ledger,qualification_only=False)
     reviewed=await p.runtime.run(run.run_id)
-    assert reviewed.state==RuntimeState.WAITING_EXTERNAL and reviewed.cursor==11
+    assert reviewed.state==RuntimeState.WAITING_USER and reviewed.cursor==9
     transport=p.execution.transports['seedance'];grant=transport.grant
     receipt=UserDecisionRecord.model_validate(p.ledger.get_artifact('user-decision',grant.decision_ref)[0])
     assert receipt.terms_hash==terms.fingerprint and grant.terms==terms

@@ -43,7 +43,7 @@ async def shadow(context: Path, professional_root: Path, legacy_spec: Path) -> d
          patch.object(socket.socket, "connect", forbidden), patch.object(socket.socket, "connect_ex", forbidden), \
          patch("drama_plugin.hosts.cinematic_projection.project", forbidden), \
          patch("drama_plugin.professional.compile_prompt_projection", forbidden):
-        async with DramaPlugin.load(PLUGIN, mock_data=data, production_artifact_roots=(professional_root,)) as plugin:
+        async with DramaPlugin.load(PLUGIN, mock_data=data, legacy_reads=True, production_artifact_roots=(professional_root,)) as plugin:
             original_execute = plugin.runtime.executor.execute
             original_assemble = plugin.shot_assembler.assemble
 
@@ -71,7 +71,7 @@ async def shadow(context: Path, professional_root: Path, legacy_spec: Path) -> d
                 assert current.status == "READY", current
                 snapshot = plugin.runtime.serialize(run.run_id)
                 before_action = plugin.runtime.next_action(run.run_id)
-                async with DramaPlugin.load(PLUGIN, mock_data=data, production_artifact_roots=(professional_root,),
+                async with DramaPlugin.load(PLUGIN, mock_data=data, legacy_reads=True, production_artifact_roots=(professional_root,),
                         production_package_store=plugin.production_packages) as restored_plugin:
                     restored_plugin.runtime.restore(snapshot)
                     assert restored_plugin.runtime.next_action(run.run_id) == before_action

@@ -61,11 +61,11 @@ class ExecutionProjection:
     async def project(self, package: ProductionPackage, task: GenerationTask, plan: AudioExecutionPlan,
                       selected: tuple[SelectedValue, ...]) -> PromptProjection:
         if task.unit is not None:
-            return await self._operation(package, task, selected)
+            return await self._operation(package, task, selected, plan)
         facts: list[ExecutableFact] = []
         internal, diagnostics, aliases = [], [], []
 
-        def add(domain: D, slot: str, text, ref: SourceReference, required=True, subject=None):
+        def add(domain: D, slot: str, text: object, ref: SourceReference, required: bool = True, subject: str | None = None) -> None:
             if not isinstance(text, str) or not text.strip():
                 return
             if "\n" in text or len(text) > 3000:
@@ -100,7 +100,7 @@ class ExecutionProjection:
                 if domain == D.PERFORMANCE and value.get("physical_state", {}).get("dpdOriginal"):
                     pin = value["physical_state"]["dpdOriginal"]
                     try:
-                        dependency, body = self.reader.dependencies.resolve_pin(pin, work_id=package.scope.work.artifact_ref)
+                        dependency, body = self.reader.historical_pin(pin, work_id=package.scope.work.artifact_ref)
                         index = value["physical_state"]["actorBeat"]
                         physical, beat = body["physicalPerformance"][index], body["beats"][index]
                         if (body["scene"]["sceneId"] != package.scope.scene.artifact_ref or
@@ -121,7 +121,7 @@ class ExecutionProjection:
                             domain=domain, source_ref=ref, required=True))
                 if domain == D.REFERENCE and "key" in value:
                     try:
-                        dependency, body = self.reader.dependencies.resolve_pin(value, work_id=package.scope.work.artifact_ref)
+                        dependency, body = self.reader.historical_pin(value, work_id=package.scope.work.artifact_ref)
                         add(domain, "medium", body.get("medium"), child(dependency, "medium"))
                         # Only the selected authored asset's name; never its compiled asset Prompt.
                         for index, asset in enumerate(body.get("assetBible", {}).get("assets", ())):
@@ -198,7 +198,7 @@ class ExecutionProjection:
         if any(d.required for d in diagnostics):
             return PromptProjection(None, tuple(internal), tuple(diagnostics), tuple(aliases))
         # Preserve source temporal order, with space and start state before actions.
-        def order(f):
+        def order(f: ExecutableFact) -> int:
             phase = -1 if f.slot == "video.start_state" else 12 if f.slot == "video.end_state" else ORDER.get(f.domain, 3)
             return phase
         unique = {f.fact_id: f for f in facts}
@@ -207,7 +207,7 @@ class ExecutionProjection:
         return PromptProjection(ir, tuple(internal), tuple(diagnostics), tuple(aliases))
 
     async def _operation(self, package: ProductionPackage, task: GenerationTask,
-                         selected: tuple[SelectedValue, ...]) -> PromptProjection:
+                         selected: tuple[SelectedValue, ...], plan: AudioExecutionPlan) -> PromptProjection:
         """Explicit finite leaf projection, scoped by production selection and receipt."""
         assert task.unit and task.profile
         facts: list[ExecutableFact] = []
@@ -221,13 +221,24 @@ class ExecutionProjection:
             if not isinstance(text, str) or not text.strip() or len(text) > 3000 or "\n" in text:
                 raise ValueError("UNIT_EXECUTABLE_LEAF_REQUIRED")
             facts.append(ExecutableFact(fact_id="execution:" + sha256_canonical([ref.model_dump(mode="json",by_alias=True), slot]), domain=domain,
-                slot=slot, text=text, source_ref=ref, obligation=O.QUALITY_SUPPORTING if domain == D.COLOR else O.EXECUTION_REQUIRED,
+                slot=slot, text=text, source_ref=ref, obligation=O.EXECUTION_REQUIRED,
                 subject_id=subject))
         for item in selected:
             domain, ref = item.selection.domain, item.selection.reference
+            if domain == D.SOUND and ref.path[-1:] == ("speechRelations",):
+                internal.append(CoverageEntry(fact_id="speech-relations:"+sha256_canonical(ref),domain=domain,source_ref=ref,
+                    obligation=O.EXECUTION_REQUIRED,status=S.INTERNAL_ONLY))
+                continue
+            if domain == D.SOUND and task.profile.native_audio is False:
+                internal.append(CoverageEntry(fact_id="disabled-audio:"+sha256_canonical(ref), domain=domain,source_ref=ref,
+                    obligation=O.QUALITY_SUPPORTING,status=S.NOT_APPLICABLE))
+                continue
             if domain == D.REFERENCE:
                 internal.append(CoverageEntry(fact_id="reference-plan:"+sha256_canonical(ref), domain=domain,
                     source_ref=ref, obligation=O.EXECUTION_REQUIRED, status=S.NOT_APPLICABLE))
+                continue
+            if domain == D.SOUND and ref.owner == "scene" and isinstance(item.value, dict):
+                add(domain, child(ref, "text"), item.value["text"], "video.audio_requirements", str(item.value["speakerKey"]))
                 continue
             slot = slots.get(domain)
             if slot is None:
@@ -235,7 +246,7 @@ class ExecutionProjection:
             if domain == D.CAMERA and ref.path[-2:] == ("movement", "policy"):
                 slot = "video.camera_motion"
             subject = None
-            if domain == D.SUBJECTS:
+            if domain == D.SUBJECTS and "presentSubjects" in ref.path:
                 parent = SourceReference(**{**ref.model_dump(), "path": ref.path[:-1] + ("id",)})
                 value = await self.reader.resolver.resolve(parent)
                 if not isinstance(value, str):
@@ -259,8 +270,15 @@ class ExecutionProjection:
                 internal.append(CoverageEntry(fact_id="reference-duty:"+sha256_canonical(ref),
                     domain=D.REFERENCE, source_ref=ref,
                     obligation=O.EXECUTION_REQUIRED if row["priority"] == "REQUIRED" else O.QUALITY_SUPPORTING,
-                    status=S.OUT_OF_UNIT if disposition == "OUT_OF_UNIT" else S.INTERNAL_ONLY,
+                    status=S.OUT_OF_UNIT if disposition == "OUT_OF_UNIT" else S.OPTIONAL_OMITTED if disposition == "OPTIONAL_OMITTED" else S.INTERNAL_ONLY,
                     input_ref=task.unit.scope_decision_ref))
+        by_event = {event.event_id: event for event in plan.speech_events}
+        for relation in plan.relations:
+            first, second = by_event[relation.event_id], by_event[relation.target_event_id]
+            left = first.speaker_ref.artifact_ref if first.speaker_ref else first.event_id
+            right = second.speaker_ref.artifact_ref if second.speaker_ref else second.event_id
+            syntax = {"BEFORE":"先于", "AFTER":"后于", "OVERLAP":"与其重叠", "INTERRUPT":"插入其声场", "CONTINUE_UNDER":"持续在其声音下方", "FADE_BEHIND":"渐弱到其声音之后"}[relation.relation.value]
+            add(D.SOUND,relation.source_ref,f"{left}的声音{syntax}{right}的声音。","preserve.audio_relation")
         selected_refs = {f.source_ref for f in facts}
         for item in await self.reader.selections(package):
             if item.selection.reference not in selected_refs:
@@ -269,6 +287,8 @@ class ExecutionProjection:
                     obligation=O.QUALITY_SUPPORTING, status=S.OUT_OF_UNIT))
         required = {"video.start_state", "video.end_state", "video.action_progression", "video.camera_motion",
             "environment.architecture", "subject.role", "video.performance", "video.audio_requirements"}
+        if task.profile.native_audio is False:
+            required.discard("video.audio_requirements")
         if not required <= {f.slot for f in facts}:
             diagnostics.append(ExecutionDiagnostic(code="EXECUTION_REQUIRED_MISSING", owner="production-selection",
                 domain=D.DIRECTION, required=True))

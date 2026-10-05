@@ -10,8 +10,8 @@ from drama_plugin.creative_engine.contracts import (
     AUTHORITY, Authority, AuthorRequest, CanonDraft, CreativeCheckpoint, DesignBody, FilmInput,
     Kind, SceneBody, ScriptBody, ShotBody, SourceBody, VersionRef, WorkBody,
 )
-from drama_plugin.creative_engine.diagnostics import (AuthorDiagnostic, AuthorResultFailure,
-    AuthorUnavailable, failure, response_context, validation_failure)
+from drama_plugin.creative_engine.diagnostics import (AuthorResultFailure, failure,
+    validation_failure, run_author_capability)
 from drama_plugin.execution.transport import CapabilityAbsent
 from pydantic import ValidationError
 from drama_plugin.creative_engine.routes import RouteSelector
@@ -19,16 +19,17 @@ from drama_plugin.creative_engine.sources import NativeCreativeSources
 from drama_plugin.creative_engine.store import CreativeStateStore, CreativeVersionStore
 from drama_plugin.governance.contracts import GateCode, GateFinding
 from drama_plugin.governance.governor import GateGovernor
-from drama_plugin.governance.store import GateFindingStore
+from drama_plugin.governance.store import FindingStore
 from drama_plugin.persistence.review import UserDecisionRecord
 from drama_plugin.production.assembler import ShotAssembler
-from drama_plugin.production.store import ProductionPackageStore
+from drama_plugin.production.store import PackageStore
 from drama_plugin.professional_design.resolver import ProfessionalDesignResolver
 from drama_plugin.runtime.capabilities import TargetCapability
+from drama_plugin.runtime.policy import AUTHOR_CONTENT_ATTEMPT_LIMIT
 from drama_plugin.runtime.contracts import (
     ArtifactReference, CapabilityInput, CapabilityResult, DecisionCategory, ResultStatus, RunMode,
-    ExecutionInspection, ExecutionRevision,
-    RuntimeRun, RuntimeScope, RuntimeState,
+    ExecutionInspection, ExecutionRevision, RecoveryClass,
+    RuntimeRun, RuntimeScope, RuntimeState, UserDecisionRequest,
 )
 
 if TYPE_CHECKING:
@@ -40,7 +41,7 @@ KEYS = ("source", "canon", "direction", "professional", "route", "review", "adop
 
 class CreativeEngineCapabilities:
     def __init__(self, versions: CreativeVersionStore, state: CreativeStateStore,
-                 packages: ProductionPackageStore, governor: GateGovernor, findings: GateFindingStore,
+                 packages: PackageStore, governor: GateGovernor, findings: FindingStore,
                  canon: CanonAuthor | None = None, direction: CreativeDirectionAuthor | None = None,
                  professional: ProfessionalDesignResolver | None = None):
         self.versions, self.state, self.packages = versions, state, packages
@@ -52,26 +53,68 @@ class CreativeEngineCapabilities:
     def registrations(self) -> dict[str, TargetCapability]:
         methods = (self.source, self.canon, self.direction, self.professional, self.route,
                    self.review, self.adoption, self.package, self.prerequisite)
+        inspectors = {"canon": self.inspect_canon_execution, "direction": self.inspect_direction_execution,
+            "professional": self.inspect_professional_execution}
         return {PREFIX + key + ":v1": TargetCapability(method, replay_safe=True,
-                    inspect_execution=self.inspect_direction_execution if key == "direction" else None)
+                    inspect_execution=inspectors.get(key))
                 for key, method in zip(KEYS, methods, strict=True)}
 
-    def inspect_direction_execution(self, inputs: CapabilityInput) -> ExecutionInspection | None:
-        from drama_plugin.creative_engine.backends import FormalDirectionAuthor
-        if not isinstance(self.direction_author, FormalDirectionAuthor):
-            return None
-        request = self._request(inputs, Authority.DIRECTION)
+    def _inspection(self, inputs: CapabilityInput, owner: Authority, fingerprint: str) -> ExecutionInspection:
+        request = self._request(inputs, owner)
         cp = self.state.checkpoint(inputs.run_id)
-        # Validate exact versions and stale state before authoring. Input bytes
-        # remain with the creative owner; only their existing refs/hashes persist.
-        if any(self.versions.stale(ref) for ref in request.source_refs):
+        immutable_kinds = ({Kind.SOURCE} if owner == Authority.CANON else
+            {Kind.SOURCE, Kind.WORK, Kind.SCRIPT, Kind.SCENE} if owner == Authority.DIRECTION else
+            {Kind.SOURCE, Kind.WORK, Kind.SCRIPT, Kind.SCENE, Kind.SHOT})
+        if any(self.versions.stale(ref) for ref in request.source_refs if self.versions.resolve(ref).kind in immutable_kinds):
             raise ValueError("CREATIVE_EXECUTION_INPUT_STALE")
-        return ExecutionInspection(revision=ExecutionRevision(
-            fingerprint=self.direction_author.execution_fingerprint(),
+        return ExecutionInspection(revision=ExecutionRevision(fingerprint=fingerprint,
             input_fingerprint=sha256_canonical({"scope": inputs.scope.model_dump(mode="json", by_alias=True),
                 "refs": [ref.model_dump(mode="json", by_alias=True) for ref in request.source_refs],
                 "film_input": self.state.input(inputs.run_id).model_dump(mode="json", by_alias=True)})),
-            completed=inputs.operation_id in cp.completed_operations or request.shot is not None)
+            retry_limit=AUTHOR_CONTENT_ATTEMPT_LIMIT,
+            completed=inputs.operation_id in cp.completed_operations or self.versions.has_author_output(
+                inputs.operation_id, {Authority.CANON: "canon", Authority.DIRECTION: "direction", Authority.PROFESSIONAL: "professional"}[owner]))
+
+    def inspect_canon_execution(self, inputs: CapabilityInput) -> ExecutionInspection | None:
+        from drama_plugin.creative_engine.backends import FormalCanonAuthor
+        if self._author_required(inputs, Authority.CANON) and (self.canon_author is None or
+                isinstance(self.canon_author, FormalCanonAuthor) and not self.canon_author.client.config.available("canon")):
+            raise CapabilityAbsent("FORMAL_CANON_AUTHOR_CONFIGURATION_ABSENT")
+        return self._inspection(inputs, Authority.CANON, self.canon_author.execution_fingerprint()) if isinstance(self.canon_author, FormalCanonAuthor) else None
+
+    def inspect_professional_execution(self, inputs: CapabilityInput) -> ExecutionInspection | None:
+        from drama_plugin.creative_engine.backends import FormalProfessionalAuthor
+        author = self.professional_author.author if self.professional_author else None
+        if self._author_required(inputs, Authority.PROFESSIONAL) and (author is None or
+                isinstance(author, FormalProfessionalAuthor) and not author.client.config.available("professional")):
+            raise CapabilityAbsent("FORMAL_PROFESSIONAL_AUTHOR_CONFIGURATION_ABSENT")
+        return self._inspection(inputs, Authority.PROFESSIONAL, author.execution_fingerprint(
+            self._request(inputs, Authority.PROFESSIONAL))) if isinstance(author, FormalProfessionalAuthor) else None
+
+    def inspect_direction_execution(self, inputs: CapabilityInput) -> ExecutionInspection | None:
+        from drama_plugin.creative_engine.backends import FormalDirectionAuthor
+        if self._author_required(inputs, Authority.DIRECTION) and (self.direction_author is None or
+                isinstance(self.direction_author, FormalDirectionAuthor) and not self.direction_author.client.config.available("direction")):
+            raise CapabilityAbsent("FORMAL_DIRECTION_AUTHOR_CONFIGURATION_ABSENT")
+        if not isinstance(self.direction_author, FormalDirectionAuthor):
+            return None
+        inspection = self._inspection(inputs, Authority.DIRECTION, self.direction_author.execution_fingerprint())
+        request = self._request(inputs, Authority.DIRECTION)
+        revising = self.state.input(inputs.run_id).revision is not None
+        return ExecutionInspection(revision=inspection.revision,
+            retry_limit=inspection.retry_limit,
+            completed=inspection.completed or (request.shot is not None and not revising))
+
+    def _author_required(self, inputs: CapabilityInput, owner: Authority) -> bool:
+        request = self._request(inputs, owner)
+        cp = self.state.checkpoint(inputs.run_id)
+        role = {Authority.CANON: "canon", Authority.DIRECTION: "direction", Authority.PROFESSIONAL: "professional"}[owner]
+        if inputs.operation_id in cp.completed_operations or self.versions.has_author_output(inputs.operation_id, role):
+            return False
+        revision = self.state.input(inputs.run_id).revision
+        revising = revision is not None and revision.owner == owner
+        return not ((owner == Authority.CANON and request.canon is not None or
+            owner == Authority.DIRECTION and request.shot is not None) and not revising)
 
     def _success(self, checkpoint: CreativeCheckpoint) -> CapabilityResult:
         return CapabilityResult(status=ResultStatus.SUCCEEDED,
@@ -92,8 +135,8 @@ class CreativeEngineCapabilities:
         decision = self.governor.govern((finding,), scope=inputs.scope,
             mode=self.runtime.store.load(inputs.run_id).mode, package_ref=None)
         ref = self.findings.put_decision(decision, run_id=inputs.run_id)
-        return CapabilityResult(status=ResultStatus.WAITING_EXTERNAL,
-            external_ref=ArtifactReference(owner="capability-absence", artifact_ref=ref.artifact_ref, version=1))
+        return CapabilityResult(status=ResultStatus.FAILED, code="AUTHOR_CAPABILITY_ABSENT",
+            recovery_class=RecoveryClass.HARD_BLOCK, artifact_refs=(ref,))
 
     def _blocked(self, inputs: CapabilityInput, code: GateCode) -> CapabilityResult:
         assert self.runtime is not None
@@ -101,8 +144,9 @@ class CreativeEngineCapabilities:
             evidence_ref=self.state.input(inputs.run_id).source_ref.runtime_ref(), required=True)
         decision = self.governor.govern((finding,), scope=inputs.scope,
             mode=self.runtime.store.load(inputs.run_id).mode, package_ref=None)
-        self.findings.put_decision(decision, run_id=inputs.run_id)
-        return CapabilityResult(status=ResultStatus.RETRYABLE_FAILURE, code=code.value)
+        ref = self.findings.put_decision(decision, run_id=inputs.run_id)
+        return CapabilityResult(status=ResultStatus.FAILED, code=code.value,
+            recovery_class=RecoveryClass.HARD_BLOCK, artifact_refs=(ref,))
 
     def _request(self, inputs: CapabilityInput, owner: Authority) -> AuthorRequest:
         value = self.state.input(inputs.run_id)
@@ -157,7 +201,8 @@ class CreativeEngineCapabilities:
                     return self._blocked(inputs, GateCode.CANON_AUTHORITY_MISMATCH)
                 signature = sha256_canonical([revision.owner, target.kind, revision.instruction])
                 if signature in value.prior_revision_signatures or len(value.prior_revision_signatures) >= 3:
-                    return CapabilityResult(status=ResultStatus.RETRYABLE_FAILURE, code="REVISION_CYCLE_OR_DEPTH_BOUND")
+                    return CapabilityResult(status=ResultStatus.FAILED, code="REVISION_CYCLE_OR_DEPTH_BOUND",
+                        recovery_class=RecoveryClass.HARD_BLOCK)
                 self.versions.invalidate(revision.target_ref)
             refs = tuple(r for r in refs if self.versions.resolve(r).kind != Kind.SOURCE)
             return self._success(self._save(inputs, cp, refs=(value.source_ref, *refs)))
@@ -165,6 +210,12 @@ class CreativeEngineCapabilities:
             return self._blocked(inputs, GateCode.CANON_AUTHORITY_MISMATCH)
 
     async def canon(self, inputs: CapabilityInput) -> CapabilityResult:
+        assert self.runtime is not None
+        cp = self.state.checkpoint(inputs.run_id)
+        return await run_author_capability(self._canon, role="canon", versions=self.versions,
+            inputs=inputs, run=self.runtime.store.load(inputs.run_id), version_refs=cp.refs, author_round=cp.author_rounds)
+
+    async def _canon(self, inputs: CapabilityInput) -> CapabilityResult:
         if result := self._replay(inputs):
             return result
         cp, value = self.state.checkpoint(inputs.run_id), self.state.input(inputs.run_id)
@@ -183,15 +234,20 @@ class CreativeEngineCapabilities:
                 return self._success(self._save(inputs, cp, refs=fixed))
         if self.canon_author is None:
             return self._absence(inputs, Authority.CANON.value)
-        if not self._round_allowed(inputs):
-            return CapabilityResult(status=ResultStatus.RETRYABLE_FAILURE, code="AUTHOR_ROUND_BOUND")
-        self.state.save(inputs.run_id, inputs.scope, CreativeCheckpoint.model_validate(
-            {**cp.model_dump(), "author_rounds": cp.author_rounds + 1}))
-        from drama_plugin.execution.transport import CapabilityAbsent
-        try:
-            draft = CanonDraft.model_validate((await self.canon_author.author(request)).model_dump())
-        except CapabilityAbsent:
-            return self._absence(inputs, Authority.CANON.value)
+        from pydantic import TypeAdapter
+        draft = self.versions.author_output(inputs.operation_id, "canon", request.source_refs, TypeAdapter(CanonDraft))
+        if draft is None:
+            if not self._round_allowed(inputs):
+                return CapabilityResult(status=ResultStatus.FAILED, code="AUTHOR_ROUND_BOUND", recovery_class=RecoveryClass.HARD_BLOCK)
+            self.state.save(inputs.run_id, inputs.scope, CreativeCheckpoint.model_validate(
+                {**cp.model_dump(), "author_rounds": cp.author_rounds + 1}))
+            try:
+                draft = CanonDraft.model_validate((await self.canon_author.author(request)).model_dump())
+            except ValidationError as error:
+                from pydantic import JsonValue
+                schema = TypeAdapter(dict[str, JsonValue]).validate_python(TypeAdapter(CanonDraft).json_schema(by_alias=True))
+                raise AuthorResultFailure(validation_failure(error, role="canon", output_schema=schema)) from None
+            self.versions.retain_author_output(inputs.operation_id, "canon", request.source_refs, draft)
         refs = [value.source_ref]
         for kind, body in ((Kind.WORK, draft.work), (Kind.SCRIPT, draft.script), (Kind.SCENE, draft.scene)):
             existing = next((self.versions.resolve(r) for r in cp.refs if self.versions.resolve(r).kind == kind), None)
@@ -204,39 +260,14 @@ class CreativeEngineCapabilities:
         if revision_path is not None:
             from drama_plugin.contracts.base import canonical_json
             self.versions.io.write(revision_path, canonical_json([r.model_dump(mode="json", by_alias=True) for r in refs]))
-        return self._success(self._save(inputs, cp, refs=tuple(refs), author_rounds=cp.author_rounds + 1))
+        rounds = self.state.checkpoint(inputs.run_id).author_rounds
+        return self._success(self._save(inputs, cp, refs=tuple(refs), author_rounds=rounds))
 
     async def direction(self, inputs: CapabilityInput) -> CapabilityResult:
-        token = response_context.set(None)
-        try:
-            return await self._direction(inputs)
-        except Exception as error:
-            if isinstance(error, (AuthorResultFailure, AuthorUnavailable)):
-                diagnostic = error.diagnostic
-            elif isinstance(error, ValidationError):
-                diagnostic = validation_failure(error, role="direction", post=True)
-            else:
-                diagnostic = failure("PROVIDER_PROTOCOL" if isinstance(error, CapabilityAbsent) else "INTERNAL",
-                    "AUTHOR_CAPABILITY_ABSENT" if isinstance(error, CapabilityAbsent) else "UNEXPECTED_DIRECTION_CAPABILITY_FAILURE",
-                    exception_type=type(error).__name__)
-            ref = self._direction_diagnostic(inputs, diagnostic)
-            if isinstance(error, CapabilityAbsent):
-                absent = self._absence(inputs, Authority.DIRECTION.value)
-                return CapabilityResult.model_validate({**absent.model_dump(), "artifact_refs": (ref,)})
-            # Keep the public Runtime failure abstraction, carrying only an exact safe evidence ref.
-            return CapabilityResult(status=ResultStatus.RETRYABLE_FAILURE,
-                code="CAPABILITY_EXECUTION_ERROR", artifact_refs=(ref,))
-        finally:
-            response_context.reset(token)
-
-    def _direction_diagnostic(self, inputs: CapabilityInput, diagnostic: AuthorDiagnostic) -> ArtifactReference:
+        assert self.runtime is not None
         cp = self.state.checkpoint(inputs.run_id)
-        body = {"schemaVersion": "author-failure-diagnostic-v1", "runId": inputs.run_id,
-            "operationId": inputs.operation_id, "scope": inputs.scope.model_dump(mode="json", by_alias=True),
-            "authorRound": cp.author_rounds, "versionRefs": [r.model_dump(mode="json", by_alias=True) for r in cp.refs],
-            "diagnostic": diagnostic.model_dump(mode="json")}
-        pin = self.versions.objects.put("author-diagnostic:" + sha256_canonical(body), body)
-        return ArtifactReference(owner="creative-diagnostic", artifact_ref="author-diagnostic:" + pin.fingerprint, version=1)
+        return await run_author_capability(self._direction, role="direction", versions=self.versions,
+            inputs=inputs, run=self.runtime.store.load(inputs.run_id), version_refs=cp.refs, author_round=cp.author_rounds)
 
     async def _direction(self, inputs: CapabilityInput) -> CapabilityResult:
         if result := self._replay(inputs):
@@ -248,27 +279,41 @@ class CreativeEngineCapabilities:
             return self._success(self._save(inputs, cp))
         if self.direction_author is None:
             return self._absence(inputs, Authority.DIRECTION.value)
-        if not self._round_allowed(inputs):
-            return CapabilityResult(status=ResultStatus.RETRYABLE_FAILURE, code="AUTHOR_ROUND_BOUND")
-        self.state.save(inputs.run_id, inputs.scope, CreativeCheckpoint.model_validate(
-            {**cp.model_dump(), "author_rounds": cp.author_rounds + 1}))
-        shot = ShotBody.model_validate((await self.direction_author.author(request)).model_dump())
+        from pydantic import TypeAdapter
+        shot = self.versions.author_output(inputs.operation_id, "direction", request.source_refs, TypeAdapter(ShotBody))
+        if shot is None:
+            if not self._round_allowed(inputs):
+                return CapabilityResult(status=ResultStatus.FAILED, code="AUTHOR_ROUND_BOUND", recovery_class=RecoveryClass.HARD_BLOCK)
+            self.state.save(inputs.run_id, inputs.scope, CreativeCheckpoint.model_validate(
+                {**cp.model_dump(), "author_rounds": cp.author_rounds + 1}))
+            try:
+                shot = ShotBody.model_validate((await self.direction_author.author(request)).model_dump())
+            except ValidationError as error:
+                from pydantic import JsonValue
+                schema = TypeAdapter(dict[str, JsonValue]).validate_python(TypeAdapter(ShotBody).json_schema(by_alias=True))
+                raise AuthorResultFailure(validation_failure(error, role="direction", output_schema=schema)) from None
         if request.canon is None or not set(shot.spoken_ids) <= {line.id for line in request.canon.scene.dialogue}:
-            diagnostic_ref = self._direction_diagnostic(inputs, failure("DIALOGUE_AUTHORITY", "DIRECTION_DIALOGUE_AUTHORITY_MISMATCH",
+            raise AuthorResultFailure(failure("DIALOGUE_AUTHORITY", "DIRECTION_DIALOGUE_AUTHORITY_MISMATCH",
                 field_path=("spokenIds",), validator="CreativeEngineCapabilities.direction.canon_dialogue_authority"))
-            result = self._blocked(inputs, GateCode.CANON_AUTHORITY_MISMATCH)
-            return CapabilityResult.model_validate({**result.model_dump(), "artifact_refs": (diagnostic_ref,)})
+        self.versions.retain_author_output(inputs.operation_id, "direction", request.source_refs, shot)
         refs = tuple(r for r in cp.refs if self.versions.resolve(r).kind not in {Kind.SHOT, Kind.PROFESSIONAL})
         ref = self.versions.write(writer=Authority.DIRECTION, kind=Kind.SHOT, scope=inputs.scope,
             body=shot, sources=refs, operation=inputs.operation_id)
-        return self._success(self._save(inputs, cp, refs=(*refs, ref), author_rounds=cp.author_rounds + 1))
+        return self._success(self._save(inputs, cp, refs=(*refs, ref), author_rounds=self.state.checkpoint(inputs.run_id).author_rounds))
 
     async def professional(self, inputs: CapabilityInput) -> CapabilityResult:
+        assert self.runtime is not None
+        cp = self.state.checkpoint(inputs.run_id)
+        return await run_author_capability(self._professional, role="professional", versions=self.versions,
+            inputs=inputs, run=self.runtime.store.load(inputs.run_id), version_refs=cp.refs, author_round=cp.author_rounds)
+
+    async def _professional(self, inputs: CapabilityInput) -> CapabilityResult:
         if result := self._replay(inputs):
             return result
         cp = self.state.checkpoint(inputs.run_id)
         request = self._request(inputs, Authority.PROFESSIONAL)
-        assert request.shot is not None
+        if request.shot is None:
+            raise CapabilityAbsent("PROFESSIONAL_SHOT_PREREQUISITE_ABSENT")
         required = set(request.shot.professional_domains)
         bodies = [self.versions.resolve(r).body for r in cp.refs]
         current = {body.domain for body in bodies if isinstance(body, DesignBody)}
@@ -276,44 +321,42 @@ class CreativeEngineCapabilities:
             return self._success(self._save(inputs, cp))
         if self.professional_author is None or self.professional_author.author is None:
             return self._absence(inputs, Authority.PROFESSIONAL.value)
-        if not self._round_allowed(inputs):
-            return CapabilityResult(status=ResultStatus.RETRYABLE_FAILURE, code="AUTHOR_ROUND_BOUND")
-        # Ordinary missing design routes internally, with a two-round bound and exact
-        # Shot evidence; the unified professional interface retains all department logic.
-        from drama_plugin.creative_engine.contracts import RevisionRequest
+        from pydantic import TypeAdapter
         refs = tuple(r for r in cp.refs if self.versions.resolve(r).kind != Kind.PROFESSIONAL)
-        selected: dict[object, VersionRef] = {}
-        rounds = cp.author_rounds
-        for attempt in range(2):
-            if rounds >= self.state.input(inputs.run_id).max_author_rounds:
-                return CapabilityResult(status=ResultStatus.RETRYABLE_FAILURE, code="AUTHOR_ROUND_BOUND")
-            rounds += 1
+        fixed_request = AuthorRequest.model_validate({**request.model_dump(), "source_refs": refs})
+        designs = self.versions.author_output(inputs.operation_id, "professional", refs, TypeAdapter(tuple[DesignBody, ...]))
+        if designs is None:
+            if not self._round_allowed(inputs):
+                return CapabilityResult(status=ResultStatus.FAILED, code="AUTHOR_ROUND_BOUND", recovery_class=RecoveryClass.HARD_BLOCK)
             self.state.save(inputs.run_id, inputs.scope, CreativeCheckpoint.model_validate(
-                {**cp.model_dump(), "author_rounds": rounds}))
-            from drama_plugin.execution.transport import CapabilityAbsent
+                {**cp.model_dump(), "author_rounds": cp.author_rounds + 1}))
             try:
                 designs = tuple(DesignBody.model_validate(d.model_dump()) for d in await (
-                    self.professional_author.revise(request) if request.revision else self.professional_author.design(request)))
-            except CapabilityAbsent:
-                return self._absence(inputs, Authority.PROFESSIONAL.value)
-            if len({d.domain for d in designs}) != len(designs) or not {d.domain for d in designs} <= required:
-                return self._blocked(inputs, GateCode.CANON_AUTHORITY_MISMATCH)
+                    self.professional_author.revise(fixed_request) if fixed_request.revision else self.professional_author.design(fixed_request)))
+            except ValidationError as error:
+                from pydantic import JsonValue
+                schema = TypeAdapter(dict[str, JsonValue]).validate_python(TypeAdapter(tuple[DesignBody, ...]).json_schema(by_alias=True))
+                raise AuthorResultFailure(validation_failure(error, role="professional", output_schema=schema)) from None
+            except ValueError as error:
+                if str(error) != "PROFESSIONAL_SYSTEM_METADATA_MODEL_OWNERSHIP":
+                    raise
+                raise AuthorResultFailure(failure("DTO_SCHEMA", "PROFESSIONAL_SYSTEM_METADATA_MODEL_OWNERSHIP", role="professional",
+                    field_path=("facts", "<system-metadata>"), validator="reject_model_metadata")) from None
+        if len(designs) != len(required) or {d.domain for d in designs} != required:
+            raise AuthorResultFailure(failure("DTO_SCHEMA", "PROFESSIONAL_DOMAIN_AUTHORITY_MISMATCH", role="professional",
+                field_path=("domain",), validator="CreativeEngineCapabilities.professional.required_domains"))
+        from drama_plugin.professional_design.provenance import reject_model_metadata
+        try:
             for design in designs:
-                selected[design.domain] = self.professional_author.persist(self.versions,
-                    AuthorRequest.model_validate({**request.model_dump(), "source_refs": refs}), design,
-                    operation=inputs.operation_id + ":" + str(attempt) + ":" + design.domain.value)
-            if required <= selected.keys():
-                authored = tuple(selected[key] for key in sorted(selected, key=str))
-                return self._success(self._save(inputs, cp, refs=(*refs, *authored), author_rounds=rounds))
-            shot_ref = next(ref for ref in refs if self.versions.resolve(ref).kind == Kind.SHOT)
-            finding = GateFinding.classified(GateCode.PACKAGE_STALE, owner=Authority.PROFESSIONAL.value,
-                scope=inputs.scope, evidence_ref=shot_ref.runtime_ref(), required=True)
-            finding_ref = self.findings.put_finding(finding)
-            repair = RevisionRequest(owner=Authority.PROFESSIONAL, target_ref=next(iter(selected.values())),
-                finding_ref=finding_ref, instruction="Resolve the remaining declared professional obligations") if selected else None
-            request = AuthorRequest.model_validate({**request.model_dump(), "revision": repair,
-                "source_refs": (*refs, *selected.values()), "finding_refs": (finding_ref,)})
-        return CapabilityResult(status=ResultStatus.RETRYABLE_FAILURE, code="PROFESSIONAL_OBLIGATION_UNRESOLVED")
+                reject_model_metadata(design.facts)
+        except ValueError:
+            raise AuthorResultFailure(failure("DTO_SCHEMA", "PROFESSIONAL_SYSTEM_METADATA_MODEL_OWNERSHIP", role="professional",
+                field_path=("facts", "<system-metadata>"), validator="reject_model_metadata")) from None
+        self.versions.retain_author_output(inputs.operation_id, "professional", refs, designs)
+        selected = tuple(self.professional_author.persist(self.versions, fixed_request, design,
+            operation=inputs.operation_id + ":" + design.domain.value) for design in sorted(designs, key=lambda d: d.domain.value))
+        return self._success(self._save(inputs, cp, refs=(*refs, *selected),
+            author_rounds=self.state.checkpoint(inputs.run_id).author_rounds))
 
     async def route(self, inputs: CapabilityInput) -> CapabilityResult:
         if result := self._replay(inputs):
@@ -337,8 +380,15 @@ class CreativeEngineCapabilities:
                     shot_id=inputs.scope.shot_id, run_id=identity,
                     mode=self.runtime.store.load(inputs.run_id).mode, workflow_id=CHILD_WORKFLOW)
                 self.state.bind(identity, inputs.scope, self.state.input(inputs.run_id))
-            await self.runtime.run(child.run_id)
+            child = await self.runtime.run(child.run_id)
             children.append(identity)
+            if child.state != RuntimeState.SUCCEEDED:
+                self.state.save(inputs.run_id, inputs.scope, CreativeCheckpoint.model_validate(
+                    {**cp.model_dump(), "route_plan": plan, "child_runs": tuple(children)}))
+                if child.last_result is None:
+                    return CapabilityResult(status=ResultStatus.FAILED, code="DEPENDENCY_RESULT_ABSENT",
+                        recovery_class=RecoveryClass.HARD_BLOCK)
+                return child.last_result
         return self._success(self._save(inputs, cp, route_plan=plan, child_runs=tuple(children)))
 
     async def prerequisite(self, inputs: CapabilityInput) -> CapabilityResult:
@@ -353,6 +403,26 @@ class CreativeEngineCapabilities:
         if any(self.versions.stale(ref) for ref in cp.refs):
             return self._blocked(inputs, GateCode.CANON_AUTHORITY_MISMATCH)
         try:
+            from drama_plugin.professional_design.provenance import ORDER, creative_facts, project_metadata
+            core = {r for r in cp.refs if self.versions.resolve(r).kind in ORDER}
+            revised = []
+            for ref in cp.refs:
+                artifact = self.versions.resolve(ref)
+                if isinstance(artifact.body, DesignBody):
+                    parents = {r for r in artifact.source_refs if self.versions.resolve(r).kind in ORDER}
+                    if artifact.scope != inputs.scope or parents != core:
+                        raise ValueError("PROFESSIONAL_SOURCE_PIN_AUTHORITY_MISMATCH")
+                    projected = project_metadata(artifact.body, self.versions, inputs.scope, artifact.source_refs)
+                    if creative_facts(projected.facts) != creative_facts(artifact.body.facts):
+                        raise ValueError("Integrity cannot change creative content")
+                    if projected != artifact.body:
+                        if artifact.state == "ADOPTED":
+                            raise ValueError("Integrity cannot rewrite adopted content")
+                        ref = self.versions.write(writer=Authority.PROFESSIONAL, kind=Kind.PROFESSIONAL,
+                            scope=inputs.scope, body=projected, sources=artifact.source_refs,
+                            operation=inputs.operation_id + ":metadata:" + ref.fingerprint)
+                revised.append(ref)
+            cp = CreativeCheckpoint.model_validate({**cp.model_dump(), "refs": tuple(revised)})
             self.validate_candidate_integrity(cp, inputs.scope)
         except ValueError:
             return self._blocked(inputs, GateCode.CANON_AUTHORITY_MISMATCH)
@@ -463,7 +533,12 @@ class CreativeEngineCapabilities:
         if run.mode == RunMode.EXPERIMENT:
             return self._success(self._save(inputs, cp))
         if self.state.ledger is None or run.last_result is None or len(run.last_result.artifact_refs) != 1:
-            return self._absence(inputs, "adoption-decision")
+            if cp.candidate_ref is None:
+                return self._blocked(inputs, GateCode.CANON_AUTHORITY_MISMATCH)
+            return CapabilityResult(status=ResultStatus.WAITING_EXTERNAL,
+                recovery_class=RecoveryClass.USER_DECISION, external_ref=cp.candidate_ref,
+                user_decision=UserDecisionRequest(category=DecisionCategory.ADOPTION,
+                    question="Adopt the exact reviewed creative candidate for production?"))
         ref = run.last_result.artifact_refs[0]
         try:
             body, scope, _ = self.state.ledger.get_artifact("user-decision", ref)

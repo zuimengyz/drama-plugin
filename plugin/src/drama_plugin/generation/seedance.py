@@ -73,7 +73,7 @@ class SeedanceTargetAdapter:
                 priority="CRITICAL" if fact.obligation == Obligation.EXECUTION_REQUIRED else "OPTIONAL",
                 required=fact.obligation == Obligation.EXECUTION_REQUIRED))
             mapping[path] = fact.fact_id
-            if slot == "video.audio_requirements":
+            if slot == "video.audio_requirements" and plan.native_audio_policy != "DISABLED":
                 event = next((e for e in plan.speech_events if e.spoken_content_id and
                     fact.source_ref.artifact_ref == e.source_ref.artifact_ref and
                     fact.source_ref.path == e.source_ref.path + ("text",)), None)

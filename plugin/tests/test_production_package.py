@@ -73,7 +73,7 @@ def fixture(tmp_path):
 
 def load(fixture, **kwargs):
     data, directory = fixture
-    return DramaPlugin.load(ROOT, mock_data=data, production_artifact_roots=(directory,), **kwargs)
+    return DramaPlugin.load(ROOT, mock_data=data, legacy_reads=True, production_artifact_roots=(directory,), **kwargs)
 
 
 def create(plugin, mode=RunMode.EXPERIMENT, run_id="run"):
@@ -194,7 +194,9 @@ async def test_missing_or_invalid_source_returns_unresolved_owner_never_fills(fi
     original = data.shot.model_dump_json()
     plugin = load(fixture);run = create(plugin)
     blocked = await plugin.runtime.run(run.run_id)
-    assert blocked.state == RuntimeState.BLOCKED and blocked.last_result.code == "ASSEMBLY_UNRESOLVED"
+    assert blocked.state == RuntimeState.FAILED and blocked.last_result.code == "ASSEMBLY_UNRESOLVED"
+    assert blocked.last_result.recovery_class.value == "HARD_BLOCK"
+    assert blocked.step_attempts == 1
     validation = plugin.production_packages.validation(blocked.last_result.artifact_refs[0])
     assert validation.status == "UNRESOLVED" and any(issue.code == code for issue in validation.issues)
     assert all(issue.owner and issue.artifact_ref for issue in validation.issues)

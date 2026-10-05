@@ -94,7 +94,7 @@ def test_legal_transition(before, after):
 @pytest.mark.parametrize("before,after", [
     (RuntimeState.PLANNED, RuntimeState.SUCCEEDED),
     (RuntimeState.SUCCEEDED, RuntimeState.RUNNING),
-    (RuntimeState.RUNNING, RuntimeState.WAITING_USER),
+    (RuntimeState.WAITING_USER, RuntimeState.RUNNING),
     (RuntimeState.FAILED, RuntimeState.READY),
 ])
 def test_invalid_transition_explicitly_rejected(before, after):
@@ -108,7 +108,7 @@ async def test_plugin_owns_offline_loop_calls_existing_tool_once_without_canon_c
     data = MockDramaData()
     assert data.work is not None
     canonical_before = data.work.model_dump_json()
-    plugin = DramaPlugin.load(ROOT, mock_data=data)
+    plugin = DramaPlugin.load(ROOT, mock_data=data, legacy_reads=True)
     calls = []
     original = plugin.tools.invoke
 
@@ -251,35 +251,45 @@ async def test_interrupted_call_restores_blocked_not_unknown_or_redispatched(rep
         return await success(inputs)
     resumed = engine_for(recovered, replay_safe=replay_safe)
     restored = resumed.restore(engine.serialize(run.run_id))
-    assert restored.state == RuntimeState.BLOCKED
-    assert restored.wait_reason == "INTERRUPTED_CAPABILITY"
-    assert resumed.next_action(run.run_id).kind == ActionKind.STOP
-    await resumed.run(run.run_id)
-    assert not calls
+    assert restored.state == (RuntimeState.READY if replay_safe else RuntimeState.FAILED)
+    result = await resumed.run(run.run_id)
     if replay_safe:
-        await resumed.retry(run.run_id)
-        assert (await resumed.run(run.run_id)).state == RuntimeState.SUCCEEDED
+        assert result.state == RuntimeState.SUCCEEDED
         assert calls == ["run-1:0"]
     else:
-        with pytest.raises(ValueError, match="not declared replay-safe"):
-            await resumed.retry(run.run_id)
+        assert result.last_result.code == "INTERRUPTED_UNSAFE_CAPABILITY"
+        assert not calls
 
 
 @pytest.mark.asyncio
 async def test_recoverable_failure_is_internal_bounded_and_not_a_user_decision():
+    calls = []
     async def unavailable(inputs):
-        raise RuntimeError("secret/full Canon content must not persist")
+        calls.append(inputs.operation_id)
+        return CapabilityResult(status=ResultStatus.RETRYABLE_FAILURE, code="TEXT_TIMEOUT")
     engine = engine_for(unavailable)
     run = create(engine)
-    blocked = await engine.run(run.run_id)
-    assert blocked.state == RuntimeState.BLOCKED and blocked.step_attempts == 1
-    assert "secret" not in engine.serialize(run.run_id)
-    await engine.retry(run.run_id)
-    assert (await engine.run(run.run_id)).state == RuntimeState.BLOCKED
-    failed = await engine.retry(run.run_id)
-    assert failed.state == RuntimeState.FAILED and failed.last_result.code == "RETRY_LIMIT_REACHED"
+    failed = await engine.run(run.run_id)
+    assert failed.state == RuntimeState.FAILED and failed.step_attempts == 2
+    assert failed.last_result.code == "RETRY_LIMIT_REACHED"
+    assert calls == ["run-1:0", "run-1:0"]
     with pytest.raises(ValueError, match="not waiting"):
         engine.decision_id(run.run_id)
+
+
+@pytest.mark.asyncio
+async def test_unexpected_internal_failure_is_hard_and_safe():
+    calls = []
+    async def broken(inputs):
+        calls.append(inputs.operation_id)
+        raise RuntimeError("secret/full Canon content must not persist")
+    engine = engine_for(broken)
+    run = create(engine)
+    failed = await engine.run(run.run_id)
+    assert failed.state == RuntimeState.FAILED and failed.step_attempts == 1
+    assert failed.last_result.code == "CAPABILITY_EXECUTION_ERROR"
+    assert "secret" not in engine.serialize(run.run_id)
+    assert len(calls) == 1
 
 
 @pytest.mark.asyncio
@@ -328,9 +338,9 @@ async def test_unregistered_capability_cannot_fall_through_to_any_legacy_tool():
     engine = RuntimeEngine(bridge)
     run = engine.create_run(work_id="work-1", mode=RunMode.PRODUCTION)
     blocked = await engine.run(run.run_id)
-    assert blocked.state == RuntimeState.BLOCKED
+    assert blocked.state == RuntimeState.FAILED
     assert blocked.last_result.code == "CAPABILITY_NOT_REGISTERED"
-    with pytest.raises(ValueError, match="not declared replay-safe"):
+    with pytest.raises(ValueError, match="Only a blocked"):
         await engine.retry(run.run_id)
 
 

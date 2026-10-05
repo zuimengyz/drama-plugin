@@ -57,7 +57,7 @@ async def phase(name: str, directory: Path, behavior: str, label: str | None) ->
          patch("drama_plugin.professional.compile_prompt_projection", forbidden), \
          patch("drama_plugin.hosts.cinematic_projection.project", forbidden), \
          patch("drama_plugin.visual.video_prompt.compile_request_ir", forbidden):
-        async with DramaPlugin.load(PLUGIN, mock_data=data, production_artifact_roots=(PROJECT / "S02-design",),
+        async with DramaPlugin.load(PLUGIN, mock_data=data, legacy_reads=True, production_artifact_roots=(PROJECT / "S02-design",),
                 ledger_path=database, target_transports={"offline-replay": transport} if transport else {},
                 target_reviewer=MockReviewer(), target_audio=ApprovedAudioConsumer()) as plugin:
             assert plugin.execution is not None

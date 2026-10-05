@@ -50,7 +50,7 @@ async def test_each_formal_author_projects_the_same_shared_policy(role):
         assert ENV['DRAMA_PLUGIN_TEXT_COMPOSITION_API_KEY'] not in json.dumps(body)
         return response(model_output(role))
     c,d,p=compose_authors(load_config(environment=POLICY_ENV).text_composition,SKILLS,transport=httpx.MockTransport(handler))
-    if role=='canon':assert await c.author(request())==canon()
+    if role=='canon':assert (await c.author(request())).work==canon().work
     elif role=='direction':await d.author(request(role))
     else:await p.design(request(role))
     assert len(calls)==1

@@ -6,8 +6,9 @@ import asyncio
 import fcntl
 import hashlib
 import os
+import time
 from pathlib import Path
-from typing import AsyncIterator
+from typing import AsyncIterator, Literal, overload
 
 from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.generation.contracts import (
@@ -56,20 +57,26 @@ class DurableRunStore:
         local-file lock is deliberately not a distributed lease or sender claim.
         """
         local = self._locks.setdefault(run_id, asyncio.Lock())
-        async with local:
+        await asyncio.wait_for(local.acquire(),timeout=30)
+        try:
             name = hashlib.sha256(run_id.encode("utf-8")).hexdigest() + ".lock"
             fd = os.open(self._lock_directory / name, os.O_CREAT | os.O_RDWR, 0o600)
             try:
+                deadline = time.monotonic() + 30
                 while True:
                     try:
                         fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
                         break
                     except BlockingIOError:
+                        if time.monotonic() >= deadline:
+                            raise TimeoutError("RUNTIME_OWNER_BUSY")
                         await asyncio.sleep(0.02)
                 yield
             finally:
                 fcntl.flock(fd, fcntl.LOCK_UN)
                 os.close(fd)
+        finally:
+            local.release()
 
 
 class DurableProductionPackageStore:
@@ -147,7 +154,17 @@ class DurableGateFindingStore:
         identity = "gate-decision:" + sha256_canonical(decision)
         ref = ArtifactReference(owner="gate-decision", artifact_ref=identity, version=1)
         self.ledger.put_artifact("gate-decision", ref, decision.scope, sha256_canonical(decision), decision)
-        self.ledger.put_index("latest-decision", run_id, ref, scope=decision.scope)
+        # The owner input pins its exact completed decision. The lookup index
+        # can then be rebuilt without guessing another run's or newer decision.
+        with self.ledger.transaction(write=True) as db:
+            row = db.execute("SELECT value_json FROM ledger_index WHERE index_type='governance-input' AND index_key=?", (run_id,)).fetchone()
+            if row is not None:
+                inputs = GovernanceInput.model_validate_json(row[0]).model_copy(update={"decision_ref": ref})
+                db.execute("UPDATE ledger_index SET value_json=? WHERE index_type='governance-input' AND index_key=?",
+                    (inputs.model_dump_json(by_alias=True), run_id))
+            db.execute("""INSERT INTO ledger_index VALUES ('latest-decision',?,?,?,?,?)
+                ON CONFLICT(index_type,index_key) DO UPDATE SET value_json=excluded.value_json""",
+                (run_id,decision.scope.work_id,decision.scope.scene_id,decision.scope.shot_id,ref.model_dump_json(by_alias=True)))
         return ref
 
     def decision(self, ref: ArtifactReference) -> GateDecision:
@@ -160,7 +177,24 @@ class DurableGateFindingStore:
         return item
 
     def latest(self, run_id: str) -> ArtifactReference:
-        return ArtifactReference.model_validate(self.ledger.get_index("latest-decision", run_id))
+        ref: ArtifactReference | None
+        try:
+            ref = ArtifactReference.model_validate(self.ledger.get_index("latest-decision", run_id))
+        except KeyError:
+            run = self.ledger.load_run(run_id)
+            ref = self.inputs(run_id).decision_ref
+            if ref is None:
+                exact = tuple(r for r in (run.last_result.artifact_refs if run.last_result else ()) if r.owner == "gate-decision")
+                if len(exact) != 1:
+                    raise KeyError("Exact governance decision unavailable")
+                ref = exact[0]
+            decision = self.decision(ref)
+            if decision.scope != run.scope or decision.mode != run.mode:
+                raise ValueError("Governance decision recovery scope/mode conflict")
+            self.ledger.put_index("latest-decision",run_id,ref,scope=run.scope)
+        assert ref is not None
+        self.decision(ref)
+        return ref
 
     def bind(self, run_id: str, inputs: GovernanceInput) -> None:
         inputs = GovernanceInput.model_validate(inputs.model_dump())
@@ -300,8 +334,45 @@ class DurableGenerationArtifactStore:
             raise ValueError("Prepared artifact belongs to another Run")
         self.ledger.put_index("prepared", run_id, ref, scope=self.ledger.load_run(run_id).scope)
 
-    def prepared(self, run_id: str) -> ArtifactReference:
-        return ArtifactReference.model_validate(self.ledger.get_index("prepared", run_id))
+    @overload
+    def prepared(self, run_id: str, *, required: Literal[True] = True) -> ArtifactReference: ...
+
+    @overload
+    def prepared(self, run_id: str, *, required: bool) -> ArtifactReference | None: ...
+
+    def prepared(self, run_id: str, *, required: bool = True) -> ArtifactReference | None:
+        try:
+            ref = ArtifactReference.model_validate(self.ledger.get_index("prepared", run_id))
+        except KeyError:
+            inputs = self.inputs(run_id)
+            goal = GovernanceInput.model_validate(self.ledger.get_index("governance-input", run_id))
+            exact = inputs.cached_preparation_ref
+            if exact is not None:
+                item = self.get(exact, GenerationPreparation)
+                if item.task != inputs.task or item.source_package_ref != goal.package_ref:
+                    raise ValueError("Prepared input authority conflict")
+            else:
+                candidates = []
+                with self.ledger.transaction() as db:
+                    rows = db.execute("SELECT artifact_id FROM immutable_artifact WHERE artifact_type='generation-preparation' AND work_id=? AND scene_id IS ? AND shot_id IS ? LIMIT 257", (self.ledger.load_run(run_id).scope.work_id,self.ledger.load_run(run_id).scope.scene_id,self.ledger.load_run(run_id).scope.shot_id)).fetchall()
+                if len(rows) > 256:
+                    raise ValueError("Exact preparation recovery bound exceeded")
+                for row in rows:
+                    candidate = ArtifactReference(owner="generation-preparation", artifact_ref=row[0], version=1)
+                    item = self.get(candidate, GenerationPreparation)
+                    if item.task == inputs.task and item.source_package_ref == goal.package_ref:
+                        candidates.append(candidate)
+                if not candidates and not required:
+                    return None
+                if len(candidates) != 1:
+                    raise KeyError("Exact preparation cannot be uniquely resolved")
+                exact = candidates[0]
+            self.set_prepared(run_id, exact)
+            return exact
+        # An explicit retained reference is always checked, even before READY.
+        # Missing/corrupt artifacts or multiple candidates are not optional absence.
+        self.get(ref, GenerationPreparation)
+        return ref
 
     def claim_rebuild(self, run_id: str) -> bool:
         return self.ledger.put_index("generation-rebuild", run_id, 1,
@@ -311,7 +382,30 @@ class DurableGenerationArtifactStore:
         try:
             return ArtifactReference.model_validate(self.ledger.get_index("final-prompt-key", key))
         except KeyError:
-            return None
+            # The task itself remains in its input owner; this index is a projection.
+            with self.ledger.transaction() as db:
+                rows = db.execute("SELECT artifact_id FROM immutable_artifact WHERE artifact_type='final-prompt' LIMIT 257").fetchall()
+                inputs = db.execute("SELECT value_json FROM ledger_index WHERE index_type='generation-input' LIMIT 257").fetchall()
+            if len(rows) > 256 or len(inputs) > 256:
+                raise ValueError("Exact FinalPrompt recovery bound exceeded")
+            tasks = [GenerationInput.model_validate_json(row[0]).task for row in inputs]
+            matches = []
+            for row in rows:
+                ref = ArtifactReference(owner="final-prompt", artifact_ref=row[0], version=1)
+                final = self.get(ref, FinalPromptArtifact)
+                for task in tasks:
+                    if final.matches_task(task) and key == sha256_canonical([
+                            final.source_package_ref.model_dump(mode="json"), task.model_dump(mode="json"),
+                            final.generator_policy_fingerprint]):
+                        matches.append(ref)
+            unique = set(matches)
+            if len(unique) > 1:
+                raise ValueError("Conflicting exact FinalPrompt recovery")
+            if not unique:
+                return None
+            ref = unique.pop()
+            self.register_final(key, ref)
+            return ref
 
     def register_final(self, key: str, ref: ArtifactReference) -> None:
         final = self.get(ref, FinalPromptArtifact)

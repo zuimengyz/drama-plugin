@@ -138,7 +138,7 @@ async def test_s02_target_shadow_uses_no_legacy_orchestration_and_restores(bound
     data, directory = fixture
     before = data.work.model_dump_json()
     path = tmp_path / "ledger.sqlite3"
-    first = DramaPlugin.load(ROOT, mock_data=data, production_artifact_roots=(directory,), ledger_path=path)
+    first = DramaPlugin.load(ROOT, mock_data=data, legacy_reads=True, production_artifact_roots=(directory,), ledger_path=path)
     first.execution_references.register(binding)
     def forbidden(*args, **kwargs):
         pytest.fail("Target crossed into Legacy orchestration or transport")
@@ -154,7 +154,7 @@ async def test_s02_target_shadow_uses_no_legacy_orchestration_and_restores(bound
         task=GenerationTask(input_mode="image_to_video", native_audio="REQUIRED"))
     partial = await first.runtime.run(run.run_id, max_ticks=5)
     assert partial.state == RuntimeState.READY
-    second = DramaPlugin.load(ROOT, mock_data=data, production_artifact_roots=(directory,), ledger_path=path)
+    second = DramaPlugin.load(ROOT, mock_data=data, legacy_reads=True, production_artifact_roots=(directory,), ledger_path=path)
     assert (await second.runtime.recover_run(run.run_id)) == partial
     done = await second.runtime.run(run.run_id)
     assert done.state == RuntimeState.SUCCEEDED and len(done.last_result.artifact_refs) == 3
@@ -166,13 +166,13 @@ async def test_s02_target_shadow_uses_no_legacy_orchestration_and_restores(bound
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("task,expected", [
-    (GenerationTask(target_model="vidu-reference-to-video"), RuntimeState.WAITING_EXTERNAL),
-    (GenerationTask(input_mode="reference"), RuntimeState.BLOCKED),
+    (GenerationTask(target_model="vidu-reference-to-video"), RuntimeState.FAILED),
+    (GenerationTask(input_mode="reference"), RuntimeState.FAILED),
 ])
 async def test_target_failure_has_no_old_prompt_or_route_fallback(generation_fixture, tmp_path, monkeypatch,
                                                                    task, expected):
     data, directory = generation_fixture
-    plugin = DramaPlugin.load(ROOT, mock_data=data, production_artifact_roots=(directory,),
+    plugin = DramaPlugin.load(ROOT, mock_data=data, legacy_reads=True, production_artifact_roots=(directory,),
         ledger_path=tmp_path / "ledger.sqlite3")
     def forbidden(*args, **kwargs):
         pytest.fail("Target failure fell back to a Legacy execution entry")
@@ -185,14 +185,14 @@ async def test_target_failure_has_no_old_prompt_or_route_fallback(generation_fix
     result = await plugin.runtime.run(run.run_id)
     assert result.state == expected
     decision = plugin.gate_findings.decision(plugin.gate_findings.latest(run.run_id))
-    assert decision.effect == ("CAPABILITY_ABSENT" if expected == RuntimeState.WAITING_EXTERNAL else "BLOCK")
+    assert decision.effect == ("CAPABILITY_ABSENT" if task.target_model == "vidu-reference-to-video" else "BLOCK")
 
 
 @pytest.mark.asyncio
 async def test_stale_reference_auto_reassembles_without_old_route(bound_fixture, monkeypatch):
     fixture, store, binding = bound_fixture
     data, directory = fixture
-    plugin = DramaPlugin.load(ROOT, mock_data=data, production_artifact_roots=(directory,),
+    plugin = DramaPlugin.load(ROOT, mock_data=data, legacy_reads=True, production_artifact_roots=(directory,),
         reference_execution_store=store)
     task = GenerationTask(input_mode="image_to_video", native_audio="REQUIRED")
     original = plugin.create_generation_run(work_id="work", scene_id="scene", shot_id="shot",
@@ -218,7 +218,7 @@ async def test_stale_reference_auto_reassembles_without_old_route(bound_fixture,
 async def test_provider_absence_finding_waits_without_old_provider(bound_fixture, tmp_path, monkeypatch):
     fixture, _, binding = bound_fixture
     data, directory = fixture
-    plugin = DramaPlugin.load(ROOT, mock_data=data, production_artifact_roots=(directory,),
+    plugin = DramaPlugin.load(ROOT, mock_data=data, legacy_reads=True, production_artifact_roots=(directory,),
         ledger_path=tmp_path / "ledger.sqlite3")
     plugin.execution_references.register(binding)
     def forbidden(*args, **kwargs):
@@ -234,7 +234,7 @@ async def test_provider_absence_finding_waits_without_old_provider(bound_fixture
     run = plugin.create_governed_run(work_id="work", scene_id="scene", shot_id="shot",
         mode=RunMode.EXPERIMENT, run_id="provider-unavailable", finding_refs=(ref,))
     result = await plugin.runtime.run(run.run_id)
-    assert result.state == RuntimeState.WAITING_EXTERNAL
+    assert result.state == RuntimeState.FAILED
     decision = plugin.gate_findings.decision(plugin.gate_findings.latest(run.run_id))
     assert decision.effect == "CAPABILITY_ABSENT"
 

@@ -128,20 +128,22 @@ async def test_goal_to_package_single_runtime_and_e1_preparation(tmp_path, mode)
 
 
 @pytest.mark.parametrize("owner,cursor", [("canon_author", 1), ("direction_author", 2), ("professional_author", 3)])
-async def test_absent_author_waits_then_resumes_correct_owner(tmp_path, owner, cursor):
+async def test_absent_author_is_true_configuration_hard_block(tmp_path, owner, cursor):
     a = Authors()
     p = plugin(tmp_path, a, **{owner: None})
     run = p.create_film_run(work_id="film", source=SOURCE, mode=RunMode.EXPERIMENT)
     waiting = await p.runtime.run(run.run_id)
-    assert waiting.state == RuntimeState.WAITING_EXTERNAL and waiting.cursor == cursor
-    assert waiting.last_result.external_ref.owner == "capability-absence"
-    decision = p.gate_findings.decision(p.gate_findings.latest(run.run_id))
-    assert decision.effect == GateEffect.CAPABILITY_ABSENT
+    assert waiting.state == RuntimeState.FAILED and waiting.cursor == cursor
+    assert waiting.last_result.external_ref is None
+    assert waiting.last_result.recovery_class.value == "HARD_BLOCK"
+    assert waiting.step_attempts == 0 and waiting.execution_revision is None
+    assert waiting.last_result.failure_stage == "EXECUTION_INSPECTION"
+    assert waiting.last_result.exception_type == "CapabilityAbsent"
     if owner == "professional_author":
         p.creative.professional_author.author = a
     else:
         setattr(p.creative, owner, a)
-    assert (await p.resume_film_run(run.run_id)).state == RuntimeState.SUCCEEDED
+    assert (await p.runtime.run(run.run_id)).state == RuntimeState.FAILED
 
 
 async def test_adoption_exact_hash_dependency_recheck_and_independent_identity(tmp_path):
@@ -171,7 +173,7 @@ async def test_adoption_stale_candidate_is_blocked(tmp_path):
     await p.decide_target_run(run.run_id, decision_id=p.runtime.decision_id(run.run_id), accepted=True, source_ref=cp.candidate_ref)
     p.creative_versions.invalidate(cp.refs[3])
     done = await p.runtime.run(run.run_id)
-    assert done.state == RuntimeState.BLOCKED
+    assert done.state == RuntimeState.FAILED
     assert p.creative.state.checkpoint(run.run_id).package_ref is None
 
 
@@ -241,7 +243,7 @@ async def test_wrong_object_or_version_uses_hs1(tmp_path, violation):
         new = p.create_film_run(work_id="film", source_ref=p.creative.state.input(run.run_id).source_ref,
             mode=RunMode.EXPERIMENT, base_refs=(*cp.refs[:-1], bad))
     done = await p.runtime.run(new.run_id)
-    assert done.state == RuntimeState.BLOCKED
+    assert done.state == RuntimeState.FAILED
     decision = p.gate_findings.decision(p.gate_findings.latest(new.run_id))
     assert decision.risk_families == (HardStopFamily.HS1,)
 
@@ -270,12 +272,11 @@ async def test_missing_references_use_same_runtime_child_and_no_provider(tmp_pat
     p = plugin(tmp_path)
     run = p.create_film_run(work_id="film", source=SOURCE, mode=RunMode.EXPERIMENT,
         route=RouteRequest(input_mode="image_to_video"))
-    assert (await finish(p, run)).state == RuntimeState.SUCCEEDED
-    cp = p.creative.state.checkpoint(run.run_id)
-    assert len(cp.child_runs) == 1
-    child = p.runtime.store.load(cp.child_runs[0])
-    assert child.state == RuntimeState.WAITING_EXTERNAL and child.workflow_id == "reference-prerequisite:v1"
-    assert child.last_result.external_ref.owner == "capability-absence"
+    result = await p.runtime.run(run.run_id)
+    assert result.state == RuntimeState.FAILED and result.last_result.recovery_class.value == "HARD_BLOCK"
+    child = p.runtime.store.load(p.creative.state.checkpoint(run.run_id).child_runs[0])
+    assert child.state == RuntimeState.FAILED and child.workflow_id == "reference-prerequisite:v1"
+    assert child.last_result.external_ref is None and child.last_result.recovery_class.value == "HARD_BLOCK"
 
 
 @pytest.mark.parametrize("domain,facts", [("SOUND", {"dialogue": "rewrite"}), ("CAMERA", {"ambience": "sound"}),
@@ -325,11 +326,11 @@ async def test_revision_cycle_and_round_bound(tmp_path):
     two = p.create_creative_revision_run(one.run_id, RevisionRequest(owner=Authority.DIRECTION,
         target_ref=refs(p, one.run_id, Kind.SHOT)[0], finding_ref=finding, instruction="same correction", depth=2))
     done = await p.runtime.run(two.run_id)
-    assert done.state == RuntimeState.BLOCKED and done.wait_reason == "REVISION_CYCLE_OR_DEPTH_BOUND"
+    assert done.state == RuntimeState.FAILED and done.last_result.code == "REVISION_CYCLE_OR_DEPTH_BOUND"
     new = p.create_film_run(work_id="film", source=SOURCE, mode=RunMode.EXPERIMENT)
-    p.creative.state.save(new.run_id, new.scope, CreativeCheckpoint(author_rounds=6))
+    p.creative.state.save(new.run_id, new.scope, CreativeCheckpoint(author_rounds=p.creative.state.input(new.run_id).max_author_rounds))
     bounded = await p.runtime.run(new.run_id)
-    assert bounded.state == RuntimeState.BLOCKED and bounded.wait_reason == "AUTHOR_ROUND_BOUND"
+    assert bounded.state == RuntimeState.FAILED and bounded.last_result.code == "AUTHOR_ROUND_BOUND"
 
 
 def test_no_department_catalog_or_creativity_in_runtime_workflow():
@@ -426,7 +427,10 @@ async def test_missing_professional_artifact_auto_revises_exact_version_with_bou
         def __init__(self):
             super().__init__()
             self.requests = []
+            self.feedback = []
         async def design(self, request):
+            from drama_plugin.creative_engine.diagnostics import structural_feedback
+            self.feedback.append(structural_feedback.get())
             self.requests.append(request)
             designs = await super().design(request)
             return designs[:-1] if len(self.requests) == 1 else designs
@@ -436,14 +440,14 @@ async def test_missing_professional_artifact_auto_revises_exact_version_with_bou
     assert (await finish(p, run)).state == RuntimeState.SUCCEEDED
     assert len(a.requests) == 2
     repair = a.requests[1]
-    assert repair.revision.owner == Authority.PROFESSIONAL and repair.finding_refs
-    assert p.creative_versions.resolve(repair.revision.target_ref).kind == Kind.PROFESSIONAL
+    assert repair.revision is None
+    assert a.feedback[1].code == "PROFESSIONAL_DOMAIN_AUTHORITY_MISMATCH"
     cp = p.creative.state.checkpoint(run.run_id)
     assert cp.author_rounds == 4 and cp.package_ref
-    assert p.creative_versions.stale(repair.revision.target_ref)
+    assert len([v for v in p.creative_versions.versions() if v.kind == Kind.PROFESSIONAL]) == 4
 
 
-async def test_professional_incomplete_model_stops_after_two_rounds(tmp_path):
+async def test_professional_incomplete_model_stops_after_five_rounds(tmp_path):
     class Missing(Authors):
         async def design(self, request):
             self.calls.append("professional")
@@ -452,5 +456,9 @@ async def test_professional_incomplete_model_stops_after_two_rounds(tmp_path):
     p = plugin(tmp_path, a)
     run = p.create_film_run(work_id="film", source=SOURCE, mode=RunMode.EXPERIMENT)
     result = await p.runtime.run(run.run_id)
-    assert result.state == RuntimeState.BLOCKED and result.wait_reason == "PROFESSIONAL_OBLIGATION_UNRESOLVED"
-    assert a.calls.count("professional") == 2
+    assert result.state == RuntimeState.FAILED and result.last_result.code == "RETRY_LIMIT_REACHED"
+    assert a.calls.count("professional") == 5
+    assert result.step_attempts == result.step_retry_limit == 5
+    calls = a.calls[:]
+    assert (await p.runtime.run(run.run_id)) == result
+    assert a.calls == calls

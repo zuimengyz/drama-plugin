@@ -7,6 +7,7 @@ import json
 import pytest
 from pydantic import ValidationError
 
+from test_target_execution import recorded_video, generation_fixture
 from test_production_package import fixture, offline, load  # Reuse the unchanged T2 approved-owner fixture.
 from drama_plugin.contracts.base import dump_contract, sha256_canonical
 from drama_plugin.governance import (
@@ -14,7 +15,7 @@ from drama_plugin.governance import (
     GateFindingStore, GovernanceInput, HardStopFamily,
 )
 from drama_plugin.governance.policy import WORKFLOW
-from drama_plugin.runtime import ArtifactReference, RunMode, RuntimeScope, RuntimeState
+from drama_plugin.runtime import ArtifactReference, RunMode, RuntimeScope, RuntimeState, RecoveryClass
 from drama_plugin.runtime.engine import RuntimeEngine
 
 SCOPE = RuntimeScope(work_id="work", scene_id="scene", shot_id="shot")
@@ -133,18 +134,22 @@ async def test_actual_package_stale_auto_reassembles_once_without_host_user_or_o
     await plugin.aclose()
 
 
-@pytest.mark.parametrize("code,state,effect", [(K.PACKAGE_SCOPE_MISMATCH,"BLOCKED",E.BLOCK),
-    (K.SUBMISSION_UNCERTAIN,"BLOCKED",E.BLOCK),(K.CAPABILITY_NOT_IMPLEMENTED,"WAITING_EXTERNAL",E.CAPABILITY_ABSENT),
-    (K.LEGACY_ENTRY_REJECTED,"FAILED",E.LEGACY_REJECT),(K.QUALITY_COVERAGE_RISK,"WAITING_EXTERNAL",E.REVIEW_REQUIRED)])
+@pytest.mark.parametrize("code,state,effect", [(K.PACKAGE_SCOPE_MISMATCH,"FAILED",E.BLOCK),
+    (K.SUBMISSION_UNCERTAIN,"FAILED",E.BLOCK),(K.CAPABILITY_NOT_IMPLEMENTED,"FAILED",E.CAPABILITY_ABSENT),
+    (K.LEGACY_ENTRY_REJECTED,"FAILED",E.LEGACY_REJECT),(K.QUALITY_COVERAGE_RISK,"WAITING_USER",E.REVIEW_REQUIRED)])
 async def test_runtime_routes_effects_instead_of_generic_gate_failed(fixture,code,state,effect):
     plugin=load(fixture)
     mode=RunMode.PRODUCTION if effect==E.REVIEW_REQUIRED else RunMode.EXPERIMENT
     done=await start(plugin,mode=mode,findings=(finding(code,required=True),))
     assert done.state==state and plugin.gate_findings.decision(plugin.gate_findings.latest(done.run_id)).effect==effect
     if effect==E.BLOCK:
-        with pytest.raises(ValueError,match="replay-safe"):await plugin.runtime.retry(done.run_id)
-    if effect in {E.CAPABILITY_ABSENT,E.REVIEW_REQUIRED}:
-        assert done.last_result.external_ref.owner==("capability-absence" if effect==E.CAPABILITY_ABSENT else "quality-review")
+        with pytest.raises(ValueError,match="blocked"):await plugin.runtime.retry(done.run_id)
+        assert done.last_result.recovery_class == RecoveryClass.HARD_BLOCK
+    if effect==E.CAPABILITY_ABSENT:
+        assert done.last_result.recovery_class==RecoveryClass.HARD_BLOCK and done.last_result.external_ref is None
+    if effect==E.REVIEW_REQUIRED:
+        assert plugin.runtime.next_action(done.run_id).decision.category.value=="ART_APPROVAL"
+        assert done.last_result.artifact_refs==(plugin.gate_findings.latest(done.run_id),)
     await plugin.aclose()
 
 
@@ -161,12 +166,13 @@ async def test_genuine_user_decision_and_restore_reuses_foundation_boundary(fixt
     await plugin.aclose();await restored.aclose()
 
 
-async def test_unimplemented_maintenance_reports_absence_never_user_or_silent_continue(fixture):
+async def test_receipt_maintenance_without_task_identity_hard_blocks_never_fake_wait(fixture):
     plugin=load(fixture)
     done=await start(plugin,findings=(finding(K.RECEIPT_RECONCILIATION),))
-    assert done.state==RuntimeState.WAITING_EXTERNAL and done.last_result.external_ref.owner=="capability-absence"
+    assert done.state==RuntimeState.FAILED and done.last_result.code=="RECONCILIATION_IDENTITY_OR_OWNER_ABSENT"
+    assert done.last_result.recovery_class==RecoveryClass.HARD_BLOCK and done.last_result.external_ref is None
     decision=plugin.gate_findings.decision(plugin.gate_findings.latest(done.run_id))
-    assert decision.effect==E.CAPABILITY_ABSENT and decision.user_decision is None
+    assert decision.effect==E.AUTO_MAINTAIN and decision.user_decision is None
     await plugin.aclose()
 
 
@@ -199,7 +205,7 @@ async def test_stale_checkpoint_restore_repairs_once_and_missing_author_pin_is_n
     restored.runtime.restore(plugin.runtime.serialize(run.run_id))
     original=data.shot.model_dump_json()
     blocked=await restored.runtime.run(run.run_id)
-    assert blocked.state==RuntimeState.BLOCKED and blocked.last_result.code=="TECHNICAL_MAINTENANCE_EXHAUSTED"
+    assert blocked.state==RuntimeState.FAILED and blocked.last_result.code=="TECHNICAL_MAINTENANCE_EXHAUSTED"
     assert data.shot.model_dump_json()==original and restored.gate_findings.maintenance_count(run.run_id)==1
     assert restored.gate_findings.decision(restored.gate_findings.latest(run.run_id)).user_decision is None
     await plugin.aclose();await restored.aclose()
@@ -218,12 +224,29 @@ def test_only_five_real_user_decision_categories(code,category):
 def test_art_approval_cannot_silently_approve_an_unrelated_cost_decision(mode):
     result=GateGovernor(GateFindingStore()).govern((finding(K.ART_APPROVAL_REQUIRED),finding(K.COST_APPROVAL_REQUIRED)),
         scope=SCOPE,mode=mode,package_ref=PKG)
-    assert result.effect==E.CAPABILITY_ABSENT and result.user_decision is None
+    assert result.effect==E.WAIT_USER and result.user_decision.category.value=="ART_APPROVAL"
+    assert len(result.finding_refs)==2  # The cost category remains independent.
 
 
 async def test_bad_canon_scope_does_not_create_a_second_derived_missing_package_hard_stop(fixture):
     fixture[0].shot.scene_id="wrong-scene"
     plugin=load(fixture);blocked=await start(plugin)
     decision=plugin.gate_findings.decision(plugin.gate_findings.latest(blocked.run_id))
-    assert blocked.state==RuntimeState.BLOCKED and decision.risk_families==("HS1",)
+    assert blocked.state==RuntimeState.FAILED and decision.risk_families==("HS1",)
     await plugin.aclose()
+
+async def test_receipt_reconciliation_waits_only_for_existing_exact_owner_identity(generation_fixture,tmp_path,recorded_video):
+    from test_target_execution import setup,checkpoint
+    plugin,replay,inputs=await setup(generation_fixture,tmp_path,recorded_video,behavior="running")
+    await plugin.execution.execute(inputs)  # Explicit offline ReplayTransport only.
+    operation,_,_=plugin.execution._approved(inputs)
+    package=operation.source_package_ref
+    ref=checkpoint(plugin,inputs).receipt_ref
+    f=GateFinding.classified(K.RECEIPT_RECONCILIATION,owner='target-execution',scope=SCOPE,evidence_ref=ref)
+    pending=await start(plugin,package_ref=package,findings=(f,),name='known-receipt-wait')
+    assert pending.state==RuntimeState.WAITING_EXTERNAL and pending.last_result.external_ref==ref
+    assert pending.last_result.recovery_class==RecoveryClass.WAIT_EXTERNAL
+    unknown=f.model_copy(update={'evidence_ref':ArtifactReference(owner='provider-receipt',artifact_ref='not-persisted',version=1)})
+    blocked=await start(plugin,package_ref=package,findings=(unknown,),name='unknown-receipt')
+    assert blocked.state==RuntimeState.FAILED and blocked.last_result.code=='RECONCILIATION_IDENTITY_OR_OWNER_ABSENT'
+    assert blocked.last_result.external_ref is None

@@ -1,5 +1,6 @@
 """IN_MEMORY_TEST_FOUNDATION; one authoritative final artifact per package/task/policy."""
 from __future__ import annotations
+from typing import Literal, overload
 
 from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.generation.contracts import (
@@ -61,7 +62,15 @@ class GenerationArtifactStore:
         self.get(ref, GenerationPreparation)
         self._prepared[run_id] = ref
 
-    def prepared(self, run_id: str) -> ArtifactReference:
+    @overload
+    def prepared(self, run_id: str, *, required: Literal[True] = True) -> ArtifactReference: ...
+
+    @overload
+    def prepared(self, run_id: str, *, required: bool) -> ArtifactReference | None: ...
+
+    def prepared(self, run_id: str, *, required: bool = True) -> ArtifactReference | None:
+        if not required and run_id not in self._prepared:
+            return None
         return self._prepared[run_id]
 
     def claim_rebuild(self, run_id: str) -> bool:
@@ -77,3 +86,10 @@ class GenerationArtifactStore:
         if key in self._finals and self._finals[key] != ref:
             raise ValueError("One task cannot have competing authoritative FinalPrompt artifacts")
         self._finals[key] = ref
+
+
+# Both existing implementations expose the same owner operations.
+from typing import TYPE_CHECKING, TypeAlias
+if TYPE_CHECKING:
+    from drama_plugin.persistence.stores import DurableGenerationArtifactStore
+GenerationStore: TypeAlias = "GenerationArtifactStore | DurableGenerationArtifactStore"

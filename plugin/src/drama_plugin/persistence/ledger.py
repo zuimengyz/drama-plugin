@@ -57,7 +57,7 @@ INDEX_TYPES = frozenset({
     "governance-input", "generation-input", "latest-decision", "prepared",
     "governance-maintenance", "generation-rebuild", "final-prompt-key",
     "execution-reference-current",
-    "media-proof-authorization", "media-proof-cost-terms", "human-media-review",
+    "media-proof-authorization", "media-proof-cost-terms", "human-media-review", "execution-recovery-authorization",
     "creative-integrity-reconciliation",
     "execution-input", "creative-input", "creative-checkpoint", "film-input", "film-checkpoint", "formal-media-current", "execution-live-grant",
 })
@@ -422,10 +422,10 @@ class ProductionLedger:
             from drama_plugin.execution.live_transport import FinancialTerms
             parsed_model = Authorization if index_type == "media-proof-authorization" else FinancialTerms
             value = parsed_model.model_validate(value.model_dump() if hasattr(value,"model_dump") else value)
-        elif index_type in {"latest-decision", "prepared", "final-prompt-key", "formal-media-current", "execution-live-grant", "human-media-review"}:
+        elif index_type in {"latest-decision", "prepared", "final-prompt-key", "formal-media-current", "execution-live-grant", "human-media-review", "execution-recovery-authorization"}:
             value = ArtifactReference.model_validate(value.model_dump() if hasattr(value, "model_dump") else value)
             expected = {"latest-decision": "gate-decision", "prepared": "generation-preparation",
-                "final-prompt-key": "final-prompt", "formal-media-current": "formal-media-registration", "execution-live-grant": "controlled-live-grant", "human-media-review":"creative-media-review"}[index_type]
+                "final-prompt-key": "final-prompt", "formal-media-current": "formal-media-registration", "execution-live-grant": "controlled-live-grant", "human-media-review":"creative-media-review", "execution-recovery-authorization":"user-decision"}[index_type]
             if value.owner != expected or value.version != 1:
                 raise ValueError("Ledger index points to the wrong artifact owner")
         elif type(value) is not int or value != 1:
@@ -439,7 +439,23 @@ class ProductionLedger:
                     raise ValueError("Ledger binding already set")
                 return False
             if old is not None and index_type == "execution-input" and old["value_json"] != encoded:
-                raise ValueError("Execution input binding is immutable")
+                from drama_plugin.execution.contracts import ExecutionInput
+                previous = ExecutionInput.model_validate_json(old["value_json"])
+                following = ExecutionInput.model_validate_json(encoded)
+                external = db.execute("SELECT 1 FROM immutable_artifact WHERE artifact_type='execution-operation' AND json_extract(body_json,'$.runId')=? LIMIT 1",(key,)).fetchone()
+                if (previous.model_dump(exclude={"authorization"}) != following.model_dump(exclude={"authorization"})
+                        or external is not None):
+                    raise ValueError("Execution input binding is immutable")
+                # Only a new exact cost receipt can replace authorization before intent reservation.
+                decision = db.execute("SELECT body_json FROM immutable_artifact WHERE artifact_id=? AND artifact_type='user-decision'",(following.authorization.approval_ref.artifact_ref,)).fetchone()
+                if decision is None:
+                    raise ValueError("Reauthorization requires exact durable cost decision")
+                from drama_plugin.persistence.review import UserDecisionRecord
+                receipt = UserDecisionRecord.model_validate_json(decision[0])
+                from drama_plugin.runtime.contracts import DecisionCategory
+                if (not receipt.accepted or receipt.category != DecisionCategory.COST_APPROVAL
+                        or receipt.run_id != key or receipt.scope != scope or receipt.source_ref != following.preparation_ref):
+                    raise ValueError("Reauthorization decision scope mismatch")
             if old is not None and old["value_json"] == encoded:
                 return False
             db.execute("""INSERT INTO ledger_index VALUES (?,?,?,?,?,?)

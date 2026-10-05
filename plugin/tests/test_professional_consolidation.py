@@ -170,7 +170,8 @@ async def test_case_d_wrong_professional_scope_stays_hs1_owned_by_governor(fixtu
         run_id="wrong-scope")
     blocked = await plugin.runtime.run(run.run_id)
     decision = plugin.gate_findings.decision(plugin.gate_findings.latest(run.run_id))
-    assert blocked.state == RuntimeState.BLOCKED and decision.risk_families == ("HS1",)
+    assert blocked.state == RuntimeState.FAILED and decision.risk_families == ("HS1",)
+    assert blocked.last_result.recovery_class.value == "HARD_BLOCK"
     await plugin.aclose()
 
 

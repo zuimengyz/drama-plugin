@@ -116,21 +116,27 @@ async def test_wrong_binding_identity_is_hs1(bound_fixture,corruption):
         key="work_id" if corruption=="wrong_media_work" else "shot_id"
         fixture[0].media[0]=fixture[0].media[0].model_copy(update={key:"other"})
     plugin=bound_load(bound_fixture);run=await prepare(plugin)
-    assert run.state==RuntimeState.BLOCKED
+    assert run.state==RuntimeState.FAILED
     decision=plugin.gate_findings.decision(plugin.gate_findings.latest(run.run_id))
     assert any(plugin.gate_findings.finding(r).risk_family==HardStopFamily.HS1 for r in decision.finding_refs)
 
 
 @pytest.mark.parametrize("corruption",["missing","hash_missing","identity_semantics_missing"])
-async def test_missing_true_required_media_is_hs4(bound_fixture,corruption):
+async def test_required_media_pending_waits_exact_identity_and_invalid_media_is_hs4(bound_fixture,corruption):
     f,store,binding=bound_fixture
     if corruption=="missing":f[0].media=[]
     elif corruption=="hash_missing":f[0].media[0]=f[0].media[0].model_copy(update={"content_hash":None})
     else:store.register(binding.model_copy(update={"version":2,"media":binding.media.model_copy(update={"semantics":("continuity",)})}))
     plugin=bound_load(bound_fixture);run=await prepare(plugin)
-    assert run.state==RuntimeState.BLOCKED
     decision=plugin.gate_findings.decision(plugin.gate_findings.latest(run.run_id))
-    assert any(plugin.gate_findings.finding(r).risk_family==HardStopFamily.HS4 for r in decision.finding_refs)
+    if corruption=="missing":
+        assert run.state==RuntimeState.WAITING_EXTERNAL
+        assert run.last_result.external_ref.artifact_ref==binding.media.media_id
+        assert run.last_result.recovery_class.value=="WAIT_EXTERNAL"
+        assert not decision.risk_families
+    else:
+        assert run.state==RuntimeState.FAILED and run.last_result.recovery_class.value=="HARD_BLOCK"
+        assert any(plugin.gate_findings.finding(r).risk_family==HardStopFamily.HS4 for r in decision.finding_refs)
 
 
 async def test_stale_reviewed_binding_auto_reassembles_without_user(bound_fixture,monkeypatch):
@@ -329,7 +335,7 @@ async def test_formal_parity_detects_missing_source_receipt(tmp_path):
     data=MockDramaData.empty()
     for key,model in (("work",Work),("script",Script),("episode",Episode),("scene",Scene),("shot",Shot)):setattr(data,key,model.model_validate(context[key]))
     data.media=[media];store=ReferenceExecutionStore();store.register(binding)
-    plugin=DramaPlugin.load(ROOT,mock_data=data,production_artifact_roots=(audit_module.PROJECT/"S02-design",),reference_execution_store=store)
+    plugin=DramaPlugin.load(ROOT,mock_data=data,legacy_reads=True, production_artifact_roots=(audit_module.PROJECT/"S02-design",),reference_execution_store=store)
     selected=await plugin.prompt_compiler.reader.selections(package)
     incomplete=coverage.model_copy(update={"entries":tuple(e for e in coverage.entries if e.domain!="LIGHTING")})
     with pytest.raises(AssertionError):audit_module.formal_required(package,ir,incomplete,plan,binding,selected,plugin.prompt_compiler.reader.dependencies)

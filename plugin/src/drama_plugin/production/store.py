@@ -37,3 +37,10 @@ class ProductionPackageStore:
         if reference.owner != "assembly-validation" or reference.version != 1:
             raise ValueError("Not an assembly validation reference")
         return self._validations[reference.artifact_ref]
+
+
+# Both existing implementations expose the same owner operations.
+from typing import TYPE_CHECKING, TypeAlias
+if TYPE_CHECKING:
+    from drama_plugin.persistence.stores import DurableProductionPackageStore
+PackageStore: TypeAlias = "ProductionPackageStore | DurableProductionPackageStore"

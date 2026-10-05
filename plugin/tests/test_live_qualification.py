@@ -28,6 +28,17 @@ async def prepared(tmp_path,monkeypatch,video):
     attempt=p.execution.store.get(checkpoint.attempt_ref,ProviderAttempt)
     return p,operation,request,attempt
 
+async def http_prepared(tmp_path,monkeypatch,video):
+    """The direct HTTP contract uses an exact Seedance identity, not Replay's."""
+    p,prior,request,_=await prepared(tmp_path,monkeypatch,video)
+    operation=ExecutionOperation.seal(**{**prior.model_dump(exclude={'fingerprint'}),'route':'seedance'})
+    request=request.model_copy(update={'operation_ref':operation.artifact_reference()})
+    attempt=ProviderAttempt.seal(scope=operation.scope,run_id=operation.run_id,
+        source_package_ref=operation.source_package_ref,operation_ref=operation.artifact_reference(),
+        provider='seedance',request_fingerprint=sha256_canonical(request),
+        client_identity=sha256_canonical([operation.artifact_reference().model_dump(mode='json',by_alias=True),'seedance',1]))
+    return p,operation,request,attempt
+
 async def no_reference(ref):
     raise CapabilityAbsent('REFERENCE_NOT_QUALIFIED')
 
@@ -37,7 +48,7 @@ def adapter(handler):
 
 @pytest.mark.asyncio
 async def test_http_exact_prompt_remote_identity_and_synthetic_ack_interrupt(tmp_path,monkeypatch,video):
-    p,op,request,attempt=await prepared(tmp_path,monkeypatch,video)
+    p,op,request,attempt=await http_prepared(tmp_path,monkeypatch,video)
     calls=[]
     def handle(req):
         calls.append(req)
@@ -59,7 +70,7 @@ async def test_http_exact_prompt_remote_identity_and_synthetic_ack_interrupt(tmp
 
 @pytest.mark.asyncio
 async def test_configured_credentials_do_not_authorize_live_submission(tmp_path,monkeypatch,video):
-    p,op,request,attempt=await prepared(tmp_path,monkeypatch,video)
+    p,op,request,attempt=await http_prepared(tmp_path,monkeypatch,video)
     calls=[]
     transport=TargetHttpTransport(adapter(lambda r:calls.append(r) or httpx.Response(200,json={})),tmp_path/'acks',ledger=p.ledger)
     with pytest.raises(CapabilityAbsent,match='GRANT_REQUIRED'):
@@ -68,7 +79,7 @@ async def test_configured_credentials_do_not_authorize_live_submission(tmp_path,
 
 @pytest.mark.asyncio
 async def test_uncertain_ack_without_task_id_never_creates_second_operation(tmp_path,monkeypatch,video):
-    p,op,request,attempt=await prepared(tmp_path,monkeypatch,video)
+    p,op,request,attempt=await http_prepared(tmp_path,monkeypatch,video)
     calls=[]
     transport=TargetHttpTransport(adapter(lambda r:calls.append(r) or httpx.Response(200,json={'status':'running'})),tmp_path/'acks',ledger=p.ledger,qualification_only=True)
     with pytest.raises(PossiblySubmitted):

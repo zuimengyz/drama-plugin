@@ -2,8 +2,12 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from collections.abc import Awaitable, Callable
+from pydantic import TypeAdapter, ValidationError
 from drama_plugin.contracts.base import sha256_canonical
+from drama_plugin.contracts.source_pin import SourcePin
+from drama_plugin.generation.operation import resolve_profile
 from drama_plugin.creative_engine.contracts import Authority, Kind, RouteRequest, DependencyTask, RoutePlan, SourceBody, VersionRef
+from drama_plugin.creative_engine.diagnostics import AuthorResultFailure, AuthorUnavailable, run_author_capability, failure
 from drama_plugin.execution.contracts import ReviewedAVCandidate, CreativeMediaReview, ExecutionOperation
 from drama_plugin.execution.transport import CapabilityAbsent
 from drama_plugin.film.assembly import assemble, final_qa, validate_cues
@@ -11,12 +15,14 @@ from drama_plugin.film.contracts import (FilmAuthorRequest, FilmCanon, FilmDirec
     FilmShotBinding, FinalFilmCandidate, FinalTechnicalQA, FinalCreativeReview, FinalDelivery, FilmRevisionFeedback)
 from drama_plugin.film.ports import FilmCanonAuthor, FilmDirectionAuthor, FilmReviewer, ExecutionRecipeSource
 from drama_plugin.film.store import FilmStore
-from drama_plugin.generation.contracts import GenerationPreparation, GenerationTask
+from drama_plugin.generation.contracts import GenerationPreparation, GenerationTask, OwnerBindings
+from drama_plugin.generation.policy import MEDIA_WORKFLOWS, media_cursor
 from drama_plugin.governance.contracts import GateCode, GateFinding
 from drama_plugin.persistence.review import UserDecisionRecord
+from drama_plugin.runtime.policy import AUTHOR_CONTENT_ATTEMPT_LIMIT
 from drama_plugin.runtime.capabilities import TargetCapability
 from drama_plugin.runtime.contracts import (ArtifactReference, CapabilityInput, CapabilityResult, DecisionCategory,
-    ResultStatus, RunMode, RuntimeScope, RuntimeState, RuntimeRun)
+    ResultStatus, RunMode, RuntimeScope, RuntimeState, RuntimeRun, RecoveryClass, UserDecisionRequest, ExecutionInspection, ExecutionRevision)
 if TYPE_CHECKING:
     from drama_plugin.plugin import DramaPlugin
 
@@ -24,6 +30,8 @@ REVISION_WORKFLOW = 'final-film-revision:v1'
 REVISION_KEYS = ('execute','assemble','review','decision','deliver')
 KEYS = ('canon','direction','prepare','decision','adopt','execute','assemble','review','decision','deliver')
 WORKFLOW = 'source-to-final-film:v1'
+MEDIA_WORKFLOW = 'source-to-reviewed-media:v1'
+MEDIA_KEYS = ('canon','direction','prepare','decision','adopt','execute')
 
 class FilmCapabilities:
     def __init__(self, plugin: DramaPlugin, store: FilmStore, *, canon: FilmCanonAuthor | None = None,
@@ -35,23 +43,87 @@ class FilmCapabilities:
     def registrations(self) -> dict[str, TargetCapability]:
         methods = {'canon':self.canon,'direction':self.direction,'prepare':self.prepare,'decision':self.decision,
             'adopt':self.adopt,'execute':self.execute,'assemble':self.assemble,'review':self.review,'deliver':self.deliver}
-        return {'film.'+key+':v1':TargetCapability(self.guard(method), replay_safe=True) for key,method in methods.items()}
+        inspectors={'canon':self.inspect_canon_execution,'direction':self.inspect_direction_execution,'execute':self.inspect_media_execution}
+        return {'film.'+key+':v1':TargetCapability(self.guard(method), replay_safe=True,inspect_execution=inspectors.get(key)) for key,method in methods.items()}
+    def _author_inspection(self, inputs: CapabilityInput, role: str, fingerprint: str) -> ExecutionInspection:
+        value,cp=self.store.input(inputs.run_id),self.store.checkpoint(inputs.run_id)
+        if self.plugin.creative_versions.stale(value.source_ref):
+            raise ValueError("CREATIVE_EXECUTION_INPUT_STALE")
+        authoritative={"sourceRef":value.source_ref.model_dump(mode="json",by_alias=True),
+            "filmInput":value.model_dump(mode="json",by_alias=True),"scope":inputs.scope.model_dump(mode="json",by_alias=True)}
+        if role=='direction':
+            if cp.canon_ref is None:
+                raise ValueError("DIRECTION_CANON_PREREQUISITE_ABSENT")
+            self.store.author(cp.canon_ref,FilmCanon)
+            authoritative["canonRef"]=cp.canon_ref.model_dump(mode="json",by_alias=True)
+        fixed=cp.canon_ref if role=='canon' else cp.direction_ref
+        return ExecutionInspection(revision=ExecutionRevision(fingerprint=fingerprint,input_fingerprint=sha256_canonical(authoritative)),
+            retry_limit=AUTHOR_CONTENT_ATTEMPT_LIMIT,
+            completed=fixed is not None or self.plugin.creative_versions.has_author_output(inputs.operation_id,role))
+    def inspect_canon_execution(self, inputs: CapabilityInput) -> ExecutionInspection | None:
+        from drama_plugin.creative_engine.backends import FormalCanonAuthor
+        return self._author_inspection(inputs,'canon',self.canon_author.execution_fingerprint(film=True)) if isinstance(self.canon_author,FormalCanonAuthor) else None
+    def inspect_direction_execution(self, inputs: CapabilityInput) -> ExecutionInspection | None:
+        from drama_plugin.creative_engine.backends import FormalDirectionAuthor
+        return self._author_inspection(inputs,'direction',self.direction_author.execution_fingerprint(film=True)) if isinstance(self.direction_author,FormalDirectionAuthor) else None
+    def inspect_media_execution(self, inputs: CapabilityInput) -> ExecutionInspection | None:
+        run=self.plugin.runtime.store.load(inputs.run_id)
+        if run.workflow_id!=MEDIA_WORKFLOW:
+            return None
+        cp=self.store.checkpoint(inputs.run_id)
+        value=self.store.input(inputs.run_id)
+        refs=[ref.model_dump(mode="json",by_alias=True) for unit in cp.units for ref in unit.refs]
+        identity={"filmInput":value.model_dump(mode="json",by_alias=True),"refs":refs,
+            "planRef":cp.plan_ref.model_dump(mode="json",by_alias=True) if cp.plan_ref else None,
+            "scope":inputs.scope.model_dump(mode="json",by_alias=True)}
+        committed=False
+        if cp.units and cp.units[0].generation_run_id:
+            child=self.plugin.runtime.store.load(cp.units[0].generation_run_id)
+            if child.workflow_id not in MEDIA_WORKFLOWS:
+                raise ValueError("CHILD_PREPARATION_WORKFLOW_MISMATCH")
+            # Compilation can still be waiting for scope approval at logical
+            # cursors 4/5. Reaching READY (6) guarantees a preparation.
+            # Earlier committed artifacts are checked too, but absence is normal.
+            prepared=self.plugin.generation_artifacts.prepared(child.run_id,
+                required=media_cursor(child.workflow_id,child.cursor)>=6)
+            if prepared is not None:
+                artifact=self.plugin.generation_artifacts.get(prepared,GenerationPreparation)
+                from drama_plugin.generation.audio import package_scope
+                if package_scope(self.plugin.production_packages.get(artifact.source_package_ref))!=child.scope or artifact.source_package_ref!=cp.units[0].package_ref:
+                    raise ValueError("CHILD_PREPARATION_SCOPE_MISMATCH")
+                committed=True
+        return ExecutionInspection(revision=ExecutionRevision(
+            fingerprint=sha256_canonical({"capability":"film.execute:v1","workflow":run.workflow_fingerprint,"owner":"TargetExecution/native-media-review",
+                "preparationLifecycle":"child-stage-v1"}),
+            input_fingerprint=sha256_canonical(identity)),completed=committed)
     def guard(self, handler: Callable[[CapabilityInput], Awaitable[CapabilityResult]]) -> Callable[[CapabilityInput], Awaitable[CapabilityResult]]:
         async def governed(inputs: CapabilityInput) -> CapabilityResult:
+            run = self.plugin.runtime.store.load(inputs.run_id)
+            if handler.__name__ in {"canon", "direction"}:
+                return await run_author_capability(handler, role="canon" if handler.__name__ == "canon" else "direction",
+                    versions=self.plugin.creative_versions, inputs=inputs, run=run,
+                    version_refs=(self.store.input(inputs.run_id).source_ref,), author_round=run.step_attempts)
             try:
                 return await handler(inputs)
             except CapabilityAbsent:
                 return self.wait(inputs,'film-consumer-capability')
-            except (ValueError, KeyError):
-                # Contract rejection goes through the one Governor; domain code
-                # cannot invent another stopping family.
+            except (ValueError, KeyError) as error:
+                stable = str(error) if str(error) in {
+                    "NATIVE_PERFORMANCE_CAPABILITY_ABSENT", "NATIVE_PERFORMANCE_CONTRACT_MISSING",
+                    "NATIVE_OPERATION_UNIT_CAPABILITY_ABSENT", "NATIVE_OPERATION_UNIT_CONTRACT_MISSING",
+                    "DPD_CANON_DIALOGUE_MISMATCH", "DPD_DUPLICATE_BEAT", "DPD_INPUT_NOT_ADOPTED",
+                    "FILM_ROUTE_PROFILE_MISMATCH", "MEDIA_REVIEW_RECEIPT_MISSING",
+                    "PERFORMANCE_SCOPE_UNAPPROVED", "PERFORMANCE_SCOPE_PARENT_MISMATCH",
+                    "SHOT_BEAT_DPD_COVERAGE_MISMATCH", "SHOT_SPOKEN_DPD_COVERAGE_MISMATCH",
+                    "REFERENCE_REQUIRED_DISPOSITION_INVALID", "REFERENCE_OUT_OF_UNIT_UNPROVEN"
+                } else "FILM_AUTHORITY_OR_CONTRACT_INVALID"
                 evidence=self.store.input(inputs.run_id).source_ref.runtime_ref()
                 finding=GateFinding.classified(GateCode.CANON_AUTHORITY_MISMATCH,owner='film-contract',
                     scope=inputs.scope,evidence_ref=evidence,required=True)
                 decision=self.plugin.gate_governor.govern((finding,),scope=inputs.scope,
-                    mode=self.plugin.runtime.store.load(inputs.run_id).mode,package_ref=None)
+                    mode=run.mode,package_ref=None)
                 ref=self.plugin.gate_findings.put_decision(decision,run_id=inputs.run_id)
-                return CapabilityResult(status=ResultStatus.FAILED,code=decision.effect.value,artifact_refs=(ref,))
+                return CapabilityResult(status=ResultStatus.FAILED,code=stable,artifact_refs=(ref,), recovery_class=RecoveryClass.HARD_BLOCK)
         return governed
     def success(self, cp: FilmCheckpoint) -> CapabilityResult:
         ref = cp.delivery_ref or cp.final_ref or cp.plan_ref or cp.direction_ref or cp.canon_ref
@@ -64,6 +136,8 @@ class FilmCapabilities:
     def wait(self, inputs: CapabilityInput, owner: str, evidence: ArtifactReference | None = None) -> CapabilityResult:
         value = self.store.input(inputs.run_id)
         ref = evidence or value.source_ref.runtime_ref()
+        if self.plugin.runtime.store.load(inputs.run_id).workflow_id == MEDIA_WORKFLOW:
+            return CapabilityResult(status=ResultStatus.FAILED, code='FILM_CAPABILITY_ABSENT', artifact_refs=(ref,), recovery_class=RecoveryClass.HARD_BLOCK)
         finding = GateFinding.classified(GateCode.CAPABILITY_NOT_IMPLEMENTED, owner=owner, scope=inputs.scope, evidence_ref=ref, required=True)
         decision = self.plugin.gate_governor.govern((finding,), scope=inputs.scope,
             mode=self.plugin.runtime.store.load(inputs.run_id).mode, package_ref=None)
@@ -77,7 +151,8 @@ class FilmCapabilities:
             raise ValueError('Source/Film language or scope mismatch')
         cp = self.store.checkpoint(inputs.run_id)
         return FilmAuthorRequest(scope=inputs.scope, source=source.body, languages=value.languages,source_ref=value.source_ref,
-            canon=self.store.author(cp.canon_ref,FilmCanon) if cp.canon_ref else None)
+            canon=self.store.author(cp.canon_ref,FilmCanon) if cp.canon_ref else None,
+            production_goal="MEDIA_REVIEW" if self.plugin.runtime.store.load(inputs.run_id).workflow_id == MEDIA_WORKFLOW else None)
     async def canon(self, inputs: CapabilityInput) -> CapabilityResult:
         cp = self.store.checkpoint(inputs.run_id)
         if cp.canon_ref:
@@ -85,30 +160,45 @@ class FilmCapabilities:
         fixed = self.store.author_ref(inputs.run_id,'film-canon')
         if fixed is None:
             if self.canon_author is None:
-                return self.wait(inputs,'canon-author')
-            fixed = self.store.put_author(inputs.run_id,FilmCanon.model_validate((await self.canon_author.author_film(self.request(inputs))).model_dump()))
+                raise CapabilityAbsent('CANON_AUTHOR_ABSENT')
+            sources = (self.store.input(inputs.run_id).source_ref,)
+            value = self.plugin.creative_versions.author_output(inputs.operation_id,'canon',sources,TypeAdapter(FilmCanon))
+            if value is None:
+                value = FilmCanon.model_validate((await self.canon_author.author_film(self.request(inputs))).model_dump())
+            self.plugin.creative_versions.retain_author_output(inputs.operation_id,'canon',sources,value)
+            fixed = self.store.put_author(inputs.run_id,value)
         return self.success(self.save(inputs,canon_ref=fixed))
     async def direction(self, inputs: CapabilityInput) -> CapabilityResult:
         cp = self.store.checkpoint(inputs.run_id)
-        if cp.direction_ref:
+        native_media = self.plugin.runtime.store.load(inputs.run_id).workflow_id == MEDIA_WORKFLOW
+        if cp.direction_ref and not native_media:
             return self.success(cp)
-        fixed = self.store.author_ref(inputs.run_id,'film-direction')
+        fixed = cp.direction_ref or self.store.author_ref(inputs.run_id,'film-direction')
+        fresh = fixed is None
         if fixed is None:
             if self.direction_author is None:
-                return self.wait(inputs,'creative-direction-author')
-            fixed = self.store.put_author(inputs.run_id,FilmDirection.model_validate((await self.direction_author.direct_film(self.request(inputs))).model_dump()))
+                raise CapabilityAbsent('DIRECTION_AUTHOR_ABSENT')
+            sources = (self.store.input(inputs.run_id).source_ref,)
+            cached = self.plugin.creative_versions.author_output(inputs.operation_id,'direction',sources,TypeAdapter(FilmDirection))
+            direction = cached if cached is not None else FilmDirection.model_validate((await self.direction_author.direct_film(self.request(inputs))).model_dump())
+        else:
+            direction = self.store.author(fixed,FilmDirection)
+        def invalid(code: str, path: tuple[str | int, ...]) -> None:
+            if fresh:
+                raise AuthorResultFailure(failure('SHOT_POST_VALIDATION', code, field_path=path, validator='FilmDirection.structure'))
+            raise ValueError(code)
         value = self.store.input(inputs.run_id)
-        direction = self.store.author(fixed,FilmDirection)
         assert cp.canon_ref
         canon = self.store.author(cp.canon_ref,FilmCanon)
         scene_ids = [s.scene_id for s in canon.scenes]
         if set(s.scene_id for s in direction.shots) != set(scene_ids):
-            raise ValueError('Direction must cover approved Scene structure')
+            invalid('FILM_DIRECTION_SCENE_COVERAGE', ('shots', 'sceneId'))
         # Order comes from the authors. Returning to an earlier Scene is not silently re-edited.
         if [scene_ids.index(s.scene_id) for s in direction.shots] != sorted(scene_ids.index(s.scene_id) for s in direction.shots):
-            raise ValueError('Shot sequencing conflicts with approved Scene order')
+            invalid('FILM_DIRECTION_SCENE_ORDER', ('shots', 'sceneId'))
         costs = value.estimated_shot_cost_microunits
-        if costs * len(direction.shots)>value.max_cost_microunits:
+        estimated = costs if native_media else costs * len(direction.shots)
+        if not native_media and estimated > value.max_cost_microunits:
             finding=GateFinding.classified(GateCode.BUDGET_EXCEEDED,owner='film-dependency',scope=inputs.scope,
                 evidence_ref=value.source_ref.runtime_ref(),required=True)
             decision=self.plugin.gate_governor.govern((finding,),scope=inputs.scope,mode=RunMode.PRODUCTION,package_ref=None)
@@ -119,20 +209,70 @@ class FilmCapabilities:
             requires=shot.requires
             if i and direction.shots[i-1].scene_id!=shot.scene_id:
                 requires=tuple(dict.fromkeys((*requires,direction.shots[i-1].shot_id)))
-            tasks.append(DependencyTask(task_id=shot.shot_id,output='video',requires=requires,estimated_cost=costs))
+            tasks.append(DependencyTask(task_id=shot.shot_id,output='video',requires=requires,estimated_cost=costs if not native_media or i == 0 else 0))
         ids = [s.shot_id for s in direction.shots]
         groups = [tuple(ids[i:i+4]) for i in range(0,len(ids),4)]
         tasks.extend(DependencyTask(task_id=f'av-group-{i}',output='video',requires=g) for i,g in enumerate(groups))
         tasks.append(DependencyTask(task_id='film-assembly',output='video',requires=tuple(f'av-group-{i}' for i in range(len(groups)))))
         tasks.append(DependencyTask(task_id='final-delivery',output='video',requires=('film-assembly',)))
-        graph = RoutePlan(route=value.route,tasks=tuple(tasks),max_tasks=32,max_depth=16,
-            capability_available=value.route in (self.plugin.execution.transports if self.plugin.execution else {}),
-            authorization_required=bool(costs),cost_limit=value.max_cost_microunits)
         # A dependency on a later edit slot cannot be handled by this bounded sequential executor.
         for i,shot in enumerate(direction.shots):
             if not set(shot.requires) <= set(ids[:i]):
-                raise ValueError('Shot dependency must precede its consumer')
-        return self.success(self.save(inputs,direction_ref=fixed,graph=graph))
+                invalid('FILM_DIRECTION_DEPENDENCY_ORDER', ('shots', i, 'requires'))
+        try:
+            graph = RoutePlan(route=value.route,tasks=tuple(tasks),max_tasks=32,max_depth=16,
+                capability_available=value.route in (self.plugin.execution.transports if self.plugin.execution else {}),
+                authorization_required=bool(costs),cost_limit=max(estimated,value.max_cost_microunits) if native_media else value.max_cost_microunits)
+        except ValidationError as error:
+            invalid('FILM_DIRECTION_DEPENDENCY_GRAPH_INVALID', ('shots', *error.errors(include_input=False,include_context=False)[0]['loc']))
+            raise AssertionError('invalid graph must fail')
+        for i, shot in enumerate(direction.shots):
+            scene = next(s.scene for s in canon.scenes if s.scene_id == shot.scene_id)
+            if self.plugin.runtime.store.load(inputs.run_id).workflow_id == MEDIA_WORKFLOW and not {"ACTION","CAMERA","PERFORMANCE","SOUND","SUBJECTS","WORLD"} <= set(shot.shot.professional_domains):
+                invalid("SHOT_MEDIA_REQUIRED_DOMAINS_MISSING", ("shots",i,"shot","professionalDomains"))
+            if not set(shot.shot.spoken_ids) <= {line.id for line in scene.dialogue}:
+                invalid('SHOT_DIALOGUE_CANON_AUTHORITY', ('shots', i, 'shot', 'spokenIds'))
+        if fixed is None:
+            self.plugin.creative_versions.retain_author_output(inputs.operation_id,'direction',
+                (self.store.input(inputs.run_id).source_ref,),direction)
+            fixed = self.store.put_author(inputs.run_id, direction)
+        cp = self.save(inputs,direction_ref=fixed,graph=graph)
+        if native_media and estimated > value.max_cost_microunits and cp.planning_cost_decision_ref is None:
+            request, target = self.pending_decision(inputs.run_id)
+            finding=GateFinding.classified(GateCode.COST_APPROVAL_REQUIRED,owner='film-planning',scope=inputs.scope,evidence_ref=target,required=True)
+            decision=self.plugin.gate_governor.govern((finding,),scope=inputs.scope,mode=RunMode.PRODUCTION,package_ref=None)
+            gate=self.plugin.gate_findings.put_decision(decision,run_id=inputs.run_id)
+            return CapabilityResult(status=ResultStatus.WAITING_EXTERNAL,external_ref=target,artifact_refs=(gate,target),
+                recovery_class=RecoveryClass.USER_DECISION,user_decision=request)
+        return self.success(cp)
+    async def drive_child(self, run_id: str) -> RuntimeRun:
+        p = self.plugin
+        run = await p.runtime.recover_run(run_id)
+        if run.state == RuntimeState.WAITING_EXTERNAL:
+            await p.runtime.reconcile_wait(run_id)
+        return await p.runtime.run(run_id)
+
+    def child_result(self, child: RuntimeRun) -> CapabilityResult:
+        link = ArtifactReference(owner="runtime", artifact_ref=child.run_id)
+        last = child.last_result
+        refs = tuple(dict.fromkeys((*(last.artifact_refs if last else ()), link)))
+        if child.state == RuntimeState.WAITING_USER:
+            request = last.user_decision if last and last.user_decision else self.plugin.runtime.next_action(child.run_id).decision
+            if request is None:
+                raise ValueError("CHILD_USER_DECISION_MISSING")
+            exact = last.external_ref if last and last.external_ref else None
+            if exact is None:
+                exact = next((r for r in refs if r.owner not in {"runtime", "creative-diagnostic"}), link)
+            return CapabilityResult(status=ResultStatus.WAITING_EXTERNAL, external_ref=exact, artifact_refs=refs,
+                recovery_class=RecoveryClass.USER_DECISION, user_decision=request)
+        if child.state == RuntimeState.WAITING_EXTERNAL:
+            if last is None or last.external_ref is None:
+                raise ValueError("CHILD_EXTERNAL_IDENTITY_MISSING")
+            return CapabilityResult(status=ResultStatus.WAITING_EXTERNAL, external_ref=last.external_ref,
+                artifact_refs=refs, recovery_class=RecoveryClass.WAIT_EXTERNAL)
+        return CapabilityResult(status=ResultStatus.FAILED, code=(last.code if last and last.code else child.wait_reason) or "CHILD_HARD_BLOCK",
+            artifact_refs=refs, recovery_class=RecoveryClass.HARD_BLOCK)
+
     async def child(self, run_id: str) -> bool:
         p = self.plugin
         run = await p.runtime.recover_run(run_id)
@@ -189,8 +329,9 @@ class FilmCapabilities:
                 units.append(self.create_unit(inputs,slot))
                 self.save(inputs,units=tuple(units))
             unit = units[slot]
-            if not await self.child(unit.creative_run_id):
-                return self.wait(inputs,'creative-child',ArtifactReference(owner='runtime-run',artifact_ref=unit.creative_run_id,version=1))
+            child = await self.drive_child(unit.creative_run_id)
+            if child.state != RuntimeState.SUCCEEDED:
+                return self.child_result(child)
             ucp = self.plugin.creative.state.checkpoint(unit.creative_run_id)
             units[slot] = ShotUnit.model_validate({**unit.model_dump(),'refs':ucp.refs,'package_ref':ucp.package_ref})
             self.save(inputs,units=tuple(units))
@@ -256,13 +397,15 @@ class FilmCapabilities:
                 child=await p.runtime.decide(identity,decision_id=receipt.decision_id,accepted=True,decision_ref=p.reviews.put_user_decision(receipt))
                 child=await p.runtime.run(identity)
             if child.state!=RuntimeState.SUCCEEDED:
-                return self.wait(inputs,'production-package-child')
+                return self.child_result(child)
             childcp=p.creative.state.checkpoint(identity)
             units[slot]=ShotUnit.model_validate({**unit.model_dump(),'production_run_id':identity,'refs':childcp.refs,'package_ref':childcp.package_ref})
             self.save(inputs,units=tuple(units))
         return self.success(self.store.checkpoint(inputs.run_id))
     async def execute(self, inputs: CapabilityInput) -> CapabilityResult:
         p,cp=self.plugin,self.store.checkpoint(inputs.run_id)
+        if p.runtime.store.load(inputs.run_id).workflow_id == MEDIA_WORKFLOW:
+            return await self.execute_media(inputs)
         if self.recipes is None or p.execution is None:
             return self.wait(inputs,'approved-execution-recipe')
         units=list(cp.units)
@@ -326,6 +469,210 @@ class FilmCapabilities:
             units[slot]=ShotUnit.model_validate({**units[slot].model_dump(),'candidate_ref':candidate_ref})
             self.save(inputs,units=tuple(units))
         return self.success(self.store.checkpoint(inputs.run_id))
+    def pending_decision(self, run_id: str) -> tuple[UserDecisionRequest, ArtifactReference]:
+        cp = self.store.checkpoint(run_id)
+        run = self.plugin.runtime.store.load(run_id)
+        value = self.store.input(run_id)
+        if run.workflow_id == MEDIA_WORKFLOW and run.cursor == 1 and cp.direction_ref and cp.planning_cost_decision_ref is None and value.estimated_shot_cost_microunits > value.max_cost_microunits:
+            return (UserDecisionRequest(category=DecisionCategory.COST_APPROVAL,
+                question="The bounded one-operation planning estimate exceeds the planning ceiling. Allow this exact approved Direction to continue preparation? This approves planning only; no external operation, actual price, dispatch, or payment is authorized."), cp.direction_ref)
+        if run.workflow_id == MEDIA_WORKFLOW and run.cursor == 5 and cp.units and cp.units[0].package_ref:
+            unit=cp.units[0]
+            if any(self.plugin.creative_versions.stale(r) for r in unit.refs):
+                assert unit.package_ref is not None
+                return (UserDecisionRequest(category=DecisionCategory.ART_APPROVAL,
+                    question="An exact adopted creative dependency has been revised. Provide the bounded original-owner revision and its exact new adopted candidate for this Shot before continuing. Accepting the old Package cannot restore stale authority."),unit.package_ref)
+        if cp.rights_request_pin is None or cp.rights_decision_ref is not None:
+            raise ValueError("No pending source processing rights request")
+        return (UserDecisionRequest(category=DecisionCategory.ADOPTION,
+            question="Authorize necessary Source/Canon-derived information of this exact adopted Shot for one external video operation, with zero paid references/retries? This grants no cost, submission or release approval."),
+            ArtifactReference(owner="source-owner", artifact_ref=cp.rights_request_pin.key, version=1))
+
+    def pending_decision_terms(self, run_id: str) -> str | None:
+        request, target = self.pending_decision(run_id)
+        if request.category == DecisionCategory.ART_APPROVAL:
+            unit=self.store.checkpoint(run_id).units[0]
+            return sha256_canonical({"packageRef":target.model_dump(mode="json",by_alias=True),
+                "staleRefs":[r.model_dump(mode="json",by_alias=True) for r in unit.refs if self.plugin.creative_versions.stale(r)],
+                "purpose":"EXACT_OWNER_REVISION_REQUIRED", "revisionDepth":unit.revision_depth})
+        if request.category == DecisionCategory.COST_APPROVAL:
+            value = self.store.input(run_id)
+            return sha256_canonical({"purpose":"FILM_PLANNING_ONLY", "directionRef":target.model_dump(mode="json",by_alias=True),
+                "estimatedCostMicrounits":value.estimated_shot_cost_microunits,"previousCeilingMicrounits":value.max_cost_microunits,
+                "maxOperations":1,"dispatchAuthorized":False})
+        return None
+
+    def consume_decision(self, run_id: str, ref: ArtifactReference, accepted: bool) -> None:
+        cp = self.store.checkpoint(run_id)
+        request, target = self.pending_decision(run_id)
+        body, scope, _ = self.store.ledger.get_artifact("user-decision", ref)
+        receipt = UserDecisionRecord.model_validate(body)
+        run = self.plugin.runtime.store.load(run_id)
+        if (receipt.run_id != run_id or receipt.scope != run.scope or scope != run.scope or receipt.source_ref != target
+                or receipt.category != request.category or receipt.accepted != accepted
+                or receipt.terms_hash != self.pending_decision_terms(run_id)):
+            raise ValueError("Rights decision does not bind the pending exact request")
+        if not accepted:
+            return
+        if request.category == DecisionCategory.ART_APPROVAL:
+            raise ValueError("An exact adopted owner revision is required; a boolean cannot approve stale authority")
+        if request.category == DecisionCategory.COST_APPROVAL:
+            self.store.save(run_id,run.scope,cp.model_copy(update={"planning_cost_decision_ref":ref}))
+            return
+        assert cp.rights_request_pin is not None
+        material = self.plugin.creative_versions.objects.read_ref(cp.rights_request_pin)
+        manifest = {**material, "externalProcessingAuthorized": True,
+            "requestRef": target.model_dump(mode="json", by_alias=True), "decisionRef": ref.model_dump(mode="json", by_alias=True)}
+        pin = self.plugin.creative_versions.objects.put("source-rights:"+sha256_canonical(manifest), manifest)
+        self.store.save(run_id, run.scope, FilmCheckpoint.model_validate({**cp.model_dump(), "rights_decision_ref": ref, "rights_pin": pin}))
+
+    async def provide_creative_revision_result(self, run_id: str, revision_run_id: str) -> RuntimeRun:
+        """Consume a completed, explicitly adopted original-owner result, never latest."""
+        p,cp=self.plugin,self.store.checkpoint(run_id)
+        run=p.runtime.store.load(run_id)
+        if run.workflow_id!=MEDIA_WORKFLOW or run.state!=RuntimeState.WAITING_USER or run.cursor!=5 or not cp.units:
+            raise ValueError("No pending native creative revision scope")
+        request,target=self.pending_decision(run_id)
+        if request.category!=DecisionCategory.ART_APPROVAL or run.last_result is None or run.last_result.external_ref!=target:
+            raise ValueError("Exact stale creative scope required")
+        old=cp.units[0]
+        child=p.runtime.store.load(revision_run_id)
+        value=p.creative.state.input(revision_run_id)
+        fixed=p.creative.state.checkpoint(revision_run_id)
+        revision=value.revision
+        if (child.state!=RuntimeState.SUCCEEDED or child.scope!=RuntimeScope(work_id=run.scope.work_id,scene_id=old.scene_id,shot_id=old.shot_id)
+                or revision is None or revision.target_ref not in old.refs or revision.depth!=old.revision_depth+1 or revision.depth>3
+                or value.source_ref!=self.store.input(run_id).source_ref or fixed.package_ref is None
+                or fixed.candidate_ref is None or fixed.decision_ref is None
+                or any(p.creative_versions.stale(ref) for ref in fixed.refs)):
+            raise ValueError("Wrong or incomplete exact owner revision")
+        source=p.creative_versions.resolve(revision.target_ref)
+        if source.authority!=revision.owner:
+            raise ValueError("Revision changed the creative owner")
+        if fixed.candidate_ref.artifact_ref != "creative-candidate:"+sha256_canonical([ref.model_dump(mode="json",by_alias=True) for ref in fixed.candidate_version_refs]):
+            raise ValueError("Wrong exact replacement candidate")
+        if p.operation_resolver is None:
+            raise ValueError("Native operation owner absent")
+        receipt=p.operation_resolver.decision(fixed.decision_ref,category=DecisionCategory.ADOPTION,
+            scope=child.scope,source_ref=fixed.candidate_ref)
+        if receipt.run_id!=revision_run_id:
+            raise ValueError("Wrong exact replacement adoption")
+        signature=sha256_canonical([revision.owner.value,revision.target_ref.model_dump(mode="json",by_alias=True),revision.instruction])
+        if signature in old.revision_signatures:
+            raise ValueError("Creative revision cycle")
+        units=list(cp.units)
+        units[0]=old.model_copy(update={"production_run_id":revision_run_id,"refs":fixed.refs,"package_ref":fixed.package_ref,
+            "candidate_ref":None,"generation_run_id":None,"execution_run_id":None,"revision_depth":revision.depth,
+            "revision_signatures":(*old.revision_signatures,signature)})
+        self.store.save(run_id,run.scope,FilmCheckpoint.model_validate({**cp.model_dump(),"units":tuple(units),"operation_task":None,
+            "rights_request_pin":None,"rights_pin":None,"rights_decision_ref":None}))
+        # The real child adoption receipt resolves the artistic replacement choice;
+        # it does not complete the media capability or authorize execution.
+        return await p.runtime.decide(run_id,decision_id=p.runtime.decision_id(run_id),accepted=True,
+            decision_ref=fixed.decision_ref,resume_same_step=True)
+
+    async def execute_media(self, inputs: CapabilityInput) -> CapabilityResult:
+        p, cp = self.plugin, self.store.checkpoint(inputs.run_id)
+        if p.operation_resolver is None or p.execution is None or not cp.units or cp.adoption_ref is None:
+            return self.wait(inputs, "native-production-composition")
+        # The first proof is one approved production unit. Film art/order is retained,
+        # while downstream Audio/AV/Final Delivery stays outside this workflow.
+        unit = cp.units[0]
+        if unit.candidate_ref:
+            return CapabilityResult(status=ResultStatus.SUCCEEDED, artifact_refs=(unit.candidate_ref,))
+        if unit.package_ref is None:
+            return CapabilityResult(status=ResultStatus.FAILED, code="ADOPTED_PACKAGE_SCOPE_OR_VERSION_INVALID", recovery_class=RecoveryClass.HARD_BLOCK)
+        if any(p.creative_versions.stale(r) for r in unit.refs):
+            request,target=self.pending_decision(inputs.run_id)
+            stale=tuple(r.runtime_ref() for r in unit.refs if p.creative_versions.stale(r))
+            finding=GateFinding.classified(GateCode.ART_APPROVAL_REQUIRED,owner="creative-owner-revision",scope=inputs.scope,evidence_ref=target,required=True)
+            decision=p.gate_governor.govern((finding,),scope=inputs.scope,mode=RunMode.PRODUCTION,package_ref=None)
+            gate=p.gate_findings.put_decision(decision,run_id=inputs.run_id)
+            return CapabilityResult(status=ResultStatus.WAITING_EXTERNAL,external_ref=target,artifact_refs=(gate,*stale),
+                recovery_class=RecoveryClass.USER_DECISION,user_decision=request)
+        assert unit.production_run_id is not None
+        shot_owner=next(p.creative_versions.resolve(ref) for ref in unit.refs if p.creative_versions.resolve(ref).kind==Kind.SHOT)
+        adoption=shot_owner.adoption_decision_ref
+        if adoption is None:
+            raise ValueError("OPERATION_NOT_ADOPTED")
+        package = p.production_packages.get(unit.package_ref)
+        task = cp.operation_task
+        if task is not None and unit.generation_run_id:
+            current_task = p.generation_artifacts.inputs(unit.generation_run_id).task
+            if current_task != task:
+                if (task.unit is None or current_task.unit is None or current_task.owners != task.owners
+                        or current_task.profile != task.profile or
+                        current_task.unit.model_dump(exclude={"scope_decision_ref"}) != task.unit.model_dump(exclude={"scope_decision_ref"})):
+                    raise ValueError("OPERATION_TASK_AUTHORITY_DRIFT")
+                p.operation_resolver.validate(package,current_task)
+                task = current_task
+                cp = self.save(inputs,operation_task=task)
+        if task is None:
+            value = self.store.input(inputs.run_id)
+            dimensions = {(1280,720):("720p","16:9"), (1920,1080):("1080p","16:9"), (720,1280):("720p","9:16"),
+                (1080,1920):("1080p","9:16")}
+            if (value.profile.width, value.profile.height) not in dimensions:
+                raise CapabilityAbsent("DELIVERY_OPERATION_PROFILE_UNSUPPORTED")
+            resolution, ratio = dimensions[(value.profile.width,value.profile.height)]
+            profile = resolve_profile(model=value.model,duration_ms=value.operation_duration_ms,resolution=resolution,
+                ratio=ratio,native_audio=value.profile.audio_required,policy=p.operation_resolver.policy)
+            if value.route != profile.provider:
+                raise ValueError("FILM_ROUTE_PROFILE_MISMATCH")
+            dpd_pin, projection_pin, snapshots = p.operation_resolver.compose_performance(unit.refs)
+            selection = await p.operation_resolver.select_unit(package, p.prompt_compiler.reader)
+            if cp.rights_request_pin is None:
+                assert cp.adoption_ref is not None
+                adopted = [r.model_dump(mode="json", by_alias=True) for r in unit.refs if p.creative_versions.resolve(r).kind != Kind.PROFESSIONAL]
+                material = {"scope": p.runtime.store.load(unit.production_run_id).scope.model_dump(mode="json", by_alias=True),
+                    "adoptedRefs": adopted, "sourceRef": next(r for r in adopted if str(r["identity"]).startswith("creative-source:")),
+                    "creativeAdoptionDecisionRef": adoption.model_dump(mode="json", by_alias=True),
+                    "dpdBindingRef": {"owner":"dpd-core","artifactRef":"dpd-binding:"+dpd_pin.fingerprint,"version":1},
+                    "profile": profile.model_dump(mode="json",by_alias=True), "processingScope": {
+                        "purpose":"MINIMAL_CONTROLLED_LIVE_TECHNICAL_PROOF", "material":"necessary Source-derived / Canon-derived information of exact adopted Shot",
+                        "providerModelAuthority":"CURRENT_B1_REQUALIFICATION", "durationSeconds":profile.requested_duration_ms / 1000,
+                        "resolution":profile.resolution,"aspectRatio":profile.aspect_ratio,"mode":profile.mode,
+                        "maxLogicalVideoOperations":1,"paidReferences":0,"paidRetries":0}}
+                pin = p.creative_versions.objects.put("source-rights-request:"+sha256_canonical(material),material)
+                cp = self.save(inputs,rights_request_pin=pin)
+            if cp.rights_decision_ref is None:
+                request, ref = self.pending_decision(inputs.run_id)
+                finding = GateFinding.classified(GateCode.ADOPTION_REQUIRED, owner="source-rights", scope=inputs.scope, evidence_ref=ref)
+                governed = p.gate_governor.govern((finding,),scope=inputs.scope,mode=RunMode.PRODUCTION,package_ref=unit.package_ref)
+                gate = p.gate_findings.put_decision(governed,run_id=inputs.run_id)
+                return CapabilityResult(status=ResultStatus.WAITING_EXTERNAL,artifact_refs=(ref,gate),external_ref=ref,
+                    recovery_class=RecoveryClass.USER_DECISION,user_decision=request)
+            assert cp.rights_pin is not None and cp.rights_request_pin is not None and cp.adoption_ref is not None
+            owners = OwnerBindings(adopted_refs=unit.refs,dpd_pin=dpd_pin,performance_scope_pin=projection_pin,snapshot_pins=snapshots,
+                rights_pin=cp.rights_pin,rights_request_ref=ArtifactReference(owner="source-owner",artifact_ref=cp.rights_request_pin.key,version=1),
+                rights_decision_ref=cp.rights_decision_ref,adoption_decision_ref=adoption)
+            task = GenerationTask(target_model=profile.model,input_mode=profile.mode,native_audio="REQUIRED" if profile.native_audio else "DISABLED",
+                unit=selection,profile=profile,owners=owners)
+            cp = self.save(inputs,operation_task=task)
+        if unit.generation_run_id:
+            child = p.runtime.store.load(unit.generation_run_id)
+            # A fresh process must restore the same pinned physical owners before
+            # reconciling its existing child task, without re-entering goal creation.
+            p._compose_media_owners(task, run_id=child.run_id)
+        else:
+            child = p.create_media_review_run(package_ref=unit.package_ref,task=task)
+        if unit.generation_run_id != child.run_id:
+            units = list(cp.units)
+            units[0] = ShotUnit.model_validate({**unit.model_dump(), "generation_run_id": child.run_id})
+            self.save(inputs,units=tuple(units))
+        child = await self.drive_child(child.run_id)
+        if child.state != RuntimeState.SUCCEEDED:
+            return self.child_result(child)
+        if child.last_result is None:
+            raise ValueError("MEDIA_REVIEW_RECEIPT_MISSING")
+        review_ref = next((ref for ref in child.last_result.artifact_refs if ref.owner == "creative-media-review"), None)
+        if review_ref is None:
+            raise ValueError("MEDIA_REVIEW_RECEIPT_MISSING")
+        cp = self.store.checkpoint(inputs.run_id)
+        units = list(cp.units)
+        units[0] = ShotUnit.model_validate({**units[0].model_dump(), "candidate_ref": review_ref})
+        self.save(inputs,units=tuple(units))
+        return CapabilityResult(status=ResultStatus.SUCCEEDED,artifact_refs=(review_ref,))
+
     async def revise_shot(self, inputs: CapabilityInput, slot: int, review_ref: ArtifactReference) -> CapabilityResult:
         p,cp=self.plugin,self.store.checkpoint(inputs.run_id)
         unit=cp.units[slot]

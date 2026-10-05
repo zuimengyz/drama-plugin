@@ -51,7 +51,7 @@ def validate_links(item: ExecutionArtifact, resolve: Callable[[ArtifactReference
         final = parents["final_prompt_ref"]
         assert isinstance(preparation, GenerationPreparation) and isinstance(final, FinalPromptArtifact)
         if (preparation.final_prompt_ref != item.final_prompt_ref or preparation.audio_plan_ref != item.audio_plan_ref or
-                final.task != preparation.task or final.task.target_model != item.model or
+                not final.matches_task(preparation.task) or final.task.target_model != item.model or
                 final.execution_reference_refs != item.reference_bindings):
             raise ValueError("Operation changes approved execution inputs")
     if isinstance(item, FinishingRecipe):

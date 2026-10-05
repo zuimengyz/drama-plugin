@@ -14,10 +14,10 @@ from drama_plugin.generation.seedance import ModelPolicyCatalog, SeedanceTargetA
 from drama_plugin.generation.sources import PackageReader
 from drama_plugin.generation.sources import child
 from drama_plugin.generation.references import ExecutionReferenceResolver
-from drama_plugin.generation.store import GenerationArtifactStore
+from drama_plugin.generation.store import GenerationStore
 from drama_plugin.production.contracts import SourceDomain as D
 from drama_plugin.production.sources import SourceReadError
-from drama_plugin.production.store import ProductionPackageStore
+from drama_plugin.production.store import PackageStore
 from drama_plugin.runtime.contracts import ArtifactReference
 
 
@@ -33,7 +33,7 @@ class PromptCompiler:
     role = "COMPILER"
     creative_authority = False
 
-    def __init__(self, packages: ProductionPackageStore, artifacts: GenerationArtifactStore, reader: PackageReader,
+    def __init__(self, packages: PackageStore, artifacts: GenerationStore, reader: PackageReader,
                  catalog: ModelPolicyCatalog | None = None, *, media_reader=None):
         self.packages, self.artifacts, self.reader = packages, artifacts, reader
         self.catalog = catalog if catalog is not None else ModelPolicyCatalog()
@@ -79,7 +79,7 @@ class PromptCompiler:
                 return result()
             plan = audio_result.plan
             audio_ref = self.artifacts.put(plan)
-            projection_task = task
+            projection_task = task.model_copy(update={"native_audio": task.resolved_native_audio_policy})
             if task.native_audio == "OPTIONAL" and not policy.native_audio:
                 projection_task = task.model_copy(update={"native_audio": "DISABLED"})
                 diagnostics.append(ExecutionDiagnostic(code="OPTIONAL_COVERAGE", owner="native-audio", domain=D.SOUND))
@@ -105,7 +105,7 @@ class PromptCompiler:
                     return result(audio=audio_ref)
             ir = PromptIR.seal(**{**ir.model_dump(exclude={"fingerprint", "execution_reference_refs"}),
                 "execution_reference_refs": tuple(i.source_ref for i in references.inputs)})
-            ir_ref = self.artifacts.put(ir)
+            ir_ref = None if task.unit else self.artifacts.put(ir)
         except SourceReadError as error:
             diagnostics.append(ExecutionDiagnostic(code="PACKAGE_STALE" if error.code.value == "VERSION_MISMATCH"
                 else "SCOPE_MISMATCH" if error.code.value in {"SCOPE_MISMATCH", "AUTHORITY_MISMATCH"}
@@ -172,7 +172,9 @@ class PromptCompiler:
                 return result(ir=ir_ref, audio=audio_ref)
             coverage = PromptCoverage.seal(source_package_ref=package_ref, entries=tuple(entries))
             coverage_ref = self.artifacts.put(coverage)
-            final = FinalPromptArtifact.seal(task=task, model_family=policy.family,
+            final = FinalPromptArtifact.seal(
+                task=GenerationTask.model_validate(task.model_dump(exclude={"unit", "profile", "owners"})) if task.unit else task,
+                task_fingerprint=sha256_canonical(task) if task.unit else None, model_family=policy.family,
                 generator_policy_fingerprint=policy.fingerprint, prompt_text=generated["prompt"], source_package_ref=package_ref,
                 prompt_ir_fingerprint=ir.fingerprint, coverage_ref=coverage_ref,
                 execution_reference_refs=ir.execution_reference_refs)
@@ -193,17 +195,35 @@ class PromptCompiler:
         return (prepared.source_package_ref != package_ref or prepared.task != task or policy is None or
                 final.generator_policy_fingerprint != policy.fingerprint)
 
+    async def prompt_ir(self, prepared: GenerationPreparation) -> PromptIR:
+        """Operation IR is a deterministic read view, not another durable owner."""
+        final = self.artifacts.get(prepared.final_prompt_ref, FinalPromptArtifact)
+        if not final.matches_task(prepared.task):
+            raise ValueError("PREPARATION_TASK_FINGERPRINT_MISMATCH")
+        if not prepared.task.unit:
+            return self.artifacts.get(ArtifactReference(owner="prompt-ir",
+                artifact_ref="prompt-ir:" + final.prompt_ir_fingerprint, version=1), PromptIR)
+        if self.reader.operations is None:
+            raise ValueError("OPERATION_RESOLVER_ABSENT")
+        package = self.packages.get(prepared.source_package_ref)
+        selected = await self.reader.operations.selected(package, prepared.task, self.reader)
+        plan = self.artifacts.get(prepared.audio_plan_ref, AudioExecutionPlan)
+        projection = await self.projection.project(package, prepared.task, plan, selected)
+        if projection.ir is None or any(d.required for d in projection.diagnostics):
+            raise ValueError("OPERATION_PROJECTION_INVALID")
+        ir = PromptIR.seal(**{**projection.ir.model_dump(exclude={"fingerprint", "execution_reference_refs"}),
+            "execution_reference_refs": final.execution_reference_refs})
+        if ir.fingerprint != final.prompt_ir_fingerprint:
+            raise ValueError("OPERATION_PROJECTION_DRIFT")
+        return ir
+
     async def validate_execution_sources(self, ref: ArtifactReference) -> tuple[ExecutionDiagnostic, ...]:
         prepared = self.artifacts.get(ref, GenerationPreparation)
         final = self.artifacts.get(prepared.final_prompt_ref, FinalPromptArtifact)
-        ir = self.artifacts.get(ArtifactReference(owner="prompt-ir", artifact_ref="prompt-ir:" + final.prompt_ir_fingerprint, version=1), PromptIR)
-        if prepared.task.unit:
-            try:
-                if self.reader.operations is None:
-                    raise ValueError("OPERATION_RESOLVER_ABSENT")
-                await self.reader.operations.selected(self.packages.get(prepared.source_package_ref), prepared.task, self.reader)
-            except (KeyError, ValueError, OSError):
-                return (ExecutionDiagnostic(code="SCOPE_MISMATCH", owner="production-selection", domain=D.DIRECTION, required=True),)
+        try:
+            ir = await self.prompt_ir(prepared)
+        except (KeyError, ValueError, OSError):
+            return (ExecutionDiagnostic(code="SCOPE_MISMATCH", owner="production-selection", domain=D.DIRECTION, required=True),)
         try:
             await self.reader.validate_execution_refs(tuple(f.source_ref for f in ir.facts) + ir.execution_reference_refs,
                 work_id=ir.scope.work_id)

@@ -69,10 +69,13 @@ async def test_stale_authoritative_parent_rejected(tmp_path):
 async def test_model_cannot_author_system_metadata(field):
     from drama_plugin.creative_engine.backends import compose_authors,professional_model_schema
     from drama_plugin.config.loader import load_config
-    output=model_output('professional');output[0]['facts']['nested']={field:[]};calls=[]
+    output=model_output('professional');output[0]['facts']['constraints']={'nested':{field:[]}};calls=[]
     def mock(r):calls.append(r);return response(output)
     _,_,author=compose_authors(load_config(environment=ENV).text_composition,SKILLS,transport=httpx.MockTransport(mock))
-    with pytest.raises(ValueError,match='MODEL_OWNERSHIP'):await author.design(request('professional'))
+    from drama_plugin.creative_engine.diagnostics import AuthorResultFailure
+    with pytest.raises(AuthorResultFailure,match='AUTHOR_SYSTEM_FIELD_FORBIDDEN') as caught:
+        await author.design(request('professional'))
+    assert any(issue.field_path[-1:]==(field,) for issue in caught.value.diagnostic.issues)
     assert len(calls)==1 # No repair/model retry.
     schema=professional_model_schema()
     assert field in schema['$defs']['DesignBody']['properties']['facts']['propertyNames']['not']['enum']

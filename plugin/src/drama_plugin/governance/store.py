@@ -34,6 +34,8 @@ class GateFindingStore:
         self._decisions[identity] = decision
         ref = ArtifactReference(owner="gate-decision", artifact_ref=identity, version=1)
         self._latest[run_id] = ref
+        if run_id in self._inputs:
+            self._inputs[run_id] = self._inputs[run_id].model_copy(update={"decision_ref": ref})
         return ref
 
     def decision(self, ref: ArtifactReference) -> GateDecision:
@@ -42,6 +44,11 @@ class GateFindingStore:
         return self._decisions[ref.artifact_ref]
 
     def latest(self, run_id: str) -> ArtifactReference:
+        if run_id not in self._latest and self.inputs(run_id).decision_ref is not None:
+            ref = self.inputs(run_id).decision_ref
+            assert ref is not None
+            self.decision(ref)
+            self._latest[run_id] = ref
         return self._latest[run_id]
 
     def bind(self, run_id: str, inputs: GovernanceInput) -> None:
@@ -64,3 +71,10 @@ class GateFindingStore:
 
     def maintenance_count(self, run_id: str) -> int:
         return self._maintenance.get(run_id, 0)
+
+
+# Both existing implementations expose the same owner operations.
+from typing import TYPE_CHECKING, TypeAlias
+if TYPE_CHECKING:
+    from drama_plugin.persistence.stores import DurableGateFindingStore
+FindingStore: TypeAlias = "GateFindingStore | DurableGateFindingStore"

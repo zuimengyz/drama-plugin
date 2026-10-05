@@ -4,18 +4,18 @@ from drama_plugin.generation.audio import package_scope
 from drama_plugin.generation.checks import execution_findings
 from drama_plugin.generation.compiler import PromptCompiler
 from drama_plugin.generation.contracts import ExecutionDiagnostic, GenerationPreparation
-from drama_plugin.generation.policy import COMPILE, REBUILD, READY, RELEASE
-from drama_plugin.generation.store import GenerationArtifactStore
+from drama_plugin.generation.policy import COMPILE, REBUILD, READY, RELEASE, MEDIA_WORKFLOWS, MEDIA_WORKFLOW, media_cursor
+from drama_plugin.generation.store import GenerationStore
 from drama_plugin.governance.capability import GateGovernanceCapability
 from drama_plugin.governance.checks import assembly_findings
 from drama_plugin.governance.contracts import GateCode, GateEffect, GateFinding
 from drama_plugin.production.contracts import SourceDomain
 from drama_plugin.runtime.capabilities import TargetCapability
-from drama_plugin.runtime.contracts import ArtifactReference, CapabilityInput, CapabilityResult, ResultStatus
+from drama_plugin.runtime.contracts import ArtifactReference, CapabilityInput, CapabilityResult, ResultStatus, RecoveryClass
 
 
 class GenerationCapability:
-    def __init__(self, compiler: PromptCompiler, artifacts: GenerationArtifactStore, governance: GateGovernanceCapability):
+    def __init__(self, compiler: PromptCompiler, artifacts: GenerationStore, governance: GateGovernanceCapability):
         self.compiler, self.artifacts, self.governance = compiler, artifacts, governance
         self.on_ready: Callable[[str, ArtifactReference], None] | None = None
 
@@ -23,8 +23,12 @@ class GenerationCapability:
         evidence = self.artifacts.retain_diagnostics(tuple(diagnostics), scope=run.scope)
         findings = execution_findings(tuple(diagnostics), scope=run.scope, evidence_ref=evidence)
         decision = self.governance.governor.govern(findings, scope=run.scope, mode=run.mode, package_ref=package_ref)
-        return CapabilityResult(status=ResultStatus.SUCCEEDED,
-            artifact_refs=(self.governance.findings.put_decision(decision, run_id=run.run_id),))
+        ref = self.governance.findings.put_decision(decision, run_id=run.run_id)
+        waiting = next((d for d in diagnostics if d.recovery_class == RecoveryClass.WAIT_EXTERNAL and d.external_ref), None)
+        if waiting and waiting.external_ref:
+            return CapabilityResult(status=ResultStatus.WAITING_EXTERNAL, artifact_refs=(ref,),
+                external_ref=waiting.external_ref, recovery_class=RecoveryClass.WAIT_EXTERNAL)
+        return CapabilityResult(status=ResultStatus.SUCCEEDED, artifact_refs=(ref,))
 
     async def compile(self, inputs: CapabilityInput) -> CapabilityResult:
         run = self.governance.runs.load(inputs.run_id)
@@ -52,15 +56,17 @@ class GenerationCapability:
         if decision.effect != GateEffect.AUTO_MAINTAIN:
             raise ValueError("Expected an internal maintenance decision")
         if not self.artifacts.claim_rebuild(inputs.run_id):
-            return CapabilityResult(status=ResultStatus.RETRYABLE_FAILURE, code="EXECUTION_REBUILD_EXHAUSTED", artifact_refs=inputs.input_refs)
+            return CapabilityResult(status=ResultStatus.FAILED, code="EXECUTION_REBUILD_EXHAUSTED", artifact_refs=inputs.input_refs, recovery_class=RecoveryClass.HARD_BLOCK)
         tasks = [self.governance.findings.finding(ref) for ref in decision.finding_refs]
         if any(f.code == GateCode.PACKAGE_STALE for f in tasks):
             result = await self.governance.maintain(inputs)
             current = self.governance.findings.decision(self.governance.findings.latest(inputs.run_id))
             if current.effect != GateEffect.CONTINUE:
                 return result
-        elif any(f.category == "AUTO_MAINTENANCE" and f.code != GateCode.DERIVED_REFRESH for f in tasks):
-            raise ValueError("Unregistered execution maintenance")
+        elif any(f.code == GateCode.RECEIPT_RECONCILIATION for f in tasks):
+            return await self.governance.maintain(inputs)
+        # Other registered derived metadata maintenance is a bounded recompilation,
+        # with exact original references and the one compiler.
         run = self.governance.runs.load(inputs.run_id)
         return await self._compile(run, self.governance.findings.inputs(run.run_id).package_ref)
 
@@ -68,6 +74,25 @@ class GenerationCapability:
         decision = self.governance._decision(inputs)
         if decision.effect != GateEffect.CONTINUE:
             raise ValueError("Only governed continuation can release execution artifacts")
+        run = self.governance.runs.load(inputs.run_id)
+        if run.workflow_id == MEDIA_WORKFLOW and media_cursor(run.workflow_id,run.cursor) == 7:
+            from drama_plugin.persistence.stores import DurableRunStore
+            if not isinstance(self.governance.runs,DurableRunStore):
+                raise ValueError("Durable financial owner required")
+            for namespace in ("media-proof-authorization", "media-proof-cost-terms"):
+                try:
+                    self.governance.runs.ledger.get_index(namespace,run.run_id)
+                    break
+                except KeyError:
+                    continue
+            else:
+                # The Plugin's provide_media_cost_terms port supplies current
+                # exact external pricing. Wait for that owner input without a
+                # fabricated quote, authorization or terminal preparation failure.
+                prepared=self.artifacts.prepared(run.run_id)
+                return CapabilityResult(status=ResultStatus.WAITING_EXTERNAL,
+                    artifact_refs=(prepared,),external_ref=prepared,
+                    recovery_class=RecoveryClass.WAIT_EXTERNAL)
         prepared = self.artifacts.prepared(inputs.run_id)
         return CapabilityResult(status=ResultStatus.SUCCEEDED, artifact_refs=(prepared,))
 
@@ -102,8 +127,12 @@ class GenerationCapability:
                         artifact_refs=(prepared.final_prompt_ref, prepared.audio_plan_ref, prepared_ref))
             elif new.effect == GateEffect.BLOCK:
                 return await self.governance.block(maintenance)
+            if new.effect == GateEffect.WAIT_USER:
+                assert new.user_decision is not None
+                return CapabilityResult(status=ResultStatus.WAITING_EXTERNAL,artifact_refs=(latest,),
+                    external_ref=new.package_ref or latest,recovery_class=RecoveryClass.USER_DECISION,user_decision=new.user_decision)
             if new.effect != GateEffect.CONTINUE:
-                return CapabilityResult(status=ResultStatus.RETRYABLE_FAILURE, code="EXECUTION_INPUT_CHANGED", artifact_refs=(latest,))
+                return await self.governance.resolve(maintenance) if new.effect in {GateEffect.CAPABILITY_ABSENT, GateEffect.REVIEW_REQUIRED} else CapabilityResult(status=ResultStatus.FAILED, code="EXECUTION_INPUT_CHANGED", artifact_refs=(latest,), recovery_class=RecoveryClass.HARD_BLOCK)
             # Optional diagnostics can recur at the release check. T3 retains
             # them as warnings; they must not turn into a technical retry/STOP.
         if self.compiler.stale(ref, decision.package_ref, self.artifacts.inputs(run.run_id).task):
@@ -112,10 +141,10 @@ class GenerationCapability:
             rebuilt = await self.rebuild(inputs.model_copy(update={"input_refs": assessed.artifact_refs}))
             following = self.governance.findings.decision(self.governance.findings.latest(run.run_id))
             if rebuilt.status != ResultStatus.SUCCEEDED or following.effect != GateEffect.CONTINUE:
-                return CapabilityResult(status=ResultStatus.RETRYABLE_FAILURE, code="EXECUTION_INPUT_CHANGED", artifact_refs=rebuilt.artifact_refs)
+                return CapabilityResult(status=ResultStatus.FAILED, code="EXECUTION_INPUT_CHANGED", artifact_refs=rebuilt.artifact_refs, recovery_class=RecoveryClass.HARD_BLOCK)
             ref = self.artifacts.prepared(run.run_id)
             prepared = self.artifacts.get(ref, GenerationPreparation)
-        if run.workflow_id == "package-to-reviewed-media:v1" and self.on_ready:
+        if run.workflow_id in MEDIA_WORKFLOWS and self.on_ready:
             self.on_ready(run.run_id,ref)
         return CapabilityResult(status=ResultStatus.SUCCEEDED,
             artifact_refs=(prepared.final_prompt_ref, prepared.audio_plan_ref, ref))

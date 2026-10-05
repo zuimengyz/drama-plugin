@@ -80,10 +80,15 @@ class PackageReader:
     """The production consumer only resolves the selections granted by this Package."""
     creative_authority = False
 
-    def __init__(self, resolver: ReferenceResolver, dependencies: LegacyExecutionReferences,
+    def __init__(self, resolver: ReferenceResolver, dependencies: LegacyExecutionReferences | None = None,
                  operations: OperationResolver | None = None):
         self.resolver, self.dependencies = resolver, dependencies
         self.operations = operations
+
+    def historical_pin(self, pin: dict[str, Any], *, work_id: str) -> tuple[SourceReference, Any]:
+        if self.dependencies is None:
+            raise SourceReadError(AssemblyIssueCode.AUTHORITY_MISMATCH, SourceOwner.PROFESSIONAL, str(pin.get("key", "")))
+        return self.dependencies.resolve_pin(pin, work_id=work_id)
 
     async def selections(self, package: ProductionPackage) -> tuple[SelectedValue, ...]:
         values = []
@@ -100,6 +105,8 @@ class PackageReader:
     async def validate_execution_refs(self, references: tuple[SourceReference, ...], *, work_id: str) -> None:
         for ref in dict.fromkeys(references):
             if ref.artifact_ref.startswith(("performance:", "asset-compilation:")):
+                if self.dependencies is None:
+                    raise SourceReadError(AssemblyIssueCode.AUTHORITY_MISMATCH, ref.owner, ref.artifact_ref)
                 self.dependencies.resolve_reference(ref, work_id=work_id)
             else:
                 await self.resolver.resolve(ref)

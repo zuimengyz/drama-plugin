@@ -27,7 +27,7 @@ from drama_plugin.execution.transport import CapabilityAbsent, IntakeTransient, 
 from drama_plugin.generation.contracts import AudioExecutionPlan, FinalPromptArtifact, GenerationPreparation, PromptIR
 from drama_plugin.governance.contracts import GateEffect, HardStopFamily
 from drama_plugin.runtime import ArtifactReference, RunMode, RuntimeState
-from drama_plugin.runtime.contracts import CapabilityInput, ResultStatus
+from drama_plugin.runtime.contracts import CapabilityInput, ResultStatus, RecoveryClass
 from test_production_package import fixture
 from test_prompt_audio_convergence import generation_fixture, load, parallel_fixture
 
@@ -151,7 +151,9 @@ async def test_complete_offline_candidate_exact_transfer_and_identity(generation
         plugin.execution.derived(prompt_ir_ref, PromptIR).fingerprint,
         plugin.execution.derived(preparation.audio_plan_ref, AudioExecutionPlan).fingerprint)
     assert generation_fixture[0].work.model_dump_json() == before
-    assert len({key for key in plugin.runtime.executor.native_keys if not key.startswith(("creative.", "film."))}) == 16
+    assert {key for key in plugin.runtime.executor.native_keys if key.startswith("execution.")} == {
+        "execution.provider:v1", "execution.media_intake:v1", "execution.media_review:v1",
+        "execution.audio:v1", "execution.av_candidate:v1"}
     assert plugin.execution.store.get(candidate.av_creative_ref, CreativeMediaReview).media == candidate.media
     assert plugin.execution.store.get(candidate.av_technical_ref, TechnicalMediaReview).media == candidate.media
     assert plugin.execution.store.get(candidate.video_creative_ref, CreativeMediaReview).media != candidate.media
@@ -193,10 +195,13 @@ async def test_ack_loss_restore_queries_same_attempt_without_resubmit(generation
     assert len(submissions(replay)) == 1
 
 
-async def test_unknown_unqueryable_stays_waiting(generation_fixture, tmp_path, recorded_video):
+async def test_unknown_unqueryable_hard_blocks_without_resubmission(generation_fixture, tmp_path, recorded_video):
     plugin, replay, inputs = await setup(generation_fixture, tmp_path, recorded_video, behavior="ack-loss")
     replay.query_available = False
     waiting = await plugin.runtime.run(inputs.run_id)
+    assert waiting.state == RuntimeState.FAILED
+    assert waiting.last_result.code == "PROVIDER_UNKNOWN_WITHOUT_LOOKUP"
+    assert waiting.last_result.recovery_class == RecoveryClass.HARD_BLOCK
     for _ in range(3):
         assert await plugin.resume_execution_run(inputs.run_id) == waiting
     assert checkpoint(plugin, inputs).state == OperationState.UNKNOWN
@@ -209,7 +214,8 @@ async def test_submitting_without_receipt_is_uncertain_never_resubmitted(generat
     assert plugin.execution.store.claim_dispatch(reserved.operation_ref)
     assert not plugin.execution.store.claim_dispatch(reserved.operation_ref)
     result = await plugin.execution.execute(inputs)
-    assert result.status == ResultStatus.WAITING_EXTERNAL
+    assert result.status == ResultStatus.FAILED
+    assert result.code == "PROVIDER_UNKNOWN_WITHOUT_LOOKUP"
     assert checkpoint(plugin, inputs).state == OperationState.UNKNOWN
     assert submissions(replay) == []
 
@@ -240,20 +246,24 @@ async def test_provider_definite_failure_not_all_errors_unknown(generation_fixtu
 async def test_pre_side_effect_checks_use_existing_governor(generation_fixture, tmp_path, recorded_video, authorized, cost, budget, family):
     plugin, replay, inputs = await setup(generation_fixture, tmp_path, recorded_video, authorized=authorized, cost=cost, budget=budget)
     done = await plugin.runtime.run(inputs.run_id)
-    assert done.state == RuntimeState.FAILED
+    assert done.state == (RuntimeState.FAILED if cost else RuntimeState.WAITING_USER)
     decision = plugin.gate_findings.decision(plugin.gate_findings.latest(inputs.run_id))
     assert decision.effect == GateEffect.BLOCK and family in decision.risk_families
-    assert checkpoint(plugin, inputs).state == OperationState.RESERVED
+    with pytest.raises(KeyError):
+        checkpoint(plugin, inputs)
+    with plugin.ledger.transaction() as db:
+        assert db.execute("SELECT count(*) FROM immutable_artifact WHERE artifact_type='execution-operation'").fetchone()[0] == 0
     assert submissions(replay) == []
 
 
 async def test_provider_absent_and_live_transport_never_called(generation_fixture, tmp_path, recorded_video):
     plugin, replay, inputs = await setup(generation_fixture, tmp_path, recorded_video, transport=False)
-    assert (await plugin.runtime.run(inputs.run_id)).state == RuntimeState.WAITING_EXTERNAL
+    done = await plugin.runtime.run(inputs.run_id)
+    assert done.state == RuntimeState.FAILED and done.last_result.recovery_class == RecoveryClass.HARD_BLOCK
     assert plugin.gate_findings.decision(plugin.gate_findings.latest(inputs.run_id)).effect == GateEffect.CAPABILITY_ABSENT
     replay.offline = False
     plugin.execution.transports["offline-replay"] = replay
-    assert (await plugin.resume_execution_run(inputs.run_id)).state == RuntimeState.WAITING_EXTERNAL
+    assert await plugin.resume_execution_run(inputs.run_id) == done
     assert submissions(replay) == []
 
 
@@ -284,9 +294,12 @@ async def test_intake_retry_is_bounded(generation_fixture, tmp_path, recorded_vi
     async def failed(result):
         raise IntakeTransient()
     monkeypatch.setattr(replay, "obtain", failed)
-    for _ in range(3):
+    for _ in range(2):
         assert (await plugin.execution.intake(inputs)).status == ResultStatus.RETRYABLE_FAILURE
-    assert (await plugin.execution.intake(inputs)).status == ResultStatus.WAITING_EXTERNAL
+    exhausted = await plugin.execution.intake(inputs)
+    assert exhausted.status == ResultStatus.FAILED and exhausted.code == "MEDIA_INTAKE_RETRY_EXHAUSTED"
+    assert exhausted.recovery_class == RecoveryClass.HARD_BLOCK
+    assert (await plugin.execution.intake(inputs)).code == "MEDIA_INTAKE_RETRY_EXHAUSTED"
     assert len(submissions(replay)) == 1
 
 
@@ -347,7 +360,8 @@ async def test_creative_review_boundary(generation_fixture, tmp_path, recorded_v
     await plugin.execution.intake(inputs)
     before = generation_fixture[0].work.model_dump_json()
     result = await plugin.execution.review(inputs)
-    assert result.status == (ResultStatus.SUCCEEDED if outcome == "PASS" else ResultStatus.WAITING_EXTERNAL)
+    assert result.status == {"PASS":ResultStatus.SUCCEEDED,"REVISE":ResultStatus.WAITING_EXTERNAL,
+        "CAPABILITY_ABSENT":ResultStatus.FAILED}[outcome]
     progress = checkpoint(plugin, inputs).progress
     assert plugin.execution.store.get(progress.video_technical_ref, TechnicalMediaReview).outcome == "PASS"
     with plugin.ledger.transaction() as db:
@@ -360,11 +374,14 @@ async def test_creative_review_boundary(generation_fixture, tmp_path, recorded_v
     assert generation_fixture[0].work.model_dump_json() == before
 
 
-async def test_absent_reviewer_can_be_registered_on_restore(generation_fixture, tmp_path, recorded_video):
+async def test_absent_reviewer_registration_does_not_reset_hard_blocked_runtime(generation_fixture, tmp_path, recorded_video):
     plugin, replay, inputs = await setup(generation_fixture, tmp_path, recorded_video, reviewer=False)
-    assert (await plugin.runtime.run(inputs.run_id)).state == RuntimeState.WAITING_EXTERNAL
+    blocked = await plugin.runtime.run(inputs.run_id)
+    assert blocked.state == RuntimeState.FAILED and blocked.last_result.recovery_class == RecoveryClass.HARD_BLOCK
     plugin.execution.reviewer = MockReviewer()
-    assert (await plugin.resume_execution_run(inputs.run_id)).state == RuntimeState.SUCCEEDED
+    assert await plugin.resume_execution_run(inputs.run_id) == blocked
+    # The existing owner can read/review its fixed media; there is no paid retry.
+    assert (await plugin.execution.review(inputs)).status == ResultStatus.SUCCEEDED
     assert len(submissions(replay)) == 1
 
 
@@ -566,11 +583,12 @@ async def test_missing_speech_consumer_is_capability_absence(generation_fixture,
     assert waiting.state == RuntimeState.WAITING_EXTERNAL and waiting.cursor == 3
 
 
-async def test_provider_absence_can_restore_with_same_attempt(generation_fixture, tmp_path, recorded_video):
+async def test_provider_absence_does_not_manufacture_external_task_or_free_recovery(generation_fixture, tmp_path, recorded_video):
     plugin, replay, inputs = await setup(generation_fixture, tmp_path, recorded_video, transport=False)
-    waiting = await plugin.runtime.run(inputs.run_id)
-    assert waiting.state == RuntimeState.WAITING_EXTERNAL
-    attempt_ref = checkpoint(plugin, inputs).attempt_ref
+    failed = await plugin.runtime.run(inputs.run_id)
+    assert failed.state == RuntimeState.FAILED and failed.last_result.recovery_class == RecoveryClass.HARD_BLOCK
+    with pytest.raises(KeyError):
+        checkpoint(plugin, inputs)
     plugin.execution.transports["offline-replay"] = replay
-    assert (await plugin.resume_execution_run(inputs.run_id)).state == RuntimeState.SUCCEEDED
-    assert checkpoint(plugin, inputs).attempt_ref == attempt_ref and len(submissions(replay)) == 1
+    assert (await plugin.resume_execution_run(inputs.run_id)).state == RuntimeState.FAILED
+    assert submissions(replay) == []

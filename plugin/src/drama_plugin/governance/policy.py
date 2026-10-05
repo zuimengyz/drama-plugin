@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 from drama_plugin.governance.contracts import GateEffect as E
-from drama_plugin.governance.store import GateFindingStore
+from drama_plugin.governance.store import FindingStore
 from drama_plugin.runtime.contracts import (
-    ActionKind as A, ArtifactReference, RunMode, RuntimeAction, RuntimeRun, RuntimeState,
+    ActionKind as A, ArtifactReference, RunMode, RuntimeAction, RuntimeRun, RuntimeState, UserDecisionRequest, DecisionCategory,
     RuntimeWorkflow,
 )
 from drama_plugin.runtime.policy import FoundationPolicy
@@ -19,7 +19,7 @@ REJECT = "governance.reject_legacy:v1"
 
 
 class GovernedPolicy:
-    def __init__(self, mode: RunMode, findings: GateFindingStore):
+    def __init__(self, mode: RunMode, findings: FindingStore):
         self.foundation = FoundationPolicy(mode)
         self.findings = findings
 
@@ -58,10 +58,11 @@ class GovernedPolicy:
             return RuntimeAction(kind=A.AUTO_MAINTENANCE, capability_key=MAINTAIN, input_refs=(ref,))
         if decision.effect == E.WAIT_USER:
             return RuntimeAction(kind=A.REQUEST_USER_DECISION, decision=decision.user_decision)
-        if decision.effect in {E.CAPABILITY_ABSENT, E.REVIEW_REQUIRED}:
-            owner = "capability-absence" if decision.effect == E.CAPABILITY_ABSENT else "quality-review"
-            return RuntimeAction(kind=A.WAIT_EXTERNAL,
-                external_ref=ArtifactReference(owner=owner, artifact_ref=ref.artifact_ref, version=1))
+        if decision.effect == E.CAPABILITY_ABSENT:
+            return RuntimeAction(kind=A.CALL_CAPABILITY, capability_key=BLOCK, input_refs=(ref,))
+        if decision.effect == E.REVIEW_REQUIRED:
+            return RuntimeAction(kind=A.REQUEST_USER_DECISION, decision=UserDecisionRequest(
+                category=DecisionCategory.ART_APPROVAL, question="Review the exact candidate and required quality findings."))
         return RuntimeAction(kind=A.CALL_CAPABILITY, capability_key=RELEASE, input_refs=(ref,))
 
 

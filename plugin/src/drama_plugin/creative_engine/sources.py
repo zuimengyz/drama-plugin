@@ -2,7 +2,9 @@
 from __future__ import annotations
 from drama_plugin.creative_engine.contracts import scope_contains
 
-from typing import cast
+from typing import cast, TYPE_CHECKING
+if TYPE_CHECKING:
+    from drama_plugin.persistence.stores import DurableReferenceExecutionStore
 from pydantic import JsonValue, TypeAdapter
 
 from drama_plugin.contracts.source_pin import SourcePin
@@ -11,6 +13,7 @@ from drama_plugin.production.contracts import (
     SourceOwner, SourceReference,
 )
 from drama_plugin.production.sources import AssemblySources, OwnedSource, SourceReadError
+from drama_plugin.production.references import PREFIX, ReferenceExecutionStore
 from drama_plugin.professional_design.contracts import (
     ProfessionalDesignRequest, ProfessionalDesignSelection, ProfessionalReferenceCheck,
 )
@@ -30,9 +33,9 @@ def json_object(value: object) -> dict[str, JsonValue]:
 
 
 class NativeCreativeSources:
-    def __init__(self, store: CreativeVersionStore, refs: tuple[VersionRef, ...]):
-        self.store = store
-        self.refs = refs
+    def __init__(self, store: CreativeVersionStore, refs: tuple[VersionRef, ...] = (),
+                 references: ReferenceExecutionStore | DurableReferenceExecutionStore | None = None):
+        self.store, self.refs, self.references = store, refs, references
 
     def version(self, kind: Kind) -> CreativeVersion:
         found = [self.store.resolve(r) for r in self.refs if self.store.resolve(r).kind == kind]
@@ -82,6 +85,11 @@ class NativeCreativeSources:
         return result
 
     async def scope_sources(self, scope: RuntimeScope) -> tuple[OwnedSource, OwnedSource, OwnedSource]:
+        if not self.refs:
+            approved = self.store.approved_selection(scope)
+            if approved is None:
+                raise SourceReadError(I.MISSING_REQUIRED_SOURCE, SourceOwner.SHOT, scope.shot_id or scope.work_id)
+            return await NativeCreativeSources(self.store, approved, self.references).scope_sources(scope)
         artifacts = tuple(self.version(kind) for kind in (Kind.WORK, Kind.SCENE, Kind.SHOT))
         if any(not scope_contains(a.scope, scope) for a in artifacts):
             raise SourceReadError(I.SCOPE_MISMATCH, SourceOwner.SHOT, scope.shot_id or scope.work_id)
@@ -90,9 +98,53 @@ class NativeCreativeSources:
     async def professional(self, department: str, pin: SourcePin) -> OwnedSource:
         raise SourceReadError(I.AUTHORITY_MISMATCH, SourceOwner.PROFESSIONAL, pin.key)
 
-    async def resolve(self, reference: SourceReference) -> JsonValue:
+    def exact_projection(self, reference: SourceReference) -> CreativeVersion:
+        """Rebuild a lost projection only by matching its exact source seal."""
         try:
-            artifact = self.store.projection(reference.fingerprint)
+            return self.store.projection(reference.fingerprint)
+        except FileNotFoundError:
+            pass
+        candidates = tuple(self.store.resolve(ref) for ref in self.refs) if self.refs else self.store.versions()
+        for candidate in candidates:
+            expected = {SourceOwner.WORK: (Kind.WORK, candidate.scope.work_id),
+                SourceOwner.SCENE: (Kind.SCENE, candidate.scope.scene_id),
+                SourceOwner.SHOT: (Kind.SHOT, candidate.scope.shot_id),
+                SourceOwner.DIRECTION: (Kind.SHOT, candidate.identity),
+                SourceOwner.PROFESSIONAL: (Kind.PROFESSIONAL, candidate.identity)}.get(reference.owner)
+            if expected is None or (candidate.kind, reference.artifact_ref) != expected:
+                continue
+            ancestors: dict[str, VersionRef] = {}
+            def collect(version: CreativeVersion) -> None:
+                if version.identity in ancestors:
+                    if ancestors[version.identity] != version.ref():
+                        raise ValueError("Exact projection has conflicting ancestor versions")
+                    return
+                ancestors[version.identity] = version.ref()
+                for parent in version.source_refs:
+                    collect(self.store.resolve(parent))
+            collect(candidate)
+            sources = NativeCreativeSources(self.store, tuple(ancestors.values()), self.references)
+            projected = sources.direction(candidate) if reference.owner == SourceOwner.DIRECTION and candidate.kind == Kind.SHOT else sources.project(candidate)
+            if projected.reference(*reference.path) == reference:
+                return candidate
+        raise ValueError("Exact creative projection unavailable")
+
+    async def resolve(self, reference: SourceReference) -> JsonValue:
+        if reference.artifact_ref.startswith(PREFIX):
+            if self.references is None:
+                raise SourceReadError(I.MISSING_REQUIRED_SOURCE, reference.owner, reference.artifact_ref)
+            return self.references.resolve(reference)
+        try:
+            artifact = self.exact_projection(reference)
+            if not self.refs:
+                refs: dict[str, VersionRef] = {}
+                def collect(version: CreativeVersion) -> None:
+                    refs[version.identity] = version.ref()
+                    for parent in version.source_refs:
+                        if parent.identity not in refs:
+                            collect(self.store.resolve(parent))
+                collect(artifact)
+                return await NativeCreativeSources(self.store, tuple(refs.values()), self.references).resolve(reference)
             projected = self.direction(artifact) if reference.owner == SourceOwner.DIRECTION else self.project(artifact)
         except (KeyError, OSError, ValueError) as error:
             raise SourceReadError(I.VERSION_MISMATCH, reference.owner, reference.artifact_ref) from error
@@ -113,6 +165,12 @@ class NativeCreativeSources:
         return value
 
     async def select(self, request: ProfessionalDesignRequest) -> ProfessionalDesignSelection:
+        if not self.refs:
+            try:
+                shot = self.exact_projection(request.scope.shot)
+                return await NativeCreativeSources(self.store, self.store.selected_refs(shot.ref()), self.references).select(request)
+            except (OSError, KeyError) as error:
+                raise SourceReadError(I.MISSING_REQUIRED_SOURCE, SourceOwner.SHOT, request.scope.shot.artifact_ref) from error
         scope = RuntimeScope(work_id=request.scope.work.artifact_ref,
             scene_id=request.scope.scene.artifact_ref, shot_id=request.scope.shot.artifact_ref)
         owned = await self.scope_sources(scope)
@@ -147,7 +205,7 @@ class NativeCreativeSources:
         issues: list[AssemblyIssue] = []
         for source in (*request.sources,):
             try:
-                version = self.store.projection(source.reference.fingerprint)
+                version = self.exact_projection(source.reference)
                 if version.scope != RuntimeScope(work_id=request.scope.work.artifact_ref,
                         scene_id=request.scope.scene.artifact_ref, shot_id=request.scope.shot.artifact_ref):
                     raise SourceReadError(I.SCOPE_MISMATCH, source.reference.owner, source.reference.artifact_ref)
@@ -178,8 +236,8 @@ class CreativeAwareSources:
 
     def snapshot(self, ref: SourceReference) -> NativeCreativeSources | None:
         try:
-            artifact = self.store.projection(ref.fingerprint)
-        except (OSError, KeyError):
+            artifact = NativeCreativeSources(self.store).exact_projection(ref)
+        except (OSError, KeyError, ValueError):
             return None
         refs: dict[str, VersionRef] = {}
         def collect(value: CreativeVersion) -> None:
@@ -203,17 +261,6 @@ class CreativeAwareSources:
         snapshot = self.snapshot(reference)
         if snapshot is None:
             return await self.legacy.resolve(reference)
-        artifact = self.store.projection(reference.fingerprint)
-        if reference.owner == SourceOwner.DIRECTION:
-            projected = snapshot.direction(artifact)
-            if projected.reference(*reference.path) != reference:
-                raise SourceReadError(I.VERSION_MISMATCH, reference.owner, reference.artifact_ref)
-            value: JsonValue = json_object(projected.body)
-            for segment in reference.path:
-                if not isinstance(value, dict):
-                    raise SourceReadError(I.MISSING_REQUIRED_SOURCE, reference.owner, reference.artifact_ref)
-                value = value[segment]
-            return value
         return await snapshot.resolve(reference)
 
 
@@ -225,7 +272,7 @@ class CreativeAwareProfessional:
     async def select(self, request: ProfessionalDesignRequest) -> ProfessionalDesignSelection:
         snapshot = self.sources.snapshot(request.scope.shot)
         if snapshot is not None:
-            shot = self.sources.store.projection(request.scope.shot.fingerprint)
+            shot = snapshot.exact_projection(request.scope.shot)
             selected = self.sources.store.selected_refs(shot.ref())
             return await NativeCreativeSources(self.sources.store, selected).select(request)
         return await self.legacy.select(request)
@@ -234,18 +281,4 @@ class CreativeAwareProfessional:
         snapshot = self.sources.snapshot(request.scope.shot)
         if snapshot is None:
             return await self.legacy.validate(request)
-        issues: list[AssemblyIssue] = []
-        for selection in request.sources:
-            ref = selection.reference
-            try:
-                artifact = self.sources.store.projection(ref.fingerprint)
-                if artifact.scope != RuntimeScope(work_id=request.scope.work.artifact_ref,
-                        scene_id=request.scope.scene.artifact_ref, shot_id=request.scope.shot.artifact_ref):
-                    raise SourceReadError(I.SCOPE_MISMATCH, ref.owner, ref.artifact_ref)
-                await self.sources.resolve(ref)
-                if self.sources.store.stale(artifact.ref()):
-                    raise SourceReadError(I.VERSION_MISMATCH, ref.owner, ref.artifact_ref)
-            except SourceReadError as error:
-                issues.append(AssemblyIssue(code=error.code, domain=selection.domain, owner=error.owner,
-                    artifact_ref=error.artifact_ref))
-        return AssemblyValidation(status="UNRESOLVED" if issues else "READY", issues=tuple(issues))
+        return await snapshot.validate(request)

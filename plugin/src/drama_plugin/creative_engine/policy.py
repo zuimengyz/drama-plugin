@@ -1,7 +1,6 @@
 """Registered E2 actions; this policy selects owners, never creative content."""
 from drama_plugin.creative_engine.capability import PREFIX
 from drama_plugin.generation.policy import GenerationPolicy
-from drama_plugin.governance.store import GateFindingStore
 from drama_plugin.runtime.contracts import (
     ActionKind as A, DecisionCategory, RunMode, RuntimeAction, RuntimeRun, RuntimeState,
     RuntimeWorkflow, UserDecisionRequest,
@@ -26,9 +25,6 @@ def dependency_workflow() -> RuntimeWorkflow:
 
 
 class CreativePolicy(GenerationPolicy):
-    def __init__(self, mode: RunMode, findings: GateFindingStore):
-        super().__init__(mode, findings)
-
     def next_action(self, run: RuntimeRun, workflow: RuntimeWorkflow) -> RuntimeAction:
         if workflow.workflow_id != WORKFLOW:
             return super().next_action(run, workflow)

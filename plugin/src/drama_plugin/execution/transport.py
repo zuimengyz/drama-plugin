@@ -16,9 +16,17 @@ from drama_plugin.execution.contracts import ExecutionOperation, ProviderAttempt
 class DefinitelyNotSubmitted(RuntimeError):
     """Transport has positive evidence that no request was sent."""
 
+    def __init__(self, code: str = "DEFINITELY_NOT_SUBMITTED", *, http_status: int | None = None):
+        super().__init__(code)
+        self.code, self.http_status = code, http_status
+
 
 class PossiblySubmitted(RuntimeError):
     """Transport cannot confirm reception; never a generation retry signal."""
+
+    def __init__(self, code: str = "SUBMISSION_UNCERTAIN", *, http_status: int | None = None):
+        super().__init__(code)
+        self.code, self.http_status = code, http_status
 
 
 class CapabilityAbsent(RuntimeError):
@@ -42,6 +50,7 @@ class ProviderTransport(Protocol):
     def provider(self) -> str: ...
     @property
     def offline(self) -> bool: ...
+    def can_reconcile(self, attempt: ProviderAttempt, receipt: ProviderReceipt | None) -> bool: ...
     async def submit(self, operation: ExecutionOperation, attempt: ProviderAttempt,
                      request: ProviderRequest) -> ProviderReceipt: ...
     async def query(self, operation: ExecutionOperation, attempt: ProviderAttempt,
@@ -72,6 +81,9 @@ class ReplayTransport:
 
     def _path(self, attempt: ProviderAttempt) -> Path:
         return self.directory / (attempt.client_identity + ".json")
+
+    def can_reconcile(self, attempt: ProviderAttempt, receipt: ProviderReceipt | None) -> bool:
+        return self.query_available and (receipt is not None or self._path(attempt).exists())
 
     async def submit(self, operation: ExecutionOperation, attempt: ProviderAttempt,
                      request: ProviderRequest) -> ProviderReceipt:

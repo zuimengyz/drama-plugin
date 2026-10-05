@@ -52,8 +52,8 @@ async def test_unchanged_validator_rejects_without_filter_repair_or_retry(domain
     def mock(r):calls.append(r);return response(body)
     _,a,_=compose_authors(load_config(environment=ENV).text_composition,SKILLS,transport=httpx.MockTransport(mock))
     with pytest.raises(AuthorResultFailure) as caught:await a.author(request('direction'))
-    assert caught.value.diagnostic.failure_stage=='SHOT_POST_VALIDATION'
-    assert caught.value.diagnostic.validator=='ShotBody.domains'
+    assert caught.value.diagnostic.failure_stage==('DTO_SCHEMA' if any(d in ('CANON','DIRECTION') for d in domains) else 'SHOT_POST_VALIDATION')
+    assert caught.value.diagnostic.validator==('model_semantic_contract' if any(d in ('CANON','DIRECTION') for d in domains) else 'ShotBody.domains')
     assert len(calls)==1 and body['professionalDomains']==domains
 
 
@@ -67,7 +67,8 @@ async def test_direction_projection_preserves_other_role_contracts(role):
     if role=='canon':await c.author(request())
     else:await p.design(request('professional'))
     schema=json.loads(captured[0]['messages'][0]['content'].rsplit('\nOutput JSON schema:\n',1)[1])
-    expected=domain_schema if role=='canon' else professional_model_schema()
+    from drama_plugin.creative_engine.author_projection import canon_schema
+    expected=canon_schema() if role=='canon' else professional_model_schema()
     assert schema==expected
     assert TypeAdapter(CanonDraft if role=='canon' else tuple[DesignBody,...]).json_schema(by_alias=True)==domain_schema
     assert 'CANON and DIRECTION must never appear in professionalDomains' not in captured[0]['messages'][0]['content']

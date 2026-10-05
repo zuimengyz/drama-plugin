@@ -45,7 +45,7 @@ async def run() -> dict[str, Any]:
     with patch("drama_plugin.plugin.load_config", return_value=DramaPluginConfig()), \
          patch.object(socket.socket, "connect", forbidden), \
          patch.object(socket.socket, "connect_ex", forbidden):
-        async with DramaPlugin.load(Path(__file__).resolve().parents[1], mock_data=data) as plugin:
+        async with DramaPlugin.load(Path(__file__).resolve().parents[1], mock_data=data, legacy_reads=True) as plugin:
             calls: list[str] = []
             original = plugin.tools.invoke
 

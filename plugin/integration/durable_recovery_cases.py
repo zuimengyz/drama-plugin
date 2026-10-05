@@ -49,7 +49,7 @@ async def target_case(scenario: str, phase: str, ledger_path: Path,
     data = load_data(fixture)
     with patch("drama_plugin.plugin.load_config", return_value=DramaPluginConfig()):
         async with DramaPlugin.load(PLUGIN, mock_data=data,
-                production_artifact_roots=(designs,), ledger_path=ledger_path) as plugin:
+                legacy_reads=True, production_artifact_roots=(designs,), ledger_path=ledger_path) as plugin:
             if phase == "start":
                 seed = plugin.create_generation_run(work_id="work", scene_id="scene", shot_id="shot",
                     mode=RunMode.EXPERIMENT, run_id=scenario + "-seed")

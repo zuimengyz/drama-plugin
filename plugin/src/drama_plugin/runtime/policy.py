@@ -8,6 +8,10 @@ from drama_plugin.runtime.contracts import (
     ActionKind, RunMode, RuntimeAction, RuntimeRun, RuntimeState, RuntimeWorkflow,
 )
 
+# Text authors share one total content-call allowance, consumed by Runtime only.
+# Generic/local capability and paid-media retry policies remain unchanged.
+AUTHOR_CONTENT_ATTEMPT_LIMIT = 5
+
 
 class RuntimePolicy(Protocol):
     @property

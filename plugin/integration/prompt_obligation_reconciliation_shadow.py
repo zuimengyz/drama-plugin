@@ -219,15 +219,15 @@ async def shadow(output: Path, project: Path = PROJECT):
          patch("drama_plugin.hosts.cinematic_projection.project",forbidden), \
          patch("drama_plugin.professional.compile_prompt_projection",forbidden), \
          patch("drama_plugin.visual.video_prompt.compile_request_ir",forbidden),patch.object(Path,"read_text",guarded_read):
-        async with DramaPlugin.load(PLUGIN,mock_data=data,production_artifact_roots=(project/"S02-design",),
+        async with DramaPlugin.load(PLUGIN,mock_data=data,legacy_reads=True, production_artifact_roots=(project/"S02-design",),
                 reference_execution_store=references) as plugin:
-            media_reads=[]; original=plugin.prompt_compiler.references.media_reader.get
+            media_reads=[]; original=plugin.prompt_compiler.references.media_reader.get_media
             async def media_get(identity):media_reads.append(identity);return await original(identity)
             count=0;generate=plugin.prompt_compiler.generator.generate
             def generator(*a,**k):
                 nonlocal count
                 count+=1;return generate(*a,**k)
-            with patch.object(plugin.prompt_compiler.references.media_reader,"get",media_get), \
+            with patch.object(plugin.prompt_compiler.references.media_reader,"get_media",media_get), \
                  patch.object(plugin.prompt_compiler.generator,"generate",generator), \
                  patch.object(plugin.providers.production,"generate_video",forbidden), \
                  patch.object(plugin.providers.production,"generate_image",forbidden):
@@ -238,7 +238,7 @@ async def shadow(output: Path, project: Path = PROJECT):
                 assert partial.cursor==4 and partial.state==RuntimeState.READY
                 prepared_ref=plugin.generation_artifacts.prepared(run.run_id)
                 prepared=plugin.generation_artifacts.get(prepared_ref,GenerationPreparation)
-                async with DramaPlugin.load(PLUGIN,mock_data=data,production_artifact_roots=(project/"S02-design",),
+                async with DramaPlugin.load(PLUGIN,mock_data=data,legacy_reads=True, production_artifact_roots=(project/"S02-design",),
                         reference_execution_store=references,production_package_store=plugin.production_packages,
                         gate_finding_store=plugin.gate_findings,generation_artifact_store=plugin.generation_artifacts) as restored:
                     restored.runtime.restore(plugin.runtime.serialize(run.run_id))

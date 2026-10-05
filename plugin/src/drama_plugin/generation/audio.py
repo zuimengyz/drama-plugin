@@ -38,7 +38,9 @@ class AudioPerformanceAssembler:
             assert task.profile
             unit_lines = [i for i in selected if i.selection.reference.owner == "scene"
                 and isinstance(i.value, dict) and i.value.get("id") in task.unit.spoken_ids]
-            if {i.value["id"] for i in unit_lines} != set(task.unit.spoken_ids) or len(unit_lines) > 1:
+            relation_items = [i for i in selected if i.selection.domain == D.SOUND and
+                i.selection.reference.path[-1:] == ("speechRelations",) and isinstance(i.value,list)]
+            if {i.value["id"] for i in unit_lines} != set(task.unit.spoken_ids) or len(unit_lines) > 1 and not relation_items:
                 return AudioAssembly(None, (ExecutionDiagnostic(code="CREATIVE_SOURCE_INSUFFICIENT",
                     owner="sound-performance", domain=D.SOUND, required=True),))
             speech = tuple(SpeechEvent(event_id=i.value["id"], spoken_content_id=i.value["id"],
@@ -46,10 +48,15 @@ class AudioPerformanceAssembler:
                 layer=SpeechLayer.PRIMARY, intelligibility=Intelligibility.MUST_UNDERSTAND, mix_priority=3,
                 execution_ref=i.selection.reference, language=i.value["language"],
                 language_ref=child(i.selection.reference,"language")) for i in unit_lines)
+            unit_relations = tuple(SpeechRelation.model_validate({**row, "sourceRef":child(item.selection.reference,str(index))})
+                for item in relation_items for index,row in enumerate(item.value)
+                if {row.get("eventId"),row.get("targetEventId")} <= set(task.unit.spoken_ids))
+            if len(unit_lines)>1 and not unit_relations:
+                return AudioAssembly(None,(ExecutionDiagnostic(code="CREATIVE_SOURCE_INSUFFICIENT",owner="sound-performance",domain=D.SOUND,required=True),))
             sound_refs = tuple(i.selection.reference for i in selected if i.selection.domain == D.SOUND)
             plan = AudioExecutionPlan.seal(source_package_ref=package.artifact_reference(), scope=package_scope(package),
-                duration_ms=task.profile.requested_duration_ms, speech_events=speech, ambience_refs=sound_refs,
-                native_audio_policy=task.native_audio, source_roles=("NATIVE_VIDEO_AUDIO",))
+                duration_ms=task.profile.requested_duration_ms, speech_events=speech, relations=unit_relations, ambience_refs=sound_refs,
+                native_audio_policy=task.resolved_native_audio_policy, source_roles=("NATIVE_VIDEO_AUDIO",) if task.profile.native_audio else ())
             return AudioAssembly(plan, ())
         diagnostics: list[ExecutionDiagnostic] = []
         events, relations = [], []

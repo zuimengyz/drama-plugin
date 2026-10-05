@@ -53,7 +53,7 @@ async def shadow(before_path: Path = EVIDENCE / "T2-S02-K02-ProductionPackage.js
          patch.object(socket.socket, "connect", forbidden), patch.object(socket.socket, "connect_ex", forbidden), \
          patch("drama_plugin.professional.compile_prompt_projection", forbidden), \
          patch("drama_plugin.hosts.cinematic_projection.project", forbidden):
-        async with DramaPlugin.load(ROOT, mock_data=data, production_artifact_roots=(professional_root,)) as plugin:
+        async with DramaPlugin.load(ROOT, mock_data=data, legacy_reads=True, production_artifact_roots=(professional_root,)) as plugin:
             execute = plugin.runtime.executor.execute
             resolve = plugin.professional_design.resolve
             read = plugin.shot_assembler.sources.professional

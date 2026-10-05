@@ -13,7 +13,7 @@ from pydantic import Field, JsonValue, TypeAdapter, model_validator
 from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.contracts.dpd import PerformanceTargetRole
 from drama_plugin.contracts.source_pin import SourcePin
-from drama_plugin.creative_engine.contracts import Authority, DesignBody, Kind, SceneBody, ShotBody, VersionRef
+from drama_plugin.creative_engine.contracts import Authority, DesignBody, Kind, SceneBody, ShotBody, VersionRef, scope_contains
 from drama_plugin.creative_engine.store import CreativeVersionStore
 from drama_plugin.runtime.contracts import ArtifactReference, Identifier, RuntimeContract, RuntimeScope
 
@@ -84,8 +84,7 @@ def _validate(versions: CreativeVersionStore, declaration: PerformanceProjection
             or performance.body.domain.value != "PERFORMANCE"
             or not isinstance(scene.body, SceneBody) or not isinstance(shot.body, ShotBody)):
         raise ValueError("PERFORMANCE_SCOPE_WRONG_OWNER")
-    if any(v.state != "ADOPTED" or v.scope != declaration.scope
-           or v.adoption_decision_ref != declaration.adoption_decision_ref for v in originals):
+    if any(v.state != "ADOPTED" or not scope_contains(v.scope, declaration.scope) or v.adoption_decision_ref is None for v in originals) or shot.adoption_decision_ref != declaration.adoption_decision_ref:
         raise ValueError("PERFORMANCE_SCOPE_UNAPPROVED")
     if any(versions.stale(v.ref()) for v in originals):
         raise ValueError("PARTNER_DPD_REQUIRED: STALE_PERFORMANCE_SCOPE")
@@ -98,7 +97,7 @@ def _validate(versions: CreativeVersionStore, declaration: PerformanceProjection
     subjects = {s.subject_ref: s for s in declaration.subjects}
     if len(subjects) != len(declaration.subjects):
         raise ValueError("DUPLICATE_PERFORMANCE_SUBJECT")
-    for line in scene.body.dialogue:
+    for line in (line for line in scene.body.dialogue if line.id in shot.body.spoken_ids):
         subject = subjects.get(line.speaker)
         if subject is None or subject.role == PerformanceTargetRole.NON_INTERACTIVE_DESTINATION:
             raise ValueError("PARTNER_DPD_REQUIRED: canonical spoken content")
@@ -115,7 +114,8 @@ def _validate(versions: CreativeVersionStore, declaration: PerformanceProjection
             raise ValueError("PARTNER_DPD_REQUIRED: authored actor inventory")
     for subject in subjects.values():
         if subject.role == PerformanceTargetRole.INTERACTIVE_PARTNER:
-            exact_lines = {line.id for line in scene.body.dialogue if line.speaker == subject.subject_ref}
+            exact_lines = {line.id for line in scene.body.dialogue
+                           if line.id in shot.body.spoken_ids and line.speaker == subject.subject_ref}
             if set(subject.spoken_ids) != exact_lines:
                 raise ValueError("PERFORMANCE_SCOPE_SPOKEN_INVENTORY_MISMATCH")
     for subject in subjects.values():

@@ -46,7 +46,7 @@ async def shadow(output: Path, project: Path = PROJECT):
          patch("drama_plugin.hosts.cinematic_projection.project", forbidden), \
          patch("drama_plugin.professional.compile_prompt_projection", forbidden), \
          patch("drama_plugin.visual.video_prompt.compile_request_ir", forbidden):
-        async with DramaPlugin.load(PLUGIN, mock_data=data, production_artifact_roots=(project / "S02-design",)) as plugin:
+        async with DramaPlugin.load(PLUGIN, mock_data=data, legacy_reads=True, production_artifact_roots=(project / "S02-design",)) as plugin:
             execute = plugin.runtime.executor.execute
             assemble = plugin.shot_assembler.assemble
             generate = plugin.prompt_compiler.generator.generate
@@ -80,7 +80,7 @@ async def shadow(output: Path, project: Path = PROJECT):
                 checkpoint = plugin.runtime.serialize(run.run_id)
                 prepared_ref = plugin.generation_artifacts.prepared(run.run_id)
                 prepared = plugin.generation_artifacts.get(prepared_ref, GenerationPreparation)
-                async with DramaPlugin.load(PLUGIN, mock_data=data, production_artifact_roots=(project / "S02-design",),
+                async with DramaPlugin.load(PLUGIN, mock_data=data, legacy_reads=True, production_artifact_roots=(project / "S02-design",),
                         production_package_store=plugin.production_packages, gate_finding_store=plugin.gate_findings,
                         generation_artifact_store=plugin.generation_artifacts) as restored:
                     restored.runtime.restore(checkpoint)

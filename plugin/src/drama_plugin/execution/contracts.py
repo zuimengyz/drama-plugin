@@ -63,13 +63,22 @@ class ExecutionOperation(ExecutionArtifact):
 
 
 class ProviderAttempt(ExecutionArtifact):
+    extension_fields = ("previous_attempt_ref", "approval_ref")
     owner = "provider-attempt"
     operation_ref: ArtifactReference
     provider: Identifier
     request_fingerprint: Hash
     # An attempt is reserved before sending, so it is also the stable query key.
     client_identity: Hash
-    ordinal: Literal[1] = 1  # E1 never implicitly creates another paid attempt.
+    ordinal: Annotated[StrictInt, Field(ge=1, le=2)] = 1
+    previous_attempt_ref: ArtifactReference | None = None
+    approval_ref: ArtifactReference | None = None
+
+    @model_validator(mode="after")
+    def supplemental_identity(self) -> Self:
+        if (self.ordinal == 2) != (self.previous_attempt_ref is not None and self.approval_ref is not None):
+            raise ValueError("Supplemental attempt requires prior attempt and fresh cost receipt")
+        return self
 
 
 class RequestReference(RuntimeContract):
@@ -101,6 +110,7 @@ class ProviderResult(RuntimeContract):
 
 
 class ProviderReceipt(ExecutionArtifact):
+    extension_fields = ("query_code", "http_status", "query_retryable", "usage")
     owner = "provider-receipt"
     operation_ref: ArtifactReference
     attempt_ref: ArtifactReference
@@ -111,6 +121,11 @@ class ProviderReceipt(ExecutionArtifact):
     state: Literal["RUNNING", "SUCCEEDED", "FAILED"]
     result: ProviderResult | None = None
     failure_code: Identifier | None = None
+    # Read/reconciliation diagnostics, never vendor text, headers or result URLs.
+    query_code: Identifier | None = None
+    http_status: Annotated[StrictInt, Field(ge=100, le=599)] | None = None
+    query_retryable: bool | None = None
+    usage: dict[str, int | float | str] | None = None
 
     @model_validator(mode="after")
     def receipt_shape(self) -> Self:
@@ -303,14 +318,27 @@ class ReviewedAVCandidate(ExecutionArtifact):
     final_delivery: Literal[False] = False
 
 
-class ExecutionInput(RuntimeContract):
+class ExecutionInput(ExtendedRuntimeContract):
+    extension_fields = ("recipe_ref",)
     preparation_ref: ArtifactReference
     authorization: Authorization
-    recipe_ref: ArtifactReference
+    recipe_ref: ArtifactReference | None = None
     route: Identifier
 
 
-class OperationProgress(RuntimeContract):
+class AttemptHistory(RuntimeContract):
+    attempt_ref: ArtifactReference
+    state: OperationState
+    receipt_ref: ArtifactReference | None = None
+    query_last_code: Identifier | None = None
+    reserved_cost_microunits: Annotated[StrictInt, Field(gt=0)]
+
+
+class OperationProgress(ExtendedRuntimeContract):
+    extension_fields = ("attempt_history", "unknown_lookup_attempts", "unknown_lookup_last_code")
+    attempt_history: tuple[AttemptHistory, ...] | None = Field(default=None, max_length=1)
+    unknown_lookup_attempts: Annotated[StrictInt, Field(ge=0, le=4)] | None = None
+    unknown_lookup_last_code: Identifier | None = None
     video_ref: ArtifactReference | None = None
     video_technical_ref: ArtifactReference | None = None
     video_creative_ref: ArtifactReference | None = None
@@ -321,6 +349,12 @@ class OperationProgress(RuntimeContract):
     av_creative_ref: ArtifactReference | None = None
     candidate_ref: ArtifactReference | None = None
     intake_attempts: Annotated[StrictInt, Field(ge=0, le=3)] = 0
+    intake_media: MediaIdentity | None = None
+    intake_last_code: Identifier | None = None
+    query_attempts: Annotated[StrictInt, Field(ge=0, le=60)] = 0
+    query_started_at_ms: Annotated[StrictInt, Field(ge=0)] | None = None
+    query_last_code: Identifier | None = None
+    media_last_code: Identifier | None = None
 
 
 EXECUTION_TYPES: dict[str, type[ExecutionArtifact]] = {model.owner: model for model in (

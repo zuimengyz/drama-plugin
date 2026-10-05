@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Annotated, ClassVar, Self
+from typing import Annotated, ClassVar, Self, Literal
 
 from pydantic import ConfigDict, Field, SerializerFunctionWrapHandler, StringConstraints, model_serializer, model_validator
 
@@ -127,6 +127,15 @@ class RuntimeWorkflow(RuntimeContract):
         return self
 
 
+class RecoveryClass(str, Enum):
+    """Recovery semantics of an existing capability result, not a new gate."""
+    AUTO_RECOVER = "AUTO_RECOVER"
+    RETRY_SAME_STEP = "RETRY_SAME_STEP"
+    WAIT_EXTERNAL = "WAIT_EXTERNAL"
+    USER_DECISION = "USER_DECISION"
+    HARD_BLOCK = "HARD_BLOCK"
+
+
 class ResultStatus(str, Enum):
     SUCCEEDED = "SUCCEEDED"
     RETRYABLE_FAILURE = "RETRYABLE_FAILURE"
@@ -142,11 +151,19 @@ class CapabilityInput(RuntimeContract):
     input_refs: tuple[ArtifactReference, ...] = Field(default=(), max_length=32)
 
 
-class CapabilityResult(RuntimeContract):
+class CapabilityResult(ExtendedRuntimeContract):
+    extension_fields = ("recovery_class", "retry_limit", "user_decision", "retry_after_seconds", "failure_stage", "exception_type")
     status: ResultStatus
     artifact_refs: tuple[ArtifactReference, ...] = Field(default=(), max_length=32)
     code: Identifier | None = None
     external_ref: ArtifactReference | None = None
+
+    recovery_class: RecoveryClass | None = None
+    retry_limit: int | None = Field(default=None, ge=1, le=8)
+    user_decision: UserDecisionRequest | None = None
+    retry_after_seconds: float | None = Field(default=None, ge=0, le=60)
+    failure_stage: Literal["EXECUTION_INSPECTION", "CAPABILITY_EXECUTION", "EXTERNAL_RECONCILIATION"] | None = None
+    exception_type: Annotated[str, StringConstraints(pattern=r"^[A-Za-z_][A-Za-z0-9_]{0,127}$")] | None = None
 
     @model_validator(mode="after")
     def result_shape(self) -> Self:
@@ -157,6 +174,11 @@ class CapabilityResult(RuntimeContract):
                 raise ValueError("Failure requires a code")
         elif self.code is not None:
             raise ValueError("Non-failure result cannot carry a failure code")
+        if self.user_decision is not None and (self.recovery_class != RecoveryClass.USER_DECISION
+                or self.status != ResultStatus.WAITING_EXTERNAL):
+            raise ValueError("A capability user decision requires an exact pending reference")
+        if self.recovery_class == RecoveryClass.USER_DECISION and self.user_decision is None:
+            raise ValueError("User recovery requires its existing decision contract")
         return self
 
 
@@ -169,6 +191,8 @@ class ExecutionRevision(RuntimeContract):
 class ExecutionInspection(RuntimeContract):
     revision: ExecutionRevision
     completed: bool
+    # Capability-owned bound, captured before its first external invocation.
+    retry_limit: int | None = Field(default=None, ge=1, le=8)
 
 
 class ExhaustedExecutionEvidence(RuntimeContract):
@@ -191,6 +215,52 @@ class RepairResumeRecord(RuntimeContract):
     limit: int = Field(default=1, ge=1, le=1)
 
 
+class InspectionRepairRecord(RuntimeContract):
+    """One authorized re-entry after a pre-capability inspection failure."""
+    cursor: int = Field(ge=0, lt=32)
+    capability_key: Identifier
+    failed_revision: int = Field(ge=0)
+    failed_result: CapabilityResult
+    previous_execution_revision: ExecutionRevision | None = None
+    current: ExecutionRevision
+
+    @model_validator(mode="after")
+    def inspection_failure_only(self) -> Self:
+        if (self.failed_result.status != ResultStatus.FAILED
+                or self.failed_result.code != "EXECUTION_IDENTITY_UNAVAILABLE"
+                or self.failed_result.failure_stage != "EXECUTION_INSPECTION"
+                or self.failed_result.recovery_class != RecoveryClass.HARD_BLOCK):
+            raise ValueError("Inspection repair requires its exact failed result")
+        if self.previous_execution_revision is not None and (
+                self.previous_execution_revision.input_fingerprint != self.current.input_fingerprint):
+            raise ValueError("Inspection repair cannot change authority inputs")
+        return self
+
+
+class ExternalRepairRecord(RuntimeContract):
+    cursor: int = Field(ge=0, lt=32)
+    capability_key: Identifier
+    failed_revision: int = Field(ge=0)
+    failed_result: CapabilityResult
+    decision_ref: ArtifactReference
+    current: ExecutionRevision
+
+    @model_validator(mode="after")
+    def bounded_external_failure(self) -> Self:
+        if (self.failed_result.code not in {"PROVIDER_UNKNOWN_WITHOUT_LOOKUP", "EXTERNAL_RECONCILIATION_ERROR", "FORMAL_MEDIA_NOT_FOUND"}
+                or self.failed_result.status != ResultStatus.FAILED
+                or self.decision_ref.owner != "user-decision"):
+            raise ValueError("External repair requires an exact supported failure and cost receipt")
+        if self.failed_result.code in {"EXTERNAL_RECONCILIATION_ERROR", "FORMAL_MEDIA_NOT_FOUND"}:
+            if not ((self.capability_key == "execution.media_intake:v1"
+                     and (self.failed_result.exception_type == "MediaImportSourceError"
+                          or self.failed_result.code == "FORMAL_MEDIA_NOT_FOUND"))
+                    or (self.capability_key == "film.execute:v1"
+                        and any(r.owner == "runtime" for r in self.failed_result.artifact_refs))):
+                raise ValueError("External repair only supports the exact media source configuration failure")
+        return self
+
+
 class RuntimeRun(RuntimeContract):
     schema_version: int = Field(default=1, ge=1, le=1)
     run_id: Identifier
@@ -207,12 +277,22 @@ class RuntimeRun(RuntimeContract):
     wait_reason: Identifier | None = None
     execution_revision: ExecutionRevision | None = None
     repair_resumes: tuple[RepairResumeRecord, ...] = Field(default=(), max_length=32)
+    inspection_repairs: tuple[InspectionRepairRecord, ...] = Field(default=(), max_length=32)
+    external_repairs: tuple[ExternalRepairRecord, ...] = Field(default=(), max_length=32)
+    executing_action: RuntimeAction | None = None
+    step_retry_limit: int | None = Field(default=None, ge=1, le=8)
+    maintenance_attempts: int | None = Field(default=None, ge=0, le=8)
 
     @model_serializer(mode="wrap")
     def preserve_existing_checkpoint_shape(self, handler: SerializerFunctionWrapHandler) -> dict[str, object]:
         data: dict[str, object] = handler(self)
         for field, alias, absent in (("execution_revision", "executionRevision", self.execution_revision is None),
-                                     ("repair_resumes", "repairResumes", not self.repair_resumes)):
+                                     ("repair_resumes", "repairResumes", not self.repair_resumes),
+                                     ("inspection_repairs", "inspectionRepairs", not self.inspection_repairs),
+                                     ("external_repairs", "externalRepairs", not self.external_repairs),
+                                     ("executing_action", "executingAction", self.executing_action is None),
+                                     ("step_retry_limit", "stepRetryLimit", self.step_retry_limit is None),
+                                     ("maintenance_attempts", "maintenanceAttempts", self.maintenance_attempts is None)):
             if absent:
                 data.pop(field, None)
                 data.pop(alias, None)
@@ -224,12 +304,24 @@ class RuntimeRun(RuntimeContract):
     def attempt_identity(self) -> str:
         operation = f"{self.run_id}:{self.cursor}"
         repair = self.active_repair()
+        if (self.maintenance_attempts and self.executing_action is not None
+                and self.executing_action.kind == ActionKind.CALL_CAPABILITY):
+            business = f"repair:{repair.current.fingerprint}:{repair.attempts}" if repair is not None and repair.attempts else str(self.step_attempts)
+            return f"{operation}:recovery:{business}:{self.maintenance_attempts}"
         if repair is not None and repair.attempts:
             return f"{operation}:repair:{repair.current.fingerprint}:{repair.attempts}"
+        if self.executing_action is not None and self.executing_action.kind == ActionKind.AUTO_MAINTENANCE:
+            return f"{operation}:maintenance:{self.executing_action.capability_key}:{self.maintenance_attempts}"
         return f"{operation}:{self.step_attempts}"
 
     @model_validator(mode="after")
     def wait_shape(self) -> Self:
+        if (len({(r.cursor, r.failed_result.code) for r in self.external_repairs}) != len(self.external_repairs)
+                or any(r.cursor > self.cursor or r.failed_revision >= self.revision for r in self.external_repairs)):
+            raise ValueError("Only one external repair per failure kind and step")
+        if (len({r.cursor for r in self.inspection_repairs}) != len(self.inspection_repairs)
+                or any(r.cursor>self.cursor or r.failed_revision>=self.revision for r in self.inspection_repairs)):
+            raise ValueError("Only one inspection repair per completed or current step")
         if len({r.cursor for r in self.repair_resumes}) != len(self.repair_resumes):
             raise ValueError("Only one repair opportunity per step")
         if any(r.cursor > self.cursor or r.current.input_fingerprint != r.exhausted.revision.input_fingerprint
@@ -253,3 +345,9 @@ def validate_repair_history(previous: RuntimeRun, following: RuntimeRun) -> None
     for old, new in zip(previous.repair_resumes, following.repair_resumes):
         if old.model_dump(exclude={"attempts"}) != new.model_dump(exclude={"attempts"}) or new.attempts < old.attempts:
             raise ValueError("Repair history is immutable")
+    if (len(following.inspection_repairs)<len(previous.inspection_repairs)
+            or following.inspection_repairs[:len(previous.inspection_repairs)]!=previous.inspection_repairs):
+        raise ValueError("Inspection repair history is immutable")
+    if (len(following.external_repairs) < len(previous.external_repairs)
+            or following.external_repairs[:len(previous.external_repairs)] != previous.external_repairs):
+        raise ValueError("External repair history is immutable")

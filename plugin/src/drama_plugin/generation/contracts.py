@@ -10,7 +10,7 @@ from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.contracts.creative_asset import Hash
 from drama_plugin.production.contracts import DomainReference, SourceDomain, SourceReference
 from drama_plugin.runtime.contracts import ArtifactReference, Identifier, RuntimeContract, RuntimeScope
-from drama_plugin.runtime.contracts import ExtendedRuntimeContract
+from drama_plugin.runtime.contracts import ExtendedRuntimeContract, RecoveryClass
 from drama_plugin.contracts.source_pin import SourcePin
 from drama_plugin.creative_engine.contracts import VersionRef
 
@@ -53,8 +53,8 @@ class OperationSelection(RuntimeContract):
     spoken_ids: tuple[Identifier, ...] = Field(default=(), max_length=16)
     start_ref: SourceReference
     end_ref: SourceReference
-    fact_refs: tuple[DomainReference, ...] = Field(min_length=1, max_length=64)
-    reference_disposition: tuple[tuple[Identifier, Literal["INPUT", "OUT_OF_UNIT", "TECHNICAL_RISK_ACCEPTED"]], ...] = Field(max_length=16)
+    fact_refs: tuple[DomainReference, ...] = Field(min_length=1, max_length=128)
+    reference_disposition: tuple[tuple[Identifier, Literal["INPUT", "OUT_OF_UNIT", "TECHNICAL_RISK_ACCEPTED", "OPTIONAL_OMITTED"]], ...] = Field(max_length=16)
     scope_decision_ref: ArtifactReference | None = None
 
     def terms_hash(self, package_ref: ArtifactReference) -> str:
@@ -81,7 +81,8 @@ class OwnerBindings(RuntimeContract):
     adopted_refs: tuple[VersionRef, ...] = Field(min_length=5, max_length=32)
     dpd_pin: SourcePin
     performance_scope_pin: SourcePin
-    snapshot_pins: tuple[SourcePin, ...] = Field(min_length=1, max_length=16)
+    # A silent Shot has BeatDPD coverage and no invented LineDPD.
+    snapshot_pins: tuple[SourcePin, ...] = Field(default=(), max_length=16)
     rights_pin: SourcePin
     rights_request_ref: ArtifactReference
     rights_decision_ref: ArtifactReference
@@ -107,7 +108,15 @@ class GenerationTask(ExtendedRuntimeContract):
                 or self.native_audio == "DISABLED" and self.profile.native_audio
                 or self.native_audio == "REQUIRED" and not self.profile.native_audio):
             raise ValueError("Task/profile conflict")
+        if self.profile and self.unit and self.unit.spoken_ids and not self.profile.native_audio:
+            raise ValueError("REQUEST_UNSUPPORTED_REQUIRED_SPEECH")
         return self
+
+    @property
+    def resolved_native_audio_policy(self) -> Literal["REQUIRED", "DISABLED", "OPTIONAL"]:
+        if self.profile is not None:
+            return "REQUIRED" if self.profile.native_audio else "DISABLED"
+        return self.native_audio
 
 
 class Obligation(str, Enum):
@@ -182,7 +191,9 @@ class PromptCoverage(DerivedArtifact):
 
 
 class FinalPromptArtifact(DerivedArtifact):
+    extension_fields = ("task_fingerprint",)
     owner = "final-prompt"
+    task_fingerprint: Hash | None = None
     task: GenerationTask
     model_family: Identifier
     generator_policy_fingerprint: Hash
@@ -190,6 +201,12 @@ class FinalPromptArtifact(DerivedArtifact):
     prompt_ir_fingerprint: Hash
     coverage_ref: ArtifactReference
     execution_reference_refs: tuple[SourceReference, ...] = Field(default=(), max_length=16)
+
+    def matches_task(self, task: GenerationTask) -> bool:
+        if self.task_fingerprint is None:
+            return self.task == task  # Immutable historical envelopes remain readable.
+        return self.task_fingerprint == sha256_canonical(task) and self.task == GenerationTask.model_validate(
+            task.model_dump(exclude={"unit", "profile", "owners"}))
 
     @model_validator(mode="after")
     def coverage_owner(self) -> Self:
@@ -341,12 +358,15 @@ class AudioExecutionPlan(DerivedArtifact):
         return self
 
 
-class ExecutionDiagnostic(RuntimeContract):
+class ExecutionDiagnostic(ExtendedRuntimeContract):
+    extension_fields = ("recovery_class", "external_ref")
     code: Identifier
     owner: Identifier
     domain: SourceDomain
     source_ref: SourceReference | None = None
     required: bool = False
+    recovery_class: RecoveryClass | None = None
+    external_ref: ArtifactReference | None = None
 
 
 class GenerationPreparation(DerivedArtifact):

@@ -49,7 +49,7 @@ def offline(monkeypatch):
 
 def load(fixture, ledger_path):
     data, directory = fixture
-    return DramaPlugin.load(ROOT, mock_data=data, production_artifact_roots=(directory,),
+    return DramaPlugin.load(ROOT, mock_data=data, legacy_reads=True, production_artifact_roots=(directory,),
         ledger_path=ledger_path)
 
 
@@ -177,7 +177,7 @@ async def test_formal_plugin_user_decision_writes_review_not_work(generation_fix
     restored = await second.runtime.recover_run(run.run_id)
     assert restored == waiting
     decision_id = second.runtime.decision_id(run.run_id)
-    decided = await second.decide_target_run(run.run_id, decision_id=decision_id, accepted=True)
+    decided = await second.decide_target_run(run.run_id, decision_id=decision_id, accepted=True,source_ref=finding.evidence_ref)
     assert decided.last_result.artifact_refs[0].owner == "user-decision"
     receipt = second.reviews.user_decision(decided.last_result.artifact_refs[0])
     assert receipt.decision_id == decision_id and receipt.accepted
@@ -268,7 +268,7 @@ async def test_artifact_storage_rejects_direct_cross_shot_write(generation_fixtu
 async def test_persistence_does_not_change_package_prompt_audio_or_binding_fingerprints(bound_fixture, tmp_path):
     fixture, memory_references, binding = bound_fixture
     data, directory = fixture
-    memory = DramaPlugin.load(ROOT, mock_data=data, production_artifact_roots=(directory,),
+    memory = DramaPlugin.load(ROOT, mock_data=data, legacy_reads=True, production_artifact_roots=(directory,),
         reference_execution_store=memory_references)
     durable = load(fixture, tmp_path / "ledger.sqlite3")
     durable_ref = durable.execution_references.register(binding)

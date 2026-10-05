@@ -39,3 +39,10 @@ class InMemoryRunStore:
         validate_repair_history(previous, validated)
         self._runs[run.run_id] = validated
         return validated
+
+
+# Both existing implementations expose the same owner operations.
+from typing import TYPE_CHECKING, TypeAlias
+if TYPE_CHECKING:
+    from drama_plugin.persistence.stores import DurableRunStore
+RunStore: TypeAlias = "InMemoryRunStore | DurableRunStore"

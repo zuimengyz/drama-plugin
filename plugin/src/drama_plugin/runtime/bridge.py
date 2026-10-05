@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
 from drama_plugin.runtime.contracts import (
-    ArtifactReference, CapabilityInput, CapabilityResult, ExecutionInspection, ResultStatus,
+    ArtifactReference, CapabilityInput, CapabilityResult, ExecutionInspection, RecoveryClass, ResultStatus,
 )
 from drama_plugin.tools.registry import ToolRegistry
 
@@ -15,6 +15,12 @@ class CapabilityExecutor(Protocol):
     async def execute(self, capability_key: str, inputs: CapabilityInput) -> CapabilityResult: ...
 
     def replay_safe(self, capability_key: str) -> bool: ...
+
+
+@runtime_checkable
+class CapabilityAvailability(Protocol):
+    """Registry presence only; querying it never invokes a capability."""
+    def availability(self, capability_key: str) -> bool: ...
 
 
 @runtime_checkable
@@ -43,6 +49,9 @@ class LegacyCapabilityBridge:
     def registered_keys(self) -> frozenset[str]:
         return frozenset(self._capabilities)
 
+    def availability(self, capability_key: str) -> bool:
+        return capability_key in self._capabilities
+
     def replay_safe(self, capability_key: str) -> bool:
         capability = self._capabilities.get(capability_key)
         return capability is not None and capability.replay_safe
@@ -50,7 +59,7 @@ class LegacyCapabilityBridge:
     async def execute(self, capability_key: str, inputs: CapabilityInput) -> CapabilityResult:
         capability = self._capabilities.get(capability_key)
         if capability is None:
-            return CapabilityResult(status=ResultStatus.RETRYABLE_FAILURE, code="CAPABILITY_NOT_REGISTERED")
+            return CapabilityResult(status=ResultStatus.FAILED, code="CAPABILITY_NOT_REGISTERED", recovery_class=RecoveryClass.HARD_BLOCK)
         result = await capability.handler(inputs)
         # Revalidate even constructed or incorrectly typed adapter output.
         return CapabilityResult.model_validate(result)

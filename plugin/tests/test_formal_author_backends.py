@@ -53,9 +53,11 @@ def request(role='canon'):
 def model_output(role):
     if role=='canon': return canon().model_dump(mode='json', by_alias=True)
     if role=='direction': return shot().model_dump(mode='json', by_alias=True)
-    return [DesignBody(domain='LIGHTING', facts={'source':'Approved practical', 'direction':'Side'}).model_dump(mode='json', by_alias=True)]
+    return [DesignBody(domain='LIGHTING', facts={'sources':['Approved practical'], 'directionAndQuality':'Side'}).model_dump(mode='json', by_alias=True)]
 
 def response(body, finish='stop'):
+    from author_model_helpers import model_dto
+    body=model_dto(body)
     return httpx.Response(200, json={'choices':[{'finish_reason':finish,'message':{'role':'assistant','content':json.dumps(body)}}]})
 
 def configured(monkeypatch, tmp_path):
@@ -103,8 +105,103 @@ async def test_load_autocomposes_and_each_role_contract_smoke(monkeypatch,tmp_pa
         return response(model_output(role))
     authors[0].client.transport=httpx.MockTransport(handler)
     c=await authors[0].author(request()); d=await authors[1].author(request('direction')); pro=await authors[2].design(request('professional'))
-    assert c==canon() and d==shot() and pro[0].domain.value=='LIGHTING'
+    assert c.work==canon().work and c.script==canon().script and c.scene.dialogue[0].text==canon().scene.dialogue[0].text and d==shot() and pro[0].domain.value=='LIGHTING'
     assert [x['model'] for x in calls]==['offline-canon-model','offline-direction-model','offline-professional-model']
+    await p.aclose()
+
+
+@pytest.mark.asyncio
+async def test_formal_film_ports_share_existing_authors_and_reject_cross_scene_dialogue(monkeypatch, tmp_path):
+    from drama_plugin.film.contracts import FilmCanon, FilmDirection, CanonScene, DirectedShot, LanguageMetadata, DeliveryProfile
+    from drama_plugin.creative_engine.diagnostics import AuthorResultFailure
+    from drama_plugin.creative_engine.backends import direction_model_schema
+    p = configured(monkeypatch, tmp_path)
+    assert p.film.canon_author is p.creative.canon_author
+    assert p.film.direction_author is p.creative.direction_author
+    run = p.create_source_film_run(work_id='formal-film-contract', run_id='formal-film-contract', source=source(),
+        languages=LanguageMetadata(source_document_language='en', original_work_language='ru', spoken_language='ru', authority_ref=REF),
+        profile=DeliveryProfile(width=1280, height=720), rights_refs=(REF,), route='offline', model='offline-model')
+    c = canon()
+    film = FilmCanon(work=c.work, script=c.script, scenes=(CanonScene(scene_id='first', scene=c.scene),
+        CanonScene(scene_id='second', scene=SceneBody(scene_text='The same appeal remains unanswered.'))))
+    direction = FilmDirection(shots=(DirectedShot(scene_id='first', shot_id='first-view', shot=shot()),
+        DirectedShot(scene_id='second', shot_id='second-view', shot=shot().model_copy(update={'spoken_ids': ()}))))
+    replies = [film.model_dump(mode='json', by_alias=True), direction.model_dump(mode='json', by_alias=True)]
+    calls = []
+    def handler(req):
+        calls.append(json.loads(req.content))
+        return response(replies.pop(0))
+    p.creative.canon_author.client.transport = httpx.MockTransport(handler)
+    inputs = CapabilityInput(run_id=run.run_id, operation_id=run.run_id+':0', scope=run.scope)
+    request = p.film.request(inputs)
+    result = await p.film.canon_author.author_film(request)
+    assert result.work==film.work and [s.scene.scene_text for s in result.scenes]==[s.scene.scene_text for s in film.scenes]
+    directed_request = request.model_copy(update={'canon': result})
+    from author_model_helpers import model_dto
+    from drama_plugin.creative_engine.author_projection import direction_projection
+    expected=FilmDirection.model_validate(direction_projection(model_dto(direction.model_dump(mode='json',by_alias=True)),directed_request,film=True))
+    assert await p.film.direction_author.direct_film(directed_request) == expected
+    schema = direction_model_schema(film=True)
+    allowed = schema['properties']['shots']['items']['properties']['shot']['properties']['professionalDomains']['items']['enum']
+    assert 'CANON' not in allowed and 'DIRECTION' not in allowed
+    assert [r['model'] for r in calls] == ['offline-canon-model', 'offline-direction-model']
+    bad = direction.model_dump(mode='json', by_alias=True)
+    bad['shots'][1]['shot']['spokenIds'] = ['appeal']
+    replies.append(bad)
+    with pytest.raises(AuthorResultFailure) as error:
+        await p.film.direction_author.direct_film(directed_request)
+    assert error.value.diagnostic.code == 'AUTHOR_SELECTION_NOT_IN_AUTHORITY'
+    await p.aclose()
+
+
+@pytest.mark.asyncio
+async def test_film_author_failure_preserves_safe_diagnostic_and_checkpoint(monkeypatch, tmp_path):
+    from drama_plugin.film.contracts import LanguageMetadata, DeliveryProfile
+    from drama_plugin.creative_engine.diagnostics import AuthorResultFailure
+    p = configured(monkeypatch, tmp_path)
+    run = p.create_source_film_run(work_id='failed-formal-film', run_id='failed-formal-film', source=source(),
+        languages=LanguageMetadata(source_document_language='en', original_work_language='ru', spoken_language='ru', authority_ref=REF),
+        profile=DeliveryProfile(width=1280, height=720), rights_refs=(REF,), route='offline', model='offline-model')
+    p.creative.canon_author.client.transport = httpx.MockTransport(lambda req: httpx.Response(200, json={
+        'choices': [{'finish_reason': 'stop', 'message': {'role': 'assistant', 'content': 'not-json',
+                    'reasoning_content': 'HIDDEN-REASONING-MUST-NOT-BE-SAVED'}}]}))
+    failed = await p.runtime.run(run.run_id)
+    assert failed.state == RuntimeState.FAILED and failed.cursor == 0
+    assert failed.last_result.code == 'RETRY_LIMIT_REACHED'
+    ref = failed.last_result.artifact_refs[0]
+    assert ref.owner == 'creative-diagnostic'
+    from drama_plugin.contracts.source_pin import SourcePin
+    evidence = p.creative_versions.objects.read_ref(SourcePin(key='author-diagnostic:'+ref.artifact_ref.split(':', 1)[1],
+        kind='CANON', fingerprint=ref.artifact_ref.split(':', 1)[1]))
+    assert evidence['diagnostic']['code'] == 'AUTHOR_DOMAIN_JSON_INVALID'
+    assert evidence['diagnostic']['failure_stage'] == 'JSON_PARSE'
+    assert evidence['diagnostic']['finish_reason'] == 'stop'
+    assert evidence['versionRefs'] == [p.film.store.input(run.run_id).source_ref.model_dump(mode='json', by_alias=True)]
+    serialized = json.dumps(evidence)
+    assert 'HIDDEN-REASONING-MUST-NOT-BE-SAVED' not in serialized and ENV['DRAMA_PLUGIN_TEXT_COMPOSITION_API_KEY'] not in serialized
+    assert p.film.store.checkpoint(run.run_id).canon_ref is None
+    await p.aclose()
+
+
+@pytest.mark.asyncio
+async def test_film_canon_schema_failure_names_only_trusted_fields(monkeypatch, tmp_path):
+    from drama_plugin.film.contracts import LanguageMetadata, DeliveryProfile
+    from drama_plugin.creative_engine.diagnostics import AuthorResultFailure
+    p = configured(monkeypatch, tmp_path)
+    run = p.create_source_film_run(work_id='schema-film', run_id='schema-film', source=source(),
+        languages=LanguageMetadata(source_document_language='en', original_work_language='ru', spoken_language='ru', authority_ref=REF),
+        profile=DeliveryProfile(width=1280, height=720), rights_refs=(REF,), route='offline', model='offline-model')
+    body = {'work': {'dramaticIntent': 'An appeal remains unanswered.', 'characterMeaning': 'Shelter is needed.',
+                     'SECRET-EXTRA-FIELD': 'PRIVATE-VALUE'},
+            'script': canon().script.model_dump(mode='json', by_alias=True),
+            'scenes': [{'sceneId': 'scene', 'scene': canon().scene.model_dump(mode='json', by_alias=True)}]}
+    p.creative.canon_author.client.transport = httpx.MockTransport(lambda req: response(body))
+    request = p.film.request(CapabilityInput(run_id=run.run_id, operation_id=run.run_id+':0', scope=run.scope))
+    with pytest.raises(AuthorResultFailure) as error:
+        await p.film.canon_author.author_film(request)
+    assert ('work', 'interpretation') in {i.field_path for i in error.value.diagnostic.issues}
+    serialized = error.value.diagnostic.model_dump_json()
+    assert 'PRIVATE-VALUE' not in serialized and 'SECRET-EXTRA-FIELD' not in serialized
     await p.aclose()
 
 @pytest.mark.asyncio
@@ -127,7 +224,7 @@ async def test_registered_capability_invokes_formal_backend(monkeypatch,tmp_path
     p.creative.state.save(run.run_id,run.scope,CreativeCheckpoint(refs=tuple(refs)))
     inputs=CapabilityInput(run_id=run.run_id,scope=run.scope,operation_id=run.run_id+':single-contract-smoke')
     result=await p.runtime.executor.execute('creative.'+role+':v1',inputs)
-    assert result.status==(ResultStatus.WAITING_EXTERNAL if remote_absent else ResultStatus.SUCCEEDED)
+    assert result.status==(ResultStatus.FAILED if remote_absent else ResultStatus.SUCCEEDED)
     assert len(calls)==1
     assert p.creative.state.checkpoint(run.run_id).package_ref is None
     await p.aclose()
@@ -139,7 +236,8 @@ async def test_empty_formal_composition_waits_without_http(monkeypatch,tmp_path)
     assert p.creative.canon_author is None and p.creative.direction_author is None and p.professional_design.author is None
     r=p.create_film_run(work_id='offline-unconfigured',mode=RunMode.PRODUCTION,source=source())
     r=await p.runtime.run(r.run_id)
-    assert r.state==RuntimeState.WAITING_EXTERNAL and r.cursor==1
+    assert r.state==RuntimeState.FAILED and r.cursor==1
+    assert r.step_attempts==0 and r.last_result.failure_stage=='EXECUTION_INSPECTION'
     assert p.creative.state.checkpoint(r.run_id).author_rounds==0
     await p.aclose()
 
@@ -164,10 +262,11 @@ async def test_result_authority_validation_no_repair_or_fallback(role,bad):
     assert len(calls)==1
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('finish',['length','tool_calls'])
+@pytest.mark.parametrize('finish',['length', 'tool_calls'])
 async def test_incomplete_model_output_rejected(finish):
     c,_,_=compose_authors(load_config(environment=ENV).text_composition,SKILLS,transport=httpx.MockTransport(lambda r:response(model_output('canon'),finish)))
-    with pytest.raises(ValueError,match='INCOMPLETE'): await c.author(request())
+    code = 'INCOMPLETE' if finish == 'length' else 'UNSUPPORTED_FINISH'
+    with pytest.raises(ValueError,match=code): await c.author(request())
 
 @pytest.mark.asyncio
 async def test_missing_language_or_model_does_not_call_transport():

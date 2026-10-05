@@ -52,11 +52,8 @@ def evidence(revision, attempts=2):
 async def exhausted(path):
     owner=Owner(); runtime,ledger=engine(path,owner)
     run=runtime.create_run(work_id='work',mode=RunMode.PRODUCTION,workflow_id=FLOW.workflow_id)
-    assert (await runtime.run(run.run_id)).state==RuntimeState.BLOCKED
-    await runtime.retry(run.run_id)
     run=await runtime.run(run.run_id)
     assert run.step_attempts==2
-    run=await runtime.retry(run.run_id)
     assert run.state==RuntimeState.FAILED and run.last_result.code=='RETRY_LIMIT_REACHED'
     return owner,runtime,ledger,run,evidence(run.execution_revision)
 
@@ -156,8 +153,8 @@ async def test_crash_after_debit_cannot_retry_or_repair_again(tmp_path):
     with pytest.raises(asyncio.CancelledError):await runtime.run(run.run_id)
     fresh,_=engine(ledger.path,owner)
     restored=await fresh.recover_run(run.run_id)
-    assert restored.state==RuntimeState.BLOCKED and restored.repair_resumes[0].attempts==1
-    assert (await fresh.retry(run.run_id)).last_result.code=='RETRY_LIMIT_REACHED'
+    assert restored.state==RuntimeState.READY and restored.repair_resumes[0].attempts==1
+    assert (await fresh.run(run.run_id)).last_result.code=='RETRY_LIMIT_REACHED'
     with pytest.raises(ValueError,match='OPPORTUNITY_ALREADY_USED'):
         await fresh.repair_resume(run.run_id,cursor=0,capability_key=KEY,exhausted=proof)
     owner.fingerprint=sha256_canonical('yet-another-contract')
@@ -194,7 +191,7 @@ async def test_pre_revision_checkpoint_uses_explicit_audited_evidence(tmp_path):
         def replay_safe(self,key):return True
     old=RuntimeEngine(OldExecutor(),workflows={FLOW.workflow_id:FLOW})
     run=old.create_run(work_id='w',mode=RunMode.PRODUCTION,workflow_id=FLOW.workflow_id)
-    await old.run(run.run_id);await old.retry(run.run_id);await old.run(run.run_id);run=await old.retry(run.run_id)
+    run=await old.run(run.run_id)
     assert run.execution_revision is None and 'executionRevision' not in json.loads(old.serialize(run.run_id))
     owner=Owner();snapshot=owner.inspect(None).revision;owner.fingerprint=sha256_canonical('new')
     router=TargetCapabilityRouter({KEY:TargetCapability(owner.execute,True,owner.inspect)},LegacyCapabilityBridge({}))

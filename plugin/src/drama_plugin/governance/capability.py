@@ -2,20 +2,20 @@
 from __future__ import annotations
 
 from drama_plugin.governance.checks import assembly_findings
-from drama_plugin.governance.contracts import GateCategory, GateCode, GateDecision, GateFinding
+from drama_plugin.governance.contracts import GateCategory, GateCode, GateDecision, GateFinding, RULES
 from drama_plugin.governance.governor import GateGovernor
-from drama_plugin.governance.policy import ASSESS, BLOCK, MAINTAIN, REJECT, RELEASE
-from drama_plugin.governance.store import GateFindingStore
+from drama_plugin.governance.policy import ASSESS, BLOCK, MAINTAIN, REJECT, RELEASE, RESOLVE
+from drama_plugin.governance.store import FindingStore
 from drama_plugin.production.assembler import ShotAssembler
-from drama_plugin.production.store import ProductionPackageStore
+from drama_plugin.production.store import PackageStore
 from drama_plugin.runtime.capabilities import TargetCapability
-from drama_plugin.runtime.contracts import ArtifactReference, CapabilityInput, CapabilityResult, ResultStatus
-from drama_plugin.runtime.store import InMemoryRunStore
+from drama_plugin.runtime.contracts import ArtifactReference, CapabilityInput, CapabilityResult, ResultStatus, RecoveryClass, UserDecisionRequest, DecisionCategory
+from drama_plugin.runtime.store import RunStore
 
 
 class GateGovernanceCapability:
-    def __init__(self, governor: GateGovernor, findings: GateFindingStore, packages: ProductionPackageStore,
-                 assembler: ShotAssembler, runs: InMemoryRunStore):
+    def __init__(self, governor: GateGovernor, findings: FindingStore, packages: PackageStore,
+                 assembler: ShotAssembler, runs: RunStore):
         self.governor, self.findings, self.packages = governor, findings, packages
         self.assembler, self.runs = assembler, runs
 
@@ -69,6 +69,38 @@ class GateGovernanceCapability:
             raise ValueError("Governance decision is no longer current")
         return decision
 
+    def consume_user_decision(self, run_id: str, receipt_ref: ArtifactReference) -> GateDecision:
+        """Consume one exact category; retain the other independent requests."""
+        from drama_plugin.persistence.review import UserDecisionRecord
+        from drama_plugin.persistence.stores import DurableRunStore
+        if not isinstance(self.runs, DurableRunStore):
+            raise ValueError("Durable user decision owner required")
+        run = self.runs.load(run_id)
+        current_ref = self.findings.latest(run_id)
+        current = self.findings.decision(current_ref)
+        if current.user_decision is None and current.effect != "REVIEW_REQUIRED":
+            raise ValueError("No pending independent user category")
+        category = current.user_decision.category if current.user_decision else DecisionCategory.ART_APPROVAL
+        body, scope, fingerprint = self.runs.ledger.get_artifact("user-decision", receipt_ref)
+        receipt = UserDecisionRecord.model_validate(body)
+        found = tuple(self.findings.finding(ref) for ref in current.finding_refs)
+        selected = tuple(f for f in found if RULES[f.code][2] == category or
+            current.effect == "REVIEW_REQUIRED" and f.category == GateCategory.WARNING and f.required)
+        evidence = {f.evidence_ref for f in selected}
+        targets = {current_ref}
+        if len(evidence) == 1:
+            targets.update(evidence)
+        if current.package_ref and (not evidence or evidence == {current.package_ref}):
+            targets.add(current.package_ref)
+        if (receipt.artifact_reference() != receipt_ref or receipt.fingerprint != fingerprint or receipt.run_id != run_id
+                or scope != run.scope or receipt.scope != run.scope or receipt.category != category
+                or receipt.source_ref not in targets or not receipt.accepted):
+            raise ValueError("User decision category/exact target mismatch")
+        remaining = tuple(f for f in found if f not in selected)
+        following = self.governor.govern(remaining, scope=run.scope, mode=run.mode, package_ref=current.package_ref)
+        self.findings.put_decision(following, run_id=run_id)
+        return following
+
     async def release(self, inputs: CapabilityInput) -> CapabilityResult:
         decision = self._decision(inputs)
         if decision.effect != "CONTINUE" or decision.package_ref is None:
@@ -77,10 +109,23 @@ class GateGovernanceCapability:
 
     async def block(self, inputs: CapabilityInput) -> CapabilityResult:
         decision = self._decision(inputs)
+        if decision.effect in {"CAPABILITY_ABSENT", "REVIEW_REQUIRED"}:
+            return await self.resolve(inputs)
         if decision.effect != "BLOCK":
             raise ValueError("Only four-family hard stops use this capability")
-        return CapabilityResult(status=ResultStatus.RETRYABLE_FAILURE, code="GOVERNED_HARD_STOP",
-                                artifact_refs=inputs.input_refs)
+        return CapabilityResult(status=ResultStatus.FAILED, code="GOVERNED_HARD_STOP",
+                                artifact_refs=inputs.input_refs, recovery_class=RecoveryClass.HARD_BLOCK)
+
+    async def resolve(self, inputs: CapabilityInput) -> CapabilityResult:
+        decision = self._decision(inputs)
+        if decision.effect == "CAPABILITY_ABSENT":
+            return CapabilityResult(status=ResultStatus.FAILED, code="REQUIRED_CAPABILITY_ABSENT", artifact_refs=inputs.input_refs,
+                recovery_class=RecoveryClass.HARD_BLOCK)
+        if decision.effect == "REVIEW_REQUIRED":
+            return CapabilityResult(status=ResultStatus.WAITING_EXTERNAL, artifact_refs=inputs.input_refs,
+                external_ref=inputs.input_refs[0], recovery_class=RecoveryClass.USER_DECISION,
+                user_decision=UserDecisionRequest(category=DecisionCategory.ART_APPROVAL, question="Review the exact candidate and required quality findings before continuing."))
+        return await self.release(inputs)
 
     async def reject(self, inputs: CapabilityInput) -> CapabilityResult:
         decision = self._decision(inputs)
@@ -93,16 +138,33 @@ class GateGovernanceCapability:
         if decision.effect != "AUTO_MAINTAIN":
             raise ValueError("Expected internal maintenance")
         if not self.findings.claim_maintenance(inputs.run_id):
-            return CapabilityResult(status=ResultStatus.RETRYABLE_FAILURE,
-                code="TECHNICAL_MAINTENANCE_EXHAUSTED", artifact_refs=inputs.input_refs)
+            return CapabilityResult(status=ResultStatus.FAILED,
+                code="TECHNICAL_MAINTENANCE_EXHAUSTED", artifact_refs=inputs.input_refs, recovery_class=RecoveryClass.HARD_BLOCK)
         tasks = [self.findings.finding(ref) for ref in decision.finding_refs
                  if self.findings.finding(ref).category == GateCategory.AUTO_MAINTENANCE]
-        if any(task.code != GateCode.PACKAGE_STALE for task in tasks):
-            absent = GateFinding.classified(GateCode.CAPABILITY_NOT_IMPLEMENTED,
-                owner="runtime-maintenance", scope=inputs.scope, evidence_ref=inputs.input_refs[0], required=True)
-            new = self.governor.govern((absent,), scope=inputs.scope, mode=decision.mode, package_ref=decision.package_ref)
-            return CapabilityResult(status=ResultStatus.SUCCEEDED,
-                artifact_refs=(self.findings.put_decision(new, run_id=inputs.run_id),))
+        receipt_tasks = [task for task in tasks if task.code == GateCode.RECEIPT_RECONCILIATION]
+        if receipt_tasks:
+            targets = {task.evidence_ref for task in receipt_tasks}
+            if len(targets) != 1 or next(iter(targets)).owner not in {"provider-receipt", "provider-attempt", "execution-operation"}:
+                return CapabilityResult(status=ResultStatus.FAILED, code="RECONCILIATION_IDENTITY_OR_OWNER_ABSENT", artifact_refs=inputs.input_refs, recovery_class=RecoveryClass.HARD_BLOCK)
+            target=next(iter(targets))
+            from drama_plugin.persistence.stores import DurableRunStore
+            from drama_plugin.execution.contracts import ProviderReceipt,ProviderAttempt,ExecutionOperation,ExecutionArtifact
+            if not isinstance(self.runs,DurableRunStore):
+                return CapabilityResult(status=ResultStatus.FAILED,code="RECONCILIATION_IDENTITY_OR_OWNER_ABSENT",artifact_refs=inputs.input_refs,recovery_class=RecoveryClass.HARD_BLOCK)
+            try:
+                body,scope,fingerprint=self.runs.ledger.get_artifact(target.owner,target)
+                models: dict[str,type[ExecutionArtifact]]={"provider-receipt":ProviderReceipt,"provider-attempt":ProviderAttempt,"execution-operation":ExecutionOperation}
+                model=models[target.owner]
+                authoritative=model.model_validate(body)
+                if authoritative.artifact_reference()!=target or authoritative.fingerprint!=fingerprint or scope!=inputs.scope:
+                    raise ValueError("Reconciliation owner scope mismatch")
+            except (KeyError,ValueError):
+                return CapabilityResult(status=ResultStatus.FAILED,code="RECONCILIATION_IDENTITY_OR_OWNER_ABSENT",artifact_refs=inputs.input_refs,recovery_class=RecoveryClass.HARD_BLOCK)
+            return CapabilityResult(status=ResultStatus.WAITING_EXTERNAL,external_ref=target,
+                artifact_refs=inputs.input_refs,recovery_class=RecoveryClass.WAIT_EXTERNAL)
+        # Package/projection maintenance is deterministic reassembly from the
+        # existing exact Assembler inputs; it cannot invent authoritative facts.
         # A new immutable assembly is the only repair. No SourcePin or Canon writes.
         run = self.runs.load(inputs.run_id)
         assembled = await self.assembler.assemble(run.scope, mode=run.mode,

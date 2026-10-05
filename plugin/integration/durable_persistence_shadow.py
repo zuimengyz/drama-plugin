@@ -57,7 +57,7 @@ async def phase(name: str, ledger_path: Path, output: Path, run_id: str, prior: 
          patch("drama_plugin.professional.compile_prompt_projection", forbidden), \
          patch("drama_plugin.hosts.cinematic_projection.project", forbidden), \
          patch("drama_plugin.visual.video_prompt.compile_request_ir", forbidden):
-        async with DramaPlugin.load(PLUGIN, mock_data=data,
+        async with DramaPlugin.load(PLUGIN, mock_data=data, legacy_reads=True,
                 production_artifact_roots=(PROJECT / "S02-design",), ledger_path=ledger_path) as plugin:
             assert plugin.ledger is not None
             with patch.object(plugin.providers.production, "generate_video", forbidden), \

@@ -14,8 +14,17 @@ class FilmStore:
     def __init__(self, ledger: ProductionLedger, versions: CreativeVersionStore):
         self.ledger, self.versions = ledger, versions
     def bind(self, run_id: str, scope: RuntimeScope, value: FilmInput) -> None:
-        self.ledger.put_index('film-input', run_id, value, scope=scope, once=True)
-        self.ledger.put_index('film-checkpoint', run_id, FilmCheckpoint(), scope=scope, once=True)
+        try:
+            current = self.input(run_id)
+        except KeyError:
+            self.ledger.put_index('film-input', run_id, value, scope=scope, once=True)
+        else:
+            if current != value:
+                raise ValueError('Film input identity changed')
+        try:
+            self.checkpoint(run_id)
+        except KeyError:
+            self.ledger.put_index('film-checkpoint', run_id, FilmCheckpoint(), scope=scope, once=True)
     def input(self, run_id: str) -> FilmInput:
         return FilmInput.model_validate(self.ledger.get_index('film-input', run_id))
     def checkpoint(self, run_id: str) -> FilmCheckpoint:
@@ -44,11 +53,26 @@ class FilmStore:
         ref = ArtifactReference(owner=owner, artifact_ref=run_id+':'+owner+':'+pin.fingerprint, version=1)
         # This index is outside execution persistence. It lets a recovered author
         # action resolve its fixed result without calling its model again.
+        cp = self.checkpoint(run_id)
+        field = 'canon_ref' if owner == 'film-canon' else 'direction_ref'
+        self.save(run_id, self.ledger.load_run(run_id).scope,
+            FilmCheckpoint.model_validate({**cp.model_dump(), field: ref}))
         self.versions.io.write(self.versions._path('film-author', [run_id,owner]), canonical_json(ref))
         return ref
     def author_ref(self, run_id: str, owner: str) -> ArtifactReference | None:
         path = self.versions._path('film-author', [run_id,owner])
-        return ArtifactReference.model_validate_json(path.read_text()) if path.exists() else None
+        if path.exists():
+            ref = ArtifactReference.model_validate_json(path.read_text())
+        else:
+            cp = self.checkpoint(run_id)
+            retained = cp.canon_ref if owner == 'film-canon' else cp.direction_ref
+            if retained is None:
+                return None
+            ref = retained
+            self.author(ref, FilmCanon if owner == 'film-canon' else FilmDirection)
+            self.versions.io.write(path, canonical_json(ref))
+        self.author(ref, FilmCanon if owner == 'film-canon' else FilmDirection)
+        return ref
     def author(self, ref: ArtifactReference, model: type[C]) -> C:
         owner = 'film-canon' if model is FilmCanon else 'film-direction'
         key, digest = ref.artifact_ref.rsplit(':',1)

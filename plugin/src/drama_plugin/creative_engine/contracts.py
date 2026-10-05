@@ -9,6 +9,7 @@ from pydantic import Field, JsonValue, model_validator, model_serializer, Serial
 from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.production.contracts import SourceDomain
 from drama_plugin.runtime.contracts import ArtifactReference, Identifier, RunMode, RuntimeContract, RuntimeScope
+from drama_plugin.runtime.policy import AUTHOR_CONTENT_ATTEMPT_LIMIT
 
 Hash = Annotated[str, Field(pattern=r"^[a-f0-9]{64}$")]
 Text = Annotated[str, Field(min_length=1, max_length=1000000)]
@@ -19,6 +20,9 @@ class Authority(str, Enum):
     CANON = "canon-author"
     DIRECTION = "creative-direction-author"
     PROFESSIONAL = "professional-design-author"
+
+
+MAX_AUTHOR_ROUNDS = AUTHOR_CONTENT_ATTEMPT_LIMIT * len((Authority.CANON, Authority.DIRECTION, Authority.PROFESSIONAL))
 
 
 class Kind(str, Enum):
@@ -82,14 +86,33 @@ class Dialogue(RuntimeContract):
     must_keep: bool = False
 
 
+class CanonSubject(RuntimeContract):
+    """Canon meaning and display label; identity is projected by the Canon adapter."""
+    id: Identifier
+    name: Text
+    meaning: Text
+
+
 class SceneBody(RuntimeContract):
     scene_text: Text
     dialogue: tuple[Dialogue, ...] = Field(default=(), max_length=100)
+    subjects: tuple[CanonSubject, ...] = Field(default=(), max_length=100)
+
+    @model_serializer(mode="wrap")
+    def historical_shape(self, handler: SerializerFunctionWrapHandler) -> dict[str, object]:
+        from typing import cast
+        body = cast(dict[str, object], handler(self))
+        if not self.subjects:
+            body.pop("subjects", None)
+        return body
 
     @model_validator(mode="after")
     def unique_lines(self) -> Self:
         if len({line.id for line in self.dialogue}) != len(self.dialogue):
             raise ValueError("Duplicate dialogue identity")
+        if self.subjects and (len({s.id for s in self.subjects}) != len(self.subjects)
+                or not {line.speaker for line in self.dialogue} <= {s.id for s in self.subjects}):
+            raise ValueError("Canon subject inventory mismatch")
         return self
 
 
@@ -285,7 +308,7 @@ class FilmInput(RuntimeContract):
     route: RouteRequest = RouteRequest()
     revision: RevisionRequest | None = None
     base_refs: tuple[VersionRef, ...] = Field(default=(), max_length=16)
-    max_author_rounds: int = Field(default=6, ge=1, le=6)
+    max_author_rounds: int = Field(default=MAX_AUTHOR_ROUNDS, ge=1, le=MAX_AUTHOR_ROUNDS)
     prior_revision_signatures: tuple[Hash, ...] = Field(default=(), max_length=3)
 
 
@@ -311,7 +334,7 @@ class CreativeIntegrityReconciliation(RuntimeContract):
 
 class CreativeCheckpoint(RuntimeContract):
     refs: tuple[VersionRef, ...] = Field(default=(), max_length=16)
-    author_rounds: int = Field(default=0, ge=0, le=6)
+    author_rounds: int = Field(default=0, ge=0, le=MAX_AUTHOR_ROUNDS)
     route_plan: RoutePlan | None = None
     decision_ref: ArtifactReference | None = None
     candidate_ref: ArtifactReference | None = None

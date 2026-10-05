@@ -81,7 +81,7 @@ def load(tmp_path,monkeypatch,video,authors=None,**kwargs):
     return p,a
 
 def create(p,run_id='film'):
-    return p.create_source_film_run(work_id='film-work',run_id=run_id,source=SourceBody(goal='Bounded film adaptation',text='Designated source text.',spoken_language='ru'),
+    return p.create_source_film_run(work_id='film-work',run_id=run_id,workflow_id='source-to-final-film:v1',source=SourceBody(goal='Bounded film adaptation',text='Designated source text.',spoken_language='ru'),
         languages=LanguageMetadata(source_document_language='en',original_work_language='ru',spoken_language='ru',authority_ref=REF),
         profile=DeliveryProfile(width=160,height=90),rights_refs=(REF,),route='offline-replay',model='seedance-2-standard')
 
@@ -142,7 +142,7 @@ async def test_film_missing_author_waits_no_fallback(tmp_path,monkeypatch,video,
         setattr(p.film,owner,None)
     run=create(p)
     run=await p.runtime.run(run.run_id)
-    assert run.state==RuntimeState.WAITING_EXTERNAL,run
+    assert run.state==RuntimeState.FAILED,run
     assert not (tmp_path/'remote'/'submissions.jsonl').exists()
 
 @pytest.mark.asyncio

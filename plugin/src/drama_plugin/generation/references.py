@@ -9,6 +9,7 @@ from drama_plugin.generation.sources import SelectedValue
 from drama_plugin.production.contracts import SourceDomain as D, SourceReference
 from drama_plugin.production.references import PREFIX, ReferenceExecutionBinding
 from drama_plugin.exceptions import ProviderError
+from drama_plugin.runtime.contracts import ArtifactReference, RecoveryClass
 
 
 @dataclass(frozen=True)
@@ -67,10 +68,19 @@ class ExecutionReferenceResolver:
                 continue
             try:
                 if self.media_reader is None:
-                    raise KeyError(binding.media.media_id)
-                media = await self.media_reader.get(binding.media.media_id)
-            except (KeyError, ValueError, LookupError, ProviderError):
-                finding("REFERENCE_INPUT_UNRESOLVED" if required else "OPTIONAL_REFERENCE_UNRESOLVED")
+                    finding("REFERENCE_INPUT_UNRESOLVED" if required else "OPTIONAL_REFERENCE_UNRESOLVED")
+                    continue
+                media = await self.media_reader.get_media(binding.media.media_id) if hasattr(self.media_reader, "get_media") else await self.media_reader.get(binding.media.media_id)
+            except (KeyError, LookupError, ProviderError):
+                if required:
+                    diagnostics.append(ExecutionDiagnostic(code="REFERENCE_MEDIA_PENDING", owner="media-provider", domain=D.REFERENCE,
+                        source_ref=ref, required=True, recovery_class=RecoveryClass.WAIT_EXTERNAL,
+                        external_ref=ArtifactReference(owner="media",artifact_ref=binding.media.media_id)))
+                else:
+                    finding("OPTIONAL_REFERENCE_UNRESOLVED")
+                continue
+            except ValueError:
+                finding("SCOPE_MISMATCH")
                 continue
             if (media.id != binding.media.media_id or media.work_id != binding.scope.work_id or
                     media.shot_id is not None and media.shot_id != binding.scope.shot_id or

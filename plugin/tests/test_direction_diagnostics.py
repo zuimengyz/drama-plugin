@@ -18,6 +18,9 @@ REASONING='HIDDEN_REASONING_DO_NOT_STORE'
 
 
 def wire(body,finish='stop'):
+    from author_model_helpers import model_dto
+    try: body=json.dumps(model_dto(json.loads(body)))
+    except json.JSONDecodeError: pass
     return httpx.Response(200,json={'model':'offline-direction-model','usage':{'prompt_tokens':12,'completion_tokens':8,
         'completion_tokens_details':{'reasoning_tokens':3},'untrusted':SECRET},'choices':[{'finish_reason':finish,
         'message':{'role':'assistant','content':body,'reasoning_content':REASONING}}]})
@@ -31,11 +34,11 @@ def author(handler):
 @pytest.mark.asyncio
 @pytest.mark.parametrize('change,stage,path,validator',[
     ('invalid_json','JSON_PARSE',('$',),None),
-    ('field','DTO_SCHEMA',('durationMs',),None),
-    ('authority','DIALOGUE_AUTHORITY',('spokenIds',),'FormalDirectionAuthor.canon_dialogue_authority'),
+    ('field','DTO_SCHEMA',('durationMs',),'model_semantic_contract'),
+    ('authority','DIALOGUE_AUTHORITY',('spokenSelections',0),'authority_candidate_selection'),
     ('order','SHOT_POST_VALIDATION',('professionalDomains',),'ShotBody.domains'),
     ('length','INCOMPLETE_OUTPUT',(),None),
-    ('extra','DTO_SCHEMA',('<extra>',),None),
+    ('extra','DTO_SCHEMA',('<extra>',),'system_field_ownership'),
 ])
 async def test_precise_failure_without_raw_input_context_or_reasoning(change,stage,path,validator):
     output=model_output('direction');finish='stop'
@@ -81,7 +84,7 @@ async def test_valid_direction_unchanged_and_task_local_failure_metadata():
             return wire('not JSON')
         return wire(json.dumps(model_output('direction')))
     a=author(handle)
-    bad=request('direction').model_copy(update={'scope':request('direction').scope.model_copy(update={'work_id':'parallel-bad'})})
+    bad=request('direction').model_copy(update={'source':request('direction').source.model_copy(update={'goal':'parallel-bad'})})
     result=await asyncio.gather(a.author(request('direction')),a.author(bad),return_exceptions=True)
     assert result[0]==shot() and isinstance(result[1],AuthorResultFailure)
     assert result[1].diagnostic.response_hash==hashlib.sha256(wire('not JSON').content).hexdigest()
@@ -112,8 +115,8 @@ async def test_runtime_stable_failure_with_exact_persisted_safe_diagnostic(monke
         p.creative.direction_author=Broken()
     else:p.creative.direction_author.client.transport=httpx.MockTransport(lambda r:wire('{invalid'))
     done=await p.runtime.run(run.run_id)
-    assert done.state==RuntimeState.BLOCKED and done.cursor==2
-    assert done.last_result.code=='CAPABILITY_EXECUTION_ERROR'
+    assert done.state==RuntimeState.FAILED and done.cursor==2
+    assert done.last_result.code==('UNEXPECTED_AUTHOR_CAPABILITY_FAILURE' if unexpected else 'RETRY_LIMIT_REACHED')
     ref=done.last_result.artifact_refs[0]
     body=p.creative_versions.objects.read_ref(SourcePin(key='diagnostic',kind='CANON',fingerprint=ref.artifact_ref.split(':')[1]))
     d=body['diagnostic']

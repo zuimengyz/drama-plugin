@@ -5,6 +5,8 @@ from pydantic import Field, ValidationInfo, model_validator
 from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.creative_engine.contracts import CanonDraft, SceneBody, ShotBody, SourceBody, VersionRef, WorkBody, ScriptBody, RoutePlan, RevisionRequest
 from drama_plugin.execution.contracts import MediaIdentity, ReviewObservation
+from drama_plugin.contracts.source_pin import SourcePin
+from drama_plugin.generation.contracts import GenerationTask
 from drama_plugin.runtime.contracts import ArtifactReference, Identifier, RuntimeContract, RuntimeScope
 
 _SEAL = object()
@@ -68,6 +70,7 @@ class FilmAuthorRequest(RuntimeContract):
     languages: LanguageMetadata
     source_ref: VersionRef
     canon: FilmCanon | None = None
+    production_goal: Literal["MEDIA_REVIEW"] | None = None
 
 class SubtitleCue(RuntimeContract):
     shot_id: Identifier
@@ -101,6 +104,7 @@ class FilmInput(RuntimeContract):
     subtitle_cues: tuple[SubtitleCue, ...] = Field(default=(), max_length=100)
     max_cost_microunits: int = Field(default=0, ge=0)
     estimated_shot_cost_microunits: int = Field(default=0, ge=0)
+    operation_duration_ms: int = Field(default=4000, ge=1000, le=15000)
 
 class ShotUnit(RuntimeContract):
     scene_id: Identifier
@@ -130,6 +134,13 @@ class FilmCheckpoint(RuntimeContract):
     delivery_ref: ArtifactReference | None = None
     revision_parent_ref: ArtifactReference | None = None
     revision_child_run_id: Identifier | None = None
+    planning_cost_decision_ref: ArtifactReference | None = None
+    rights_request_pin: SourcePin | None = None
+    rights_decision_ref: ArtifactReference | None = None
+    rights_pin: SourcePin | None = None
+    scope_request_pin: SourcePin | None = None
+    scope_decision_ref: ArtifactReference | None = None
+    operation_task: GenerationTask | None = None
     completed: tuple[Identifier, ...] = Field(default=(), max_length=16)
 
 class FilmArtifact(RuntimeContract):

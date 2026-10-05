@@ -129,7 +129,7 @@ class ReferenceExecutionStore:
 class ReferenceBoundSources:
     """Compose native binding storage with the explicit migration Canon reader."""
     lifecycle = "MIGRATION_ONLY"  # Canon reader facade; the native store has its own authority.
-    def __init__(self, legacy, references: ReferenceExecutionStore):
+    def __init__(self, legacy, references: ReferenceStore):
         self.legacy, self.references = legacy, references
 
     async def scope_sources(self, scope):
@@ -153,3 +153,10 @@ class BoundMediaReader:
 
     async def get(self, identity: str):
         return await self.tools.invoke("media.get_media", media_id=identity)
+
+
+# Both existing implementations expose the same owner operations.
+from typing import TYPE_CHECKING, TypeAlias
+if TYPE_CHECKING:
+    from drama_plugin.persistence.stores import DurableReferenceExecutionStore
+ReferenceStore: TypeAlias = "ReferenceExecutionStore | DurableReferenceExecutionStore"

@@ -87,7 +87,7 @@ NOT_CREATED), `job_id`, `output_hash` for a completion, and `evidence`. Optional
 When billing arrives later, use `billing --input billing.json` with `attempt_id`,
 `job_id`, `credits` and `billing_event_id`. The job must match; the same event is
 idempotent and cannot be counted on another attempt.
-A timeout after submit stays UNKNOWN and prevents a fresh generation; recover the
+A timeout after submit stays UNKNOWN and first requires finite automatic queries; recover the
 same job. Terminal provider failures pause for recovery, separate from visual FAIL.
 
 Use `review --input review.json` with `attempt_id`, the exact `output_hash`,
@@ -108,7 +108,7 @@ Findings carry `category`, `severity`, `evidence` and `remedy`:
   without harming required evidence, record MINOR/CROP and the postprocessing plan.
   Missing required evidence can never be relabelled cosmetic.
 
-Use the content-review standard in SKILL.md. A rejected candidate does not exhaust its target. Host replanning, reassessment and working-input selection use the same state and stage totals, without manual exceptions. Preserve prior pause/review/plan versions. Validate fingerprints and ownership of the new executable request, not obsolete local paths from earlier machines. Confirmed noncreation does not consume a generated-job slot; unknown creation blocks resubmission until reconciled.
+Use the content-review standard in SKILL.md. A rejected candidate does not exhaust its target. Host replanning, reassessment and working-input selection use the same state and stage totals, without manual exceptions. Preserve prior pause/review/plan versions. Validate fingerprints and ownership of the new executable request, not obsolete local paths from earlier machines. Confirmed noncreation does not consume a generated-job slot; unknown creation retains its possible charge and full reservation. After finite automatic recovery, only a current cumulative authorization can permit one linked supplemental attempt on the unchanged logical operation; exhausted authorization leaves a recoverable wait without another POST.
 
 Use `status` for first reviewed count, first usable count, first-pass yield,
 unreviewed count, technical failures, known credits and unknown billing count.

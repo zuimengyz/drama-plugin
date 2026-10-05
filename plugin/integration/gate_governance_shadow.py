@@ -70,7 +70,7 @@ async def shadow() -> dict[str, Any]:
                  patch.object(socket.socket,"connect",forbidden),patch.object(socket.socket,"connect_ex",forbidden), \
                  patch("drama_plugin.professional.compile_prompt_projection",forbidden), \
                  patch("drama_plugin.hosts.cinematic_projection.project",forbidden):
-                async with DramaPlugin.load(ROOT,mock_data=data,production_artifact_roots=(root,),
+                async with DramaPlugin.load(ROOT,mock_data=data,legacy_reads=True, production_artifact_roots=(root,),
                         production_package_store=store) as plugin:
                     additional = ()
                     scope_shot = "wrong-shot-fixture" if name == "wrong-shot-scope" else data.shot.id

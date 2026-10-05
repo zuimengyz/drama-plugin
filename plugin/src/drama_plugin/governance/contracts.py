@@ -8,7 +8,7 @@ from pydantic import Field, model_validator
 
 from drama_plugin.runtime.contracts import (
     ArtifactReference, DecisionCategory, Identifier, RunMode, RuntimeContract,
-    RuntimeScope, UserDecisionRequest,
+    RuntimeScope, UserDecisionRequest, ExtendedRuntimeContract,
 )
 
 
@@ -145,6 +145,8 @@ class GateDecision(RuntimeContract):
         return self
 
 
-class GovernanceInput(RuntimeContract):
+class GovernanceInput(ExtendedRuntimeContract):
+    extension_fields = ("decision_ref",)
     package_ref: ArtifactReference | None = None
     finding_refs: tuple[ArtifactReference, ...] = Field(default=(), max_length=24)
+    decision_ref: ArtifactReference | None = None

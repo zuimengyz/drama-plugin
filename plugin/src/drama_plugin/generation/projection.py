@@ -225,6 +225,16 @@ class ExecutionProjection:
                 subject_id=subject))
         for item in selected:
             domain, ref = item.selection.domain, item.selection.reference
+            if task.return_last_frame and domain == D.EDITORIAL and 'temporalStructure' in ref.path:
+                # The adopted whole-Shot runtime remains context. The actual
+                # bounded duration comes from the frozen execution profile.
+                internal.append(CoverageEntry(fact_id='shot-time-context:'+sha256_canonical(ref),
+                    domain=domain,source_ref=ref,obligation=O.QUALITY_SUPPORTING,status=S.INTERNAL_ONLY))
+                continue
+            if task.continuation and item.selection in task.continuation.context_fact_refs:
+                internal.append(CoverageEntry(fact_id="continuation-context:"+sha256_canonical(ref),
+                    domain=domain, source_ref=ref, obligation=O.QUALITY_SUPPORTING, status=S.INTERNAL_ONLY))
+                continue
             if domain == D.SOUND and ref.path[-1:] == ("speechRelations",):
                 internal.append(CoverageEntry(fact_id="speech-relations:"+sha256_canonical(ref),domain=domain,source_ref=ref,
                     obligation=O.EXECUTION_REQUIRED,status=S.INTERNAL_ONLY))
@@ -255,6 +265,12 @@ class ExecutionProjection:
             add(domain, ref, item.value, slot, subject)
         for ref, slot in ((task.unit.start_ref, "video.start_state"), (task.unit.end_ref, "video.end_state")):
             add(D.ACTION, ref, await self.reader.resolver.resolve(ref), slot)
+        if task.continuation:
+            # This physical constraint is derived from the real endpoint binding,
+            # independently of the opening camera plan retained as context.
+            endpoint = next(i for i in selected if i.selection.reference in task.execution_reference_refs)
+            add(D.CAMERA, child(endpoint.selection.reference, "endpointState"),
+                endpoint.value['endpointState'], "video.camera_motion")
         for ref in task.unit.action_refs:
             if ref not in {f.source_ref for f in facts}:
                 add(D.ACTION, ref, await self.reader.resolver.resolve(ref), "video.action_progression")

@@ -215,8 +215,10 @@ class RepairResumeRecord(RuntimeContract):
     limit: int = Field(default=1, ge=1, le=1)
 
 
-class InspectionRepairRecord(RuntimeContract):
-    """One authorized re-entry after a pre-capability inspection failure."""
+class InspectionRepairRecord(ExtendedRuntimeContract):
+    """One authorized re-entry after a pre-capability inspection failure per batch."""
+    extension_fields = ('batch_ref',)
+    batch_ref: ArtifactReference | None = None
     cursor: int = Field(ge=0, lt=32)
     capability_key: Identifier
     failed_revision: int = Field(ge=0)
@@ -237,7 +239,9 @@ class InspectionRepairRecord(RuntimeContract):
         return self
 
 
-class ExternalRepairRecord(RuntimeContract):
+class ExternalRepairRecord(ExtendedRuntimeContract):
+    extension_fields = ('batch_ref',)
+    batch_ref: ArtifactReference | None = None
     cursor: int = Field(ge=0, lt=32)
     capability_key: Identifier
     failed_revision: int = Field(ge=0)
@@ -247,10 +251,16 @@ class ExternalRepairRecord(RuntimeContract):
 
     @model_validator(mode="after")
     def bounded_external_failure(self) -> Self:
-        if (self.failed_result.code not in {"PROVIDER_UNKNOWN_WITHOUT_LOOKUP", "EXTERNAL_RECONCILIATION_ERROR", "FORMAL_MEDIA_NOT_FOUND"}
+        if (self.failed_result.code not in {"PROVIDER_UNKNOWN_WITHOUT_LOOKUP", "EXTERNAL_RECONCILIATION_ERROR", "FORMAL_MEDIA_NOT_FOUND", "GOVERNED_HARD_STOP", "EXECUTION_REVISION_CHANGED", 'TECHNICAL_MEDIA_FAILURE', 'HUMAN_REVIEW_CONTEXT_MISMATCH'}
                 or self.failed_result.status != ResultStatus.FAILED
                 or self.decision_ref.owner != "user-decision"):
             raise ValueError("External repair requires an exact supported failure and cost receipt")
+        if self.failed_result.code == 'TECHNICAL_MEDIA_FAILURE' and self.capability_key not in {'execution.media_review:v1','film.execute:v1'}:
+            raise ValueError('Technical repair requires retained review owner output')
+        if self.failed_result.code == 'HUMAN_REVIEW_CONTEXT_MISMATCH' and self.capability_key not in {'execution.media_review:v1','film.execute:v1'}:
+            raise ValueError('Review response repair requires its exact native review step')
+        if self.failed_result.code in {'GOVERNED_HARD_STOP','EXECUTION_REVISION_CHANGED'} and self.capability_key not in {'generation.ready:v1','generation.release:v1','film.execute:v1'}:
+            raise ValueError('Resolved reference readiness repair requires its exact native step')
         if self.failed_result.code in {"EXTERNAL_RECONCILIATION_ERROR", "FORMAL_MEDIA_NOT_FOUND"}:
             if not ((self.capability_key == "execution.media_intake:v1"
                      and (self.failed_result.exception_type == "MediaImportSourceError"
@@ -259,6 +269,14 @@ class ExternalRepairRecord(RuntimeContract):
                         and any(r.owner == "runtime" for r in self.failed_result.artifact_refs))):
                 raise ValueError("External repair only supports the exact media source configuration failure")
         return self
+
+
+class ExecutionBatchResume(RuntimeContract):
+    batch_ref: ArtifactReference
+    decision_ref: ArtifactReference
+    completed_revision: int = Field(ge=0)
+    completed_cursor: int = Field(ge=0)
+    completed_result: CapabilityResult
 
 
 class RuntimeRun(RuntimeContract):
@@ -279,6 +297,7 @@ class RuntimeRun(RuntimeContract):
     repair_resumes: tuple[RepairResumeRecord, ...] = Field(default=(), max_length=32)
     inspection_repairs: tuple[InspectionRepairRecord, ...] = Field(default=(), max_length=32)
     external_repairs: tuple[ExternalRepairRecord, ...] = Field(default=(), max_length=32)
+    execution_batches: tuple[ExecutionBatchResume, ...] = Field(default=(), max_length=8)
     executing_action: RuntimeAction | None = None
     step_retry_limit: int | None = Field(default=None, ge=1, le=8)
     maintenance_attempts: int | None = Field(default=None, ge=0, le=8)
@@ -290,6 +309,7 @@ class RuntimeRun(RuntimeContract):
                                      ("repair_resumes", "repairResumes", not self.repair_resumes),
                                      ("inspection_repairs", "inspectionRepairs", not self.inspection_repairs),
                                      ("external_repairs", "externalRepairs", not self.external_repairs),
+                                     ("execution_batches", "executionBatches", not self.execution_batches),
                                      ("executing_action", "executingAction", self.executing_action is None),
                                      ("step_retry_limit", "stepRetryLimit", self.step_retry_limit is None),
                                      ("maintenance_attempts", "maintenanceAttempts", self.maintenance_attempts is None)):
@@ -316,10 +336,10 @@ class RuntimeRun(RuntimeContract):
 
     @model_validator(mode="after")
     def wait_shape(self) -> Self:
-        if (len({(r.cursor, r.failed_result.code) for r in self.external_repairs}) != len(self.external_repairs)
+        if (len({(r.cursor, r.failed_result.code, r.batch_ref) for r in self.external_repairs}) != len(self.external_repairs)
                 or any(r.cursor > self.cursor or r.failed_revision >= self.revision for r in self.external_repairs)):
             raise ValueError("Only one external repair per failure kind and step")
-        if (len({r.cursor for r in self.inspection_repairs}) != len(self.inspection_repairs)
+        if (len({(r.cursor,r.batch_ref) for r in self.inspection_repairs}) != len(self.inspection_repairs)
                 or any(r.cursor>self.cursor or r.failed_revision>=self.revision for r in self.inspection_repairs)):
             raise ValueError("Only one inspection repair per completed or current step")
         if len({r.cursor for r in self.repair_resumes}) != len(self.repair_resumes):
@@ -340,6 +360,9 @@ class RuntimeRun(RuntimeContract):
 
 def validate_repair_history(previous: RuntimeRun, following: RuntimeRun) -> None:
     """Append-only repair provenance; consumption may only advance once."""
+    if (len(following.execution_batches) < len(previous.execution_batches)
+            or following.execution_batches[:len(previous.execution_batches)] != previous.execution_batches):
+        raise ValueError('Execution batch history is immutable')
     if len(following.repair_resumes) < len(previous.repair_resumes):
         raise ValueError("Repair history cannot be removed")
     for old, new in zip(previous.repair_resumes, following.repair_resumes):

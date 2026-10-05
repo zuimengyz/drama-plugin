@@ -173,6 +173,7 @@ class ProviderTask(ContractModel):
     resolution: str | None = None
     fps: float | None = Field(default=None, gt=0, allow_inf_nan=False)
     output_url: str | None = Field(default=None, repr=False)
+    last_frame_url: str | None = Field(default=None, repr=False)
     output_media_id: str | None = None
     usage: dict[str, int | float | str] = Field(default_factory=dict)
     estimated_cost: float | None = Field(default=None, ge=0, allow_inf_nan=False)
@@ -184,7 +185,7 @@ class ProviderTask(ContractModel):
     retryable: bool = False
 
     def durable(self) -> dict[str, Any]:
-        return self.model_dump(mode='json', by_alias=True, exclude={'output_url'})
+        return self.model_dump(mode='json', by_alias=True, exclude={'output_url', 'last_frame_url'})
 
 
 VideoGenerationResult = ProviderTask

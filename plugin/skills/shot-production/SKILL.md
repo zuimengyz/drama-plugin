@@ -5,6 +5,50 @@ description: Produce image, video, or audio media for an approved historical-dra
 
 # Shot Production
 
+For an authorized adjacent-clip validation on a native Film Run, retain the original
+Film, adopted Shot/Package, completed child and logical operation. Queue only the
+bounded same-Scene children through `queue_source_film_media`; the existing Film
+execution capability drives them in order. Select the requested authored Action
+phase, rather than repeatedly selecting the opening phase. Pin reviewed native
+Media through execution reference bindings with exact source duties and hashes.
+The Target Seedance video-reference route reuses the original reviewed provider
+output; signed locators are delivery details beneath the immutable input seal.
+For consecutive segments of one take, a global identity/room video is not a
+continuation endpoint. After the preceding child completes and is reviewed, use
+`prepare_source_film_continuation` to bind its retained official last JPEG as the
+next `image_to_video` first frame. A bounded queue may carry later source/profile
+descriptors, but Runtime freezes their child/preparation only after the preceding
+result and review exist; it binds each actual endpoint automatically. The runtime
+checks contiguous authored Action phases and disjoint new speech/action work.
+A completed generation or visual PASS does not mean its entire selected spoken
+line was realized. Record listened, byte-pinned spoken IDs in the existing review
+observation before advancing that line; otherwise preserve unverified coverage
+and stop progress rather than silently skipping its unfinished words. When the
+user explicitly permits a bounded visual continuation with unreliable listening,
+the new batch may retain `SPOKEN_CONTENT_COVERAGE_UNVERIFIED` and carry that pending
+coverage forward. This is not speech completion or Scene acceptance. An observed
+omission or repetition still stops the next generation.
+Whole-shot establishing camera prose stays pinned as context, not a new event.
+Seedance first-frame and multimodal reference inputs cannot be mixed. Request
+`return_last_frame` for new chain operations, retain its real provider result,
+and inspect the actual POST `image_url`/`first_frame` slot. A missing official
+last frame is not proof that a local extraction is a trusted portrait input.
+Rebuild previews through `source_film_preview_manifest`: this I2V route returns
+new segments, each logical completion appears once, and no fixed prefix trim is
+allowed. Raw repeated performance needs regeneration; frame similarity never
+authorizes removing dialogue. Historical frozen requests/reviews are retained.
+Each new clip requires fresh exact financial terms within the shared user budget.
+A user-authorized replacement opening uses `restart_source_film_media` on the
+same completed parent boundary. The immutable batch retains its preceding
+checkpoint and Runtime completion; old child operations, requests and fees remain.
+Use a new text-only opening with `return_last_frame=true`, then deferred I2V
+descriptors. Never feed old rejected Media into that batch. Persist every official
+tail through `retain_source_film_last_frame`, including the final segment; each
+continuation takes the immediately preceding batch output. Its preview contains
+only this batch's new raw segments, without trims or transitions.
+A failed continuity review stops the next child; a passing frame review never
+proves unobserved native audio or complete Scene coverage.
+
 Before preparing or submitting new video generation, use the Host's current per-model enabled status. Skip disabled models even if an earlier route selected them or a preference pins them. Re-select only within existing continuity and authorization gates. Disabling a model stops new submissions; it does not discard or prevent recovery of an already submitted task. Image generation is unaffected.
 
 ## Every performance-bearing Shot and silent Beat (R3)

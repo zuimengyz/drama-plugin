@@ -347,6 +347,10 @@ class DurableGenerationArtifactStore:
             inputs = self.inputs(run_id)
             goal = GovernanceInput.model_validate(self.ledger.get_index("governance-input", run_id))
             exact = inputs.cached_preparation_ref
+            if exact is None and not required:
+                # Before the child's compilation stage, shared preparations are
+                # cache candidates, not proof this Run committed one of them.
+                return None
             if exact is not None:
                 item = self.get(exact, GenerationPreparation)
                 if item.task != inputs.task or item.source_package_ref != goal.package_ref:

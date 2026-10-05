@@ -13,7 +13,7 @@ import httpx
 from pydantic import Field, JsonValue, TypeAdapter
 from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.contracts.video import ProviderTask, CostEstimate
-from drama_plugin.execution.contracts import ExecutionOperation, ProviderAttempt, ProviderRequest, ProviderReceipt, ProviderResult
+from drama_plugin.execution.contracts import ExecutionOperation, ProviderAttempt, ProviderRequest, ProviderReceipt, ProviderResult, RequestReference
 from drama_plugin.execution.transport import CapabilityAbsent, DefinitelyNotSubmitted, PossiblySubmitted, IntakeTransient
 from drama_plugin.execution.media import atomic_write
 from drama_plugin.providers.video.base import HttpVideoProvider, SafeProviderError
@@ -24,7 +24,12 @@ from drama_plugin.persistence.review import UserDecisionRecord
 from drama_plugin.persistence.ledger import ProductionLedger
 
 def wire_payload(request: ProviderRequest, *, provider: str, resolution: str, aspect_ratio: str) -> dict[str, JsonValue]:
-    if request.input_mode!='text_to_video' or request.references:
+    referenced = (provider == 'seedance' and request.input_mode == 'reference' and bool(request.references)
+        and all(r.role == 'REFERENCE' and r.kind == 'video' for r in request.references))
+    endpoint = (provider == 'seedance' and request.input_mode == 'image_to_video'
+        and tuple(r.role for r in request.references) == ('FIRST_FRAME',)
+        and all(r.kind == 'image' for r in request.references))
+    if not referenced and not endpoint and (request.input_mode!='text_to_video' or request.references):
         raise CapabilityAbsent('TARGET_HTTP_REFERENCE_SERIALIZER_ABSENT')
     spec=registry()['models'][request.model]
     if request.duration_ms%1000 or request.duration_ms//1000 not in spec.get('durations',[request.duration_ms//1000]):
@@ -50,6 +55,13 @@ def wire_payload(request: ProviderRequest, *, provider: str, resolution: str, as
             'duration':seconds,'resolution':resolution,'ratio':aspect_ratio}
         if provider=='seedance':
             body.update(generate_audio=audio,watermark=False)
+            if request.return_last_frame:
+                body['return_last_frame'] = True
+            if referenced or endpoint:
+                # Quote/seal the immutable inputs, never an expiring delivery URL.
+                body['content'] += [{'type':r.kind+'_url', r.kind+'_url':{'url':
+                    'media:'+r.media_id+':'+r.content_hash}, 'role':
+                    'reference_video' if r.role == 'REFERENCE' else r.role.lower()} for r in request.references]
         elif audio:
             raise CapabilityAbsent('PROVIDER_REQUIRED_NATIVE_AUDIO_UNSUPPORTED')
         return body
@@ -156,14 +168,76 @@ class TargetHttpTransport:
         return wire_payload(request, provider=self.provider, resolution=self.resolution, aspect_ratio=self.aspect_ratio)
 
     @staticmethod
-    def preview(prepared: GenerationPreparation, final: FinalPromptArtifact) -> dict[str, JsonValue]:
+    def preview(prepared: GenerationPreparation, final: FinalPromptArtifact, *, ledger: ProductionLedger | None = None) -> dict[str, JsonValue]:
         profile = prepared.task.profile
         if profile is None or prepared.final_prompt_ref != final.artifact_reference() or not final.matches_task(prepared.task):
             raise ValueError('EXACT_PREPARATION_REQUIRED')
+        references = []
+        if final.execution_reference_refs:
+            if ledger is None:
+                raise CapabilityAbsent('EXACT_REFERENCE_LEDGER_REQUIRED')
+            from drama_plugin.production.references import ReferenceExecutionBinding
+            for ref in final.execution_reference_refs:
+                body, _, fingerprint = ledger.get_artifact('reference-execution-binding',
+                    ArtifactReference(owner=ref.owner.value,artifact_ref=ref.artifact_ref,version=ref.version))
+                binding = ReferenceExecutionBinding.model_validate(body)
+                if binding.source().reference() != ref or fingerprint != ref.fingerprint:
+                    raise ValueError('REFERENCE_BINDING_IDENTITY_MISMATCH')
+                references.append(RequestReference(binding_ref=ref,media_id=binding.media.media_id,
+                    content_hash=binding.media.content_hash,role=binding.role,kind=binding.media.kind))
         return wire_payload(ProviderRequest(model=profile.model, input_mode=profile.mode, profile=profile,
             prompt_text=final.prompt_text, duration_ms=profile.requested_duration_ms,
-            native_audio=prepared.task.native_audio), provider=profile.provider,
+            native_audio=prepared.task.native_audio,references=tuple(references),
+            return_last_frame=prepared.task.return_last_frame), provider=profile.provider,
             resolution=profile.resolution, aspect_ratio=profile.aspect_ratio)
+
+    async def reference_url(self, reference: RequestReference, operation: ExecutionOperation) -> str:
+        """Reuse an exact reviewed native output; no media discovery or upload."""
+        from drama_plugin.execution.contracts import MediaBinding, CreativeMediaReview
+        from drama_plugin.production.references import ReferenceExecutionBinding
+        from drama_plugin.execution.store import ExecutionStore
+        ref = reference.binding_ref
+        body, scope, fingerprint = self.ledger.get_artifact('reference-execution-binding',
+            ArtifactReference(owner=ref.owner.value,artifact_ref=ref.artifact_ref,version=ref.version))
+        binding = ReferenceExecutionBinding.model_validate(body)
+        if (scope != operation.scope or binding.source().reference() != ref or fingerprint != ref.fingerprint
+                or (binding.media.media_id,binding.media.content_hash,binding.media.kind,binding.role) !=
+                (reference.media_id,reference.content_hash,reference.kind,reference.role)):
+            raise ValueError('REFERENCE_BINDING_IDENTITY_MISMATCH')
+        store = ExecutionStore(self.ledger)
+        if binding.endpoint_frame_ref:
+            from drama_plugin.generation.operation import continuation_frame
+            from drama_plugin.persistence.stores import DurableGenerationArtifactStore
+            task = DurableGenerationArtifactStore(self.ledger).get(operation.preparation_ref,GenerationPreparation).task
+            if not task.continuation or task.continuation.frame_ref != binding.endpoint_frame_ref:
+                raise CapabilityAbsent('TRUSTED_NATIVE_ENDPOINT_REQUIRED')
+            frame, source, receipt, _ = continuation_frame(self.ledger, binding.endpoint_frame_ref,
+                allow_unverified_audio=bool(task.continuation.allow_unverified_audio))
+            origin = store.get(source.operation_ref, ExecutionOperation)
+            if (frame.media.content_hash != reference.content_hash or frame.media.media_id != reference.media_id
+                    or receipt.provider != self.provider or origin.model != operation.model):
+                raise CapabilityAbsent('TRUSTED_NATIVE_ENDPOINT_REQUIRED')
+            url = urlsplit(receipt.last_frame_url)
+            if url.scheme != 'https' or not url.hostname or url.username or url.password:
+                raise ValueError('REFERENCE_DELIVERY_REQUIRES_HTTPS')
+            return receipt.last_frame_url
+        review = store.get(ArtifactReference(owner='creative-media-review',
+            artifact_ref=binding.media.review_ref,version=1),CreativeMediaReview)
+        if review.outcome != 'PASS' or review.scope != scope or review.media.content_hash != reference.content_hash:
+            raise CapabilityAbsent('EXACT_REVIEWED_REFERENCE_REQUIRED')
+        source = store.get(store.checkpoint(review.operation_ref).progress.video_ref,MediaBinding)
+        origin = store.get(source.operation_ref,ExecutionOperation)
+        receipt = store.get(source.receipt_ref,ProviderReceipt)
+        if (source.canonical_media_ref is None or source.canonical_media_ref.artifact_ref != reference.media_id
+                or source.media.content_hash != reference.content_hash or source.operation_ref != review.operation_ref
+                or receipt.state != 'SUCCEEDED' or receipt.provider != self.provider
+                or origin.model != operation.model or receipt.result is None):
+            raise CapabilityAbsent('TRUSTED_NATIVE_VIDEO_REFERENCE_REQUIRED')
+        # The original provider output preserves the account's trusted face provenance.
+        url = urlsplit(receipt.result.locator)
+        if url.scheme != 'https' or not url.hostname or url.username or url.password:
+            raise ValueError('REFERENCE_DELIVERY_REQUIRES_HTTPS')
+        return receipt.result.locator
 
     def _grant(self, operation:ExecutionOperation, request:ProviderRequest|None = None) -> None:
         from drama_plugin.config.video_route import require_runtime_route
@@ -255,7 +329,8 @@ class TargetHttpTransport:
             failure_code=task.error_code or 'PROVIDER_FAILED' if state=='FAILED' else None,
             query_code=query_code,
             http_status=int(query_code[5:]) if query_code and query_code.startswith('HTTP_') and query_code[5:].isdigit() else None,
-            query_retryable=task.retryable if query_code else None, usage=task.usage or None)
+            query_retryable=task.retryable if query_code else None, usage=task.usage or None,
+            last_frame_url=task.last_frame_url if state == 'SUCCEEDED' else None)
 
     async def recover_unknown(self, operation: ExecutionOperation, attempt: ProviderAttempt) -> ProviderReceipt | None:
         """Bounded caller queries recent jobs; only an exact echoed identity binds."""
@@ -302,6 +377,11 @@ class TargetHttpTransport:
         body=self.approved_payload(request)
         if not self.offline and self.grant and self.grant.cost_quote.request_fingerprint!=sha256_canonical(body):
             raise ValueError('Cost quote differs from final wire request')
+        if request.references:
+            body = dict(body)
+            body['content'] = [body['content'][0]] + [{'type':ref.kind+'_url', ref.kind+'_url':{
+                'url':await self.reference_url(ref,operation)},'role':
+                'reference_video' if ref.role == 'REFERENCE' else ref.role.lower()} for ref in request.references]
         spec=registry()['providers'][self.provider]
         endpoint=spec['create']
         if isinstance(endpoint,dict):
@@ -313,6 +393,10 @@ class TargetHttpTransport:
         if self.provider=='wan':
             headers['X-DashScope-Async']='enable'
         # Exactly one HTTP POST. All ambiguity is reconciled by TargetExecution.
+        # Capture what is actually sent, without credentials. Historical requests
+        # remain frozen; only new attempts get this immutable dispatch evidence.
+        from drama_plugin.contracts.base import canonical_json
+        atomic_write(self.root/(attempt.client_identity+'.'+sha256_canonical(body)+'.wire.json'), canonical_json(body).encode())
         try:
             response=await self.adapter.client.post(self.adapter.settings.base_url+str(endpoint),json=body,headers=headers)
         except httpx.TransportError:

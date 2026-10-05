@@ -89,8 +89,19 @@ class OwnerBindings(RuntimeContract):
     adoption_decision_ref: ArtifactReference
 
 
+class ContinuationInput(ExtendedRuntimeContract):
+    """Physical predecessor and consumed context; never an approved screenplay rewrite."""
+    predecessor_media_ref: ArtifactReference
+    frame_ref: ArtifactReference
+    global_reference_ref: SourceReference
+    context_fact_refs: tuple[DomainReference, ...] = Field(default=(), max_length=128)
+    output_mode: Literal["NEW_SEGMENT"] = "NEW_SEGMENT"
+    extension_fields = ('allow_unverified_audio',)
+    allow_unverified_audio: Literal[True] | None = None
+
+
 class GenerationTask(ExtendedRuntimeContract):
-    extension_fields = ("unit", "profile", "owners")
+    extension_fields = ("unit", "profile", "owners", "execution_reference_refs", "continuation", "return_last_frame")
     kind: Literal["VIDEO"] = "VIDEO"
     target_model: Identifier = "seedance-2-standard"
     input_mode: Literal["text_to_video", "reference", "image_to_video", "first_last_frame"] = "text_to_video"
@@ -99,9 +110,15 @@ class GenerationTask(ExtendedRuntimeContract):
     unit: OperationSelection | None = None
     profile: ExecutionProfile | None = None
     owners: OwnerBindings | None = None
+    execution_reference_refs: tuple[SourceReference, ...] | None = Field(default=None, min_length=1, max_length=16)
+    continuation: ContinuationInput | None = None
+    return_last_frame: Literal[True] | None = None
 
     @model_validator(mode="after")
     def operation_boundary(self) -> Self:
+        if self.continuation and (not self.unit or self.input_mode != "image_to_video"
+                or self.return_last_frame is not True or len(self.execution_reference_refs or ()) != 1):
+            raise ValueError("EXACT_CONTINUATION_FIRST_FRAME_REQUIRED")
         if any((self.unit, self.profile, self.owners)) and not all((self.unit, self.profile, self.owners)):
             raise ValueError("Operation selection/profile/owner refs must be fixed together")
         if self.profile and (self.target_model != self.profile.model or self.input_mode != self.profile.mode
@@ -206,7 +223,7 @@ class FinalPromptArtifact(DerivedArtifact):
         if self.task_fingerprint is None:
             return self.task == task  # Immutable historical envelopes remain readable.
         return self.task_fingerprint == sha256_canonical(task) and self.task == GenerationTask.model_validate(
-            task.model_dump(exclude={"unit", "profile", "owners"}))
+            task.model_dump(exclude={"unit", "profile", "owners", "continuation"}))
 
     @model_validator(mode="after")
     def coverage_owner(self) -> Self:

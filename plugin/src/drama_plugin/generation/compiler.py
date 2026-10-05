@@ -40,7 +40,7 @@ class PromptCompiler:
         self.audio = AudioPerformanceAssembler()
         self.projection = ExecutionProjection(reader)
         self.generator = SeedanceTargetAdapter()
-        self.references = ExecutionReferenceResolver(media_reader)
+        self.references = ExecutionReferenceResolver(media_reader, getattr(reader.operations, 'ledger', None))
 
     async def compile(self, package_ref: ArtifactReference, task: GenerationTask = GenerationTask()) -> CompilationResult:
         package = self.packages.get(package_ref)
@@ -173,7 +173,7 @@ class PromptCompiler:
             coverage = PromptCoverage.seal(source_package_ref=package_ref, entries=tuple(entries))
             coverage_ref = self.artifacts.put(coverage)
             final = FinalPromptArtifact.seal(
-                task=GenerationTask.model_validate(task.model_dump(exclude={"unit", "profile", "owners"})) if task.unit else task,
+                task=GenerationTask.model_validate(task.model_dump(exclude={"unit", "profile", "owners", "continuation"})) if task.unit else task,
                 task_fingerprint=sha256_canonical(task) if task.unit else None, model_family=policy.family,
                 generator_policy_fingerprint=policy.fingerprint, prompt_text=generated["prompt"], source_package_ref=package_ref,
                 prompt_ir_fingerprint=ir.fingerprint, coverage_ref=coverage_ref,
@@ -231,6 +231,8 @@ class PromptCompiler:
             return (ExecutionDiagnostic(code="PACKAGE_STALE" if error.code.value == "VERSION_MISMATCH" else "EXECUTION_REQUIRED_MISSING",
                 owner=error.owner.value, domain=D.PERFORMANCE, required=True),)
         package = self.packages.get(prepared.source_package_ref)
-        checked = await self.references.resolve(package, prepared.task, await self.reader.selections(package),
+        selected = (await self.reader.operations.selected(package,prepared.task,self.reader) if prepared.task.unit
+            else await self.reader.selections(package))
+        checked = await self.references.resolve(package, prepared.task, selected,
             subjects={f.subject_id for f in ir.facts if f.subject_id})
         return checked.diagnostics

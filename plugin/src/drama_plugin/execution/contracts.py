@@ -81,15 +81,17 @@ class ProviderAttempt(ExecutionArtifact):
         return self
 
 
-class RequestReference(RuntimeContract):
+class RequestReference(ExtendedRuntimeContract):
+    extension_fields = ("kind",)
     binding_ref: SourceReference
     media_id: Identifier
     content_hash: Hash
     role: Literal["FIRST_FRAME", "LAST_FRAME", "REFERENCE"]
+    kind: Literal["image", "video", "audio"] | None = None
 
 
 class ProviderRequest(ExtendedRuntimeContract):
-    extension_fields = ("profile",)
+    extension_fields = ("profile", "return_last_frame")
     operation_ref: ArtifactReference | None = None
     model: Identifier
     input_mode: Literal["text_to_video", "reference", "image_to_video", "first_last_frame"]
@@ -98,6 +100,7 @@ class ProviderRequest(ExtendedRuntimeContract):
     native_audio: Literal["OPTIONAL", "REQUIRED", "DISABLED"]
     references: tuple[RequestReference, ...] = Field(default=(), max_length=16)
     profile: ExecutionProfile | None = None
+    return_last_frame: Literal[True] | None = None
 
 
 class ProviderResult(RuntimeContract):
@@ -110,7 +113,7 @@ class ProviderResult(RuntimeContract):
 
 
 class ProviderReceipt(ExecutionArtifact):
-    extension_fields = ("query_code", "http_status", "query_retryable", "usage")
+    extension_fields = ("query_code", "http_status", "query_retryable", "usage", "last_frame_url")
     owner = "provider-receipt"
     operation_ref: ArtifactReference
     attempt_ref: ArtifactReference
@@ -126,6 +129,7 @@ class ProviderReceipt(ExecutionArtifact):
     http_status: Annotated[StrictInt, Field(ge=100, le=599)] | None = None
     query_retryable: bool | None = None
     usage: dict[str, int | float | str] | None = None
+    last_frame_url: str | None = Field(default=None, min_length=1, max_length=2048)
 
     @model_validator(mode="after")
     def receipt_shape(self) -> Self:
@@ -139,15 +143,15 @@ class ProviderReceipt(ExecutionArtifact):
 class MediaIdentity(RuntimeContract):
     media_id: Identifier
     content_hash: Hash
-    kind: Literal["VIDEO", "AUDIO"]
-    mime: Literal["video/mp4", "audio/wav", "audio/mp4"]
+    kind: Literal["VIDEO", "AUDIO", "IMAGE"]
+    mime: Literal["video/mp4", "audio/wav", "audio/mp4", "image/jpeg"]
     byte_count: Annotated[StrictInt, Field(gt=0)]
 
     @model_validator(mode="after")
     def stable_id(self) -> Self:
         if self.media_id != "media:sha256:" + self.content_hash:
             raise ValueError("Media identity must be content addressed")
-        if (self.kind == "VIDEO") != self.mime.startswith("video/"):
+        if not self.mime.startswith({"VIDEO":"video/", "AUDIO":"audio/", "IMAGE":"image/"}[self.kind]):
             raise ValueError("Media kind/MIME mismatch")
         return self
 
@@ -166,7 +170,26 @@ class MediaBinding(ExecutionArtifact):
     canonical_media_ref: ArtifactReference | None = None
 
 
-class ProbeObservation(RuntimeContract):
+class ContinuationFrame(ExecutionArtifact):
+    """Provider-returned last JPEG, retained unchanged beneath its source operation."""
+    owner = "continuation-frame"
+    predecessor_media_ref: ArtifactReference
+    receipt_ref: ArtifactReference
+    media: MediaIdentity
+    width: int = Field(gt=0)
+    height: int = Field(gt=0)
+
+    @model_validator(mode="after")
+    def frame_shape(self) -> Self:
+        if self.predecessor_media_ref.owner != "media-binding" or self.media.kind != "IMAGE":
+            raise ValueError("PROVIDER_ENDPOINT_FRAME_REQUIRED")
+        return self
+
+
+class ProbeObservation(ExtendedRuntimeContract):
+    extension_fields = ('video_duration_ms','audio_duration_ms')
+    video_duration_ms: int | None = Field(default=None,gt=0)
+    audio_duration_ms: int | None = Field(default=None,gt=0)
     container: Identifier
     duration_ms: Annotated[StrictInt, Field(gt=0, le=3_600_000)]
     width: Annotated[StrictInt, Field(gt=0)] | None = None
@@ -176,11 +199,13 @@ class ProbeObservation(RuntimeContract):
 
 
 class TechnicalMediaReview(ExecutionArtifact):
+    extension_fields = ('supersedes_ref',)
+    supersedes_ref: ArtifactReference | None = None
     owner = "technical-media-review"
     operation_ref: ArtifactReference
     attempt_ref: ArtifactReference
     media: MediaIdentity
-    policy_version: Literal["technical-media-v1"] = "technical-media-v1"
+    policy_version: Literal["technical-media-v1", "technical-media-stream-duration-v2"] = "technical-media-v1"
     outcome: Literal["PASS", "FAIL"]
     observation: ProbeObservation | None = None
     findings: tuple[Identifier, ...] = Field(default=(), max_length=16)
@@ -194,11 +219,19 @@ class TechnicalMediaReview(ExecutionArtifact):
         return self
 
 
-class ReviewObservation(RuntimeContract):
+class ReviewObservation(ExtendedRuntimeContract):
+    extension_fields = ('verified_spoken_ids',)
     code: Identifier
     owner: Identifier
     finding: str = Field(min_length=1, max_length=1000)
     required_revision: str | None = Field(default=None, min_length=1, max_length=1000)
+    verified_spoken_ids: tuple[Identifier, ...] | None = Field(default=None, min_length=1, max_length=16)
+
+    @model_validator(mode='after')
+    def speech_observation(self) -> Self:
+        if (self.verified_spoken_ids is not None) != (self.code == 'SPOKEN_CONTENT_COVERAGE_VERIFIED'):
+            raise ValueError('Exact observed speech coverage requires its named observation')
+        return self
 
 
 class CreativeMediaReview(ExecutionArtifact):
@@ -335,7 +368,8 @@ class AttemptHistory(RuntimeContract):
 
 
 class OperationProgress(ExtendedRuntimeContract):
-    extension_fields = ("attempt_history", "unknown_lookup_attempts", "unknown_lookup_last_code")
+    extension_fields = ("attempt_history", "unknown_lookup_attempts", "unknown_lookup_last_code", 'video_technical_repair_ref')
+    video_technical_repair_ref: ArtifactReference | None = None
     attempt_history: tuple[AttemptHistory, ...] | None = Field(default=None, max_length=1)
     unknown_lookup_attempts: Annotated[StrictInt, Field(ge=0, le=4)] | None = None
     unknown_lookup_last_code: Identifier | None = None
@@ -356,8 +390,12 @@ class OperationProgress(ExtendedRuntimeContract):
     query_last_code: Identifier | None = None
     media_last_code: Identifier | None = None
 
+    @property
+    def current_video_technical_ref(self) -> ArtifactReference | None:
+        return self.video_technical_repair_ref or self.video_technical_ref
+
 
 EXECUTION_TYPES: dict[str, type[ExecutionArtifact]] = {model.owner: model for model in (
-    ExecutionOperation, ProviderAttempt, ProviderReceipt, MediaBinding, TechnicalMediaReview,
+    ExecutionOperation, ProviderAttempt, ProviderReceipt, MediaBinding, ContinuationFrame, TechnicalMediaReview,
     CreativeMediaReview, FinishingRecipe, AudioExecution, AVDerivative, ReviewedAVCandidate,
 )}

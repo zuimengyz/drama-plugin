@@ -51,8 +51,8 @@ class LocalMediaStore:
         self.directory = directory.resolve()
         self.directory.mkdir(parents=True, exist_ok=True)
 
-    def retain(self, content: bytes, *, kind: Literal["VIDEO", "AUDIO"],
-               mime: Literal["video/mp4", "audio/wav", "audio/mp4"], expected_hash: str | None = None) -> MediaIdentity:
+    def retain(self, content: bytes, *, kind: Literal["VIDEO", "AUDIO", "IMAGE"],
+               mime: Literal["video/mp4", "audio/wav", "audio/mp4", "image/jpeg"], expected_hash: str | None = None) -> MediaIdentity:
         if not content:
             raise ValueError("Empty provider media")
         digest = hashlib.sha256(content).hexdigest()
@@ -85,6 +85,8 @@ def probe(path: Path, *, decode: bool = True) -> ProbeObservation:
     video = next((s for s in streams if s["codec_type"] == "video"), None)
     audio = next((s for s in streams if s["codec_type"] == "audio"), None)
     observation = ProbeObservation(container=payload["format"]["format_name"],
+        video_duration_ms=round(float(video['duration'])*1000) if video and video.get('duration') else None,
+        audio_duration_ms=round(float(audio['duration'])*1000) if audio and audio.get('duration') else None,
         duration_ms=round(float(payload["format"]["duration"]) * 1000),
         width=video["width"] if video else None, height=video["height"] if video else None,
         video_codec=video["codec_name"] if video else None, audio_codec=audio["codec_name"] if audio else None)
@@ -92,6 +94,19 @@ def probe(path: Path, *, decode: bool = True) -> ProbeObservation:
         subprocess.run(["ffmpeg", "-nostdin", "-v", "error", "-xerror", "-err_detect", "explode",
             "-i", str(path), "-f", "null", "-"], capture_output=True, check=True, timeout=30)
     return observation
+
+
+def probe_jpeg(path: Path) -> tuple[int, int]:
+    """A provider endpoint is one image, with no invented video duration."""
+    result = subprocess.run(['ffprobe','-v','error','-select_streams','v:0',
+        '-show_entries','stream=codec_name,width,height','-of','json',str(path)],
+        check=True,capture_output=True,timeout=30)
+    streams = json.loads(result.stdout)['streams']
+    if len(streams) != 1 or streams[0]['codec_name'] != 'mjpeg':
+        raise ValueError('PROVIDER_LAST_FRAME_JPEG_REQUIRED')
+    subprocess.run(['ffmpeg','-nostdin','-v','error','-xerror','-i',str(path),
+        '-frames:v','1','-f','null','-'],check=True,capture_output=True,timeout=30)
+    return streams[0]['width'], streams[0]['height']
 
 
 def probe_intake_bytes(content: bytes) -> ProbeObservation | None:
@@ -119,8 +134,12 @@ def inspect(store: LocalMediaStore, media: MediaIdentity, *, duration_ms: int,
         raise
     except (OSError, ValueError, KeyError, subprocess.SubprocessError):
         return None, ("CORRUPT_OR_UNREADABLE_MEDIA",)
-    if abs(observation.duration_ms - duration_ms) > tolerance_ms:
+    measured_duration = observation.video_duration_ms if media.kind == 'VIDEO' and observation.video_duration_ms else observation.duration_ms
+    if abs(measured_duration - duration_ms) > tolerance_ms:
         failures.append("RESULT_DURATION_MISMATCH")
+    if (media.kind == 'VIDEO' and audio_expected and observation.video_duration_ms and observation.audio_duration_ms
+            and abs(observation.video_duration_ms-observation.audio_duration_ms) > tolerance_ms):
+        failures.append('RESULT_AV_DURATION_MISMATCH')
     if media.kind == "VIDEO" and (not observation.video_codec or not observation.width or not observation.height):
         failures.append("RESULT_VIDEO_MISSING")
     if media.kind == "AUDIO" and (not observation.audio_codec or observation.video_codec):

@@ -257,11 +257,66 @@ class RuntimeEngine:
             self._context(following)
             return self.store.save(following, expected_revision=run.revision)
 
+    async def resume_media_batch(self, run_id: str, *, batch_ref: ArtifactReference,
+                                 decision_ref: ArtifactReference) -> RuntimeRun:
+        """Re-enter only a completed Film media boundary for an owner-validated new batch."""
+        from drama_plugin.runtime.contracts import ExecutionBatchResume
+        async with self.store.lock(run_id):
+            run = self.store.load(run_id)
+            self._context(run)
+            if any(record.batch_ref == batch_ref for record in run.execution_batches):
+                return run
+            if (run.workflow_id != 'source-to-reviewed-media:v1' or run.state != RuntimeState.SUCCEEDED
+                    or run.cursor != 6 or run.last_result is None
+                    or batch_ref.owner != 'film-media-batch' or decision_ref.owner != 'user-decision'):
+                raise ValueError('COMPLETED_FILM_MEDIA_BATCH_REQUIRED')
+            record = ExecutionBatchResume(batch_ref=batch_ref,decision_ref=decision_ref,
+                completed_revision=run.revision,completed_cursor=run.cursor,completed_result=run.last_result)
+            following = RuntimeRun.model_validate({**run.model_dump(), 'state':RuntimeState.READY,
+                'cursor':5,'revision':run.revision+1,'last_result':None,'wait_reason':None,
+                'step_attempts':0,'step_retry_limit':None,'maintenance_attempts':None,
+                'execution_revision':None,'executing_action':None,
+                'execution_batches':(*run.execution_batches,record)})
+            self._context(following)
+            return self.store.save(following,expected_revision=run.revision)
+
     async def repair_unknown_submission(self, run_id: str, *, expected_revision: int,
                                         capability_key: str, decision_ref: ArtifactReference) -> RuntimeRun:
         """Re-enter the exact UNKNOWN failure after owner-validated cost renewal."""
         return await self._repair_external_failure(run_id, expected_revision=expected_revision,
             capability_key=capability_key, decision_ref=decision_ref, code="PROVIDER_UNKNOWN_WITHOUT_LOOKUP")
+
+    async def repair_resolved_reference_gate(self, run_id: str, *, expected_revision: int,
+                                             decision_ref: ArtifactReference, current: ExecutionRevision) -> RuntimeRun:
+        """Owner-verified preparation reference repair, once, retaining the hard-stop result."""
+        async with self.store.lock(run_id):
+            run = self.store.load(run_id)
+            policy, workflow = self._context(run)
+            key = workflow.steps[run.cursor].capability_key
+            batch = run.execution_batches[-1].batch_ref if run.execution_batches else None
+            prior=next((r for r in run.external_repairs if r.cursor==run.cursor
+                and r.batch_ref==batch and r.failed_result.code=='GOVERNED_HARD_STOP' and r.capability_key==key),None)
+            code=run.last_result.code if run.last_result else None
+            inspection=self._inspection(run,key)
+            correcting_revision=(code=='EXECUTION_REVISION_CHANGED' and prior is not None
+                and (key=='film.execute:v1' or inspection is None and run.execution_revision==prior.current))
+            if (run.state != RuntimeState.FAILED or run.last_result is None
+                    or code != 'GOVERNED_HARD_STOP' and not correcting_revision
+                    or run.revision != expected_revision or key not in {'generation.ready:v1','generation.release:v1','film.execute:v1'}
+                    or not self.executor.replay_safe(key) or run.step_attempts >= (run.step_retry_limit or policy.max_step_attempts)
+                    or any(r.cursor == run.cursor and r.failed_result.code == code and r.batch_ref==batch for r in run.external_repairs)
+                    or run.execution_revision is not None and run.execution_revision.input_fingerprint != current.input_fingerprint):
+                raise ValueError('EXACT_RESOLVED_REFERENCE_GATE_REQUIRED')
+            record = ExternalRepairRecord(batch_ref=batch,cursor=run.cursor,capability_key=key,failed_revision=run.revision,
+                failed_result=run.last_result,decision_ref=decision_ref,current=current)
+            following = RuntimeRun.model_validate({**run.model_dump(),'state':RuntimeState.READY,'revision':run.revision+1,
+                'wait_reason':None,'executing_action':None,
+                'execution_revision':inspection.revision if inspection else None,
+                'external_repairs':(*run.external_repairs,record)})
+            action = policy.next_action(following,workflow)
+            if action.kind != ActionKind.CALL_CAPABILITY or action.capability_key != key:
+                raise ValueError('REFERENCE_GATE_STILL_UNRESOLVED')
+            return self.store.save(following,expected_revision=run.revision)
 
     async def repair_media_intake_configuration(self, run_id: str, *, expected_revision: int,
                                                 capability_key: str, decision_ref: ArtifactReference) -> RuntimeRun:
@@ -271,6 +326,16 @@ class RuntimeEngine:
             raise ValueError("REPAIR_REQUIRES_EXACT_MEDIA_IMPORT_CONFIGURATION_FAILURE")
         return await self._repair_external_failure(run_id, expected_revision=expected_revision,
             capability_key=capability_key, decision_ref=decision_ref, code=failed.code)
+
+    async def repair_video_duration_review(self, run_id: str, *, expected_revision: int,
+                                            capability_key: str, decision_ref: ArtifactReference) -> RuntimeRun:
+        return await self._repair_external_failure(run_id,expected_revision=expected_revision,
+            capability_key=capability_key,decision_ref=decision_ref,code='TECHNICAL_MEDIA_FAILURE')
+
+    async def repair_review_response(self, run_id: str, *, expected_revision: int,
+                                    capability_key: str, decision_ref: ArtifactReference) -> RuntimeRun:
+        return await self._repair_external_failure(run_id,expected_revision=expected_revision,
+            capability_key=capability_key,decision_ref=decision_ref,code='HUMAN_REVIEW_CONTEXT_MISMATCH')
 
     async def _repair_external_failure(self, run_id: str, *, expected_revision: int,
                                        capability_key: str, decision_ref: ArtifactReference, code: str) -> RuntimeRun:
@@ -324,7 +389,8 @@ class RuntimeEngine:
             if (cursor!=run.cursor or cursor>=len(workflow.steps)
                     or workflow.steps[cursor].capability_key!=capability_key):
                 raise ValueError("REPAIR_STEP_MISMATCH")
-            if any(r.cursor==cursor for r in run.inspection_repairs) or run.active_repair() is not None:
+            batch_ref = run.execution_batches[-1].batch_ref if run.execution_batches else None
+            if any(r.cursor==cursor and r.batch_ref==batch_ref for r in run.inspection_repairs) or run.active_repair() is not None:
                 raise ValueError("REPAIR_OPPORTUNITY_ALREADY_USED")
             if not self.executor.replay_safe(capability_key):
                 raise ValueError("REPAIR_REPLAY_UNSAFE")
@@ -337,7 +403,7 @@ class RuntimeEngine:
                     or run.execution_revision is not None
                     and run.execution_revision.input_fingerprint!=input_fingerprint):
                 raise ValueError("REPAIR_AUTHORITY_INPUT_CHANGED")
-            record=InspectionRepairRecord(cursor=cursor,capability_key=capability_key,
+            record=InspectionRepairRecord(cursor=cursor,capability_key=capability_key,batch_ref=batch_ref,
                 failed_revision=run.revision,failed_result=run.last_result,
                 previous_execution_revision=run.execution_revision,current=inspection.revision)
             following=RuntimeRun.model_validate({**run.model_dump(),"state":RuntimeState.READY,

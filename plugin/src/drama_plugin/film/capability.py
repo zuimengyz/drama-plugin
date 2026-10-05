@@ -76,9 +76,13 @@ class FilmCapabilities:
         identity={"filmInput":value.model_dump(mode="json",by_alias=True),"refs":refs,
             "planRef":cp.plan_ref.model_dump(mode="json",by_alias=True) if cp.plan_ref else None,
             "scope":inputs.scope.model_dump(mode="json",by_alias=True)}
+        if cp.media_batch_ref:
+            identity['mediaBatchRef'] = cp.media_batch_ref.model_dump(mode='json',by_alias=True)
         committed=False
         if cp.units and cp.units[0].generation_run_id:
-            child=self.plugin.runtime.store.load(cp.units[0].generation_run_id)
+            child_id = (self.plugin.source_film_media_opening(inputs.run_id) if cp.media_batch_ref
+                else cp.units[0].generation_run_id)
+            child=self.plugin.runtime.store.load(child_id)
             if child.workflow_id not in MEDIA_WORKFLOWS:
                 raise ValueError("CHILD_PREPARATION_WORKFLOW_MISMATCH")
             # Compilation can still be waiting for scope approval at logical
@@ -578,8 +582,24 @@ class FilmCapabilities:
         # The first proof is one approved production unit. Film art/order is retained,
         # while downstream Audio/AV/Final Delivery stays outside this workflow.
         unit = cp.units[0]
+        if cp.media_batch_ref:
+            child_id = p.source_film_media_opening(inputs.run_id)
+            task = p.generation_artifacts.inputs(child_id).task
+            p._compose_media_owners(task,run_id=child_id)
+            child = await self.drive_child(child_id)
+            if child.state != RuntimeState.SUCCEEDED:
+                if (child.state == RuntimeState.WAITING_USER and child.last_result and child.last_result.external_ref
+                        and child.last_result.external_ref.owner == 'media-binding'):
+                    await p.retain_source_film_last_frame(child_id)
+                return self.child_result(child)
+            review_ref = next((ref for ref in child.last_result.artifact_refs if ref.owner == 'creative-media-review'),None)
+            if review_ref is None:
+                raise ValueError('MEDIA_REVIEW_RECEIPT_MISSING')
+            await p.retain_source_film_last_frame(child_id)
+            self.save(inputs,media_batch_opening_review_ref=review_ref)
+            return await self.execute_scene_media(inputs)
         if unit.candidate_ref:
-            return CapabilityResult(status=ResultStatus.SUCCEEDED, artifact_refs=(unit.candidate_ref,))
+            return await self.execute_scene_media(inputs)
         if unit.package_ref is None:
             return CapabilityResult(status=ResultStatus.FAILED, code="ADOPTED_PACKAGE_SCOPE_OR_VERSION_INVALID", recovery_class=RecoveryClass.HARD_BLOCK)
         if any(p.creative_versions.stale(r) for r in unit.refs):
@@ -646,7 +666,8 @@ class FilmCapabilities:
                 rights_pin=cp.rights_pin,rights_request_ref=ArtifactReference(owner="source-owner",artifact_ref=cp.rights_request_pin.key,version=1),
                 rights_decision_ref=cp.rights_decision_ref,adoption_decision_ref=adoption)
             task = GenerationTask(target_model=profile.model,input_mode=profile.mode,native_audio="REQUIRED" if profile.native_audio else "DISABLED",
-                unit=selection,profile=profile,owners=owners)
+                unit=selection,profile=profile,owners=owners,
+                return_last_frame=True if profile.provider == 'seedance' else None)
             cp = self.save(inputs,operation_task=task)
         if unit.generation_run_id:
             child = p.runtime.store.load(unit.generation_run_id)
@@ -671,7 +692,61 @@ class FilmCapabilities:
         units = list(cp.units)
         units[0] = ShotUnit.model_validate({**units[0].model_dump(), "candidate_ref": review_ref})
         self.save(inputs,units=tuple(units))
-        return CapabilityResult(status=ResultStatus.SUCCEEDED,artifact_refs=(review_ref,))
+        return await self.execute_scene_media(inputs)
+
+    async def execute_scene_media(self, inputs: CapabilityInput) -> CapabilityResult:
+        """Ordered adjacent clips beneath the original adopted Shot, using native child goals."""
+        p, cp = self.plugin, self.store.checkpoint(inputs.run_id)
+        unit = cp.units[0]
+        refs = list(cp.scene_media_review_refs or ())
+        for index, child_id in enumerate(cp.scene_media_run_ids or ()):
+            task = p.generation_artifacts.inputs(child_id).task
+            child = p.runtime.store.load(child_id)
+            if task.continuation:
+                from drama_plugin.generation.operation import validate_continuation, continuation_frame
+                validate_continuation(p.ledger, task)
+                _, predecessor, _, _ = continuation_frame(p.ledger, task.continuation.frame_ref,
+                    allow_unverified_audio=bool(task.continuation.allow_unverified_audio))
+                previous_id = cp.scene_media_run_ids[index-1] if index else p.source_film_media_opening(inputs.run_id)
+                if predecessor.run_id != previous_id:
+                    raise ValueError('IMMEDIATE_REVIEWED_PREDECESSOR_REQUIRED')
+            if (child.scope != RuntimeScope(work_id=inputs.scope.work_id,scene_id=unit.scene_id,shot_id=unit.shot_id)
+                    or p.gate_findings.inputs(child_id).package_ref != unit.package_ref):
+                raise ValueError('SCENE_CONTINUATION_SCOPE_MISMATCH')
+            p._compose_media_owners(task,run_id=child_id)
+            child = await self.drive_child(child_id)
+            if child.state != RuntimeState.SUCCEEDED:
+                if (task.return_last_frame and child.state == RuntimeState.WAITING_USER and child.last_result
+                        and child.last_result.external_ref and child.last_result.external_ref.owner == 'media-binding'):
+                    await p.retain_source_film_last_frame(child_id)
+                return self.child_result(child)
+            review_ref = next((r for r in child.last_result.artifact_refs if r.owner == 'creative-media-review'),None)
+            if review_ref is None:
+                raise ValueError('SCENE_CONTINUATION_REVIEW_MISSING')
+            from drama_plugin.execution.contracts import CreativeMediaReview
+            if p.execution.store.get(review_ref,CreativeMediaReview).outcome != 'PASS':
+                return CapabilityResult(status=ResultStatus.WAITING_EXTERNAL,external_ref=review_ref,
+                    artifact_refs=(review_ref,ArtifactReference(owner='runtime',artifact_ref=child_id)),
+                    recovery_class=RecoveryClass.USER_DECISION,user_decision=UserDecisionRequest(
+                        category=DecisionCategory.ART_APPROVAL,question='This adjacent clip failed continuity review; resolve its exact observations before continuing.'))
+            if task.return_last_frame:
+                await p.retain_source_film_last_frame(child_id)
+            if index < len(refs):
+                if refs[index] != review_ref:
+                    raise ValueError('SCENE_CONTINUATION_REVIEW_DRIFT')
+            else:
+                refs.append(review_ref)
+                self.save(inputs,scene_media_review_refs=tuple(refs))
+        current = self.store.checkpoint(inputs.run_id)
+        if current.scene_media_pending_tasks:
+            # Bind only now, after the immediately preceding result and review.
+            # A crash replays the same frame/goal identities, never a paid create.
+            task = await p.prepare_source_film_continuation(inputs.run_id,task=current.scene_media_pending_tasks[0])
+            child = p.create_media_review_run(package_ref=unit.package_ref,task=task)
+            self.save(inputs,scene_media_run_ids=(*(current.scene_media_run_ids or ()),child.run_id),
+                scene_media_pending_tasks=current.scene_media_pending_tasks[1:])
+            return await self.execute_scene_media(inputs)
+        return CapabilityResult(status=ResultStatus.SUCCEEDED,artifact_refs=(cp.media_batch_opening_review_ref or unit.candidate_ref,*refs))
 
     async def revise_shot(self, inputs: CapabilityInput, slot: int, review_ref: ArtifactReference) -> CapabilityResult:
         p,cp=self.plugin,self.store.checkpoint(inputs.run_id)

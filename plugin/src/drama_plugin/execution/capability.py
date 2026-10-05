@@ -217,7 +217,7 @@ class TargetExecution:
             if scope != run.scope or fingerprint != ref.fingerprint or binding.source().reference() != ref:
                 raise ValueError("Reference binding identity mismatch")
             references.append(RequestReference(binding_ref=ref, media_id=binding.media.media_id,
-                content_hash=binding.media.content_hash, role=binding.role))
+                content_hash=binding.media.content_hash, role=binding.role, kind=binding.media.kind))
         roles = {r.role for r in references}
         if final.task.input_mode == "image_to_video" and "FIRST_FRAME" not in roles:
             raise ValueError("Approved first frame is absent")
@@ -227,7 +227,8 @@ class TargetExecution:
             raise ValueError("Approved references are absent")
         request = ProviderRequest(operation_ref=operation.artifact_reference(), model=operation.model,
             input_mode=final.task.input_mode, prompt_text=final.prompt_text, duration_ms=plan.duration_ms,
-            native_audio=final.task.native_audio, references=tuple(references), profile=preparation.task.profile)
+            native_audio=final.task.native_audio, references=tuple(references), profile=preparation.task.profile,
+            return_last_frame=preparation.task.return_last_frame)
         serialize_request(request)
         return operation, request, recipe
 
@@ -601,6 +602,7 @@ class TargetExecution:
             tolerance_ms=recipe.duration_tolerance_ms if recipe else FinishingRecipe.model_fields["duration_tolerance_ms"].default, audio_expected=audio_expected,
             resolution=profile.resolution if profile else None, aspect_ratio=profile.aspect_ratio if profile else None)
         return TechnicalMediaReview.seal(scope=operation.scope, run_id=operation.run_id,
+            policy_version='technical-media-stream-duration-v2',
             source_package_ref=operation.source_package_ref, operation_ref=checkpoint.operation_ref,
             attempt_ref=checkpoint.attempt_ref, media=media, outcome="FAIL" if findings else "PASS",
             observation=observation, findings=findings)
@@ -671,9 +673,9 @@ class TargetExecution:
             raise ValueError("NO_PENDING_HUMAN_OPERATION_REVIEW")
         operation, _, _ = self._approved(CapabilityInput(run_id=run_id,operation_id=run_id+":review",scope=run.scope))
         cp = self.store.checkpoint(operation.artifact_reference())
-        if cp.progress.video_ref != media_ref or not cp.progress.video_technical_ref:
+        if cp.progress.video_ref != media_ref or not cp.progress.current_video_technical_ref:
             raise ValueError("EXACT_TECHNICALLY_REVIEWED_MEDIA_REQUIRED")
-        if self.store.get(cp.progress.video_technical_ref, TechnicalMediaReview).outcome != "PASS":
+        if self.store.get(cp.progress.current_video_technical_ref, TechnicalMediaReview).outcome != "PASS":
             raise ValueError("TECHNICAL_REVIEW_NOT_PASSED")
         binding = self.store.get(media_ref, MediaBinding)
         expected = self.review_context(operation, binding.media, binding.canonical_media_ref)
@@ -721,7 +723,7 @@ class TargetExecution:
                         artifact_refs=(self._diagnostic(inputs,"MEDIA_CACHE_IO_TRANSIENT"),))
             try:
                 profile = self.derived(operation.preparation_ref, GenerationPreparation).task.profile
-                technical = self.store.get(progress.video_technical_ref, TechnicalMediaReview) if progress.video_technical_ref else self._technical(
+                technical = self.store.get(progress.current_video_technical_ref, TechnicalMediaReview) if progress.current_video_technical_ref else self._technical(
                     operation, checkpoint, binding.media, recipe,
                     audio_expected=(profile.native_audio if profile else
                         self.derived(operation.audio_plan_ref, AudioExecutionPlan).native_audio_policy == "REQUIRED"))
@@ -731,7 +733,8 @@ class TargetExecution:
             except CapabilityAbsent:
                 return self._hard(inputs, "MEDIA_PROBE_ABSENT", progress.video_ref)
             technical_ref = self.store.put(technical)
-            self.store.progress(checkpoint.operation_ref, video_technical_ref=technical_ref)
+            self.store.progress(checkpoint.operation_ref, **({'video_technical_repair_ref':technical_ref}
+                if progress.video_technical_repair_ref else {'video_technical_ref':technical_ref}))
             if technical.outcome != "PASS":
                 return self._hard(inputs, "TECHNICAL_MEDIA_FAILURE", technical_ref)
             try:
@@ -767,8 +770,8 @@ class TargetExecution:
             if recipe is None:
                 raise ExecutionScopeMismatch("Audio/finishing requires an approved recipe")
             progress = checkpoint.progress
-            assert progress.video_ref and progress.video_technical_ref and progress.video_creative_ref
-            if self.store.get(progress.video_technical_ref, TechnicalMediaReview).outcome != "PASS" or self.store.get(progress.video_creative_ref, CreativeMediaReview).outcome != "PASS":
+            assert progress.video_ref and progress.current_video_technical_ref and progress.video_creative_ref
+            if self.store.get(progress.current_video_technical_ref, TechnicalMediaReview).outcome != "PASS" or self.store.get(progress.video_creative_ref, CreativeMediaReview).outcome != "PASS":
                 return self._absence(inputs, progress.video_ref, "review-revision")
             video = self.store.get(progress.video_ref, MediaBinding).media
             if not progress.audio_ref:
@@ -847,11 +850,11 @@ class TargetExecution:
                 progress = self.store.progress(checkpoint.operation_ref, av_creative_ref=creative_ref)
             if creative.outcome != "PASS":
                 return self._absence(inputs, creative_ref, creative.observations[0].owner if creative.observations else "creative-media-review")
-            assert progress.video_technical_ref and progress.video_creative_ref and progress.audio_ref and progress.audio_technical_ref
+            assert progress.current_video_technical_ref and progress.video_creative_ref and progress.audio_ref and progress.audio_technical_ref
             candidate = ReviewedAVCandidate.seal(scope=operation.scope, run_id=operation.run_id,
                 source_package_ref=operation.source_package_ref, operation_ref=checkpoint.operation_ref,
                 attempt_ref=checkpoint.attempt_ref, video_binding_ref=progress.video_ref,
-                video_technical_ref=progress.video_technical_ref, video_creative_ref=progress.video_creative_ref,
+                video_technical_ref=progress.current_video_technical_ref, video_creative_ref=progress.video_creative_ref,
                 audio_execution_ref=progress.audio_ref, audio_technical_ref=progress.audio_technical_ref,
                 av_derivative_ref=progress.av_ref, av_technical_ref=technical_ref, av_creative_ref=creative_ref,
                 media=derivative.media)
@@ -893,9 +896,9 @@ class TargetExecution:
                 elif cp.progress.intake_media:
                     self.media.path(cp.progress.intake_media)  # Exact physical bytes/hash.
                     completed=True
-            elif key==REVIEW and cp.progress.video_ref and cp.progress.video_technical_ref:
+            elif key==REVIEW and cp.progress.video_ref and cp.progress.current_video_technical_ref:
                 binding=self.store.get(cp.progress.video_ref,MediaBinding)
-                technical=self.store.get(cp.progress.video_technical_ref,TechnicalMediaReview)
+                technical=self.store.get(cp.progress.current_video_technical_ref,TechnicalMediaReview)
                 completed=(technical.operation_ref==cp.operation_ref and technical.media==binding.media
                     and technical.scope==operation.scope and binding.operation_ref==cp.operation_ref)
         except (KeyError,OSError):

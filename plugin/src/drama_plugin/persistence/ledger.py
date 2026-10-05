@@ -56,7 +56,7 @@ ARTIFACT_TYPES.update({name: (name + "-v1", "film", RetentionClass.REVIEW
 INDEX_TYPES = frozenset({
     "governance-input", "generation-input", "latest-decision", "prepared",
     "governance-maintenance", "generation-rebuild", "final-prompt-key",
-    "execution-reference-current",
+    "execution-reference-current", "continuation-frame",
     "media-proof-authorization", "media-proof-cost-terms", "human-media-review", "execution-recovery-authorization",
     "creative-integrity-reconciliation",
     "execution-input", "creative-input", "creative-checkpoint", "film-input", "film-checkpoint", "formal-media-current", "execution-live-grant",
@@ -422,10 +422,10 @@ class ProductionLedger:
             from drama_plugin.execution.live_transport import FinancialTerms
             parsed_model = Authorization if index_type == "media-proof-authorization" else FinancialTerms
             value = parsed_model.model_validate(value.model_dump() if hasattr(value,"model_dump") else value)
-        elif index_type in {"latest-decision", "prepared", "final-prompt-key", "formal-media-current", "execution-live-grant", "human-media-review", "execution-recovery-authorization"}:
+        elif index_type in {"latest-decision", "prepared", "final-prompt-key", "formal-media-current", "execution-live-grant", "human-media-review", "execution-recovery-authorization", "continuation-frame"}:
             value = ArtifactReference.model_validate(value.model_dump() if hasattr(value, "model_dump") else value)
             expected = {"latest-decision": "gate-decision", "prepared": "generation-preparation",
-                "final-prompt-key": "final-prompt", "formal-media-current": "formal-media-registration", "execution-live-grant": "controlled-live-grant", "human-media-review":"creative-media-review", "execution-recovery-authorization":"user-decision"}[index_type]
+                "final-prompt-key": "final-prompt", "formal-media-current": "formal-media-registration", "execution-live-grant": "controlled-live-grant", "human-media-review":"creative-media-review", "execution-recovery-authorization":"user-decision", "continuation-frame":"continuation-frame"}[index_type]
             if value.owner != expected or value.version != 1:
                 raise ValueError("Ledger index points to the wrong artifact owner")
         elif type(value) is not int or value != 1:

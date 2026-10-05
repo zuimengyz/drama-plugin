@@ -7,7 +7,7 @@ from drama_plugin.creative_engine.contracts import CanonDraft, SceneBody, ShotBo
 from drama_plugin.execution.contracts import MediaIdentity, ReviewObservation
 from drama_plugin.contracts.source_pin import SourcePin
 from drama_plugin.generation.contracts import GenerationTask
-from drama_plugin.runtime.contracts import ArtifactReference, Identifier, RuntimeContract, RuntimeScope
+from drama_plugin.runtime.contracts import ArtifactReference, Identifier, RuntimeContract, ExtendedRuntimeContract, RuntimeScope
 
 _SEAL = object()
 
@@ -119,7 +119,8 @@ class ShotUnit(RuntimeContract):
     revision_depth: int = Field(default=0, ge=0, le=3)
     revision_signatures: tuple[str, ...] = Field(default=(), max_length=3)
 
-class FilmCheckpoint(RuntimeContract):
+class FilmCheckpoint(ExtendedRuntimeContract):
+    extension_fields = ('scene_media_run_ids', 'scene_media_review_refs', 'scene_media_pending_tasks', 'scene_media_goal_hash', 'media_batch_ref', 'media_batch_opening_review_ref')
     canon_ref: ArtifactReference | None = None
     direction_ref: ArtifactReference | None = None
     plan_ref: ArtifactReference | None = None
@@ -141,6 +142,12 @@ class FilmCheckpoint(RuntimeContract):
     scope_request_pin: SourcePin | None = None
     scope_decision_ref: ArtifactReference | None = None
     operation_task: GenerationTask | None = None
+    scene_media_run_ids: tuple[Identifier, ...] | None = Field(default=None, min_length=1, max_length=3)
+    scene_media_review_refs: tuple[ArtifactReference, ...] | None = Field(default=None, max_length=3)
+    scene_media_pending_tasks: tuple[GenerationTask, ...] | None = Field(default=None, max_length=3)
+    scene_media_goal_hash: Identifier | None = None
+    media_batch_ref: ArtifactReference | None = None
+    media_batch_opening_review_ref: ArtifactReference | None = None
     completed: tuple[Identifier, ...] = Field(default=(), max_length=16)
 
 class FilmArtifact(RuntimeContract):
@@ -242,4 +249,15 @@ class FilmRevisionFeedback(FilmArtifact):
     decision_or_review_ref: ArtifactReference
     requests: tuple[RevisionRequest, ...] = Field(min_length=1, max_length=12)
 
-FILM_TYPES: dict[str, type[FilmArtifact]] = {c.owner:c for c in (FilmPlan, FinalFilmCandidate, FinalTechnicalQA, FinalCreativeReview, FinalDelivery, FilmRevisionFeedback)}
+class FilmMediaBatch(FilmArtifact):
+    """An authorized replacement production, retaining the preceding execution view."""
+    owner = 'film-media-batch'
+    schema_version: Literal['film-media-batch-v1'] = 'film-media-batch-v1'
+    batch_id: Identifier
+    authorization_ref: ArtifactReference
+    opening_run_id: Identifier
+    goal_hash: Identifier
+    allow_unverified_audio: bool = False
+    previous_checkpoint: FilmCheckpoint
+
+FILM_TYPES: dict[str, type[FilmArtifact]] = {c.owner:c for c in (FilmPlan, FinalFilmCandidate, FinalTechnicalQA, FinalCreativeReview, FinalDelivery, FilmRevisionFeedback, FilmMediaBatch)}

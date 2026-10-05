@@ -26,8 +26,8 @@ class ReferenceResolution:
 
 class ExecutionReferenceResolver:
     """No media list, URL, download, old request/spec or inferred reference duty."""
-    def __init__(self, media_reader):
-        self.media_reader = media_reader
+    def __init__(self, media_reader, ledger=None):
+        self.media_reader, self.ledger = media_reader, ledger
 
     async def resolve(self, package, task: GenerationTask, selected: tuple[SelectedValue, ...],
                       *, subjects: set[str]) -> ReferenceResolution:
@@ -49,7 +49,11 @@ class ExecutionReferenceResolver:
             if binding.role == "FIRST_FRAME":
                 starts = [v.value for v in selected if v.selection.reference.owner == "shot" and
                           v.selection.reference.path[-1:] == ("visualEntryState",)]
-                if starts != [binding.endpoint_state]:
+                if binding.endpoint_frame_ref:
+                    if not task.continuation or task.continuation.frame_ref != binding.endpoint_frame_ref:
+                        finding("SCOPE_MISMATCH")
+                        continue
+                elif starts != [binding.endpoint_state]:
                     finding("SCOPE_MISMATCH")
                     continue
             if binding.role == "LAST_FRAME":
@@ -65,6 +69,19 @@ class ExecutionReferenceResolver:
                               "reference": {"REFERENCE"}}[task.input_mode]
             if binding.role not in expected_roles:
                 finding("REQUEST_UNSUPPORTED" if required else "OPTIONAL_REFERENCE_UNRESOLVED")
+                continue
+            if binding.endpoint_frame_ref:
+                from drama_plugin.generation.operation import continuation_frame
+                if self.ledger is None:
+                    finding("REFERENCE_INPUT_UNRESOLVED")
+                    continue
+                frame, source, _, _ = continuation_frame(self.ledger, binding.endpoint_frame_ref,
+                    allow_unverified_audio=bool(task.continuation and task.continuation.allow_unverified_audio))
+                if (frame.scope != binding.scope or frame.media.media_id != binding.media.media_id
+                        or frame.media.content_hash != binding.media.content_hash):
+                    finding("SCOPE_MISMATCH")
+                    continue
+                inputs.append(ExecutableReference(ref, binding))
                 continue
             try:
                 if self.media_reader is None:

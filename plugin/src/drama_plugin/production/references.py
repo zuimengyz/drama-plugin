@@ -15,7 +15,7 @@ from drama_plugin.contracts.cinematic import ReferenceRequirement
 from drama_plugin.contracts.video import VideoReference
 from drama_plugin.production.contracts import SourceOwner, SourceReference, AssemblyIssueCode
 from drama_plugin.production.sources import OwnedSource, SourceReadError
-from drama_plugin.runtime.contracts import Identifier, RuntimeContract, RuntimeScope
+from drama_plugin.runtime.contracts import Identifier, ExtendedRuntimeContract, RuntimeScope, ArtifactReference
 
 PREFIX = "execution-reference:"
 
@@ -29,13 +29,14 @@ class FrozenReferenceRequirement(ReferenceRequirement):
     model_config = ConfigDict(frozen=True, revalidate_instances="always")
 
 
-class ReferenceExecutionBinding(RuntimeContract):
+class ReferenceExecutionBinding(ExtendedRuntimeContract):
     """The existing media/duty contracts lack Shot scope and joint subject binding.
 
     The wrapper adds only those relations and explicit authorization evidence.
     No URL, syntax tag, API slot or request is accepted.
     """
     schema_version: Literal["reference-execution-binding-v1"] = "reference-execution-binding-v1"
+    extension_fields = ("endpoint_frame_ref",)
     binding_id: Identifier
     version: int = Field(gt=0)
     scope: RuntimeScope
@@ -46,9 +47,12 @@ class ReferenceExecutionBinding(RuntimeContract):
     endpoint_state: str | None = Field(default=None, min_length=1, max_length=1000)
     authorization_scope: Literal["REVIEWED_TRIAL_INPUT", "ADOPTED_PRODUCTION_INPUT"]
     authority_refs: tuple[SourceReference, ...] = Field(min_length=1, max_length=8)
+    endpoint_frame_ref: ArtifactReference | None = None
 
     @model_validator(mode="after")
     def execution_identity(self) -> Self:
+        if self.endpoint_frame_ref and (self.role != "FIRST_FRAME" or self.endpoint_frame_ref.owner != "continuation-frame"):
+            raise ValueError("CONTINUATION_ENDPOINT_REQUIRED")
         if not self.scope.scene_id or not self.scope.shot_id:
             raise ValueError("Execution reference is Shot scoped")
         if self.media.prompt_binding is not None:

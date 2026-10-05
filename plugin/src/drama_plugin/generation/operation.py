@@ -43,6 +43,119 @@ def object_at(value: object) -> dict[str, JsonValue]:
     return checked
 
 
+def continuation_context(unit: OperationSelection, previous: OperationSelection) -> tuple[DomainReference, ...]:
+    """Shared whole-shot setup remains context, rather than a repeated per-clip event."""
+    contextual = {"CAMERA": {"movement", "cameraPosition", "lensIntention", "pointOfView"},
+        "EDITORIAL": {"temporalStructure", "spatialOrientation", "protectedEvents"}, "COLOR": {"arc"}}
+    return tuple(f for f in unit.fact_refs if f in previous.fact_refs and
+        any(key in f.reference.path for key in contextual.get(f.domain, set())))
+
+
+def continuation_frame(ledger: ProductionLedger, ref: ArtifactReference, *, allow_unverified_audio: bool = False):
+    """Validate native last-frame provenance through its exact successful task."""
+    from drama_plugin.execution.store import ExecutionStore
+    from drama_plugin.execution.contracts import ContinuationFrame, MediaBinding, ExecutionOperation, ProviderReceipt, CreativeMediaReview
+    from drama_plugin.generation.contracts import GenerationPreparation
+    store = ExecutionStore(ledger)
+    frame = store.get(ref, ContinuationFrame)
+    source = store.get(frame.predecessor_media_ref, MediaBinding)
+    receipt = store.get(frame.receipt_ref, ProviderReceipt)
+    original = store.get(source.receipt_ref, ProviderReceipt)
+    op = store.get(source.operation_ref, ExecutionOperation)
+    review_ref = store.checkpoint(source.operation_ref).progress.video_creative_ref
+    review = store.get(review_ref, CreativeMediaReview) if review_ref else None
+    if (review is None or review.outcome != 'PASS' or review.operation_ref != source.operation_ref
+            or review.media != source.media or review.scope != source.scope):
+        raise ValueError('REVIEWED_CONTINUATION_PREDECESSOR_REQUIRED')
+    if (not receipt.last_frame_url or receipt.state != "SUCCEEDED" or receipt.result is None
+            or receipt.remote_identity != source.provider_result_id
+            or receipt.attempt_ref != source.attempt_ref or receipt.operation_ref != source.operation_ref
+            or original.remote_identity != receipt.remote_identity
+            or frame.run_id != source.run_id or frame.scope != source.scope
+            or frame.source_package_ref != source.source_package_ref):
+        raise ValueError("PROVIDER_LAST_FRAME_PROVENANCE_MISMATCH")
+    previous = ledger.get_artifact('generation-preparation', op.preparation_ref)[0]
+    previous_task = GenerationPreparation.model_validate(previous).task
+    validate_predecessor_speech(previous_task.unit,review.observations,allow_unverified_audio=allow_unverified_audio)
+    return frame, source, receipt, previous_task
+
+
+def validate_observed_speech(unit: OperationSelection, observations) -> None:
+    if unit.spoken_ids:
+        verified = {identity for row in observations for identity in (row.verified_spoken_ids or ())}
+        if verified != set(unit.spoken_ids):
+            raise ValueError('CONTINUATION_SPEECH_COMPLETION_UNVERIFIED')
+
+
+def validate_predecessor_speech(unit: OperationSelection, observations, *, allow_unverified_audio: bool = False) -> None:
+    try:
+        validate_observed_speech(unit,observations)
+    except ValueError:
+        if not (allow_unverified_audio and any(row.code == 'SPOKEN_CONTENT_COVERAGE_UNVERIFIED'
+                for row in observations) and not any(row.code in {'SPOKEN_CONTENT_MISSING','SPOKEN_CONTENT_REPEATED'}
+                for row in observations)):
+            raise
+
+
+def validate_segment_progress(unit: OperationSelection, predecessors: tuple[OperationSelection, ...]) -> None:
+    """Predecessors are newest first; IDs track assigned work, not audio QA claims."""
+    seen_actions, seen_spoken = set(unit.action_refs), set(unit.spoken_ids)
+    def phase(selection):
+        ref = selection.action_refs[0]
+        if (len(selection.action_refs) != 1 or len(ref.path) < 3
+                or ref.path[-3] != 'actionPhases' or ref.path[-1] != 'action' or not ref.path[-2].isdigit()):
+            raise ValueError('CONTINUATION_PHASE_CONTRACT_REQUIRED')
+        return (ref.owner,ref.artifact_ref,ref.version,ref.fingerprint,ref.path[:-2]), int(ref.path[-2])
+    key, index = phase(unit)
+    for previous in predecessors:
+        previous_key, previous_index = phase(previous)
+        if key != previous_key or index != previous_index + 1:
+            raise ValueError('CONTINUATION_PROGRESS_REPEAT_OR_SKIP')
+        if seen_actions.intersection(previous.action_refs) or seen_spoken.intersection(previous.spoken_ids):
+            raise ValueError('CONTINUATION_CONTENT_OVERLAP')
+        seen_actions.update(previous.action_refs); seen_spoken.update(previous.spoken_ids)
+        index = previous_index
+
+
+def validate_continuation(ledger: ProductionLedger, task: GenerationTask) -> None:
+    if task.continuation is None:
+        return
+    c = task.continuation
+    frame, source, _, previous = continuation_frame(ledger, c.frame_ref,allow_unverified_audio=bool(c.allow_unverified_audio))
+    if frame.predecessor_media_ref != c.predecessor_media_ref or not task.unit or not previous.unit:
+        raise ValueError("CONTINUATION_PREDECESSOR_MISMATCH")
+    if c.context_fact_refs != continuation_context(task.unit, previous.unit):
+        raise ValueError("CONTINUATION_CONTEXT_DRIFT")
+    predecessors = []
+    for _ in range(3):
+        predecessors.append(previous.unit)
+        if previous.continuation is None:
+            break
+        if previous.continuation.global_reference_ref != c.global_reference_ref:
+            raise ValueError("CONTINUATION_GLOBAL_REFERENCE_DRIFT")
+        _, source, _, previous = continuation_frame(ledger, previous.continuation.frame_ref,
+            allow_unverified_audio=bool(previous.continuation.allow_unverified_audio))
+    else:
+        raise ValueError("BOUNDED_SCENE_CONTINUATION_REQUIRED")
+    validate_segment_progress(task.unit, tuple(predecessors))
+    from drama_plugin.production.references import ReferenceExecutionBinding
+    global_ref = c.global_reference_ref
+    global_body, _, _ = ledger.get_artifact('reference-execution-binding',
+        ArtifactReference(owner=global_ref.owner.value, artifact_ref=global_ref.artifact_ref, version=global_ref.version))
+    global_binding = ReferenceExecutionBinding.model_validate(global_body)
+    if (global_binding.source().reference() != global_ref or global_binding.scope != frame.scope
+            or global_binding.media.kind != 'video' or global_binding.media.content_hash != source.media.content_hash):
+        raise ValueError('CONTINUATION_GLOBAL_REFERENCE_MISMATCH')
+    ref = task.execution_reference_refs[0]
+    body, _, _ = ledger.get_artifact('reference-execution-binding',
+        ArtifactReference(owner=ref.owner.value, artifact_ref=ref.artifact_ref, version=ref.version))
+    binding = ReferenceExecutionBinding.model_validate(body)
+    if (binding.source().reference() != ref or binding.endpoint_frame_ref != c.frame_ref
+            or binding.role != 'FIRST_FRAME' or binding.media.content_hash != frame.media.content_hash
+            or binding.media.media_id != frame.media.media_id or binding.scope != source.scope):
+        raise ValueError("CONTINUATION_FIRST_FRAME_MISMATCH")
+
+
 class OperationResolver:
     """Reads exact owner facts, receipts and projections at prepare AND dispatch."""
     def __init__(self, versions: CreativeVersionStore, ledger: ProductionLedger, policy: VideoRoutePolicy):
@@ -243,19 +356,21 @@ class OperationResolver:
         dpd_pin = self.versions.objects.put("adopted-dpd-binding:"+sha256_canonical(body), body)
         return dpd_pin, scope_pin, tuple(snapshot_pins)
 
-    async def select_unit(self, package: ProductionPackage, reader: PackageReader) -> OperationSelection:
+    async def select_unit(self, package: ProductionPackage, reader: PackageReader, *, phase_index: int = 0) -> OperationSelection:
         selected = await reader.selections(package)
         action = next((v for v in selected if v.selection.domain == "ACTION" and isinstance(v.value, dict) and v.value.get("actionPhases")), None)
         if action is None:
             raise ValueError("NATIVE_OPERATION_UNIT_CAPABILITY_ABSENT")
-        phase = object_at(action.value["actionPhases"][0])
+        if isinstance(phase_index, bool) or not 0 <= phase_index < len(action.value["actionPhases"]):
+            raise ValueError("NATIVE_OPERATION_PHASE_OUT_OF_RANGE")
+        phase = object_at(action.value["actionPhases"][phase_index])
         if not isinstance(phase.get("beatId"), str) or not isinstance(phase.get("spokenIds"), list):
             raise ValueError("NATIVE_OPERATION_UNIT_CONTRACT_MISSING")
         phase_spoken_ids = TypeAdapter(tuple[str, ...]).validate_python(phase["spokenIds"])
         base = action.selection.reference
         def leaf(ref: SourceReference, *path: str) -> SourceReference:
             return SourceReference.model_validate({**ref.model_dump(), "path": (*ref.path, *path)})
-        start, end, action_ref = (leaf(base, "actionPhases", "0", name) for name in ("entryState", "observable", "action"))
+        start, end, action_ref = (leaf(base, "actionPhases", str(phase_index), name) for name in ("entryState", "observable", "action"))
         facts: list[DomainReference] = []
         # Finite approved executable leaves. DPD, provenance and entire JSON are never Prompt prose.
         fields = {"ACTION": {"actionPhases", "physicalStateConstraints"}, "PERFORMANCE": {"beats", "physicalExpression"},
@@ -279,7 +394,7 @@ class OperationResolver:
                         walk(child, leaf(ref, name), domain)
             elif isinstance(value, list):
                 for index, child in enumerate(value):
-                    if domain == "ACTION" and "actionPhases" in ref.path and index != 0:
+                    if domain == "ACTION" and "actionPhases" in ref.path and index != phase_index:
                         continue
                     walk(child, leaf(ref, str(index)), domain)
         dispositions = []
@@ -306,6 +421,7 @@ class OperationResolver:
 
     async def selected(self, package: ProductionPackage, task: GenerationTask, reader: PackageReader) -> tuple[SelectedValue, ...]:
         self.validate(package, task, require_scope=False)
+        validate_continuation(self.ledger, task)
         unit = task.unit
         assert unit
         full = await reader.selections(package)
@@ -317,6 +433,22 @@ class OperationResolver:
         refs = (*unit.action_refs, unit.start_ref, unit.end_ref, *(d.reference for d in unit.fact_refs))
         if any(not allowed(r) for r in refs):
             raise ValueError("UNIT_SOURCE_OUTSIDE_PACKAGE")
+        if task.continuation:
+            action = unit.action_refs[0]
+            phase_ref = SourceReference.model_validate({**action.model_dump(), 'path':action.path[:-1]})
+            phase = object_at(await reader.resolver.resolve(phase_ref))
+            if unit.spoken_ids != tuple(phase['spokenIds']) or unit.beat_ids != (phase['beatId'],):
+                raise ValueError('CONTINUATION_AUTHORED_CONTENT_DRIFT')
+            if (unit.start_ref.path != (*phase_ref.path,'entryState')
+                    or unit.end_ref.path != (*phase_ref.path,'observable')
+                    or any((ref.artifact_ref,ref.fingerprint) != (phase_ref.artifact_ref,phase_ref.fingerprint)
+                        for ref in (unit.start_ref,unit.end_ref))):
+                raise ValueError('CONTINUATION_ENDPOINT_PROGRESS_DRIFT')
+            for fact in unit.fact_refs:
+                if fact.domain == 'ACTION' and 'actionPhases' in fact.reference.path and fact.reference.path[:-1] != phase_ref.path:
+                    raise ValueError('CONTINUATION_ACTION_OVERLAP')
+                if fact.reference.owner == 'scene' and object_at(await reader.resolver.resolve(fact.reference))['id'] not in unit.spoken_ids:
+                    raise ValueError('CONTINUATION_SPEECH_OVERLAP')
         finite = {"ACTION": {"actionPhases", "physicalStateConstraints"},
             "PERFORMANCE": {"beats", "physicalExpression"}, "CAMERA": {"movement", "cameraPosition", "height", "pointOfView", "lensIntention", "axisAndScreenDirection"},
             "WORLD": {"setting", "weather", "time", "physicalWorldRules"},
@@ -345,9 +477,26 @@ class OperationResolver:
                 beat_ids = row.get("beatIds")
                 if not isinstance(beat_ids,list) or not beat_ids or set(unit.beat_ids).intersection(beat_ids):
                     raise ValueError("REFERENCE_OUT_OF_UNIT_UNPROVEN")
-        if any(value == "INPUT" for value in dispositions.values()) and not any(
-                item.selection.reference.artifact_ref.startswith("reference-execution-binding:") for item in full):
+        from drama_plugin.production.references import PREFIX, ReferenceExecutionBinding
+        bound = []
+        for ref in task.execution_reference_refs or ():
+            if ref.owner != "professional" or not ref.artifact_ref.startswith(PREFIX) or ref.path:
+                raise ValueError("REFERENCE_BINDING_AUTHORITY_REQUIRED")
+            value = await reader.resolver.resolve(ref)
+            binding = ReferenceExecutionBinding.model_validate(value)
+            if binding.scope != package_scope(package) or binding.source().reference() != ref:
+                raise ValueError("REFERENCE_BINDING_SCOPE_MISMATCH")
+            granted = {(r.owner, r.artifact_ref, r.version, r.fingerprint) for r in permitted}
+            if not all((r.owner, r.artifact_ref, r.version, r.fingerprint) in granted for r in binding.authority_refs):
+                raise ValueError("REFERENCE_BINDING_OUTSIDE_PACKAGE")
+            bound.append(SelectedValue(DomainReference(domain=SourceDomain.REFERENCE, reference=ref), value))
+        if any(value == "INPUT" for value in dispositions.values()) and not (bound or any(
+                item.selection.reference.artifact_ref.startswith(PREFIX) for item in full)):
             raise ValueError("REFERENCE_INPUT_UNRESOLVED")
+        duties = {d.purpose for item in (*bound,*full) if item.selection.reference.artifact_ref.startswith(PREFIX)
+            for d in ReferenceExecutionBinding.model_validate(item.value).duties}
+        if any(dispositions[str(row['id'])] == 'INPUT' and row.get('inputDuty') not in duties for row in reference_rows):
+            raise ValueError('REFERENCE_INPUT_DUTY_UNBOUND')
         self.validate(package, task)
         # Every explicit path is read from the immutable selected owner, never a model string.
-        return tuple([SelectedValue(d, await reader.resolver.resolve(d.reference)) for d in unit.fact_refs])
+        return tuple([SelectedValue(d, await reader.resolver.resolve(d.reference)) for d in unit.fact_refs] + bound)

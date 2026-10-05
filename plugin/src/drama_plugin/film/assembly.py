@@ -16,6 +16,35 @@ from drama_plugin.film.contracts import FilmShotBinding, SubtitleCue, DeliveryPr
 from drama_plugin.runtime.contracts import ArtifactReference
 
 
+def scene_segments(refs: tuple[ArtifactReference, ...], execution: ExecutionStore):
+    """Exactly-once logical clips, all returned as NEW_SEGMENT without time trims."""
+    from drama_plugin.execution.contracts import MediaBinding, ExecutionOperation
+    from drama_plugin.generation.contracts import GenerationPreparation
+    from drama_plugin.generation.operation import validate_continuation
+    seen, ordered = {}, []
+    for ref in refs:
+        binding = execution.get(ref, MediaBinding)
+        identity = binding.operation_ref
+        if identity in seen:
+            if seen[identity] != binding:
+                raise ValueError('SCENE_OPERATION_MEDIA_DRIFT')
+            continue  # The exact same immutable completion can be delivered twice.
+        op = execution.get(identity, ExecutionOperation)
+        raw, _, _ = execution.ledger.get_artifact('generation-preparation', op.preparation_ref)
+        task = GenerationPreparation.model_validate(raw).task
+        if ordered:
+            if not task.continuation:
+                raise ValueError('CONTINUATION_INPUT_NOT_PROVEN')
+            validate_continuation(execution.ledger, task)
+            if task.continuation.predecessor_media_ref != ordered[-1][0]:
+                raise ValueError('SCENE_SEGMENT_ORDER_OR_PREDECESSOR_MISMATCH')
+        elif task.continuation:
+            raise ValueError('SCENE_OPENING_SEGMENT_MISSING')
+        seen[identity] = binding
+        ordered.append((ref, binding))
+    return tuple(ordered)
+
+
 def _stamp(ms: int) -> str:
     return f'{ms//3600000:02}:{ms//60000%60:02}:{ms//1000%60:02},{ms%1000:03}'
 

@@ -21,7 +21,7 @@ def no_network(monkeypatch):
     monkeypatch.setattr(socket.socket, 'connect', forbidden)
     monkeypatch.setattr(socket.socket, 'connect_ex', forbidden)
 
-async def failed_film(tmp_path, monkeypatch, video, mode):
+async def failed_film(tmp_path, monkeypatch, video, mode, *, historical=True):
     p, authors, parent, child, cp = await reference_boundary(tmp_path, monkeypatch)
     await p.decide_target_run(parent.run_id, decision_id=p.runtime.decision_id(parent.run_id),
         accepted=True, source_ref=cp.units[0].package_ref)
@@ -60,10 +60,11 @@ async def failed_film(tmp_path, monkeypatch, video, mode):
         result=await native.handler(inputs)
         return CapabilityResult(status=ResultStatus.FAILED,code='PROVIDER_UNKNOWN_WITHOUT_LOOKUP',
             artifact_refs=result.artifact_refs,recovery_class=RecoveryClass.HARD_BLOCK)
-    p.runtime.executor._native['execution.provider:v1']=replace(native,handler=old_behavior)
+    if historical:
+        p.runtime.executor._native['execution.provider:v1']=replace(native,handler=old_behavior)
     failed=await p.resume_source_film_run(parent.run_id)
     p.runtime.executor._native['execution.provider:v1']=native
-    assert failed.state == RuntimeState.FAILED
+    assert failed.state == (RuntimeState.FAILED if historical else RuntimeState.WAITING_EXTERNAL)
     with p.ledger.transaction() as db:
         row=db.execute('SELECT operation_ref_json FROM production_operation WHERE operation_ref_json IS NOT NULL').fetchone()
     from drama_plugin.runtime.contracts import ArtifactReference
@@ -80,6 +81,23 @@ async def failed_film(tmp_path, monkeypatch, video, mode):
         receipt=transport.receipt(op,old_attempt,task)
         transport._path(old_attempt).write_text(receipt.model_dump_json(by_alias=True))
     return p,authors,failed,child,cp,op,old_attempt,retry,transport,calls,service
+
+@pytest.mark.asyncio
+async def test_current_unknown_wait_can_renew_once_without_terminal_state_reset(tmp_path,monkeypatch,video):
+    p,a,waiting,child,cp,op,old,terms,t,calls,service=await failed_film(tmp_path,monkeypatch,video,'unknown',historical=False)
+    before=p.runtime.store.load(child.run_id)
+    assert not before.external_repairs
+    assert await p.recover_unknown_media_submission(waiting.run_id,terms=terms,accepted=True)==waiting
+    assert p.runtime.store.load(child.run_id)==before
+    result=await p.resume_source_film_run(waiting.run_id)
+    current=p.execution.store.checkpoint(op.artifact_reference())
+    assert result.state==RuntimeState.WAITING_EXTERNAL and current.state==OperationState.UNKNOWN
+    assert current.progress.attempt_history[0].reserved_cost_microunits==1000000
+    assert p.execution.store.get(current.attempt_ref,ProviderAttempt).previous_attempt_ref==old.artifact_reference()
+    for _ in range(3):await p.resume_source_film_run(waiting.run_id)
+    assert sum(r.method=='POST' for r in calls)==2
+    assert p.generation_artifacts.prepared(child.run_id)==terms.preparation_ref
+    assert not p.runtime.store.load(child.run_id).external_repairs
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('mode',['recover','success','unknown'])

@@ -25,9 +25,10 @@ class SeedanceProvider(HttpVideoProvider):
         return body
 
     def normalize(self, raw: dict[str, Any], task: ProviderTask) -> ProviderTask:
-        return self.result(task, task_id=raw.get('id'), state=raw.get('status'), url=(raw.get('content') or {}).get('video_url'),
+        result = self.result(task, task_id=raw.get('id'), state=raw.get('status'), url=(raw.get('content') or {}).get('video_url'),
                            created=raw.get('created_at'), completed=raw.get('updated_at'), duration=raw.get('duration'),
                            resolution=raw.get('resolution'), fps=raw.get('framespersecond'), usage=raw.get('usage'), error=raw.get('error'))
+        return result.model_copy(update={'last_frame_url': (raw.get('content') or {}).get('last_frame_url')})
 
 
 class MiniMaxProvider(HttpVideoProvider):

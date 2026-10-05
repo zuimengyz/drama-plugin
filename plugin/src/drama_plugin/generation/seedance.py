@@ -36,7 +36,7 @@ class ModelPolicyCatalog:
         except ValueError:
             return None
         material = {"model": model, "family": family, "generator_version": generator.version,
-                    "target_adapter_version": "t5r-seedance-reference-view-v2",
+                    "target_adapter_version": "t5r-seedance-reference-view-v3",
                     "generator_policy": policy(), "hard_limit": spec["prompt_limit"],
                     "native_audio": spec["native_audio"], "input_modes": spec["input_modes"],
                     "durations": spec["durations"]}
@@ -94,7 +94,8 @@ class SeedanceTargetAdapter:
         for item in references:
             binding = item.binding
             media = binding.media.model_dump(mode="json", by_alias=False)
-            media["slot"] = {"FIRST_FRAME": "first_frame", "LAST_FRAME": "last_frame", "REFERENCE": "reference_images"}[binding.role]
+            media["slot"] = ("reference_" + binding.media.kind + "s" if binding.role == "REFERENCE" else
+                {"FIRST_FRAME": "first_frame", "LAST_FRAME": "last_frame"}[binding.role])
             media["prompt_binding"] = {"subject_ids": list(binding.subject_ids), "coverage": []}
             inputs.append(media)
         generated = get_generator(policy.family).generate(cast(VisualPromptIR, view), rows,

@@ -343,23 +343,508 @@ class DramaPlugin:
         if self.film is None:
             raise ConfigurationError("Film production requires durable ProductionLedger")
         from drama_plugin.film.policy import film_workflow, film_revision_workflow, film_media_workflow
-        from drama_plugin.runtime.contracts import CapabilityInput, ResultStatus, RuntimeState
+        from drama_plugin.runtime.contracts import CapabilityInput, ResultStatus, RuntimeState, DecisionCategory
         run = await self.runtime.recover_run(run_id)
+        cp = self.film.store.checkpoint(run_id)
+        if cp.media_batch_ref and not any(b.batch_ref == cp.media_batch_ref for b in run.execution_batches):
+            from drama_plugin.film.contracts import FilmMediaBatch
+            batch = self.film.store.get(cp.media_batch_ref, FilmMediaBatch)
+            self.operation_resolver.decision(batch.authorization_ref, category=DecisionCategory.ADOPTION,
+                scope=run.scope, source_ref=self.generation_artifacts.inputs(batch.opening_run_id).task.owners.rights_request_ref)
+            run = await self.runtime.resume_media_batch(run_id,batch_ref=cp.media_batch_ref,decision_ref=batch.authorization_ref)
+        if cp.media_batch_ref and run.state == RuntimeState.FAILED and run.last_result and run.last_result.code == 'TECHNICAL_MEDIA_FAILURE':
+            await self._repair_source_film_video_duration(run_id)
+            run = self.runtime.store.load(run_id)
+        if cp.media_batch_ref and run.state == RuntimeState.FAILED and run.last_result and run.last_result.code == 'HUMAN_REVIEW_CONTEXT_MISMATCH':
+            await self._repair_source_film_review_response(run_id)
+            run = self.runtime.store.load(run_id)
+        if (cp.media_batch_ref and run.state == RuntimeState.FAILED and run.last_result
+                and run.last_result.code == 'EXECUTION_IDENTITY_UNAVAILABLE'
+                and run.last_result.exception_type == 'KeyError'):
+            # Same-batch cache inspection repair: no child execution or paid
+            # request existed at this boundary; completed old batches are retained.
+            child_id = self.source_film_media_opening(run_id)
+            child = self.runtime.store.load(child_id)
+            with self.ledger.transaction() as db:
+                paid = db.execute('SELECT 1 FROM production_operation WHERE run_id=? AND operation_ref_json IS NOT NULL',(child_id,)).fetchone()
+            if child.state == RuntimeState.PLANNED and child.cursor == 0 and paid is None:
+                inspection = self.film.inspect_media_execution(CapabilityInput(run_id=run_id,operation_id=run_id+':5',scope=run.scope))
+                run = await self.runtime.repair_inspection_failure(run_id,expected_revision=run.revision,
+                    cursor=5,capability_key='film.execute:v1',input_fingerprint=inspection.revision.input_fingerprint)
         flows = {f.workflow_id: f for f in (film_workflow(), film_revision_workflow(), film_media_workflow())}
         flow = flows.get(run.workflow_id)
         if flow is None:
             raise ValueError("Wrong Film workflow")
         if run.workflow_id != flow.workflow_id:
             raise ValueError("Wrong Film workflow")
+        if run.state == RuntimeState.FAILED and run.last_result and run.last_result.code in {'GOVERNED_HARD_STOP','EXECUTION_REVISION_CHANGED'}:
+            await self._repair_official_frame_compilation(run_id)
+            await self._repair_adjacent_reference_readiness(run_id)
+            run = self.runtime.store.load(run_id)
         if (run.state == RuntimeState.FAILED and run.last_result is not None
                 and run.last_result.code in {"EXTERNAL_RECONCILIATION_ERROR", "FORMAL_MEDIA_NOT_FOUND"}):
             await self._repair_completed_media_import_configuration(run_id)
             run = self.runtime.store.load(run_id)
-        if run.state == RuntimeState.WAITING_EXTERNAL:
+        if run.state in {RuntimeState.WAITING_EXTERNAL,RuntimeState.WAITING_USER} and run.last_result and run.last_result.external_ref:
             await self.runtime.reconcile_wait(run_id)
         elif run.state == RuntimeState.BLOCKED and run.wait_reason == "INTERRUPTED_CAPABILITY":
             await self.runtime.retry(run_id)
         return await self.runtime.run(run_id)
+
+    async def _repair_source_film_review_response(self, run_id: str) -> None:
+        """Retain an actual scoped REVISE after a reviewer response protocol error."""
+        from drama_plugin.runtime.contracts import RuntimeState,ArtifactReference
+        from drama_plugin.execution.contracts import ExecutionOperation,MediaBinding,CreativeMediaReview
+        from drama_plugin.execution.review import HumanReviewer,MockReviewer
+        parent=self.runtime.store.load(run_id);cp=self.film.store.checkpoint(run_id)
+        links=[r.artifact_ref for r in parent.last_result.artifact_refs if r.owner=='runtime']
+        if len(links)!=1 or links[0] not in (cp.scene_media_run_ids or ()):
+            return
+        child=self.runtime.store.load(links[0])
+        if (media_cursor(child.workflow_id,child.cursor)!=11 or child.state not in {RuntimeState.FAILED,RuntimeState.READY}
+                or not child.last_result or child.last_result.code not in {'HUMAN_REVIEW_CONTEXT_MISMATCH',None}):
+            return
+        with self.ledger.transaction() as db:
+            row=db.execute('SELECT operation_ref_json FROM production_operation WHERE run_id=? AND operation_ref_json IS NOT NULL',(child.run_id,)).fetchone()
+        op=self.execution.store.get(ArtifactReference.model_validate_json(row[0]),ExecutionOperation)
+        checkpoint=self.execution.store.checkpoint(op.artifact_reference())
+        if checkpoint.progress.video_creative_ref:
+            review=self.execution.store.get(checkpoint.progress.video_creative_ref,CreativeMediaReview)
+        else:
+            if isinstance(self.execution.reviewer,(HumanReviewer,MockReviewer)) or self.execution.reviewer is None:
+                return  # No external attestation is fabricated or bypassed.
+            media=self.execution.store.get(checkpoint.progress.video_ref,MediaBinding)
+            review=await self.execution._creative(op,checkpoint,media.media)
+            if review.outcome!='REVISE':
+                return
+            self.execution.store.progress(op.artifact_reference(),video_creative_ref=self.execution.store.put(review))
+        if review.outcome!='REVISE' or review.operation_ref!=op.artifact_reference():
+            return
+        if child.state==RuntimeState.FAILED:
+            await self.runtime.repair_review_response(child.run_id,expected_revision=child.revision,
+                capability_key='execution.media_review:v1',decision_ref=op.authorization.approval_ref)
+        await self.runtime.repair_review_response(run_id,expected_revision=parent.revision,
+            capability_key='film.execute:v1',decision_ref=op.authorization.approval_ref)
+
+    async def _repair_source_film_video_duration(self, run_id: str) -> None:
+        """Re-probe exact bytes after the confirmed container-vs-video duration bug."""
+        from drama_plugin.execution.contracts import ExecutionOperation,MediaBinding,TechnicalMediaReview
+        from drama_plugin.generation.contracts import GenerationPreparation
+        from drama_plugin.runtime.contracts import ArtifactReference,RuntimeState
+        parent = self.runtime.store.load(run_id)
+        cp = self.film.store.checkpoint(run_id)
+        child_id = next((r.artifact_ref for r in parent.last_result.artifact_refs if r.owner == 'runtime'),None)
+        if child_id not in (self.source_film_media_opening(run_id),*(cp.scene_media_run_ids or ())):
+            return
+        child = self.runtime.store.load(child_id)
+        if child.state != RuntimeState.FAILED or not child.last_result or child.last_result.code != 'TECHNICAL_MEDIA_FAILURE':
+            return
+        with self.ledger.transaction() as db:
+            row = db.execute('SELECT operation_ref_json FROM production_operation WHERE run_id=? AND operation_ref_json IS NOT NULL',(child_id,)).fetchone()
+        op = self.execution.store.get(ArtifactReference.model_validate_json(row[0]),ExecutionOperation)
+        checkpoint = self.execution.store.checkpoint(op.artifact_reference())
+        progress = checkpoint.progress
+        old = self.execution.store.get(progress.video_technical_ref,TechnicalMediaReview)
+        if old.outcome != 'FAIL' or old.findings != ('RESULT_DURATION_MISMATCH',) or old.policy_version != 'technical-media-v1':
+            return
+        binding = self.execution.store.get(progress.video_ref,MediaBinding)
+        task = self.generation_artifacts.get(op.preparation_ref,GenerationPreparation).task
+        fresh = self.execution._technical(op,checkpoint,binding.media,None,audio_expected=task.profile.native_audio)
+        if fresh.outcome != 'PASS':
+            return
+        repaired = TechnicalMediaReview.seal(**{**fresh.model_dump(exclude={'fingerprint'}),'supersedes_ref':progress.video_technical_ref})
+        repaired_ref = self.execution.store.put(repaired)
+        self.execution.store.progress(op.artifact_reference(),video_technical_repair_ref=repaired_ref)
+        self._compose_media_owners(task,run_id=child_id)
+        await self.runtime.repair_video_duration_review(child_id,expected_revision=child.revision,
+            capability_key='execution.media_review:v1',decision_ref=op.authorization.approval_ref)
+        await self.runtime.repair_video_duration_review(run_id,expected_revision=parent.revision,
+            capability_key='film.execute:v1',decision_ref=op.authorization.approval_ref)
+
+    async def _repair_official_frame_compilation(self, run_id: str) -> None:
+        """Repair the reference compiler's omitted bounded-audio policy, before creation."""
+        from drama_plugin.runtime.contracts import RuntimeState,ExecutionRevision,CapabilityInput,DecisionCategory
+        from drama_plugin.contracts.base import sha256_canonical
+        from drama_plugin.governance.contracts import GateCode
+        parent=self.runtime.store.load(run_id);cp=self.film.store.checkpoint(run_id)
+        if not cp.media_batch_ref or not parent.last_result or parent.last_result.code!='GOVERNED_HARD_STOP':
+            return
+        links=[r.artifact_ref for r in parent.last_result.artifact_refs if r.owner=='runtime']
+        if len(links)!=1 or links[0] not in (cp.scene_media_run_ids or ()):
+            return
+        child=self.runtime.store.load(links[0])
+        if child.state!=RuntimeState.FAILED or media_cursor(child.workflow_id,child.cursor)!=4 or not child.last_result:
+            return
+        task=self.generation_artifacts.inputs(child.run_id).task
+        if not task.continuation or not task.continuation.allow_unverified_audio:
+            return
+        with self.ledger.transaction() as db:
+            if db.execute('SELECT 1 FROM production_operation WHERE run_id=? AND operation_ref_json IS NOT NULL',(child.run_id,)).fetchone():
+                raise ValueError('REFERENCE_REPAIR_MUST_PRECEDE_PAID_OPERATION')
+        failed_gates=[r for r in child.last_result.artifact_refs if r.owner=='gate-decision']
+        if len(failed_gates)!=1:
+            return
+        old=self.gate_findings.decision(failed_gates[0])
+        findings=[self.gate_findings.finding(r) for r in old.finding_refs]
+        required=[f for f in findings if f.required]
+        if not required or any(f.code!=GateCode.REQUEST_INPUT_MISSING or f.owner!='production-selection' for f in required):
+            return
+        diagnostics=[d for f in required for d in self.generation_artifacts.diagnostics(f.evidence_ref) if d.required]
+        if not diagnostics or any(d.code!='EXECUTION_REQUIRED_MISSING' or d.owner!='production-selection' for d in diagnostics):
+            return
+        package_ref=self.gate_findings.inputs(child.run_id).package_ref
+        result=await self.prompt_compiler.compile(package_ref,task)
+        fresh=self.generation_artifacts.diagnostics(result.diagnostics_ref)
+        if not result.preparation_ref or any(d.required for d in fresh):
+            return
+        if any(d.required for d in await self.prompt_compiler.validate_execution_sources(result.preparation_ref)):
+            return
+        auth=task.owners.rights_decision_ref
+        self.operation_resolver.decision(auth,category=DecisionCategory.ADOPTION,scope=child.scope,
+            source_ref=task.owners.rights_request_ref,allow_parent_scope=True)
+        self.generation_artifacts.set_prepared(child.run_id,result.preparation_ref)
+        from drama_plugin.generation.checks import execution_findings
+        fixed=self.gate_governor.govern(execution_findings(fresh,scope=child.scope,evidence_ref=result.diagnostics_ref),
+            scope=child.scope,mode=child.mode,package_ref=package_ref)
+        self.gate_findings.put_decision(fixed,run_id=child.run_id)
+        current=child.execution_revision or ExecutionRevision(fingerprint=sha256_canonical(task),
+            input_fingerprint=sha256_canonical([package_ref.model_dump(mode='json'),task.model_dump(mode='json')]))
+        await self.runtime.repair_resolved_reference_gate(child.run_id,expected_revision=child.revision,decision_ref=auth,current=current)
+        inspection=self.film.inspect_media_execution(CapabilityInput(run_id=run_id,operation_id=f'{run_id}:{parent.cursor}',scope=parent.scope))
+        await self.runtime.repair_resolved_reference_gate(run_id,expected_revision=parent.revision,decision_ref=auth,current=inspection.revision)
+
+    async def _repair_adjacent_reference_readiness(self, run_id: str) -> None:
+        """Repair only the confirmed native-reference omission, before any paid reservation."""
+        from drama_plugin.runtime.contracts import RuntimeState,ExecutionRevision,CapabilityInput,DecisionCategory
+        from drama_plugin.generation.contracts import GenerationPreparation
+        from drama_plugin.contracts.base import sha256_canonical
+        from drama_plugin.governance.contracts import GateCode
+        parent=self.runtime.store.load(run_id);cp=self.film.store.checkpoint(run_id)
+        links=[r.artifact_ref for r in parent.last_result.artifact_refs if r.owner=='runtime']
+        if len(links)!=1 or links[0] not in (cp.scene_media_run_ids or ()):
+            return
+        child=self.runtime.store.load(links[0])
+        previous_repair=next((r for r in child.external_repairs if r.cursor==child.cursor
+            and r.capability_key=='generation.ready:v1' and r.failed_result.code=='GOVERNED_HARD_STOP'),None)
+        already_repaired=previous_repair is not None
+        if (child.state not in {RuntimeState.FAILED,RuntimeState.READY} or child.last_result is None
+                or child.last_result.code not in {'GOVERNED_HARD_STOP','EXECUTION_REVISION_CHANGED'}
+                or child.last_result.code=='EXECUTION_REVISION_CHANGED' and not already_repaired
+                or media_cursor(child.workflow_id,child.cursor)!=6
+                or child.state==RuntimeState.READY and not already_repaired):
+            return
+        ref=self.generation_artifacts.prepared(child.run_id)
+        prepared=self.generation_artifacts.get(ref,GenerationPreparation)
+        if not prepared.task.execution_reference_refs:
+            return
+        with self.ledger.transaction() as db:
+            if db.execute('SELECT 1 FROM production_operation WHERE run_id=? AND operation_ref_json IS NOT NULL',(child.run_id,)).fetchone():
+                raise ValueError('REFERENCE_REPAIR_MUST_PRECEDE_PAID_OPERATION')
+        # A crash may have written the replacement Gate before either Runtime save.
+        # Read the exact retained failure evidence, never the mutable latest index.
+        failed_result=previous_repair.failed_result if previous_repair else child.last_result
+        failed_gates=[r for r in failed_result.artifact_refs if r.owner=='gate-decision']
+        if len(failed_gates)!=1:
+            return
+        old_gate=self.gate_findings.decision(failed_gates[0])
+        old_findings=[self.gate_findings.finding(r) for r in old_gate.finding_refs]
+        if not old_findings or any(f.code!=GateCode.REQUEST_INPUT_MISSING for f in old_findings):
+            return
+        diagnostics=[d for f in old_findings for d in self.generation_artifacts.diagnostics(f.evidence_ref)]
+        if any(d.required and d.code!='REFERENCE_INPUT_UNRESOLVED' for d in diagnostics):
+            return
+        if any(d.required for d in await self.prompt_compiler.validate_execution_sources(ref)):
+            return
+        package=self.production_packages.get(prepared.source_package_ref)
+        self.operation_resolver.validate(package,prepared.task)
+        validation=await self.shot_assembler.validate_sources(package)
+        if validation.status != 'READY':
+            return
+        auth=prepared.task.owners.rights_decision_ref
+        self.operation_resolver.decision(auth,category=DecisionCategory.ADOPTION,scope=child.scope,
+            source_ref=prepared.task.owners.rights_request_ref,allow_parent_scope=True)
+        current=child.execution_revision or ExecutionRevision(
+            fingerprint=sha256_canonical(['reference-readiness-v2',ref.model_dump(mode='json',by_alias=True)]),
+            input_fingerprint=sha256_canonical([prepared.source_package_ref.model_dump(mode='json',by_alias=True),
+                prepared.task.model_dump(mode='json',by_alias=True),ref.model_dump(mode='json',by_alias=True)]))
+        if child.state==RuntimeState.FAILED:
+            fixed=self.gate_governor.govern((),scope=child.scope,mode=child.mode,package_ref=prepared.source_package_ref)
+            self.gate_findings.put_decision(fixed,run_id=child.run_id)
+            await self.runtime.repair_resolved_reference_gate(child.run_id,expected_revision=child.revision,decision_ref=auth,current=current)
+        inspection=self.film.inspect_media_execution(CapabilityInput(run_id=run_id,operation_id=f'{run_id}:{parent.cursor}',scope=parent.scope))
+        await self.runtime.repair_resolved_reference_gate(run_id,expected_revision=parent.revision,decision_ref=auth,current=inspection.revision)
+
+    def source_film_media_opening(self, run_id: str) -> str:
+        from drama_plugin.film.contracts import FilmMediaBatch
+        cp = self.film.store.checkpoint(run_id)
+        return (self.film.store.get(cp.media_batch_ref,FilmMediaBatch).opening_run_id
+            if cp.media_batch_ref else cp.units[0].generation_run_id)
+
+    async def restart_source_film_media(self, run_id: str, *, batch_id: str,
+                                         tasks: tuple[GenerationTask, ...], allow_unverified_audio: bool = False) -> RuntimeRun:
+        """A new bounded media batch on the same adopted Film; historical requests stay immutable."""
+        from drama_plugin.film.contracts import FilmCheckpoint, FilmMediaBatch
+        from drama_plugin.contracts.base import sha256_canonical
+        from drama_plugin.runtime.contracts import RuntimeState
+        from drama_plugin.generation.operation import validate_segment_progress
+        parent = self.runtime.store.load(run_id)
+        cp = self.film.store.checkpoint(run_id)
+        goal_hash = sha256_canonical([t.model_dump(mode='json',by_alias=True) for t in tasks])
+        if cp.media_batch_ref:
+            current = self.film.store.get(cp.media_batch_ref,FilmMediaBatch)
+            if current.batch_id == batch_id:
+                if current.goal_hash != goal_hash or current.allow_unverified_audio != allow_unverified_audio:
+                    raise ValueError('MEDIA_BATCH_IDENTITY_CHANGED')
+                return await self.resume_source_film_run(run_id)
+        if (parent.workflow_id != 'source-to-reviewed-media:v1' or parent.state != RuntimeState.SUCCEEDED
+                or parent.cursor != 6 or not 3 <= len(tasks) <= 4 or not cp.units):
+            raise ValueError('COMPLETED_FILM_BOUNDED_REPRODUCTION_REQUIRED')
+        unit = cp.units[0]
+        opening = tasks[0]
+        if (opening.input_mode != 'text_to_video' or opening.execution_reference_refs or opening.continuation
+                or opening.return_last_frame is not True or opening.unit.action_refs[0].path[-2:] != ('0','action')):
+            raise ValueError('FRESH_TEXT_OPENING_WITH_OFFICIAL_TAIL_REQUIRED')
+        package = self.production_packages.get(unit.package_ref)
+        for index, task in enumerate(tasks):
+            self.operation_resolver.validate(package,task)
+            if (task.owners.adopted_refs != unit.refs or task.return_last_frame is not True
+                    or task.profile.provider != cp.operation_task.profile.provider
+                    or task.profile.model != cp.operation_task.profile.model
+                    or task.profile.resolution != cp.operation_task.profile.resolution
+                    or task.profile.aspect_ratio != cp.operation_task.profile.aspect_ratio
+                    or task.profile.native_audio != cp.operation_task.profile.native_audio):
+                raise ValueError('ADJACENT_SCENE_CONTINUITY_ROUTE_REQUIRED')
+            if index:
+                if task.continuation or task.execution_reference_refs or task.input_mode != 'image_to_video':
+                    raise ValueError('DEFERRED_CONTINUATION_INPUT_REQUIRED')
+                validate_segment_progress(task.unit,tuple(t.unit for t in reversed(tasks[:index])))
+        child = self.create_media_review_run(package_ref=unit.package_ref,task=opening)
+        if child.run_id in (unit.generation_run_id,*(cp.scene_media_run_ids or ())):
+            raise ValueError('MEDIA_BATCH_MUST_HAVE_NEW_OPENING')
+        batch = FilmMediaBatch.seal(scope=parent.scope,run_id=run_id,film_version=cp.film_version,
+            batch_id=batch_id,authorization_ref=opening.owners.rights_decision_ref,opening_run_id=child.run_id,
+            goal_hash=goal_hash,allow_unverified_audio=allow_unverified_audio,previous_checkpoint=cp)
+        ref = self.film.store.put(batch)
+        self.film.store.save(run_id,parent.scope,FilmCheckpoint.model_validate({**cp.model_dump(),
+            'media_batch_ref':ref,'media_batch_opening_review_ref':None,
+            'scene_media_run_ids':None,'scene_media_review_refs':None,'scene_media_pending_tasks':tasks[1:],
+            'scene_media_goal_hash':goal_hash}))
+        return await self.resume_source_film_run(run_id)
+
+    def source_film_preview_manifest(self, run_id: str) -> str:
+        """Rebuild from immutable completions, never accumulated concat text."""
+        from drama_plugin.execution.contracts import ExecutionOperation
+        from drama_plugin.film.assembly import scene_segments
+        from drama_plugin.runtime.contracts import ArtifactReference
+        cp = self.film.store.checkpoint(run_id)
+        refs = []
+        for child in (self.source_film_media_opening(run_id), *(cp.scene_media_run_ids or ())):
+            with self.ledger.transaction() as db:
+                row = db.execute('SELECT operation_ref_json FROM production_operation WHERE run_id=? AND operation_ref_json IS NOT NULL', (child,)).fetchone()
+            op_ref = ArtifactReference.model_validate_json(row[0])
+            refs.append(self.execution.store.checkpoint(op_ref).progress.video_ref)
+        segments = scene_segments(tuple(refs), self.execution.store)
+        return 'ffconcat version 1.0\n' + ''.join("file '"+str(self.execution.media.path(b.media)).replace("'", "'\\''")+"'\n" for _, b in segments)
+
+    async def retain_source_film_last_frame(self, child_id: str) -> ArtifactReference:
+        """Persist the provider-original JPEG for any completed segment, including the last."""
+        from drama_plugin.execution.contracts import ExecutionOperation, MediaBinding, ProviderReceipt, ProviderAttempt, ContinuationFrame
+        from drama_plugin.execution.media import LocalMediaStore, probe_jpeg
+        from drama_plugin.execution.transport import CapabilityAbsent
+        from drama_plugin.generation.contracts import GenerationPreparation
+        from drama_plugin.runtime.contracts import ArtifactReference
+        from urllib.parse import urlsplit
+        with self.ledger.transaction() as db:
+            row = db.execute('SELECT operation_ref_json FROM production_operation WHERE run_id=? AND operation_ref_json IS NOT NULL', (child_id,)).fetchone()
+        op_ref = ArtifactReference.model_validate_json(row[0])
+        op = self.execution.store.get(op_ref,ExecutionOperation)
+        progress = self.execution.store.checkpoint(op_ref).progress
+        source_ref = progress.video_ref
+        source = self.execution.store.get(source_ref,MediaBinding)
+        previous = self.generation_artifacts.get(op.preparation_ref,GenerationPreparation).task
+        # Historical tasks that never requested the official frame are not probed.
+        if previous.return_last_frame is not True:
+            raise ValueError('OFFICIAL_TAIL_NOT_REQUESTED')
+        try:
+            frame_ref = ArtifactReference.model_validate(self.ledger.get_index('continuation-frame', source_ref.artifact_ref))
+            frame = self.execution.store.get(frame_ref, ContinuationFrame)
+            LocalMediaStore(self.execution.media.directory).path(frame.media)
+        except KeyError:
+            receipt = self.execution.store.get(source.receipt_ref, ProviderReceipt)
+            self._compose_media_owners(previous, run_id=child_id)
+            transport = self.execution.transports[receipt.provider]
+            if not receipt.last_frame_url:
+                # One read-only lookup; this path never creates or retries a task.
+                from drama_plugin.contracts.video import ProviderTask
+                raw = await transport.adapter._http('GET', '/contents/generations/tasks/'+receipt.remote_identity)
+                queried = transport.adapter.normalize(raw, ProviderTask(provider=receipt.provider,model=op.model,
+                    provider_task_id=receipt.remote_identity,client_request_id=receipt.client_identity,
+                    request_fingerprint=receipt.request_fingerprint,status='SUCCEEDED'))
+                attempt = self.execution.store.get(source.attempt_ref, ProviderAttempt)
+                receipt = transport.receipt(op, attempt, queried)
+            if not receipt.last_frame_url or receipt.state != 'SUCCEEDED':
+                raise CapabilityAbsent('PROVIDER_LAST_FRAME_UNAVAILABLE')
+            url = urlsplit(receipt.last_frame_url)
+            if url.scheme != 'https' or not url.hostname or url.username or url.password:
+                raise ValueError('REFERENCE_DELIVERY_REQUIRES_HTTPS')
+            response = await transport.adapter.client.get(receipt.last_frame_url)
+            response.raise_for_status()
+            if not response.content.startswith(b'\xff\xd8\xff'):
+                raise ValueError('PROVIDER_LAST_FRAME_JPEG_REQUIRED')
+            media_store = LocalMediaStore(self.execution.media.directory)
+            image = media_store.retain(response.content, kind='IMAGE', mime='image/jpeg')
+            width, height = probe_jpeg(media_store.path(image))
+            from drama_plugin.execution.contracts import TechnicalMediaReview
+            source_probe = self.execution.store.get(progress.current_video_technical_ref, TechnicalMediaReview).observation
+            if (width, height) != (source_probe.width, source_probe.height):
+                raise ValueError('PROVIDER_LAST_FRAME_DIMENSIONS_MISMATCH')
+            receipt_ref = self.execution.store.put(receipt)
+            frame = ContinuationFrame.seal(scope=source.scope,run_id=source.run_id,source_package_ref=source.source_package_ref,
+                predecessor_media_ref=source_ref,receipt_ref=receipt_ref,media=image,width=width,height=height)
+            frame_ref = self.execution.store.put(frame)
+            self.ledger.put_index('continuation-frame',source_ref.artifact_ref,frame_ref,scope=source.scope,once=True)
+        return frame_ref
+
+    async def prepare_source_film_continuation(self, run_id: str, *, task: GenerationTask) -> GenerationTask:
+        """Freeze the immediately preceding native result as a new endpoint input.
+
+        No create POST, creative rewrite or authority/financial approval is made here.
+        A missing official last frame is an explicit input limitation, not a fallback
+        to the opening video or an invented trusted local extraction.
+        """
+        from drama_plugin.execution.contracts import ExecutionOperation, MediaBinding, ProviderReceipt, ProviderAttempt, ContinuationFrame
+        from drama_plugin.execution.media import LocalMediaStore, probe_jpeg
+        from drama_plugin.execution.transport import CapabilityAbsent
+        from drama_plugin.generation.contracts import ContinuationInput, GenerationPreparation, GenerationTask
+        from drama_plugin.generation.operation import continuation_context, validate_continuation
+        from drama_plugin.film.contracts import FilmMediaBatch
+        from drama_plugin.production.references import ReferenceExecutionBinding
+        from drama_plugin.runtime.contracts import ArtifactReference, RuntimeState
+        from urllib.parse import urlsplit
+        cp = self.film.store.checkpoint(run_id)
+        previous_id = (cp.scene_media_run_ids or (self.source_film_media_opening(run_id),))[-1]
+        previous_run = self.runtime.store.load(previous_id)
+        if previous_run.state != RuntimeState.SUCCEEDED or task.input_mode != 'image_to_video':
+            raise ValueError('REVIEWED_PREDECESSOR_AND_FIRST_FRAME_ROUTE_REQUIRED')
+        if task.continuation:
+            validate_continuation(self.ledger, task)
+            return task
+        with self.ledger.transaction() as db:
+            row = db.execute('SELECT operation_ref_json FROM production_operation WHERE run_id=? AND operation_ref_json IS NOT NULL', (previous_id,)).fetchone()
+        op_ref = ArtifactReference.model_validate_json(row[0])
+        op = self.execution.store.get(op_ref, ExecutionOperation)
+        progress = self.execution.store.checkpoint(op_ref).progress
+        source_ref = progress.video_ref
+        source = self.execution.store.get(source_ref, MediaBinding)
+        previous = self.generation_artifacts.get(op.preparation_ref, GenerationPreparation).task
+        if task.profile.provider != 'seedance' or task.profile.model != previous.profile.model:
+            raise ValueError('ADJACENT_SCENE_CONTINUITY_ROUTE_REQUIRED')
+        global_ref = (previous.continuation.global_reference_ref if previous.continuation else
+            (task.execution_reference_refs or (None,))[0])
+        if global_ref is None:
+            # Build global identity/room context exclusively from this batch's new opening.
+            from drama_plugin.creative_engine.contracts import Kind
+            from drama_plugin.execution.contracts import TechnicalMediaReview
+            package = self.production_packages.get(source.source_package_ref)
+            selections = await self.prompt_compiler.reader.selections(package)
+            reference = next(v for v in selections if v.selection.domain == 'REFERENCE' and isinstance(v.value,dict) and 'references' in v.value)
+            subject = next(v.body.facts['presentSubjects'][0]['id'] for r in previous.owners.adopted_refs
+                for v in (self.creative_versions.resolve(r),) if v.kind == Kind.PROFESSIONAL and v.body.domain == 'SUBJECTS')
+            duties = []
+            for row in reference.value['references']:
+                if row['priority'] != 'REQUIRED':
+                    continue
+                role = 'CHARACTER' if 'identity' in row['inputDuty'].lower() else 'LOCATION' if 'topology' in row['inputDuty'].lower() else 'PERFORMANCE'
+                duties.append(dict(role=role,necessity='REQUIRED',subject=subject if role in ('CHARACTER','PERFORMANCE') else source.scope.scene_id,purpose=row['inputDuty']))
+            probe = self.execution.store.get(progress.current_video_technical_ref,TechnicalMediaReview).observation
+            global_ref = self.execution_references.register(ReferenceExecutionBinding(
+                binding_id='batch-opening-'+source.media.content_hash,version=1,scope=source.scope,
+                media=dict(media_id=source.canonical_media_ref.artifact_ref,version=str(source.canonical_media_ref.version or 1),
+                    content_hash=source.media.content_hash,kind='video',semantics=('identity','costume','environment','style','motion','continuity'),
+                    duration=probe.duration_ms/1000,width=probe.width,height=probe.height,review_ref=progress.video_creative_ref.artifact_ref),
+                duties=tuple(duties),subject_ids=(subject,),role='REFERENCE',authorization_scope='ADOPTED_PRODUCTION_INPUT',
+                authority_refs=(reference.selection.reference,)))
+        raw, _, _ = self.ledger.get_artifact('reference-execution-binding',
+            ArtifactReference(owner=global_ref.owner.value, artifact_ref=global_ref.artifact_ref, version=global_ref.version))
+        global_binding = ReferenceExecutionBinding.model_validate(raw)
+        if global_binding.source().reference() != global_ref or global_binding.scope != source.scope:
+            raise ValueError('GLOBAL_CONTINUITY_REFERENCE_MISMATCH')
+        frame_ref = await self.retain_source_film_last_frame(previous_id)
+        frame = self.execution.store.get(frame_ref,ContinuationFrame)
+        # Retain the opening reference as global context; I2V and multimodal
+        # reference_video are mutually exclusive in this provider's wire API.
+        endpoint = self.execution_references.register(ReferenceExecutionBinding(
+            binding_id='continuation-'+frame.fingerprint,version=1,scope=source.scope,
+            media=dict(media_id=frame.media.media_id,version='1',content_hash=frame.media.content_hash,kind='image',
+                semantics=global_binding.media.semantics,width=frame.width,height=frame.height,
+                review_ref=global_binding.media.review_ref),duties=global_binding.duties,subject_ids=global_binding.subject_ids,
+            role='FIRST_FRAME',endpoint_frame_ref=frame_ref,
+            endpoint_state='Continue from the supplied actual final frame. Preserve its framing and axis; do not replay the establishing view or reset the camera distance.',
+            authorization_scope=global_binding.authorization_scope,authority_refs=global_binding.authority_refs))
+        bound = GenerationTask.model_validate({**task.model_dump(), 'execution_reference_refs':(endpoint,),
+            'return_last_frame':True, 'continuation':ContinuationInput(predecessor_media_ref=source_ref,frame_ref=frame_ref,
+                global_reference_ref=global_ref,context_fact_refs=continuation_context(task.unit,previous.unit),
+                allow_unverified_audio=True if cp.media_batch_ref and self.film.store.get(cp.media_batch_ref,FilmMediaBatch).allow_unverified_audio else None)})
+        validate_continuation(self.ledger, bound)
+        return bound
+
+    def queue_source_film_media(self, run_id: str, *, tasks: tuple[GenerationTask, ...]) -> tuple[str, ...]:
+        """Append a bounded adjacent Scene batch to the existing Film execution boundary."""
+        from drama_plugin.runtime.contracts import RuntimeState, RuntimeScope
+        from drama_plugin.film.contracts import FilmCheckpoint
+        if not self.film or not self.operation_resolver or not 1 <= len(tasks) <= 3:
+            raise ValueError('BOUNDED_SCENE_CONTINUATION_REQUIRED')
+        parent = self.runtime.store.load(run_id)
+        cp = self.film.store.checkpoint(run_id)
+        from drama_plugin.contracts.base import sha256_canonical
+        goal_hash = sha256_canonical([t.model_dump(mode='json',by_alias=True) for t in tasks])
+        if parent.workflow_id == 'source-to-reviewed-media:v1' and cp.scene_media_goal_hash == goal_hash:
+            return cp.scene_media_run_ids
+        if (parent.workflow_id != 'source-to-reviewed-media:v1' or parent.cursor != 5
+                or parent.state not in {RuntimeState.READY,RuntimeState.WAITING_USER,RuntimeState.WAITING_EXTERNAL}
+                or not cp.units or cp.units[0].package_ref is None):
+            raise ValueError('EXISTING_FILM_EXECUTION_BOUNDARY_REQUIRED')
+        unit = cp.units[0]
+        package = self.production_packages.get(unit.package_ref)
+        scope = RuntimeScope(work_id=parent.scope.work_id,scene_id=unit.scene_id,shot_id=unit.shot_id)
+        from drama_plugin.generation.operation import validate_continuation, continuation_frame, validate_segment_progress
+        task = tasks[0]
+        if not task.continuation:
+            raise ValueError('EXACT_CONTINUATION_FIRST_FRAME_REQUIRED')
+        validate_continuation(self.ledger, task)
+        _, preceding, _, _ = continuation_frame(self.ledger, task.continuation.frame_ref,
+            allow_unverified_audio=bool(task.continuation.allow_unverified_audio))
+        queued = cp.scene_media_run_ids or ()
+        # Repeated queue calls recover the same child; they do not append it again.
+        if queued and self.generation_artifacts.inputs(queued[-1]).task == task and not tasks[1:]:
+            return queued
+        previous_id = (queued or (self.source_film_media_opening(run_id),))[-1]
+        if preceding.run_id != previous_id or self.runtime.store.load(previous_id).state != RuntimeState.SUCCEEDED:
+            raise ValueError('IMMEDIATE_REVIEWED_PREDECESSOR_REQUIRED')
+        if len(queued) + len(tasks) > 3 or cp.scene_media_pending_tasks:
+            raise ValueError('BOUNDED_SCENE_CONTINUATION_REQUIRED')
+        for previous, following in zip(tasks,tasks[1:]):
+            if following.continuation is not None or following.input_mode != 'image_to_video':
+                raise ValueError('DEFERRED_CONTINUATION_INPUT_REQUIRED')
+            validate_segment_progress(following.unit,(previous.unit,))
+        for task in tasks:
+            self.operation_resolver.validate(package,task,require_scope=False)
+            if (not task.execution_reference_refs or task.owners.adopted_refs != unit.refs
+                    or task.profile.provider != cp.operation_task.profile.provider
+                    or task.profile.model != cp.operation_task.profile.model
+                    or task.profile.resolution != cp.operation_task.profile.resolution
+                    or task.profile.aspect_ratio != cp.operation_task.profile.aspect_ratio
+                    or task.profile.native_audio != cp.operation_task.profile.native_audio):
+                raise ValueError('ADJACENT_SCENE_CONTINUITY_ROUTE_REQUIRED')
+        # Later descriptors contain source/profile authority but no frozen media
+        # goal or preparation until their actual predecessor exists.
+        ids = (self.create_media_review_run(package_ref=unit.package_ref,task=tasks[0]).run_id,)
+        if len(set(ids)) != len(ids) or unit.generation_run_id in ids:
+            raise ValueError('SCENE_CONTINUATION_DUPLICATE_OPERATION')
+        self.film.store.save(run_id,parent.scope,FilmCheckpoint.model_validate({**cp.model_dump(),
+            'scene_media_run_ids':(*queued,*ids),'scene_media_review_refs':cp.scene_media_review_refs or (),
+            'scene_media_pending_tasks':tasks[1:],'scene_media_goal_hash':goal_hash}))
+        return (*queued,*ids)
 
     async def _repair_completed_media_import_configuration(self, run_id: str) -> None:
         """Only the same successful recovery operation may repair this local preflight failure."""
@@ -509,7 +994,7 @@ class DramaPlugin:
     async def resume_film_run(self, run_id: str) -> RuntimeRun:
         """Reconcile the pending registered author action; callers do not select a tool."""
         from drama_plugin.creative_engine.policy import WORKFLOW
-        from drama_plugin.runtime.contracts import CapabilityInput, ResultStatus, RuntimeState
+        from drama_plugin.runtime.contracts import CapabilityInput, ResultStatus, RuntimeState, DecisionCategory
         run = await self.runtime.recover_run(run_id)
         if run.workflow_id != WORKFLOW:
             raise ValueError("Only creative runs can resume here")
@@ -593,8 +1078,14 @@ class DramaPlugin:
         package = self.production_packages.get(package_ref)
         self.operation_resolver.validate(package,task,require_scope=False)
         scope = package_scope(package)
-        identity = "media-proof:" + sha256_canonical([package_ref.model_dump(mode="json",by_alias=True),
-            task.unit.model_dump(mode="json",by_alias=True,exclude={"scope_decision_ref"}), task.profile.model_dump(mode="json",by_alias=True), task.owners.model_dump(mode="json",by_alias=True)])
+        identity_parts = [package_ref.model_dump(mode="json",by_alias=True),
+            task.unit.model_dump(mode="json",by_alias=True,exclude={"scope_decision_ref"}), task.profile.model_dump(mode="json",by_alias=True), task.owners.model_dump(mode="json",by_alias=True)]
+        if task.execution_reference_refs is not None:
+            identity_parts.append([r.model_dump(mode='json',by_alias=True) for r in task.execution_reference_refs])
+        if task.continuation is not None or task.return_last_frame is not None:
+            identity_parts.append({'continuation':task.continuation.model_dump(mode='json',by_alias=True) if task.continuation else None,
+                'returnLastFrame':task.return_last_frame})
+        identity = "media-proof:" + sha256_canonical(identity_parts)
         if offline_authorization and (offline_authorization.execution_mode != "OFFLINE_ONLY"
                 or offline_authorization.estimated_cost_microunits or offline_authorization.budget_microunits):
             raise ValueError("Goal entry cannot accept a live authorization or paid fixture")
@@ -627,15 +1118,22 @@ class DramaPlugin:
             self.execution.media = FormalMediaStore(self.execution.media.directory,self.providers.media,self.execution.store)
         if self.execution.reviewer is None:
             self.execution.reviewer = HumanReviewer()
-        if task.profile.provider not in self.execution.transports:
-            recovery_ref = None
-            if run_id is not None:
-                with self.ledger.transaction() as db:
-                    rows = db.execute("SELECT operation_ref_json FROM production_operation WHERE run_id=? AND operation_ref_json IS NOT NULL LIMIT 2",(run_id,)).fetchall()
-                if len(rows) > 1:
-                    raise ConfigurationError("Media run operation identity is not unique")
-                if rows:
-                    recovery_ref = ArtifactReference.model_validate_json(rows[0][0])
+        recovery_ref = None
+        if run_id is not None:
+            with self.ledger.transaction() as db:
+                rows = db.execute("SELECT operation_ref_json FROM production_operation WHERE run_id=? AND operation_ref_json IS NOT NULL LIMIT 2",(run_id,)).fetchall()
+            if len(rows) > 1:
+                raise ConfigurationError("Media run operation identity is not unique")
+            if rows:
+                recovery_ref = ArtifactReference.model_validate_json(rows[0][0])
+        from drama_plugin.execution.live_transport import TargetHttpTransport
+        current = self.execution.transports.get(task.profile.provider)
+        # A query-only transport pinned to the first paid operation must never
+        # fence an independently authorized adjacent child, or query its sibling.
+        rebind = isinstance(current,TargetHttpTransport) and not current.offline and (
+            current.recovery_operation_ref != recovery_ref or current.adapter.model != task.profile.model
+            or current.resolution != task.profile.resolution or current.aspect_ratio != task.profile.aspect_ratio)
+        if current is None or rebind:
             try:
                 self.execution.transports[task.profile.provider] = configured_http_transport(model=task.profile.model,
                     receipt_root=self.ledger.path.parent/(self.ledger.path.name+".receipts"),ledger=self.ledger,
@@ -687,13 +1185,19 @@ class DramaPlugin:
             raise ValueError('Explicit accepted cost authorization required')
         parent = self.runtime.store.load(run_id)
         cp = self.film.store.checkpoint(run_id)
-        child = self.runtime.store.load(cp.units[0].generation_run_id)
-        if (parent.state != RuntimeState.FAILED or child.state != RuntimeState.FAILED
-                or parent.last_result.code != 'PROVIDER_UNKNOWN_WITHOUT_LOOKUP'
-                or child.last_result.code != 'PROVIDER_UNKNOWN_WITHOUT_LOOKUP'):
-            raise ValueError('Exact failed Film/UNKNOWN child required')
         terms.validate_current()
         operation = self.execution.store.get(terms.recovery_operation_ref, ExecutionOperation)
+        allowed_children = (self.source_film_media_opening(run_id), *(cp.scene_media_run_ids or ()))
+        if operation.run_id not in allowed_children:
+            raise ValueError('Exact failed Film/UNKNOWN child required')
+        child = self.runtime.store.load(operation.run_id)
+        terminal = (parent.state == child.state == RuntimeState.FAILED and parent.last_result
+            and child.last_result and parent.last_result.code == child.last_result.code == 'PROVIDER_UNKNOWN_WITHOUT_LOOKUP')
+        waiting = (parent.state == child.state == RuntimeState.WAITING_EXTERNAL and parent.last_result
+            and child.last_result and child.last_result.external_ref == operation.artifact_reference()
+            and any(r.owner == 'runtime' and r.artifact_ref == child.run_id for r in parent.last_result.artifact_refs))
+        if not (terminal or waiting):
+            raise ValueError('Exact failed Film/UNKNOWN child required')
         checkpoint = self.execution.store.checkpoint(operation.artifact_reference())
         attempt = self.execution.store.get(checkpoint.attempt_ref, ProviderAttempt)
         prepared = self.generation_artifacts.get(terms.preparation_ref, GenerationPreparation)
@@ -703,7 +1207,7 @@ class DramaPlugin:
                 or checkpoint.state != OperationState.UNKNOWN or checkpoint.receipt_ref is not None
                 or terms.reserved_unknown_microunits < operation.authorization.budget_microunits
                 or terms.preparation_ref != operation.preparation_ref or terms.profile != prepared.task.profile
-                or terms.wire_payload_hash != sha256_canonical(TargetHttpTransport.preview(prepared, final))):
+                or terms.wire_payload_hash != sha256_canonical(TargetHttpTransport.preview(prepared, final, ledger=self.ledger))):
             raise ValueError('Exact operation/prior UNKNOWN/preparation/wire recovery terms required')
         self._compose_media_owners(prepared.task, run_id=child.run_id)
         receipt = UserDecisionRecord.seal(run_id=child.run_id, scope=child.scope,
@@ -713,6 +1217,8 @@ class DramaPlugin:
         ref = self.reviews.put_user_decision(receipt)
         self.ledger.put_index('media-proof-cost-terms', child.run_id, terms, scope=child.scope)
         self.ledger.put_index('execution-recovery-authorization', child.run_id, ref, scope=child.scope)
+        if waiting:
+            return parent  # The native provider capability reconciles this same wait and consumes the new receipt.
         await self.runtime.repair_unknown_submission(child.run_id, expected_revision=child.revision,
             capability_key='execution.provider:v1', decision_ref=ref)
         return await self.runtime.repair_unknown_submission(run_id, expected_revision=parent.revision,
@@ -741,7 +1247,7 @@ class DramaPlugin:
         final = self.generation_artifacts.get(prepared.final_prompt_ref,FinalPromptArtifact)
         terms.validate_current()
         if (terms.preparation_ref != prepared.artifact_reference() or terms.profile != prepared.task.profile
-                or terms.wire_payload_hash != sha256_canonical(TargetHttpTransport.preview(prepared,final))):
+                or terms.wire_payload_hash != sha256_canonical(TargetHttpTransport.preview(prepared,final,ledger=self.ledger))):
             raise ValueError("Exact preparation/wire financial terms required")
         self.ledger.put_index("media-proof-cost-terms",run_id,terms,scope=run.scope,
             once=not (cost_reauthorization or pending_approval))
@@ -795,7 +1301,7 @@ class DramaPlugin:
         if self.execution is None:
             raise ConfigurationError("Target execution requires durable ProductionLedger")
         from drama_plugin.execution.policy import WORKFLOW, execution_workflow
-        from drama_plugin.runtime.contracts import CapabilityInput, ResultStatus, RuntimeState
+        from drama_plugin.runtime.contracts import CapabilityInput, ResultStatus, RuntimeState, DecisionCategory
         run = await self.runtime.recover_run(run_id)
         from drama_plugin.generation.policy import MEDIA_WORKFLOW, media_review_workflow
         if run.workflow_id not in {WORKFLOW,*MEDIA_WORKFLOWS}:
@@ -898,7 +1404,7 @@ class DramaPlugin:
         from drama_plugin.contracts.base import sha256_canonical
         prepared = self.generation_artifacts.get(terms.preparation_ref,GenerationPreparation)
         final = self.generation_artifacts.get(prepared.final_prompt_ref,FinalPromptArtifact)
-        if terms.profile != prepared.task.profile or terms.wire_payload_hash != sha256_canonical(TargetHttpTransport.preview(prepared,final)):
+        if terms.profile != prepared.task.profile or terms.wire_payload_hash != sha256_canonical(TargetHttpTransport.preview(prepared,final,ledger=self.ledger)):
             raise ValueError("APPROVED_FINANCIAL_TERMS_DRIFT")
         assert self.operation_resolver
         self.operation_resolver.validate(self.production_packages.get(prepared.source_package_ref),prepared.task)

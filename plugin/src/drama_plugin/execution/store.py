@@ -239,7 +239,7 @@ class ExecutionStore:
 
     def progress(self, ref: ArtifactReference, **updates: ArtifactReference | MediaIdentity | int | str | None) -> OperationProgress:
         expected: dict[str, type[ExecutionArtifact]] = {
-            "video_ref": MediaBinding, "video_technical_ref": TechnicalMediaReview,
+            "video_ref": MediaBinding, "video_technical_ref": TechnicalMediaReview, 'video_technical_repair_ref':TechnicalMediaReview,
             "video_creative_ref": CreativeMediaReview, "audio_ref": AudioExecution,
             "audio_technical_ref": TechnicalMediaReview, "av_ref": AVDerivative,
             "av_technical_ref": TechnicalMediaReview, "av_creative_ref": CreativeMediaReview,
@@ -256,6 +256,16 @@ class ExecutionStore:
             if row is None:
                 raise KeyError(ref.artifact_ref)
             prior = OperationProgress.model_validate_json(row["progress_json"])
+            if updates.get('video_technical_repair_ref') and not prior.video_technical_repair_ref:
+                old_review = self.get(prior.video_technical_ref,TechnicalMediaReview)
+                new_review = self.get(updates['video_technical_repair_ref'],TechnicalMediaReview)
+                if (old_review.outcome != 'FAIL' or old_review.findings != ('RESULT_DURATION_MISMATCH',)
+                        or old_review.policy_version != 'technical-media-v1'
+                        or new_review.supersedes_ref != prior.video_technical_ref
+                        or new_review.policy_version != 'technical-media-stream-duration-v2'
+                        or new_review.outcome != 'PASS' or new_review.media != old_review.media
+                        or new_review.attempt_ref != old_review.attempt_ref or new_review.scope != old_review.scope):
+                    raise ExecutionIntegrityError('TECHNICAL_REINSPECTION_SCOPE_INVALID','Exact retained duration-only failure required')
             for field, value in updates.items():
                 old = getattr(prior, field)
                 if isinstance(old, (ArtifactReference, MediaIdentity)) and old != value:

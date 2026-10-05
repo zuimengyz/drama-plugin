@@ -120,7 +120,7 @@ class ShotUnit(RuntimeContract):
     revision_signatures: tuple[str, ...] = Field(default=(), max_length=3)
 
 class FilmCheckpoint(ExtendedRuntimeContract):
-    extension_fields = ('scene_media_run_ids', 'scene_media_review_refs', 'scene_media_pending_tasks', 'scene_media_goal_hash', 'media_batch_ref', 'media_batch_opening_review_ref')
+    extension_fields = ('scene_media_run_ids', 'scene_media_review_refs', 'scene_media_pending_tasks', 'scene_media_goal_hash', 'media_batch_ref', 'media_batch_opening_review_ref', 'scene_media_revision_refs')
     canon_ref: ArtifactReference | None = None
     direction_ref: ArtifactReference | None = None
     plan_ref: ArtifactReference | None = None
@@ -148,6 +148,7 @@ class FilmCheckpoint(ExtendedRuntimeContract):
     scene_media_goal_hash: Identifier | None = None
     media_batch_ref: ArtifactReference | None = None
     media_batch_opening_review_ref: ArtifactReference | None = None
+    scene_media_revision_refs: tuple[ArtifactReference, ...] | None = Field(default=None,max_length=3)
     completed: tuple[Identifier, ...] = Field(default=(), max_length=16)
 
 class FilmArtifact(RuntimeContract):
@@ -260,4 +261,16 @@ class FilmMediaBatch(FilmArtifact):
     allow_unverified_audio: bool = False
     previous_checkpoint: FilmCheckpoint
 
-FILM_TYPES: dict[str, type[FilmArtifact]] = {c.owner:c for c in (FilmPlan, FinalFilmCandidate, FinalTechnicalQA, FinalCreativeReview, FinalDelivery, FilmRevisionFeedback, FilmMediaBatch)}
+
+class FilmSegmentRevision(FilmArtifact):
+    """Replace a candidate at one position; retain failed media, fees and deferred goals."""
+    owner = 'film-segment-revision'
+    schema_version: Literal['film-segment-revision-v1'] = 'film-segment-revision-v1'
+    slot: int = Field(ge=0,le=2)
+    previous_run_id: Identifier
+    replacement_run_id: Identifier
+    review_ref: ArtifactReference
+    camera_direction_ref: ArtifactReference
+    previous_checkpoint: FilmCheckpoint
+
+FILM_TYPES: dict[str, type[FilmArtifact]] = {c.owner:c for c in (FilmPlan, FinalFilmCandidate, FinalTechnicalQA, FinalCreativeReview, FinalDelivery, FilmRevisionFeedback, FilmMediaBatch, FilmSegmentRevision)}

@@ -240,8 +240,9 @@ class InspectionRepairRecord(ExtendedRuntimeContract):
 
 
 class ExternalRepairRecord(ExtendedRuntimeContract):
-    extension_fields = ('batch_ref',)
+    extension_fields = ('batch_ref', 'revision_ref')
     batch_ref: ArtifactReference | None = None
+    revision_ref: ArtifactReference | None = None
     cursor: int = Field(ge=0, lt=32)
     capability_key: Identifier
     failed_revision: int = Field(ge=0)
@@ -251,7 +252,7 @@ class ExternalRepairRecord(ExtendedRuntimeContract):
 
     @model_validator(mode="after")
     def bounded_external_failure(self) -> Self:
-        if (self.failed_result.code not in {"PROVIDER_UNKNOWN_WITHOUT_LOOKUP", "EXTERNAL_RECONCILIATION_ERROR", "FORMAL_MEDIA_NOT_FOUND", "GOVERNED_HARD_STOP", "EXECUTION_REVISION_CHANGED", 'TECHNICAL_MEDIA_FAILURE', 'HUMAN_REVIEW_CONTEXT_MISMATCH'}
+        if (self.failed_result.code not in {"PROVIDER_UNKNOWN_WITHOUT_LOOKUP", "EXTERNAL_RECONCILIATION_ERROR", "FORMAL_MEDIA_NOT_FOUND", "GOVERNED_HARD_STOP", "EXECUTION_REVISION_CHANGED", 'TECHNICAL_MEDIA_FAILURE', 'HUMAN_REVIEW_CONTEXT_MISMATCH', 'FINANCIAL_AUTHORITY_ALREADY_CONSUMED', 'RECOVERY_TRANSPORT_READ_ONLY'}
                 or self.failed_result.status != ResultStatus.FAILED
                 or self.decision_ref.owner != "user-decision"):
             raise ValueError("External repair requires an exact supported failure and cost receipt")
@@ -259,6 +260,8 @@ class ExternalRepairRecord(ExtendedRuntimeContract):
             raise ValueError('Technical repair requires retained review owner output')
         if self.failed_result.code == 'HUMAN_REVIEW_CONTEXT_MISMATCH' and self.capability_key not in {'execution.media_review:v1','film.execute:v1'}:
             raise ValueError('Review response repair requires its exact native review step')
+        if self.failed_result.code in {'FINANCIAL_AUTHORITY_ALREADY_CONSUMED','RECOVERY_TRANSPORT_READ_ONLY'} and self.capability_key not in {'execution.provider:v1','film.execute:v1'}:
+            raise ValueError('Reserved revision dispatch repair requires its exact native step')
         if self.failed_result.code in {'GOVERNED_HARD_STOP','EXECUTION_REVISION_CHANGED'} and self.capability_key not in {'generation.ready:v1','generation.release:v1','film.execute:v1'}:
             raise ValueError('Resolved reference readiness repair requires its exact native step')
         if self.failed_result.code in {"EXTERNAL_RECONCILIATION_ERROR", "FORMAL_MEDIA_NOT_FOUND"}:
@@ -336,7 +339,7 @@ class RuntimeRun(RuntimeContract):
 
     @model_validator(mode="after")
     def wait_shape(self) -> Self:
-        if (len({(r.cursor, r.failed_result.code, r.batch_ref) for r in self.external_repairs}) != len(self.external_repairs)
+        if (len({(r.cursor, r.failed_result.code, r.batch_ref, r.revision_ref) for r in self.external_repairs}) != len(self.external_repairs)
                 or any(r.cursor > self.cursor or r.failed_revision >= self.revision for r in self.external_repairs)):
             raise ValueError("Only one external repair per failure kind and step")
         if (len({(r.cursor,r.batch_ref) for r in self.inspection_repairs}) != len(self.inspection_repairs)

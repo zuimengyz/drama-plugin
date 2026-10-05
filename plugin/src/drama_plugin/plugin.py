@@ -346,6 +346,9 @@ class DramaPlugin:
         from drama_plugin.runtime.contracts import CapabilityInput, ResultStatus, RuntimeState, DecisionCategory
         run = await self.runtime.recover_run(run_id)
         cp = self.film.store.checkpoint(run_id)
+        if run.state==RuntimeState.FAILED and run.last_result and run.last_result.code in {'FINANCIAL_AUTHORITY_ALREADY_CONSUMED','RECOVERY_TRANSPORT_READ_ONLY'}:
+            await self._repair_source_film_revision_dispatch(run_id)
+            run=self.runtime.store.load(run_id)
         if cp.media_batch_ref and not any(b.batch_ref == cp.media_batch_ref for b in run.execution_batches):
             from drama_plugin.film.contracts import FilmMediaBatch
             batch = self.film.store.get(cp.media_batch_ref, FilmMediaBatch)
@@ -390,6 +393,47 @@ class DramaPlugin:
         elif run.state == RuntimeState.BLOCKED and run.wait_reason == "INTERRUPTED_CAPABILITY":
             await self.runtime.retry(run_id)
         return await self.runtime.run(run_id)
+
+    async def _repair_source_film_revision_dispatch(self, run_id: str) -> None:
+        """Repair a revised intent collision only while its dispatch is provably RESERVED."""
+        from drama_plugin.film.contracts import FilmSegmentRevision
+        from drama_plugin.execution.contracts import ExecutionOperation,ProviderAttempt,OperationState
+        from drama_plugin.generation.contracts import GenerationPreparation
+        from drama_plugin.runtime.contracts import RuntimeState,ArtifactReference,DecisionCategory
+        parent=self.runtime.store.load(run_id);cp=self.film.store.checkpoint(run_id)
+        links=[r.artifact_ref for r in parent.last_result.artifact_refs if r.owner=='runtime']
+        if len(links)!=1 or links[0] not in (cp.scene_media_run_ids or ()):
+            return
+        child=self.runtime.store.load(links[0])
+        if (child.state!=RuntimeState.FAILED or not child.last_result
+                or child.last_result.code not in {'FINANCIAL_AUTHORITY_ALREADY_CONSUMED','RECOVERY_TRANSPORT_READ_ONLY'}
+                or media_cursor(child.workflow_id,child.cursor)!=9):
+            return
+        revision_ref=next((r for r in cp.scene_media_revision_refs or ()
+            if self.film.store.get(r,FilmSegmentRevision).replacement_run_id==child.run_id),None)
+        if revision_ref is None:return
+        with self.ledger.transaction() as db:
+            row=db.execute('SELECT operation_ref_json,dispatch_state FROM production_operation WHERE run_id=? AND operation_ref_json IS NOT NULL',(child.run_id,)).fetchone()
+        if not row or row['dispatch_state'] not in {'RESERVED','FAILED'}:return
+        op=self.execution.store.get(ArtifactReference.model_validate_json(row['operation_ref_json']),ExecutionOperation)
+        check=self.execution.store.checkpoint(op.artifact_reference())
+        attempt=self.execution.store.get(check.attempt_ref,ProviderAttempt)
+        if check.receipt_ref or attempt.ordinal!=1 or check.progress.attempt_history:
+            return
+        if child.last_result.code=='RECOVERY_TRANSPORT_READ_ONLY':
+            if check.state==OperationState.FAILED:self.execution.store.repair_unsubmitted_transport(op.artifact_reference())
+            elif check.state!=OperationState.RESERVED:return
+        elif check.state!=OperationState.RESERVED:return
+        prepared=self.generation_artifacts.get(op.preparation_ref,GenerationPreparation)
+        self.operation_resolver.decision(op.authorization.approval_ref,category=DecisionCategory.COST_APPROVAL,
+            scope=child.scope,source_ref=op.preparation_ref)
+        self.ledger.put_index('film-segment-dispatch-revision',child.run_id,revision_ref,scope=child.scope,once=True)
+        self.execution.dispatch_rights_key(op,attempt)
+        self._compose_media_owners(prepared.task,run_id=child.run_id)
+        await self.runtime.repair_revision_dispatch(child.run_id,expected_revision=child.revision,
+            capability_key='execution.provider:v1',decision_ref=op.authorization.approval_ref)
+        await self.runtime.repair_revision_dispatch(run_id,expected_revision=parent.revision,
+            capability_key='film.execute:v1',decision_ref=op.authorization.approval_ref)
 
     async def _repair_source_film_review_response(self, run_id: str) -> None:
         """Retain an actual scoped REVISE after a reviewer response protocol error."""
@@ -645,6 +689,104 @@ class DramaPlugin:
             refs.append(self.execution.store.checkpoint(op_ref).progress.video_ref)
         segments = scene_segments(tuple(refs), self.execution.store)
         return 'ffconcat version 1.0\n' + ''.join("file '"+str(self.execution.media.path(b.media)).replace("'", "'\\''")+"'\n" for _, b in segments)
+
+    async def revise_source_film_segment(self, run_id: str, *, slot: int, task: GenerationTask) -> RuntimeRun:
+        """Use the existing native media child for a scoped revised candidate, never replay paid success."""
+        from drama_plugin.film.contracts import FilmCheckpoint, FilmSegmentRevision
+        from drama_plugin.execution.contracts import ExecutionOperation,CreativeMediaReview
+        from drama_plugin.generation.contracts import GenerationTask,CameraExecutionDirection
+        from drama_plugin.runtime.contracts import ArtifactReference,RuntimeState,CapabilityInput
+        from drama_plugin.generation.operation import validate_continuation
+        from drama_plugin.production.references import ReferenceExecutionBinding
+        from drama_plugin.contracts.base import sha256_canonical
+        parent=self.runtime.store.load(run_id);cp=self.film.store.checkpoint(run_id)
+        for ref in cp.scene_media_revision_refs or ():
+            prior=self.film.store.get(ref,FilmSegmentRevision)
+            if prior.slot==slot and self.generation_artifacts.inputs(prior.replacement_run_id).task.camera_direction_ref==task.camera_direction_ref:
+                return await self.resume_source_film_run(run_id)
+        ids=list(cp.scene_media_run_ids or ())
+        if (parent.workflow_id!='source-to-reviewed-media:v1' or parent.cursor!=5
+                or parent.state not in {RuntimeState.WAITING_USER,RuntimeState.WAITING_EXTERNAL,RuntimeState.FAILED}
+                or slot!=len(ids)-1 or len(cp.scene_media_revision_refs or ())>=3):
+            raise ValueError('EXACT_FAILED_ADJACENT_CANDIDATE_REQUIRED')
+        old_id=ids[slot];old=self.generation_artifacts.inputs(old_id).task
+        with self.ledger.transaction() as db:
+            row=db.execute('SELECT operation_ref_json FROM production_operation WHERE run_id=? AND operation_ref_json IS NOT NULL',(old_id,)).fetchone()
+        if row is None:
+            failed=self.runtime.store.load(old_id)
+            if (parent.state!=RuntimeState.FAILED or failed.state!=RuntimeState.FAILED
+                    or failed.cursor!=2 or not failed.last_result or failed.last_result.code!='GOVERNED_HARD_STOP'):
+                raise ValueError('EXACT_PREPAYMENT_PLANNING_FAILURE_REQUIRED')
+            evidence=next(r for r in failed.last_result.artifact_refs if r.owner=='gate-decision')
+            gate=self.gate_findings.decision(evidence)
+            required=[self.gate_findings.finding(r) for r in gate.finding_refs if self.gate_findings.finding(r).required]
+            if not required or any(f.code.value!='PROVIDER_HARD_LIMIT' or f.owner!='prompt-compiler' for f in required):
+                raise ValueError('EXACT_PREPAYMENT_PLANNING_FAILURE_REQUIRED')
+        else:
+            op_ref=ArtifactReference.model_validate_json(row[0]);progress=self.execution.store.checkpoint(op_ref).progress
+            review=self.execution.store.get(progress.video_creative_ref,CreativeMediaReview)
+            if review.outcome!='REVISE':raise ValueError('BOUNDED_CAMERA_REVISION_REQUIRED')
+            evidence=progress.video_creative_ref
+        if (not task.camera_direction_ref or old.unit!=task.unit
+                or old.profile!=task.profile or old.owners!=task.owners or old.continuation!=task.continuation
+                or task.execution_reference_refs!=old.execution_reference_refs):
+            raise ValueError('BOUNDED_CAMERA_REVISION_REQUIRED')
+        self.operation_resolver.validate(self.production_packages.get(cp.units[0].package_ref),task)
+        ref=old.execution_reference_refs[0]
+        raw,_,_=self.ledger.get_artifact('reference-execution-binding',ArtifactReference(owner=ref.owner.value,artifact_ref=ref.artifact_ref,version=ref.version))
+        endpoint=ReferenceExecutionBinding.model_validate(raw)
+        endpoint=endpoint.model_copy(update={'binding_id':endpoint.binding_id+'-camera-'+task.camera_direction_ref.artifact_ref[-16:],
+            'endpoint_state':'Begin from the supplied actual final frame, inheriting its axis, pose and current framing. Subsequent camera changes follow the selected narrative camera direction; the segment boundary is not a movement trigger.'})
+        task=GenerationTask.model_validate({**task.model_dump(),'execution_reference_refs':(self.execution_references.register(endpoint),)})
+        validate_continuation(self.ledger,task)
+        if parent.state==RuntimeState.FAILED:
+            fresh=await self.prompt_compiler.compile(cp.units[0].package_ref,task)
+            if not fresh.preparation_ref or any(d.required for d in self.generation_artifacts.diagnostics(fresh.diagnostics_ref)):
+                raise ValueError('REVISED_PREPARATION_MUST_PASS_BEFORE_RESUME')
+            if any(d.required for d in await self.prompt_compiler.validate_execution_sources(fresh.preparation_ref)):
+                raise ValueError('REVISED_PREPARATION_MUST_PASS_BEFORE_RESUME')
+        child=self.create_media_review_run(package_ref=cp.units[0].package_ref,task=task)
+        if child.run_id==old_id:raise ValueError('REVISED_REQUEST_REQUIRED')
+        record=FilmSegmentRevision.seal(scope=parent.scope,run_id=run_id,film_version=cp.film_version,slot=slot,
+            previous_run_id=old_id,replacement_run_id=child.run_id,review_ref=evidence,
+            camera_direction_ref=task.camera_direction_ref,previous_checkpoint=cp)
+        revision_ref=self.film.store.put(record);ids[slot]=child.run_id
+        self.ledger.put_index('film-segment-dispatch-revision',child.run_id,revision_ref,scope=child.scope,once=True)
+        self.film.store.save(run_id,parent.scope,FilmCheckpoint.model_validate({**cp.model_dump(),
+            'scene_media_run_ids':tuple(ids),'scene_media_review_refs':(cp.scene_media_review_refs or ())[:slot],
+            'scene_media_pending_tasks':(), 'scene_media_revision_refs':(*(cp.scene_media_revision_refs or ()),revision_ref)}))
+        if parent.state==RuntimeState.FAILED:
+            binding=self.generation_artifacts.get(task.camera_direction_ref,CameraExecutionDirection)
+            inspection=self.film.inspect_media_execution(CapabilityInput(run_id=run_id,operation_id=f'{run_id}:5',scope=parent.scope))
+            await self.runtime.resume_unsubmitted_segment_revision(run_id,expected_revision=parent.revision,
+                previous_child_id=old_id,revision_ref=revision_ref,decision_ref=binding.approval_ref,current=inspection.revision)
+        return await self.resume_source_film_run(run_id)
+
+    async def reconcile_historical_unknown(self, operation_ref: ArtifactReference) -> ArtifactReference:
+        """One bounded read for an already completed business goal; financial uncertainty stays attributed once."""
+        from drama_plugin.execution.contracts import ExecutionOperation,ProviderAttempt,OperationState,HistoricalUnknownAccounting
+        from drama_plugin.generation.contracts import GenerationPreparation
+        from drama_plugin.execution.live_transport import TargetHttpTransport
+        op=self.execution.store.get(operation_ref,ExecutionOperation);cp=self.execution.store.checkpoint(operation_ref)
+        if cp.progress.historical_unknown_accounting_ref:return cp.progress.historical_unknown_accounting_ref
+        if cp.state!=OperationState.SUCCEEDED or not cp.progress.video_ref or len(cp.progress.attempt_history or ())!=1:
+            raise ValueError('COMPLETED_SUPPLEMENT_WITH_HISTORICAL_UNKNOWN_REQUIRED')
+        old=cp.progress.attempt_history[0]
+        if old.state!=OperationState.UNKNOWN:raise ValueError('HISTORICAL_UNKNOWN_REQUIRED')
+        self._compose_media_owners(self.generation_artifacts.get(op.preparation_ref,GenerationPreparation).task,run_id=op.run_id)
+        transport=self.execution.transports[op.route];recovered=None;code='NO_EXACT_TASK_RECOVERED'
+        try:
+            if isinstance(transport,TargetHttpTransport):
+                recovered=await transport.recover_unknown(op,self.execution.store.get(old.attempt_ref,ProviderAttempt))
+            if recovered:code='EXACT_TASK_RECOVERED_ACCOUNTING_PENDING'
+        except Exception:code='TASK_LOOKUP_TRANSIENT_ACCOUNTING_PENDING'
+        receipt_ref=self.execution.store.put(recovered) if recovered else None
+        record=HistoricalUnknownAccounting.seal(scope=op.scope,run_id=op.run_id,source_package_ref=op.source_package_ref,
+            operation_ref=operation_ref,unknown_attempt_ref=old.attempt_ref,completed_by_media_ref=cp.progress.video_ref,
+            recovered_receipt_ref=receipt_ref,query_code=code,reserved_cost_microunits=old.reserved_cost_microunits)
+        ref=self.execution.store.put(record)
+        self.execution.store.progress(operation_ref,historical_unknown_accounting_ref=ref)
+        return ref
 
     async def retain_source_film_last_frame(self, child_id: str) -> ArtifactReference:
         """Persist the provider-original JPEG for any completed segment, including the last."""
@@ -1085,6 +1227,8 @@ class DramaPlugin:
         if task.continuation is not None or task.return_last_frame is not None:
             identity_parts.append({'continuation':task.continuation.model_dump(mode='json',by_alias=True) if task.continuation else None,
                 'returnLastFrame':task.return_last_frame})
+        if task.camera_direction_ref is not None:
+            identity_parts.append({'cameraDirectionRef':task.camera_direction_ref.model_dump(mode='json',by_alias=True)})
         identity = "media-proof:" + sha256_canonical(identity_parts)
         if offline_authorization and (offline_authorization.execution_mode != "OFFLINE_ONLY"
                 or offline_authorization.estimated_cost_microunits or offline_authorization.budget_microunits):
@@ -1125,7 +1269,11 @@ class DramaPlugin:
             if len(rows) > 1:
                 raise ConfigurationError("Media run operation identity is not unique")
             if rows:
-                recovery_ref = ArtifactReference.model_validate_json(rows[0][0])
+                candidate=ArtifactReference.model_validate_json(rows[0][0])
+                from drama_plugin.execution.contracts import OperationState
+                # Intent reservation alone does not mean the Provider saw a request.
+                if self.execution.store.checkpoint(candidate).state!=OperationState.RESERVED:
+                    recovery_ref=candidate
         from drama_plugin.execution.live_transport import TargetHttpTransport
         current = self.execution.transports.get(task.profile.provider)
         # A query-only transport pinned to the first paid operation must never

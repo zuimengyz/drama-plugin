@@ -389,6 +389,9 @@ def author_payload(request: AuthorRequest | FilmAuthorRequest) -> dict[str, Json
     source=request.source.model_dump(mode='json',by_alias=True)
     source={k:v for k,v in source.items() if k not in {'originalOwnerRef','languageMetadataRef'}}
     result: dict[str,JsonValue]={'source':JSON.validate_python(source)}
+    if isinstance(request, AuthorRequest) and request.revision:
+        # Findings are explicit scoped instructions, not provenance or invented IDs.
+        result['revisionInstruction'] = request.revision.instruction
     def scene_view(scene:SceneBody)->dict[str,JsonValue]:
         roster=subjects(scene)
         return {'sceneText':scene.scene_text,'subjectCandidates':[{'selection':i,'name':s['name'],'meaning':s['meaning']} for i,s in enumerate(roster)],

@@ -253,7 +253,8 @@ class DurableReviewStore:
         return record
 
 
-DERIVED_TYPES = (PromptIR, PromptCoverage, FinalPromptArtifact, AudioExecutionPlan, GenerationPreparation)
+from drama_plugin.generation.contracts import CameraExecutionDirection
+DERIVED_TYPES = (PromptIR, PromptCoverage, FinalPromptArtifact, AudioExecutionPlan, GenerationPreparation, CameraExecutionDirection)
 
 
 class DurableGenerationArtifactStore:

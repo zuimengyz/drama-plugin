@@ -19,7 +19,9 @@ Director Vision; Layout; Blocking; Performance; Action and Crowd Bibles.
 
 ## Professional decisions
 
-Choose what the audience must perceive before selecting movement or shot scale. Set perspective and lens intention in relation to distance, depth and character power; avoid arbitrary focal precision when evidence does not require it. Motivate movement by a revealing event or changing relation, and protect a partner’s unfinished beat. Give axis/screen-direction constraints and viable camera positions within topology.
+Choose what the audience must perceive before selecting movement or shot scale. Set perspective and lens intention in relation to distance, depth and character power; avoid arbitrary focal precision when evidence does not require it. Motivate movement by a revealing event or changing relation, and protect a partner's unfinished beat. Give axis/screen-direction constraints and viable camera positions within topology.
+
+For serial video segments, elaborate `movement.phaseDirections` against the existing Action phase. State the inherited camera condition, CONTINUE/START/CHANGE/STOP/HOLD decision, narrative trigger, motive, trajectory, extent and end state. Separate scene intent and preceding/following beats as background from this phase's execution. An approved exact `CameraExecutionDirection` can bind this scoped elaboration without replacing retained Canon or completed media. A file boundary is never a dramatic trigger. Use event or canonical phrase timing; numeric timing needs an actual phase-local source, not whole-Scene times or a uniform second rule. A particular beat may merit holding, but stillness is not a general fallback. These requirements express cinematic intent; only observed footage can prove the result.
 
 ## Outputs
 

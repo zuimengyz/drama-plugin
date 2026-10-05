@@ -100,8 +100,32 @@ class ContinuationInput(ExtendedRuntimeContract):
     allow_unverified_audio: Literal[True] | None = None
 
 
+class CameraPhaseTiming(RuntimeContract):
+    """Professional event timing, not a provider clock or deterministic control."""
+    phase_index: Annotated[StrictInt, Field(ge=0, le=15)]
+    scene_context: Text
+    preceding_beat_context: Text
+    following_beat_context: Text
+    inherited_state: Text
+    decision: Literal['CONTINUE', 'START', 'CHANGE', 'STOP', 'HOLD']
+    trigger: Text
+    motivation: Text
+    trajectory: Text
+    amplitude: Text
+    end_state: Text
+
+
+class CameraExecutionDirection(DerivedArtifact):
+    """Exact scoped acceptance of a Camera owner's elaboration of existing sources."""
+    owner = 'camera-execution-direction'
+    scope: RuntimeScope
+    camera_ref: VersionRef
+    selection_hash: Hash
+    approval_ref: ArtifactReference
+
+
 class GenerationTask(ExtendedRuntimeContract):
-    extension_fields = ("unit", "profile", "owners", "execution_reference_refs", "continuation", "return_last_frame")
+    extension_fields = ("unit", "profile", "owners", "execution_reference_refs", "continuation", "return_last_frame", 'camera_direction_ref')
     kind: Literal["VIDEO"] = "VIDEO"
     target_model: Identifier = "seedance-2-standard"
     input_mode: Literal["text_to_video", "reference", "image_to_video", "first_last_frame"] = "text_to_video"
@@ -113,6 +137,7 @@ class GenerationTask(ExtendedRuntimeContract):
     execution_reference_refs: tuple[SourceReference, ...] | None = Field(default=None, min_length=1, max_length=16)
     continuation: ContinuationInput | None = None
     return_last_frame: Literal[True] | None = None
+    camera_direction_ref: ArtifactReference | None = None
 
     @model_validator(mode="after")
     def operation_boundary(self) -> Self:

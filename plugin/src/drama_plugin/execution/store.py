@@ -18,7 +18,7 @@ from drama_plugin.contracts.base import canonical_json
 from drama_plugin.execution.contracts import (
     EXECUTION_TYPES, AVDerivative, AudioExecution, CreativeMediaReview,
     ExecutionArtifact, ExecutionInput, ExecutionOperation, FinishingRecipe, MediaBinding,
-    OperationProgress, OperationState, ProviderAttempt, ProviderReceipt, ReviewedAVCandidate, TechnicalMediaReview, MediaIdentity, AttemptHistory,
+    OperationProgress, OperationState, ProviderAttempt, ProviderReceipt, ReviewedAVCandidate, TechnicalMediaReview, MediaIdentity, AttemptHistory, HistoricalUnknownAccounting,
 )
 from drama_plugin.persistence.ledger import ProductionLedger
 from drama_plugin.runtime.contracts import ArtifactReference, RuntimeRun
@@ -212,6 +212,17 @@ class ExecutionStore:
             db.execute("UPDATE production_operation SET dispatch_state='FAILED' WHERE operation_id=? AND dispatch_state='SUBMITTING'",
                        (ref.artifact_ref,))
 
+    def repair_unsubmitted_transport(self, ref: ArtifactReference) -> None:
+        """Only the local read-only guard proves this exact first dispatch never reached HTTP."""
+        check=self.checkpoint(ref);attempt=self.get(check.attempt_ref,ProviderAttempt)
+        if (check.state!=OperationState.FAILED or check.receipt_ref or attempt.ordinal!=1
+                or check.progress.attempt_history or check.progress.intake_media
+                or check.progress.query_last_code!='RECOVERY_TRANSPORT_READ_ONLY'):
+            raise ValueError('EXACT_LOCAL_NOT_SUBMITTED_TRANSPORT_FAILURE_REQUIRED')
+        with self.ledger.transaction(write=True) as db:
+            if db.execute("UPDATE production_operation SET dispatch_state='RESERVED' WHERE operation_id=? AND dispatch_state='FAILED' AND receipt_ref_json IS NULL",(ref.artifact_ref,)).rowcount!=1:
+                raise ValueError('EXACT_LOCAL_NOT_SUBMITTED_TRANSPORT_FAILURE_REQUIRED')
+
     def receipt(self, ref: ArtifactReference, receipt: ProviderReceipt) -> ArtifactReference:
         checkpoint = self.checkpoint(ref)
         if checkpoint.state == OperationState.RESERVED:
@@ -244,6 +255,7 @@ class ExecutionStore:
             "audio_technical_ref": TechnicalMediaReview, "av_ref": AVDerivative,
             "av_technical_ref": TechnicalMediaReview, "av_creative_ref": CreativeMediaReview,
             "candidate_ref": ReviewedAVCandidate,
+            'historical_unknown_accounting_ref': HistoricalUnknownAccounting,
         }
         for field, value in updates.items():
             if isinstance(value, ArtifactReference):

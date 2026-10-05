@@ -38,6 +38,7 @@ ARTIFACT_TYPES: dict[str, tuple[str, str, RetentionClass]] = {
     "final-prompt": ("final-prompt-v1", "generation", RetentionClass.PRODUCTION_REQUIRED),
     "audio-plan": ("audio-execution-plan-v1", "generation", RetentionClass.PRODUCTION_REQUIRED),
     "generation-preparation": ("generation-preparation-v1", "generation", RetentionClass.PRODUCTION_REQUIRED),
+    'camera-execution-direction': ('camera-execution-direction-v1','generation',RetentionClass.PRODUCTION_REQUIRED),
     "execution-diagnostic": ("execution-diagnostic-v1", "review", RetentionClass.REVIEW),
     "gate-finding": ("gate-finding-v1", "review", RetentionClass.REVIEW),
     "gate-decision": ("gate-decision-v1", "review", RetentionClass.REVIEW),
@@ -56,7 +57,7 @@ ARTIFACT_TYPES.update({name: (name + "-v1", "film", RetentionClass.REVIEW
 INDEX_TYPES = frozenset({
     "governance-input", "generation-input", "latest-decision", "prepared",
     "governance-maintenance", "generation-rebuild", "final-prompt-key",
-    "execution-reference-current", "continuation-frame",
+    "execution-reference-current", "continuation-frame", "film-segment-dispatch-revision",
     "media-proof-authorization", "media-proof-cost-terms", "human-media-review", "execution-recovery-authorization",
     "creative-integrity-reconciliation",
     "execution-input", "creative-input", "creative-checkpoint", "film-input", "film-checkpoint", "formal-media-current", "execution-live-grant",
@@ -244,7 +245,7 @@ class ProductionLedger:
         # table as an arbitrary JSON/Canon payload sink by supplying a known tag.
         from drama_plugin.generation.contracts import (
             AudioExecutionPlan, DerivedArtifact, ExecutionDiagnostic, FinalPromptArtifact,
-            GenerationPreparation, PromptCoverage, PromptIR,
+            GenerationPreparation, PromptCoverage, PromptIR, CameraExecutionDirection,
         )
         from drama_plugin.governance.contracts import GateDecision, GateFinding
         from drama_plugin.production.contracts import AssemblyValidation, ProductionPackage
@@ -259,6 +260,7 @@ class ProductionLedger:
             "final-prompt": FinalPromptArtifact,
             "audio-plan": AudioExecutionPlan,
             "generation-preparation": GenerationPreparation,
+            'camera-execution-direction': CameraExecutionDirection,
             "gate-finding": GateFinding,
             "gate-decision": GateDecision,
             "user-decision": UserDecisionRecord,
@@ -334,7 +336,7 @@ class ProductionLedger:
                     return models[link.owner].model_validate_json(row["body_json"])
                 validate_film_links(film, resolve_film_link)
             if artifact_type in {"prompt-ir", "prompt-coverage", "final-prompt",
-                                 "audio-plan", "generation-preparation"} or artifact_type in EXECUTION_TYPES:
+                                 "audio-plan", "generation-preparation", 'camera-execution-direction'} or artifact_type in EXECUTION_TYPES:
                 derived = cast(DerivedArtifact, checked)
                 source = db.execute("""SELECT work_id,scene_id,shot_id FROM immutable_artifact
                     WHERE artifact_id=? AND version=? AND artifact_type='production-package'""",
@@ -422,10 +424,10 @@ class ProductionLedger:
             from drama_plugin.execution.live_transport import FinancialTerms
             parsed_model = Authorization if index_type == "media-proof-authorization" else FinancialTerms
             value = parsed_model.model_validate(value.model_dump() if hasattr(value,"model_dump") else value)
-        elif index_type in {"latest-decision", "prepared", "final-prompt-key", "formal-media-current", "execution-live-grant", "human-media-review", "execution-recovery-authorization", "continuation-frame"}:
+        elif index_type in {"latest-decision", "prepared", "final-prompt-key", "formal-media-current", "execution-live-grant", "human-media-review", "execution-recovery-authorization", "continuation-frame", "film-segment-dispatch-revision"}:
             value = ArtifactReference.model_validate(value.model_dump() if hasattr(value, "model_dump") else value)
             expected = {"latest-decision": "gate-decision", "prepared": "generation-preparation",
-                "final-prompt-key": "final-prompt", "formal-media-current": "formal-media-registration", "execution-live-grant": "controlled-live-grant", "human-media-review":"creative-media-review", "execution-recovery-authorization":"user-decision", "continuation-frame":"continuation-frame"}[index_type]
+                "final-prompt-key": "final-prompt", "formal-media-current": "formal-media-registration", "execution-live-grant": "controlled-live-grant", "human-media-review":"creative-media-review", "execution-recovery-authorization":"user-decision", "continuation-frame":"continuation-frame", "film-segment-dispatch-revision":"film-segment-revision"}[index_type]
             if value.owner != expected or value.version != 1:
                 raise ValueError("Ledger index points to the wrong artifact owner")
         elif type(value) is not int or value != 1:

@@ -6,7 +6,7 @@ from collections.abc import Callable
 from drama_plugin.execution.contracts import (
     AVDerivative, AudioExecution, CreativeMediaReview, ExecutionArtifact, ExecutionOperation,
     FinishingRecipe, MediaBinding, ProviderAttempt, ProviderReceipt, ReviewedAVCandidate,
-    TechnicalMediaReview,
+    TechnicalMediaReview, HistoricalUnknownAccounting,
 )
 from drama_plugin.generation.contracts import AudioExecutionPlan, DerivedArtifact, FinalPromptArtifact, GenerationPreparation
 from drama_plugin.runtime.contracts import ArtifactReference, RuntimeContract
@@ -20,6 +20,8 @@ LINK_TYPES: dict[str, type[RuntimeContract]] = {
     "video_creative_ref": CreativeMediaReview, "audio_technical_ref": TechnicalMediaReview,
     "av_derivative_ref": AVDerivative, "av_technical_ref": TechnicalMediaReview,
     "av_creative_ref": CreativeMediaReview,
+    'unknown_attempt_ref': ProviderAttempt, 'completed_by_media_ref':MediaBinding,
+    'recovered_receipt_ref':ProviderReceipt,
 }
 
 
@@ -40,6 +42,17 @@ def validate_links(item: ExecutionArtifact, resolve: Callable[[ArtifactReference
     operation = parents.get("operation_ref")
     attempt = parents.get("attempt_ref")
     recipe = parents.get("recipe_ref")
+    if isinstance(item,HistoricalUnknownAccounting):
+        old=parents['unknown_attempt_ref'];media=parents['completed_by_media_ref']
+        assert isinstance(old,ProviderAttempt) and isinstance(media,MediaBinding)
+        completed=resolve(media.attempt_ref)
+        if (old.ordinal!=1 or old.operation_ref!=item.operation_ref or media.operation_ref!=item.operation_ref
+                or not isinstance(completed,ProviderAttempt) or completed.ordinal!=2
+                or completed.previous_attempt_ref!=old.artifact_reference()):
+            raise ValueError('Historical accounting requires exact completed supplemental goal')
+        recovered=parents.get('recovered_receipt_ref')
+        if recovered and (recovered.attempt_ref!=old.artifact_reference() or recovered.operation_ref!=item.operation_ref):
+            raise ValueError('Historical receipt belongs to another attempt')
     if isinstance(operation, ExecutionOperation):
         if isinstance(attempt, ProviderAttempt) and attempt.operation_ref != operation.artifact_reference():
             raise ValueError("Execution attempt belongs to another logical operation")

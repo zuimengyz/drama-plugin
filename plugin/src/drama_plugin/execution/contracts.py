@@ -367,8 +367,21 @@ class AttemptHistory(RuntimeContract):
     reserved_cost_microunits: Annotated[StrictInt, Field(gt=0)]
 
 
+class HistoricalUnknownAccounting(ExecutionArtifact):
+    owner = 'historical-unknown-accounting'
+    operation_ref: ArtifactReference
+    unknown_attempt_ref: ArtifactReference
+    completed_by_media_ref: ArtifactReference
+    recovered_receipt_ref: ArtifactReference | None = None
+    query_code: Identifier
+    business_state: Literal['COMPLETED_BY_SUPPLEMENT'] = 'COMPLETED_BY_SUPPLEMENT'
+    accounting_state: Literal['PENDING_RECONCILIATION'] = 'PENDING_RECONCILIATION'
+    reserved_cost_microunits: Annotated[StrictInt, Field(gt=0)]
+
+
 class OperationProgress(ExtendedRuntimeContract):
-    extension_fields = ("attempt_history", "unknown_lookup_attempts", "unknown_lookup_last_code", 'video_technical_repair_ref')
+    extension_fields = ("attempt_history", "unknown_lookup_attempts", "unknown_lookup_last_code", 'video_technical_repair_ref', 'historical_unknown_accounting_ref')
+    historical_unknown_accounting_ref: ArtifactReference | None = None
     video_technical_repair_ref: ArtifactReference | None = None
     attempt_history: tuple[AttemptHistory, ...] | None = Field(default=None, max_length=1)
     unknown_lookup_attempts: Annotated[StrictInt, Field(ge=0, le=4)] | None = None
@@ -397,5 +410,5 @@ class OperationProgress(ExtendedRuntimeContract):
 
 EXECUTION_TYPES: dict[str, type[ExecutionArtifact]] = {model.owner: model for model in (
     ExecutionOperation, ProviderAttempt, ProviderReceipt, MediaBinding, ContinuationFrame, TechnicalMediaReview,
-    CreativeMediaReview, FinishingRecipe, AudioExecution, AVDerivative, ReviewedAVCandidate,
+    CreativeMediaReview, FinishingRecipe, AudioExecution, AVDerivative, ReviewedAVCandidate, HistoricalUnknownAccounting,
 )}

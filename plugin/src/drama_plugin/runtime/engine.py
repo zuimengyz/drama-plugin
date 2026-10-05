@@ -337,8 +337,17 @@ class RuntimeEngine:
         return await self._repair_external_failure(run_id,expected_revision=expected_revision,
             capability_key=capability_key,decision_ref=decision_ref,code='HUMAN_REVIEW_CONTEXT_MISMATCH')
 
+    async def repair_revision_dispatch(self, run_id: str, *, expected_revision: int,
+                                       capability_key: str, decision_ref: ArtifactReference) -> RuntimeRun:
+        failed=self.store.load(run_id).last_result
+        if failed is None or failed.code not in {'FINANCIAL_AUTHORITY_ALREADY_CONSUMED','RECOVERY_TRANSPORT_READ_ONLY'}:
+            raise ValueError('EXACT_UNSUBMITTED_REVISION_FAILURE_REQUIRED')
+        return await self._repair_external_failure(run_id,expected_revision=expected_revision,
+            capability_key=capability_key,decision_ref=decision_ref,code=failed.code,unsubmitted_local_repair=True)
+
     async def _repair_external_failure(self, run_id: str, *, expected_revision: int,
-                                       capability_key: str, decision_ref: ArtifactReference, code: str) -> RuntimeRun:
+                                       capability_key: str, decision_ref: ArtifactReference, code: str,
+                                       unsubmitted_local_repair: bool = False) -> RuntimeRun:
         async with self.store.lock(run_id):
             run = self.store.load(run_id)
             policy, workflow = self._context(run)
@@ -349,8 +358,10 @@ class RuntimeEngine:
                 raise ValueError("REPAIR_FAILED_REVISION_OR_STEP_MISMATCH")
             if any(r.cursor == run.cursor and r.failed_result.code == code for r in run.external_repairs):
                 raise ValueError("REPAIR_OPPORTUNITY_ALREADY_USED")
-            if (not self.executor.replay_safe(capability_key)
-                    or run.step_attempts >= (run.step_retry_limit or policy.max_step_attempts)):
+            limit=run.step_retry_limit or policy.max_step_attempts
+            extra=(unsubmitted_local_repair and code in {'FINANCIAL_AUTHORITY_ALREADY_CONSUMED','RECOVERY_TRANSPORT_READ_ONLY'}
+                and run.step_attempts>=limit and limit<=policy.max_step_attempts+1)
+            if (not self.executor.replay_safe(capability_key) or run.step_attempts>=limit and not extra):
                 raise ValueError("REPAIR_REPLAY_UNSAFE_OR_EXHAUSTED")
             inspection = self._inspection(run, capability_key)
             if (inspection is None or run.execution_revision is None
@@ -362,6 +373,7 @@ class RuntimeEngine:
             following = RuntimeRun.model_validate({**run.model_dump(), "state": RuntimeState.READY,
                 "revision": run.revision + 1, "wait_reason": None, "executing_action": None,
                 "execution_revision": inspection.revision, "external_repairs": (*run.external_repairs, record),
+                "step_retry_limit":run.step_attempts+1 if extra else run.step_retry_limit,
                 "last_result": CapabilityResult(status=ResultStatus.SUCCEEDED, artifact_refs=(decision_ref,))})
             self._context(following)
             return self.store.save(following, expected_revision=run.revision)
@@ -558,6 +570,28 @@ class RuntimeEngine:
                     recovery_class=RecoveryClass.HARD_BLOCK, failure_stage="EXTERNAL_RECONCILIATION",
                     exception_type=type(error).__name__)
             return self._record_result(run,result)
+
+    async def resume_unsubmitted_segment_revision(self, run_id: str, *, expected_revision: int,
+            previous_child_id: str, revision_ref: ArtifactReference, decision_ref: ArtifactReference,
+            current: ExecutionRevision) -> RuntimeRun:
+        """An owner has validated a new scoped input after a pre-payment planning failure."""
+        async with self.store.lock(run_id):
+            run=self.store.load(run_id);_,workflow=self._context(run)
+            if (run.state!=RuntimeState.FAILED or run.revision!=expected_revision or run.workflow_id!='source-to-reviewed-media:v1'
+                    or run.cursor!=5 or not run.last_result or run.last_result.code!='GOVERNED_HARD_STOP'
+                    or not any(r.owner=='runtime' and r.artifact_ref==previous_child_id for r in run.last_result.artifact_refs)
+                    or revision_ref.owner!='film-segment-revision' or decision_ref.owner!='user-decision'
+                    or any(r.revision_ref==revision_ref for r in run.external_repairs)
+                    or run.execution_revision and run.execution_revision.input_fingerprint!=current.input_fingerprint):
+                raise ValueError('EXACT_UNSUBMITTED_SEGMENT_REVISION_REQUIRED')
+            record=ExternalRepairRecord(batch_ref=run.execution_batches[-1].batch_ref if run.execution_batches else None,
+                revision_ref=revision_ref,cursor=run.cursor,capability_key='film.execute:v1',failed_revision=run.revision,
+                failed_result=run.last_result,decision_ref=decision_ref,current=current)
+            following=RuntimeRun.model_validate({**run.model_dump(),'state':RuntimeState.READY,'revision':run.revision+1,
+                'executing_action':None,'wait_reason':None,'external_repairs':(*run.external_repairs,record)})
+            if workflow.steps[following.cursor].capability_key!='film.execute:v1':
+                raise ValueError('EXACT_UNSUBMITTED_SEGMENT_REVISION_REQUIRED')
+            return self.store.save(following,expected_revision=run.revision)
 
     def serialize(self, run_id: str) -> str:
         run = self.store.load(run_id)

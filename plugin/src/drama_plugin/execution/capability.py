@@ -59,6 +59,34 @@ class TargetExecution:
         self.reviewer, self.audio = reviewer, audio
         self.operations = operations
 
+    def dispatch_rights_key(self, operation: ExecutionOperation, attempt: ProviderAttempt) -> str:
+        """Consume an explicitly scoped Film revision once without reusing its predecessor's intent."""
+        prepared=self.derived(operation.preparation_ref,GenerationPreparation)
+        owners=prepared.task.owners
+        assert owners
+        key='rights:'+owners.rights_decision_ref.artifact_ref
+        try:
+            ref=ArtifactReference.model_validate(self.store.ledger.get_index('film-segment-dispatch-revision',operation.run_id))
+        except KeyError:
+            ref=None
+        if ref is not None:
+            from drama_plugin.film.contracts import FilmSegmentRevision
+            body,scope,digest=self.store.ledger.get_artifact('film-segment-revision',ref)
+            revision=FilmSegmentRevision.model_validate(body)
+            if (revision.artifact_reference()!=ref or revision.scope!=scope or revision.fingerprint!=digest
+                    or revision.replacement_run_id!=operation.run_id
+                    or revision.camera_direction_ref!=prepared.task.camera_direction_ref
+                    or revision.previous_checkpoint.units[0].package_ref!=prepared.source_package_ref):
+                raise ValueError('EXACT_AUTHORIZED_SEGMENT_REVISION_REQUIRED')
+            if self.operations is None:
+                raise ValueError('EXACT_AUTHORIZED_SEGMENT_REVISION_REQUIRED')
+            # Validate the already approved Camera scope using its exact native Package.
+            from drama_plugin.persistence.stores import DurableProductionPackageStore
+            package=DurableProductionPackageStore(self.store.ledger).get(prepared.source_package_ref)
+            self.operations.camera_direction(package,prepared.task)
+            key+=':revision:'+ref.artifact_ref
+        return key+(':attempt:2' if attempt.ordinal==2 else '')
+
     def _diagnostic(self, inputs: CapabilityInput, code: str) -> ArtifactReference:
         return DurableGenerationArtifactStore(self.store.ledger).retain_diagnostics((ExecutionDiagnostic(
             code=code, owner="target-execution", domain=SourceDomain.REFERENCE, required=True),), scope=inputs.scope)
@@ -417,9 +445,7 @@ class TargetExecution:
                         self.store.ledger.put_index("execution-live-grant", grant.decision_ref.artifact_ref,
                             grant.artifact_reference(), scope=operation.scope, once=True)
                         if request.profile:
-                            owners = self.derived(operation.preparation_ref,GenerationPreparation).task.owners
-                            assert owners
-                            rights_key = "rights:"+owners.rights_decision_ref.artifact_ref + (':attempt:2' if attempt.ordinal == 2 else '')
+                            rights_key = self.dispatch_rights_key(operation,attempt)
                             self.store.ledger.put_index("execution-live-grant", rights_key,
                                 grant.artifact_reference(),scope=operation.scope,once=True)
                     except ValueError:

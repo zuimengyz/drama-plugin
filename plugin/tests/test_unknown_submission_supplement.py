@@ -223,3 +223,30 @@ async def test_definitely_rejected_service_import_repairs_without_another_genera
     assert archive['failedResult'] == broken_child.last_result.model_dump(mode='json',by_alias=True)
     assert archive['claim'] == 'SUBMITTING'
     assert sum(r.method == 'POST' for r in calls) == 2 and a.calls == ['canon','direction','professional']
+
+@pytest.mark.asyncio
+async def test_historical_unknown_business_completion_and_accounting_pending_do_not_reopen_or_reserve_twice(tmp_path,monkeypatch,video):
+    from drama_plugin.execution.contracts import HistoricalUnknownAccounting
+    p,a,failed,child,cp,op,old,terms,t,calls,service=await failed_film(tmp_path,monkeypatch,video,'success')
+    await p.recover_unknown_media_submission(failed.run_id,terms=terms,accepted=True)
+    await p.resume_source_film_run(failed.run_id)
+    await p.resume_source_film_run(failed.run_id)
+    before=p.execution.store.checkpoint(op.artifact_reference())
+    assert before.progress.video_ref and before.state==OperationState.SUCCEEDED
+    parent=p.runtime.store.load(failed.run_id)
+    requests=len(calls);posts=sum(r.method=='POST' for r in calls)
+    ref=await p.reconcile_historical_unknown(op.artifact_reference())
+    record=p.execution.store.get(ref,HistoricalUnknownAccounting)
+    assert record.business_state=='COMPLETED_BY_SUPPLEMENT' and record.accounting_state=='PENDING_RECONCILIATION'
+    assert record.unknown_attempt_ref==old.artifact_reference() and record.completed_by_media_ref==before.progress.video_ref
+    assert record.reserved_cost_microunits==before.progress.attempt_history[0].reserved_cost_microunits
+    assert len(calls)==requests+1 and sum(r.method=='POST' for r in calls)==posts==2
+    assert await p.reconcile_historical_unknown(op.artifact_reference())==ref
+    assert len(calls)==requests+1
+    after=p.execution.store.checkpoint(op.artifact_reference())
+    assert after.state==before.state and after.receipt_ref==before.receipt_ref
+    assert after.progress.attempt_history==before.progress.attempt_history
+    assert sum(h.reserved_cost_microunits for h in after.progress.attempt_history)==1000000
+    assert p.runtime.store.load(failed.run_id)==parent
+    await p.resume_source_film_run(failed.run_id)
+    assert sum(r.method=='POST' for r in calls)==2

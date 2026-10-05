@@ -164,6 +164,36 @@ class OperationResolver:
     def read(self, pin: SourcePin) -> dict[str, JsonValue]:
         return object_at(self.versions.objects.read_ref(pin))
 
+    def camera_direction(self, package: ProductionPackage, task: GenerationTask):
+        from drama_plugin.generation.contracts import CameraExecutionDirection, CameraPhaseTiming
+        from drama_plugin.creative_engine.sources import NativeCreativeSources
+        if task.camera_direction_ref is None:
+            return None
+        raw, scope, digest = self.ledger.get_artifact(CameraExecutionDirection.owner, task.camera_direction_ref)
+        binding = CameraExecutionDirection.model_validate(raw)
+        if (binding.artifact_reference() != task.camera_direction_ref or binding.fingerprint != digest
+                or binding.scope != scope or scope != package_scope(package)
+                or binding.source_package_ref != package.artifact_reference()
+                or binding.selection_hash != sha256_canonical(task.unit)):
+            raise ValueError('CAMERA_DIRECTION_SCOPE_MISMATCH')
+        camera = self.versions.resolve(binding.camera_ref)
+        core = tuple(r for r in task.owners.adopted_refs if self.versions.resolve(r).kind != Kind.PROFESSIONAL)
+        if (camera.kind != Kind.PROFESSIONAL or camera.scope != scope or camera.state != 'REVIEWED'
+                or not isinstance(camera.body, DesignBody) or camera.body.domain != 'CAMERA'
+                or set(camera.source_refs) != set(core)):
+            raise ValueError('CAMERA_DIRECTION_OWNER_MISMATCH')
+        self.decision(binding.approval_ref,category=DecisionCategory.ART_APPROVAL,scope=scope,
+            source_ref=camera.ref().runtime_ref(),
+            terms_hash=sha256_canonical([v.model_dump(mode='json',by_alias=True) for v in (package.artifact_reference(),task.unit,camera.ref())]),allow_parent_scope=True)
+        rows = tuple(CameraPhaseTiming.model_validate(v) for v in camera.body.facts['movement']['phaseDirections'])
+        phase = int(task.unit.action_refs[0].path[-2])
+        selected = [(i, row) for i, row in enumerate(rows) if row.phase_index == phase]
+        if len(selected) != 1 or len({row.phase_index for row in rows}) != len(rows):
+            raise ValueError('CAMERA_DIRECTION_PHASE_MISMATCH')
+        i, timing = selected[0]
+        source = NativeCreativeSources(self.versions,core).project(camera).reference('content','movement','phaseDirections',str(i))
+        return timing, source
+
     def decision(self, ref: ArtifactReference, *, category: DecisionCategory, scope: RuntimeScope,
                  source_ref: ArtifactReference, terms_hash: str | None = None, allow_parent_scope: bool = False) -> UserDecisionRecord:
         body, actual_scope, fingerprint = self.ledger.get_artifact("user-decision", ref)
@@ -213,6 +243,7 @@ class OperationResolver:
         if unit is None or profile is None or owners is None:
             raise ValueError("OPERATION_INPUTS_MISSING")
         scope = package_scope(package)
+        self.camera_direction(package,task)
         if require_current_profile:
             current = resolve_profile(model=profile.model, duration_ms=profile.requested_duration_ms,
                 resolution=profile.resolution, ratio=profile.aspect_ratio, native_audio=profile.native_audio,

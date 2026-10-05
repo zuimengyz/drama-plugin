@@ -7,7 +7,7 @@ from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.generation.audio import package_scope
 from drama_plugin.generation.contracts import (
     AudioExecutionPlan, CoverageEntry, CoverageStatus as S, ExecutableFact,
-    ExecutionDiagnostic, GenerationTask, Obligation as O, PromptIR,
+    ExecutionDiagnostic, GenerationTask, Obligation as O, PromptIR, CameraPhaseTiming,
 )
 from drama_plugin.generation.sources import PackageReader, SelectedValue, child
 from drama_plugin.production.contracts import ProductionPackage, SourceDomain as D, SourceReference
@@ -225,6 +225,10 @@ class ExecutionProjection:
                 subject_id=subject))
         for item in selected:
             domain, ref = item.selection.domain, item.selection.reference
+            if task.camera_direction_ref and domain == D.CAMERA and any(k in ref.path for k in ('movement','cameraPosition','lensIntention','pointOfView')):
+                internal.append(CoverageEntry(fact_id='camera-whole-shot-context:'+sha256_canonical(ref),
+                    domain=domain,source_ref=ref,obligation=O.QUALITY_SUPPORTING,status=S.INTERNAL_ONLY))
+                continue
             if task.return_last_frame and domain == D.EDITORIAL and 'temporalStructure' in ref.path:
                 # The adopted whole-Shot runtime remains context. The actual
                 # bounded duration comes from the frozen execution profile.
@@ -271,6 +275,18 @@ class ExecutionProjection:
             endpoint = next(i for i in selected if i.selection.reference in task.execution_reference_refs)
             add(D.CAMERA, child(endpoint.selection.reference, "endpointState"),
                 endpoint.value['endpointState'], "video.camera_motion")
+        if task.camera_direction_ref:
+            timing, source = self.reader.operations.camera_direction(package,task)
+            labels = {'scene_context':'BACKGROUND ONLY, scene intent',
+                'preceding_beat_context':'BACKGROUND ONLY, already completed; do not perform again',
+                'following_beat_context':'BACKGROUND ONLY, later beat; do not perform in this segment',
+                'inherited_state':'CURRENT SEGMENT, inherited camera state', 'decision':'CURRENT SEGMENT, camera decision',
+                'trigger':'CURRENT SEGMENT, narrative trigger; segment boundary is not a trigger',
+                'motivation':'CURRENT SEGMENT, dramatic motivation', 'trajectory':'CURRENT SEGMENT, camera trajectory',
+                'amplitude':'CURRENT SEGMENT, movement extent', 'end_state':'CURRENT SEGMENT, final camera state'}
+            for key,label in labels.items():
+                add(D.CAMERA,child(source,CameraPhaseTiming.model_fields[key].alias or key),
+                    label+': '+getattr(timing,key),'video.camera_motion')
         for ref in task.unit.action_refs:
             if ref not in {f.source_ref for f in facts}:
                 add(D.ACTION, ref, await self.reader.resolver.resolve(ref), "video.action_progression")

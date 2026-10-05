@@ -29,6 +29,7 @@ the new batch may retain `SPOKEN_CONTENT_COVERAGE_UNVERIFIED` and carry that pen
 coverage forward. This is not speech completion or Scene acceptance. An observed
 omission or repetition still stops the next generation.
 Whole-shot establishing camera prose stays pinned as context, not a new event.
+When a retained candidate shows unmotivated movement, ask the existing cinematography owner for a phase-bound inherited state, motion decision, narrative trigger, motive, trajectory, extent and end state. Bind the exact scoped accepted `CameraExecutionDirection`; compile its background separately from current execution. Use `revise_source_film_segment` for the same phase and actual predecessor, retaining the failed candidate, requests, costs and deferred goals. No clip boundary, whole-Scene clock or generic hold sentence may substitute for a beat decision. Review the entire new output and join against that decision; lack of movement alone is not a PASS.
 Seedance first-frame and multimodal reference inputs cannot be mixed. Request
 `return_last_frame` for new chain operations, retain its real provider result,
 and inspect the actual POST `image_url`/`first_frame` slot. A missing official
@@ -38,6 +39,7 @@ new segments, each logical completion appears once, and no fixed prefix trim is
 allowed. Raw repeated performance needs regeneration; frame similarity never
 authorizes removing dialogue. Historical frozen requests/reviews are retained.
 Each new clip requires fresh exact financial terms within the shared user budget.
+A scoped `FilmSegmentRevision` consumes its own approved replacement intent once, together with fresh exact cost terms; never clear or reuse its predecessor's consumed intent. A RESERVED operation has not crossed dispatch and remains eligible for its original single submission. Only a retained local `RECOVERY_TRANSPORT_READ_ONLY` definitely-not-submitted refusal permits that same dispatch to reopen; UNKNOWN is never treated this way.
 A user-authorized replacement opening uses `restart_source_film_media` on the
 same completed parent boundary. The immutable batch retains its preceding
 checkpoint and Runtime completion; old child operations, requests and fees remain.
@@ -184,6 +186,8 @@ A [visual route](../../docs/visual-route-contract.md) is separate from provider/
 For a qualified official video route, use the [unified video contract](../../docs/video-provider-contract.md) and `scripts/video_provider.py` Host entry. It uses the same Work route, stage authorization, exact reservation and Media completion as existing production. Skills supply creative requirements and stable references; provider translation, credentials and asynchronous vendor identity stay below the Host boundary.
 
 For uncertain submission, first perform finite automatic queries and resume any exactly recovered task. When none is recoverable, the current cumulative cost authorization may permit a bounded supplemental attempt on the same logical operation and unchanged request. Preserve the UNKNOWN attempt, count it as possibly charged, retain its full reservation, and append the new attempt with its exact approval and prior-attempt link. Never reset counts or reinterpret UNKNOWN as free/noncreation. No additional user task ID or absolute noncreation proof is needed within the authorized count and budget. After the authorized supplemental attempt is UNKNOWN, retain a queryable wait and do not add another submission. Expired media links never justify new generation. A retained candidate is not content approval or user adoption. Preserve the canonical continuity/style fingerprint in every attempt and result. Comfy image generation, OAuth, MCP and video fallback remain available through their existing Host path.
+
+When the supplemental result has completed the same business goal, use `reconcile_historical_unknown` for one bounded read and retain `COMPLETED_BY_SUPPLEMENT` together with `PENDING_RECONCILIATION`. Keep the original attempt and its original reserve attribution exactly once. The historical accounting record cannot reopen the completed goal, request another supplement or duplicate its reserve in a revision/new batch. No exact recovery or invoice means the old result/fee stays unknown, never zero or settled; this does not block an independently authorized current candidate.
 
 ## Route-owned expression
 

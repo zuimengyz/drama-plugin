@@ -120,9 +120,13 @@ def professional_fact_schemas(definitions: dict[str, JsonValue]) -> dict[D, dict
     refs = rows({"id": text, "priority": {"type": "string", "enum": ["REQUIRED", "PREFERRED"]},
         "beatIds": strings, "designPurpose": text, "inputDuty": text},
         ("id", "priority", "beatIds", "designPurpose", "inputDuty"), nonempty=False)
+    from drama_plugin.generation.contracts import CameraPhaseTiming
+    camera_phase_schema = CameraPhaseTiming.model_json_schema(by_alias=True)
     return {
         D.ACTION: object_schema({"actionPhases": action}, ("actionPhases",)),
-        D.CAMERA: object_schema({"movement": object_schema({"policy": text}, ("policy",))}, ("movement",)),
+        D.CAMERA: object_schema({"movement": object_schema({"policy": text,
+            "phaseDirections": {"type": "array", "minItems": 1, "maxItems": 16,
+                "items": camera_phase_schema}}, ("policy",))}, ("movement",)),
         D.WORLD: object_schema({"setting": text}, ("setting",)),
         D.SUBJECTS: object_schema({"presentSubjects": rows({key: text for key in ("id", "role", "inSceneBehaviour")},
             ("id", "role", "inSceneBehaviour"))}, ("presentSubjects",)),

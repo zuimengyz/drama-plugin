@@ -258,19 +258,24 @@ class RuntimeEngine:
             return self.store.save(following, expected_revision=run.revision)
 
     async def resume_media_batch(self, run_id: str, *, batch_ref: ArtifactReference,
-                                 decision_ref: ArtifactReference) -> RuntimeRun:
+                                 decision_ref: ArtifactReference,
+                                 continuation_goal_hash: str | None = None) -> RuntimeRun:
         """Re-enter only a completed Film media boundary for an owner-validated new batch."""
         from drama_plugin.runtime.contracts import ExecutionBatchResume
         async with self.store.lock(run_id):
             run = self.store.load(run_id)
             self._context(run)
-            if any(record.batch_ref == batch_ref for record in run.execution_batches):
+            if any(record.batch_ref == batch_ref and record.continuation_goal_hash == continuation_goal_hash
+                   for record in run.execution_batches):
                 return run
             if (run.workflow_id != 'source-to-reviewed-media:v1' or run.state != RuntimeState.SUCCEEDED
                     or run.cursor != 6 or run.last_result is None
                     or batch_ref.owner != 'film-media-batch' or decision_ref.owner != 'user-decision'):
                 raise ValueError('COMPLETED_FILM_MEDIA_BATCH_REQUIRED')
+            if continuation_goal_hash is not None and not any(record.batch_ref == batch_ref for record in run.execution_batches):
+                raise ValueError('EXISTING_MEDIA_BATCH_CONTINUATION_REQUIRED')
             record = ExecutionBatchResume(batch_ref=batch_ref,decision_ref=decision_ref,
+                continuation_goal_hash=continuation_goal_hash,
                 completed_revision=run.revision,completed_cursor=run.cursor,completed_result=run.last_result)
             following = RuntimeRun.model_validate({**run.model_dump(), 'state':RuntimeState.READY,
                 'cursor':5,'revision':run.revision+1,'last_result':None,'wait_reason':None,

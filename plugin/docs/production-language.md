@@ -40,12 +40,17 @@ validate typed audio/production bindings before create. Legacy unbound projectio
 remain available for offline inspection, not live dialogue submission. A translated
 line with old review-text character offsets blocks pending approved localized coverage.
 Existing Work profiles remain immutable; a changed runtime setting cannot silently
-rewrite or override them. No Fish capability or subtitle timing change is included.
+rewrite or override them. No Fish capability or final speech timing authority change is included.
 
 Cinematic Finishing owns separate subtitle localization contracts. `compile_subtitle_track`
 checks current production text, semantic intent and Work targets. Tracks are UNTIMED, delivered
 only to post-production/player; final timing/export and adopted narration subtitle localization
-remain future consumers. Narration NONE emits no narration task. Still-image compilers
+remain future consumers. An explicitly requested review copy can use `ReviewSubtitleTrack`
+with observed native speech, selected edit hash and measured per-source offsets.
+`export_review_subtitles` requires visible uncertainty at unresolved cues; it does not
+authorize final export or certify canon speech coverage. The existing finishing module's
+`render_subtitle_review` preserves native audio packets and picture timing while adding
+requested visible captions to a separate candidate. Narration NONE emits no narration task. Still-image compilers
 do not consume language/subtitle settings; video consumes only approved spoken-language
 bindings, not subtitle settings. Technical fixtures cannot enter speech production.
 

@@ -100,6 +100,28 @@ class SubtitleTrack(ContractModel):
     purpose: Literal['TECHNICAL_FIXTURE','PRODUCTION']
     delivery_boundary: Literal['POST_PRODUCTION_OR_PLAYER']='POST_PRODUCTION_OR_PLAYER'
 
+class ObservedSubtitleTiming(ContractModel):
+    """Measured speech in a selected native source; canon is intent, not evidence."""
+    source_media_hash: Hash
+    observation_ref: Text
+    observation_hash: Hash
+    transcribed_text: Text
+    source_start: float = Field(ge=0, allow_inf_nan=False)
+    source_end: float = Field(gt=0, allow_inf_nan=False)
+    edit_offset: float = Field(ge=0, allow_inf_nan=False)
+    uncertainty: str = ''
+
+class ReviewSubtitleCue(SubtitleCue):
+    """Review-only subtype preserves the historical untimed contract and hashes."""
+    timing_status: Literal['OBSERVED_CANDIDATE']='OBSERVED_CANDIDATE'
+    observed_timing: ObservedSubtitleTiming
+
+class ReviewSubtitleTrack(SubtitleTrack):
+    cues: tuple[ReviewSubtitleCue,...] = Field(min_length=1)
+    edit_media_hash: Hash
+    edit_duration: float = Field(gt=0, allow_inf_nan=False)
+    review_status: Literal['CANDIDATE']='CANDIDATE'
+
 class SpeechLanguageAuthorization(ContractModel):
     profile: ProductionLanguageProfile
     intent: SemanticDialogueIntent

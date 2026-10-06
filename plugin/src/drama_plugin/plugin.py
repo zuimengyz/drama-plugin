@@ -355,6 +355,24 @@ class DramaPlugin:
             self.operation_resolver.decision(batch.authorization_ref, category=DecisionCategory.ADOPTION,
                 scope=run.scope, source_ref=self.generation_artifacts.inputs(batch.opening_run_id).task.owners.rights_request_ref)
             run = await self.runtime.resume_media_batch(run_id,batch_ref=cp.media_batch_ref,decision_ref=batch.authorization_ref)
+        if (cp.media_batch_ref and run.state == RuntimeState.SUCCEEDED and cp.scene_media_run_ids
+                and self.runtime.store.load(cp.scene_media_run_ids[-1]).state == RuntimeState.PLANNED):
+            # A later human-authorized adjacent phase can arrive after this batch
+            # completed. Preserve that completion and re-enter only its media step.
+            from drama_plugin.generation.operation import continuation_frame, validate_continuation
+            child_id = cp.scene_media_run_ids[-1]
+            task = self.generation_artifacts.inputs(child_id).task
+            validate_continuation(self.ledger, task)
+            _, predecessor, _, _ = continuation_frame(self.ledger, task.continuation.frame_ref,
+                allow_unverified_audio=bool(task.continuation.allow_unverified_audio))
+            previous_id = cp.scene_media_run_ids[-2] if len(cp.scene_media_run_ids) > 1 else self.source_film_media_opening(run_id)
+            if (predecessor.run_id != previous_id or self.runtime.store.load(previous_id).state != RuntimeState.SUCCEEDED
+                    or self.gate_findings.inputs(child_id).package_ref != cp.units[0].package_ref):
+                raise ValueError('IMMEDIATE_REVIEWED_PREDECESSOR_REQUIRED')
+            self.operation_resolver.decision(task.owners.rights_decision_ref, category=DecisionCategory.ADOPTION,
+                scope=run.scope, source_ref=task.owners.rights_request_ref)
+            run = await self.runtime.resume_media_batch(run_id,batch_ref=cp.media_batch_ref,
+                decision_ref=task.owners.rights_decision_ref,continuation_goal_hash=cp.scene_media_goal_hash)
         if cp.media_batch_ref and run.state == RuntimeState.FAILED and run.last_result and run.last_result.code == 'TECHNICAL_MEDIA_FAILURE':
             await self._repair_source_film_video_duration(run_id)
             run = self.runtime.store.load(run_id)
@@ -942,8 +960,10 @@ class DramaPlugin:
         goal_hash = sha256_canonical([t.model_dump(mode='json',by_alias=True) for t in tasks])
         if parent.workflow_id == 'source-to-reviewed-media:v1' and cp.scene_media_goal_hash == goal_hash:
             return cp.scene_media_run_ids
-        if (parent.workflow_id != 'source-to-reviewed-media:v1' or parent.cursor != 5
-                or parent.state not in {RuntimeState.READY,RuntimeState.WAITING_USER,RuntimeState.WAITING_EXTERNAL}
+        active_boundary = (parent.cursor == 5 and parent.state in {
+            RuntimeState.READY,RuntimeState.WAITING_USER,RuntimeState.WAITING_EXTERNAL})
+        completed_boundary = (parent.cursor == 6 and parent.state == RuntimeState.SUCCEEDED and cp.media_batch_ref is not None)
+        if (parent.workflow_id != 'source-to-reviewed-media:v1' or not (active_boundary or completed_boundary)
                 or not cp.units or cp.units[0].package_ref is None):
             raise ValueError('EXISTING_FILM_EXECUTION_BOUNDARY_REQUIRED')
         unit = cp.units[0]

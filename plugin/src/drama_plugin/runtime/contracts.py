@@ -274,7 +274,9 @@ class ExternalRepairRecord(ExtendedRuntimeContract):
         return self
 
 
-class ExecutionBatchResume(RuntimeContract):
+class ExecutionBatchResume(ExtendedRuntimeContract):
+    extension_fields = ('continuation_goal_hash',)
+    continuation_goal_hash: str | None = Field(default=None, pattern=r'^[a-f0-9]{64}$')
     batch_ref: ArtifactReference
     decision_ref: ArtifactReference
     completed_revision: int = Field(ge=0)

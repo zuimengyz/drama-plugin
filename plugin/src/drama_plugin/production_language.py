@@ -1,6 +1,7 @@
 """Source metadata -> work policy -> localized text -> speech/subtitle boundaries.
 
-No translation model, provider, subtitle timing or visual prompt authorship here.
+No translation model, provider or visual prompt authorship here. Review timing
+consumes observed speech; final speech/edit approval remains separate.
 """
 from typing import Any, Sequence
 from drama_plugin.config.models import DramaPluginConfig
@@ -10,7 +11,7 @@ from drama_plugin.contracts.creative_source import SourceArtifact
 from drama_plugin.contracts.production_language import (
     SourceLanguageMetadata, ProductionLanguageProfile, SubtitlePolicy,
     SemanticDialogueIntent, ProductionDialogueLine, SubtitleTrack,
-    SpeechLanguageAuthorization,
+    SpeechLanguageAuthorization, ReviewSubtitleTrack,
 )
 
 
@@ -135,6 +136,60 @@ def compile_subtitle_track(track: SubtitleTrack, lines: Sequence[ProductionDialo
 
 def require_subtitle_export(track: SubtitleTrack) -> None:
     raise ValueError('FINAL_SUBTITLE_TIMING_REQUIRES_APPROVED_SPEECH_AND_FINAL_EDIT')
+
+def export_review_subtitles(track: ReviewSubtitleTrack, *, policy: SubtitlePolicy,
+                            expected_edit_hash: str, source_offsets: dict[str, float],
+                            observations: dict[str, dict[str, Any]]) -> str:
+    """SRT candidate from actual speech, with unresolved words visible to viewers.
+
+    This does not authorize a final export or certify spoken canon coverage.
+    Offsets must come from the selected edit, not segment ordinals or guesses.
+    """
+    t=ReviewSubtitleTrack.model_validate(dump_contract(track))
+    if not policy.enabled or t.track_language not in policy.languages:
+        raise ValueError('SUBTITLE_PROFILE_MISMATCH')
+    if t.edit_media_hash!=expected_edit_hash:
+        raise ValueError('SUBTITLE_EDIT_HASH_MISMATCH')
+    if len({q.cue_id for q in t.cues})!=len(t.cues):
+        raise ValueError('DUPLICATE_SUBTITLE_CUE')
+    def stamp(seconds: float) -> str:
+        ms=round(seconds*1000);h,ms=divmod(ms,3600000);m,ms=divmod(ms,60000);s,ms=divmod(ms,1000)
+        return f'{h:02}:{m:02}:{s:02},{ms:03}'
+    rows=[];previous_end=0.0
+    for index,q in enumerate(t.cues,1):
+        e=q.observed_timing
+        if q.target_language!=t.track_language or bool(q.dialogue_line_id)==bool(q.narration_cue_id):
+            raise ValueError('SUBTITLE_SOURCE_BINDING_MISMATCH')
+        if e.source_media_hash not in source_offsets or abs(source_offsets[e.source_media_hash]-e.edit_offset)>.000001:
+            raise ValueError('SUBTITLE_SELECTED_SOURCE_OFFSET_MISMATCH')
+        obs=observations.get(e.observation_ref)
+        if not obs or sha256_canonical(obs)!=e.observation_hash or obs.get('receipt',{}).get('sourceMediaHash')!=e.source_media_hash:
+            raise ValueError('SUBTITLE_OBSERVATION_BINDING_MISMATCH')
+        # Invalid full observations may retain individually bounded raw events;
+        # the candidate must explicitly disclose that limitation.
+        events=(obs.get('observation') or {}).get('speechEvents',[])
+        if not events and obs.get('raw'):
+            import json
+            events=json.loads(obs['raw']).get('speechEvents',[])
+            offset=obs['receipt']['sourceStart']
+            events=[{**v,'start':v['start']+offset,'end':v['end']+offset} for v in events]
+            if not e.uncertainty:
+                raise ValueError('INVALID_OBSERVATION_REQUIRES_VISIBLE_UNCERTAINTY')
+        if not any(v['description']==e.transcribed_text and abs(v['start']-e.source_start)<.000001 and abs(v['end']-e.source_end)<.000001 for v in events):
+            raise ValueError('SUBTITLE_ACTUAL_SPEECH_EVENT_REQUIRED')
+        receipt=obs['receipt']
+        if not receipt['sourceStart']<=e.source_start<e.source_end<=receipt['sourceEnd']:
+            raise ValueError('SUBTITLE_TIMING_OUTSIDE_OBSERVATION')
+        start=e.edit_offset+e.source_start;end=e.edit_offset+e.source_end
+        if not previous_end<=start<end<=t.edit_duration:
+            raise ValueError('SUBTITLE_TIMING_OVERLAP_OR_OUTSIDE_EDIT')
+        if e.uncertainty and not any(marker in q.subtitle_text for marker in ('待核','不清','unverified','unclear')):
+            raise ValueError('UNRESOLVED_SUBTITLE_MUST_BE_VISIBLE')
+        if q.localization_status=='UPSTREAM_LOCALIZATION_CONFLICT':
+            raise ValueError('UPSTREAM_LOCALIZATION_CONFLICT')
+        previous_end=end
+        rows.append(f'{index}\n{stamp(start)} --> {stamp(end)}\n{q.subtitle_text.strip()}\n')
+    return '\n'.join(rows)
 
 
 def speech_rendition(auth: SpeechLanguageAuthorization) -> dict[str,Any]:

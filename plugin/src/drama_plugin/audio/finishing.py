@@ -37,6 +37,83 @@ def number(value: Any) -> float:
         raise ValueError('Non-finite timing/gain')
     return v
 
+def render_subtitle_review(source: Path, *, tracks: list[Any], policy: Any,
+                           expected_hash: str, source_offsets: dict[str,float],
+                           observations: dict[str,dict[str,Any]], cue_images: list[Path],
+                           directory: Path) -> dict[str,Any]:
+    """User-requested visible subtitle overlay, with native audio packet copy.
+
+    Unlike sound finishing this deliberately re-encodes picture for captions.
+    It never enters the speech generation or final audio acceptance path.
+    Raster text is supplied by the Host, so libass is not a runtime requirement.
+    """
+    from drama_plugin.production_language import export_review_subtitles
+    from drama_plugin.contracts.base import dump_contract
+    if file_hash(source)!=expected_hash:
+        raise ValueError('SUBTITLE_EDIT_HASH_MISMATCH')
+    if not tracks or len(cue_images)!=len(tracks[0].cues):
+        raise ValueError('SUBTITLE_OVERLAY_CUE_COUNT_MISMATCH')
+    def bindings(t: Any) -> list[Any]:
+        return [dump_contract(q.observed_timing) for q in t.cues]
+    if any(bindings(t)!=bindings(tracks[0]) for t in tracks[1:]):
+        raise ValueError('BILINGUAL_SUBTITLE_TIMING_MISMATCH')
+    directory.mkdir(parents=True,exist_ok=True)
+    exports={}
+    for track in tracks:
+        text=export_review_subtitles(track,policy=policy,expected_edit_hash=expected_hash,
+            source_offsets=source_offsets,observations=observations)
+        path=directory/f'subtitles.{track.track_language}.srt'
+        path.write_text(text,encoding='utf-8');exports[track.track_language]=str(path)
+    recipe={'sourceHash':expected_hash,'tracks':[dump_contract(t) for t in tracks],
+        'overlays':[file_hash(x) for x in cue_images],'scope':'SUBTITLE_REVIEW_CANDIDATE',
+        'nativeAudio':'PACKET_COPY','picture':'CAPTION_OVERLAY_ONLY'}
+    fp=digest(recipe);journal=directory/'subtitle-render.json'
+    if journal.exists():
+        old=json.loads(journal.read_text())
+        if old['recipeHash']!=fp or file_hash(Path(old['output']))!=old['outputHash']:
+            raise ValueError('Subtitle revision changed; preserve it and use a new revision')
+        return cast(dict[str,Any],old)
+    source_probe=probe(source)
+    if abs(float(source_probe['format']['duration'])-tracks[0].edit_duration)>.001:
+        raise ValueError('SUBTITLE_EDIT_DURATION_MISMATCH')
+    output=directory/'review-bilingual.mp4'
+    args=['ffmpeg','-nostdin','-v','error','-y','-i',str(source)]
+    for image in cue_images:args+=['-i',str(image)]
+    filters=[];prior='[0:v:0]'
+    for i,q in enumerate(tracks[0].cues,1):
+        e=q.observed_timing;start=e.edit_offset+e.source_start;end=e.edit_offset+e.source_end
+        label=f'[sub{i}]'
+        filters.append(f"{prior}[{i}:v:0]overlay=enable='gte(t,{start:.6f})*lt(t,{end:.6f})':eof_action=repeat{label}")
+        prior=label
+    stream=next(s for s in source_probe['streams'] if s['codec_type']=='video')
+    args+=['-filter_complex',';'.join(filters),'-map',prior,'-map','0:a:0',
+        '-c:v','libx264','-crf','18','-preset','medium','-pix_fmt','yuv420p',
+        '-fps_mode:v','passthrough','-enc_time_base:v',stream['time_base'],
+        '-video_track_timescale',stream['time_base'].split('/')[1],
+        '-c:a','copy','-movflags','+faststart',str(output)]
+    run(args)
+    run(['ffmpeg','-nostdin','-v','error','-i',str(output),'-f','null','-'])
+    def audio_packets(path: Path) -> list[dict[str,Any]]:
+        return json.loads(run(['ffprobe','-v','error','-select_streams','a:0','-show_packets',
+            '-show_data_hash','sha256','-show_entries','packet=pts_time,dts_time,duration_time,data_hash',
+            '-of','json',str(path)]))['packets']
+    if audio_packets(source)!=audio_packets(output):
+        raise ValueError('SUBTITLE_REVIEW_NATIVE_AUDIO_CHANGED')
+    a=sorted(video_packets(source),key=lambda p:float(p['pts_time']))
+    b=sorted(video_packets(output),key=lambda p:float(p['pts_time']))
+    if len(a)!=len(b) or any(abs(float(x['pts_time'])-float(y['pts_time']))>.0001 for x,y in zip(a,b)):
+        raise ValueError('SUBTITLE_REVIEW_PICTURE_TIMING_CHANGED')
+    output_probe=probe(output)
+    if abs(float(output_probe['format']['duration'])-float(source_probe['format']['duration']))>.001:
+        raise ValueError('SUBTITLE_REVIEW_DURATION_CHANGED')
+    result={'recipeHash':fp,'recipe':recipe,'output':str(output),'outputHash':file_hash(output),
+        'exports':exports,'command':args,'probe':output_probe,'sourceProbe':source_probe,
+        'nativeAudioPacketsIdentical':True,'pictureFrameCount':len(b),'pictureTimingPreserved':True,
+        'pictureReencodedForRequestedCaptions':True,'fullDecode':'PASS',
+        'audioFinalAcceptance':'UNVERIFIED','userAdoption':'PENDING','generationCalls':0}
+    journal.write_text(json.dumps(result,ensure_ascii=False,indent=2))
+    return result
+
 
 def envelope(points: list[list[float]]) -> str:
     """Piecewise linear gain; coordinates are local seconds after source trim."""

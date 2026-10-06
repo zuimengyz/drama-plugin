@@ -179,4 +179,11 @@ reviewed semantic compression, line breaking and honorific/name policy. Use Work
 languages only. Compile via `compile_subtitle_track`; before audio/edit timing, retain `UNTIMED`.
 No final SRT/VTT export until an approved timing contract exists. Never insert subtitle requests
 into image/video prompts or use subtitles to revise dialogue.
+For an explicitly requested review candidate, `ReviewSubtitleTrack`/`ReviewSubtitleCue`
+may bind observed native speech events to measured edit offsets and export via
+`export_review_subtitles`. Keep uncertain wording visible at its cue; this never
+certifies final speech coverage or bypasses `require_subtitle_export`.
+`render_subtitle_review` in the existing finishing module can burn these captions
+into a separate review copy, re-encoding picture only for that requested overlay.
+Preserve the unsubtitled source, all picture timing and exact native audio packets.
 See [production language](../../docs/production-language.md).

@@ -208,6 +208,57 @@ async def test_three_segments_advance_actual_wire_and_progress_and_idempotent_as
 
 
 @pytest.mark.asyncio
+async def test_append_third_after_completed_same_batch_keeps_completed_results(tmp_path,monkeypatch,media_files):
+    from drama_plugin.contracts.media import Media
+    p,r,service,calls,creates,auth,authors=await scenario(tmp_path,monkeypatch,media_files)
+    cp=p.film.store.checkpoint(r);old_first=cp.units[0].generation_run_id;package_ref=cp.units[0].package_ref
+    op,check,_,_=await finish(p,old_first,package_ref)
+    assert (await p.resume_source_film_run(r)).state==RuntimeState.SUCCEEDED
+    check=p.execution.store.checkpoint(op.artifact_reference())
+    base=p.generation_artifacts.get(op.preparation_ref,GenerationPreparation).task
+    opening=referenced_task(p,p.production_packages.get(package_ref),base,Media.model_validate(service.records[0]),
+        check.progress.video_creative_ref,binding_id='unused-new-batch-context',mode='text_to_video')
+    opening=opening.model_copy(update={'execution_reference_refs':None,'return_last_frame':True})
+    later=tuple([(await following(p,r,service,old_first,i,bind=False)).model_copy(
+        update={'execution_reference_refs':None,'return_last_frame':True}) for i in (1,2)])
+    original_ready=p.generation_capability.on_ready
+    def offline_authorize(child,ref):
+        p.ledger.put_index('media-proof-authorization',child,auth,scope=p.runtime.store.load(child).scope,once=True)
+        original_ready(child,ref)
+    p.generation_capability.on_ready=offline_authorize
+    await p.restart_source_film_media(r,batch_id='serial-after-completion',tasks=(opening,*later))
+    first=p.source_film_media_opening(r)
+    await finish(p,first,package_ref)
+    await p.resume_source_film_run(r)
+    second=p.film.store.checkpoint(r).scene_media_run_ids[-1]
+    await finish(p,second,package_ref)
+    # Fixture for the existing bounded second-candidate revision: the future
+    # descriptor was withheld, rather than generating an unapproved next clip.
+    cp=p.film.store.checkpoint(r)
+    p.film.store.save(r,p.runtime.store.load(r).scope,cp.model_copy(update={'scene_media_pending_tasks':()}))
+    completed=await p.resume_source_film_run(r)
+    assert completed.state==RuntimeState.SUCCEEDED
+    originals=[p.generation_artifacts.get(completion(p,c)[0].preparation_ref,GenerationPreparation).model_dump_json() for c in (first,second)]
+    task=await p.prepare_source_film_continuation(r,task=later[-1])
+    ids=p.queue_source_film_media(r,tasks=(task,))
+    assert ids[0]==second and len(ids)==2
+    third=ids[-1];posts=len(creates)
+    assert p.queue_source_film_media(r,tasks=(task,))==ids
+    await p.resume_source_film_run(r)
+    assert p.runtime.store.load(r).execution_batches[-1].completed_result==completed.last_result
+    assert p.runtime.store.load(r).execution_batches[-1].continuation_goal_hash==p.film.store.checkpoint(r).scene_media_goal_hash
+    await finish(p,third,package_ref)
+    assert (await p.resume_source_film_run(r)).state==RuntimeState.SUCCEEDED
+    assert p.queue_source_film_media(r,tasks=(task,))==ids
+    await p.resume_source_film_run(r)
+    assert len(creates)==posts+1
+    assert creates[-1]['content'][1]['image_url']['url']=='https://result.invalid/tail-2.jpg'
+    assert p.source_film_preview_manifest(r).count("file '")==3
+    assert [p.generation_artifacts.get(completion(p,c)[0].preparation_ref,GenerationPreparation).model_dump_json() for c in (first,second)]==originals
+    assert authors.calls==['canon','direction','professional']
+
+
+@pytest.mark.asyncio
 async def test_missing_official_tail_does_not_fallback_or_create(tmp_path,monkeypatch,media_files):
     p,r,service,calls,creates,auth,authors=await scenario(tmp_path,monkeypatch,media_files,last_frame=False)
     cp=p.film.store.checkpoint(r);first=cp.units[0].generation_run_id

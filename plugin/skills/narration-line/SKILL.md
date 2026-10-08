@@ -65,6 +65,14 @@ not authorize that revision or a new business write.
 
 ## Spoken language
 
+Bind the narrative identity and delivery of each approved spoken event separately:
+inner narration, retrospective voice-over, camera-addressed self-description and
+story-world dialogue may coexist in one shot. Narration does not silence every
+visible actor or turn their separately assigned lines into voice-over. Preserve
+exact words and inter-event relations. Hand semantic perspective, pauses and
+foreground priorities to Sound; continuity of the same voice need not imply an
+artificially different timbre for narration and dialogue.
+
 Consume the Work `ProductionLanguageProfile`; all adopted narration types use its resolved
 production language. Review language never selects speech language. `NONE` creates zero
 narration localization tasks. Language configuration cannot adopt a cue or change Narration Bible.

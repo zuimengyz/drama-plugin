@@ -111,7 +111,7 @@ def validate_performance_target(subject_ref: str, dpds: Mapping[str, DPDSnapshot
 
 def compose_partner_beats(*, projection_scope: PerformanceScopeWitness,
                           beats: Mapping[str, BeatDPD]) -> tuple[BeatDPD, ...]:
-    """Project approved silent partner actions without inventing psychology."""
+    """Project exact adopted partner duties at beats owned by another actor."""
     from drama_plugin.contracts.dpd import PerformanceTargetRole
     from drama_plugin.professional_design.performance_scope import SubjectProjection
     declaration = projection_scope.current()
@@ -132,7 +132,7 @@ def compose_partner_beats(*, projection_scope: PerformanceScopeWitness,
             raise ValueError('PARTNER_DPD_SOURCE_BINDING_MISMATCH')
         actions = (*subject.reciprocal_actions, *subject.authored_responses,
                    *subject.listener_tasks, *subject.dramatic_exchanges)
-        if not actions or subject.spoken_ids:
+        if not actions:
             raise ValueError('PARTNER_DPD_REQUIRED: authored silent partner actions')
         for key in missing:
             if key not in beats:

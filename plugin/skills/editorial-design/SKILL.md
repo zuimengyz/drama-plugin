@@ -21,6 +21,13 @@ Shot Bible; Performance; Sound/Music; Director rhythm intent.
 
 Name what a cut reveals or withholds and the event it must wait for. Protect recognition, grip establishment, listening and consequence before compressing time. A held shot needs changing attention, not a prescribed long-take quota. Plan J/L relations through sound refs and keep spatial orientation across boundaries. Record alternative coverage requests separately; editing intent is not measured media timing.
 
+Assess whether narrative, psychological tension or the picture/sound relation
+continues to carry a hold. Meaningful stillness and silence need no minimum motion.
+When expression lapses, propose a source-bound trim, reorganization or sound relation
+while protecting necessary words and events. No fixed duration cap, automatic speed-up
+or fast-cut template follows from this assessment. Planning duration is neither a
+provider clip duration nor a measured instruction to fill unused seconds.
+
 ## Outputs
 
 Produce a versioned `Editorial Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.

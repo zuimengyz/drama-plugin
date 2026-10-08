@@ -36,7 +36,7 @@ class ModelPolicyCatalog:
         except ValueError:
             return None
         material = {"model": model, "family": family, "generator_version": generator.version,
-                    "target_adapter_version": "t5r-seedance-reference-view-v3",
+                    "target_adapter_version": "t5r-seedance-event-audio-view-v4",
                     "generator_policy": policy(), "hard_limit": spec["prompt_limit"],
                     "native_audio": spec["native_audio"], "input_modes": spec["input_modes"],
                     "durations": spec["durations"]}

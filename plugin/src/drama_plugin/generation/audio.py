@@ -43,22 +43,49 @@ class AudioPerformanceAssembler:
             if {i.value["id"] for i in unit_lines} != set(task.unit.spoken_ids) or len(unit_lines) > 1 and not relation_items:
                 return AudioAssembly(None, (ExecutionDiagnostic(code="CREATIVE_SOURCE_INSUFFICIENT",
                     owner="sound-performance", domain=D.SOUND, required=True),))
-            speech = tuple(SpeechEvent(event_id=i.value["id"], spoken_content_id=i.value["id"],
-                source_ref=i.selection.reference, speaker_ref=ArtifactReference(owner="character",artifact_ref=i.value["speakerKey"]),
-                layer=SpeechLayer.PRIMARY, intelligibility=Intelligibility.MUST_UNDERSTAND, mix_priority=3,
-                execution_ref=i.selection.reference, language=i.value["language"],
-                language_ref=child(i.selection.reference,"language"),
-                delivery_mode='VOICE_OVER' if task.unit.execution_context and task.unit.execution_context.voice_over_ref else None,
-                delivery_source_ref=task.unit.execution_context.voice_over_ref if task.unit.execution_context else None,
-                visible_state_ref=task.unit.execution_context.visible_state_ref if task.unit.execution_context else None) for i in unit_lines)
+            declarations = [i for i in selected if i.selection.domain == D.SOUND
+                and i.selection.reference.path[1:2] == ('audio_events',) and isinstance(i.value,dict)]
+            events=[]
+            for i in unit_lines:
+                declared=[d for d in declarations if d.value.get('spoken_content_id') == i.value['id']]
+                if len(declared)>1 or declared and (declared[0].value.get('speaker_key') != i.value['speakerKey']
+                        or declared[0].value.get('event_id') != i.value['id']):
+                    return AudioAssembly(None,(ExecutionDiagnostic(code='DIALOGUE_IDENTITY_MISMATCH',
+                        owner='sound-performance',domain=D.SOUND,source_ref=i.selection.reference,required=True),))
+                declaration=declared[0] if declared else None
+                row=declaration.value if declaration else {}
+                ref=declaration.selection.reference if declaration else i.selection.reference
+                context=task.unit.execution_context
+                try:
+                    events.append(SpeechEvent(event_id=i.value['id'],spoken_content_id=i.value['id'],
+                        source_ref=i.selection.reference,speaker_ref=ArtifactReference(owner='character',artifact_ref=i.value['speakerKey']),
+                        layer=row.get('layer',SpeechLayer.PRIMARY),intelligibility=row.get('intelligibility',Intelligibility.MUST_UNDERSTAND),
+                        mix_priority=row.get('mix_priority',3),execution_ref=ref,language=i.value['language'],
+                        language_ref=child(i.selection.reference,'language'),
+                        delivery_mode=row.get('delivery_mode') if declaration else 'VOICE_OVER' if context and context.voice_over_ref else None,
+                        delivery_source_ref=child(ref,'delivery_mode') if declaration and row.get('delivery_mode') else context.voice_over_ref if context else None,
+                        delivery_refs=tuple(child(ref,k) for k in ('performance','space','attention','continuity') if row.get(k)),
+                        visible_state_ref=context.visible_state_ref if context else None,window_ms=row.get('window_ms')))
+                except (ValidationError,ValueError,TypeError):
+                    return AudioAssembly(None,(ExecutionDiagnostic(code='CREATIVE_SOURCE_INSUFFICIENT',
+                        owner='sound-performance',domain=D.SOUND,source_ref=ref,required=True),))
+            speech=tuple(events)
             unit_relations = tuple(SpeechRelation.model_validate({**row, "sourceRef":child(item.selection.reference,str(index))})
                 for item in relation_items for index,row in enumerate(item.value)
                 if {row.get("eventId"),row.get("targetEventId")} <= set(task.unit.spoken_ids))
             if len(unit_lines)>1 and not unit_relations:
                 return AudioAssembly(None,(ExecutionDiagnostic(code="CREATIVE_SOURCE_INSUFFICIENT",owner="sound-performance",domain=D.SOUND,required=True),))
-            sound_refs = tuple(i.selection.reference for i in selected if i.selection.domain == D.SOUND)
+            refs={k:[] for k in ('ambience','foley','silence','mix')}
+            for i in selected:
+                if i.selection.domain != D.SOUND or i.selection.reference.owner != 'professional':continue
+                ref=i.selection.reference
+                field=ref.path[1] if len(ref.path)>1 else ''
+                if field in ('speechRelations','audio_events'):continue
+                kind={'contactTiedSound':'foley','silence':'silence','orderingRules':'mix','dialogueAndLegibility':'mix'}.get(field,'ambience')
+                refs[kind].append(ref)
             plan = AudioExecutionPlan.seal(source_package_ref=package.artifact_reference(), scope=package_scope(package),
-                duration_ms=task.profile.requested_duration_ms, speech_events=speech, relations=unit_relations, ambience_refs=sound_refs,
+                duration_ms=task.profile.requested_duration_ms, speech_events=speech, relations=unit_relations,
+                ambience_refs=tuple(refs['ambience']),foley_refs=tuple(refs['foley']),silence_refs=tuple(refs['silence']),mix_intent_refs=tuple(refs['mix']),
                 native_audio_policy=task.resolved_native_audio_policy, source_roles=("NATIVE_VIDEO_AUDIO",) if task.profile.native_audio else ())
             return AudioAssembly(plan, ())
         diagnostics: list[ExecutionDiagnostic] = []

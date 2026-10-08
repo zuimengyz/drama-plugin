@@ -220,12 +220,12 @@ async def descriptor(p,r,unit,phase=0,mode='text_to_video',spoken_range=None,all
     return GenerationTask(target_model=profile.model,input_mode=mode,native_audio='REQUIRED' if profile.native_audio else 'DISABLED',profile=profile,unit=selection,owners=owners,return_last_frame=True)
 
 
-async def execute(p,r,task,unit,auth):
+async def execute(p,r,task,unit,auth,observations=()):
     task=await p.prepare_source_film_unit(r,task=task)
     child=p.create_media_review_run(package_ref=unit.package_ref,task=task,offline_authorization=auth)
     ids=p.queue_source_film_media(r,tasks=(task,));assert child.run_id in ids
     await p.resume_source_film_run(r)
-    await finish(p,child.run_id,unit.package_ref)
+    await finish(p,child.run_id,unit.package_ref,observations=observations)
     adopt_media(p,r,child.run_id)
     await p.resume_source_film_run(r)
     return child.run_id,task
@@ -523,6 +523,90 @@ class MixedNarrationDirectAuthors(SameNarratorAuthors):
                     facts['lines']=[{**row,'dramaticAction':'旁白交代回忆。' if row['spokenContentId']=='school-voice' else '当面对他们说，声音平直。'} for row in facts['lines']]
             result.append(design.model_copy(update={'facts':facts}))
         return tuple(result)
+
+
+class EventSoundAuthors(SameNarratorAuthors):
+    async def author_film(self,request):
+        value=await super().author_film(request)
+        return value.model_copy(update={'scenes':tuple(s.model_copy(update={'scene':s.scene.model_copy(update={
+            'dialogue':tuple(line.model_copy(update={'speaker':'a-mockers'}) if line.id=='school-second' else line for line in s.scene.dialogue)})})
+            if s.scene_id=='school' else s for s in value.scenes)})
+    async def design(self,request):
+        result=[]
+        for design in await super().design(request):
+            facts=dict(design.facts)
+            if request.scope.scene_id=='school':
+                if design.domain=='SOUND':
+                    facts['audio_events']=[dict(event_id=identity,spoken_content_id=identity,speaker_key='actor' if identity=='school-voice' else 'a-mockers',
+                        delivery_mode=mode,layer='PRIMARY',intelligibility='MUST_UNDERSTAND',mix_priority=3,
+                        performance='Measured words; retain the authored pause.',space=space,
+                        attention='At the direct utterance, restore the audible school space.',
+                        continuity='Same narrator vocal identity; no imposed timbre change.')
+                        for identity,mode,space in [('school-voice','VOICE_OVER','Close dry retrospective voice.'),
+                            ('school-second','ON_SCREEN','On-site voice with corridor distance and room response.')]]
+                    facts['ambience']=[{'phaseIndex':0,'design':'School footsteps beneath foreground speech.'},
+                        {'phaseIndex':1,'design':'Later stairwell footsteps, only in the aftermath.'}]
+                if design.domain=='ACTION':
+                    first=facts['actionPhases'][0]
+                    facts['actionPhases']=[first,{**first,'spokenIds':[],'action':'Silent consequence only.',
+                        'entryState':'School corridor after the exchange.','observable':'Quiet departure.'}]
+                if design.domain=='PERFORMANCE':
+                    facts['projectionSubjects']=[{**row,'spokenIds':['school-voice'] if row['subjectRef']=='actor' else ['school-second']}
+                        for row in facts['projectionSubjects']]
+                if design.domain=='SUBJECTS':facts['absences']='No violence.'
+            result.append(design.model_copy(update={'facts':facts}))
+        return tuple(result)
+
+
+@pytest.mark.asyncio
+async def test_native_mixed_event_audio_design_enters_final_mock_request(tmp_path,monkeypatch,media_files):
+    import subprocess
+    for video in media_files[0]:
+        output=video.with_name('audio-'+video.name)
+        subprocess.run(['ffmpeg','-v','error','-i',str(video),'-f','lavfi','-i','anullsrc=r=48000:cl=stereo',
+            '-c:v','copy','-c:a','aac','-shortest','-y',str(output)],check=True,capture_output=True)
+        output.replace(video)
+    p,r,_,_,creates,auth,_=await scenario(tmp_path,monkeypatch,media_files,authors=EventSoundAuthors())
+    cp=p.film.store.checkpoint(r);room,school=cp.units[:2]
+    await finish(p,room.generation_run_id,room.package_ref);adopt_media(p,r,room.generation_run_id)
+    await p.resume_source_film_run(r)
+    task=await descriptor(p,r,school)
+    from drama_plugin.execution.contracts import ReviewObservation
+    child,task=await execute(p,r,task,school,auth,observations=(ReviewObservation(
+        code='NATIVE_AUDIO_UNVERIFIED',owner='offline-fixture',finding='Mock audio is not Russian verification.'),))
+    request=creates[-1];text=request['content'][0]['text']
+    prep=p.generation_artifacts.get(p.generation_artifacts.prepared(child),GenerationPreparation)
+    from drama_plugin.generation.contracts import AudioExecutionPlan
+    plan=p.generation_artifacts.get(prep.audio_plan_ref,AudioExecutionPlan)
+    assert [e.delivery_mode for e in plan.speech_events]==['ON_SCREEN','VOICE_OVER'] or {e.delivery_mode for e in plan.speech_events}=={'VOICE_OVER','ON_SCREEN'}
+    assert request['generate_audio'] is True and request['return_last_frame'] is True
+    assert 'Close dry retrospective voice.' in text and 'On-site voice with corridor distance' in text
+    assert 'restore the audible school space' in text and 'Same narrator vocal identity' in text
+    assert '画外自白' in text and '说道{Я знал это с рождения.}' in text
+    assert '画面人物不说、不对口型' not in text and 'school-voice' not in text and 'speaker_key' not in text
+    assert 'Later stairwell' not in text
+    # Same beat, new silent phase: phase applicability wins over a shared beat ID.
+    silent=await descriptor(p,r,school,phase=1,mode='image_to_video',allow_unverified_audio=True)
+    preview=await p.prompt_compiler.preview_request(school.package_ref,await p.prepare_source_film_unit(r,task=silent))
+    assert not preview['speechEvents'] and 'School footsteps beneath' not in preview['request']['content'][0]['text']
+    assert 'Later stairwell footsteps' in preview['request']['content'][0]['text']
+    before=len(creates);await p.resume_source_film_run(r);assert len(creates)==before
+
+
+@pytest.mark.asyncio
+async def test_native_event_audio_keeps_exact_speaker_identity_check(tmp_path,monkeypatch,media_files):
+    class WrongSpeaker(EventSoundAuthors):
+        async def design(self,request):
+            designs=await super().design(request)
+            for d in designs:
+                if request.scope.scene_id=='school' and d.domain=='SOUND':d.facts['audio_events'][0]['speaker_key']='a-mockers'
+            return designs
+    p,r,_,_,creates,_,_=await scenario(tmp_path,monkeypatch,media_files,authors=WrongSpeaker())
+    unit=p.film.store.checkpoint(r).units[1];task=await descriptor(p,r,unit)
+    result=await p.prompt_compiler.compile(unit.package_ref,task)
+    assert result.preparation_ref is None
+    assert any(d.code=='DIALOGUE_IDENTITY_MISMATCH' for d in p.generation_artifacts.diagnostics(result.diagnostics_ref))
+    assert len(creates)==0
 
 
 @pytest.mark.asyncio

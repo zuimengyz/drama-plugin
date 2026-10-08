@@ -5,6 +5,14 @@ description: Produce image, video, or audio media for an approved historical-dra
 
 # Shot Production
 
+For selected Seedance native audio/video production, resolve the current Sound and
+spoken-event design before freezing the request. Verify applicable delivery,
+space, environmental priority, dramatic transitions and performance in the final
+Seedance prompt, and synchronous audio in the actual API body. Keep full Bibles,
+review notes and future/completed events out of executable prose. Preserve the
+native track by default and assess the heard result separately from compiler tests;
+do not introduce automatic TTS, fixed shot duration or a new approval gate.
+
 For authorized native Film production, retain the original Film and completed
 children/operations. Read `source_film_status` before scheduling and report its
 Scene → Shot → phase coverage, adoption, remaining content and next boundary.

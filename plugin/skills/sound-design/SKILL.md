@@ -21,6 +21,24 @@ Environment physical spaces; Action/Crowd; Blocking; Dialogue/Voice; Director in
 
 Locate each sound source and listener perspective. Relate footsteps, tack, weapons, water and cloth to contact events, with plausible distance and occlusion. Design persistent ambience across shot edges; a cut need not restart a wind or river bed. Distinguish physical silence, withheld attention and absent score. Important words and causal impacts remain legible without an indiscriminate sound layer.
 
+Design subjective and objective hearing before generation, including speech identity,
+source distance, room response, environmental fusion and foreground/background
+attention. Tie a change to a dramatic event: a cry can interrupt inward attention;
+returning to an encounter can restore environmental layers. Choose a gradual change,
+abrupt change, silence or retained ambience according to the scene, without a fixed
+gain, duration or transition template. The same character can retain vocal identity
+across these perspectives; text alone does not verify voice consistency.
+
+For the native source-to-reviewed-media path, reuse Sound `audio_events` with exact
+`event_id` / `spoken_content_id` / `speaker_key`, existing delivery modes and concise
+performance, space, attention and continuity leaves. Scope ambient/contact/silence
+records to the current beat and, where one beat spans units, `phaseIndex`. Keep IDs,
+evidence and review status internal. Production compiles only applicable decisions
+through the model-specific adapter and verifies the final request. Native joint
+audio/video remains the default when selected; independent TTS/redubbing is a separate
+authorized route, not a Sound default. This handoff does not claim deterministic
+provider control or acoustic success before hearing the actual output.
+
 ## Outputs
 
 Produce a versioned `Sound Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.

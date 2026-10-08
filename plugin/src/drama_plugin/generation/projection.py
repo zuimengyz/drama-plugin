@@ -245,7 +245,7 @@ class ExecutionProjection:
                 internal.append(CoverageEntry(fact_id="continuation-context:"+sha256_canonical(ref),
                     domain=domain, source_ref=ref, obligation=O.QUALITY_SUPPORTING, status=S.INTERNAL_ONLY))
                 continue
-            if domain == D.SOUND and ref.path[-1:] == ("speechRelations",):
+            if domain == D.SOUND and (ref.path[-1:] == ("speechRelations",) or ref.path[1:2] == ('audio_events',)):
                 internal.append(CoverageEntry(fact_id="speech-relations:"+sha256_canonical(ref),domain=domain,source_ref=ref,
                     obligation=O.EXECUTION_REQUIRED,status=S.INTERNAL_ONLY))
                 continue
@@ -278,12 +278,21 @@ class ExecutionProjection:
                 add(domain,ref,'Location structure: '+str(spatial)+'. Current Scene state: '+str(result['localOverride']), 'environment.architecture')
                 continue
             if domain == D.SOUND and ref.owner == "scene" and isinstance(item.value, dict):
-                if (task.unit.execution_context and task.unit.execution_context.voice_over_ref
+                event=next((e for e in plan.speech_events if e.source_ref==ref),None)
+                if (event and event.delivery_mode=='VOICE_OVER' and event.delivery_source_ref
+                        and event.delivery_source_ref != (task.unit.execution_context.voice_over_ref if task.unit.execution_context else None)):
+                    add(domain,event.delivery_source_ref,
+                        'This utterance is retrospective voice-over, outside the pictured action. Do not make the visible speaker lip-sync this utterance; separately assigned on-screen speech remains on-screen.',
+                        'preserve.audio_relation',str(item.value['speakerKey']))
+                elif (task.unit.execution_context and task.unit.execution_context.voice_over_ref
                         and not any(f.source_ref == task.unit.execution_context.voice_over_ref and f.slot == 'preserve.audio_relation' for f in facts)):
                     add(domain, task.unit.execution_context.voice_over_ref,
                         'VOICE_OVER by the adult retrospective narrator, outside the pictured age and space. Visible subjects do not speak or lip-sync these lines.',
                         'preserve.audio_relation', str(item.value['speakerKey']))
                 add(domain, child(ref, "text"), item.value["text"], "video.audio_requirements", str(item.value["speakerKey"]))
+                if event:
+                    for delivery in event.delivery_refs:
+                        add(domain,delivery,await self.reader.resolver.resolve(delivery),'video.audio_requirements',str(item.value['speakerKey']))
                 continue
             slot = slots.get(domain)
             if slot is None:

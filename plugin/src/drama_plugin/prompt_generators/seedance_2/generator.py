@@ -176,12 +176,12 @@ class Seedance2PromptGenerator:
                 if a.kind in ('DIALOGUE','VOICE_OVER','OFF_SCREEN'):
                     if a.speaker not in subjects or not a.language: raise ValueError('UNRESOLVED:dialogue-design:SPEAKER_LANGUAGE_REQUIRED')
                     if a.kind == 'VOICE_OVER':
-                        return (a.timing + ' ' if a.timing else '') + f'画外自白（叙述者身份：{subjects[a.speaker]}，独立于画面人物的当前年龄；画面人物不说、不对口型），用{a.language}' + '{' + atom.text + '}'
+                        return (a.timing + ' ' if a.timing else '') + f'画外自白（叙述者身份：{subjects[a.speaker]}，独立于画面人物的当前年龄；本句不作画内发声或对口型），用{a.language}' + '{' + atom.text + '}'
                     if a.kind == 'OFF_SCREEN':
                         return (a.timing + ' ' if a.timing else '') + f'画外声音（{subjects[a.speaker]}），用{a.language}' + '{' + atom.text + '}'
                     return (a.timing + ' ' if a.timing else '') + f'{subjects[a.speaker]} 用{a.language}说道' + '{' + atom.text + '}'
                 left, right = ('（', '）') if a.kind == 'BGM' else ('<', '>')
-                return (a.timing + ' ' if a.timing else '') + left + atom.text + right
+                return (a.timing + ' ' if a.timing else '') + left + literal(atom.text) + right
             field = atom.path.rsplit('.', 1)[-1].split('[')[0]
             text = literal(atom.text, replace_aliases=field != 'role')
             if atom.path.startswith(('blocking.', 'action.')):

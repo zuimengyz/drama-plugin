@@ -387,6 +387,8 @@ class OperationResolver:
             if beat.beat_id in beats:
                 raise ValueError("DPD_DUPLICATE_BEAT")
             beats[beat.beat_id] = beat
+        witness = read_performance_scope(self.versions, scope_pin)
+        partner_beats = compose_partner_beats(projection_scope=witness, beats=beats)
         dialogue = {line.id: line for line in scene.body.dialogue}
         snapshots: dict[str, DPDSnapshot] = {}
         for row in TypeAdapter(list[JsonValue]).validate_python(facts.get("lines", [])):
@@ -395,9 +397,10 @@ class OperationResolver:
             if key not in shot.body.spoken_ids or key in snapshots:
                 raise ValueError("DPD_CANON_DIALOGUE_MISMATCH")
             line = LineDPD.model_validate({**value, "sceneId": shot.scope.scene_id, "speaker": dialogue[key].speaker})
-            snapshots[key] = compose_dpd(scene_dpd, beats[line.beat_id], line)
-        witness = read_performance_scope(self.versions, scope_pin)
-        partner_beats = compose_partner_beats(projection_scope=witness, beats=beats)
+            authored=next((b for b in (*beats.values(),*partner_beats)
+                if b.beat_id==line.beat_id and b.actor==line.speaker),None)
+            if authored is None:raise ValueError('PARTNER_DPD_REQUIRED: canonical speaker beat')
+            snapshots[key] = compose_dpd(scene_dpd, authored, line)
         coverage = validate_shot_dpd_coverage(projection_scope=witness, snapshots=snapshots, beats=beats, partner_beats=partner_beats)
         snapshot_rows, snapshot_pins = [], []
         for key, snapshot in sorted(snapshots.items()):
@@ -455,6 +458,8 @@ class OperationResolver:
                 facts.append(DomainReference(domain=domain, reference=ref))
                 values[ref] = value
             elif isinstance(value, dict):
+                if 'phaseIndex' in value and value['phaseIndex'] != phase_index:
+                    return
                 if domain == 'SUBJECTS' and 'id' in value and 'role' in value:
                     p, a = labels(str(value['role']), PLACES), labels(str(value['role']), AGES)
                     if p and places and p.isdisjoint(places) or a and ages and a.isdisjoint(ages):
@@ -470,7 +475,7 @@ class OperationResolver:
                 if isinstance(value.get("id"), str) and domain == "PERFORMANCE" and value["id"] != phase["beatId"]:
                     return
                 for name, child in value.items():
-                    if name not in {"id", "beatId", "spokenIds", "actor", "target", "note", "objective", "obstacle", "tactic", "direction", "transitionTrigger"}:
+                    if name not in {"id", "beatId", "phaseIndex", "spokenIds", "actor", "target", "note", "objective", "obstacle", "tactic", "direction", "transitionTrigger"}:
                         walk(child, leaf(ref, name), domain)
             elif isinstance(value, list):
                 for index, child in enumerate(value):
@@ -479,6 +484,12 @@ class OperationResolver:
                     walk(child, leaf(ref, str(index)), domain)
         dispositions = []
         for item in selected:
+            if item.selection.domain == 'SOUND' and isinstance(item.value,dict):
+                for index,row in enumerate(item.value.get('audio_events', ())):
+                    if row.get('spoken_content_id') in phase_spoken_ids:
+                        ref=leaf(item.selection.reference,'audio_events',str(index))
+                        facts.append(DomainReference(domain=SourceDomain.SOUND,reference=ref))
+                        values[ref]=row
             if item.selection.domain == 'WORLD' and isinstance(item.value,dict) and 'locationBinding' in item.value:
                 facts.append(DomainReference(domain=SourceDomain.WORLD,reference=leaf(item.selection.reference,'locationBinding')))
                 values[leaf(item.selection.reference,'locationBinding')] = item.value['locationBinding']
@@ -498,7 +509,12 @@ class OperationResolver:
                     dispositions.append((str(row["id"]), "TECHNICAL_RISK_ACCEPTED" if applies and row["priority"] == "REQUIRED" else "OPTIONAL_OMITTED" if applies else "OUT_OF_UNIT"))
             if item.selection.domain not in fields or not isinstance(item.value, dict):
                 continue
-            for key in fields[item.selection.domain]:
+            executable_fields=fields[item.selection.domain]
+            if item.selection.domain == 'PERFORMANCE' and item.value.get('physicalExpression'):
+                # The owner can supply phase-specific observable expression
+                # while retaining the full beat DPD as professional context.
+                executable_fields=executable_fields-{'beats'}
+            for key in executable_fields:
                 if key in item.value:
                     walk(TypeAdapter(JsonValue).validate_python(item.value[key]), leaf(item.selection.reference, key), item.selection.domain)
         shot = object_at(await reader.resolver.resolve(package.scope.shot))['content']
@@ -516,6 +532,10 @@ class OperationResolver:
                     str(line.get('dramaticAction',''))+' '+str(line.get('observableIntent','')),re.I)]
             if direct:
                 voice_ref = None
+        if any(f.reference.path[1:2] == ('audio_events',) for f in facts if f.domain == 'SOUND'):
+            # Exact event declarations own mixed VO/on-screen delivery; the
+            # whole-Shot narration paragraph cannot apply to every speaker.
+            voice_ref = None
         current, context = make_context(phase=phase, phases=action.value['actionPhases'], index=phase_index,
             shot=shot, shot_ref=package.scope.shot, action_ref=base, facts=facts, values=values, voice_ref=voice_ref)
         return OperationSelection.model_validate(dict(beat_ids=(phase["beatId"],), action_refs=(action_ref,), spoken_ids=phase_spoken_ids,
@@ -569,7 +589,7 @@ class OperationResolver:
             "PERFORMANCE": {"beats", "physicalExpression"}, "CAMERA": {"movement", "cameraPosition", "height", "pointOfView", "lensIntention", "axisAndScreenDirection"},
             "WORLD": {"setting", "weather", "time", "physicalWorldRules", 'locationBinding'},
             "SUBJECTS": {"presentSubjects", "identityConstraints", "absences"},
-            "SOUND": {"ambience", "contactTiedSound", "dialogueAndLegibility", "orderingRules", "silence", "acousticSpace", "speechRelations"},
+            "SOUND": {"ambience", "contactTiedSound", "dialogueAndLegibility", "orderingRules", "silence", "acousticSpace", "speechRelations", "audio_events"},
             "LIGHTING": {"sources", "directionAndQuality", "intensityRatios", "constraints", "nightContinuity"},
             "COLOR": {"scenePalette", "arc", "constraints"}, "EDITORIAL": {"compression", "temporalStructure", "protectedEvents", "spatialOrientation"},
             "REFERENCE": {"references"}}

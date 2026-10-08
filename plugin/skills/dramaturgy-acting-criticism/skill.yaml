@@ -1,0 +1,14 @@
+code: dramaturgy-acting-criticism
+name: Dramaturgy and Acting Criticism
+description: Critique dramatic causality, character life, relationships and realized acting through tasks, resistance, listening, choices and consequences; no screenplay or performance authority.
+context:
+  required: [scope]
+  optional: [sourceRevision, sourceRefs, creativeOriginals, mediaRefs, observationRefs, reviewWorkspaceRef]
+  refresh_after: []
+tools:
+  preferred: [work.get_work, script.get_script, scene.get_scene]
+  allowed: [episode.get_episode, shot.get_shot, asset.get_asset, media.get_media, context.build_context]
+completion:
+  conditions:
+    - Judgments distinguish observed evidence, interpretation, counterargument and limits.
+    - Review outputs remain advisory and source-pinned; production and technical authority are unchanged.

@@ -25,7 +25,9 @@ Story Bible; Historical Entity and Adaptation Boundary Bibles; approved Characte
 
 ## Professional decisions
 
-Distinguish stable character invariants from immediate objectives. Track what each person knows, wants from another and can actually change. Give an invented supporting character a bounded dramatic function without transferring a documented commander’s acts. Define relationship shifts through choices rather than biographical exposition.
+Distinguish stable character invariants from immediate objectives. Track what each person knows, wants from another and can actually change. Knowledge and desire need not agree: knowing an attempt is futile can intensify the need to make it. Compare source-supported readings by the relationship each makes possible, the response the person gives or withholds, and the cost to a competing need. Protecting dignity may also prolong not being understood; do not resolve that tension into a single moral or emotion label. Separate source facts from the chosen interpretation, and carry its strongest rival and expressive cost into the scene handoff.
+
+For remembered or framed speech, distinguish the event's participant from the later speaker: their knowledge, addressee and unfinished relation may differ while old pressures persist. An intentional fusion remains available; identify what it permits or obscures rather than demanding a time label. Hand off the relationship condition entering and remaining after the scene, so Performance can derive current tasks without copying a biography or mistaking a remembered crisis for present urgency. These are meaning and stage decisions, not gestures. Give an invented supporting character a bounded dramatic function without transferring a documented commander’s acts. Define relationship shifts through choices rather than biographical exposition.
 
 ## Outputs
 

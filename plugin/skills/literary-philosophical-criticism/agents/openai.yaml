@@ -1,0 +1,4 @@
+interface:
+  display_name: "Literary and Philosophical Criticism"
+  short_description: "Critique literature and adaptation"
+  default_prompt: "Use $literary-philosophical-criticism to review the supplied work within the evidence and authority limits."

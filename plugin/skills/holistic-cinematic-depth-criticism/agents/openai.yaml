@@ -1,0 +1,4 @@
+interface:
+  display_name: "Holistic Cinematic Depth Criticism"
+  short_description: "Assess overall cinematic depth"
+  default_prompt: "Use $holistic-cinematic-depth-criticism to review the supplied work within the evidence and authority limits."

@@ -1,0 +1,14 @@
+code: artistic-review-council
+name: Artistic Review Council
+description: Organize independent film art criticism, reconcile argued disagreements and retain bounded judgments across specialist and holistic reviews; no production execution.
+context:
+  required: [scope]
+  optional: [sourceRevision, sourceRefs, creativeOriginals, mediaRefs, observationRefs, reviewWorkspaceRef]
+  refresh_after: []
+tools:
+  preferred: [work.get_work, script.get_script, scene.get_scene]
+  allowed: [episode.get_episode, shot.get_shot, asset.get_asset, media.get_media, context.build_context]
+completion:
+  conditions:
+    - Judgments distinguish observed evidence, interpretation, counterargument and limits.
+    - Review outputs remain advisory and source-pinned; production and technical authority are unchanged.

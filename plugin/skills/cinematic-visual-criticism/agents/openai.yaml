@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cinematic and Visual Criticism"
+  short_description: "Critique visual storytelling"
+  default_prompt: "Use $cinematic-visual-criticism to review the supplied work within the evidence and authority limits."

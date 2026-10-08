@@ -1,0 +1,14 @@
+code: holistic-cinematic-depth-criticism
+name: Holistic Cinematic Depth Criticism
+description: Independently assess a film's character life, dramatic weight, thought, lived world and accumulated resonance before reading specialist verdicts; no score aggregation or production authority.
+context:
+  required: [scope]
+  optional: [sourceRevision, sourceRefs, creativeOriginals, mediaRefs, observationRefs, reviewWorkspaceRef]
+  refresh_after: []
+tools:
+  preferred: [work.get_work, script.get_script, scene.get_scene]
+  allowed: [episode.get_episode, shot.get_shot, asset.get_asset, media.get_media, context.build_context]
+completion:
+  conditions:
+    - Judgments distinguish observed evidence, interpretation, counterargument and limits.
+    - Review outputs remain advisory and source-pinned; production and technical authority are unchanged.

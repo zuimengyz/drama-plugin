@@ -1,0 +1,4 @@
+interface:
+  display_name: "Artistic Learning and Evolution"
+  short_description: "Test contextual artistic learning"
+  default_prompt: "Use $artistic-learning-evolution to review the supplied work within the evidence and authority limits."

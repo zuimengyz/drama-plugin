@@ -1,0 +1,4 @@
+interface:
+  display_name: "Artistic Review Council"
+  short_description: "Coordinate independent film art reviews"
+  default_prompt: "Use $artistic-review-council to review the supplied work within the evidence and authority limits."

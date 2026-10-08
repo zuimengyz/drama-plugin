@@ -22,6 +22,9 @@ EXPECTED |= {
     "reference-strategy", "clip-decomposition",
 }
 EXPECTED |= {'literary-source-analysis', 'philosophical-core', 'literary-adaptation', 'literature-to-cinema', 'narration-line'}
+# Independent advisory critics are discoverable Skills, not Runtime departments.
+EXPECTED |= {'cinematic-visual-criticism', 'artistic-review-council', 'dramaturgy-acting-criticism', 'holistic-cinematic-depth-criticism', 'sound-narration-temporal-criticism', 'artistic-learning-evolution', 'literary-philosophical-criticism'}
+
 
 CREATIVE = {
     "work-creation": ("work.create_work", "work.save_work", ("historical_spine_complete", "fact_attribution_valid", "protagonist_scope_alignment", "structure_covers_spine")),

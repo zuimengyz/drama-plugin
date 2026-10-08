@@ -133,7 +133,7 @@ async def test_case_b_unmapped_internal_skill_does_not_change_runtime_path(fixtu
         return await execute(key, inputs)
     monkeypatch.setattr(plugin.runtime.executor, "execute", observed)
     second, _ = await assembled(plugin, run_id="after")
-    assert first == second and len(plugin.skills.list()) == 58
+    assert first == second and len(plugin.skills.list()) == 65
     assert calls == ["production.assemble_package:v1", "production.inspect_package:v1"]
     await plugin.aclose()
 

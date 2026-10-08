@@ -1,0 +1,4 @@
+interface:
+  display_name: "Dramaturgy and Acting Criticism"
+  short_description: "Critique drama, character and acting"
+  default_prompt: "Use $dramaturgy-acting-criticism to review the supplied work within the evidence and authority limits."

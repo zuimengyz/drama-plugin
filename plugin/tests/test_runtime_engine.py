@@ -135,7 +135,7 @@ async def test_plugin_owns_offline_loop_calls_existing_tool_once_without_canon_c
     assert data.work.model_dump_json() == canonical_before
     assert completed.last_result.artifact_refs[0].version == data.work.version
     assert plugin.runtime.executor.legacy.lifecycle == "MIGRATION_ONLY"
-    assert len(plugin.tools.list()) == 52 and len(plugin.skills.list()) == 57
+    assert len(plugin.tools.list()) == 52 and len(plugin.skills.list()) == 64
     await plugin.aclose()
 
 

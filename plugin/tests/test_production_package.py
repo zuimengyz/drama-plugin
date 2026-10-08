@@ -110,7 +110,7 @@ async def test_plugin_native_e2e_has_one_assembler_no_legacy_dispatch_or_canon_c
     assert package.boundary.mode == mode and not package.boundary.provider_submission_allowed
     assert (package.scope.work.artifact_ref, package.scope.scene.artifact_ref, package.scope.shot.artifact_ref) == ("work", "scene", "shot")
     assert plugin.shot_assembler.role == "ASSEMBLER" and not plugin.production_packages.creative_authority
-    assert len(plugin.tools.list()) == 52 and len(plugin.skills.list()) == 57
+    assert len(plugin.tools.list()) == 52 and len(plugin.skills.list()) == 64
     assert before == {name: dump_contract(getattr(data, name)) for name in before}
     assert all("CANON TEXT" not in text and "KEEP ME" not in text for text in envelopes)
     snapshot = plugin.runtime.serialize(result.run_id)

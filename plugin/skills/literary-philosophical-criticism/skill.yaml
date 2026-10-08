@@ -1,0 +1,14 @@
+code: literary-philosophical-criticism
+name: Literary and Philosophical Criticism
+description: Critique a designated literary work's interpretation and cinematic adaptation through textual form, philosophical contradiction and transformed expression; do not author its source package.
+context:
+  required: [scope]
+  optional: [sourceRevision, sourceRefs, creativeOriginals, mediaRefs, observationRefs, reviewWorkspaceRef]
+  refresh_after: []
+tools:
+  preferred: [work.get_work, script.get_script, scene.get_scene]
+  allowed: [episode.get_episode, shot.get_shot, asset.get_asset, media.get_media, context.build_context]
+completion:
+  conditions:
+    - Judgments distinguish observed evidence, interpretation, counterargument and limits.
+    - Review outputs remain advisory and source-pinned; production and technical authority are unchanged.

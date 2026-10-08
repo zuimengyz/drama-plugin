@@ -1,0 +1,14 @@
+code: artistic-learning-evolution
+name: Artistic Learning and Evolution
+description: Convert independently argued film-art findings into contextual creative Skill candidates and controlled design comparisons; no Runtime learning, automatic promotion or production generation.
+context:
+  required: [scope]
+  optional: [sourceRevision, sourceRefs, creativeOriginals, mediaRefs, observationRefs, reviewWorkspaceRef]
+  refresh_after: []
+tools:
+  preferred: [work.get_work, script.get_script, scene.get_scene]
+  allowed: [episode.get_episode, shot.get_shot, asset.get_asset, media.get_media, context.build_context]
+completion:
+  conditions:
+    - Judgments distinguish observed evidence, interpretation, counterargument and limits.
+    - Review outputs remain advisory and source-pinned; production and technical authority are unchanged.

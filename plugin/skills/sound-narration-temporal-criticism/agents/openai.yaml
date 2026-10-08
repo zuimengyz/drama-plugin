@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sound Narration and Temporal Criticism"
+  short_description: "Critique sound, narration and film time"
+  default_prompt: "Use $sound-narration-temporal-criticism to review the supplied work within the evidence and authority limits."

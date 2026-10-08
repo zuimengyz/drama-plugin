@@ -139,13 +139,22 @@ def require_subtitle_export(track: SubtitleTrack) -> None:
 
 def export_review_subtitles(track: ReviewSubtitleTrack, *, policy: SubtitlePolicy,
                             expected_edit_hash: str, source_offsets: dict[str, float],
-                            observations: dict[str, dict[str, Any]]) -> str:
-    """SRT candidate from actual speech, with unresolved words visible to viewers.
+                            observations: dict[str, dict[str, Any]],
+                            clean_authorization: dict[str, Any] | None = None,
+                            script_lines: dict[str,dict[str,Any]] | None = None,
+                            assigned_lines: dict[str,list[str]] | None = None) -> str:
+    """SRT from measured audio windows; authorized clean wording may use script.
 
     This does not authorize a final export or certify spoken canon coverage.
     Offsets must come from the selected edit, not segment ordinals or guesses.
     """
     t=ReviewSubtitleTrack.model_validate(dump_contract(track))
+    clean=clean_authorization is not None
+    if clean and (clean_authorization.get('workId')!=t.work_id
+            or clean_authorization.get('policy')!='ASR_THEN_APPROVED_SCRIPT_CLEAN'
+            or not clean_authorization.get('userAuthorized') or not clean_authorization.get('requestRef')
+            or not script_lines or not assigned_lines):
+        raise ValueError('CLEAN_SUBTITLE_AUTHORIZATION_REQUIRED')
     if not policy.enabled or t.track_language not in policy.languages:
         raise ValueError('SUBTITLE_PROFILE_MISMATCH')
     if t.edit_media_hash!=expected_edit_hash:
@@ -155,11 +164,27 @@ def export_review_subtitles(track: ReviewSubtitleTrack, *, policy: SubtitlePolic
     def stamp(seconds: float) -> str:
         ms=round(seconds*1000);h,ms=divmod(ms,3600000);m,ms=divmod(ms,60000);s,ms=divmod(ms,1000)
         return f'{h:02}:{m:02}:{s:02},{ms:03}'
-    rows=[];previous_end=0.0
+    rows=[];previous_end=0.0;coverage={}
     for index,q in enumerate(t.cues,1):
         e=q.observed_timing
         if q.target_language!=t.track_language or bool(q.dialogue_line_id)==bool(q.narration_cue_id):
             raise ValueError('SUBTITLE_SOURCE_BINDING_MISMATCH')
+        if clean:
+            import re
+            b=q.text_basis;line=(script_lines or {}).get(q.dialogue_line_id)
+            if (not b or not line or q.dialogue_line_id not in (assigned_lines or {}).get(e.source_media_hash,[])
+                    or line['sceneId']!=q.scene_id or line['speaker']!=q.speaker_ref
+                    or line['hash']!=q.production_line_hash or b.script_line_hash!=line['hash']
+                    or b.script_ref!=line['scriptRef']):
+                raise ValueError('SUBTITLE_CURRENT_ASSIGNED_SCRIPT_REQUIRED')
+            lo,hi=b.script_range
+            if not 0<=lo<hi<=len(line['text']) or b.script_fragment!=line['text'][lo:hi]:
+                raise ValueError('SUBTITLE_SCRIPT_FRAGMENT_MISMATCH')
+            if b.kind=='SCRIPT' and b.source_text!=b.script_fragment.strip():
+                raise ValueError('SUBTITLE_SCRIPT_FRAGMENT_MISMATCH')
+            coverage.setdefault((e.source_media_hash,q.dialogue_line_id),[]).append((lo,hi))
+            if not q.subtitle_text.strip() or re.search(r'未审|待审|代审|待核|暂译|听不清|待确认|UNVERIFIED|\[(?:[^\]]*(?:unclear|inaudible|unverified|pending|provisional)[^\]]*)\]',q.subtitle_text,re.I):
+                raise ValueError('CLEAN_SUBTITLE_PRODUCTION_MARKER_FORBIDDEN')
         if e.source_media_hash not in source_offsets or abs(source_offsets[e.source_media_hash]-e.edit_offset)>.000001:
             raise ValueError('SUBTITLE_SELECTED_SOURCE_OFFSET_MISMATCH')
         obs=observations.get(e.observation_ref)
@@ -167,28 +192,50 @@ def export_review_subtitles(track: ReviewSubtitleTrack, *, policy: SubtitlePolic
             raise ValueError('SUBTITLE_OBSERVATION_BINDING_MISMATCH')
         # Invalid full observations may retain individually bounded raw events;
         # the candidate must explicitly disclose that limitation.
+        estimated=clean and q.timing_basis=='SENTENCE_ESTIMATE'
         events=(obs.get('observation') or {}).get('speechEvents',[])
         if not events and obs.get('raw'):
             import json
-            events=json.loads(obs['raw']).get('speechEvents',[])
+            try:events=json.loads(obs['raw']).get('speechEvents',[])
+            except (ValueError,TypeError,AttributeError):
+                if not estimated:raise ValueError('SUBTITLE_ACTUAL_SPEECH_EVENT_REQUIRED')
+                events=[]
             offset=obs['receipt']['sourceStart']
             events=[{**v,'start':v['start']+offset,'end':v['end']+offset} for v in events]
-            if not e.uncertainty:
+            if not e.uncertainty and not clean:
                 raise ValueError('INVALID_OBSERVATION_REQUIRES_VISIBLE_UNCERTAINTY')
-        if not any(v['description']==e.transcribed_text and abs(v['start']-e.source_start)<.000001 and abs(v['end']-e.source_end)<.000001 for v in events):
+        if estimated and (q.text_basis.kind not in ('SCRIPT','MIXED') or not e.uncertainty):
+            raise ValueError('SUBTITLE_ESTIMATE_REQUIRES_UNVERIFIED_SCRIPT_BASIS')
+        if not estimated and not any(v['description']==e.transcribed_text and
+                (v['start']-.000001<=e.source_start<e.source_end<=v['end']+.000001 if clean else
+                 abs(v['start']-e.source_start)<.000001 and abs(v['end']-e.source_end)<.000001)
+                for v in events):
             raise ValueError('SUBTITLE_ACTUAL_SPEECH_EVENT_REQUIRED')
         receipt=obs['receipt']
         if not receipt['sourceStart']<=e.source_start<e.source_end<=receipt['sourceEnd']:
             raise ValueError('SUBTITLE_TIMING_OUTSIDE_OBSERVATION')
-        start=e.edit_offset+e.source_start;end=e.edit_offset+e.source_end
+        display_end=q.display_source_end if q.display_source_end is not None else e.source_end
+        if q.display_source_end is not None and (not clean or not e.source_end<=display_end<=receipt['sourceEnd']):
+            raise ValueError('SUBTITLE_DISPLAY_HOLD_OUTSIDE_SOURCE')
+        start=e.edit_offset+e.source_start;end=e.edit_offset+display_end
         if not previous_end<=start<end<=t.edit_duration:
             raise ValueError('SUBTITLE_TIMING_OVERLAP_OR_OUTSIDE_EDIT')
-        if e.uncertainty and not any(marker in q.subtitle_text for marker in ('待核','不清','unverified','unclear')):
+        if not clean and e.uncertainty and not any(marker in q.subtitle_text for marker in ('待核','不清','unverified','unclear')):
             raise ValueError('UNRESOLVED_SUBTITLE_MUST_BE_VISIBLE')
         if q.localization_status=='UPSTREAM_LOCALIZATION_CONFLICT':
             raise ValueError('UPSTREAM_LOCALIZATION_CONFLICT')
         previous_end=end
         rows.append(f'{index}\n{stamp(start)} --> {stamp(end)}\n{q.subtitle_text.strip()}\n')
+    if clean:
+        expected={(media,line) for media,lines in (assigned_lines or {}).items() for line in lines}
+        if set(coverage)!=expected:raise ValueError('SUBTITLE_ASSIGNED_CONTENT_COVERAGE_INCOMPLETE')
+        for (_,line),ranges in coverage.items():
+            cursor=0
+            for lo,hi in ranges:
+                if lo!=cursor:raise ValueError('SUBTITLE_SCRIPT_RANGE_DUPLICATED_OR_SKIPPED')
+                cursor=hi
+            if cursor!=len((script_lines or {})[line]['text']):
+                raise ValueError('SUBTITLE_ASSIGNED_CONTENT_COVERAGE_INCOMPLETE')
     return '\n'.join(rows)
 
 

@@ -47,7 +47,14 @@ checks current production text, semantic intent and Work targets. Tracks are UNT
 only to post-production/player; final timing/export and adopted narration subtitle localization
 remain future consumers. An explicitly requested review copy can use `ReviewSubtitleTrack`
 with observed native speech, selected edit hash and measured per-source offsets.
-`export_review_subtitles` requires visible uncertainty at unresolved cues; it does not
+`export_review_subtitles` retains that visible-uncertainty behavior for historical
+review copies. Explicit ASR-first/script clean-delivery authorization may instead
+bind `text_basis` to the current approved script and frozen media's assigned lines.
+Validate complete, ordered, non-overlapping script ranges and source timing; export
+natural captions without review markers while retaining uncertainty in sidecars.
+The existing Omni adapter can return transcription independently of auxiliary
+observation validity. Subtitle wording completion does not verify actual speech.
+The review-copy path does not
 authorize final export or certify canon speech coverage. The existing finishing module's
 `render_subtitle_review` preserves native audio packets and picture timing while adding
 requested visible captions to a separate candidate. Narration NONE emits no narration task. Still-image compilers

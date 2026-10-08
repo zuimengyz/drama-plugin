@@ -13,6 +13,7 @@ from pydantic import ConfigDict, Field, model_validator
 from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.contracts.cinematic import ReferenceRequirement
 from drama_plugin.contracts.video import VideoReference
+from drama_plugin.contracts.location_design import SceneLocationBinding
 from drama_plugin.production.contracts import SourceOwner, SourceReference, AssemblyIssueCode
 from drama_plugin.production.sources import OwnedSource, SourceReadError
 from drama_plugin.runtime.contracts import Identifier, ExtendedRuntimeContract, RuntimeScope, ArtifactReference
@@ -36,7 +37,7 @@ class ReferenceExecutionBinding(ExtendedRuntimeContract):
     No URL, syntax tag, API slot or request is accepted.
     """
     schema_version: Literal["reference-execution-binding-v1"] = "reference-execution-binding-v1"
-    extension_fields = ("endpoint_frame_ref",)
+    extension_fields = ("endpoint_frame_ref", 'source_scope', 'use_ref', 'state_ref', 'location_binding')
     binding_id: Identifier
     version: int = Field(gt=0)
     scope: RuntimeScope
@@ -48,9 +49,18 @@ class ReferenceExecutionBinding(ExtendedRuntimeContract):
     authorization_scope: Literal["REVIEWED_TRIAL_INPUT", "ADOPTED_PRODUCTION_INPUT"]
     authority_refs: tuple[SourceReference, ...] = Field(min_length=1, max_length=8)
     endpoint_frame_ref: ArtifactReference | None = None
+    source_scope: RuntimeScope | None = None
+    use_ref: SourceReference | None = None
+    state_ref: SourceReference | None = None
+    location_binding: SceneLocationBinding | None = None
 
     @model_validator(mode="after")
     def execution_identity(self) -> Self:
+        if self.source_scope and self.source_scope != self.scope:
+            if self.source_scope.work_id != self.scope.work_id or self.use_ref is None or self.state_ref is None:
+                raise ValueError('CROSS_SCOPE_REFERENCE_REQUIRES_AUTHORED_USE_AND_STATE')
+            if self.use_ref not in self.authority_refs or self.use_ref.owner != 'professional':
+                raise ValueError('CROSS_SCOPE_REFERENCE_USE_AUTHORITY_REQUIRED')
         if self.endpoint_frame_ref and (self.role != "FIRST_FRAME" or self.endpoint_frame_ref.owner != "continuation-frame"):
             raise ValueError("CONTINUATION_ENDPOINT_REQUIRED")
         if not self.scope.scene_id or not self.scope.shot_id:
@@ -73,6 +83,10 @@ class ReferenceExecutionBinding(ExtendedRuntimeContract):
             if "://" in value or value.startswith("data:") or re.search(r"@(?:图片|视频|音频)\d+|<主体\d+>", value):
                 raise ValueError("URL/provider syntax is not binding authority")
         return self
+
+    @property
+    def origin_scope(self) -> RuntimeScope:
+        return self.source_scope or self.scope
 
     def source(self) -> OwnedSource:
         return OwnedSource(SourceOwner.PROFESSIONAL,

@@ -56,6 +56,50 @@ def test_env_override_and_secret_repr():
 def test_no_global_dashscope_fallback():
     with pytest.raises(ConfigurationError):load_config(environment={P+'AUDIO_SEMANTIC_MODE':'bailian_qwen_omni',P+'QWEN_OMNI_BASE_URL':'https://example.test/v1','DASHSCOPE_API_KEY':uuid.uuid4().hex})
 
+
+@pytest.mark.asyncio
+async def test_subtitle_transcription_uses_same_config_audio_and_complete_sse(source):
+    import base64
+    def handler(request):
+        payload=json.loads(request.content)
+        assert payload['model']=='configured-omni' and payload['reasoning_effort']=='low'
+        assert payload['use_multichannel'] is True and payload['modalities']==['text']
+        assert payload['max_tokens']==2048 and payload['stream_options']['include_usage']
+        content=payload['messages'][0]['content']
+        assert base64.b64decode(content[0]['input_audio']['data'].split(',',1)[1])==source.audio_path.read_bytes()
+        assert 'verbatim' in content[1]['text'] and '(ru)' in content[1]['text']
+        assert 'speechEvents' not in content[1]['text'] and 'response_format' not in payload
+        chunks=[{'choices':[{'index':0,'delta':{'reasoning_content':'not transcript','content':'Я всегда '}}]},
+            {'choices':[{'index':0,'delta':{'content':'был смешон.'}},{'index':1,'delta':{'content':'not selected'}}]},
+            {'choices':[],'usage':{'prompt_tokens':3,'completion_tokens':4}}]
+        return httpx.Response(200,headers={'content-type':'text/event-stream'},text='\n'.join('data: '+json.dumps(c) for c in chunks)+'\ndata: [DONE]\n')
+    p=provider(handler,model='configured-omni',reasoning_effort='low',use_multichannel=True)
+    r=await p.transcribe_audio(source,language='ru');await p.aclose()
+    assert r.status=='AUDIO_TRANSCRIPTION_CANDIDATE' and r.observation is None
+    assert r.transcript['text']=='Я всегда был смешон.' and r.transcript['verification']=='UNVERIFIED'
+    assert r.receipt['usage']['completion_tokens']==4 and r.receipt['semanticProviderCalls']==1
+
+
+@pytest.mark.asyncio
+async def test_invalid_auxiliary_observation_preserves_independent_speech(source):
+    data=body();data['speechEvents']=[{**event(),'description':'Я всегда был смешон.'}]
+    data['environmentEvents']=[{'start':0,'end':9,'description':'Out of window, missing fields'}]
+    p=provider(lambda r:success(data));r=await p.observe_audio(source);await p.aclose()
+    assert r.status=='AUDIO_SEMANTIC_RESPONSE_INVALID' and r.observation is None
+    assert r.receipt['failureCategory']=='AUXILIARY_OBSERVATION_VALIDATION_FAILED'
+    assert r.transcript['segments'][0]['start']==3.5 and r.transcript['text']=='Я всегда был смешон.'
+    assert r.transcript['verification']=='UNVERIFIED' and r.receipt['semanticProviderCalls']==1
+
+
+@pytest.mark.asyncio
+async def test_subtitle_plain_non_json_and_text_parse_failure_are_distinct(source):
+    p=provider(lambda r:httpx.Response(200,json={'choices':[{'message':{'content':'Я был смешон.'}}]}))
+    r=await p.transcribe_audio(source,language='ru');await p.aclose()
+    assert r.transcript['text']=='Я был смешон.'
+    p=provider(lambda r:httpx.Response(200,json={'choices':[]}))
+    r=await p.transcribe_audio(source,language='ru');await p.aclose()
+    assert r.transcript is None and r.receipt['failureCategory']=='TEXT_RESPONSE_PARSE_FAILED'
+
 @pytest.mark.asyncio
 async def test_request_absolute_timeline_and_pending_fusion(source):
     def handler(request):

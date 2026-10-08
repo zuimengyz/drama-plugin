@@ -129,7 +129,8 @@ async def test_absence_after_ready_and_corrupt_early_reference_still_fail(tmp_pa
     # Read-only inspector receives a later child phase; no fake checkpoint write.
     store=SimpleNamespace(load=lambda run_id:parent if run_id==parent.run_id else child.model_copy(update={'cursor':4,'state':RuntimeState.READY,'wait_reason':None}))
     view=SimpleNamespace(runtime=SimpleNamespace(store=store),generation_artifacts=p.generation_artifacts,
-        production_packages=p.production_packages)
+        production_packages=p.production_packages,source_film_media_opening=p.source_film_media_opening,
+        source_film_unit_for_task=p.source_film_unit_for_task)
     owner=FilmCapabilities(view,p.film.store)
     with pytest.raises(KeyError,match='Exact preparation'):
         owner.inspect_media_execution(input_for(parent))

@@ -46,7 +46,23 @@ class DerivedArtifact(ExtendedRuntimeContract):
         return ArtifactReference(owner=self.owner, artifact_ref=self.owner + ":" + self.fingerprint, version=1)
 
 
-class OperationSelection(RuntimeContract):
+class ScopedFact(RuntimeContract):
+    """Exact spans of an approved leaf, rather than newly authored prompt prose."""
+    source_ref: SourceReference
+    spans: tuple[tuple[int, int], ...] = Field(min_length=1, max_length=16)
+
+
+class UnitExecutionContext(RuntimeContract):
+    boundary: Literal['START', 'CONTINUE', 'CUT', 'MATCH']
+    boundary_ref: SourceReference
+    location_keys: tuple[Identifier, ...] = Field(default=(), max_length=16)
+    visible_state_ref: SourceReference
+    voice_over_ref: SourceReference | None = None
+    fact_spans: tuple[ScopedFact, ...] = Field(default=(), max_length=128)
+    background_refs: tuple[DomainReference, ...] = Field(default=(), max_length=128)
+
+
+class OperationSelection(ExtendedRuntimeContract):
     """A bounded production selection, never a new creative version."""
     beat_ids: tuple[Identifier, ...] = Field(min_length=1, max_length=16)
     action_refs: tuple[SourceReference, ...] = Field(min_length=1, max_length=16)
@@ -56,6 +72,19 @@ class OperationSelection(RuntimeContract):
     fact_refs: tuple[DomainReference, ...] = Field(min_length=1, max_length=128)
     reference_disposition: tuple[tuple[Identifier, Literal["INPUT", "OUT_OF_UNIT", "TECHNICAL_RISK_ACCEPTED", "OPTIONAL_OMITTED"]], ...] = Field(max_length=16)
     scope_decision_ref: ArtifactReference | None = None
+    extension_fields = ('execution_context', 'spoken_range')
+    execution_context: UnitExecutionContext | None = None
+    # Exact whole-line slice within an unchanged authored Action phase.
+    # (start, exclusive end, authored total); no text rewrite or word clipping.
+    spoken_range: tuple[StrictInt, StrictInt, StrictInt] | None = None
+
+    @model_validator(mode='after')
+    def whole_line_slice(self) -> Self:
+        if self.spoken_range:
+            start,end,total=self.spoken_range
+            if not 0 <= start < end <= total or end-start != len(self.spoken_ids):
+                raise ValueError('UNIT_SPOKEN_RANGE_INVALID')
+        return self
 
     def terms_hash(self, package_ref: ArtifactReference) -> str:
         return sha256_canonical([package_ref.model_dump(mode="json",by_alias=True), self.model_dump(mode="json", by_alias=True, exclude={"scope_decision_ref"})])
@@ -124,8 +153,15 @@ class CameraExecutionDirection(DerivedArtifact):
     approval_ref: ArtifactReference
 
 
+class MediaBoundary(RuntimeContract):
+    """Pinned edit predecessor; a cut/match is not a first-frame continuation."""
+    kind: Literal['CUT', 'MATCH', 'CONTINUE']
+    predecessor_media_ref: ArtifactReference
+    source_ref: SourceReference
+
+
 class GenerationTask(ExtendedRuntimeContract):
-    extension_fields = ("unit", "profile", "owners", "execution_reference_refs", "continuation", "return_last_frame", 'camera_direction_ref')
+    extension_fields = ("unit", "profile", "owners", "execution_reference_refs", "continuation", "return_last_frame", 'camera_direction_ref', 'boundary')
     kind: Literal["VIDEO"] = "VIDEO"
     target_model: Identifier = "seedance-2-standard"
     input_mode: Literal["text_to_video", "reference", "image_to_video", "first_last_frame"] = "text_to_video"
@@ -138,9 +174,14 @@ class GenerationTask(ExtendedRuntimeContract):
     continuation: ContinuationInput | None = None
     return_last_frame: Literal[True] | None = None
     camera_direction_ref: ArtifactReference | None = None
+    boundary: MediaBoundary | None = None
 
     @model_validator(mode="after")
     def operation_boundary(self) -> Self:
+        if self.boundary and self.boundary.kind in ('CUT', 'MATCH') and self.continuation:
+            raise ValueError('EDIT_BOUNDARY_CANNOT_INHERIT_CONTINUATION')
+        if self.boundary and self.boundary.kind in ('CUT', 'MATCH') and self.input_mode in ('image_to_video', 'first_last_frame'):
+            raise ValueError('EDIT_BOUNDARY_REQUIRES_NEW_SHOT_START')
         if self.continuation and (not self.unit or self.input_mode != "image_to_video"
                 or self.return_last_frame is not True or len(self.execution_reference_refs or ()) != 1):
             raise ValueError("EXACT_CONTINUATION_FIRST_FRAME_REQUIRED")
@@ -278,7 +319,11 @@ class TemporalRelation(str, Enum):
     FADE_BEHIND = "FADE_BEHIND"
 
 
-class SpeechEvent(RuntimeContract):
+class SpeechEvent(ExtendedRuntimeContract):
+    extension_fields = ('delivery_mode', 'delivery_source_ref', 'visible_state_ref')
+    delivery_mode: Literal['VOICE_OVER', 'ON_SCREEN', 'OFF_SCREEN'] | None = None
+    delivery_source_ref: SourceReference | None = None
+    visible_state_ref: SourceReference | None = None
     event_id: Identifier
     source_ref: SourceReference
     spoken_content_id: Identifier | None = None

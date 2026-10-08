@@ -34,13 +34,38 @@ class PromptCompiler:
     creative_authority = False
 
     def __init__(self, packages: PackageStore, artifacts: GenerationStore, reader: PackageReader,
-                 catalog: ModelPolicyCatalog | None = None, *, media_reader=None):
+                 catalog: ModelPolicyCatalog | None = None, *, media_reader=None, _preview: bool = False):
         self.packages, self.artifacts, self.reader = packages, artifacts, reader
         self.catalog = catalog if catalog is not None else ModelPolicyCatalog()
         self.audio = AudioPerformanceAssembler()
         self.projection = ExecutionProjection(reader)
         self.generator = SeedanceTargetAdapter()
         self.references = ExecutionReferenceResolver(media_reader, getattr(reader.operations, 'ledger', None))
+        if _preview:
+            from drama_plugin.generation.store import GenerationArtifactStore
+            if not isinstance(artifacts,GenerationArtifactStore):
+                raise ValueError('OFFLINE_PREVIEW_REQUIRES_VOLATILE_STORE')
+        self._preview = _preview
+
+    async def preview_request(self, package_ref, task):
+        """Same compiler and provider projection, volatile artifacts, no child/cost/POST."""
+        from drama_plugin.generation.store import GenerationArtifactStore
+        from drama_plugin.execution.live_transport import TargetHttpTransport
+        artifacts = GenerationArtifactStore()
+        compiler = PromptCompiler(self.packages,artifacts,self.reader,self.catalog,
+            media_reader=self.references.media_reader,_preview=True)
+        result = await compiler.compile(package_ref,task)
+        diagnostics = [d.model_dump(mode='json',by_alias=True) for d in artifacts.diagnostics(result.diagnostics_ref)]
+        if result.preparation_ref is None:
+            return {'simulation':True,'submitted':False,'productionAuthorized':False,'diagnostics':diagnostics,'request':None}
+        prepared = artifacts.get(result.preparation_ref,GenerationPreparation)
+        final = artifacts.get(prepared.final_prompt_ref,FinalPromptArtifact)
+        plan = artifacts.get(prepared.audio_plan_ref,AudioExecutionPlan)
+        return {'simulation':True,'submitted':False,'productionAuthorized':False,'diagnostics':diagnostics,
+            'packageRef':package_ref.model_dump(mode='json',by_alias=True),
+            'request':TargetHttpTransport.preview(prepared,final,ledger=self.references.ledger),
+            'speechEvents':[e.model_dump(mode='json',by_alias=True) for e in plan.speech_events],
+            'task':task.model_dump(mode='json',by_alias=True),'persistentPreparationCreated':False}
 
     async def compile(self, package_ref: ArtifactReference, task: GenerationTask = GenerationTask()) -> CompilationResult:
         package = self.packages.get(package_ref)
@@ -70,7 +95,7 @@ class PromptCompiler:
             if task.unit:
                 if self.reader.operations is None:
                     raise ValueError("OPERATION_RESOLVER_ABSENT")
-                selected = await self.reader.operations.selected(package, task, self.reader)
+                selected = await self.reader.operations.selected(package, task, self.reader,admission_required=not self._preview)
             else:
                 selected = await self.reader.selections(package)
             audio_result = self.audio.assemble(package, task, selected)

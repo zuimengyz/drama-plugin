@@ -181,8 +181,22 @@ No final SRT/VTT export until an approved timing contract exists. Never insert s
 into image/video prompts or use subtitles to revise dialogue.
 For an explicitly requested review candidate, `ReviewSubtitleTrack`/`ReviewSubtitleCue`
 may bind observed native speech events to measured edit offsets and export via
-`export_review_subtitles`. Keep uncertain wording visible at its cue; this never
-certifies final speech coverage or bypasses `require_subtitle_export`.
+`export_review_subtitles`. With no explicit clean-delivery authorization, keep
+uncertain wording visible. When the user authorizes ASR-first/script fallback,
+use the same exporter and renderer's `clean_authorization`, current approved
+`script_lines` and frozen-media `assigned_lines`. Resolve all assigned content
+from reliable original-language transcription first; fill unreliable parts from
+that exact script version, not unseen phases or another Scene. Record each cue's
+`text_basis` (ASR/SCRIPT/MIXED), script range and evidence privately. Clean SRT
+and captions contain complete natural text and no production review markers.
+Use measured speech windows and edit offsets, splitting at reasonable sentence
+boundaries without claiming word-perfect alignment. This completes subtitle
+delivery, not original speech/translation verification, media adoption or visual
+review. Existing video findings and source audio remain unchanged.
+Reuse the configured Omni adapter's `transcribe_audio` before adding a provider;
+independent speech survives auxiliary observation validation failures without
+promoting the full observation. One bounded pass is enough; unresolved wording
+uses the authorized script fallback rather than repeated service calls.
 `render_subtitle_review` in the existing finishing module can burn these captions
 into a separate review copy, re-encoding picture only for that requested overlay.
 Preserve the unsubtitled source, all picture timing and exact native audio packets.

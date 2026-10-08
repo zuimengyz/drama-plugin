@@ -77,7 +77,7 @@ class ExecutionReferenceResolver:
                     continue
                 frame, source, _, _ = continuation_frame(self.ledger, binding.endpoint_frame_ref,
                     allow_unverified_audio=bool(task.continuation and task.continuation.allow_unverified_audio))
-                if (frame.scope != binding.scope or frame.media.media_id != binding.media.media_id
+                if (frame.scope != binding.origin_scope or frame.media.media_id != binding.media.media_id
                         or frame.media.content_hash != binding.media.content_hash):
                     finding("SCOPE_MISMATCH")
                     continue
@@ -100,7 +100,7 @@ class ExecutionReferenceResolver:
                 finding("SCOPE_MISMATCH")
                 continue
             if (media.id != binding.media.media_id or media.work_id != binding.scope.work_id or
-                    media.shot_id is not None and media.shot_id != binding.scope.shot_id or
+                    media.shot_id is not None and media.shot_id != binding.origin_scope.shot_id or
                     media.media_type.value.lower() != binding.media.kind):
                 finding("SCOPE_MISMATCH")
                 continue

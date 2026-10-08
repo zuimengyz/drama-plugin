@@ -17,7 +17,7 @@ from drama_plugin.persistence.review import UserDecisionRecord
 from drama_plugin.production.contracts import ProductionPackage, SourceReference, DomainReference, SourceDomain
 from drama_plugin.professional_design.performance_scope import (read_performance_scope, retain_performance_scope,
     PerformanceProjectionScope, ProjectionEvidence, SubjectProjection)
-from drama_plugin.performance_coverage import validate_shot_dpd_coverage
+from drama_plugin.performance_coverage import validate_shot_dpd_coverage, compose_partner_beats
 from drama_plugin.providers.video.registry import registry
 from drama_plugin.runtime.contracts import ArtifactReference, DecisionCategory, RuntimeScope
 
@@ -91,13 +91,13 @@ def validate_predecessor_speech(unit: OperationSelection, observations, *, allow
     try:
         validate_observed_speech(unit,observations)
     except ValueError:
-        if not (allow_unverified_audio and any(row.code == 'SPOKEN_CONTENT_COVERAGE_UNVERIFIED'
+        if not (allow_unverified_audio and any(row.code in {'SPOKEN_CONTENT_COVERAGE_UNVERIFIED','AUDIO_UNVERIFIED','NATIVE_AUDIO_UNVERIFIED'}
                 for row in observations) and not any(row.code in {'SPOKEN_CONTENT_MISSING','SPOKEN_CONTENT_REPEATED'}
                 for row in observations)):
             raise
 
 
-def validate_segment_progress(unit: OperationSelection, predecessors: tuple[OperationSelection, ...]) -> None:
+def validate_segment_progress(unit: OperationSelection, predecessors: tuple[OperationSelection, ...], *, allow_new_action: bool = False) -> None:
     """Predecessors are newest first; IDs track assigned work, not audio QA claims."""
     seen_actions, seen_spoken = set(unit.action_refs), set(unit.spoken_ids)
     def phase(selection):
@@ -107,14 +107,27 @@ def validate_segment_progress(unit: OperationSelection, predecessors: tuple[Oper
             raise ValueError('CONTINUATION_PHASE_CONTRACT_REQUIRED')
         return (ref.owner,ref.artifact_ref,ref.version,ref.fingerprint,ref.path[:-2]), int(ref.path[-2])
     key, index = phase(unit)
+    current = unit
     for previous in predecessors:
         previous_key, previous_index = phase(previous)
-        if key != previous_key or index != previous_index + 1:
+        if key != previous_key and allow_new_action:
+            if index != 0 or current.spoken_range and current.spoken_range[0] != 0 or seen_spoken.intersection(previous.spoken_ids):
+                raise ValueError('NEW_ACTION_MUST_START_WITH_NEW_CONTENT')
+            return
+        same_phase_slice = (key == previous_key and index == previous_index
+            and current.spoken_range is not None and previous.spoken_range is not None
+            and current.spoken_range[0] == previous.spoken_range[1]
+            and current.spoken_range[2] == previous.spoken_range[2])
+        next_phase = (index == previous_index + 1
+            and (current.spoken_range is None or current.spoken_range[0] == 0)
+            and (previous.spoken_range is None or previous.spoken_range[1] == previous.spoken_range[2]))
+        if key != previous_key or not (same_phase_slice or next_phase):
             raise ValueError('CONTINUATION_PROGRESS_REPEAT_OR_SKIP')
-        if seen_actions.intersection(previous.action_refs) or seen_spoken.intersection(previous.spoken_ids):
+        if (not same_phase_slice and seen_actions.intersection(previous.action_refs)) or seen_spoken.intersection(previous.spoken_ids):
             raise ValueError('CONTINUATION_CONTENT_OVERLAP')
         seen_actions.update(previous.action_refs); seen_spoken.update(previous.spoken_ids)
         index = previous_index
+        current = previous
 
 
 def validate_continuation(ledger: ProductionLedger, task: GenerationTask) -> None:
@@ -127,23 +140,32 @@ def validate_continuation(ledger: ProductionLedger, task: GenerationTask) -> Non
     if c.context_fact_refs != continuation_context(task.unit, previous.unit):
         raise ValueError("CONTINUATION_CONTEXT_DRIFT")
     predecessors = []
-    for _ in range(3):
+    for _ in range(128):  # Same bound as retained native Film media units.
         predecessors.append(previous.unit)
         if previous.continuation is None:
             break
         if previous.continuation.global_reference_ref != c.global_reference_ref:
-            raise ValueError("CONTINUATION_GLOBAL_REFERENCE_DRIFT")
+            # A designed cross-unit continuation rebinds the same immutable
+            # source for a new target use. Do not compare consumer scopes.
+            from drama_plugin.production.references import ReferenceExecutionBinding
+            def binding(ref):
+                return ReferenceExecutionBinding.model_validate(ledger.get_artifact('reference-execution-binding',
+                    ArtifactReference(owner=ref.owner.value,artifact_ref=ref.artifact_ref,version=ref.version))[0])
+            old, new = binding(previous.continuation.global_reference_ref), binding(c.global_reference_ref)
+            if not (task.boundary and task.boundary.kind == 'CONTINUE' and
+                    new.origin_scope == old.origin_scope and new.media == old.media):
+                raise ValueError("CONTINUATION_GLOBAL_REFERENCE_DRIFT")
         _, source, _, previous = continuation_frame(ledger, previous.continuation.frame_ref,
             allow_unverified_audio=bool(previous.continuation.allow_unverified_audio))
     else:
         raise ValueError("BOUNDED_SCENE_CONTINUATION_REQUIRED")
-    validate_segment_progress(task.unit, tuple(predecessors))
+    validate_segment_progress(task.unit, tuple(predecessors), allow_new_action=bool(task.boundary and task.boundary.kind == 'CONTINUE'))
     from drama_plugin.production.references import ReferenceExecutionBinding
     global_ref = c.global_reference_ref
     global_body, _, _ = ledger.get_artifact('reference-execution-binding',
         ArtifactReference(owner=global_ref.owner.value, artifact_ref=global_ref.artifact_ref, version=global_ref.version))
     global_binding = ReferenceExecutionBinding.model_validate(global_body)
-    if (global_binding.source().reference() != global_ref or global_binding.scope != frame.scope
+    if (global_binding.source().reference() != global_ref or global_binding.origin_scope != source.scope
             or global_binding.media.kind != 'video' or global_binding.media.content_hash != source.media.content_hash):
         raise ValueError('CONTINUATION_GLOBAL_REFERENCE_MISMATCH')
     ref = task.execution_reference_refs[0]
@@ -152,7 +174,7 @@ def validate_continuation(ledger: ProductionLedger, task: GenerationTask) -> Non
     binding = ReferenceExecutionBinding.model_validate(body)
     if (binding.source().reference() != ref or binding.endpoint_frame_ref != c.frame_ref
             or binding.role != 'FIRST_FRAME' or binding.media.content_hash != frame.media.content_hash
-            or binding.media.media_id != frame.media.media_id or binding.scope != source.scope):
+            or binding.media.media_id != frame.media.media_id or binding.origin_scope != frame.scope):
         raise ValueError("CONTINUATION_FIRST_FRAME_MISMATCH")
 
 
@@ -297,7 +319,8 @@ class OperationResolver:
         if "beatBindings" in dpd:
             snapshots = {snapshot.line.spoken_content_id: snapshot for pin in owners.snapshot_pins for snapshot in (DPDSnapshot.model_validate(self.read(pin)),)}
             bound_beats = {b.beat_id: b for raw in TypeAdapter(list[JsonValue]).validate_python(dpd["beatBindings"]) for b in (BeatDPD.model_validate(raw),)}
-            validate_shot_dpd_coverage(projection_scope=read_performance_scope(self.versions, owners.performance_scope_pin), snapshots=snapshots, beats=bound_beats)
+            partner_beats = tuple(BeatDPD.model_validate(raw) for raw in TypeAdapter(list[JsonValue]).validate_python(dpd.get("partnerBeatBindings", [])))
+            validate_shot_dpd_coverage(projection_scope=read_performance_scope(self.versions, owners.performance_scope_pin), snapshots=snapshots, beats=bound_beats, partner_beats=partner_beats)
         if not set(unit.spoken_ids) <= {line.id for line in scene.body.dialogue}:
             raise ValueError("UNIT_DIALOGUE_MISMATCH")
         rights = self.read(owners.rights_pin)
@@ -373,7 +396,9 @@ class OperationResolver:
                 raise ValueError("DPD_CANON_DIALOGUE_MISMATCH")
             line = LineDPD.model_validate({**value, "sceneId": shot.scope.scene_id, "speaker": dialogue[key].speaker})
             snapshots[key] = compose_dpd(scene_dpd, beats[line.beat_id], line)
-        coverage = validate_shot_dpd_coverage(projection_scope=read_performance_scope(self.versions, scope_pin), snapshots=snapshots, beats=beats)
+        witness = read_performance_scope(self.versions, scope_pin)
+        partner_beats = compose_partner_beats(projection_scope=witness, beats=beats)
+        coverage = validate_shot_dpd_coverage(projection_scope=witness, snapshots=snapshots, beats=beats, partner_beats=partner_beats)
         snapshot_rows, snapshot_pins = [], []
         for key, snapshot in sorted(snapshots.items()):
             pin = self.versions.objects.put("dpd-snapshot:"+snapshot.fingerprint, snapshot.model_dump(mode="json", by_alias=True))
@@ -384,10 +409,13 @@ class OperationResolver:
             "performanceRef": performance.ref().model_dump(mode="json", by_alias=True),
             "projectionScopePin": scope_pin.model_dump(mode="json", by_alias=True), "snapshotBindings": snapshot_rows,
             "beatBindings": [b.model_dump(mode="json", by_alias=True) for b in beats.values()], "fullShotDPDCoverage": coverage}
+        if partner_beats:
+            body["partnerBeatBindings"] = [b.model_dump(mode="json", by_alias=True) for b in partner_beats]
         dpd_pin = self.versions.objects.put("adopted-dpd-binding:"+sha256_canonical(body), body)
         return dpd_pin, scope_pin, tuple(snapshot_pins)
 
-    async def select_unit(self, package: ProductionPackage, reader: PackageReader, *, phase_index: int = 0) -> OperationSelection:
+    async def select_unit(self, package: ProductionPackage, reader: PackageReader, *, phase_index: int = 0,
+                          spoken_range: tuple[int,int] | None = None) -> OperationSelection:
         selected = await reader.selections(package)
         action = next((v for v in selected if v.selection.domain == "ACTION" and isinstance(v.value, dict) and v.value.get("actionPhases")), None)
         if action is None:
@@ -395,14 +423,24 @@ class OperationResolver:
         if isinstance(phase_index, bool) or not 0 <= phase_index < len(action.value["actionPhases"]):
             raise ValueError("NATIVE_OPERATION_PHASE_OUT_OF_RANGE")
         phase = object_at(action.value["actionPhases"][phase_index])
+        from drama_plugin.generation.unit_scope import phase_labels, labels, PLACES, AGES, make_context
+        places, ages = phase_labels(phase)
         if not isinstance(phase.get("beatId"), str) or not isinstance(phase.get("spokenIds"), list):
             raise ValueError("NATIVE_OPERATION_UNIT_CONTRACT_MISSING")
         phase_spoken_ids = TypeAdapter(tuple[str, ...]).validate_python(phase["spokenIds"])
+        slice_record = None
+        if spoken_range is not None:
+            begin,end=spoken_range
+            if any(isinstance(n,bool) for n in spoken_range) or not 0 <= begin < end <= len(phase_spoken_ids):
+                raise ValueError('UNIT_SPOKEN_RANGE_INVALID')
+            slice_record=(begin,end,len(phase_spoken_ids))
+            phase_spoken_ids=phase_spoken_ids[begin:end]
         base = action.selection.reference
         def leaf(ref: SourceReference, *path: str) -> SourceReference:
             return SourceReference.model_validate({**ref.model_dump(), "path": (*ref.path, *path)})
         start, end, action_ref = (leaf(base, "actionPhases", str(phase_index), name) for name in ("entryState", "observable", "action"))
         facts: list[DomainReference] = []
+        values = {}
         # Finite approved executable leaves. DPD, provenance and entire JSON are never Prompt prose.
         fields = {"ACTION": {"actionPhases", "physicalStateConstraints"}, "PERFORMANCE": {"beats", "physicalExpression"},
             "CAMERA": {"movement", "cameraPosition", "height", "pointOfView", "lensIntention", "axisAndScreenDirection"},
@@ -415,8 +453,19 @@ class OperationResolver:
                 if not value.strip() or len(value)>3000 or "\n" in value:
                     raise ValueError("UNIT_EXECUTABLE_LEAF_REQUIRED")
                 facts.append(DomainReference(domain=domain, reference=ref))
+                values[ref] = value
             elif isinstance(value, dict):
+                if domain == 'SUBJECTS' and 'id' in value and 'role' in value:
+                    p, a = labels(str(value['role']), PLACES), labels(str(value['role']), AGES)
+                    if p and places and p.isdisjoint(places) or a and ages and a.isdisjoint(ages):
+                        return
                 if isinstance(value.get("beatId"), str) and value["beatId"] != phase["beatId"]:
+                    return
+                # A professional event can be narrower than an Action beat
+                # (e.g. two narration slices on opposite sides of a cut).
+                # Preserve the whole owner record, execute only its assigned
+                # current utterances; the applicability inventory is not prose.
+                if isinstance(value.get("spokenIds"), list) and value["spokenIds"] and not set(value["spokenIds"]) & set(phase_spoken_ids):
                     return
                 if isinstance(value.get("id"), str) and domain == "PERFORMANCE" and value["id"] != phase["beatId"]:
                     return
@@ -430,11 +479,16 @@ class OperationResolver:
                     walk(child, leaf(ref, str(index)), domain)
         dispositions = []
         for item in selected:
+            if item.selection.domain == 'WORLD' and isinstance(item.value,dict) and 'locationBinding' in item.value:
+                facts.append(DomainReference(domain=SourceDomain.WORLD,reference=leaf(item.selection.reference,'locationBinding')))
+                values[leaf(item.selection.reference,'locationBinding')] = item.value['locationBinding']
             if item.selection.domain == "SOUND" and isinstance(item.value,dict) and item.value.get("speechRelations"):
                 # Keep authored relations structured; event IDs are not executable prose.
                 facts.append(DomainReference(domain=SourceDomain.SOUND,reference=leaf(item.selection.reference,"speechRelations")))
+                values[leaf(item.selection.reference,'speechRelations')] = item.value['speechRelations']
             if item.selection.reference.owner == "scene" and isinstance(item.value, dict) and item.value.get("id") in phase_spoken_ids:
                 facts.append(item.selection)
+                values[item.selection.reference] = item.value
             if item.selection.domain == "REFERENCE" and isinstance(item.value, dict):
                 for raw in item.value.get("references", []):
                     row = object_at(raw)
@@ -447,14 +501,40 @@ class OperationResolver:
             for key in fields[item.selection.domain]:
                 if key in item.value:
                     walk(TypeAdapter(JsonValue).validate_python(item.value[key]), leaf(item.selection.reference, key), item.selection.domain)
+        shot = object_at(await reader.resolver.resolve(package.scope.shot))['content']
+        voice_ref = next((leaf(item.selection.reference, 'dialogueAndLegibility') for item in selected
+            if item.selection.domain == 'SOUND' and isinstance(item.value, dict)
+            and any(word in str(item.value.get('dialogueAndLegibility','')).lower() for word in ('voiceover','voice-over','画外','旁白'))), None)
+        # A whole-Scene sound paragraph may require both narration and direct
+        # address. Exact current-line Performance takes precedence over that
+        # global mention; it must not turn an authored on-screen line into VO.
+        if voice_ref:
+            import re
+            direct = [line for item in selected if item.selection.domain == 'PERFORMANCE' and isinstance(item.value,dict)
+                for line in item.value.get('lines',[]) if line.get('spokenContentId') in phase_spoken_ids
+                and re.search(r'当面|画内|on.?screen|直接(?:台词|发声|说话)',
+                    str(line.get('dramaticAction',''))+' '+str(line.get('observableIntent','')),re.I)]
+            if direct:
+                voice_ref = None
+        current, context = make_context(phase=phase, phases=action.value['actionPhases'], index=phase_index,
+            shot=shot, shot_ref=package.scope.shot, action_ref=base, facts=facts, values=values, voice_ref=voice_ref)
         return OperationSelection.model_validate(dict(beat_ids=(phase["beatId"],), action_refs=(action_ref,), spoken_ids=phase_spoken_ids,
-            start_ref=start, end_ref=end, fact_refs=tuple(sorted(set(facts), key=lambda f: (f.domain.value, f.reference.path))), reference_disposition=tuple(dispositions)))
+            start_ref=start, end_ref=end, fact_refs=tuple(sorted(set(current), key=lambda f: (f.domain.value, f.reference.path))),
+            reference_disposition=tuple(dispositions), execution_context=context, spoken_range=slice_record))
 
-    async def selected(self, package: ProductionPackage, task: GenerationTask, reader: PackageReader) -> tuple[SelectedValue, ...]:
-        self.validate(package, task, require_scope=False)
+    async def selected(self, package: ProductionPackage, task: GenerationTask, reader: PackageReader, *, admission_required: bool = True) -> tuple[SelectedValue, ...]:
+        if admission_required:
+            self.validate(package, task, require_scope=False)
         validate_continuation(self.ledger, task)
         unit = task.unit
         assert unit
+        if unit.execution_context:
+            from drama_plugin.generation.unit_scope import canonical_context
+            fresh = await self.select_unit(package, reader, phase_index=int(unit.action_refs[0].path[-2]),
+                spoken_range=unit.spoken_range[:2] if unit.spoken_range else None)
+            if (canonical_context(fresh.execution_context) != canonical_context(unit.execution_context) or fresh.fact_refs != unit.fact_refs
+                    or fresh.action_refs != unit.action_refs or fresh.beat_ids != unit.beat_ids or fresh.spoken_ids != unit.spoken_ids):
+                raise ValueError('UNIT_SCOPED_PROJECTION_DRIFT')
         full = await reader.selections(package)
         permitted = {item.selection.reference for item in full}
         def allowed(ref: SourceReference) -> bool:
@@ -468,7 +548,12 @@ class OperationResolver:
             action = unit.action_refs[0]
             phase_ref = SourceReference.model_validate({**action.model_dump(), 'path':action.path[:-1]})
             phase = object_at(await reader.resolver.resolve(phase_ref))
-            if unit.spoken_ids != tuple(phase['spokenIds']) or unit.beat_ids != (phase['beatId'],):
+            authored_ids=tuple(phase['spokenIds'])
+            if unit.spoken_range:
+                begin,end,total=unit.spoken_range
+                if total != len(authored_ids): raise ValueError('CONTINUATION_AUTHORED_CONTENT_DRIFT')
+                authored_ids=authored_ids[begin:end]
+            if unit.spoken_ids != authored_ids or unit.beat_ids != (phase['beatId'],):
                 raise ValueError('CONTINUATION_AUTHORED_CONTENT_DRIFT')
             if (unit.start_ref.path != (*phase_ref.path,'entryState')
                     or unit.end_ref.path != (*phase_ref.path,'observable')
@@ -482,7 +567,7 @@ class OperationResolver:
                     raise ValueError('CONTINUATION_SPEECH_OVERLAP')
         finite = {"ACTION": {"actionPhases", "physicalStateConstraints"},
             "PERFORMANCE": {"beats", "physicalExpression"}, "CAMERA": {"movement", "cameraPosition", "height", "pointOfView", "lensIntention", "axisAndScreenDirection"},
-            "WORLD": {"setting", "weather", "time", "physicalWorldRules"},
+            "WORLD": {"setting", "weather", "time", "physicalWorldRules", 'locationBinding'},
             "SUBJECTS": {"presentSubjects", "identityConstraints", "absences"},
             "SOUND": {"ambience", "contactTiedSound", "dialogueAndLegibility", "orderingRules", "silence", "acousticSpace", "speechRelations"},
             "LIGHTING": {"sources", "directionAndQuality", "intensityRatios", "constraints", "nightContinuity"},
@@ -520,6 +605,57 @@ class OperationResolver:
             granted = {(r.owner, r.artifact_ref, r.version, r.fingerprint) for r in permitted}
             if not all((r.owner, r.artifact_ref, r.version, r.fingerprint) in granted for r in binding.authority_refs):
                 raise ValueError("REFERENCE_BINDING_OUTSIDE_PACKAGE")
+            if binding.source_scope and binding.source_scope != binding.scope:
+                if binding.state_ref != unit.start_ref or binding.use_ref is None or not allowed(binding.use_ref):
+                    raise ValueError('REFERENCE_USE_OUTSIDE_CURRENT_UNIT')
+                use = await reader.resolver.resolve(binding.use_ref)
+                if not isinstance(use, (str,dict)) or not use:
+                    raise ValueError('REFERENCE_USE_AUTHORITY_REQUIRED')
+                if any(d.role == 'CHARACTER' for d in binding.duties):
+                    identity_uses = [r for r in binding.authority_refs if allowed(r) and
+                        (r.path[-1:] == ('identityConstraints',) or r.path[-1:] == ('inputDuty',))]
+                    uses = [str(await reader.resolver.resolve(r)).lower() for r in identity_uses]
+                    if not uses or not any(any(token in value
+                            for token in ('identity','same person','narrator','character','人物','身份')) for value in uses):
+                        raise ValueError('REFERENCE_CHARACTER_USE_UNSUPPORTED')
+                if any(d.role == 'CHARACTER' for d in binding.duties):
+                    from drama_plugin.execution.contracts import CreativeMediaReview, ExecutionOperation
+                    from drama_plugin.generation.contracts import GenerationPreparation
+                    if binding.endpoint_frame_ref:
+                        _,_,_,source_task = continuation_frame(self.ledger,binding.endpoint_frame_ref,
+                            allow_unverified_audio=bool(task.continuation and task.continuation.allow_unverified_audio))
+                    else:
+                        review = CreativeMediaReview.model_validate(self.ledger.get_artifact('creative-media-review',
+                            ArtifactReference(owner='creative-media-review',artifact_ref=binding.media.review_ref,version=1))[0])
+                        op = ExecutionOperation.model_validate(self.ledger.get_artifact('execution-operation',review.operation_ref)[0])
+                        source_task = GenerationPreparation.model_validate(self.ledger.get_artifact('generation-preparation',op.preparation_ref)[0]).task
+                        if review.outcome != 'PASS' or review.scope != binding.origin_scope or review.media.content_hash != binding.media.content_hash:
+                            raise ValueError('REFERENCE_SOURCE_REVIEW_MISMATCH')
+                    source_ids = {row['id'] for r in source_task.owners.adopted_refs for v in (self.versions.resolve(r),)
+                        if v.kind == Kind.PROFESSIONAL and v.body.domain == 'SUBJECTS' for row in v.body.facts['presentSubjects']}
+                    if not set(binding.subject_ids) <= source_ids:
+                        raise ValueError('REFERENCE_SOURCE_IDENTITY_MISMATCH')
+                if any(d.role == 'LOCATION' for d in binding.duties):
+                    from drama_plugin.contracts.location_design import SceneLocationBinding
+                    location_use = next((r for r in binding.authority_refs if allowed(r) and r.path[-1:] == ('locationBinding',)),None)
+                    if location_use is None: raise ValueError('REFERENCE_LOCATION_USE_UNSUPPORTED')
+                    target_location = SceneLocationBinding.model_validate(await reader.resolver.resolve(location_use))
+                    if binding.location_binding != target_location:
+                        raise ValueError('REFERENCE_LOCATION_USE_UNSUPPORTED')
+                    # Actual source provenance comes from its reviewed native
+                    # Preparation, not a caller's assertion of place identity.
+                    with self.ledger.transaction() as db:
+                        row = db.execute("SELECT body_json FROM immutable_artifact WHERE artifact_type='creative-media-review' AND artifact_id=?",(binding.media.review_ref,)).fetchone()
+                    if row is None: raise ValueError('REFERENCE_SOURCE_REVIEW_REQUIRED')
+                    from drama_plugin.execution.contracts import CreativeMediaReview, ExecutionOperation
+                    from drama_plugin.generation.contracts import GenerationPreparation
+                    review = CreativeMediaReview.model_validate_json(row[0])
+                    op_body = self.ledger.get_artifact('execution-operation',review.operation_ref)[0]
+                    source_task = GenerationPreparation.model_validate(self.ledger.get_artifact('generation-preparation',ExecutionOperation.model_validate(op_body).preparation_ref)[0]).task
+                    worlds = [self.versions.resolve(r) for r in source_task.owners.adopted_refs if self.versions.resolve(r).kind == Kind.PROFESSIONAL and self.versions.resolve(r).body.domain == 'WORLD']
+                    source_location = SceneLocationBinding.model_validate(worlds[0].body.facts.get('locationBinding'))
+                    if source_location.location_ref != target_location.location_ref or review.scope != binding.origin_scope:
+                        raise ValueError('REFERENCE_LOCATION_SOURCE_MISMATCH')
             bound.append(SelectedValue(DomainReference(domain=SourceDomain.REFERENCE, reference=ref), value))
         if any(value == "INPUT" for value in dispositions.values()) and not (bound or any(
                 item.selection.reference.artifact_ref.startswith(PREFIX) for item in full)):
@@ -528,6 +664,7 @@ class OperationResolver:
             for d in ReferenceExecutionBinding.model_validate(item.value).duties}
         if any(dispositions[str(row['id'])] == 'INPUT' and row.get('inputDuty') not in duties for row in reference_rows):
             raise ValueError('REFERENCE_INPUT_DUTY_UNBOUND')
-        self.validate(package, task)
+        if admission_required:
+            self.validate(package, task)
         # Every explicit path is read from the immutable selected owner, never a model string.
         return tuple([SelectedValue(d, await reader.resolver.resolve(d.reference)) for d in unit.fact_refs] + bound)

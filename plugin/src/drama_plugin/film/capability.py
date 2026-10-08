@@ -79,9 +79,9 @@ class FilmCapabilities:
         if cp.media_batch_ref:
             identity['mediaBatchRef'] = cp.media_batch_ref.model_dump(mode='json',by_alias=True)
         committed=False
-        if cp.units and cp.units[0].generation_run_id:
-            child_id = (self.plugin.source_film_media_opening(inputs.run_id) if cp.media_batch_ref
-                else cp.units[0].generation_run_id)
+        if cp.units and self.plugin.source_film_media_opening(inputs.run_id):
+            child_id = (cp.scene_media_run_ids or (self.plugin.source_film_media_opening(inputs.run_id),))[-1]
+            unit = self.plugin.source_film_unit_for_task(inputs.run_id,self.plugin.generation_artifacts.inputs(child_id).task)
             child=self.plugin.runtime.store.load(child_id)
             if child.workflow_id not in MEDIA_WORKFLOWS:
                 raise ValueError("CHILD_PREPARATION_WORKFLOW_MISMATCH")
@@ -93,7 +93,7 @@ class FilmCapabilities:
             if prepared is not None:
                 artifact=self.plugin.generation_artifacts.get(prepared,GenerationPreparation)
                 from drama_plugin.generation.audio import package_scope
-                if package_scope(self.plugin.production_packages.get(artifact.source_package_ref))!=child.scope or artifact.source_package_ref!=cp.units[0].package_ref:
+                if package_scope(self.plugin.production_packages.get(artifact.source_package_ref))!=child.scope or artifact.source_package_ref!=unit.package_ref:
                     raise ValueError("CHILD_PREPARATION_SCOPE_MISMATCH")
                 committed=True
         return ExecutionInspection(revision=ExecutionRevision(
@@ -119,7 +119,8 @@ class FilmCapabilities:
                     "FILM_ROUTE_PROFILE_MISMATCH", "MEDIA_REVIEW_RECEIPT_MISSING",
                     "PERFORMANCE_SCOPE_UNAPPROVED", "PERFORMANCE_SCOPE_PARENT_MISMATCH",
                     "SHOT_BEAT_DPD_COVERAGE_MISMATCH", "SHOT_SPOKEN_DPD_COVERAGE_MISMATCH",
-                    "REFERENCE_REQUIRED_DISPOSITION_INVALID", "REFERENCE_OUT_OF_UNIT_UNPROVEN"
+                    "REFERENCE_REQUIRED_DISPOSITION_INVALID", "REFERENCE_OUT_OF_UNIT_UNPROVEN",
+                    "SCENE_CONTINUATION_SCOPE_MISMATCH"
                 } else "FILM_AUTHORITY_OR_CONTRACT_INVALID"
                 evidence=self.store.input(inputs.run_id).source_ref.runtime_ref()
                 finding=GateFinding.classified(GateCode.CANON_AUTHORITY_MISMATCH,owner='film-contract',
@@ -480,8 +481,9 @@ class FilmCapabilities:
         if run.workflow_id == MEDIA_WORKFLOW and run.cursor == 1 and cp.direction_ref and cp.planning_cost_decision_ref is None and value.estimated_shot_cost_microunits > value.max_cost_microunits:
             return (UserDecisionRequest(category=DecisionCategory.COST_APPROVAL,
                 question="The bounded one-operation planning estimate exceeds the planning ceiling. Allow this exact approved Direction to continue preparation? This approves planning only; no external operation, actual price, dispatch, or payment is authorized."), cp.direction_ref)
-        if run.workflow_id == MEDIA_WORKFLOW and run.cursor == 5 and cp.units and cp.units[0].package_ref:
-            unit=cp.units[0]
+        if run.workflow_id == MEDIA_WORKFLOW and run.cursor == 5 and cp.units:
+            unit = self.plugin.source_film_unit_for_task(run_id,cp.operation_task) if cp.operation_task else next(
+                u for u in cp.units if (u.scene_id,u.shot_id)==tuple(self.plugin.source_film_production_progress(run_id)['nextUnit'][k] for k in ('sceneId','shotId')))
             if any(self.plugin.creative_versions.stale(r) for r in unit.refs):
                 assert unit.package_ref is not None
                 return (UserDecisionRequest(category=DecisionCategory.ART_APPROVAL,
@@ -495,7 +497,7 @@ class FilmCapabilities:
     def pending_decision_terms(self, run_id: str) -> str | None:
         request, target = self.pending_decision(run_id)
         if request.category == DecisionCategory.ART_APPROVAL:
-            unit=self.store.checkpoint(run_id).units[0]
+            unit=next(u for u in self.store.checkpoint(run_id).units if u.package_ref==target)
             return sha256_canonical({"packageRef":target.model_dump(mode="json",by_alias=True),
                 "staleRefs":[r.model_dump(mode="json",by_alias=True) for r in unit.refs if self.plugin.creative_versions.stale(r)],
                 "purpose":"EXACT_OWNER_REVISION_REQUIRED", "revisionDepth":unit.revision_depth})
@@ -539,7 +541,7 @@ class FilmCapabilities:
         request,target=self.pending_decision(run_id)
         if request.category!=DecisionCategory.ART_APPROVAL or run.last_result is None or run.last_result.external_ref!=target:
             raise ValueError("Exact stale creative scope required")
-        old=cp.units[0]
+        old=next(u for u in cp.units if u.package_ref==target)
         child=p.runtime.store.load(revision_run_id)
         value=p.creative.state.input(revision_run_id)
         fixed=p.creative.state.checkpoint(revision_run_id)
@@ -565,7 +567,7 @@ class FilmCapabilities:
         if signature in old.revision_signatures:
             raise ValueError("Creative revision cycle")
         units=list(cp.units)
-        units[0]=old.model_copy(update={"production_run_id":revision_run_id,"refs":fixed.refs,"package_ref":fixed.package_ref,
+        units[cp.units.index(old)]=old.model_copy(update={"production_run_id":revision_run_id,"refs":fixed.refs,"package_ref":fixed.package_ref,
             "candidate_ref":None,"generation_run_id":None,"execution_run_id":None,"revision_depth":revision.depth,
             "revision_signatures":(*old.revision_signatures,signature)})
         self.store.save(run_id,run.scope,FilmCheckpoint.model_validate({**cp.model_dump(),"units":tuple(units),"operation_task":None,
@@ -579,9 +581,15 @@ class FilmCapabilities:
         p, cp = self.plugin, self.store.checkpoint(inputs.run_id)
         if p.operation_resolver is None or p.execution is None or not cp.units or cp.adoption_ref is None:
             return self.wait(inputs, "native-production-composition")
-        # The first proof is one approved production unit. Film art/order is retained,
-        # while downstream Audio/AV/Final Delivery stays outside this workflow.
-        unit = cp.units[0]
+        # Frozen work recovers its exact owner. A fresh unit comes from the
+        # adopted plan/coverage view, rather than an implicit first-Shot scope.
+        if cp.operation_task:
+            unit = p.source_film_unit_for_task(inputs.run_id,cp.operation_task)
+        else:
+            target = p.source_film_production_progress(inputs.run_id)['nextUnit']
+            if target is None: return self.success(cp)
+            unit = next(u for u in cp.units if (u.scene_id,u.shot_id)==(target['sceneId'],target['shotId']))
+        slot = cp.units.index(unit)
         if cp.media_batch_ref:
             child_id = p.source_film_media_opening(inputs.run_id)
             task = p.generation_artifacts.inputs(child_id).task
@@ -678,7 +686,7 @@ class FilmCapabilities:
             child = p.create_media_review_run(package_ref=unit.package_ref,task=task)
         if unit.generation_run_id != child.run_id:
             units = list(cp.units)
-            units[0] = ShotUnit.model_validate({**unit.model_dump(), "generation_run_id": child.run_id})
+            units[slot] = ShotUnit.model_validate({**unit.model_dump(), "generation_run_id": child.run_id})
             self.save(inputs,units=tuple(units))
         child = await self.drive_child(child.run_id)
         if child.state != RuntimeState.SUCCEEDED:
@@ -690,18 +698,20 @@ class FilmCapabilities:
             raise ValueError("MEDIA_REVIEW_RECEIPT_MISSING")
         cp = self.store.checkpoint(inputs.run_id)
         units = list(cp.units)
-        units[0] = ShotUnit.model_validate({**units[0].model_dump(), "candidate_ref": review_ref})
+        units[slot] = ShotUnit.model_validate({**units[slot].model_dump(), "candidate_ref": review_ref})
         self.save(inputs,units=tuple(units))
         return await self.execute_scene_media(inputs)
 
     async def execute_scene_media(self, inputs: CapabilityInput) -> CapabilityResult:
         """Ordered adjacent clips beneath the original adopted Shot, using native child goals."""
         p, cp = self.plugin, self.store.checkpoint(inputs.run_id)
-        unit = cp.units[0]
         refs = list(cp.scene_media_review_refs or ())
         for index, child_id in enumerate(cp.scene_media_run_ids or ()):
             task = p.generation_artifacts.inputs(child_id).task
+            unit = p.source_film_unit_for_task(inputs.run_id,task)
             child = p.runtime.store.load(child_id)
+            previous_id = cp.scene_media_run_ids[index-1] if index else p.source_film_media_opening(inputs.run_id)
+            p.validate_source_film_boundary(inputs.run_id,task=task,previous_id=previous_id)
             if task.continuation:
                 from drama_plugin.generation.operation import validate_continuation, continuation_frame
                 validate_continuation(p.ledger, task)
@@ -710,9 +720,8 @@ class FilmCapabilities:
                 previous_id = cp.scene_media_run_ids[index-1] if index else p.source_film_media_opening(inputs.run_id)
                 if predecessor.run_id != previous_id:
                     raise ValueError('IMMEDIATE_REVIEWED_PREDECESSOR_REQUIRED')
-            if (child.scope != RuntimeScope(work_id=inputs.scope.work_id,scene_id=unit.scene_id,shot_id=unit.shot_id)
-                    or p.gate_findings.inputs(child_id).package_ref != unit.package_ref):
-                raise ValueError('SCENE_CONTINUATION_SCOPE_MISMATCH')
+            from drama_plugin.film.media_units import validate_child_package
+            validate_child_package(p,child_id,unit)
             p._compose_media_owners(task,run_id=child_id)
             child = await self.drive_child(child_id)
             if child.state != RuntimeState.SUCCEEDED:
@@ -741,12 +750,14 @@ class FilmCapabilities:
         if current.scene_media_pending_tasks:
             # Bind only now, after the immediately preceding result and review.
             # A crash replays the same frame/goal identities, never a paid create.
-            task = await p.prepare_source_film_continuation(inputs.run_id,task=current.scene_media_pending_tasks[0])
+            task = await p.prepare_source_film_unit(inputs.run_id,task=current.scene_media_pending_tasks[0])
+            unit = p.source_film_unit_for_task(inputs.run_id,task)
             child = p.create_media_review_run(package_ref=unit.package_ref,task=task)
             self.save(inputs,scene_media_run_ids=(*(current.scene_media_run_ids or ()),child.run_id),
                 scene_media_pending_tasks=current.scene_media_pending_tasks[1:])
             return await self.execute_scene_media(inputs)
-        return CapabilityResult(status=ResultStatus.SUCCEEDED,artifact_refs=(cp.media_batch_opening_review_ref or unit.candidate_ref,*refs))
+        opening = p.source_film_unit_for_task(inputs.run_id,p.generation_artifacts.inputs(p.source_film_media_opening(inputs.run_id)).task)
+        return CapabilityResult(status=ResultStatus.SUCCEEDED,artifact_refs=(cp.media_batch_opening_review_ref or opening.candidate_ref,*refs))
 
     async def revise_shot(self, inputs: CapabilityInput, slot: int, review_ref: ArtifactReference) -> CapabilityResult:
         p,cp=self.plugin,self.store.checkpoint(inputs.run_id)

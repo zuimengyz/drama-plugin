@@ -1,6 +1,6 @@
 """Language metadata sidecars preserve the frozen source/work originals."""
 from typing import Any, Literal
-from pydantic import Field
+from pydantic import Field, model_serializer
 from drama_plugin.contracts.base import ContractModel
 from drama_plugin.contracts.creative_asset import Text,Hash
 from drama_plugin.config.language import LanguageTag
@@ -111,10 +111,35 @@ class ObservedSubtitleTiming(ContractModel):
     edit_offset: float = Field(ge=0, allow_inf_nan=False)
     uncertainty: str = ''
 
+class SubtitleTextBasis(ContractModel):
+    """Subtitle wording provenance, independently of observed speech verification."""
+    kind: Literal['ASR','SCRIPT','MIXED']
+    source_text: Text
+    script_ref: Text
+    script_line_hash: Hash
+    script_range: tuple[int,int]
+    script_fragment: str = Field(min_length=1)
+    evidence_refs: tuple[Text,...] = ()
+
+
 class ReviewSubtitleCue(SubtitleCue):
     """Review-only subtype preserves the historical untimed contract and hashes."""
     timing_status: Literal['OBSERVED_CANDIDATE']='OBSERVED_CANDIDATE'
     observed_timing: ObservedSubtitleTiming
+    text_basis: SubtitleTextBasis | None = None
+    display_source_end: float | None = Field(default=None,ge=0,allow_inf_nan=False)
+    timing_basis: Literal['SENTENCE_ESTIMATE','SPEECH_WINDOW_SENTENCE_SPLIT'] | None = None
+
+    @model_serializer(mode='wrap')
+    def preserve_historical_cues(self, handler):
+        result=handler(self)
+        if self.text_basis is None:
+            result.pop('textBasis',None);result.pop('text_basis',None)
+        if self.display_source_end is None:
+            result.pop('displaySourceEnd',None);result.pop('display_source_end',None)
+        if self.timing_basis is None:
+            result.pop('timingBasis',None);result.pop('timing_basis',None)
+        return result
 
 class ReviewSubtitleTrack(SubtitleTrack):
     cues: tuple[ReviewSubtitleCue,...] = Field(min_length=1)

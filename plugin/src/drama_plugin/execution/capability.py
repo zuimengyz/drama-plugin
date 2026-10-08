@@ -75,15 +75,18 @@ class TargetExecution:
             revision=FilmSegmentRevision.model_validate(body)
             if (revision.artifact_reference()!=ref or revision.scope!=scope or revision.fingerprint!=digest
                     or revision.replacement_run_id!=operation.run_id
-                    or revision.camera_direction_ref!=prepared.task.camera_direction_ref
-                    or revision.previous_checkpoint.units[0].package_ref!=prepared.source_package_ref):
+                    or revision.camera_direction_ref!=prepared.task.camera_direction_ref):
                 raise ValueError('EXACT_AUTHORIZED_SEGMENT_REVISION_REQUIRED')
             if self.operations is None:
                 raise ValueError('EXACT_AUTHORIZED_SEGMENT_REVISION_REQUIRED')
             # Validate the already approved Camera scope using its exact native Package.
             from drama_plugin.persistence.stores import DurableProductionPackageStore
             package=DurableProductionPackageStore(self.store.ledger).get(prepared.source_package_ref)
-            self.operations.camera_direction(package,prepared.task)
+            targets=[u for u in revision.previous_checkpoint.units if
+                (u.scene_id,u.shot_id)==(operation.scope.scene_id,operation.scope.shot_id)]
+            if len(targets)!=1 or targets[0].package_ref!=prepared.source_package_ref:
+                raise ValueError('EXACT_AUTHORIZED_SEGMENT_REVISION_REQUIRED')
+            self.operations.validate(package,prepared.task)
             key+=':revision:'+ref.artifact_ref
         return key+(':attempt:2' if attempt.ordinal==2 else '')
 

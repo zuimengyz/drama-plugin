@@ -85,6 +85,23 @@ def test_approved_noninteractive_destination_requires_no_fake_psychology(setup):
     assert result == {'role':'NON_INTERACTIVE_DESTINATION','partnerDPDRequired':False,'status':'PARTNER_DPD_NOT_REQUIRED'}
 
 
+def test_actor_objective_does_not_become_destination_obligation(setup):
+    versions,d,_,_=setup
+    old=versions.resolve(d.performance_ref)
+    candidate=versions.resolve(old.candidate_origin_ref)
+    facts=deepcopy(candidate.body.facts)
+    facts['beats'][2].update(objective='Walk past without seeking help.',obstacle='His own hesitation.',tactic='Keep walking.')
+    fresh_candidate=versions.write(writer=Authority.PROFESSIONAL,kind=Kind.PROFESSIONAL,scope=d.scope,
+        body=DesignBody(domain='PERFORMANCE',facts=facts),sources=candidate.source_refs,operation='actor-goal-candidate')
+    adopted=versions.write(writer=Authority.PROFESSIONAL,kind=Kind.PROFESSIONAL,scope=d.scope,
+        body=versions.resolve(fresh_candidate).body,sources=old.source_refs,operation='actor-goal-adopted',
+        adoption_decision=d.adoption_decision_ref,candidate_origin=fresh_candidate)
+    evidence=tuple(e.model_copy(update={'value_hash':sha256_canonical(facts['beats'][2][e.field_path[-1]])}) for e in d.evidence)
+    revised=d.model_copy(update={'performance_ref':adopted,'evidence':evidence})
+    pin=retain_performance_scope(versions,revised,writer=Authority.PROFESSIONAL)
+    assert validate_performance_target('destination',{},projection_scope=read_performance_scope(versions,pin))['partnerDPDRequired'] is False
+
+
 def test_consumers_cannot_issue_or_deserialize_exemptions(setup):
     versions,d,pin,witness = setup
     with pytest.raises(ValueError,match='WRONG_WRITER'):

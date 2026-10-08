@@ -240,9 +240,10 @@ class InspectionRepairRecord(ExtendedRuntimeContract):
 
 
 class ExternalRepairRecord(ExtendedRuntimeContract):
-    extension_fields = ('batch_ref', 'revision_ref')
+    extension_fields = ('batch_ref', 'revision_ref', 'child_ref')
     batch_ref: ArtifactReference | None = None
     revision_ref: ArtifactReference | None = None
+    child_ref: ArtifactReference | None = None
     cursor: int = Field(ge=0, lt=32)
     capability_key: Identifier
     failed_revision: int = Field(ge=0)
@@ -252,10 +253,17 @@ class ExternalRepairRecord(ExtendedRuntimeContract):
 
     @model_validator(mode="after")
     def bounded_external_failure(self) -> Self:
-        if (self.failed_result.code not in {"PROVIDER_UNKNOWN_WITHOUT_LOOKUP", "EXTERNAL_RECONCILIATION_ERROR", "FORMAL_MEDIA_NOT_FOUND", "GOVERNED_HARD_STOP", "EXECUTION_REVISION_CHANGED", 'TECHNICAL_MEDIA_FAILURE', 'HUMAN_REVIEW_CONTEXT_MISMATCH', 'FINANCIAL_AUTHORITY_ALREADY_CONSUMED', 'RECOVERY_TRANSPORT_READ_ONLY'}
+        if (self.failed_result.code not in {"PROVIDER_UNKNOWN_WITHOUT_LOOKUP", "EXTERNAL_RECONCILIATION_ERROR", "FORMAL_MEDIA_NOT_FOUND", "GOVERNED_HARD_STOP", "EXECUTION_REVISION_CHANGED", 'TECHNICAL_MEDIA_FAILURE', 'HUMAN_REVIEW_CONTEXT_MISMATCH', 'FINANCIAL_AUTHORITY_ALREADY_CONSUMED', 'RECOVERY_TRANSPORT_READ_ONLY', 'HTTP_400', 'PROVIDER_DEFINITE_FAILURE', 'FILM_AUTHORITY_OR_CONTRACT_INVALID', 'SCENE_CONTINUATION_SCOPE_MISMATCH'}
                 or self.failed_result.status != ResultStatus.FAILED
                 or self.decision_ref.owner != "user-decision"):
             raise ValueError("External repair requires an exact supported failure and cost receipt")
+        if self.failed_result.code in {'FILM_AUTHORITY_OR_CONTRACT_INVALID','SCENE_CONTINUATION_SCOPE_MISMATCH'} and (
+                self.capability_key!='film.execute:v1' or self.cursor!=5
+                or self.child_ref is None or self.child_ref.owner!='runtime'):
+            raise ValueError('Completed native package repair requires its exact unsubmitted child')
+        if self.failed_result.code in {'HTTP_400','PROVIDER_DEFINITE_FAILURE'} and (self.capability_key!='film.execute:v1' or self.cursor!=5 or self.revision_ref is None
+                or self.revision_ref.owner!='film-segment-revision'):
+            raise ValueError('Definite provider failure requires its scoped Film revision')
         if self.failed_result.code == 'TECHNICAL_MEDIA_FAILURE' and self.capability_key not in {'execution.media_review:v1','film.execute:v1'}:
             raise ValueError('Technical repair requires retained review owner output')
         if self.failed_result.code == 'HUMAN_REVIEW_CONTEXT_MISMATCH' and self.capability_key not in {'execution.media_review:v1','film.execute:v1'}:
@@ -269,7 +277,11 @@ class ExternalRepairRecord(ExtendedRuntimeContract):
                      and (self.failed_result.exception_type == "MediaImportSourceError"
                           or self.failed_result.code == "FORMAL_MEDIA_NOT_FOUND"))
                     or (self.capability_key == "film.execute:v1"
-                        and any(r.owner == "runtime" for r in self.failed_result.artifact_refs))):
+                        and (any(r.owner == "runtime" for r in self.failed_result.artifact_refs)
+                             or self.child_ref is not None and self.child_ref.owner=='runtime'
+                             and self.failed_result.code=='EXTERNAL_RECONCILIATION_ERROR'
+                             and self.failed_result.failure_stage=='EXTERNAL_RECONCILIATION'
+                             and self.failed_result.exception_type in {'ConnectTimeout','ReadTimeout','ConnectError','ReadError'}))):
                 raise ValueError("External repair only supports the exact media source configuration failure")
         return self
 
@@ -302,7 +314,9 @@ class RuntimeRun(RuntimeContract):
     repair_resumes: tuple[RepairResumeRecord, ...] = Field(default=(), max_length=32)
     inspection_repairs: tuple[InspectionRepairRecord, ...] = Field(default=(), max_length=32)
     external_repairs: tuple[ExternalRepairRecord, ...] = Field(default=(), max_length=32)
-    execution_batches: tuple[ExecutionBatchResume, ...] = Field(default=(), max_length=8)
+    # One immutable entry per completed native Film unit/batch, including
+    # serial clip continuations. This is retained history, not a retry budget.
+    execution_batches: tuple[ExecutionBatchResume, ...] = Field(default=(), max_length=256)
     executing_action: RuntimeAction | None = None
     step_retry_limit: int | None = Field(default=None, ge=1, le=8)
     maintenance_attempts: int | None = Field(default=None, ge=0, le=8)
@@ -341,7 +355,9 @@ class RuntimeRun(RuntimeContract):
 
     @model_validator(mode="after")
     def wait_shape(self) -> Self:
-        if (len({(r.cursor, r.failed_result.code, r.batch_ref, r.revision_ref) for r in self.external_repairs}) != len(self.external_repairs)
+        if (len({(r.cursor, r.failed_result.code, r.batch_ref, r.revision_ref,
+                  tuple(v.artifact_ref for v in r.failed_result.artifact_refs if v.owner=='runtime')
+                  if r.capability_key=='film.execute:v1' else ()) for r in self.external_repairs}) != len(self.external_repairs)
                 or any(r.cursor > self.cursor or r.failed_revision >= self.revision for r in self.external_repairs)):
             raise ValueError("Only one external repair per failure kind and step")
         if (len({(r.cursor,r.batch_ref) for r in self.inspection_repairs}) != len(self.inspection_repairs)

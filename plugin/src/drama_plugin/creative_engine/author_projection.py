@@ -174,7 +174,7 @@ def direction_schema(*, film: bool = False) -> dict[str, JsonValue]:
     schema.pop('$defs',None)
     if film:
         return obj({'shots':arr(obj({'sceneSelection':SELECT,'shot':schema,'requiresSelections':arr(SELECT,0,4),
-            'transition':{'type':'string','enum':['cut'],'default':'cut'}},('sceneSelection','shot')),1,12)})
+            'transition':{'type':'string','enum':['cut','continuous','match'],'default':'cut'}},('sceneSelection','shot')),1,12)})
     return schema
 
 

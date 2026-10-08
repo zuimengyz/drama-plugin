@@ -40,7 +40,9 @@ def number(value: Any) -> float:
 def render_subtitle_review(source: Path, *, tracks: list[Any], policy: Any,
                            expected_hash: str, source_offsets: dict[str,float],
                            observations: dict[str,dict[str,Any]], cue_images: list[Path],
-                           directory: Path) -> dict[str,Any]:
+                           directory: Path, clean_authorization: dict[str,Any] | None = None,
+                           script_lines: dict[str,dict[str,Any]] | None = None,
+                           assigned_lines: dict[str,list[str]] | None = None) -> dict[str,Any]:
     """User-requested visible subtitle overlay, with native audio packet copy.
 
     Unlike sound finishing this deliberately re-encodes picture for captions.
@@ -54,19 +56,22 @@ def render_subtitle_review(source: Path, *, tracks: list[Any], policy: Any,
     if not tracks or len(cue_images)!=len(tracks[0].cues):
         raise ValueError('SUBTITLE_OVERLAY_CUE_COUNT_MISMATCH')
     def bindings(t: Any) -> list[Any]:
-        return [dump_contract(q.observed_timing) for q in t.cues]
+        return [(dump_contract(q.observed_timing),q.display_source_end) for q in t.cues]
     if any(bindings(t)!=bindings(tracks[0]) for t in tracks[1:]):
         raise ValueError('BILINGUAL_SUBTITLE_TIMING_MISMATCH')
     directory.mkdir(parents=True,exist_ok=True)
     exports={}
     for track in tracks:
         text=export_review_subtitles(track,policy=policy,expected_edit_hash=expected_hash,
-            source_offsets=source_offsets,observations=observations)
+            source_offsets=source_offsets,observations=observations,
+            clean_authorization=clean_authorization,script_lines=script_lines,assigned_lines=assigned_lines)
         path=directory/f'subtitles.{track.track_language}.srt'
         path.write_text(text,encoding='utf-8');exports[track.track_language]=str(path)
     recipe={'sourceHash':expected_hash,'tracks':[dump_contract(t) for t in tracks],
         'overlays':[file_hash(x) for x in cue_images],'scope':'SUBTITLE_REVIEW_CANDIDATE',
         'nativeAudio':'PACKET_COPY','picture':'CAPTION_OVERLAY_ONLY'}
+    if clean_authorization:
+        recipe.update(subtitleDeliveryPolicy=clean_authorization,scriptLines=script_lines,assignedLines=assigned_lines)
     fp=digest(recipe);journal=directory/'subtitle-render.json'
     if journal.exists():
         old=json.loads(journal.read_text())
@@ -81,7 +86,8 @@ def render_subtitle_review(source: Path, *, tracks: list[Any], policy: Any,
     for image in cue_images:args+=['-i',str(image)]
     filters=[];prior='[0:v:0]'
     for i,q in enumerate(tracks[0].cues,1):
-        e=q.observed_timing;start=e.edit_offset+e.source_start;end=e.edit_offset+e.source_end
+        e=q.observed_timing;start=e.edit_offset+e.source_start
+        end=e.edit_offset+(q.display_source_end if q.display_source_end is not None else e.source_end)
         label=f'[sub{i}]'
         filters.append(f"{prior}[{i}:v:0]overlay=enable='gte(t,{start:.6f})*lt(t,{end:.6f})':eof_action=repeat{label}")
         prior=label

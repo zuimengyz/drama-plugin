@@ -8,7 +8,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal, ClassVar
 from collections.abc import Mapping
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, parse_qs
+from datetime import datetime, timezone, timedelta
 import httpx
 from pydantic import Field, JsonValue, TypeAdapter
 from drama_plugin.contracts.base import sha256_canonical
@@ -223,12 +224,13 @@ class TargetHttpTransport:
             return receipt.last_frame_url
         review = store.get(ArtifactReference(owner='creative-media-review',
             artifact_ref=binding.media.review_ref,version=1),CreativeMediaReview)
-        if review.outcome != 'PASS' or review.scope != scope or review.media.content_hash != reference.content_hash:
+        if (review.outcome != 'PASS' or review.scope != binding.origin_scope or review.media.content_hash != reference.content_hash
+                or binding.origin_scope.work_id != operation.scope.work_id):
             raise CapabilityAbsent('EXACT_REVIEWED_REFERENCE_REQUIRED')
         source = store.get(store.checkpoint(review.operation_ref).progress.video_ref,MediaBinding)
         origin = store.get(source.operation_ref,ExecutionOperation)
         receipt = store.get(source.receipt_ref,ProviderReceipt)
-        if (source.canonical_media_ref is None or source.canonical_media_ref.artifact_ref != reference.media_id
+        if (source.scope != binding.origin_scope or source.canonical_media_ref is None or source.canonical_media_ref.artifact_ref != reference.media_id
                 or source.media.content_hash != reference.content_hash or source.operation_ref != review.operation_ref
                 or receipt.state != 'SUCCEEDED' or receipt.provider != self.provider
                 or origin.model != operation.model or receipt.result is None):
@@ -237,6 +239,19 @@ class TargetHttpTransport:
         url = urlsplit(receipt.result.locator)
         if url.scheme != 'https' or not url.hostname or url.username or url.password:
             raise ValueError('REFERENCE_DELIVERY_REQUIRES_HTTPS')
+        params = {k.lower():v[0] for k,v in parse_qs(url.query).items()}
+        stamp, ttl = params.get('x-tos-date'), params.get('x-tos-expires')
+        if stamp and ttl and ttl.isdigit() and datetime.strptime(stamp,'%Y%m%dT%H%M%SZ').replace(tzinfo=timezone.utc)+timedelta(seconds=int(ttl)) <= datetime.now(timezone.utc):
+            # Refresh only delivery metadata for this exact already retained
+            # task. Do not recreate it, upload a derivative or alter its Media.
+            fresh = await self.query(origin, store.get(source.attempt_ref,ProviderAttempt), receipt)
+            if (fresh is None or fresh.state!='SUCCEEDED' or fresh.remote_identity!=source.provider_result_id
+                    or fresh.result is None or fresh.result.result_id!=receipt.result.result_id):
+                raise CapabilityAbsent('REFERENCE_DELIVERY_REFRESH_FAILED')
+            store.put(fresh)  # append evidence; preserve original source receipt
+            if fresh.result.locator==receipt.result.locator:
+                raise DefinitelyNotSubmitted('REFERENCE_DELIVERY_EXPIRED')
+            return fresh.result.locator
         return receipt.result.locator
 
     def _grant(self, operation:ExecutionOperation, request:ProviderRequest|None = None) -> None:
@@ -404,6 +419,11 @@ class TargetHttpTransport:
         if response.status_code>=500 or response.status_code==408:
             raise PossiblySubmitted('HTTP_'+str(response.status_code), http_status=response.status_code)
         if response.status_code>=300:
+            if self.provider=='seedance':
+                from drama_plugin.providers.video.diagnostics import seedance_error
+                from drama_plugin.contracts.base import canonical_json
+                atomic_write(self.root/(attempt.client_identity+'.rejection.json'),
+                    canonical_json(seedance_error(response,self.adapter.settings.api_key.get_secret_value())).encode())
             raise DefinitelyNotSubmitted('HTTP_'+str(response.status_code), http_status=response.status_code)
         try:
             raw=TypeAdapter(dict[str,JsonValue]).validate_python(response.json())

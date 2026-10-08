@@ -60,7 +60,7 @@ class AudioBinding(Record):
     path: str
     source: str
     text_hash: str = Field(pattern=r'^[0-9a-f]{64}$')
-    kind: Literal['DIALOGUE', 'BGM', 'SFX']
+    kind: Literal['DIALOGUE', 'VOICE_OVER', 'OFF_SCREEN', 'BGM', 'SFX']
     speaker: str | None = None
     language: str | None = None
     timing: str | None = None

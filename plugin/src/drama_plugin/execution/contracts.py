@@ -235,7 +235,7 @@ class ReviewObservation(ExtendedRuntimeContract):
 
 
 class CreativeMediaReview(ExecutionArtifact):
-    extension_fields = ("canonical_media_ref", "preparation_ref", "review_context_hash")
+    extension_fields = ("canonical_media_ref", "preparation_ref", "review_context_hash", "supersedes_ref")
     owner = "creative-media-review"
     operation_ref: ArtifactReference
     attempt_ref: ArtifactReference
@@ -248,9 +248,12 @@ class CreativeMediaReview(ExecutionArtifact):
     canonical_media_ref: ArtifactReference | None = None
     preparation_ref: ArtifactReference | None = None
     review_context_hash: Hash | None = None
+    supersedes_ref: ArtifactReference | None = None
 
     @model_validator(mode="after")
     def revision_owner(self) -> Self:
+        if self.supersedes_ref and self.supersedes_ref.owner != self.owner:
+            raise ValueError("Creative reassessment requires its original review")
         recommendation = {"PASS": "CANDIDATE_ONLY", "REVISE": "REVISION_REQUIRED",
                           "CAPABILITY_ABSENT": "UNASSESSED"}[self.outcome]
         if self.adoption_recommendation != recommendation:

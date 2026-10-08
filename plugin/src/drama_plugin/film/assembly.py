@@ -45,6 +45,34 @@ def scene_segments(refs: tuple[ArtifactReference, ...], execution: ExecutionStor
     return tuple(ordered)
 
 
+def edited_media_segments(refs: tuple[ArtifactReference, ...], execution: ExecutionStore):
+    """Cuts/matches join reviewed chains through the existing ordered edit path."""
+    from drama_plugin.execution.contracts import MediaBinding, ExecutionOperation
+    from drama_plugin.generation.contracts import GenerationPreparation
+    seen, ordered, chain = {}, [], []
+    for ref in refs:
+        binding = execution.get(ref,MediaBinding)
+        if binding.operation_ref in seen:
+            if seen[binding.operation_ref] != binding: raise ValueError('SCENE_OPERATION_MEDIA_DRIFT')
+            continue
+        op = execution.get(binding.operation_ref,ExecutionOperation)
+        task = GenerationPreparation.model_validate(execution.ledger.get_artifact('generation-preparation',op.preparation_ref)[0]).task
+        if ordered and task.boundary and task.boundary.kind in ('CUT','MATCH'):
+            if task.boundary.predecessor_media_ref != ordered[-1][0] or task.continuation:
+                raise ValueError('NATIVE_EDIT_ORDER_OR_PREDECESSOR_MISMATCH')
+            scene_segments(tuple(chain),execution)
+            chain = []
+        elif ordered and not task.continuation:
+            raise ValueError('NATIVE_EDIT_BOUNDARY_REQUIRED')
+        chain.append(ref); ordered.append((ref,binding)); seen[binding.operation_ref] = binding
+    if chain: scene_segments(tuple(chain),execution)
+    return tuple(ordered)
+
+
+def concat_manifest(paths) -> str:
+    return 'ffconcat version 1.0\n' + ''.join("file '"+str(path).replace("'", "'\\''")+"'\n" for path in paths)
+
+
 def _stamp(ms: int) -> str:
     return f'{ms//3600000:02}:{ms//60000%60:02}:{ms//1000%60:02},{ms%1000:03}'
 
@@ -102,7 +130,7 @@ def assemble(shots: tuple[FilmShotBinding, ...], store: LocalMediaStore, subtitl
         root = Path(temp)
         paths = [store.path(shot.media) for shot in shots]
         # Paths are not interpolated into a shell. The concat demuxer has its own quoting.
-        (root/'edit.txt').write_text('\n'.join("file '"+str(path).replace("'", "'\\''")+"'" for path in paths))
+        (root/'edit.txt').write_text(concat_manifest(paths))
         joined = root/'joined.mp4'
         subprocess.run(['ffmpeg','-nostdin','-v','error','-f','concat','-safe','0','-i',str(root/'edit.txt'),
                         '-map','0:v:0','-map','0:a:0?','-c','copy','-fflags','+bitexact','-y',str(joined)],

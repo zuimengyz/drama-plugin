@@ -5,9 +5,12 @@ description: Produce image, video, or audio media for an approved historical-dra
 
 # Shot Production
 
-For an authorized adjacent-clip validation on a native Film Run, retain the original
-Film, adopted Shot/Package, completed child and logical operation. Queue only the
-bounded same-Scene children through `queue_source_film_media`; the existing Film
+For authorized native Film production, retain the original Film and completed
+children/operations. Read `source_film_status` before scheduling and report its
+Scene → Shot → phase coverage, adoption, remaining content and next boundary.
+Use the adopted FilmPlan and media adoption receipts to select the next unit's
+exact Scene/Shot/Package versions; do not reuse the opening Package across a cut.
+Queue bounded units through `queue_source_film_media`; the existing Film
 execution capability drives them in order. Select the requested authored Action
 phase, rather than repeatedly selecting the opening phase. Pin reviewed native
 Media through execution reference bindings with exact source duties and hashes.
@@ -19,7 +22,14 @@ continuation endpoint. After the preceding child completes and is reviewed, use
 next `image_to_video` first frame. A bounded queue may carry later source/profile
 descriptors, but Runtime freezes their child/preparation only after the preceding
 result and review exist; it binds each actual endpoint automatically. The runtime
-checks contiguous authored Action phases and disjoint new speech/action work.
+checks contiguous phases within each Action and disjoint new speech/action work;
+a new Action starts at its own phase 0. Use `prepare_source_film_unit` for the
+designed boundary. CONTINUE inherits the immediate official tail; CUT exits that
+chain even inside one Scene/Shot; MATCH is a separate start with authored reference
+use, not an automatic I2V continuation. A designed cross-Scene CONTINUE is retained
+across Scene IDs. Recover frozen work with its pinned boundary and references,
+never by discovering the latest media again. Hard cuts use the ordered edit
+assembly; they do not require equal endpoint frames or remove dialogue.
 A completed generation or visual PASS does not mean its entire selected spoken
 line was realized. Record listened, byte-pinned spoken IDs in the existing review
 observation before advancing that line; otherwise preserve unverified coverage
@@ -40,6 +50,7 @@ allowed. Raw repeated performance needs regeneration; frame similarity never
 authorizes removing dialogue. Historical frozen requests/reviews are retained.
 Each new clip requires fresh exact financial terms within the shared user budget.
 A scoped `FilmSegmentRevision` consumes its own approved replacement intent once, together with fresh exact cost terms; never clear or reuse its predecessor's consumed intent. A RESERVED operation has not crossed dispatch and remains eligible for its original single submission. Only a retained local `RECOVERY_TRANSPORT_READ_ONLY` definitely-not-submitted refusal permits that same dispatch to reopen; UNKNOWN is never treated this way.
+A created task with an exact terminal FAILED receipt and no media may use the same scoped segment revision only within an explicit additional-create authorization and fresh costs. Preserve the task, failure, consumed intent and count; never fabricate a REVISE media review when no output exists. Do not weaken Provider moderation. Release a fee reserve only from source-pinned applicable billing evidence; policy-based reconciliation and the actual invoice remain separate. An UNKNOWN or running task cannot enter this path.
 A user-authorized replacement opening uses `restart_source_film_media` on the
 same completed parent boundary. The immutable batch retains its preceding
 checkpoint and Runtime completion; old child operations, requests and fees remain.
@@ -48,8 +59,99 @@ descriptors. Never feed old rejected Media into that batch. Persist every offici
 tail through `retain_source_film_last_frame`, including the final segment; each
 continuation takes the immediately preceding batch output. Its preview contains
 only this batch's new raw segments, without trims or transitions.
+When deriving the retained context for a continuation, apply that predecessor's
+reference dispositions: OUT_OF_UNIT age/place duties stay out, and multiple
+authored purposes for the same role/subject share one binding duty. I2V still
+sends only the immediate official first frame.
 A failed continuity review stops the next child; a passing frame review never
 proves unobserved native audio or complete Scene coverage.
+An explicit current-unit rights approval may carry the existing bounded
+unverified-audio policy when the old batch did not. Validate the exact rights
+scope and receipt; retain earlier listening doubts, and still stop reliable
+missing/repeated speech. Never rewrite the old batch or mark speech verified.
+If a native parent reconciliation times out after its current child has an exact
+known provider receipt, resume that same result through the bounded read repair.
+Pin the child in the retained failure evidence; this does not authorize a create
+POST, an UNKNOWN supplement, or a new fee reservation.
+
+Cross-Shot reuse keeps immutable source scope/review/hash and adds the target use
+and current Action state separately. Select adopted sources by shared character
+identity and typed LocationDesign/SceneLocationBinding, including historical
+returns; source adoption does not prove suitability for a new purpose. Project
+the target location override separately from the place geometry. Keep age,
+costume, light/time, pose, camera progress and spoken content in the target design.
+An adult source is narrative identity evidence, not a verified child portrait or
+voiceprint. Missing qualified face/voice media remains UNVERIFIED; do not upload
+external human images or mix unsupported Seedance slots to bypass that limit.
+For a child/youth start, a mismatched or unknown-age adopted face stays in the
+narrative identity record; do not send it as an executable face reference. Use
+the already qualified text-only start when no applicable visual input exists.
+Determine source subjects from that media's frozen unit, not the entire Shot's
+roster. A school output does not prove university or street crowds declared in
+other phases; known mismatched ages also stay out of adult face inputs. Identical
+source/use prompt obligations appear once, while conflicting obligations fail.
+Project the Work's adopted historical era alongside the current location/time;
+source-only metadata does not count as an executable period requirement.
+An observed age/location failure may use the existing same-content segment
+revision with a derived professional Package and corrected legal input route.
+Keep canonical Action/lines, boundary and any actual continuation endpoint fixed.
+Bound replacements per content position and count every paid former candidate;
+earlier Scene camera repairs do not consume a later position's revision bound.
+Apply source-pinned unit fragments to WORLD/SOUND/age facts without replaying
+future montage events. In a continuing place, a completed pre-entry/vignette cue
+stays background; retain valid current-event relations such as "before he speaks".
+Model-specific audio projection must distinguish VOICE_OVER
+and OFF_SCREEN from on-screen DIALOGUE; pictured children must not lip-sync an
+adult retrospective confession. Structured fields and prompts are requirements,
+not deterministic Provider controls or observed consistency proofs.
+
+Speech ordering refers to exact utterance events/spokenContentId, including
+successive lines by one speaker; model text identifies those utterances without
+turning the relation into extra speech. Global constraints retain global scope;
+only an authored subject row receives that subject's label. Cross-age narrator
+identity must not attach to a mocking crowd. Keep review status, unresolved
+evidence and raw IDs in records, outside executable model prose.
+
+Silent interactive groups may use sparse BeatDPD bindings projected from their
+exact approved Performance subject actions; do not invent group psychology.
+An actor's goal toward a presence-only destination remains the actor's goal.
+Scope span/reference inventories compare independently of serialization order.
+A corrected pre-submission scope failure resumes the exact child and retains its
+failure evidence; repairs for earlier children do not exhaust a new child's bound.
+
+If an Action phase exceeds route duration feasibility, a source-pinned whole-line
+`spoken_range` may split its existing spoken IDs without rewriting that Action,
+Scene, Shot or Package. Preserve contiguous ranges and all lines exactly once;
+later parts of the same phase use its immediate official tail, never replay the
+hard-cut start. A phase is covered only when all assigned lines are covered.
+For authorized autonomous production, `select_source_film_working_input` records
+a persisted PASS candidate as HOST_WORKING_INPUT. Production coverage/reference
+selection may advance from it; user adoption and actual sound verification stay
+separate and pending. Never fabricate an ADOPTION receipt for a new candidate.
+If final playback exposes a concrete defect in an unadopted completed candidate,
+append its exact scoped REVISE through `record_source_film_candidate_reassessment`.
+Preserve the original review and successful generation; progress and reference
+selection exclude that candidate. Record dependent continuation separately rather
+than claiming a new visible defect or silently reusing the rejected starting state.
+An explicit user adoption may accept that exact completed version with its known
+findings. Append the existing ADOPTION receipts for the retained source Media and
+the delivered bundle, keeping REVISE and listening evidence intact. Adopted
+assigned content advances native production progress; accepted repair/dependency
+plans no longer requeue it. Preserve each finding's restrictions on future
+reference use; adoption does not qualify flawed scenery or group appearance.
+
+Use `resume_source_film_status` to continue the existing Run and deliver the
+program's coverage announcements at a written paragraph/Scene end. A successful
+parent operation is not completed film content. Keep user adoption, actual sound
+verification, accepted uncertainties, subtitles and remote persistence separate.
+Coverage counts adopted assigned phases/lines; it does not verify actual Russian.
+Accepted uncertainties do not requeue the same adopted content. Planning duration
+and actual adopted duration remain distinct, without duration-based filler clips.
+`preview_source_film_next_unit` produces a volatile, explicitly NOT_AUTHORIZED
+request rehearsal through the native compiler/Provider projection. It creates no
+formal child, Preparation, cost reservation or POST; reference locators are media
+identity placeholders. Use `scripts/preview-native-film.py` against a snapshot
+for offline progress and request delivery. No real result is implied by a test.
 
 Before preparing or submitting new video generation, use the Host's current per-model enabled status. Skip disabled models even if an earlier route selected them or a preference pins them. Re-select only within existing continuity and authorization gates. Disabling a model stops new submissions; it does not discard or prevent recovery of an already submitted task. Image generation is unaffected.
 
@@ -206,3 +308,11 @@ For an explicitly selected STILL/LIVE_ACTION knowledge profile, use the shared s
 Use the evidence-based face/camera criteria through the existing Review handoff in that document. A face looks game-like only as a summary of specific regional evidence, never as a standalone FAIL or beauty score. Invisible evidence is UNKNOWN, minor observations do not request regeneration, and each actual failure routes one responsible owner. F40 scopes a proposed repair around original anchors and preserved facts; it does not spend or retry. C35's one-variable rule is an A5 experimental control, not a limit on authorized production repairs.
 
 Read [mapping and evidence profile](../../docs/still-professional-mapping.md) when preparing these still records. Knowledge remains LOCAL_EXPERIMENTAL until scoped A5 media evidence.
+
+For the native source-to-reviewed-media path, consume professional beat and spoken-ID applicability before compilation. A beat may span distinct camera events and a designed hard cut; derive the missing execution mapping through the existing Professional / FilmPlan / Package versions, retaining original Action and dialogue coverage. Structured movement leaves remain camera motion in the final model request. Refresh an expired official reference-video delivery URL by querying its exact retained task; retain provenance and immutable Media, never recreate or locally substitute its face video. A definite HTTP create rejection may use the existing bounded segment revision with fresh execution/cost authorization; preserve its failure and do not classify it as UNKNOWN or successful media.
+
+Current-age reference selection uses positive authored state or observed appearance, with the source state read from its frozen production owners. A prohibition such as “do not become a child” does not prove a child age. Prefer qualified current-Scene identity evidence when available; retain relevant historical location selection and all source/use checks. This choice expresses an input purpose, not verified likeness or voice identity.
+
+A new professional-derived Package applies to new production. Completed native clips retain their exact frozen Package, Preparation, media hash and adopted Canon/Scene/Shot identity. Recovery verifies these immutable links separately from the current Package; it must not reject old completed clips merely because a later professional version exists or replace their frozen owners to pass validation.
+
+Changed reference purposes/authority versions create a new immutable target-use binding even when the source media and Action state are unchanged. Source-view descriptions such as a reference video's final close view are current identity evidence, not future Scene events to remove from the request.

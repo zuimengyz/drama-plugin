@@ -48,9 +48,16 @@ def media_files(tmp_path):
     return videos,images
 
 
-async def scenario(tmp_path,monkeypatch,media_files,*,last_frame=True):
+async def scenario(tmp_path,monkeypatch,media_files,*,last_frame=True,authors=None):
     videos,images=media_files
-    p,authors=native_load(tmp_path,monkeypatch,ThreePhases())
+    p,authors=native_load(tmp_path,monkeypatch,authors or ThreePhases())
+    if hasattr(authors,'bind_store'): authors.bind_store(p.creative_versions.objects)
+    if getattr(authors,'voice',False):
+        create=p.create_source_film_run
+        def with_audio(**kwargs):
+            kwargs['profile']=kwargs['profile'].model_copy(update={'audio_required':True})
+            return create(**kwargs)
+        p.create_source_film_run=with_audio
     class UniqueMedia(MediaService):
         def handler(self,request):
             if request.url.path=='/media/list':
@@ -62,6 +69,10 @@ async def scenario(tmp_path,monkeypatch,media_files,*,last_frame=True):
                 return httpx.Response(200,json=self.records[-1])
             return response
     service=UniqueMedia(videos[0]);p.providers.media=service.provider()
+    from drama_plugin.contracts.media import Media
+    async def get_retained_media(identity):
+        return Media.model_validate(next(row for row in service.records if row['id']==identity))
+    monkeypatch.setattr(p.providers.media,'get_media',get_retained_media)
     p.execution.media=FormalMediaStore(p.execution.media.directory,p.providers.media,p.execution.store)
     p.prompt_compiler.references.media_reader=p.providers.media
     calls=[];creates=[]
@@ -395,6 +406,13 @@ def test_unverified_audio_requires_explicit_policy_and_does_not_become_verified(
     missing=ReviewObservation(code='SPOKEN_CONTENT_MISSING',owner='observer',finding='Reliable observation of omitted canonical words.')
     with pytest.raises(ValueError,match='SPEECH_COMPLETION_UNVERIFIED'):
         validate_predecessor_speech(unit,(*pending,missing),allow_unverified_audio=True)
+    for code in ('AUDIO_UNVERIFIED','NATIVE_AUDIO_UNVERIFIED'):
+        old=(ReviewObservation(code=code,owner='observer',finding='Retained listening doubt; not a coverage attestation.'),)
+        validate_predecessor_speech(unit,old,allow_unverified_audio=True)
+        for stop in ('SPOKEN_CONTENT_MISSING','SPOKEN_CONTENT_REPEATED'):
+            finding=ReviewObservation(code=stop,owner='observer',finding='Reliable content error.')
+            with pytest.raises(ValueError,match='SPEECH_COMPLETION_UNVERIFIED'):
+                validate_predecessor_speech(unit,(*old,finding),allow_unverified_audio=True)
 
 
 @pytest.mark.asyncio

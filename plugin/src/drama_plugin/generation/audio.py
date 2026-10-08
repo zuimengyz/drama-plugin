@@ -47,7 +47,10 @@ class AudioPerformanceAssembler:
                 source_ref=i.selection.reference, speaker_ref=ArtifactReference(owner="character",artifact_ref=i.value["speakerKey"]),
                 layer=SpeechLayer.PRIMARY, intelligibility=Intelligibility.MUST_UNDERSTAND, mix_priority=3,
                 execution_ref=i.selection.reference, language=i.value["language"],
-                language_ref=child(i.selection.reference,"language")) for i in unit_lines)
+                language_ref=child(i.selection.reference,"language"),
+                delivery_mode='VOICE_OVER' if task.unit.execution_context and task.unit.execution_context.voice_over_ref else None,
+                delivery_source_ref=task.unit.execution_context.voice_over_ref if task.unit.execution_context else None,
+                visible_state_ref=task.unit.execution_context.visible_state_ref if task.unit.execution_context else None) for i in unit_lines)
             unit_relations = tuple(SpeechRelation.model_validate({**row, "sourceRef":child(item.selection.reference,str(index))})
                 for item in relation_items for index,row in enumerate(item.value)
                 if {row.get("eventId"),row.get("targetEventId")} <= set(task.unit.spoken_ids))

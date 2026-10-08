@@ -220,16 +220,22 @@ class ExecutionProjection:
         def add(domain: D, ref: SourceReference, text: object, slot: str, subject: str | None = None) -> None:
             if not isinstance(text, str) or not text.strip() or len(text) > 3000 or "\n" in text:
                 raise ValueError("UNIT_EXECUTABLE_LEAF_REQUIRED")
-            facts.append(ExecutableFact(fact_id="execution:" + sha256_canonical([ref.model_dump(mode="json",by_alias=True), slot]), domain=domain,
+            fact = ExecutableFact(fact_id="execution:" + sha256_canonical([ref.model_dump(mode="json",by_alias=True), slot]), domain=domain,
                 slot=slot, text=text, source_ref=ref, obligation=O.EXECUTION_REQUIRED,
-                subject_id=subject))
+                subject_id=subject)
+            previous = next((f for f in facts if f.fact_id == fact.fact_id), None)
+            if previous is not None:
+                if previous != fact:
+                    raise ValueError('UNIT_EXECUTION_OBLIGATION_CONFLICT')
+                return
+            facts.append(fact)
         for item in selected:
             domain, ref = item.selection.domain, item.selection.reference
             if task.camera_direction_ref and domain == D.CAMERA and any(k in ref.path for k in ('movement','cameraPosition','lensIntention','pointOfView')):
                 internal.append(CoverageEntry(fact_id='camera-whole-shot-context:'+sha256_canonical(ref),
                     domain=domain,source_ref=ref,obligation=O.QUALITY_SUPPORTING,status=S.INTERNAL_ONLY))
                 continue
-            if task.return_last_frame and domain == D.EDITORIAL and 'temporalStructure' in ref.path:
+            if task.return_last_frame and not task.unit.execution_context and domain == D.EDITORIAL and 'temporalStructure' in ref.path:
                 # The adopted whole-Shot runtime remains context. The actual
                 # bounded duration comes from the frozen execution profile.
                 internal.append(CoverageEntry(fact_id='shot-time-context:'+sha256_canonical(ref),
@@ -248,25 +254,66 @@ class ExecutionProjection:
                     obligation=O.QUALITY_SUPPORTING,status=S.NOT_APPLICABLE))
                 continue
             if domain == D.REFERENCE:
+                from drama_plugin.production.references import PREFIX, ReferenceExecutionBinding
+                if ref.artifact_ref.startswith(PREFIX):
+                    binding = ReferenceExecutionBinding.model_validate(item.value)
+                    if binding.role == 'REFERENCE' and binding.use_ref:
+                        add(domain,binding.use_ref,
+                            'Retained source reference use: '+ '; '.join(d.purpose for d in binding.duties)+
+                            ' Do not inherit its background, opening action, pose, lighting, camera progress or completed speech.', 'preserve.reference_use')
                 internal.append(CoverageEntry(fact_id="reference-plan:"+sha256_canonical(ref), domain=domain,
                     source_ref=ref, obligation=O.EXECUTION_REQUIRED, status=S.NOT_APPLICABLE))
                 continue
+            if domain == D.WORLD and ref.path[-1:] == ('locationBinding',):
+                from drama_plugin.contracts.location_design import SceneLocationBinding
+                from drama_plugin.production_design import resolve_location_design
+                binding = SceneLocationBinding.model_validate(item.value)
+                pin = binding.location_ref.artifact_ref
+                result = resolve_location_design(binding,scene_id=package.scope.scene.artifact_ref,
+                    current={pin.key:pin.fingerprint},artifacts={pin.key:self.reader.operations.versions.objects.read_ref(pin)})
+                # Geometry from the immutable base; transient state exclusively
+                # from the target override (or the target WORLD source).
+                base = result['base']
+                spatial = {k:base[k] for k in ('name','macroGeography','architectureOrStructures','zoneLayout','landmarks','continuityAnchors')}
+                add(domain,ref,'Location structure: '+str(spatial)+'. Current Scene state: '+str(result['localOverride']), 'environment.architecture')
+                continue
             if domain == D.SOUND and ref.owner == "scene" and isinstance(item.value, dict):
+                if (task.unit.execution_context and task.unit.execution_context.voice_over_ref
+                        and not any(f.source_ref == task.unit.execution_context.voice_over_ref and f.slot == 'preserve.audio_relation' for f in facts)):
+                    add(domain, task.unit.execution_context.voice_over_ref,
+                        'VOICE_OVER by the adult retrospective narrator, outside the pictured age and space. Visible subjects do not speak or lip-sync these lines.',
+                        'preserve.audio_relation', str(item.value['speakerKey']))
                 add(domain, child(ref, "text"), item.value["text"], "video.audio_requirements", str(item.value["speakerKey"]))
                 continue
             slot = slots.get(domain)
             if slot is None:
                 raise ValueError("UNIT_FIELD_NOT_EXECUTABLE")
-            if domain == D.CAMERA and ref.path[-2:] == ("movement", "policy"):
+            if domain == D.CAMERA and "movement" in ref.path:
                 slot = "video.camera_motion"
             subject = None
+            if domain == D.SUBJECTS and 'presentSubjects' not in ref.path:
+                # Constraints outside a subject row retain their authored scope.
+                # They must never become subject.None.role and inherit the first
+                # visible actor's label in the model adapter.
+                slot = 'preserve.subject_constraints'
             if domain == D.SUBJECTS and "presentSubjects" in ref.path:
                 parent = SourceReference(**{**ref.model_dump(), "path": ref.path[:-1] + ("id",)})
                 value = await self.reader.resolver.resolve(parent)
                 if not isinstance(value, str):
                     raise ValueError("UNIT_SUBJECT_ID_REQUIRED")
                 subject = value
-            add(domain, ref, item.value, slot, subject)
+            from drama_plugin.generation.unit_scope import project_scoped_value
+            add(domain, ref, project_scoped_value(task.unit.execution_context, ref, item.value), slot, subject)
+        if task.unit.execution_context:
+            context = task.unit.execution_context
+            internal.extend(CoverageEntry(fact_id='out-of-current-unit:'+sha256_canonical(f.reference), domain=f.domain,
+                source_ref=f.reference, obligation=O.QUALITY_SUPPORTING, status=S.OUT_OF_UNIT) for f in context.background_refs)
+            kind = task.boundary.kind if task.boundary else context.boundary
+            if kind in ('CUT','MATCH'):
+                boundary_ref = task.boundary.source_ref if task.boundary else context.boundary_ref
+                match_design = (' Authored match criterion: '+str(await self.reader.resolver.resolve(boundary_ref))+'.') if kind=='MATCH' else ''
+                add(D.EDITORIAL, boundary_ref,
+                    'NEW SHOT START after a '+kind+'.'+match_design+' Execute only the current entry state and action. Prior framing, camera progress and opening action are completed context, not instructions.', 'preserve.time')
         for ref, slot in ((task.unit.start_ref, "video.start_state"), (task.unit.end_ref, "video.end_state")):
             add(D.ACTION, ref, await self.reader.resolver.resolve(ref), slot)
         if task.continuation:
@@ -305,12 +352,18 @@ class ExecutionProjection:
                     status=S.OUT_OF_UNIT if disposition == "OUT_OF_UNIT" else S.OPTIONAL_OMITTED if disposition == "OPTIONAL_OMITTED" else S.INTERNAL_ONLY,
                     input_ref=task.unit.scope_decision_ref))
         by_event = {event.event_id: event for event in plan.speech_events}
+        line_text = {item.value['id']:item.value['text'] for item in selected
+            if item.selection.reference.owner == 'scene' and isinstance(item.value,dict)
+            and item.value.get('id') in by_event}
         for relation in plan.relations:
             first, second = by_event[relation.event_id], by_event[relation.target_event_id]
-            left = first.speaker_ref.artifact_ref if first.speaker_ref else first.event_id
-            right = second.speaker_ref.artifact_ref if second.speaker_ref else second.event_id
+            # Temporal relations bind utterance events, including two utterances
+            # by the same narrator. Exact approved text identifies each event in
+            # the model prompt; IDs and source evidence remain in the sealed plan.
+            left = '台词『'+line_text[first.event_id]+'』'
+            right = '台词『'+line_text[second.event_id]+'』'
             syntax = {"BEFORE":"先于", "AFTER":"后于", "OVERLAP":"与其重叠", "INTERRUPT":"插入其声场", "CONTINUE_UNDER":"持续在其声音下方", "FADE_BEHIND":"渐弱到其声音之后"}[relation.relation.value]
-            add(D.SOUND,relation.source_ref,f"{left}的声音{syntax}{right}的声音。","preserve.audio_relation")
+            add(D.SOUND,relation.source_ref,f"{left}{syntax}{right}；这是这两次发声的关系，不增加或重复台词。","preserve.audio_relation")
         selected_refs = {f.source_ref for f in facts}
         for item in await self.reader.selections(package):
             if item.selection.reference not in selected_refs:

@@ -21,8 +21,10 @@ class AudioSemanticResult:
     receipt: dict[str, Any]
     raw_text: str
     status: str
+    transcript: dict[str, Any] | None = None
 
 
 class AudioSemanticProvider(Protocol):
     async def observe_audio(self, source: AudioSemanticInput) -> AudioSemanticResult: ...
+    async def transcribe_audio(self, source: AudioSemanticInput, *, language: str) -> AudioSemanticResult: ...
     async def aclose(self) -> None: ...

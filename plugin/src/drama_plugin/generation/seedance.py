@@ -55,7 +55,9 @@ class SeedanceTargetAdapter:
         subjects = sorted({fact.subject_id for fact in ir.facts if fact.subject_id and fact.domain == "SUBJECTS"})
         for fact in ir.facts:
             slot = fact.slot
-            if slot.startswith("subject."):
+            if slot.startswith("subject.") and fact.subject_id is None:
+                slot = 'preserve.subject_constraints'
+            elif slot.startswith("subject."):
                 slot = "subject." + str(fact.subject_id) + "." + slot.split(".", 1)[1]
             index = count.get(slot, 0)
             count[slot] = index + 1
@@ -79,14 +81,15 @@ class SeedanceTargetAdapter:
                     fact.source_ref.path == e.source_ref.path + ("text",)), None)
                 timing = None if event is None or event.window_ms is None else f"{event.window_ms[0]/1000:g}–{event.window_ms[1]/1000:g}s"
                 audio.append(AudioBinding(path=path, source=source, text_hash=sha256_canonical(text),
-                    kind="DIALOGUE" if event is not None else "SFX", speaker=str(fact.subject_id) if event else None,
+                    kind=(event.delivery_mode if event.delivery_mode in ('VOICE_OVER','OFF_SCREEN') else 'DIALOGUE') if event is not None else "SFX", speaker=str(fact.subject_id) if event else None,
                     language=event.language if event else None, timing=timing))
         camera = next(f for f in ir.facts if f.slot == "video.camera_motion")
         # Existing generator only needs this read-only structural subset. We do
         # not fill unused legacy VisualPromptIR fields with fabricated defaults.
         view = SimpleNamespace(task=SimpleNamespace(clip_id=ir.scope.shot_id),
             subjects=tuple(SimpleNamespace(id=identity, role=SimpleNamespace(text=next(
-                (f.text for f in ir.facts if f.subject_id == identity and f.slot == "subject.role"), identity)))
+                (f.text for f in ir.facts if f.subject_id == identity and f.slot == "subject.role" and f.source_ref.path[-1:] == ('role',)),
+                next((f.text for f in ir.facts if f.subject_id == identity and f.slot == 'subject.role'),identity))))
                 for identity in subjects), action=True, blocking=True,
             video_temporal=SimpleNamespace(camera_motion=SimpleNamespace(text=camera.text, source=camera.fact_id),
                 action_progression=tuple(f for f in ir.facts if f.slot == "video.action_progression")))

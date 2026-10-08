@@ -125,10 +125,10 @@ def _validate(versions: CreativeVersionStore, declaration: PerformanceProjection
         if len(rows) != len(subject.beat_ids) or any(b.get("target") != subject.source_target_label for b in rows):
             raise ValueError("PERFORMANCE_DESTINATION_SOURCE_BINDING")
         for b in rows:
-            # These are missing *requirements*, not negative psychology. Only an
-            # explicit authority declaration can interpret the bound note.
-            if any(b.get(field) != "Not authored." for field in ("objective", "obstacle", "tactic")):
-                raise ValueError("PARTNER_DPD_REQUIRED: authored exchange requirement")
+            # The Beat's actor owns these requirements. A presence-only target
+            # does not inherit the actor's objective, obstacle or tactic. Its
+            # own obligations are checked on SubjectProjection and recursively
+            # below, with the original evidence binding retained.
             if not isinstance(b.get("note"), str) or not str(b["note"]).strip():
                 raise ValueError("PERFORMANCE_DESTINATION_EVIDENCE_REQUIRED")
             expected_paths = {("beats", str(authored_beats.index(b)), field)

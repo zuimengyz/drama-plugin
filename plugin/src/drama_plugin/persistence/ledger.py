@@ -57,11 +57,16 @@ ARTIFACT_TYPES.update({name: (name + "-v1", "film", RetentionClass.REVIEW
 INDEX_TYPES = frozenset({
     "governance-input", "generation-input", "latest-decision", "prepared",
     "governance-maintenance", "generation-rebuild", "final-prompt-key",
-    "execution-reference-current", "continuation-frame", "film-segment-dispatch-revision",
+    "execution-reference-current", "continuation-frame", "film-segment-dispatch-revision", "source-film-working-input", "source-film-candidate-reassessment",
     "media-proof-authorization", "media-proof-cost-terms", "human-media-review", "execution-recovery-authorization",
     "creative-integrity-reconciliation",
     "execution-input", "creative-input", "creative-checkpoint", "film-input", "film-checkpoint", "formal-media-current", "execution-live-grant",
 })
+
+# The native parent retains bounded batch/repair history in its checkpoint.
+# Contract admission still rejects creative bodies; this is a byte capacity,
+# independent of paid-operation and retry limits.
+CHECKPOINT_BYTE_LIMIT = 1048576
 
 
 class ProductionLedger:
@@ -81,13 +86,13 @@ class ProductionLedger:
             db.execute("PRAGMA busy_timeout=30000")
             db.execute("PRAGMA journal_mode=WAL")
             db.execute("PRAGMA synchronous=FULL")
-            db.executescript("""
+            db.executescript(f"""
                 CREATE TABLE IF NOT EXISTS production_run (
                     run_id TEXT PRIMARY KEY, revision INTEGER NOT NULL,
                     work_id TEXT NOT NULL, scene_id TEXT, shot_id TEXT,
                     mode TEXT NOT NULL, workflow_id TEXT NOT NULL,
                     state TEXT NOT NULL, cursor INTEGER NOT NULL,
-                    checkpoint_json TEXT NOT NULL CHECK(length(CAST(checkpoint_json AS BLOB)) <= 32768)
+                    checkpoint_json TEXT NOT NULL CHECK(length(CAST(checkpoint_json AS BLOB)) <= {CHECKPOINT_BYTE_LIMIT})
                 );
                 CREATE TABLE IF NOT EXISTS immutable_artifact (
                     artifact_id TEXT NOT NULL, version INTEGER NOT NULL,
@@ -116,6 +121,20 @@ class ProductionLedger:
                 );
             """)
             db.execute("BEGIN IMMEDIATE")
+            # SQLite cannot ALTER a CHECK constraint. Rebuild only this typed
+            # checkpoint table atomically; every row/value remains byte-exact,
+            # and operation foreign keys continue to point at production_run.
+            schema = db.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='production_run'").fetchone()[0]
+            old_check = "CHECK(length(CAST(checkpoint_json AS BLOB)) <= 32768)"
+            if old_check in schema:
+                retained_schema = [r[0] for r in db.execute("SELECT sql FROM sqlite_master WHERE tbl_name='production_run' AND type IN ('index','trigger') AND sql IS NOT NULL")]
+                widened = schema.replace("production_run", "_production_run_checkpoint_capacity_v2", 1).replace(old_check, f"CHECK(length(CAST(checkpoint_json AS BLOB)) <= {CHECKPOINT_BYTE_LIMIT})")
+                db.execute(widened)
+                db.execute("INSERT INTO _production_run_checkpoint_capacity_v2 SELECT * FROM production_run")
+                db.execute("DROP TABLE production_run")
+                db.execute("ALTER TABLE _production_run_checkpoint_capacity_v2 RENAME TO production_run")
+                for statement in retained_schema:
+                    db.execute(statement)
             # Additive migration of the Foundation operation table. Old LOCAL_ONLY
             # rows and historical runs are never rewritten or migrated.
             columns = {row[1] for row in db.execute("PRAGMA table_info(production_operation)")}
@@ -326,6 +345,22 @@ class ProductionLedger:
                 from drama_plugin.film.contracts import FilmArtifact
                 from drama_plugin.film.validation import validate_links as validate_film_links
                 film = cast(FilmArtifact, checked)
+                if artifact_type=='film-segment-revision' and film.review_ref.owner=='execution-operation':
+                    rejected=db.execute('SELECT run_id,dispatch_state,receipt_ref_json,progress_json FROM production_operation WHERE operation_id=?',
+                        (film.review_ref.artifact_ref,)).fetchone()
+                    progress=json.loads(rejected['progress_json']) if rejected and rejected['progress_json'] else {}
+                    if (not rejected or rejected['run_id']!=film.previous_run_id or rejected['dispatch_state']!='FAILED'
+                            or rejected['receipt_ref_json'] is not None or progress.get('queryLastCode')!='HTTP_400'
+                            or progress.get('attemptHistory') or progress.get('videoRef')):
+                        raise ValueError('Exact definite create rejection required')
+                if artifact_type=='film-segment-revision' and film.review_ref.owner=='provider-receipt':
+                    rejected=db.execute('SELECT dispatch_state,receipt_ref_json,progress_json FROM production_operation WHERE run_id=? AND operation_ref_json IS NOT NULL',
+                        (film.previous_run_id,)).fetchone()
+                    progress=json.loads(rejected['progress_json']) if rejected and rejected['progress_json'] else {}
+                    if (not rejected or rejected['dispatch_state']!='FAILED' or not rejected['receipt_ref_json']
+                            or ArtifactReference.model_validate_json(rejected['receipt_ref_json'])!=film.review_ref
+                            or progress.get('attemptHistory') or progress.get('videoRef')):
+                        raise ValueError('Exact terminal provider failure required')
                 parent_run = db.execute("SELECT work_id,scene_id,shot_id FROM production_run WHERE run_id=?", (film.run_id,)).fetchone()
                 if parent_run is None or tuple(parent_run) != (scope.work_id, scope.scene_id, scope.shot_id):
                     raise ValueError("Film artifact Run scope mismatch")
@@ -424,10 +459,10 @@ class ProductionLedger:
             from drama_plugin.execution.live_transport import FinancialTerms
             parsed_model = Authorization if index_type == "media-proof-authorization" else FinancialTerms
             value = parsed_model.model_validate(value.model_dump() if hasattr(value,"model_dump") else value)
-        elif index_type in {"latest-decision", "prepared", "final-prompt-key", "formal-media-current", "execution-live-grant", "human-media-review", "execution-recovery-authorization", "continuation-frame", "film-segment-dispatch-revision"}:
+        elif index_type in {"latest-decision", "prepared", "final-prompt-key", "formal-media-current", "execution-live-grant", "human-media-review", "execution-recovery-authorization", "continuation-frame", "film-segment-dispatch-revision", "source-film-working-input", "source-film-candidate-reassessment"}:
             value = ArtifactReference.model_validate(value.model_dump() if hasattr(value, "model_dump") else value)
             expected = {"latest-decision": "gate-decision", "prepared": "generation-preparation",
-                "final-prompt-key": "final-prompt", "formal-media-current": "formal-media-registration", "execution-live-grant": "controlled-live-grant", "human-media-review":"creative-media-review", "execution-recovery-authorization":"user-decision", "continuation-frame":"continuation-frame", "film-segment-dispatch-revision":"film-segment-revision"}[index_type]
+                "final-prompt-key": "final-prompt", "formal-media-current": "formal-media-registration", "execution-live-grant": "controlled-live-grant", "human-media-review":"creative-media-review", "execution-recovery-authorization":"user-decision", "continuation-frame":"continuation-frame", "film-segment-dispatch-revision":"film-segment-revision", "source-film-working-input":"media-binding", "source-film-candidate-reassessment":"creative-media-review"}[index_type]
             if value.owner != expected or value.version != 1:
                 raise ValueError("Ledger index points to the wrong artifact owner")
         elif type(value) is not int or value != 1:

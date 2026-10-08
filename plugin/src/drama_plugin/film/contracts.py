@@ -52,8 +52,8 @@ class DirectedShot(RuntimeContract):
     shot_id: Identifier
     shot: ShotBody
     requires: tuple[Identifier, ...] = Field(default=(), max_length=4)
-    # Only already represented cuts are executable; unsupported transitions wait.
-    transition: Literal['cut'] = 'cut'
+    # Native media dispatch distinguishes continuity from an editorial cut/match.
+    transition: Literal['cut', 'continuous', 'match'] = 'cut'
 
 class FilmDirection(RuntimeContract):
     shots: tuple[DirectedShot, ...] = Field(min_length=1, max_length=12)
@@ -142,13 +142,13 @@ class FilmCheckpoint(ExtendedRuntimeContract):
     scope_request_pin: SourcePin | None = None
     scope_decision_ref: ArtifactReference | None = None
     operation_task: GenerationTask | None = None
-    scene_media_run_ids: tuple[Identifier, ...] | None = Field(default=None, min_length=1, max_length=3)
-    scene_media_review_refs: tuple[ArtifactReference, ...] | None = Field(default=None, max_length=3)
+    scene_media_run_ids: tuple[Identifier, ...] | None = Field(default=None, min_length=1, max_length=128)
+    scene_media_review_refs: tuple[ArtifactReference, ...] | None = Field(default=None, max_length=128)
     scene_media_pending_tasks: tuple[GenerationTask, ...] | None = Field(default=None, max_length=3)
     scene_media_goal_hash: Identifier | None = None
     media_batch_ref: ArtifactReference | None = None
     media_batch_opening_review_ref: ArtifactReference | None = None
-    scene_media_revision_refs: tuple[ArtifactReference, ...] | None = Field(default=None,max_length=3)
+    scene_media_revision_refs: tuple[ArtifactReference, ...] | None = Field(default=None,max_length=128)
     completed: tuple[Identifier, ...] = Field(default=(), max_length=16)
 
 class FilmArtifact(RuntimeContract):
@@ -266,11 +266,11 @@ class FilmSegmentRevision(FilmArtifact):
     """Replace a candidate at one position; retain failed media, fees and deferred goals."""
     owner = 'film-segment-revision'
     schema_version: Literal['film-segment-revision-v1'] = 'film-segment-revision-v1'
-    slot: int = Field(ge=0,le=2)
+    slot: int = Field(ge=0,le=127)
     previous_run_id: Identifier
     replacement_run_id: Identifier
     review_ref: ArtifactReference
-    camera_direction_ref: ArtifactReference
+    camera_direction_ref: ArtifactReference | None = None
     previous_checkpoint: FilmCheckpoint
 
 FILM_TYPES: dict[str, type[FilmArtifact]] = {c.owner:c for c in (FilmPlan, FinalFilmCandidate, FinalTechnicalQA, FinalCreativeReview, FinalDelivery, FilmRevisionFeedback, FilmMediaBatch, FilmSegmentRevision)}

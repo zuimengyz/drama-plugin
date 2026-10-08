@@ -3,7 +3,7 @@ from collections.abc import Callable
 from drama_plugin.film.contracts import (FilmArtifact,FilmPlan,FinalFilmCandidate,FinalTechnicalQA,FinalCreativeReview,FinalDelivery,FilmRevisionFeedback,FilmSegmentRevision)
 from drama_plugin.generation.contracts import CameraExecutionDirection
 from drama_plugin.governance.contracts import GateDecision
-from drama_plugin.execution.contracts import ReviewedAVCandidate,TechnicalMediaReview,CreativeMediaReview
+from drama_plugin.execution.contracts import ReviewedAVCandidate,TechnicalMediaReview,CreativeMediaReview,ExecutionOperation,ProviderReceipt
 from drama_plugin.persistence.review import UserDecisionRecord
 from drama_plugin.runtime.contracts import ArtifactReference,RuntimeContract,DecisionCategory
 
@@ -18,12 +18,21 @@ def validate_links(item:FilmArtifact,resolve:Callable[[ArtifactReference],Runtim
     if isinstance(item,FilmPlan):
         return # Author originals resolve through their independent Canon owner.
     if isinstance(item,FilmSegmentRevision):
-        review=resolve(item.review_ref);direction=resolve(item.camera_direction_ref)
+        review=resolve(item.review_ref)
+        direction=resolve(item.camera_direction_ref) if item.camera_direction_ref else None
         failed_media=isinstance(review,CreativeMediaReview) and review.outcome=='REVISE' and review.run_id==item.previous_run_id
         failed_prepare=isinstance(review,GateDecision) and review.effect=='BLOCK'
-        if (not (failed_media or failed_prepare) or review.scope.work_id!=item.scope.work_id
-                or not isinstance(direction,CameraExecutionDirection) or direction.scope!=review.scope
-                or direction.source_package_ref!=(review.source_package_ref if failed_media else review.package_ref)
+        failed_dispatch=isinstance(review,ExecutionOperation) and review.run_id==item.previous_run_id
+        failed_task=isinstance(review,ProviderReceipt) and review.state=='FAILED' and review.result is None and bool(review.remote_identity) and review.run_id==item.previous_run_id
+        if failed_task:
+            operation=resolve(review.operation_ref)
+            failed_task=(isinstance(operation,ExecutionOperation) and operation.run_id==review.run_id
+                and operation.scope==review.scope and operation.source_package_ref==review.source_package_ref)
+        source_package=review.package_ref if failed_prepare else getattr(review,'source_package_ref',None)
+        if (not (failed_media or failed_prepare or failed_dispatch or failed_task) or review.scope.work_id!=item.scope.work_id
+                or (item.camera_direction_ref and (not isinstance(direction,CameraExecutionDirection) or direction.scope!=review.scope
+                    or direction.source_package_ref!=source_package))
+                or (not item.camera_direction_ref and not (failed_media or failed_dispatch or failed_task))
                 or item.previous_checkpoint.scene_media_run_ids[item.slot]!=item.previous_run_id
                 or item.previous_run_id==item.replacement_run_id):
             raise ValueError('Exact scoped failed segment revision required')

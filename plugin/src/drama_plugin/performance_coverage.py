@@ -7,7 +7,7 @@ from __future__ import annotations
 import re
 from typing import Any, Mapping, Sequence, TYPE_CHECKING
 from drama_plugin.contracts.base import dump_contract, sha256_canonical
-from drama_plugin.contracts.dpd import DPDSnapshot, BeatDPD, SceneDPD
+from drama_plugin.contracts.dpd import DPDSnapshot, BeatDPD, SceneDPD, DPDLayerState
 from drama_plugin.dpd import compose_dpd
 from drama_plugin.contracts.sequence import FilmReview, SourcePin
 
@@ -109,8 +109,46 @@ def validate_performance_target(subject_ref: str, dpds: Mapping[str, DPDSnapshot
             'status': 'PARTNER_DPD_PRESENT' if required else 'PARTNER_DPD_NOT_REQUIRED'}
 
 
+def compose_partner_beats(*, projection_scope: PerformanceScopeWitness,
+                          beats: Mapping[str, BeatDPD]) -> tuple[BeatDPD, ...]:
+    """Project approved silent partner actions without inventing psychology."""
+    from drama_plugin.contracts.dpd import PerformanceTargetRole
+    from drama_plugin.professional_design.performance_scope import SubjectProjection
+    declaration = projection_scope.current()
+    performance = projection_scope._versions.resolve(declaration.performance_ref).body
+    rows = performance.facts.get('projectionSubjects', [])
+    approved = {s.subject_ref: s for row in rows for s in (SubjectProjection.model_validate(row),)}
+    result = []
+    for subject in declaration.subjects:
+        if subject.role != PerformanceTargetRole.INTERACTIVE_PARTNER:
+            continue
+        missing = [key for key in subject.beat_ids if not any(
+            b.beat_id == key and b.actor == subject.subject_ref for b in beats.values())]
+        if not missing:
+            continue
+        # Additional bindings require the exact adopted owner row. A consumer
+        # declaration alone cannot author an action or manufacture a partner.
+        if approved.get(subject.subject_ref) != subject:
+            raise ValueError('PARTNER_DPD_SOURCE_BINDING_MISMATCH')
+        actions = (*subject.reciprocal_actions, *subject.authored_responses,
+                   *subject.listener_tasks, *subject.dramatic_exchanges)
+        if not actions or subject.spoken_ids:
+            raise ValueError('PARTNER_DPD_REQUIRED: authored silent partner actions')
+        for key in missing:
+            if key not in beats:
+                raise ValueError('PARTNER_DPD_BEAT_BINDING_MISMATCH')
+            result.append(BeatDPD(scene_id=declaration.scope.scene_id, beat_id=key,
+                actor=subject.subject_ref, obstacle='; '.join(subject.obstacles) or 'Not authored.',
+                transition_trigger='; '.join(actions), direction=DPDLayerState(
+                    objective='; '.join(subject.objectives) or None,
+                    tactic='; '.join(subject.tactics) or None,
+                    performance_boundaries=actions)))
+    return tuple(result)
+
+
 def validate_shot_dpd_coverage(*, projection_scope: PerformanceScopeWitness,
-                               snapshots: Mapping[str, DPDSnapshot], beats: Mapping[str, BeatDPD]) -> dict[str, object]:
+                               snapshots: Mapping[str, DPDSnapshot], beats: Mapping[str, BeatDPD],
+                               partner_beats: tuple[BeatDPD, ...] = ()) -> dict[str, object]:
     """Target Shot DPD prerequisite coverage, not Film/AV/creative-media QA.
 
     Silent BeatDPD remains sparse; no fake SpokenContent is manufactured to make
@@ -146,7 +184,10 @@ def validate_shot_dpd_coverage(*, projection_scope: PerformanceScopeWitness,
     for key, beat in beats.items():
         if beat.beat_id != key or beat.scene_id != declaration.scope.scene_id or beat.actor != actual[key]['actor']:
             raise ValueError('SHOT_BEAT_DPD_SOURCE_BINDING_MISMATCH')
-    all_dpds: dict[str, DPDSnapshot | BeatDPD] = {**beats, **snapshots}
+    if partner_beats != compose_partner_beats(projection_scope=projection_scope, beats=beats):
+        raise ValueError('PARTNER_DPD_SOURCE_BINDING_MISMATCH')
+    all_dpds: dict[str, DPDSnapshot | BeatDPD] = {**beats, **snapshots,
+        **{'partner:' + str(i): b for i, b in enumerate(partner_beats)}}
     targets = {s.subject_ref: validate_performance_target(s.subject_ref, all_dpds, projection_scope=projection_scope)
                for s in declaration.subjects}
     return {'status': 'PASS', 'spokenCount': len(snapshots), 'beatCount': len(beats),

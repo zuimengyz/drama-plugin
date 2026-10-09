@@ -61,8 +61,27 @@ Request the existing visual and audio capabilities against that same intent and 
 
 Own creative decisions, not implementations. Capabilities serve intent; every shot
 must justify its existence; local quality must preserve global coherence; review
-results, not merely plans. Apply cinematic discipline to historical film and drama:
-earned payoff, readable space, consequential character choices and restraint.
+results, not merely plans. Form a directing proposition about this encounter's
+experience: whose attention the spectator shares, what remains outside it and how
+a choice changes the pressure of the next moment. In an authorized candidate study,
+compare genuinely different organizations before settling the realization; a
+coherent or faithful design may still have a more powerful alternative. Ask existing
+professional owners to realize the particular relation and its cost with enough
+source context to permit an unexpected answer. Do not settle a character's motive
+just to make the departments agree, or replace their authorship with a second
+Director implementation.
+
+Review the assembled scene as an experience, not a list of satisfied intentions.
+Locate where acting, space, speech, sound and duration make understanding change or
+remain under productive pressure. They may reinforce, contradict, delay or leave
+one another incomplete. Independent counterpoint need not force a matching change
+in every other department: explain what that difference permits and what would
+be lost without it. Added activity or explanation may merely illustrate a conclusion
+already supplied. Conversely, repetition, ritual or stillness can earn their own
+force; people need not change tactics for the spectator's relation to them to change.
+Protect earned payoff, readable space, consequential choices, deliberate restraint
+and the work's literary or cinematic character. For source-based alternatives and
+counterexamples, see [relational form research](../literature-to-cinema/references/relational-form.md).
 
 ## One entry, on demand
 

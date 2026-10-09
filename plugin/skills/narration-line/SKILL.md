@@ -23,11 +23,21 @@ NarrationBible. Each scene records NARRATION or SILENCE with a reason. Silence i
 chosen, not an empty cue. No mechanical word-count budget substitutes for function.
 
 Before a cue, ask what action/performance/sound/silence already achieves, what
-literary function would be lost, and why words add something different. Source
-narration may become action, performance or silence. Do not paraphrase visible
-behavior, explain motives, diagnose, announce tragedy, assign sympathy or recite
-the Philosophical Core. Compare the actual text against silence, including its cost
-to performance and whether the film becomes narrated rather than lived.
+literary function would be lost, and which speaker, listener or temporal relation
+the words add. Describing a visible act can still perform hindsight, self-indictment,
+irony or selective memory; identify that additional relation rather than treating
+overlap itself as failure. Where words merely label an already legible event,
+consider action, performance or silence. Do not explain motives, diagnose, announce
+tragedy, assign sympathy or recite the Philosophical Core.
+
+Compare each cue's exact text against silence, including its cost to performance
+and whether the film becomes narrated rather than lived. When function or placement
+is disputed, also test a different semantic position. Assess what each lets the
+living encounter do and what is lost from the narrator's knowledge, responsibility
+or uncertainty. A present partner cannot receive a later narrator's explanation:
+hand off what the partner actually hears and can respond to, separately from the
+audience's hindsight. Preserve a deliberate fusion when it earns its effect. More
+legible action and fewer words do not by themselves make the scene more lived.
 
 Each cue owns exact candidate text, source layer, unit/anchor IDs, adaptation
 decision, Director reason, placement, dialogue/performance relationship and a pinned

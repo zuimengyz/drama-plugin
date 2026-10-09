@@ -5,17 +5,57 @@ description: Convert independently argued film-art findings into contextual crea
 
 # Artistic Learning and Evolution
 
-Consume pinned observations, independent professional/holistic judgments, counterarguments, current creative guidance and its actual handoff. Own the learning study, not source interpretation, specialist design or film adoption.
+Consume the work, its artistic intent, audience feedback, pinned observations,
+independent judgments and current guidance. Own artistic research and the learning
+study; source interpretation, specialist creation and film adoption retain their
+owners. Research expressive potential as well as failure. Sound existing guidance
+is a resource, not an endpoint: a correct habit can be challenged by a stronger
+artistic question without first being declared defective.
 
-Diagnose the causal level before editing guidance: absent craft principle; existing principle not used; used but artistically weak choice; design-to-generation mismatch; or evidence insufficient. A disappointing output does not prove its Skill is missing. Reuse existing guidance or improve its use before proposing another rule.
+Diagnose causes before claiming a Skill failed: absent principle, unused principle,
+weak artistic choice, design-to-generation mismatch or insufficient evidence. Study
+credible literary, dramatic and cinematic knowledge where it changes the question;
+separate an author's proposition, the team's inference and an untested hypothesis.
+Bring genuinely competing questions to the existing creative owners, rather than
+prescribing the actions or feelings a critic later rewards them for following.
+Learn from powerful imperfection, restraint and successful ambiguity too.
 
-Record observation → intent/effect difference → attributed owners → counterargument → smallest candidate → contextual principle → test. Choose only relevant Skills; a cross-professional finding need not modify all participants. Learn from successful restraint and ambiguity too.
+Separate open exploration from a guidance comparison. Open studies may change scene
+organization, speech, viewpoint, sound and duration within the user's source and
+authority bounds. Independent criticism asks what new thought, relationship, world
+or film form each makes possible, and what it sacrifices. An alternative that only
+adds explanation, activity or terminology need not be an improvement. A useful
+finding may concern a limitation of the team's method rather than a missing rule.
 
-Create an isolated candidate copy or patch pinned to the original Skill checksum. Change only artistic guidance, preserving technical paragraphs, context/tools/permissions and production contracts. Prefer revising, fusing or replacing an existing principle over indefinite appended prohibitions. Include applicable context, a counterexample and a withdrawal condition.
+When a method deserves testing, preserve recoverable originals pinned by checksum
+and revise, fuse or replace relevant artistic guidance. Its scale follows the
+artistic problem, not a minimum patch or a Skill count. Preserve technical
+paragraphs, context/tools/permissions and production contracts. State its applicable
+context, strongest counterexample and condition for revisiting or withdrawing it.
+A cross-professional discovery need not modify all participating Skills.
 
-For a controlled comparison, keep source, task, major inputs, author capability and evaluation questions constant. Only the selected guidance changes; use separate fresh author passes without showing a desired result. Give a blinded independent critic the same source and anonymous alternatives. Compare concrete playable differences and costs, not prompt length or the number of instructions. An explanatory interpretation may conceal a handoff problem: test the actual professional design that must use the insight, including its effect on the next owner. A tied or mixed single comparison does not invalidate every learning direction. Locate the failure, refine or withdraw the method, and preserve contrary results rather than repeating an unchanged candidate until it wins.
+For a controlled comparison, keep source, character conditions, creative goal,
+author capability and evaluation questions constant. Only the selected guidance
+bundle changes; use fresh authors without a desired result and a blinded independent
+critic with the same sources and anonymous works. Do not freeze the expressive
+choices the method is meant to develop: different shots, words and durations remain
+available. A narrowly bounded comparison may fix more variables, but it cannot be
+the only route to discovery. Test actual professional consumers and complete
+designs, including what the next owner receives, not merely explanatory notes.
+Preserve negative and mixed results; refine or withdraw the method rather than
+repeat it unchanged until it wins. Close the study when further work adds little
+or an argued aesthetic disagreement remains irreducible; retain the best-supported
+candidate and its unresolved cost. If the original guidance already yields the new
+value, report renewed use instead of claiming the revision was necessary.
 
-Separate evidence levels: guidance altered a judgment; a creative design improved; a realized film improved. Text-only tests can establish the first two, never the third. Replication and future media observations remain open where needed. Retain mixed or negative results and revise or withdraw the candidate.
+Through the task's explicitly authorized local artistic route, execute revised
+guidance in real creative work, obtain independent criticism and retain or restore
+it. Then allow the creative owners to make a final work from the argued findings;
+feedback-informed synthesis is not an untouched blind-trial winner. Distinguish an
+artistic hypothesis, design improvement, tested guidance benefit and realized film
+improvement. Text studies cannot prove the last. Narrow claims where replication,
+performance or actual sound/image experience remains unavailable; do not let those
+limits become a ban on source-bound artistic exploration.
 
 Report promotion status and limits. Candidates need independent review and the user's requested adoption route before replacing production guidance; this Skill never merges its own learning. When the user explicitly requests local creative-guidance enhancement, complete that route with an actual artistic-body revision supported by the independent comparison, or restore the original if its cost outweighs its benefit. Preserve the original and explain what changed in a consumer's design, what remains unproved and when to revisit the revision. This is a contextual craft decision, not automatic promotion from a score or a candidate label. No automatic writes to existing Skills, new aesthetic production gates, paid calls or changes to Runtime/provider/compiler/API/schema/configuration.
 

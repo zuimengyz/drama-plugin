@@ -24,8 +24,14 @@ Separate open exploration from a guidance comparison. Open studies may change sc
 organization, speech, viewpoint, sound and duration within the user's source and
 authority bounds. Independent criticism asks what new thought, relationship, world
 or film form each makes possible, and what it sacrifices. An alternative that only
-adds explanation, activity or terminology need not be an improvement. A useful
-finding may concern a limitation of the team's method rather than a missing rule.
+adds explanation, activity or terminology need not be an improvement. Distinguish
+renewed attention to the work, a new artistic inspiration and a guidance revision:
+an open study benefiting from all three does not isolate the method's contribution.
+Give both sides of a guidance comparison the same new inspiration, or use a common
+contrasting task; where this cannot be separated, report conditional evidence.
+A useful finding may concern the team's use of sound guidance rather than a missing
+rule. Transfer the way of discovering a relation, not the successful example's
+gesture, emotional scale or chosen form.
 
 When a method deserves testing, preserve recoverable originals pinned by checksum
 and revise, fuse or replace relevant artistic guidance. Its scale follows the

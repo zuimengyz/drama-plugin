@@ -58,6 +58,39 @@ targeted revision.
 
 For an authorized standalone candidate rewrite, use [whole-scene craft proof](../cinematic-screenplay-incubation/references/scene-craft-proof.md): retain formal sources and user locks, pin the candidate wording, and keep source mappings outside the readable body. Candidate approval never implicitly replaces formal `spokenContent`.
 
+## Discover the dramatic process and its center of attention
+
+For literary development, use the adaptation's open opportunities as well as its
+preservation decisions. Begin with what people must accomplish in this particular
+world and what it costs them not to accomplish it. Event completion does not settle
+what is worth experiencing. Explore competing centers of attention: a request being
+received, a possibility withheld, a shared assumption lost, or a need persisting
+after its apparent conclusion. Let the complete encounter test these possibilities
+before naming its fulcrum. It may be distributed through repetition, waiting or
+absence rather than concentrated in a reversal.
+
+Where the source summarizes an exchange, discover how it is received, tested,
+misunderstood or refused. Compare a lived passage with its plot-report compression:
+which person's opportunity, waiting or cost disappears while the facts stay clear?
+That loss can justify attention; if only explanation disappears, examine whether
+the explaining is itself a consequential confession, argument or comic event.
+Neither expansion nor compression wins in advance. An addition should change the
+lived relationship, available choice or accumulated cost, not merely clarify motive.
+
+Let environment and ordinary activity have purposes beyond illustrating the
+protagonist. They can change the conditions of an encounter without becoming new
+obstacles in a formula. A sustained desire, repeated attempt or wait may deepen
+the audience's understanding of a cost even when the person's intention does not
+change. Do not manufacture a reversal in each moment to prove depth. Compare the
+complete scene with the added process removed; an intelligible cooperation can
+also divert attention from a more consequential refusal. Preserve productive
+pressure and unresolved consequence, and discard activity that only lengthens
+event delivery. Distinguish essential connections from the experience that merits
+time; do not give every causal beat equal emphasis. Carry the particular need,
+partner knowledge, remaining cost and reason for attention into the existing
+Character/Dialogue/Performance handoff; leave physical and audiovisual realization
+to their owners. These are artistic discovery questions, not additional gates.
+
 ## Creative Lifecycle
 
 ### 1. Understand Goal

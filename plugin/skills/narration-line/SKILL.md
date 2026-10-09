@@ -22,22 +22,33 @@ distance, knowledge, temporal position, irony, density and rhythm consistent in 
 NarrationBible. Each scene records NARRATION or SILENCE with a reason. Silence is
 chosen, not an empty cue. No mechanical word-count budget substitutes for function.
 
-Before a cue, ask what action/performance/sound/silence already achieves, what
-literary function would be lost, and which speaker, listener or temporal relation
-the words add. Describing a visible act can still perform hindsight, self-indictment,
-irony or selective memory; identify that additional relation rather than treating
-overlap itself as failure. Where words merely label an already legible event,
-consider action, performance or silence. Do not explain motives, diagnose, announce
-tragedy, assign sympathy or recite the Philosophical Core.
+Begin with the whole scene and its neighboring narrative movement, not a defense
+of individual cues. Whose experience governs attention? Can other people make
+claims the narrator has not already explained, and can the event leave an unresolved
+cost? A sequence of individually valuable admissions may collectively settle the
+relationship too early. Conversely, a sustained act of recollection, thought,
+irony or address can itself be the film's living dramatic event. Do not measure
+narrative autonomy by how little speech remains.
 
-Compare each cue's exact text against silence, including its cost to performance
-and whether the film becomes narrated rather than lived. When function or placement
-is disputed, also test a different semantic position. Assess what each lets the
-living encounter do and what is lost from the narrator's knowledge, responsibility
-or uncertainty. A present partner cannot receive a later narrator's explanation:
-hand off what the partner actually hears and can respond to, separately from the
-audience's hindsight. Preserve a deliberate fusion when it earns its effect. More
-legible action and fewer words do not by themselves make the scene more lived.
+Compare complete passages with different narration organizations that pursue the
+same source and dramatic purpose. Give action and partners enough design to work;
+muting an unfinished scene is not a fair alternative. Compare what the audience
+experiences before, during and after the encounter, including losses from moving
+thought into a later scene. Keep essential thought where its accumulation creates
+questions, choices or narrative identity, rather than hiding it merely to favor
+images. A local gain must not leave the whole film without its necessary voice.
+
+Then return to each cue: what do action/performance/sound/silence already achieve,
+what literary function would be lost, and which speaker, listener or temporal
+relation do the words add? A description of a visible act can perform hindsight,
+self-indictment, irony or selective memory; overlap alone is not failure. Compare
+the exact text with silence and, for disputed placement, another semantic position.
+Assess the living partner's scope for response as well as the narrator's knowledge,
+responsibility and uncertainty. The partner cannot receive a later explanation:
+hand off what they actually hear separately from the audience's hindsight. Preserve
+a deliberate fusion when it earns its effect. Do not diagnose motives, assign
+sympathy or recite the Philosophical Core to certify meaning. Greater clarity and
+fewer words do not by themselves make the encounter more lived.
 
 Each cue owns exact candidate text, source layer, unit/anchor IDs, adaptation
 decision, Director reason, placement, dialogue/performance relationship and a pinned

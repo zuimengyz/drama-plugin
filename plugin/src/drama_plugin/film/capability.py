@@ -346,6 +346,11 @@ class FilmCapabilities:
         cp = self.store.checkpoint(inputs.run_id)
         assert cp.direction_ref and cp.canon_ref
         canon,direction = self.store.author(cp.canon_ref,FilmCanon),self.store.author(cp.direction_ref,FilmDirection)
+        # Complete native Canon fixes narrative order; shooting order does not
+        # authorize creating later-scene identities independently. Historical
+        # partial inventories remain unknown, without fabricated adoption.
+        if all(scene.scene.subjects for scene in canon.scenes):
+            p.asset_sequence.bind_film(inputs.scope.work_id, canon, source_ref=cp.canon_ref, screenplay_ref=cp.screenplay_ref)
         shot = direction.shots[slot]
         scene = next(s for s in canon.scenes if s.scene_id == shot.scene_id)
         scope = RuntimeScope(work_id=inputs.scope.work_id,scene_id=shot.scene_id,shot_id=shot.shot_id)
@@ -428,6 +433,8 @@ class FilmCapabilities:
                         scope=artifact.scope,body=artifact.body,sources=parents,
                         operation=inputs.run_id+':film-adopt:'+prior.fingerprint,adoption_decision=cp.adoption_ref,candidate_origin=prior)
         cp=self.save(inputs,units=tuple(ShotUnit.model_validate({**u.model_dump(),'refs':tuple(remapped[r] for r in u.refs)}) for u in cp.units))
+        if p.native_task_persistence.enabled:
+            await p.native_task_persistence.persist(tuple(dict.fromkeys(r for u in cp.units for r in u.refs)))
         units=list(cp.units)
         for slot,unit in enumerate(units):
             identity=unit.production_run_id or f'{inputs.run_id}:unit:{slot}:production:v{cp.film_version}'

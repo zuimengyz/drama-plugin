@@ -28,6 +28,7 @@ services:
     base_url: http://127.0.0.1:8080
     operations:
       create_work: /api/tool/work/create
+      persist_native_task: /api/tool/work/persist-native
       get_work: /api/tool/work/get
       save_work: /api/tool/work/save
       patch_work: /api/tool/work/patch-content

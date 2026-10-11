@@ -79,6 +79,20 @@ def _environment_overrides(environment: Mapping[str, str]) -> dict[str, Any]:
             providers[service] = {"mode": environment[mode_key].strip().lower()}
         prefix = f"DRAMA_PLUGIN_SERVICE_{service.upper()}_"
         values: dict[str, Any] = {}
+        # Shared memory-service connection; explicit legacy domain ENV always wins.
+        # Research and production may be independent services and are never aliased.
+        if service in ("memory", "asset", "media", "context", "voice"):
+            for suffix, field in (("BASE_URL", "base_url"), ("API_TOKEN", "api_token"), ("TIMEOUT_SECONDS", "timeout_seconds")):
+                shared = "DRAMA_SERVICE_" + suffix
+                if shared in environment:
+                    raw = environment[shared].strip()
+                    if suffix == "TIMEOUT_SECONDS":
+                        try:
+                            values[field] = float(raw)
+                        except ValueError as exc:
+                            raise ConfigurationError("Invalid shared Drama Service timeout") from exc
+                    else:
+                        values[field] = raw or (None if suffix == "API_TOKEN" else "")
         if prefix + "BASE_URL" in environment:
             values["base_url"] = environment[prefix + "BASE_URL"].strip()
         if prefix + "API_TOKEN" in environment:
@@ -155,6 +169,11 @@ def load_config(
         if isinstance(payload.get("video_route_policy"), dict):
             payload["video_route_policy"] = {**payload["video_route_policy"], "source": "PLUGIN_CONFIG"}
     merged = _deep_merge(payload, _environment_overrides(source_environment))
+    # Additive operation for the established Drama-Service memory contract only.
+    # An unrelated/custom memory provider retains its explicitly configured routes.
+    memory_ops = merged.get('services', {}).get('memory', {}).get('operations', {})
+    if memory_ops.get('get_work') == '/api/tool/work/get':
+        memory_ops.setdefault('persist_native_task', '/api/tool/work/persist-native')
     try:
         config = DramaPluginConfig.model_validate(merged)
         config._language_sources = {field: ("environment:"+key if key in source_environment else f"config:{path}:{field}" if field in payload else "default:"+field) for field,key in LANGUAGE_ENV.items()}

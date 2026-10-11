@@ -5,9 +5,42 @@ description: Resolve stable reusable visual assets for a Work, Script, Episode, 
 
 # Asset Resolution
 
+For native narrative asset preparation, read the exact pending reference through
+`specialized_assets.read_preparation`. Resolve each missing requirement in that
+Scene before later Scenes: reuse accepted assets/references first, or use the
+native `specialized_assets.*_reference` chain for a necessary new reference. The
+pending result retains its preparation ref and a Runtime child ref. Read that
+child with `read_reference`: the existing specialized professional author supplies
+source-bound artwork, and the existing still compiler seals its request. If the
+artwork is supplied interactively, `frame_reference` accepts a complete typed
+FrameSpec with the exact target/design fingerprint, not a raw prompt. Native
+source authority is checked by this owner; `professional_sources` is reserved for
+the separate opt-in retained Still Knowledge receipt and must not be repurposed.
+Use `quote_reference` for current request-bound quote/balance and one-operation
+budget. `decide_reference` delegates exact COST_APPROVAL/ADOPTION to the existing
+Target decision owner. `resume_reference` advances that same child. Review actual
+retained pixels and record exact-hash checks/findings using `review_reference`;
+PASS alone does not adopt. Accepted candidates register through the existing
+SpecializedAssetSequence and AssetProvider, then the parent prepares its remaining
+narrative dependencies. No earlier Scene videos are required.
+
+A pending preparation grants no media-spending authority. Do not
+call retired raw-prompt generation or automatically adopt candidates/templates.
+After the existing artistic adoption covers the exact design and reference media,
+use `specialized_assets.accept`; it reads back the complete registration and reuses
+an already accepted requirement on replay. Keep new variations as separate versions
+with an accepted parent, retaining old records. Then resume the existing creative
+Run; it advances remaining predecessor assets and the requested Scene automatically.
+Drama-Service persists these originals, proofs and bindings through AssetProvider;
+it does not decide appearance, order, or artistic adoption.
+The existing Asset and ordinary image import APIs require a registered business
+Work with this exact identity. Check that scope before spending. The separate
+Target-video native-scope receipt cannot authorize asset-image import; never forge
+a Shot, Package or Service Work alias to make a reference appear registered.
+
 Analyze only the current creative context and identify visual objects that may deserve reuse across Scenes, Shots, or Agent runs. Use `asset.get_asset` for a known `assetId`. Use `asset.list_assets` for a structured type scope; use `asset.search_assets` when only a natural-language identity or description is known. Judge candidates before creating anything. `FOUND` and `NOT_FOUND`, suitability, classification, and reuse decisions belong to the Agent.
 
-Use `media.get_media` when an existing reference Media ID must be inspected. When no suitable Asset exists and a standard image is necessary, return the missing reference duty to its owning design Skill (character-art for characters, environment-art for environments, or prop-design for objects) and the formal production workflow. Consume only the resulting compiled, gated and reserved request; raw-prompt `production.generate_image` is retired. Asset resolution owns reuse and registration, not visual design. Import an unregistered physical result with `media.import_media`, then get, resolve, download and verify its complete hash before binding it. `media.create_media` registers an opaque reference only; it does not prove stored bytes. never register an already stable `mediaId` again. Use `asset.create_asset` only after producing the complete initial formal state needed to register a genuinely new stable Asset. A successful create is the normal first write and returns the stable ID; do not call `asset.save_asset` immediately afterward unless a concrete revision has actually occurred. Use `asset.save_asset` only to revise an already persisted Asset because of a specific user request, discovered error, upstream change, or necessary addition to its formal state.
+Use `media.get_media` when an existing reference Media ID must be inspected. When no suitable Asset exists and a standard image is necessary, return the missing reference duty to Specialized Asset Design for concrete characters/environments/costume, or Prop Design for its independent object originals, then use the native reference production chain above. Deprecated character-art/environment-art are retained read views. Consume only the resulting compiled, gated and reserved request; raw-prompt `production.generate_image` is retired. Asset resolution owns reuse and registration, not visual design. Import an unregistered physical result with `media.import_media`, then get, resolve, download and verify its complete hash before binding it. `media.create_media` registers an opaque reference only; it does not prove stored bytes. never register an already stable `mediaId` again. Use `asset.create_asset` only after producing the complete initial formal state needed to register a genuinely new stable Asset. A successful create is the normal first write and returns the stable ID; do not call `asset.save_asset` immediately afterward unless a concrete revision has actually occurred. Use `asset.save_asset` only to revise an already persisted Asset because of a specific user request, discovered error, upstream change, or necessary addition to its formal state.
 
 When standard-image production uses an external visual provider, load the shared [Visual Provider Capability and Technical Retry Policy](../shot-production/references/visual-provider.md). Apply its retry classification, bounded per-operation budget, submission-uncertainty protection, same-job recovery, and separate technical retry versus Visual Review revision counters. Do not duplicate or weaken that policy here.
 
@@ -92,3 +125,14 @@ For sequence reuse, contribute current identity/reference fingerprints to [Bible
 For a Sequence ProductionDesignFreeze, resolve current Asset IDs, content fingerprints, explicit user approval evidence and any required verified Media bytes. A text-only design or HOST_WORKING_REFERENCE cannot fulfill an approved face/media duty. Return every missing role, including mount/tack when required; never approve a candidate to complete the seal.
 
 For explicit [visual routes](../../docs/visual-route-contract.md), use route-aware discovery before reference selection. Existing untagged assets remain legacy evidence requiring review, never implicit CG matches. Store visualRoute only on newly authorized route-specific content; create a separate design/reference revision rather than overwriting a live-action identity or copying its approval.
+
+Seedream supports text-to-image (default) and explicitly selected image-to-image.
+Existing assets alone never change the mode. Image-to-image selects accepted Asset
+references through reference_selections (or the inherited parent), verifies their
+formal Media bytes and sends them in the official image field, with distinct
+identity/location duties. Text rendering of a justified variant still inherits
+the approved identity design; it must not claim image conditioning or establish a
+new face. Both modes require actual review and adoption. Unknown synchronous
+submission cannot be queried by pretending a video task ID is an image task.
+Recover the exact retained receipt/output or leave that uncertain attempt pending;
+never POST again on resume.

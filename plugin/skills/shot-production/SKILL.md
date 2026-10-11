@@ -5,6 +5,15 @@ description: Produce image, video, or audio media for an approved historical-dra
 
 # Shot Production
 
+For new native production, consume narrative asset preparation from the existing
+Professional entry. Do not bypass a pending `specialized-asset-preparation` with
+temporary character/room prose. Resolve its exact requirements through Asset
+Resolution, then resume the same Run. Shooting order remains independent of asset
+creation order; previous Scenes' videos are not asset prerequisites. Prefer the
+accepted character/location library references over whole-shot video reuse. A
+character reference's background carries no location authority, and reference
+capacity/delivery still use the selected model's existing checks.
+
 For selected Seedance native audio/video production, resolve the current Sound and
 spoken-event design before freezing the request. Verify applicable delivery,
 space, environmental priority, dramatic transitions and performance in the final

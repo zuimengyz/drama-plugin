@@ -5,6 +5,29 @@ description: Author source-pinned character appearance, costume and scene assets
 
 # Specialized Asset Design
 
+After the complete film screenplay is selected, prepare assets in its narrative
+Scene order, independently of the requested shooting order. The native Professional
+entry uses `SpecializedAssetSequence`: read accepted assets, design the current
+Scene's increment, and finish its necessary references/adoption before advancing
+asset preparation to the next Scene. Missing assets are normal resumable preparation;
+they do not authorize skipping predecessors, recasting, or shooting earlier videos.
+Establish a CHARACTER baseline only at that person's first appearance. Later Scenes
+reuse it; justified variations select an accepted parent and retain identity/root,
+version, reason and sources. Reuse locations/props according to actual identity and
+artistic relation, rather than applying the character rule to every object.
+Preserve existing adoption and media. Unproven historical relations remain unknown.
+These rules govern post-selection professional design, not Host first writing.
+
+For a missing native asset reference, `design_asset_reference` receives this Scene's retained professional context and the exact selected asset original. It authors
+one still proof; system projection assigns identity, source fingerprint and the
+existing image route. Asset Resolution advances its native reference child through
+compile, quote, spending decision, retention, review, adoption and registration.
+Do not call a legacy Work stage or reinterpret a route label as an art original.
+Use reference_mode=text_to_image by default. Select image_to_image only when it
+is explicitly required, with accepted reference_selections or the inherited
+parent. Do not infer the mode from available media. Retain parent identity design
+for text-rendered variants; I2I also retains its exact adopted identity image.
+
 Use `DramaPlugin.specialized_asset_host()` and the contracts in
 [Core Creative R1](../../docs/core-creative-r1.md). Own concrete CharacterAsset,
 CostumeAsset and SceneAsset decisions. Existing character-art, costume-design,

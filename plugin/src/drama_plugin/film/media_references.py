@@ -43,6 +43,52 @@ def location_context(p, unit):
     return {'status':'RESOLVED_DESIGN','locationId':binding.location_ref.location_id,**resolved}
 
 
+def asset_reference_candidates(p, unit, selection):
+    """Project accepted library references through the existing binding contract.
+
+These precede whole-shot video reuse. Character backgrounds never acquire LOCATION
+authority. Exact managed bytes/capacity/route are still checked by existing consumers.
+"""
+    from drama_plugin.creative_engine.sources import NativeCreativeSources
+    native = NativeCreativeSources(p.creative_versions, unit.refs, p.execution_references)
+    subjects = professional(p, unit, 'SUBJECTS')
+    scope = subjects.scope
+    indices = {int(f.reference.path[2]) for f in selection.fact_refs
+        if f.domain == 'SUBJECTS' and f.reference.path[1:2] == ('presentSubjects',)}
+    active = {r['id'] for i,r in enumerate(subjects.body.facts['presentSubjects']) if i in indices}
+    world = professional(p, unit, 'WORLD')
+    result = []
+    for original in (subjects, world):
+        source = native.project(original)
+        for index, asset in enumerate(original.body.facts.get('assetBindings', [])):
+            value = asset['content']['specializedAsset']
+            character = original == subjects and asset['assetType'] == 'CHARACTER' and value['subjectId'] in active
+            location = original == world and asset['assetType'] == 'LOCATION' and asset['id'] == world.body.facts.get('locationAssetId')
+            if not (character or location):
+                continue
+            use = source.reference('content', 'assetBindings', str(index))
+            role, subject = ('CHARACTER', value['subjectId']) if character else ('LOCATION', value['stableIdentity'])
+            for media in asset.get('resolvedMedia', []):
+                width, height = media.get('width'), media.get('height')
+                # Do not guess probe data or reuse a template as a reference.
+                if not width or not height:
+                    raise ValueError('ASSET_REFERENCE_PROBE_REQUIRED')
+                purpose = ('Accepted character identity; use target scene costume, state, lighting and physical location. Background is not a location reference.'
+                    if character else 'Accepted physical space; apply current scene state and film lighting design.')
+                identity = sha256_canonical([scope.model_dump(mode='json',by_alias=True), asset['id'], media['mediaId'], use.model_dump(mode='json',by_alias=True)])
+                result.append(ReferenceExecutionBinding(binding_id='asset-'+identity,version=1,scope=scope,
+                    source_scope=RuntimeScope(work_id=scope.work_id,scene_id=value['establishedSceneId']),
+                    use_ref=use,state_ref=selection.start_ref,
+                    media=dict(media_id=media['mediaId'],version=media['version'],content_hash=media['contentHash'],
+                        kind=media['mediaType'].lower(),semantics=('identity',) if character else ('environment',),
+                        width=width,height=height,duration=media.get('durationMs',0)/1000 if media.get('durationMs') else None,
+                        review_ref=value['adoptionRef']['key']+':'+value['adoptionRef']['fingerprint']),
+                    duties=(dict(role=role,necessity='REQUIRED',subject=subject,purpose=purpose),),
+                    subject_ids=(subject,) if character else (),role='REFERENCE',
+                    authorization_scope='ADOPTED_PRODUCTION_INPUT',authority_refs=(use,)))
+    return tuple(result)
+
+
 def select_references(p, run_id, unit, selection, *, register=False):
     progress = production_progress(p,run_id)
     package = p.production_packages.get(unit.package_ref)
@@ -63,6 +109,13 @@ def select_references(p, run_id, unit, selection, *, register=False):
         currentTime=project_scoped_value(selection.execution_context,world_source.reference('content','time'),world.body.facts.get('time')),
         currentWeather=project_scoped_value(selection.execution_context,world_source.reference('content','weather'),world.body.facts.get('weather')))
     chosen, bindings, candidates, narrative_sources, excluded_sources, seen = [], [], [], [], [], set()
+    for binding in asset_reference_candidates(p, unit, selection):
+        candidates.append(binding)
+        if register:
+            bindings.append(p.execution_references.register(binding))
+        chosen.append({'mediaId': binding.media.media_id, 'contentHash': binding.media.content_hash,
+            'purposes': [d.role for d in binding.duties], 'inputRole': 'REFERENCE', 'source':'ADOPTED_SPECIALIZED_ASSET'})
+        seen.update((d.role,d.subject) for d in binding.duties)
     from drama_plugin.generation.unit_scope import labels, AGES
     def entry_ages(ref):
         source=native.project(native.exact_projection(ref))

@@ -34,6 +34,7 @@ from drama_plugin.runtime.contracts import (
 
 if TYPE_CHECKING:
     from drama_plugin.runtime.engine import RuntimeEngine
+    from drama_plugin.creative_engine.persistence import NativeTaskPersistence
 
 PREFIX = "creative."
 KEYS = ("source", "canon", "direction", "professional", "route", "review", "adoption", "package", "prerequisite")
@@ -51,6 +52,8 @@ class CreativeEngineCapabilities:
         self.screenplays = ScreenplayWorkshop(versions.objects)
         self.route_selector = RouteSelector()
         self.runtime: RuntimeEngine | None = None
+        self.reference_production = None
+        self.native_task_persistence: NativeTaskPersistence | None = None
 
     def registrations(self) -> dict[str, TargetCapability]:
         methods = (self.source, self.canon, self.direction, self.professional, self.route,
@@ -366,17 +369,38 @@ class CreativeEngineCapabilities:
         request = self._request(inputs, Authority.PROFESSIONAL)
         if request.shot is None:
             raise CapabilityAbsent("PROFESSIONAL_SHOT_PREREQUISITE_ABSENT")
+        if self.professional_author is not None:
+            from drama_plugin.professional_design.asset_sequence import AssetPreparationPending
+            while True:
+                try:
+                    request = await self.professional_author.prepare_assets(request)
+                    break
+                except AssetPreparationPending as pending:
+                    if self.reference_production is not None:
+                        result = await self.reference_production.pending(pending.ref, inputs.run_id, request)
+                        if result.status == ResultStatus.SUCCEEDED:
+                            continue
+                        return result
+                    return CapabilityResult(status=ResultStatus.WAITING_EXTERNAL, external_ref=pending.runtime_ref(),
+                        recovery_class=RecoveryClass.WAIT_EXTERNAL, artifact_refs=(pending.runtime_ref(),))
         required = set(request.shot.professional_domains)
         bodies = [self.versions.resolve(r).body for r in cp.refs]
         current = {body.domain for body in bodies if isinstance(body, DesignBody)}
-        if required <= current and not (request.revision and request.revision.owner == Authority.PROFESSIONAL):
+        inheritance_current = (self.professional_author is None or
+            self.professional_author.asset_inheritance_current(request, (body for body in bodies if isinstance(body, DesignBody))))
+        if required <= current and inheritance_current and not (request.revision and request.revision.owner == Authority.PROFESSIONAL):
             return self._success(self._save(inputs, cp))
         if self.professional_author is None or self.professional_author.author is None:
             return self._absence(inputs, Authority.PROFESSIONAL.value)
         from pydantic import TypeAdapter
         refs = tuple(r for r in cp.refs if self.versions.resolve(r).kind != Kind.PROFESSIONAL)
         fixed_request = AuthorRequest.model_validate({**request.model_dump(), "source_refs": refs})
-        designs = self.versions.author_output(inputs.operation_id, "professional", refs, TypeAdapter(tuple[DesignBody, ...]))
+        author_operation = inputs.operation_id
+        asset_bindings = self.professional_author.asset_bindings(fixed_request)
+        if asset_bindings is not None:
+            from drama_plugin.contracts.base import sha256_canonical
+            author_operation += ':assets:' + sha256_canonical(asset_bindings)
+        designs = self.versions.author_output(author_operation, "professional", refs, TypeAdapter(tuple[DesignBody, ...]))
         if designs is None:
             if not self._round_allowed(inputs):
                 return CapabilityResult(status=ResultStatus.FAILED, code="AUTHOR_ROUND_BOUND", recovery_class=RecoveryClass.HARD_BLOCK)
@@ -404,9 +428,9 @@ class CreativeEngineCapabilities:
         except ValueError:
             raise AuthorResultFailure(failure("DTO_SCHEMA", "PROFESSIONAL_SYSTEM_METADATA_MODEL_OWNERSHIP", role="professional",
                 field_path=("facts", "<system-metadata>"), validator="reject_model_metadata")) from None
-        self.versions.retain_author_output(inputs.operation_id, "professional", refs, designs)
+        self.versions.retain_author_output(author_operation, "professional", refs, designs)
         selected = tuple(self.professional_author.persist(self.versions, fixed_request, design,
-            operation=inputs.operation_id + ":" + design.domain.value) for design in sorted(designs, key=lambda d: d.domain.value))
+            operation=author_operation + ":" + design.domain.value) for design in sorted(designs, key=lambda d: d.domain.value))
         return self._success(self._save(inputs, cp, refs=(*refs, *selected),
             author_rounds=self.state.checkpoint(inputs.run_id).author_rounds))
 
@@ -415,13 +439,27 @@ class CreativeEngineCapabilities:
             return result
         cp = self.state.checkpoint(inputs.run_id)
         try:
-            plan = self.route_selector.plan(self.state.input(inputs.run_id).route)
+            route = self.state.input(inputs.run_id).route
+            available = set(route.available_inputs)
+            # Consume formal adopted references already bound by the professional
+            # owner, rather than requesting their production again from a label.
+            for ref in cp.refs:
+                body = self.versions.resolve(ref).body
+                if isinstance(body, DesignBody):
+                    for asset in body.facts.get('assetBindings', []):
+                        if isinstance(asset, dict) and asset.get('referenceMediaIds'):
+                            if asset.get('assetType') == 'CHARACTER':
+                                available.add('character_reference')
+                            elif asset.get('assetType') == 'LOCATION':
+                                available.add('environment_reference')
+            route = route.model_copy(update={'available_inputs': tuple(sorted(available))})
+            plan = self.route_selector.plan(route)
         except ValueError:
             return self._blocked(inputs, GateCode.BUDGET_EXCEEDED)
         assert self.runtime is not None
         children: list[str] = []
-        # Only prerequisites become child tasks. This E2 child workflow deliberately
-        # reports missing generation capability, without invoking a transport.
+        # Only prerequisites become child tasks. Their native owner resolves exact
+        # selected asset duties; a route label alone cannot invent reference art.
         for task in plan.tasks[1:]:
             identity = inputs.run_id + ":dependency:" + task.task_id
             try:
@@ -432,6 +470,8 @@ class CreativeEngineCapabilities:
                     shot_id=inputs.scope.shot_id, run_id=identity,
                     mode=self.runtime.store.load(inputs.run_id).mode, workflow_id=CHILD_WORKFLOW)
                 self.state.bind(identity, inputs.scope, self.state.input(inputs.run_id))
+                self.state.save(identity, inputs.scope, CreativeCheckpoint(refs=cp.refs,
+                    screenplay_ref=cp.screenplay_ref))
             child = await self.runtime.run(child.run_id)
             children.append(identity)
             if child.state != RuntimeState.SUCCEEDED:
@@ -444,9 +484,18 @@ class CreativeEngineCapabilities:
         return self._success(self._save(inputs, cp, route_plan=plan, child_runs=tuple(children)))
 
     async def prerequisite(self, inputs: CapabilityInput) -> CapabilityResult:
-        # No E2 media execution is authorized. E3 supplies a package-derived native
-        # reference producer; until then this same Runtime child waits explicitly.
-        return self._absence(inputs, "reference-production")
+        if self.professional_author is not None and self.reference_production is not None:
+            from drama_plugin.professional_design.asset_sequence import AssetPreparationPending
+            request = self._request(inputs, Authority.PROFESSIONAL)
+            try:
+                await self.professional_author.prepare_assets(request)
+            except AssetPreparationPending as pending:
+                return await self.reference_production.pending(pending.ref, inputs.run_id, request)
+        # A first-frame/environment route obligation requires its own selected
+        # professional artwork. Never synthesize it from the dependency name.
+        return CapabilityResult(status=ResultStatus.WAITING_EXTERNAL,
+            external_ref=self.state.input(inputs.run_id).source_ref.runtime_ref(),
+            recovery_class=RecoveryClass.WAIT_EXTERNAL)
 
     async def review(self, inputs: CapabilityInput) -> CapabilityResult:
         if result := self._replay(inputs):
@@ -620,9 +669,12 @@ class CreativeEngineCapabilities:
                 remapped[prior] = self.versions.write(writer=artifact.authority, kind=artifact.kind,
                     scope=artifact.scope, body=artifact.body, sources=parents,
                     operation=inputs.operation_id + ":" + prior.fingerprint, adoption_decision=ref, candidate_origin=prior)
-            return self._success(self._save(inputs, cp, refs=tuple(remapped.values()), decision_ref=ref))
         except (KeyError, ValueError, OSError):
             return self._blocked(inputs, GateCode.CANON_AUTHORITY_MISMATCH)
+        adopted=tuple(remapped.values())
+        if self.native_task_persistence is not None and self.native_task_persistence.enabled:
+            await self.native_task_persistence.persist(adopted)
+        return self._success(self._save(inputs,cp,refs=adopted,decision_ref=ref))
 
     async def package(self, inputs: CapabilityInput) -> CapabilityResult:
         if result := self._replay(inputs):

@@ -142,7 +142,10 @@ def test_existing_asset_no_music_rights_requirement(kind):
 
 def test_skill_tool_architecture():
     p=DramaPlugin.load(ROOT, mock_data=MockDramaData())
-    assert len(p.skills.list())==64 and len(p.tools.list())==52
+    assert len(p.skills.list())==64
+    # Native owner facets leave the existing 52 core provider tools intact.
+    assert len([t for t in p.tools.list() if t.domain not in {'screenplay','specialized_assets','native_creative'}])==52
+    assert {t.code for t in p.tools.list() if t.domain=='native_creative'}=={'native_creative.persist_task'}
     for skill in ['cinematic-direction','cinematic-finishing']:
         text=(ROOT/'skills'/skill/'skill.yaml').read_text()
         assert 'asset.get_asset' in text

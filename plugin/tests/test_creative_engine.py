@@ -124,7 +124,8 @@ async def test_goal_to_package_single_runtime_and_e1_preparation(tmp_path, mode)
         assert SOURCE.text not in indexes and "Indifference conceals responsibility" not in indexes
         assert len(list(db.execute("SELECT name FROM sqlite_master WHERE type='table'"))) == 4
     assert SOURCE.text not in p.runtime.serialize(run.run_id)
-    assert len({key for key in p.runtime.executor.native_keys if not key.startswith("film.")}) == 25
+    assert len({key for key in p.runtime.executor.native_keys if not key.startswith(("film.", "specialized-assets.reference."))}) == 25
+    assert len({key for key in p.runtime.executor.native_keys if key.startswith("specialized-assets.reference.")}) == 7
 
 
 @pytest.mark.parametrize("owner,cursor", [("canon_author", 1), ("direction_author", 2), ("professional_author", 3)])
@@ -273,10 +274,11 @@ async def test_missing_references_use_same_runtime_child_and_no_provider(tmp_pat
     run = p.create_film_run(work_id="film", source=SOURCE, mode=RunMode.EXPERIMENT,
         route=RouteRequest(input_mode="image_to_video"))
     result = await p.runtime.run(run.run_id)
-    assert result.state == RuntimeState.FAILED and result.last_result.recovery_class.value == "HARD_BLOCK"
+    assert result.state == RuntimeState.WAITING_EXTERNAL and result.last_result.recovery_class.value == "WAIT_EXTERNAL"
     child = p.runtime.store.load(p.creative.state.checkpoint(run.run_id).child_runs[0])
-    assert child.state == RuntimeState.FAILED and child.workflow_id == "reference-prerequisite:v1"
-    assert child.last_result.external_ref is None and child.last_result.recovery_class.value == "HARD_BLOCK"
+    assert child.state == RuntimeState.WAITING_EXTERNAL and child.workflow_id == "reference-prerequisite:v1"
+    assert child.last_result.external_ref is not None and child.last_result.recovery_class.value == "WAIT_EXTERNAL"
+    assert p.creative.state.checkpoint(child.run_id).refs == p.creative.state.checkpoint(run.run_id).refs
 
 
 @pytest.mark.parametrize("domain,facts", [("SOUND", {"dialogue": "rewrite"}), ("CAMERA", {"ambience": "sound"}),

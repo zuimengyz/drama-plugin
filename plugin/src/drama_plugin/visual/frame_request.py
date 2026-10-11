@@ -102,12 +102,16 @@ class FrameSpec(Record):
     prompt_normalization: dict[str, Any] | None = None
     prompt_ir: dict[str, Any] | None = None
     professional_sources: tuple[SourcePin, ...] = ()
+    # Explicit Ark mode; existing text-only seals keep their original wire bytes.
+    image_mode: Literal['text_to_image', 'image_to_image'] = 'text_to_image'
 
     @model_serializer(mode='wrap')
     def legacy_wire(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
         data = dict(handler(self))
         if not self.professional_sources:
             data.pop('professional_sources', None)
+        if self.image_mode == 'text_to_image':
+            data.pop('image_mode', None)
         return data
 
 
@@ -137,10 +141,15 @@ def _unique(values: list[str], error: str) -> None:
 
 def _verify_graph(spec: FrameSpec, template: Template) -> None:
     if template.http_provider is not None:
-        from drama_plugin.providers.ark_image import CAPABILITY, image_payload
-        if (template.http_provider != 'ark' or template.graph_hash != sha256_canonical(CAPABILITY)
+        from drama_plugin.providers.ark_image import image_capability, image_payload
+        capability = image_capability(spec.image_mode)
+        inputs = (spec.edit_source,) if spec.edit_source else spec.references
+        slots = tuple(f'ref{i+1}' for i in range(len(inputs)))
+        if (template.http_provider != 'ark' or template.graph_hash != sha256_canonical(capability)
                 or template.graph_path != 'ark:image-generation-v1' or template.api_workflow is not None
-                or template.image_slots or spec.references or spec.edit_source or template.settings):
+                or template.image_slots != slots or template.settings
+                or (spec.image_mode == 'text_to_image' and inputs)
+                or (spec.image_mode == 'image_to_image' and not inputs)):
             raise ValueError('ARK_IMAGE_CAPABILITY_MISMATCH')
         image_payload(template.model, 'capability validation', template.output_size, spec.seed)
         return
@@ -338,9 +347,10 @@ def compile_frame(spec: FrameSpec, template: Template | None = None) -> dict[str
     overrides[template.prompt_node] = {**template.settings, template.prompt_key: prompt, template.seed_key: spec.seed}
     request = {"tool": "run_template", "name": template.name, "description": spec.shot_id + "-frame", "input_overrides": overrides}
     if template.http_provider == 'ark':
-        from drama_plugin.providers.ark_image import image_payload
+        from drama_plugin.providers.ark_image import image_payload, inline_image
         request = {'tool': 'image.create', 'provider': 'ark',
-                   'body': image_payload(template.model, prompt, template.output_size, spec.seed)}
+                   'body': image_payload(template.model, prompt, template.output_size, spec.seed,
+                        images=tuple(inline_image(Path(r.local_path).read_bytes()) for r in inputs))}
     if template.api_workflow is not None:
         from copy import deepcopy
         api = deepcopy(template.api_workflow)

@@ -6,14 +6,18 @@ text completion per call; invalid results are rejected without repair/fallback.
 """
 from pathlib import Path
 import hashlib
-from typing import Callable, Literal, TypeVar
+from typing import Any, Callable, Literal, TypeVar, TYPE_CHECKING, cast
+
+if TYPE_CHECKING:
+    from drama_plugin.professional_design.asset_sequence import SceneAssetDraft
+    from drama_plugin.visual.frame_request import FrameSpec
 
 import httpx
 from pydantic import Field, JsonValue, TypeAdapter, ValidationError
 from drama_plugin.contracts.base import ContractModel
 
 from drama_plugin.config.text_composition import AuthorRole, TextCompositionConfig
-from drama_plugin.contracts.base import canonical_json, sha256_canonical
+from drama_plugin.contracts.base import canonical_json, dump_contract, sha256_canonical
 from drama_plugin.creative_engine.contracts import AuthorRequest, CanonDraft, DesignBody, ShotBody
 from drama_plugin.film.contracts import FilmAuthorRequest, FilmCanon, FilmDirection
 from drama_plugin.creative_engine.diagnostics import (AuthorDiagnostic, AuthorResultFailure,
@@ -740,7 +744,132 @@ class FormalDirectionAuthor(SkillAuthor):
 class FormalProfessionalAuthor(SkillAuthor):
     # The execution identity covers this real diagnostic/feedback implementation
     # revision without changing the model's creative authority or output schema.
-    implementation_identity = "creative.professional:v1:FormalProfessionalAuthor:continuity-selection-v2"
+    implementation_identity = "creative.professional:v1:FormalProfessionalAuthor:asset-inheritance-v3"
+
+    async def design_assets(self, request: AuthorRequest) -> 'SceneAssetDraft':
+        from drama_plugin.professional_design.asset_sequence import SceneAssetDraft
+        from drama_plugin.creative_engine.author_projection import object_value, sequence
+        context = object_value((request.professional_context or {})['assetPreparation'])
+        subject_rows = [object_value(row) for row in sequence(context['subjectCandidates'])]
+        asset_rows = [object_value(row) for row in sequence(context['assetCandidates'])]
+        def asset_design(raw: JsonValue) -> JsonValue:
+            return object_value(object_value(object_value(raw)['content'])['specializedAsset'])['design']
+        payload = author_payload(request)
+        payload['assetPreparation'] = {
+            'sceneOrdinal': context['sceneOrdinal'],
+            'subjectCandidates': [{'selection': row['selection'], 'name': row['name'], 'meaning': row['meaning'],
+                'inherited': asset_design(row['inherited'])
+                    if isinstance(row.get('inherited'), dict) else None} for row in subject_rows],
+            'assetCandidates': [{'selection': row['selection'], 'assetType': object_value(row['asset'])['assetType'],
+                'name': object_value(row['asset'])['name'],
+                'design': asset_design(row['asset'])}
+                for row in asset_rows]}
+        payload['filmLook'] = [object_value(row)['design'] for row in sequence((request.professional_context or {}).get('filmLook', []))]
+        system = BOUNDARY + '''\nPost-selection Specialized Asset Design only. Design this narrative Scene's necessary assets.
+Every subject without an inherited identity needs one CHARACTER baseline selected by subjectSelection.
+For inherited characters omit unchanged identity or select reuseSelection. A justified costume, makeup,
+age/state variation retains that person's identity and requires variantReason; do not recast them.
+For LOCATION/PROP/OTHER choose an applicable supplied asset for reuse, or design a genuinely new asset.
+Different places may share period materials without reusing physical layout. Request only necessary
+references through referenceRequired. Templates and candidates are not adopted identities. No media,
+adoption, machine identities, source refs, versions, workflow or provider instructions in the result.
+''' + self.knowledge(('specialized-asset-design/SKILL.md', 'asset-resolution/SKILL.md'))
+        return await self.client.complete('professional', system, request, TypeAdapter(SceneAssetDraft),
+            model_payload=payload, author_identity=self.implementation_identity + ':assets')
+
+    async def design_asset_reference(self, request: AuthorRequest, requirement: dict[str, Any],
+                                     *, reference_inputs: tuple[Any, ...] = ()) -> 'FrameSpec':
+        """Selected asset artwork, projected through the existing still compiler.
+
+        This is not a Shot or new identity author. Only the artwork's semantic
+        facts are model-authored; exact identity, sources and execution task are
+        supplied by the owning asset preparation.
+        """
+        from copy import deepcopy
+        from drama_plugin.visual.frame_request import FrameSpec
+        from drama_plugin.contracts.visual_prompt import VisualPromptIR
+        from drama_plugin.contracts.source_pin import SourcePin
+        from drama_plugin.config.production_routes import selected
+        schema = deepcopy(TypeAdapter(FrameSpec).json_schema())
+        ir_schema = deepcopy(TypeAdapter(VisualPromptIR).json_schema())
+        schema.setdefault('$defs', {}).update(ir_schema.pop('$defs'))
+        schema['properties']['prompt_ir'] = ir_schema
+        for key in ('shot_id', 'shot_fingerprint', 'professional_sources', 'references',
+                    'reference_lock', 'reference_members', 'edit_source', 'scope_context',
+                    'prompt_normalization', 'identity_bootstrap', 'image_mode'):
+            schema['properties'].pop(key, None)
+            if key in schema.get('required', []):
+                schema['required'].remove(key)
+        if 'prompt_ir' not in schema['required']:
+            schema['required'].append('prompt_ir')
+        ir_schema['properties'].pop('source_fingerprint')
+        ir_schema['required'].remove('source_fingerprint')
+        task_schema = schema['$defs']['Task']
+        for key in ('provider_family', 'task_type', 'input_mode'):
+            task_schema['properties'].pop(key)
+            task_schema['required'].remove(key)
+        for model, key in (('Actor', 'entity_key'), ('Subject', 'id')):
+            definition = schema['$defs'][model]
+            definition['properties'].pop(key)
+            definition['required'].remove(key)
+        def projection(raw: JsonValue) -> JsonValue:
+            from drama_plugin.creative_engine.author_projection import object_value
+            value: dict[str, Any] = deepcopy(object_value(raw))
+            pin = SourcePin.model_validate(requirement['designRef'])
+            subject = requirement['subjectId']
+            value.update(shot_id='asset-reference:'+pin.fingerprint,
+                shot_fingerprint=pin.fingerprint,
+                references=[r.model_dump(mode='json') for r in reference_inputs],
+                reference_lock={f'{r.asset_id}/{r.media_id}/{r.version}':r.content_hash for r in reference_inputs})
+            mode = requirement.get('referenceMode','text_to_image')
+            value['image_mode'] = mode
+            if requirement['assetType'] == 'CHARACTER':
+                if len(value.get('actors', [])) != 1 or len(value['prompt_ir'].get('subjects', [])) != 1:
+                    raise ValueError('REFERENCE_SINGLE_SELECTED_IDENTITY_REQUIRED')
+                value['actors'][0]['entity_key'] = subject
+                value['prompt_ir']['subjects'][0]['id'] = subject
+                if mode == 'text_to_image':
+                    value['identity_bootstrap'] = ('Text rendering of the inherited adopted identity and selected variation'
+                        if requirement.get('inheritedFromAssetId') else 'First reference for this selected specialized character design')
+            elif value.get('actors') or value['prompt_ir'].get('subjects'):
+                raise ValueError('NON_CHARACTER_REFERENCE_MUST_NOT_INVENT_PEOPLE')
+            value['prompt_ir']['task'].update(task_type='REFERENCE_EDIT' if mode=='image_to_image' else 'TEXT_TO_IMAGE',
+                input_mode='reference' if mode=='image_to_image' else 'text',
+                provider_family=selected()['image_model'])
+            # Seal against validated defaults; source fingerprint is system-owned.
+            ir = value.pop('prompt_ir')
+            spec = FrameSpec.model_validate(value)
+            ir['source_fingerprint'] = sha256_canonical(spec.model_dump(mode='json', exclude={'prompt_ir'}))
+            value = spec.model_dump(mode='json')
+            value['prompt_ir'] = ir
+            return cast(JsonValue, value)
+        payload = author_payload(request)
+        asset_payload: dict[str,Any] = {k: requirement[k] for k in
+            ('assetType', 'name', 'design', 'variantReason')}
+        asset_payload['referenceMode'] = requirement.get('referenceMode','text_to_image')
+        asset_payload['inheritedFromAssetId'] = requirement.get('inheritedFromAssetId')
+        asset_payload['inheritedDesign'] = requirement.get('inheritedDesign')
+        asset_payload['referenceInputs'] = [r.model_dump(mode='json') for r in reference_inputs]
+        payload['selectedAssetReference'] = cast(JsonValue,asset_payload)
+        system = BOUNDARY + '''\nAuthor one STILL reference artwork for the exact supplied specialized asset.
+Preserve its approved concrete appearance and the selected film's runtime medium,
+Film Look and Scene evidence. This is an asset proof, not a movie Shot or later
+action. For CHARACTER show exactly the one selected person; choose a background
+that does not imply a different physical location is its required set. For other
+asset types show that asset without inventing people. Keep identity, physical
+location and Film Look distinct. No adoption, provider choice or machine sources.
+Supply observable semantic FrameSpec facts and typed prompt_ir facts with their
+approved basis. Do not replace approved art with generic cinematic adjectives.
+Default to text-to-image. Only an explicitly selected image-to-image requirement
+supplies referenceInputs; preserve those exact adopted identities, describe the
+approved change in edit_delta and what remains in preserve. Existing assets alone
+do not select image-to-image. An inherited text-rendered variation preserves its
+parent design; do not invent a new face or pretend an image input was delivered.
+''' + self.knowledge(('specialized-asset-design/SKILL.md', 'reference-strategy/SKILL.md'))
+        return await self.client.complete('professional', system, request, TypeAdapter(FrameSpec),
+            model_payload=payload, model_schema=schema, project=projection,
+            author_identity=self.implementation_identity+':reference-artwork')
+
     def system_contract(self, request: AuthorRequest) -> str:
         if request.shot is None:
             raise CapabilityAbsent("PROFESSIONAL_SHOT_PREREQUISITE_ABSENT")
@@ -748,6 +877,7 @@ class FormalProfessionalAuthor(SkillAuthor):
         paths = tuple(p for domain in domains for p in PROFESSIONAL_CRAFT[domain])
         system = BOUNDARY + "\nOwn only the requested professional domains " + canonical_json(domains) + ". Return a JSON array with one DesignBody for each required domain. Preserve exact Shot/Canon meaning and dialogue. PERFORMANCE lines select exactly selectedSpokenCandidates once each. Subjects select supplied Canon subjectCandidates. System derives their spoken inventory. Create semantic PERFORMANCE Beat rows with actorSelection and targetSelection; ACTION, lines and REFERENCE select their ordinal positions within this bundle. System assigns all beat/reference IDs. No subjectRef, id, beatId, spokenContentId, spokenIds, artifactRef or provenance in model output. No guessed strings or fuzzy matching. No Canon, Shot-intent, provider or workflow fields in professional facts.\n"
         system += "System authority projects provenance after authoring. Never output sourcePins, scope, Source/Work/Script/Scene/Shot refs or artifact identity/version/fingerprint objects, including inside nested facts. Author creative design facts only.\n"
+        system += "Consume visualContinuity.assets: these are already adopted assets prepared in narrative order. Preserve inherited physical identities and references. Author only this Shot's state/behaviour/layout; do not recreate faces, replace identities or invent asset bindings. System binds the exact assets after authoring.\n"
         system += "At this post-selection stage, consume visualContinuity and the supplied screenplay evidence. Film Look is a work-owned basis, not a universal palette. OBSERVED_RESULT remains observed evidence, never Canon. CAMERA, LIGHTING and COLOR elaborate this Scene's inheritance or an intentional departure with its dramatic reason in continuityInterpretation. Motivate local light without silently replacing film-wide relationships. Production Design coherence is reconciliation among these owners, not a second author. WORLD selects locationSelection when a relevant locationCandidate is supplied, preserves its physical identity/layout, and describes current state; common materials/furniture types may be shared between different places. Character references prove identity only, not their background's location. Keep full reasoning in continuityInterpretation; executable finite fields express only this unit's concise, nonduplicated decisions. Shot intent/acting/action stay with their existing owners.\n"
         return system + self.knowledge(paths)
 

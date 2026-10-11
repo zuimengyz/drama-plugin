@@ -43,6 +43,7 @@ ARTIFACT_TYPES: dict[str, tuple[str, str, RetentionClass]] = {
     "gate-finding": ("gate-finding-v1", "review", RetentionClass.REVIEW),
     "gate-decision": ("gate-decision-v1", "review", RetentionClass.REVIEW),
     "user-decision": ("user-decision-v1", "review", RetentionClass.REVIEW),
+    "asset-reference-production": ("asset-reference-production-v1", "specialized-assets", RetentionClass.PRODUCTION_REQUIRED),
 }
 
 # E1 extends the same typed immutable store; Media bytes stay with Media Store.
@@ -59,7 +60,7 @@ INDEX_TYPES = frozenset({
     "governance-maintenance", "generation-rebuild", "final-prompt-key",
     "execution-reference-current", "continuation-frame", "film-segment-dispatch-revision", "source-film-working-input", "source-film-candidate-reassessment",
     "media-proof-authorization", "media-proof-cost-terms", "human-media-review", "execution-recovery-authorization",
-    "creative-integrity-reconciliation",
+    "creative-integrity-reconciliation", "asset-reference-current",
     "execution-input", "creative-input", "creative-checkpoint", "film-input", "film-checkpoint", "formal-media-current", "execution-live-grant",
 })
 
@@ -270,6 +271,7 @@ class ProductionLedger:
         from drama_plugin.production.contracts import AssemblyValidation, ProductionPackage
         from drama_plugin.production.references import ReferenceExecutionBinding
         from drama_plugin.persistence.review import UserDecisionRecord
+        from drama_plugin.professional_design.reference_production import ReferenceProductionRecord
         models: dict[str, type[RuntimeContract]] = {
             "production-package": ProductionPackage,
             "assembly-validation": AssemblyValidation,
@@ -283,6 +285,7 @@ class ProductionLedger:
             "gate-finding": GateFinding,
             "gate-decision": GateDecision,
             "user-decision": UserDecisionRecord,
+            "asset-reference-production": ReferenceProductionRecord,
         }
         models.update(EXECUTION_TYPES)
         models.update(FILM_TYPES)

@@ -144,6 +144,13 @@ class DramaPlugin:
             creative_sources = native_sources
             professional_backend = native_sources
         self.professional_design = ProfessionalDesignResolver(professional_backend, author=professional_author)
+        from drama_plugin.professional_design.asset_sequence import SpecializedAssetSequence, register_asset_sequence_tools
+        self.asset_sequence = SpecializedAssetSequence(self.creative_versions.objects, providers.asset, providers.media)
+        from drama_plugin.creative_engine.persistence import NativeTaskPersistence, register_native_persistence_tools
+        self.native_task_persistence = NativeTaskPersistence(self.creative_versions, providers.memory)
+        register_native_persistence_tools(self.tools, self.native_task_persistence)
+        self.professional_design.asset_sequence = self.asset_sequence
+        register_asset_sequence_tools(self.tools, self.asset_sequence)
         self.shot_assembler = ShotAssembler(creative_sources, self.professional_design, self.execution_references)
         package_capability = ProductionPackageCapability(self.shot_assembler, self.production_packages, runs)
         workflow = assembly_workflow()
@@ -201,16 +208,24 @@ class DramaPlugin:
             canon=film_canon_author, direction=film_direction_author, reviewer=film_reviewer, recipes=film_recipes) if self.ledger else None
         film_native = self.film.registrations() if self.film else {}
         film_flows = {flow.workflow_id: flow for flow in (film_workflow(), film_revision_workflow(), film_media_workflow())} if self.film else {}
+        from drama_plugin.professional_design.reference_production import TargetReferenceProduction, reference_workflow, register_reference_tools
+        self.reference_production = TargetReferenceProduction(self) if self.ledger else None
+        reference_native = self.reference_production.registrations() if self.reference_production else {}
+        reference_flow = reference_workflow()
+        if self.reference_production:
+            self.creative.reference_production = self.reference_production
+        register_reference_tools(self.tools, self.reference_production)
         self.runtime = RuntimeEngine(TargetCapabilityRouter({**package_capability.registrations(),
-            **self.gate_governance.registrations(), **self.generation_capability.registrations(), **execution_native, **self.creative.registrations(), **film_native},
+            **self.gate_governance.registrations(), **self.generation_capability.registrations(), **execution_native, **self.creative.registrations(), **film_native, **reference_native},
             LegacyCapabilityBridge.from_tools(tools) if legacy_reads else None, self.legacy_boundary), store=runs,
             workflows={**foundation_workflows(), workflow.workflow_id: workflow,
                 governance_workflow.workflow_id: governance_workflow, generation_flow.workflow_id: generation_flow,
                 execution_flow.workflow_id: execution_flow, creative_flow.workflow_id: creative_flow,
-                dependency_flow.workflow_id: dependency_flow, **film_flows,
+                dependency_flow.workflow_id: dependency_flow, reference_flow.workflow_id: reference_flow, **film_flows,
                 **{wid: media_review_workflow(wid) for wid in MEDIA_WORKFLOWS}},
             policies={mode: FilmPolicy(mode, self.gate_findings, self.film.store, self.gate_governor) if self.film else CreativePolicy(mode, self.gate_findings) for mode in RunMode})
         self.creative.runtime = self.runtime
+        self.creative.native_task_persistence = self.native_task_persistence
         for mode_policy in self.runtime._policies.values():
             if isinstance(mode_policy, GenerationPolicy):
                 mode_policy.mainline_ledger = self.ledger
@@ -1457,6 +1472,11 @@ class DramaPlugin:
             result = await self.runtime.executor.execute(key, CapabilityInput(run_id=run_id,
                 operation_id=f"{run_id}:{run.cursor}", scope=run.scope))
             if result.status == ResultStatus.WAITING_EXTERNAL:
+                if (result.external_ref and (result.external_ref != run.last_result.external_ref
+                        or result.artifact_refs != run.last_result.artifact_refs)
+                        and result.external_ref.owner in {'specialized-asset-preparation', 'runtime'}):
+                    return await self.runtime.record_external_result(run_id,
+                        external_ref=run.last_result.external_ref, result=result)
                 return run
             await self.runtime.record_external_result(run_id, external_ref=run.last_result.external_ref, result=result)
         elif run.state == RuntimeState.BLOCKED and run.wait_reason == "INTERRUPTED_CAPABILITY":
@@ -1813,6 +1833,9 @@ class DramaPlugin:
             candidate = self.creative.state.checkpoint(run_id).candidate_ref
             if source_ref != candidate:
                 raise ValueError("Adoption must bind the exact candidate version-set hash")
+        if run.workflow_id == 'specialized-asset-reference:v1':
+            if self.reference_production is None or source_ref != self.reference_production.get(run_id).artifact_reference():
+                raise ValueError('Reference decision must bind exact request/quote or retained review candidate')
         assert action.decision is not None
         film_dynamic = (self.film is not None and run.workflow_id == "source-to-reviewed-media:v1"
             and run.last_result is not None and run.last_result.recovery_class == RecoveryClass.USER_DECISION)

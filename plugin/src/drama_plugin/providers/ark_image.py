@@ -12,6 +12,54 @@ CAPABILITY: dict[str, Any] = dict(provider='ark', endpoint=ENDPOINT, models=SEED
                   pixel_ranges={model: ([3686400, 16777216] if name.endswith('lite') else [921600, 4624220])
                                 for name, model in SEEDREAM_MODELS.items()})
 
+# Keep the original T2I capability seal for retained frames/bindings.
+IMAGE_TO_IMAGE_CAPABILITY = {**CAPABILITY, 'input': 'image_to_image',
+    'image': 'ordered_inline_base64', 'max_reference_images': 3,
+    'evidence': 'https://docs.volcengine.com/docs/ark/image-generation-api?lang=zh'}
+
+
+def image_capability(mode: str = 'text_to_image') -> dict[str, Any]:
+    if mode == 'text_to_image':
+        return CAPABILITY
+    if mode == 'image_to_image':
+        return IMAGE_TO_IMAGE_CAPABILITY
+    raise ValueError('UNKNOWN_SEEDREAM_IMAGE_MODE')
+
+
+def inline_image(data: bytes) -> str:
+    """Deliver exact retained PNG/JPEG bytes; no resize, crop or upload fiction."""
+    import base64
+    import struct
+    if len(data) > 10 * 1024 * 1024:
+        raise ValueError('SEEDREAM_REFERENCE_TOO_LARGE')
+    if data.startswith(b'\x89PNG\r\n\x1a\n') and len(data) >= 24:
+        mime='png'; width,height=struct.unpack('>II',data[16:24])
+    else:
+        if not data.startswith(b'\xff\xd8\xff'):
+            raise ValueError('SEEDREAM_REFERENCE_FORMAT_UNSUPPORTED')
+        mime='jpeg'; width=height=0; offset=2
+        while offset+4<=len(data):
+            if data[offset]!=255:
+                break
+            while offset<len(data) and data[offset]==255:
+                offset+=1
+            if offset>=len(data):
+                break
+            marker=data[offset]; offset+=1
+            if marker in {0xD8,0xD9}:
+                continue
+            if marker==0xDA or offset+2>len(data):
+                break
+            length=struct.unpack('>H',data[offset:offset+2])[0]
+            if length<2 or offset+length>len(data):
+                break
+            if marker in {0xC0,0xC1,0xC2,0xC3,0xC5,0xC6,0xC7,0xC9,0xCA,0xCB,0xCD,0xCE,0xCF} and length>=7:
+                height,width=struct.unpack('>HH',data[offset+3:offset+7]); break
+            offset+=length
+    if min(width,height)<=14 or width*height>36_000_000 or not 1/16<=width/height<=16:
+        raise ValueError('SEEDREAM_REFERENCE_DIMENSIONS_UNSUPPORTED')
+    return 'data:image/'+mime+';base64,'+base64.b64encode(data).decode('ascii')
+
 
 def credential() -> ProviderSettings:
     value = settings()['seedance']
@@ -20,7 +68,8 @@ def credential() -> ProviderSettings:
     return value
 
 
-def image_payload(model: str, prompt: str, size: tuple[int, int], seed: int) -> dict[str, Any]:
+def image_payload(model: str, prompt: str, size: tuple[int, int], seed: int,
+                  *, images: tuple[str, ...] = ()) -> dict[str, Any]:
     if model not in SEEDREAM_MODELS.values():
         raise ValueError('UNKNOWN_OFFICIAL_SEEDREAM_MODEL')
     w, h = size
@@ -35,6 +84,16 @@ def image_payload(model: str, prompt: str, size: tuple[int, int], seed: int) -> 
         if not 0 <= seed <= 2147483647:
             raise ValueError('SEEDREAM_SEED_UNSUPPORTED')
         body.update(seed=seed, sequential_image_generation='disabled', stream=False)
+    if images:
+        import base64
+        if len(images)>3:
+            raise ValueError('EXISTING_REFERENCE_PLAN_CAP_EXCEEDED')
+        for value in images:
+            prefix, encoded=value.split(';base64,',1)
+            data=base64.b64decode(encoded,validate=True)
+            if inline_image(data)!=value or prefix not in {'data:image/png','data:image/jpeg'}:
+                raise ValueError('SEEDREAM_INLINE_INPUT_MISMATCH')
+        body['image'] = images[0] if len(images)==1 else list(images)
     return body
 
 
@@ -43,8 +102,9 @@ def binding(frame: dict[str, Any], evidence: dict[str, Any]) -> dict[str, Any]:
     from drama_plugin.visual.image_route import execution_identity
     verify_compiled(frame)
     config = credential()
+    capability=image_capability(frame['spec'].get('image_mode','text_to_image'))
     return dict(execution=execution_identity(frame), operation='image.create',
-                provider_schema=CAPABILITY, provider_schema_fingerprint=sha256_canonical(CAPABILITY),
+                provider_schema=capability, provider_schema_fingerprint=sha256_canonical(capability),
                 request_fingerprint=sha256_canonical(frame['request']),
                 endpoint_fingerprint=sha256_canonical(config.base_url+ENDPOINT),
                 authentication_status='CONFIGURED_NOT_VERIFIED', evidence=evidence)

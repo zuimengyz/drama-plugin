@@ -418,9 +418,14 @@ def author_payload(request: AuthorRequest | FilmAuthorRequest) -> dict[str, Json
             # full originals local, and semantic craft/ordinal choices on wire.
             context = request.professional_context or {}
             result['visualContinuity'] = {
+                'assets': [{'assetType': row['assetType'], 'name': row['name'],
+                    'design': object_value(object_value(row['content'])['specializedAsset'])['design'],
+                    'subjectSelection': next((i for i,s in enumerate(subjects(request.canon.scene))
+                        if s['id'] == object_value(object_value(row['content'])['specializedAsset']).get('subjectId')), None)}
+                    for row in sequence(object_value(context.get('assetSequence', {})).get('currentAssets', []))],
                 'currentDesigns': [{'domain':row['domain'], 'facts':JSON.validate_python({k:v
                     for k,v in object_value(creative_facts(row['facts'])).items()
-                    if k not in {'continuityEvidence','continuityDesignRefs','locationBinding'}})}
+                    if k not in {'continuityEvidence','continuityDesignRefs','locationBinding','assetBindings','assetNarrativeRef','locationAssetId'}})}
                     for row in sequence(context.get('currentDesigns', [])) if isinstance(row,dict)
                     and row['domain'] in {d.value for d in request.shot.professional_domains}],
                 'filmLook': [JSON.validate_python({k:v for k,v in object_value(row['design']).items()

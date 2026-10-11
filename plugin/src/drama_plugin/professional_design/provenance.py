@@ -23,7 +23,7 @@ JSON: TypeAdapter[JsonValue] = TypeAdapter(JsonValue)
 
 def reject_model_metadata(value: JsonValue) -> None:
     if isinstance(value, dict):
-        if MANAGED_FIELDS.intersection(value):
+        if (MANAGED_FIELDS | {'assetBindings', 'assetNarrativeRef', 'locationAssetId'}).intersection(value):
             raise ValueError('PROFESSIONAL_SYSTEM_METADATA_MODEL_OWNERSHIP')
         # Exact structured artifact identities cannot hide under an arbitrary key.
         if 'identity' in value and ('version' in value or 'fingerprint' in value):

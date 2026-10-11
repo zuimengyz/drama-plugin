@@ -22,7 +22,7 @@ def execution_identity(compiled: dict[str, Any]) -> dict[str, Any]:
 def select_frame_template(spec: FrameSpec) -> Template:
     from drama_plugin.visual.frame_request import Template
     from drama_plugin.config.production_routes import selected
-    from drama_plugin.providers.ark_image import CAPABILITY
+    from drama_plugin.providers.ark_image import CAPABILITY, image_capability
     route = selected()
     if route['image_provider'] == 'ark':
         import math
@@ -34,8 +34,9 @@ def select_frame_template(spec: FrameSpec) -> Template:
         factor = max(1, math.ceil(math.sqrt(minimum/(width*height))))
         return Template(name='ark-official-seedream', model=route['image_model'],
             evidence='Ark official image-generation-api and model-list; no realized quality claim',
-            graph_hash=sha256_canonical(CAPABILITY), graph_path='ark:image-generation-v1',
-            image_slots=(), prompt_node='prompt', output_size=(width*factor, height*factor),
+            graph_hash=sha256_canonical(image_capability(spec.image_mode)), graph_path='ark:image-generation-v1',
+            image_slots=tuple(f'ref{i+1}' for i in range(len((spec.edit_source,) if spec.edit_source else spec.references))),
+            prompt_node='prompt', output_size=(width*factor, height*factor),
             supported_types=(spec.shot_type,), http_provider='ark')
     width, height = spec.target_size
     if any(v < 480 or v > 3840 or v % 16 for v in (width, height)):

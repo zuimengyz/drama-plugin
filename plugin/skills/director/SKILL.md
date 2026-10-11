@@ -52,6 +52,12 @@ Consume ScreenplayInput through `CreativeSourceHost.director_handoff`, which pin
 
 # Director
 
+Once the full screenplay is selected, coordinate Specialized Asset Design in its
+narrative Scene order. A request to shoot a later Scene first prepares missing
+predecessor assets, without producing predecessor videos. Keep established identities
+and adoption; new characters begin at their actual debut. This is post-selection
+professional inheritance, never a restriction injected into Host first writing.
+
 Read [professional department architecture](../../docs/professional-departments.md).
 
 ## Role and authority

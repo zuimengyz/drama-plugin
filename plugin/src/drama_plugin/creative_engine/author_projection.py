@@ -12,7 +12,7 @@ from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.creative_engine.contracts import AuthorRequest, CanonDraft, SceneBody
 from drama_plugin.creative_engine.diagnostics import AuthorDiagnostic, AuthorResultFailure, aggregate_failures, failure
 from drama_plugin.film.contracts import FilmAuthorRequest
-from drama_plugin.professional_design.provenance import MANAGED_FIELDS
+from drama_plugin.professional_design.provenance import MANAGED_FIELDS, creative_facts
 
 JSON: TypeAdapter[JsonValue] = TypeAdapter(JsonValue)
 SYSTEM_FIELDS = frozenset({*MANAGED_FIELDS, 'artifactRef', 'subjectRef', 'sourceRef', 'mediaId',
@@ -230,6 +230,8 @@ def professional_schema() -> dict[str, JsonValue]:
         contract['additionalProperties']=False
         assert isinstance(domain,str)
         for name in optional_fields[domain]:props[name]={'$ref':'#/$defs/JsonValue'}
+        if domain in {'WORLD','CAMERA','LIGHTING','COLOR'}:
+            props['continuityInterpretation']=TEXT
         def rename(c:dict[str,JsonValue], old:str, new:str, replacement:dict[str,JsonValue]) -> None:
             p=object_value(c['properties']); p.pop(old,None);p[new]=replacement
             c['required']=[new if k==old else k for k in sequence(c.get('required',[]))]
@@ -374,6 +376,11 @@ def professional_projection(value: JsonValue, request: AuthorRequest) -> JsonVal
             facts['actionPhases']=[{**{k:v for k,v in object_value(raw).items() if k not in {'beatSelection','spokenSelections'}},
                 'beatId':choose(object_value(raw)['beatSelection'],beat_ids,'beatSelection'),
                 'spokenIds':[object_value(choose(v,spoken,'spokenSelections'))['id'] for v in sequence(object_value(raw)['spokenSelections'])]} for raw in sequence(facts['actionPhases'])]
+        elif domain=='WORLD' and 'locationSelection' in facts:
+            locations = sequence((request.professional_context or {}).get('locationCandidates', []))
+            place = object_value(choose(facts.pop('locationSelection'), locations, 'locationSelection'))
+            design = object_value(place['design'])
+            facts['locationBinding'] = {'locationRef': {'locationId': design['id'], 'artifactRef': place['ref']}}
         elif domain=='REFERENCE':
             facts['references']=[{**{k:v for k,v in object_value(raw).items() if k!='beatSelections'},'id':identity('reference',[request.scope.work_id,request.scope.scene_id,request.scope.shot_id],i),
                 'beatIds':[choose(v,beat_ids,'beatSelections') for v in sequence(object_value(raw)['beatSelections'])]} for i,raw in enumerate(sequence(facts['references']))]
@@ -390,7 +397,8 @@ def author_payload(request: AuthorRequest | FilmAuthorRequest) -> dict[str, Json
     source={k:v for k,v in source.items() if k not in {'originalOwnerRef','languageMetadataRef'}}
     result: dict[str,JsonValue]={'source':JSON.validate_python(source)}
     if request.screenplay_context is not None:
-        result['hostScreenplay'] = JSON.validate_python(request.screenplay_context)
+        result['hostScreenplay'] = JSON.validate_python({k:v for k,v in request.screenplay_context.items()
+            if k != 'professionalDesignRefs'})
     if isinstance(request, AuthorRequest) and request.revision:
         # Findings are explicit scoped instructions, not provenance or invented IDs.
         result['revisionInstruction'] = request.revision.instruction
@@ -406,6 +414,20 @@ def author_payload(request: AuthorRequest | FilmAuthorRequest) -> dict[str, Json
     elif request.canon:
         result['canon']={'work':JSON.validate_python(request.canon.work.model_dump(mode="json",by_alias=True)),'script':JSON.validate_python(request.canon.script.model_dump(mode="json",by_alias=True)),'scene':scene_view(request.canon.scene)}
         if request.shot:
+            # This input exists only after selected Scene/Shot authority. Keep
+            # full originals local, and semantic craft/ordinal choices on wire.
+            context = request.professional_context or {}
+            result['visualContinuity'] = {
+                'currentDesigns': [{'domain':row['domain'], 'facts':JSON.validate_python({k:v
+                    for k,v in object_value(creative_facts(row['facts'])).items()
+                    if k not in {'continuityEvidence','continuityDesignRefs','locationBinding'}})}
+                    for row in sequence(context.get('currentDesigns', [])) if isinstance(row,dict)
+                    and row['domain'] in {d.value for d in request.shot.professional_domains}],
+                'filmLook': [JSON.validate_python({k:v for k,v in object_value(row['design']).items()
+                    if k not in {'workScope','sourcePins'}}) for row in sequence(context.get('filmLook', [])) if isinstance(row,dict)],
+                'locationCandidates': [{'selection':row['selection'], 'design':JSON.validate_python({k:v
+                    for k,v in object_value(row['design']).items() if k not in {'id','revision','sceneRefs','parentLocationId','historicalBasis'}})}
+                    for row in sequence(context.get('locationCandidates', [])) if isinstance(row,dict)]}
             result['shot']=JSON.validate_python(request.shot.model_dump(mode='json',by_alias=True,exclude={'spoken_ids'}))
             result['selectedSpokenCandidates']=[{'selection':i,'text':line.text,'speakerSelection':next(j for j,s in enumerate(subjects(request.canon.scene)) if s['id']==line.speaker)} for i,line in enumerate(line for line in request.canon.scene.dialogue if line.id in request.shot.spoken_ids)]
             result['beatSelectionRule']='Select ordinal rows from PERFORMANCE.beats in this same professional bundle; identities are assigned by the system after all owners validate. ACTION/REFERENCE consume those exact approved rows.'

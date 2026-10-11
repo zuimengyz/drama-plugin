@@ -126,7 +126,8 @@ def professional_fact_schemas(definitions: dict[str, JsonValue]) -> dict[D, dict
         D.CAMERA: object_schema({"movement": object_schema({"policy": text,
             "phaseDirections": {"type": "array", "minItems": 1, "maxItems": 16,
                 "items": camera_phase_schema}}, ("policy",))}, ("movement",)),
-        D.WORLD: object_schema({"setting": text}, ("setting",)),
+        D.WORLD: object_schema({"setting": text, "locationSelection": {"type":"integer", "minimum":0,
+            "description":"Select a supplied locationCandidate only; the system binds its exact LocationDesignRef."}}, ("setting",)),
         D.SUBJECTS: object_schema({"presentSubjects": rows({key: text for key in ("id", "role", "inSceneBehaviour")},
             ("id", "role", "inSceneBehaviour"))}, ("presentSubjects",)),
         D.PERFORMANCE: object_schema({"sceneDPD": scene, "beats": {"type": "array", "minItems": 1, "items": beat},
@@ -739,7 +740,7 @@ class FormalDirectionAuthor(SkillAuthor):
 class FormalProfessionalAuthor(SkillAuthor):
     # The execution identity covers this real diagnostic/feedback implementation
     # revision without changing the model's creative authority or output schema.
-    implementation_identity = "creative.professional:v1:FormalProfessionalAuthor:semantic-selection-v1"
+    implementation_identity = "creative.professional:v1:FormalProfessionalAuthor:continuity-selection-v2"
     def system_contract(self, request: AuthorRequest) -> str:
         if request.shot is None:
             raise CapabilityAbsent("PROFESSIONAL_SHOT_PREREQUISITE_ABSENT")
@@ -747,6 +748,7 @@ class FormalProfessionalAuthor(SkillAuthor):
         paths = tuple(p for domain in domains for p in PROFESSIONAL_CRAFT[domain])
         system = BOUNDARY + "\nOwn only the requested professional domains " + canonical_json(domains) + ". Return a JSON array with one DesignBody for each required domain. Preserve exact Shot/Canon meaning and dialogue. PERFORMANCE lines select exactly selectedSpokenCandidates once each. Subjects select supplied Canon subjectCandidates. System derives their spoken inventory. Create semantic PERFORMANCE Beat rows with actorSelection and targetSelection; ACTION, lines and REFERENCE select their ordinal positions within this bundle. System assigns all beat/reference IDs. No subjectRef, id, beatId, spokenContentId, spokenIds, artifactRef or provenance in model output. No guessed strings or fuzzy matching. No Canon, Shot-intent, provider or workflow fields in professional facts.\n"
         system += "System authority projects provenance after authoring. Never output sourcePins, scope, Source/Work/Script/Scene/Shot refs or artifact identity/version/fingerprint objects, including inside nested facts. Author creative design facts only.\n"
+        system += "At this post-selection stage, consume visualContinuity and the supplied screenplay evidence. Film Look is a work-owned basis, not a universal palette. OBSERVED_RESULT remains observed evidence, never Canon. CAMERA, LIGHTING and COLOR elaborate this Scene's inheritance or an intentional departure with its dramatic reason in continuityInterpretation. Motivate local light without silently replacing film-wide relationships. Production Design coherence is reconciliation among these owners, not a second author. WORLD selects locationSelection when a relevant locationCandidate is supplied, preserves its physical identity/layout, and describes current state; common materials/furniture types may be shared between different places. Character references prove identity only, not their background's location. Keep full reasoning in continuityInterpretation; executable finite fields express only this unit's concise, nonduplicated decisions. Shot intent/acting/action stay with their existing owners.\n"
         return system + self.knowledge(paths)
 
     def execution_fingerprint(self, request: AuthorRequest) -> str:

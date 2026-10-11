@@ -60,6 +60,15 @@ class ProfessionalDesignResolver:
         from drama_plugin.creative_engine.contracts import Authority, Kind
         from drama_plugin.professional_design.provenance import reject_model_metadata
         reject_model_metadata(design.facts)
+        context = request.professional_context or {}
+        from pydantic import JsonValue
+        refs: list[JsonValue] = []
+        for name in ('filmLook', 'locationCandidates'):
+            rows = context.get(name, [])
+            assert isinstance(rows, list)
+            refs.extend(row['ref'] for row in rows if isinstance(row, dict))
+        if refs:
+            design = design.model_copy(update={'facts': {**design.facts, 'continuityDesignRefs': refs}})
         return versions.write(writer=Authority.PROFESSIONAL, kind=Kind.PROFESSIONAL,
             scope=request.scope, body=design, sources=request.source_refs, operation=operation)
 

@@ -247,8 +247,9 @@ class RevisionRequest(RuntimeContract):
 
 
 class AuthorRequest(ExtendedRuntimeContract):
-    extension_fields = ('screenplay_context',)
+    extension_fields = ('screenplay_context', 'professional_context')
     screenplay_context: dict[str, JsonValue] | None = None
+    professional_context: dict[str, JsonValue] | None = None
     scope: RuntimeScope
     source: SourceBody
     source_refs: tuple[VersionRef, ...]

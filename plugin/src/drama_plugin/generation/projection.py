@@ -282,8 +282,16 @@ class ExecutionProjection:
                 # Geometry from the immutable base; transient state exclusively
                 # from the target override (or the target WORLD source).
                 base = result['base']
-                spatial = {k:base[k] for k in ('name','macroGeography','architectureOrStructures','zoneLayout','landmarks','continuityAnchors')}
-                add(domain,ref,'Location structure: '+str(spatial)+'. Current Scene state: '+str(result['localOverride']), 'environment.architecture')
+                # Project authored values, not Python dictionaries, keys or
+                # a fictitious "None" scene state. No design inference here.
+                spatial = [base['name'], base['macroGeography'], base['architectureOrStructures'],
+                    *base['zoneLayout'].values(), *base['landmarks'].values(), *base['continuityAnchors']]
+                override = result['localOverride']
+                if override:
+                    for key, value in override.items():
+                        if key not in {'changeReason','continuityNote'} and value is not None:
+                            spatial.extend(value if isinstance(value, list) else [value])
+                add(domain,ref,'；'.join(dict.fromkeys(spatial)), 'environment.architecture')
                 continue
             if domain == D.SOUND and ref.owner == "scene" and isinstance(item.value, dict):
                 event=next((e for e in plan.speech_events if e.source_ref==ref),None)

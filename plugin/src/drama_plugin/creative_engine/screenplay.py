@@ -123,6 +123,10 @@ class ScreenplayWorkshop:
         for ref in refs:
             indexed = self._read(ref, 'narrative-thread-v1')
             latest[(indexed['key'], indexed['status'])] = ref
+        # A pinned handoff remains portable when its originals are available
+        # without the mutable discovery index. Read explicit refs only; absence
+        # from the index does not authorize calling an old thread current.
+        refs += [ref for ref in include_refs if ref not in refs]
         rows = []
         for ref in refs:
             row = self._read(ref, 'narrative-thread-v1')
@@ -130,7 +134,7 @@ class ScreenplayWorkshop:
                 raise ValueError('Long-arc index work mismatch')
             if only_refs and ref.fingerprint not in selected:
                 continue
-            if latest[(row['key'], row['status'])] != ref and ref.fingerprint not in selected:
+            if latest.get((row['key'], row['status'])) != ref and ref.fingerprint not in selected:
                 continue
             # Current scope membership and author-selected topics, never adjacency.
             relevant = scene_id in row['sceneIds'] or bool(set(tags) & set(row['tags'])) or ref.fingerprint in selected
@@ -139,7 +143,7 @@ class ScreenplayWorkshop:
             # An earlier candidate is opt-in, not an automatic answer for a new V1.
             if row['status'] in {'AUTHOR_CONCEPT', 'OPEN_POSSIBILITY'} and ref.fingerprint not in selected:
                 continue
-            rows.append({'ref': dump_contract(ref), 'current': latest[(row['key'], row['status'])] == ref, **row})
+            rows.append({'ref': dump_contract(ref), 'current': latest.get((row['key'], row['status'])) == ref, **row})
         if selected - {r['ref']['fingerprint'] for r in rows}:
             raise ValueError('Selected long-arc thread is absent or belongs to another work')
         return rows
@@ -305,6 +309,44 @@ class ScreenplayWorkshop:
         self.objects.read_ref(SourcePin.model_validate(packet['screenplayRef']))
         return packet
 
+    def bind_professional_context(self, handoff_ref: SourcePin, *, work_id: str,
+                                  scene_id: str, design_refs: tuple[SourcePin, ...]) -> SourcePin:
+        """Bind explicitly selected existing designs after the Host scene decision.
+
+        Preserve screenplay and evidence. No history scan, Canon adoption,
+        competing design store or prewriting rules.
+        """
+        packet = self.bound_packet(handoff_ref, work_id=work_id, scene_id=scene_id)
+        if packet is None or packet.get('schemaVersion') != 'scene-screenplay-shot-handoff-v1':
+            raise ValueError('Professional designs require a selected complete scene')
+        updated = {**packet, 'professionalDesignRefs': [dump_contract(r) for r in design_refs]}
+        self.professional_context(updated, work_id=work_id, scene_id=scene_id)
+        return self.objects.put('scene-professional-handoff:' + scene_id, updated)
+
+    def professional_context(self, packet: dict[str, Any] | None, *, work_id: str,
+                             scene_id: str | None) -> dict[str, Any]:
+        from drama_plugin.contracts.film_grammar import WorkDirectingAuthority
+        from drama_plugin.contracts.location_design import LocationDesign
+        result: dict[str, Any] = {'workId': work_id, 'sceneId': scene_id,
+                                 'filmLook': [], 'locationCandidates': []}
+        for raw in (packet or {}).get('professionalDesignRefs', []):
+            ref = SourcePin.model_validate(raw)
+            body = self.objects.read_ref(ref)
+            if body.get('schemaVersion') == 'work-directing-authority-v1':
+                look = WorkDirectingAuthority.model_validate(body)
+                if look.work_scope != work_id:
+                    raise ValueError('Professional Film Look work mismatch')
+                result['filmLook'].append({'ref': dump_contract(ref), 'design': dump_contract(look)})
+            elif body.get('schemaVersion') == 'location-design-v2':
+                place = LocationDesign.model_validate(body)
+                if scene_id not in place.scene_refs:
+                    raise ValueError('Professional location scope mismatch')
+                result['locationCandidates'].append({'selection': len(result['locationCandidates']),
+                    'ref': dump_contract(ref), 'design': dump_contract(place)})
+            else:
+                raise ValueError('Unsupported professional continuity original')
+        return result
+
     def bind_context(self, *, work_id: str, scene_id: str | None) -> SourcePin:
         return self.objects.put('native-screenplay-context:' + work_id, {
             'schemaVersion': 'native-screenplay-context-v1', 'workId': work_id, 'sceneId': scene_id,
@@ -330,6 +372,10 @@ def register_screenplay_tools(registry: 'ToolRegistry', workshop: ScreenplayWork
     from drama_plugin.tools.catalog import _domain_tool
     async def retain_context(original: ContextOriginal) -> SourcePin:
         return workshop.retain_context(ContextOriginal.model_validate(original))
+    async def bind_professional_context(handoff_ref: SourcePin, work_id: str, scene_id: str,
+                                       design_refs: tuple[SourcePin, ...]) -> SourcePin:
+        return workshop.bind_professional_context(SourcePin.model_validate(handoff_ref), work_id=work_id,
+            scene_id=scene_id, design_refs=tuple(SourcePin.model_validate(r) for r in design_refs))
     async def retain_thread(thread: NarrativeThread) -> SourcePin:
         return workshop.retain_thread(NarrativeThread.model_validate(thread))
     async def begin(session_id: str, work_id: str, scope: Literal['FILM', 'SCENE'], goal: str,
@@ -352,6 +398,8 @@ def register_screenplay_tools(registry: 'ToolRegistry', workshop: ScreenplayWork
         return workshop.decide(session_id, choice=choice, reason=reason, expected_revision=expected_revision, text=text)
     async def shot_handoff(session_id: str) -> dict[str, Any]: return workshop.shot_handoff(session_id)
     specs: list[tuple[str, ToolHandler, Any, dict[str, Any], dict[str, Any]]] = [
+        ('bind_professional_context', bind_professional_context, SourcePin,
+            {'handoff_ref': SourcePin, 'work_id': str, 'scene_id': str, 'design_refs': tuple[SourcePin, ...]}, {}),
         ('retain_context', retain_context, SourcePin, {'original': ContextOriginal}, {}),
         ('retain_thread', retain_thread, SourcePin, {'thread': NarrativeThread}, {}),
         ('begin', begin, dict, {'session_id': str, 'work_id': str, 'scope': Literal['FILM', 'SCENE'], 'goal': str, 'source_refs': tuple[SourcePin, ...]},

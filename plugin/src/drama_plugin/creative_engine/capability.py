@@ -170,8 +170,17 @@ class CreativeEngineCapabilities:
         shot = next((v.body for v in versions if v.kind == Kind.SHOT), None)
         canon = CanonDraft(work=work, script=script, scene=scene) if isinstance(work, WorkBody) and isinstance(
             script, ScriptBody) and isinstance(scene, SceneBody) else None
+        context = self.screenplays.objects.read_ref(checkpoint.screenplay_ref) if checkpoint.screenplay_ref else self.screenplays.bound_packet(value.screenplay_ref, work_id=inputs.scope.work_id, scene_id=inputs.scope.scene_id)
+        professional = self.screenplays.professional_context(context, work_id=inputs.scope.work_id,
+            scene_id=inputs.scope.scene_id) if owner == Authority.PROFESSIONAL else None
+        if professional is not None:
+            professional['currentDesigns'] = [{'ref': v.ref().model_dump(mode='json', by_alias=True),
+                'domain': v.body.domain.value, 'facts': v.body.facts} for v in versions
+                if v.kind == Kind.PROFESSIONAL and isinstance(v.body, DesignBody)]
+        # Preserve exact refs across native handoffs; author_payload omits them
+        # from non-professional model inputs. Only this owner resolves the art.
         return AuthorRequest(scope=inputs.scope, source=source.body, source_refs=checkpoint.refs,
-            screenplay_context=self.screenplays.objects.read_ref(checkpoint.screenplay_ref) if checkpoint.screenplay_ref else self.screenplays.bound_packet(value.screenplay_ref, work_id=inputs.scope.work_id, scene_id=inputs.scope.scene_id),
+            screenplay_context=context, professional_context=professional,
             canon=canon, shot=shot if isinstance(shot, ShotBody) else None, revision=value.revision if value.revision and value.revision.owner == owner else None)
 
     def _replay(self, inputs: CapabilityInput) -> CapabilityResult | None:
@@ -256,6 +265,7 @@ class CreativeEngineCapabilities:
                 from drama_plugin.creative_engine.screenplay_author import native_film_original
                 request = request.model_copy(update={'screenplay_context': await native_film_original(
                     self.screenplays, self.canon_author, request, operation=inputs.operation_id)})
+                assert request.screenplay_context is not None
                 cp = CreativeCheckpoint.model_validate({**self.state.checkpoint(inputs.run_id).model_dump(),
                     'screenplay_ref': self.screenplays.objects.put('native-film-handoff:' + inputs.run_id, request.screenplay_context)})
                 self.state.save(inputs.run_id, inputs.scope, cp)
@@ -324,6 +334,7 @@ class CreativeEngineCapabilities:
                 request = request.model_copy(update={'screenplay_context': await native_scene_screenplay(
                     self.screenplays, self.canon_author, request, operation=inputs.operation_id,
                     scene_id=inputs.scope.scene_id or inputs.scope.work_id + ':scene')})
+                assert request.screenplay_context is not None
                 cp = CreativeCheckpoint.model_validate({**self.state.checkpoint(inputs.run_id).model_dump(),
                     'screenplay_ref': self.screenplays.objects.put('native-scene-handoff:' + inputs.run_id, request.screenplay_context)})
                 self.state.save(inputs.run_id, inputs.scope, cp)

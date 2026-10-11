@@ -39,6 +39,7 @@ from drama_plugin.providers.mock import MockAssetProvider, MockDramaData, MockMe
 from drama_plugin.providers.speech.fish_audio import FishAudioHttpClient
 from drama_plugin.providers.speech.role_dubbing import FishRoleDubbingProvider, UnavailableRoleDubbingProvider
 from drama_plugin.skills import SkillRegistry, SkillToolReferenceValidator
+from drama_plugin.contracts.source_pin import SourcePin
 from drama_plugin.tools import ToolRegistry, build_tool_registry
 from drama_plugin.providers.base.audio_semantic import AudioSemanticProvider
 from drama_plugin.providers.http.qwen_omni import BailianQwenOmniAudioSemanticProvider
@@ -189,6 +190,9 @@ class DramaPlugin:
         self.creative = CreativeEngineCapabilities(self.creative_versions, CreativeStateStore(self.ledger),
             self.production_packages, self.gate_governor, self.gate_findings,
             canon_author, direction_author, self.professional_design)
+        self.screenplays = self.creative.screenplays
+        from drama_plugin.creative_engine.screenplay import register_screenplay_tools
+        register_screenplay_tools(self.tools, self.screenplays)
         creative_flow, dependency_flow = creative_workflow(), dependency_workflow()
         from drama_plugin.film.store import FilmStore
         from drama_plugin.film.capability import FilmCapabilities
@@ -230,7 +234,6 @@ class DramaPlugin:
         if providers.voice is None or providers.role_dubbing is None:
             raise ConfigurationError("Voice and Role Dubbing providers must be configured")
         tools = build_tool_registry(providers.memory, providers.asset, providers.research, providers.production, providers.media, providers.context, providers.voice, providers.role_dubbing)
-        SkillToolReferenceValidator.validate(skills, tools)
         from drama_plugin.creative_engine.backends import compose_authors
         formal_canon, formal_direction, formal_professional = compose_authors(
             config.text_composition, plugin_root / manifest.skills_directory)
@@ -244,7 +247,7 @@ class DramaPlugin:
             film_canon_author = formal_canon
         if film_direction_author is None:
             film_direction_author = formal_direction
-        return cls(plugin_root, config, manifest, providers, skills, tools, clients,
+        result = cls(plugin_root, config, manifest, providers, skills, tools, clients,
                    production_artifact_roots=production_artifact_roots, production_package_store=production_package_store,
                    gate_finding_store=gate_finding_store, generation_artifact_store=generation_artifact_store,
                    reference_execution_store=reference_execution_store, ledger_path=ledger_path,
@@ -252,6 +255,8 @@ class DramaPlugin:
                    target_reviewer=target_reviewer, target_audio=target_audio, target_media_root=target_media_root,
                    creative_root=creative_root, canon_author=canon_author, direction_author=direction_author,
                    professional_author=professional_author, film_canon_author=film_canon_author, film_direction_author=film_direction_author, film_reviewer=film_reviewer, film_recipes=film_recipes, target_formal_media=target_formal_media, legacy_reads=legacy_reads)
+        SkillToolReferenceValidator.validate(skills, result.tools)
+        return result
 
     @staticmethod
     def _load_manifest(path: Path) -> PluginManifest:
@@ -305,7 +310,8 @@ class DramaPlugin:
                                languages: LanguageMetadata | None = None, profile: DeliveryProfile,
                                rights_refs: tuple[ArtifactReference, ...], route: str, model: str,
                                run_id: str, max_cost_microunits: int = 0,
-                               estimated_shot_cost_microunits: int = 0, workflow_id: str | None = None) -> RuntimeRun:
+                               estimated_shot_cost_microunits: int = 0, workflow_id: str | None = None,
+                               screenplay_session_id: str | None = None) -> RuntimeRun:
         """Film scope entry: only goal/source, owner metadata and execution policy."""
         if self.film is None:
             raise ConfigurationError("Film production requires durable ProductionLedger")
@@ -328,6 +334,7 @@ class DramaPlugin:
             scope=run.scope,body=source,sources=(),operation=run_id+":film-source")
         self.film.store.bind(run_id,run.scope,FilmInput(source_ref=source_ref,languages=languages,
             profile=profile,rights_refs=rights_refs,route=route,model=model,
+            screenplay_ref=self.screenplays.bind_selection(screenplay_session_id, work_id=work_id, scene_id=None) if screenplay_session_id else self.screenplays.bind_context(work_id=work_id, scene_id=None),
             max_cost_microunits=max_cost_microunits,estimated_shot_cost_microunits=estimated_shot_cost_microunits))
         try:
             existing = self.runtime.store.load(run_id)
@@ -1354,7 +1361,8 @@ class DramaPlugin:
                         route: RouteRequest | None = None, run_id: str | None = None,
                         revision: RevisionRequest | None = None,
                         base_refs: tuple[VersionRef, ...] = (),
-                        prior_revision_signatures: tuple[str, ...] = ()) -> RuntimeRun:
+                        prior_revision_signatures: tuple[str, ...] = (), screenplay_session_id: str | None = None,
+                        screenplay_ref: SourcePin | None = None) -> RuntimeRun:
         """A goal/source is enough; Plugin workflow owns all subsequent owner selection."""
         if self.ledger is None and not self._test_foundation:
             raise ConfigurationError("Target creative production requires ProductionLedger")
@@ -1368,7 +1376,14 @@ class DramaPlugin:
             source_ref = self.creative_versions.write(writer=Authority.SOURCE, kind=Kind.SOURCE,
                 scope=run.scope, body=source, sources=(), operation=run.run_id + ":source-input")
         assert source_ref is not None
+        if screenplay_session_id and screenplay_ref:
+            raise ValueError('Select a screenplay session or an exact retained handoff')
+        fixed_screenplay = screenplay_ref or (self.screenplays.bind_selection(screenplay_session_id,
+            work_id=work_id, scene_id=run.scope.scene_id) if screenplay_session_id else
+            self.screenplays.bind_context(work_id=work_id, scene_id=run.scope.scene_id))
+        self.screenplays.bound_packet(fixed_screenplay, work_id=work_id, scene_id=run.scope.scene_id)
         inputs = FilmInput(source_ref=source_ref, approved_canon_refs=approved_canon_refs,
+            screenplay_ref=fixed_screenplay,
             route=route or RouteRequest(), revision=revision, base_refs=base_refs,
             prior_revision_signatures=prior_revision_signatures)
         self.creative.state.bind(run.run_id, run.scope, inputs)
@@ -1387,7 +1402,8 @@ class DramaPlugin:
             raise ValueError("A completed reviewed Experiment candidate is required")
         value = self.creative.state.input(candidate_run_id)
         return self.create_film_run(work_id=candidate.scope.work_id, mode=RunMode.PRODUCTION,
-            source_ref=value.source_ref, base_refs=cp.refs, route=value.route, run_id=run_id)
+            source_ref=value.source_ref, base_refs=cp.refs, route=value.route, run_id=run_id,
+            screenplay_ref=cp.screenplay_ref or value.screenplay_ref)
 
     def create_creative_revision_run(self, parent_run_id: str, request: RevisionRequest,
                                      *, run_id: str | None = None) -> RuntimeRun:
@@ -1405,7 +1421,7 @@ class DramaPlugin:
             raise ValueError("Revision depth must advance from its parent")
         run = self.create_film_run(work_id=parent.scope.work_id, scene_id=parent.scope.scene_id, shot_id=parent.scope.shot_id, mode=parent.mode,
             source_ref=prior.source_ref, route=prior.route, revision=request, base_refs=cp.refs,
-            prior_revision_signatures=history, run_id=run_id)
+            prior_revision_signatures=history, run_id=run_id, screenplay_ref=cp.screenplay_ref or prior.screenplay_ref)
         from drama_plugin.creative_engine.contracts import CreativeCheckpoint
         self.creative.state.save(run.run_id, run.scope, CreativeCheckpoint(author_rounds=cp.author_rounds))
         return run
@@ -1580,7 +1596,7 @@ class DramaPlugin:
                 self.execution.transports[task.profile.provider] = configured_http_transport(model=task.profile.model,
                     receipt_root=self.ledger.path.parent/(self.ledger.path.name+".receipts"),ledger=self.ledger,
                     resolution=task.profile.resolution,aspect_ratio=task.profile.aspect_ratio,
-                    recovery_operation_ref=recovery_ref)
+                    recovery_operation_ref=recovery_ref,media_provider=self.providers.media)
             except CapabilityAbsent:
                 pass  # Exact owner reports absence; no alternative route.
 

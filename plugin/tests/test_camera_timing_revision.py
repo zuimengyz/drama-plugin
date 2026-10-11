@@ -4,7 +4,7 @@ from datetime import datetime,timedelta,timezone
 from drama_plugin.contracts.video import CostEstimate
 from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.creative_engine.contracts import Authority,Kind,DesignBody
-from drama_plugin.generation.contracts import CameraPhaseTiming,CameraExecutionDirection,GenerationPreparation,FinalPromptArtifact
+from drama_plugin.generation.contracts import CameraPhaseTiming,CameraExecutionDirection,GenerationPreparation,FinalPromptArtifact,PromptCoverage
 from drama_plugin.persistence.review import UserDecisionRecord
 from drama_plugin.execution.live_transport import TargetHttpTransport,FinancialTerms
 from drama_plugin.execution.contracts import CreativeMediaReview,ReviewObservation
@@ -33,7 +33,8 @@ def camera_binding(p,r,package,task,*,verbose=False):
         motivation='The audience discovers affection rather than inspecting the room.',trajectory='A small forward move on the same axis.',
         amplitude='A slight approach within the close view.',end_state='Settle in a slightly tighter frontal view.')
     if verbose:
-        row=row.model_copy(update={'scene_context':'Already established room. '*100,'motivation':'Observe the affection within this beat. '*70})
+        row=row.model_copy(update={'scene_context':'Already established room. '*100,'motivation':'Observe the affection within this beat. '*70,
+            'trajectory':'Approach on the same axis and settle. '*60})
     suffix='verbose' if verbose else 'concise'
     camera=p.creative_versions.write(writer=Authority.PROFESSIONAL,kind=Kind.PROFESSIONAL,scope=p.runtime.store.load(p.source_film_media_opening(r)).scope,
         body=DesignBody(domain='CAMERA',facts={'movement':{'policy':'Overall shot context only.', 'phaseDirections':[row.model_dump(mode='json',by_alias=True)]}}),sources=core,operation='camera-test-'+suffix)
@@ -112,7 +113,12 @@ async def test_camera_event_wire_and_same_endpoint_candidate_replacement(tmp_pat
     wire=TargetHttpTransport.preview(prep,final,ledger=p.ledger)
     assert 'Only when the eyes soften' in wire['content'][0]['text']
     assert 'CURRENT SEGMENT, inherited camera state' in wire['content'][0]['text']
-    assert 'BACKGROUND ONLY, already completed' in wire['content'][0]['text']
+    assert 'BACKGROUND ONLY' not in wire['content'][0]['text']
+    assert 'Opening establish and push are completed.' not in wire['content'][0]['text']
+    assert 'Later solitude remains later.' not in wire['content'][0]['text']
+    coverage=p.generation_artifacts.get(final.coverage_ref,PromptCoverage)
+    assert {'sceneContext','precedingBeatContext','followingBeatContext'} <= {
+        e.source_ref.path[-1] for e in coverage.entries if e.status=='OUT_OF_UNIT'}
     assert 'Wide establishing view, then push closer.' not in wire['content'][0]['text']
     assert wire['return_last_frame'] and wire['content'][1]['role']=='first_frame'
     assert not await p.prompt_compiler.validate_execution_sources(compiled.preparation_ref)

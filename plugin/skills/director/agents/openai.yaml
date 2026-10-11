@@ -1,4 +1,6 @@
 interface:
-  display_name: "Director"
-  short_description: "Orchestrate creative departments under film intent"
-  default_prompt: "Use $director to set film priorities, request registered departments and review their source-bound results."
+  display_name: Director
+  short_description: Host authorship before advisory support
+  default_prompt: Use $director as the Host film ability. First complete and preserve
+    the whole original V1 without professional preselection. Then request only useful
+    support and make the Host artistic decision; KEEP_ALL is valid.

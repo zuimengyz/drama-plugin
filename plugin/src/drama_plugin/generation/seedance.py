@@ -36,7 +36,7 @@ class ModelPolicyCatalog:
         except ValueError:
             return None
         material = {"model": model, "family": family, "generator_version": generator.version,
-                    "target_adapter_version": "t5r-seedance-event-audio-view-v4",
+                    "target_adapter_version": "t5r-seedance-unit-layout-v5",
                     "generator_policy": policy(), "hard_limit": spec["prompt_limit"],
                     "native_audio": spec["native_audio"], "input_modes": spec["input_modes"],
                     "durations": spec["durations"]}
@@ -53,8 +53,40 @@ class SeedanceTargetAdapter:
         rows, audio, mapping = [], [], {}
         count: dict[str, int] = {}
         subjects = sorted({fact.subject_id for fact in ir.facts if fact.subject_id and fact.domain == "SUBJECTS"})
-        for fact in ir.facts:
+        # Arrange a native unit as space/time, cast, current action, photography,
+        # light/color and sound. Sorting never paraphrases an owner's text or
+        # changes the canonical subject-label/input order.
+        order = {"WORLD": 0, "SUBJECTS": 1, "REFERENCE": 2, "ACTION": 3,
+                 "PERFORMANCE": 4, "CAMERA": 5, "LIGHTING": 6, "COLOR": 7,
+                 "EDITORIAL": 8, "DIRECTION": 9, "SOUND": 10}
+        def execution_order(fact):
+            field = fact.source_ref.path[-1]
+            phase = (-1 if field == "entryState" or fact.slot == "video.start_state"
+                     else 2 if field == "observable" or fact.slot == "video.end_state" else 0)
+            if fact.domain == "WORLD":
+                phase = {"time": 0, "setting": 1, "weather": 2, "physicalWorldRules": 3}.get(field, 4)
+            elif fact.domain == "SUBJECTS":
+                phase = {"identityConstraints": 0, "absences": 1, "role": 2, "inSceneBehaviour": 3}.get(field, 4)
+            elif fact.domain == "CAMERA":
+                phase = {"pointOfView": 0, "axisAndScreenDirection": 1, "cameraPosition": 2, "height": 3,
+                         "lensIntention": 4, "policy": 5, "inheritedState": 6, "decision": 7,
+                         "trigger": 8, "motivation": 9, "trajectory": 10, "amplitude": 11, "endState": 12}.get(field, 5)
+            return (order.get(fact.domain.value, 9), phase)
+
+        for fact in sorted(ir.facts, key=execution_order):
             slot = fact.slot
+            # These finite Action leaves are states/constraints, not extra
+            # numbered events. The source fact and coverage receipt stay exact.
+            if fact.domain == "ACTION":
+                slot = {"entryState": "video.start_state", "observable": "video.end_state",
+                        "physicalStateConstraints": "preserve.physical_state"}.get(
+                            fact.source_ref.path[-1], slot)
+            elif fact.domain == "SUBJECTS" and fact.source_ref.path[-1] == "inSceneBehaviour":
+                slot = "subject.current_visible_action"
+            elif fact.domain == "WORLD" and fact.source_ref.path[-1] == "time":
+                slot = "world.time_of_day"
+            elif fact.domain == "LIGHTING" and fact.source_ref.path[-1] == "nightContinuity":
+                slot = "lighting.time_of_day"
             if slot.startswith("subject.") and fact.subject_id is None:
                 slot = 'preserve.subject_constraints'
             elif slot.startswith("subject."):
@@ -71,6 +103,9 @@ class SeedanceTargetAdapter:
                         "ILLUSTRATION": "插画", "ANIMATION": "动画"}.get(text, text)
             if fact.source_ref.path[-1:] == ("decision",) and text == "NO_SCORE_MUST_PRESERVE":
                 text = "本镜头不配乐。"
+            if fact.domain == "CAMERA" and fact.source_ref.path[-1:] == ("decision",):
+                text = {"START": "本镜开始运镜。", "CONTINUE": "延续已开始的运镜。", "CHANGE": "改变运镜。",
+                        "STOP": "停止运镜。", "HOLD": "保持当前机位。"}.get(text, text)
             rows.append(dict(path=path, text=text, source=source, scope="CLIP",
                 priority="CRITICAL" if fact.obligation == Obligation.EXECUTION_REQUIRED else "OPTIONAL",
                 required=fact.obligation == Obligation.EXECUTION_REQUIRED))
@@ -103,6 +138,8 @@ class SeedanceTargetAdapter:
             inputs.append(media)
         generated = get_generator(policy.family).generate(cast(VisualPromptIR, view), rows,
             context={"mode": input_mode, "references": inputs, "native_audio": policy.native_audio and plan.native_audio_policy != "DISABLED",
+                     "unit_layout": True,
+                     "actor_tokens_only": True,
                      "annotations": ProjectionAnnotations(audio=tuple(audio)).model_dump(mode="json")},
             hard_limit=policy.hard_limit)
         return {**generated, "target_mapping": mapping}

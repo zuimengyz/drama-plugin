@@ -1,8 +1,7 @@
 code: shot-design
 name: Shot Design
-description: Design actual shots, coverage purpose and start/end states from approved
-  camera, blocking and action originals; use for coverage and thin Shot assembly,
-  not camera or editorial re-authorship.
+description: Realize the complete Host-selected scene screenplay through meaningful
+  shots and performance; preserve formal department and adoption authority.
 context:
   required:
   - scene
@@ -18,6 +17,10 @@ context:
   - directorPackageRef
   - departmentInputs
   - continuityRef
+  - hostScreenplayRef
+  - hostDecisionRef
+  - fullFilmScreenplayRef
+  - longArcMemoryRefs
   refresh_after:
   - shot.create_shot
   - shot.save_shot
@@ -34,6 +37,7 @@ tools:
   - media.get_media
   - context.build_context
   - context.refresh_context
+  - screenplay.shot_handoff
 completion:
   conditions:
   - Coverage and thin Shot refs preserve approved Scene meaning, bindings and start/end

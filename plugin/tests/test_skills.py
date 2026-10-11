@@ -195,8 +195,14 @@ def test_creative_completion_conditions_include_lifecycle_gate() -> None:
     for skill_code in CREATIVE:
         conditions = registry.get(skill_code).completion.conditions
         assert len(conditions) == 3
-        gate = conditions[-1].lower()
-        assert all(term in gate for term in ("persistence", "sufficient context", "plan", "draft", "passing", "review"))
+        if skill_code == 'scene-development':
+            assert 'preserved before professional support' in conditions[0]
+            assert 'KEEP_ALL' in conditions[0]
+            assert 'cannot silently overwrite adopted facts' in conditions[1]
+            assert 'full scene' in conditions[2] and 'Host decision' in conditions[2]
+        else:
+            gate = conditions[-1].lower()
+            assert all(term in gate for term in ("persistence", "sufficient context", "plan", "draft", "passing", "review"))
 
 
 def test_professional_references_are_minimal_discoverable_and_stage_routed() -> None:

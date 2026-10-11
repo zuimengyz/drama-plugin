@@ -389,6 +389,8 @@ def author_payload(request: AuthorRequest | FilmAuthorRequest) -> dict[str, Json
     source=request.source.model_dump(mode='json',by_alias=True)
     source={k:v for k,v in source.items() if k not in {'originalOwnerRef','languageMetadataRef'}}
     result: dict[str,JsonValue]={'source':JSON.validate_python(source)}
+    if request.screenplay_context is not None:
+        result['hostScreenplay'] = JSON.validate_python(request.screenplay_context)
     if isinstance(request, AuthorRequest) and request.revision:
         # Findings are explicit scoped instructions, not provenance or invented IDs.
         result['revisionInstruction'] = request.revision.instruction

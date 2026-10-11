@@ -7,8 +7,9 @@ from typing import Annotated, Literal, Self
 from pydantic import Field, JsonValue, model_validator, model_serializer, SerializerFunctionWrapHandler
 
 from drama_plugin.contracts.base import sha256_canonical
+from drama_plugin.contracts.source_pin import SourcePin
 from drama_plugin.production.contracts import SourceDomain
-from drama_plugin.runtime.contracts import ArtifactReference, Identifier, RunMode, RuntimeContract, RuntimeScope
+from drama_plugin.runtime.contracts import ArtifactReference, Identifier, RunMode, RuntimeContract, ExtendedRuntimeContract, RuntimeScope
 from drama_plugin.runtime.policy import AUTHOR_CONTENT_ATTEMPT_LIMIT
 
 Hash = Annotated[str, Field(pattern=r"^[a-f0-9]{64}$")]
@@ -245,7 +246,9 @@ class RevisionRequest(RuntimeContract):
     depth: int = Field(default=1, ge=1, le=3)
 
 
-class AuthorRequest(RuntimeContract):
+class AuthorRequest(ExtendedRuntimeContract):
+    extension_fields = ('screenplay_context',)
+    screenplay_context: dict[str, JsonValue] | None = None
     scope: RuntimeScope
     source: SourceBody
     source_refs: tuple[VersionRef, ...]
@@ -302,7 +305,9 @@ class RoutePlan(RuntimeContract):
         return self
 
 
-class FilmInput(RuntimeContract):
+class FilmInput(ExtendedRuntimeContract):
+    extension_fields = ('screenplay_ref',)
+    screenplay_ref: SourcePin | None = None
     source_ref: VersionRef
     approved_canon_refs: tuple[VersionRef, ...] = Field(default=(), max_length=3)
     route: RouteRequest = RouteRequest()
@@ -332,7 +337,9 @@ class CreativeIntegrityReconciliation(RuntimeContract):
         return self
 
 
-class CreativeCheckpoint(RuntimeContract):
+class CreativeCheckpoint(ExtendedRuntimeContract):
+    extension_fields = ('screenplay_ref',)
+    screenplay_ref: SourcePin | None = None
     refs: tuple[VersionRef, ...] = Field(default=(), max_length=16)
     author_rounds: int = Field(default=0, ge=0, le=MAX_AUTHOR_ROUNDS)
     route_plan: RoutePlan | None = None

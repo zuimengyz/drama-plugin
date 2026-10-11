@@ -8,8 +8,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal, ClassVar
 from collections.abc import Mapping
-from urllib.parse import urlsplit, parse_qs
-from datetime import datetime, timezone, timedelta
+from urllib.parse import urlsplit
 import httpx
 from pydantic import Field, JsonValue, TypeAdapter
 from drama_plugin.contracts.base import sha256_canonical
@@ -151,11 +150,12 @@ class TargetHttpTransport:
     def __init__(self, adapter: HttpVideoProvider, receipt_root: Path, *, ledger: ProductionLedger,
                  grant: ControlledLiveGrant | None = None, qualification_only: bool = False,
                  resolution: str = "720p", aspect_ratio: str = "16:9", environment: Mapping[str,str] | None = None,
-                 recovery_operation_ref: ArtifactReference | None = None):
+                 recovery_operation_ref: ArtifactReference | None = None, media_provider=None):
         self.adapter,self.provider=adapter,adapter.provider
         self.resolution,self.aspect_ratio,self.environment=resolution,aspect_ratio,environment
         self.offline=qualification_only
         self.recovery_operation_ref=recovery_operation_ref
+        self.media_provider=media_provider
         self.root,self.ledger,self.grant=receipt_root.resolve(),ledger,grant
         self.root.mkdir(parents=True,exist_ok=True)
         if qualification_only and not isinstance(adapter.client._transport,httpx.MockTransport):
@@ -193,7 +193,8 @@ class TargetHttpTransport:
             resolution=profile.resolution, aspect_ratio=profile.aspect_ratio)
 
     async def reference_url(self, reference: RequestReference, operation: ExecutionOperation) -> str:
-        """Reuse an exact reviewed native output; no media discovery or upload."""
+        """Deliver exact reviewed native bytes with fresh storage access and original provenance."""
+        from drama_plugin.execution.reference_delivery import verify_origin, managed_original_url
         from drama_plugin.execution.contracts import MediaBinding, CreativeMediaReview
         from drama_plugin.production.references import ReferenceExecutionBinding
         from drama_plugin.execution.store import ExecutionStore
@@ -235,24 +236,11 @@ class TargetHttpTransport:
                 or receipt.state != 'SUCCEEDED' or receipt.provider != self.provider
                 or origin.model != operation.model or receipt.result is None):
             raise CapabilityAbsent('TRUSTED_NATIVE_VIDEO_REFERENCE_REQUIRED')
-        # The original provider output preserves the account's trusted face provenance.
-        url = urlsplit(receipt.result.locator)
-        if url.scheme != 'https' or not url.hostname or url.username or url.password:
-            raise ValueError('REFERENCE_DELIVERY_REQUIRES_HTTPS')
-        params = {k.lower():v[0] for k,v in parse_qs(url.query).items()}
-        stamp, ttl = params.get('x-tos-date'), params.get('x-tos-expires')
-        if stamp and ttl and ttl.isdigit() and datetime.strptime(stamp,'%Y%m%dT%H%M%SZ').replace(tzinfo=timezone.utc)+timedelta(seconds=int(ttl)) <= datetime.now(timezone.utc):
-            # Refresh only delivery metadata for this exact already retained
-            # task. Do not recreate it, upload a derivative or alter its Media.
-            fresh = await self.query(origin, store.get(source.attempt_ref,ProviderAttempt), receipt)
-            if (fresh is None or fresh.state!='SUCCEEDED' or fresh.remote_identity!=source.provider_result_id
-                    or fresh.result is None or fresh.result.result_id!=receipt.result.result_id):
-                raise CapabilityAbsent('REFERENCE_DELIVERY_REFRESH_FAILED')
-            store.put(fresh)  # append evidence; preserve original source receipt
-            if fresh.result.locator==receipt.result.locator:
-                raise DefinitelyNotSubmitted('REFERENCE_DELIVERY_EXPIRED')
-            return fresh.result.locator
-        return receipt.result.locator
+        await verify_origin(self.adapter, self.root, origin, receipt,
+            store.get(source.attempt_ref, ProviderAttempt), source.media.content_hash)
+        # Source cache identity and canonical Media ID differ; bytes must match both.
+        return await managed_original_url(self.media_provider, self.adapter.client, source.media, source.scope,
+            media_id=reference.media_id)
 
     def _grant(self, operation:ExecutionOperation, request:ProviderRequest|None = None) -> None:
         from drama_plugin.config.video_route import require_runtime_route
@@ -329,6 +317,7 @@ class TargetHttpTransport:
     def can_reconcile(self, attempt: ProviderAttempt, receipt: ProviderReceipt | None) -> bool:
         return self.reconciliation_receipt(attempt,receipt) is not None
     def receipt(self,operation:ExecutionOperation,attempt:ProviderAttempt,task:ProviderTask)->ProviderReceipt:
+        from drama_plugin.execution.reference_delivery import credential_fingerprint
         if not task.provider_task_id or task.status in ('UNKNOWN','NOT_CREATED'):
             raise PossiblySubmitted('REMOTE_IDENTITY_UNRESOLVED')
         state='SUCCEEDED' if task.status=='SUCCEEDED' else 'FAILED' if task.status in ('FAILED','CANCELED') else 'RUNNING'
@@ -345,7 +334,9 @@ class TargetHttpTransport:
             query_code=query_code,
             http_status=int(query_code[5:]) if query_code and query_code.startswith('HTTP_') and query_code[5:].isdigit() else None,
             query_retryable=task.retryable if query_code else None, usage=task.usage or None,
-            last_frame_url=task.last_frame_url if state == 'SUCCEEDED' else None)
+            last_frame_url=task.last_frame_url if state == 'SUCCEEDED' else None,
+            source_generated_at=(task.completed_at or task.created_at) if self.provider == 'seedance' and state == 'SUCCEEDED' else None,
+            source_account_fingerprint=credential_fingerprint(self.adapter) if self.provider == 'seedance' and state == 'SUCCEEDED' else None)
 
     async def recover_unknown(self, operation: ExecutionOperation, attempt: ProviderAttempt) -> ProviderReceipt | None:
         """Bounded caller queries recent jobs; only an exact echoed identity binds."""
@@ -469,7 +460,7 @@ class TargetHttpTransport:
 def configured_http_transport(*, model:str, receipt_root:Path, ledger:ProductionLedger,
                               resolution:str, aspect_ratio:str, environment:Mapping[str,str]|None=None,
                               grant:ControlledLiveGrant|None=None,
-                              recovery_operation_ref:ArtifactReference|None=None) -> TargetHttpTransport:
+                              recovery_operation_ref:ArtifactReference|None=None, media_provider=None) -> TargetHttpTransport:
     """Configuration chooses a model/provider; this factory never selects a fallback."""
     from drama_plugin.config.loader import load_config
     from drama_plugin.config.video_route import require_runtime_route
@@ -515,7 +506,8 @@ def configured_http_transport(*, model:str, receipt_root:Path, ledger:Production
         raise CapabilityAbsent('TARGET_HTTP_REFERENCE_SERIALIZER_ABSENT')
     adapter=adapters[provider](model,configuration[provider],resolve=no_reference)
     transport=TargetHttpTransport(adapter,receipt_root,ledger=ledger,resolution=resolution,
-        aspect_ratio=aspect_ratio,environment=environment,grant=grant,recovery_operation_ref=recovery_operation_ref)
+        aspect_ratio=aspect_ratio,environment=environment,grant=grant,recovery_operation_ref=recovery_operation_ref,
+        media_provider=media_provider)
     if recovery_operation_ref is not None:
         assert operation is not None and attempt is not None
         # UNKNOWN without an ACK can still use bounded recent-job recovery.

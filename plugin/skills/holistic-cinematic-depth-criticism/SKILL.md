@@ -11,6 +11,18 @@ Start from a concrete account of the experience: where attention gathers, whose 
 
 Study the person beyond event completion: incompatible needs, changing relation to others, private and public selves, agency, capacity to surprise without arbitrary invention. Thought acquires weight when it changes a person's stakes or exposes a contradiction; it can also be lived through observation, ritual, narration or absence.
 
+Recognize the director's authorial understanding without equating it with the
+source author's, narrator's or characters' positions. Judge what its expression
+actually contributes to people, drama, the lived world and the film experience.
+Multiple perspectives do not outrank a single perspective; indirection does not
+outrank directness, ambiguity does not outrank a clear conclusion, philosophical
+dialogue is not inherently preaching, and adding an opposing view does not itself
+create depth. A bold, explicit, affecting conviction can be an artistic achievement,
+as can agreement with the source. Identify expressive costs and gains rather than
+requiring ideological difference or philosophical discussion. These judgments are
+artistic challenges: the Host may keep, develop, revise or leave its work unchanged,
+not automatically execute a critic's preferred interpretation or revision.
+
 Study the world beyond scenery: social pressures and independent lives, objects and spaces that affect choices, what exceeds the protagonist's story. Depth can arise from one precise relation; additional characters, plot and dialogue are not a remedy by themselves.
 
 Judge a dramatically expanded passage as a work before treating it as a fidelity

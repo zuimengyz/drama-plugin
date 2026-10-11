@@ -1,7 +1,7 @@
 """Film manifests bind immutable author versions; consumers have no writing authority."""
 from __future__ import annotations
 from typing import ClassVar, Literal, Self
-from pydantic import Field, ValidationInfo, model_validator
+from pydantic import Field, JsonValue, ValidationInfo, model_validator
 from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.creative_engine.contracts import CanonDraft, SceneBody, ShotBody, SourceBody, VersionRef, WorkBody, ScriptBody, RoutePlan, RevisionRequest
 from drama_plugin.execution.contracts import MediaIdentity, ReviewObservation
@@ -64,7 +64,9 @@ class FilmDirection(RuntimeContract):
             raise ValueError('Duplicate Shot')
         return self
 
-class FilmAuthorRequest(RuntimeContract):
+class FilmAuthorRequest(ExtendedRuntimeContract):
+    extension_fields = ('screenplay_context',)
+    screenplay_context: dict[str, JsonValue] | None = None
     scope: RuntimeScope
     source: SourceBody
     languages: LanguageMetadata
@@ -94,7 +96,9 @@ class DeliveryProfile(RuntimeContract):
     duration_tolerance_ms: int = Field(default=250, ge=0, le=1000)
     subtitle_required: bool = False
 
-class FilmInput(RuntimeContract):
+class FilmInput(ExtendedRuntimeContract):
+    extension_fields = ('screenplay_ref',)
+    screenplay_ref: SourcePin | None = None
     source_ref: VersionRef
     languages: LanguageMetadata
     route: Identifier
@@ -120,7 +124,8 @@ class ShotUnit(RuntimeContract):
     revision_signatures: tuple[str, ...] = Field(default=(), max_length=3)
 
 class FilmCheckpoint(ExtendedRuntimeContract):
-    extension_fields = ('scene_media_run_ids', 'scene_media_review_refs', 'scene_media_pending_tasks', 'scene_media_goal_hash', 'media_batch_ref', 'media_batch_opening_review_ref', 'scene_media_revision_refs')
+    screenplay_ref: SourcePin | None = None
+    extension_fields = ('screenplay_ref', 'scene_media_run_ids', 'scene_media_review_refs', 'scene_media_pending_tasks', 'scene_media_goal_hash', 'media_batch_ref', 'media_batch_opening_review_ref', 'scene_media_revision_refs')
     canon_ref: ArtifactReference | None = None
     direction_ref: ArtifactReference | None = None
     plan_ref: ArtifactReference | None = None

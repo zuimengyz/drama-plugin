@@ -1,8 +1,7 @@
 code: scene-development
 name: Scene Development
-description: Develop scene dramaturgy and causal beats from an Episode, then assemble
-  department references; dialogue, staging, art and execution retain their independent
-  owners.
+description: Develop a complete Host-authored scene director screenplay from the full-film
+  framework before professional realization; preserve originals and adopted authority.
 context:
   required:
   - episode
@@ -14,6 +13,10 @@ context:
   - directorPackageRef
   - departmentInputs
   - continuityRef
+  - hostScreenplayRef
+  - hostDecisionRef
+  - fullFilmScreenplayRef
+  - longArcMemoryRefs
   refresh_after:
   - scene.create_scene
   - scene.save_scene
@@ -30,12 +33,19 @@ tools:
   - research.verify_claim
   - context.build_context
   - context.refresh_context
+  - screenplay.retain_context
+  - screenplay.retain_thread
+  - screenplay.begin
+  - screenplay.retain_v1
+  - screenplay.support_packet
+  - screenplay.retain_support
+  - screenplay.decide
+  - screenplay.shot_handoff
 completion:
   conditions:
-  - The Scene covers assigned historical beats with valid attribution and realizes
-    an explicit Narrative Input State, Required Transition, and Narrative Output State.
-  - It passes necessity, Before/After, Scene State Continuity, and Causal Narrative
-    Continuity gates and is ready for Shot design without silently creating downstream
-    Shots.
-  - Persistence follows sufficient context, an internal plan, a complete draft, and
-    a passing Scene review with no unresolved historical or continuity conflict.
+  - The complete original scene V1 is preserved before professional support; the Host
+    selects the later full version, including KEEP_ALL.
+  - Formal Scene persistence retains existing attribution and continuity authority;
+    candidate prose cannot silently overwrite adopted facts.
+  - The selected full scene, its Host decision and relevant long-arc sources reach
+    Shot design.

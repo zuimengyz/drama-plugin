@@ -231,6 +231,14 @@ class ExecutionProjection:
             facts.append(fact)
         for item in selected:
             domain, ref = item.selection.domain, item.selection.reference
+            # A Camera owner's explicitly named background is retained in the
+            # package/selection, but never replayed in current-unit model prose.
+            # Keep the frozen OperationSelection intact for recovery.
+            if (domain == D.CAMERA and 'phaseDirections' in ref.path and
+                    ref.path[-1] in {'sceneContext', 'precedingBeatContext', 'followingBeatContext'}):
+                internal.append(CoverageEntry(fact_id='camera-background:'+sha256_canonical(ref),
+                    domain=domain,source_ref=ref,obligation=O.QUALITY_SUPPORTING,status=S.OUT_OF_UNIT))
+                continue
             if task.camera_direction_ref and domain == D.CAMERA and any(k in ref.path for k in ('movement','cameraPosition','lensIntention','pointOfView')):
                 internal.append(CoverageEntry(fact_id='camera-whole-shot-context:'+sha256_canonical(ref),
                     domain=domain,source_ref=ref,obligation=O.QUALITY_SUPPORTING,status=S.INTERNAL_ONLY))
@@ -341,6 +349,11 @@ class ExecutionProjection:
                 'motivation':'CURRENT SEGMENT, dramatic motivation', 'trajectory':'CURRENT SEGMENT, camera trajectory',
                 'amplitude':'CURRENT SEGMENT, movement extent', 'end_state':'CURRENT SEGMENT, final camera state'}
             for key,label in labels.items():
+                if key in {'scene_context', 'preceding_beat_context', 'following_beat_context'}:
+                    ref = child(source,CameraPhaseTiming.model_fields[key].alias or key)
+                    internal.append(CoverageEntry(fact_id='camera-background:'+sha256_canonical(ref),
+                        domain=D.CAMERA,source_ref=ref,obligation=O.QUALITY_SUPPORTING,status=S.OUT_OF_UNIT))
+                    continue
                 add(D.CAMERA,child(source,CameraPhaseTiming.model_fields[key].alias or key),
                     label+': '+getattr(timing,key),'video.camera_motion')
         for ref in task.unit.action_refs:

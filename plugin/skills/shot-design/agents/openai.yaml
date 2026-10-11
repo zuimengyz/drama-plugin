@@ -1,4 +1,6 @@
 interface:
-  display_name: "Shot Design"
-  short_description: "Design concise and continuity-aware dramatic Shots"
-  default_prompt: "Use $shot-design to cover this Scene with the fewest Shots that preserve both visual and causal narrative state continuity."
+  display_name: Shot Design
+  short_description: Realize the selected whole scene
+  default_prompt: Use $shot-design after the Host has selected a complete scene screenplay.
+    Read its whole text and context, then develop meaningful shot and performance
+    precision without a detail quota.

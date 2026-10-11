@@ -1,5 +1,7 @@
 """All creates are MockTransport. Actual wire, native owner and three phase coverage."""
 import json
+from datetime import datetime, timezone
+from hashlib import sha256
 import subprocess
 from pathlib import Path
 import httpx
@@ -78,11 +80,17 @@ async def scenario(tmp_path,monkeypatch,media_files,*,last_frame=True,authors=No
     calls=[];creates=[]
     def vendor(request):
         calls.append(request)
+        if request.url.host == 'storage.invalid':
+            assert 'authorization' not in request.headers
+            row = next(row for row in service.records if row['id'] == request.url.path[1:])
+            data = next(path.read_bytes() for path in videos if sha256(path.read_bytes()).hexdigest() == row['contentHash'])
+            return httpx.Response(200,content=data,headers={'Content-Type':'video/mp4'})
         if request.method=='POST':
             index=len(creates); creates.append(json.loads(request.content)); service.video=videos[index % len(videos)]
             content={'video_url':f'https://result.invalid/video-{index}.mp4'}
             if last_frame: content['last_frame_url']=f'https://result.invalid/tail-{index}.jpg'
-            return httpx.Response(200,json={'id':f'task-{index}','status':'succeeded','content':content})
+            return httpx.Response(200,json={'id':f'task-{index}','status':'succeeded','content':content,
+                'updated_at':int(datetime.now(timezone.utc).timestamp())})
         if request.url.path.startswith('/video-'):
             return httpx.Response(200,content=videos[int(request.url.path[7:request.url.path.index('.mp4')]) % len(videos)].read_bytes())
         if request.url.path.startswith('/tail-'):
@@ -90,12 +98,14 @@ async def scenario(tmp_path,monkeypatch,media_files,*,last_frame=True,authors=No
         if '/contents/generations/tasks/' in request.url.path:
             index=int(request.url.path[-1]);content={'video_url':f'https://result.invalid/video-{index}.mp4'}
             if last_frame:content['last_frame_url']=f'https://result.invalid/tail-{index}.jpg'
-            return httpx.Response(200,json={'id':f'task-{index}','status':'succeeded','content':content})
+            return httpx.Response(200,json={'id':f'task-{index}','status':'succeeded','content':content,
+                'updated_at':int(datetime.now(timezone.utc).timestamp())})
         raise AssertionError(str(request.url))
     async def no_reference(_):raise AssertionError('No extra reference generation')
     adapter=SeedanceProvider('seedance-2-fast',ProviderSettings(base_url='https://ark.cn-beijing.volces.com/api/v3',api_key=SecretStr(FAKE_SECRET)),
         resolve=no_reference,client=httpx.AsyncClient(transport=httpx.MockTransport(vendor)))
-    p.execution.transports['seedance']=TargetHttpTransport(adapter,tmp_path/'acks',ledger=p.ledger,qualification_only=True)
+    p.execution.transports['seedance']=TargetHttpTransport(adapter,tmp_path/'acks',ledger=p.ledger,qualification_only=True,
+        media_provider=p.providers.media)
     monkeypatch.setenv('DRAMA_PLUGIN_MEDIA_IMPORT_ALLOWED_ROOTS',str(tmp_path))
     run_id=await adopt_to_rights(p)
     parent=await p.runtime.run(run_id);cp=p.film.store.checkpoint(run_id)

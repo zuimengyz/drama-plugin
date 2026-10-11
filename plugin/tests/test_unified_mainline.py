@@ -90,6 +90,12 @@ class MediaService:
             self.records.append(item.model_dump(mode='json',by_alias=True))
             return httpx.Response(200,json=self.records[-1])
         if request.url.path=='/media/resolve':
+            if request.url.params.get('delivery') == 'provider':
+                item = next(r for r in self.records if r['id'] == request.url.params['media_id'])
+                return httpx.Response(200,json={'mediaId':item['id'],
+                    'url':'https://storage.invalid/'+item['id'],
+                    'expiresAt':(datetime.now(timezone.utc)+timedelta(minutes=15)).isoformat(),
+                    'mimeType':item['mimeType'],'sizeBytes':item['fileSize']})
             return httpx.Response(200,json={'mediaId':'canonical-service-media-1','url':'/media/content',
                 'expiresAt':(datetime.now(timezone.utc)+timedelta(minutes=5)).isoformat()})
         if request.url.path=='/media/content':
@@ -121,12 +127,14 @@ def load(tmp_path, monkeypatch, video, *, restore=False, service=None, vendor_ca
     def vendor(request):
         vendor_calls.append(request)
         if request.method=='POST':
-            return httpx.Response(200,json={'id':'offline-contract-task','status':'succeeded','content':{'video_url':'https://result.invalid/clip.mp4'}})
-        return httpx.Response(200,content=video.read_bytes())
+            return httpx.Response(200,json={'id':'offline-contract-task','status':'succeeded',
+                'updated_at':int(datetime.now(timezone.utc).timestamp()),'content':{'video_url':'https://result.invalid/clip.mp4'}})
+        return httpx.Response(200,content=video.read_bytes(),headers={'Content-Type':'video/mp4'})
     async def no_reference(_): raise AssertionError('No reference generation')
     adapter=SeedanceProvider('seedance-2-fast',ProviderSettings(base_url='https://ark.cn-beijing.volces.com/api/v3',api_key=SecretStr(FAKE_SECRET)),
         resolve=no_reference,client=httpx.AsyncClient(transport=httpx.MockTransport(vendor)))
-    p.execution.transports['seedance']=TargetHttpTransport(adapter,tmp_path/'acks',ledger=p.ledger,qualification_only=True)
+    p.execution.transports['seedance']=TargetHttpTransport(adapter,tmp_path/'acks',ledger=p.ledger,qualification_only=True,
+        media_provider=p.providers.media)
     monkeypatch.setenv('DRAMA_PLUGIN_MEDIA_IMPORT_ALLOWED_ROOTS',str(tmp_path))
     package=ProductionPackage.model_validate(json.loads(next(r['body_json'] for r in fixture['artifacts'] if r['artifact_type']=='production-package')))
     return p,package,service,vendor_calls

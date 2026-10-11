@@ -5,6 +5,14 @@ description: Convert independently argued film-art findings into contextual crea
 
 # Artistic Learning and Evolution
 
+Under [Host-first creation](../../docs/host-first-creation.md), study the complete
+preserved original and later versions as independent artistic possibilities.
+Do not pre-screen a first draft or require the Host to implement a finding.
+Research powerful retention and expansion as well as reduction. AIE is creative
+research and independent challenge, never the final committee verdict; the Host
+can reject advice and choose unchanged V1. Developer-authorized implementation
+belongs to the development task, not to an AIE agent's autonomous code authority.
+
 Consume the work, its artistic intent, audience feedback, pinned observations,
 independent judgments and current guidance. Own artistic research and the learning
 study; source interpretation, specialist creation and film adoption retain their

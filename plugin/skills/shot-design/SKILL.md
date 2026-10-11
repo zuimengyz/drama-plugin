@@ -3,6 +3,19 @@ name: shot-design
 description: Design actual shots, coverage purpose and start/end states from approved camera, blocking and action originals; use for coverage and thin Shot assembly, not camera or editorial re-authorship.
 ---
 
+## Complete scene to precision
+
+First consume the selected complete scene from the registered
+[Host-first screenplay handoff](../../docs/host-first-creation.md), with its exact
+version, Host decision, full-film framework and relevant long-arc context. Do not
+start from a plot excerpt or silently replace its artistic intention through
+department consensus. Develop meaningful gaze, face, hand, breath, partner trigger,
+acoustic distance, visibility and cut relationships where the scene needs them;
+no micro-action quota. Changes to words or key relationships return to the Host.
+Candidate precision remains design-only. Formal Shot persistence still uses the
+existing adopted Scene/dialogue and current department originals below.
+
+
 ## Creative Source applicability
 
 Consume the parent Script's current ScreenplayInput. Historical evidence, historical beat coverage, actor hierarchy and reconstruction rules in this Skill and its references apply to HISTORICAL. For LITERARY consume the pinned adaptation decisions, compression destinations, cinematic translation and arc stages instead; return new causal changes or source reinterpretation upstream. Shared continuity, knowledge, review and persistence gates remain mandatory. See [Creative Source](../../docs/creative-source.md). Do not use old Media or casting as a literary source.
@@ -138,3 +151,5 @@ is not formalized, and intended lineage is not observed evidence.
 ## Route-owned expression
 
 Read approved route expression plus Director/Action/Camera originals. Thin Shot assembly may project their scope and source hashes; it cannot promote quiet beats or ordinary soldiers to the hero amplitude. Read [expression route contract](../../docs/expression-route-contract.md) when using character or action expression profiles.
+
+The local `screenplay.shot_handoff` operation supplies the complete selected scene candidate and decision; it refuses a full-film session without an intervening complete scene.

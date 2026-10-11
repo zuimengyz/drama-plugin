@@ -211,7 +211,20 @@ async def test_registered_capability_invokes_formal_backend(monkeypatch,tmp_path
     p=configured(monkeypatch,tmp_path); calls=[]
     def handler(req):
         calls.append(req)
-        return httpx.Response(401,json={'error':'offline-contract-key'}) if remote_absent else response(model_output(role))
+        if remote_absent:
+            return httpx.Response(401,json={'error':'offline-contract-key'})
+        system = json.loads(req.content)['messages'][0]['content']
+        if role == 'canon':
+            if 'whole autonomous film screenplay in text' in system:
+                return response({'text': canon().script.screenplay})
+            if 'same Host author' in system:
+                return response({'choice': 'KEEP_ALL', 'reason': 'Keep the whole film fixture.', 'text': None})
+        if role == 'direction':
+            if 'Write the whole independent scene' in system:
+                return response({'text': 'The traveler calls once, listens, and keeps waiting.'})
+            if 'same Host author' in system:
+                return response({'choice': 'KEEP_ALL', 'reason': 'The full encounter already lives.', 'text': None})
+        return response(model_output(role))
     p.creative.canon_author.client.transport=httpx.MockTransport(handler)
     run=p.create_film_run(work_id='offline-r3-capability',mode=RunMode.PRODUCTION,source=source())
     s=p.creative.state.input(run.run_id).source_ref; refs=[s]
@@ -225,7 +238,10 @@ async def test_registered_capability_invokes_formal_backend(monkeypatch,tmp_path
     inputs=CapabilityInput(run_id=run.run_id,scope=run.scope,operation_id=run.run_id+':single-contract-smoke')
     result=await p.runtime.executor.execute('creative.'+role+':v1',inputs)
     assert result.status==(ResultStatus.FAILED if remote_absent else ResultStatus.SUCCEEDED)
-    assert len(calls)==1
+    assert len(calls)==((4 if role == 'direction' else 3 if role == 'canon' else 1) if not remote_absent else 1)
+    if role == 'direction' and not remote_absent:
+        payload = json.loads(json.loads(calls[-1].content)['messages'][1]['content'])
+        assert payload['hostScreenplay']['screenplay']['text'] == 'The traveler calls once, listens, and keeps waiting.'
     assert p.creative.state.checkpoint(run.run_id).package_ref is None
     await p.aclose()
 

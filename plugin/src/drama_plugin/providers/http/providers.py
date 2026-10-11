@@ -111,8 +111,11 @@ class HttpMediaProvider:
         async with open_media_source(source_uri) as source:
             validate_media_mime(media_type, purpose, source.content_type)
             return _one(Media, await self.http.multipart_request("import_media", metadata=metadata, stream=source.stream, filename=source.filename, content_type=source.content_type))
-    async def resolve_media(self, media_id: str) -> MediaResolveResult:
-        return _one(MediaResolveResult, await self.http.request("resolve_media", params={"media_id": media_id}))
+    async def resolve_media(self, media_id: str, *, provider_delivery: bool = False) -> MediaResolveResult:
+        params = {"media_id": media_id}
+        if provider_delivery:
+            params['delivery'] = 'provider'
+        return _one(MediaResolveResult, await self.http.request("resolve_media", params=params))
     async def download_media(self, media_id: str, destination: Path) -> MediaResolveResult:
         resolved = await self.resolve_media(media_id)
         await self.http.download_service_content(resolved.url, destination)

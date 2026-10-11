@@ -1,4 +1,6 @@
 interface:
-  display_name: "Artistic Learning and Evolution"
-  short_description: "Test contextual artistic learning"
-  default_prompt: "Use $artistic-learning-evolution to review the supplied work within the evidence and authority limits."
+  display_name: Artistic Learning and Evolution
+  short_description: Independent advisory artistic research
+  default_prompt: Use $artistic-learning-evolution to research the complete preserved
+    original after authorship, offer independent advisory findings, and leave the
+    artistic decision to its Host.

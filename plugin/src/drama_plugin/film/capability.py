@@ -65,7 +65,13 @@ class FilmCapabilities:
         return self._author_inspection(inputs,'canon',self.canon_author.execution_fingerprint(film=True)) if isinstance(self.canon_author,FormalCanonAuthor) else None
     def inspect_direction_execution(self, inputs: CapabilityInput) -> ExecutionInspection | None:
         from drama_plugin.creative_engine.backends import FormalDirectionAuthor
-        return self._author_inspection(inputs,'direction',self.direction_author.execution_fingerprint(film=True)) if isinstance(self.direction_author,FormalDirectionAuthor) else None
+        if not isinstance(self.direction_author, FormalDirectionAuthor):
+            return None
+        from drama_plugin.creative_engine.backends import FormalCanonAuthor
+        fingerprint = self.direction_author.execution_fingerprint(film=True)
+        if isinstance(self.canon_author, FormalCanonAuthor):
+            fingerprint = sha256_canonical([fingerprint, self.canon_author.scene_execution_fingerprint()])
+        return self._author_inspection(inputs, 'direction', fingerprint)
     def inspect_media_execution(self, inputs: CapabilityInput) -> ExecutionInspection | None:
         run=self.plugin.runtime.store.load(inputs.run_id)
         if run.workflow_id!=MEDIA_WORKFLOW:
@@ -156,6 +162,7 @@ class FilmCapabilities:
             raise ValueError('Source/Film language or scope mismatch')
         cp = self.store.checkpoint(inputs.run_id)
         return FilmAuthorRequest(scope=inputs.scope, source=source.body, languages=value.languages,source_ref=value.source_ref,
+            screenplay_context=self.plugin.screenplays.objects.read_ref(cp.screenplay_ref) if cp.screenplay_ref else self.plugin.screenplays.bound_packet(value.screenplay_ref, work_id=inputs.scope.work_id, scene_id=None),
             canon=self.store.author(cp.canon_ref,FilmCanon) if cp.canon_ref else None,
             production_goal="MEDIA_REVIEW" if self.plugin.runtime.store.load(inputs.run_id).workflow_id == MEDIA_WORKFLOW else None)
     async def canon(self, inputs: CapabilityInput) -> CapabilityResult:
@@ -169,7 +176,22 @@ class FilmCapabilities:
             sources = (self.store.input(inputs.run_id).source_ref,)
             value = self.plugin.creative_versions.author_output(inputs.operation_id,'canon',sources,TypeAdapter(FilmCanon))
             if value is None:
-                value = FilmCanon.model_validate((await self.canon_author.author_film(self.request(inputs))).model_dump())
+                request = self.request(inputs)
+                from drama_plugin.creative_engine.backends import FormalCanonAuthor
+                if isinstance(self.canon_author, FormalCanonAuthor):
+                    from drama_plugin.creative_engine.screenplay_author import native_film_original
+                    selected = await native_film_original(self.plugin.screenplays, self.canon_author, request, operation=inputs.operation_id)
+                    self.save(inputs, screenplay_ref=self.plugin.screenplays.objects.put('native-film-handoff:' + inputs.run_id, selected))
+                    request = request.model_copy(update={'screenplay_context': selected})
+                value = FilmCanon.model_validate((await self.canon_author.author_film(request)).model_dump())
+            from drama_plugin.creative_engine.backends import validate_selected_screenplay
+            validate_selected_screenplay(self.request(inputs), value)
+            originals = [r.model_dump(mode='json', by_alias=True) for r in sources]
+            self.plugin.screenplays.native_original(inputs.operation_id, work_id=inputs.scope.work_id,
+                scope='FILM', scene_id=None, text=value.script.screenplay, source_refs=originals)
+            for scene in value.scenes:
+                self.plugin.screenplays.native_original(inputs.operation_id, work_id=inputs.scope.work_id,
+                    scope='SCENE', scene_id=scene.scene_id, text=scene.scene.scene_text, source_refs=originals)
             self.plugin.creative_versions.retain_author_output(inputs.operation_id,'canon',sources,value)
             fixed = self.store.put_author(inputs.run_id,value)
         return self.success(self.save(inputs,canon_ref=fixed))
@@ -185,7 +207,22 @@ class FilmCapabilities:
                 raise CapabilityAbsent('DIRECTION_AUTHOR_ABSENT')
             sources = (self.store.input(inputs.run_id).source_ref,)
             cached = self.plugin.creative_versions.author_output(inputs.operation_id,'direction',sources,TypeAdapter(FilmDirection))
-            direction = cached if cached is not None else FilmDirection.model_validate((await self.direction_author.direct_film(self.request(inputs))).model_dump())
+            if cached is not None:
+                direction = cached
+            else:
+                request = self.request(inputs)
+                from drama_plugin.creative_engine.backends import FormalCanonAuthor
+                if isinstance(self.canon_author, FormalCanonAuthor) and request.canon is not None:
+                    from drama_plugin.creative_engine.screenplay_author import native_scene_screenplay, native_film_decision
+                    film_selection = await native_film_decision(self.plugin.screenplays, self.canon_author, request,
+                        operation=inputs.operation_id, screenplay=request.canon.script.screenplay)
+                    request = request.model_copy(update={'screenplay_context': film_selection})
+                    scenes = [await native_scene_screenplay(self.plugin.screenplays, self.canon_author, request,
+                        operation=inputs.operation_id, scene_id=scene.scene_id) for scene in request.canon.scenes]
+                    request = request.model_copy(update={'screenplay_context': {
+                        **(request.screenplay_context or {}), 'selectedSceneScreenplays': scenes}})
+                    cp = self.save(inputs, screenplay_ref=self.plugin.screenplays.objects.put('native-film-scene-handoffs:' + inputs.run_id, request.screenplay_context))
+                direction = FilmDirection.model_validate((await self.direction_author.direct_film(request)).model_dump())
         else:
             direction = self.store.author(fixed,FilmDirection)
         def invalid(code: str, path: tuple[str | int, ...]) -> None:
@@ -296,6 +333,14 @@ class FilmCapabilities:
         else:
             run = await p.runtime.run(run_id)
         return run.state == RuntimeState.SUCCEEDED
+    def scene_handoff_ref(self, cp: FilmCheckpoint, scene_id: str | None) -> SourcePin | None:
+        if cp.screenplay_ref is None:
+            return None
+        packet = self.plugin.screenplays.objects.read_ref(cp.screenplay_ref)
+        scene = next((s for s in packet.get('selectedSceneScreenplays', ())
+            if s['screenplay']['sceneId'] == scene_id), None)
+        return self.plugin.screenplays.objects.put('film-selected-scene:' + str(scene_id), scene) if scene else None
+
     def create_unit(self, inputs: CapabilityInput, slot: int) -> ShotUnit:
         p = self.plugin
         cp = self.store.checkpoint(inputs.run_id)
@@ -320,7 +365,8 @@ class FilmCapabilities:
         except KeyError:
             p.create_film_run(work_id=scope.work_id,scene_id=scope.scene_id,shot_id=scope.shot_id,mode=RunMode.EXPERIMENT,
                 source_ref=refs[0],base_refs=tuple(refs),run_id=run_id,
-                route=RouteRequest(available_capabilities=('text_to_video',)))
+                route=RouteRequest(available_capabilities=('text_to_video',)),
+                screenplay_ref=self.scene_handoff_ref(cp, scope.scene_id))
         return ShotUnit(scene_id=shot.scene_id,shot_id=shot.shot_id,creative_run_id=run_id,refs=tuple(refs))
     async def prepare(self, inputs: CapabilityInput) -> CapabilityResult:
         cp = self.store.checkpoint(inputs.run_id)

@@ -1,4 +1,6 @@
 interface:
-  display_name: "Scene Development"
-  short_description: "Turn Episode intent into a playable dramatic Scene"
-  default_prompt: "Use $scene-development to realize the assigned historical beats as a playable, causally continuous Scene state transition."
+  display_name: Scene Development
+  short_description: Write a complete Host-authored scene
+  default_prompt: Use $scene-development to write a complete autonomous scene V1 from
+    the full-film framework and relevant nonadjacent memory. Preserve V1 before requesting
+    professional advice and selecting the final scene.

@@ -79,18 +79,15 @@ def select_references(p, run_id, unit, selection, *, register=False):
         if record.get('productionSelection') not in ('USER_SELECTED','HOST_WORKING_INPUT'): continue
         source_unit = next(u for u in p.film.store.checkpoint(run_id).units if u.shot_id == record['shotId'])
         op, check, media, source_task = completion(p,record['runId'])
-        # An expired original URL remains provenance, but is not a usable
-        # execution input. Do not keep selecting it ahead of a qualified later
-        # candidate or send its already observed download failure again.
+        # Delivery expiry does not expire managed bytes. The dispatch owner
+        # verifies original account/age and resolves fresh private-storage access.
         from drama_plugin.execution.contracts import ProviderReceipt
-        from urllib.parse import urlsplit,parse_qs
         from datetime import datetime,timezone,timedelta
         receipt=p.execution.store.get(media.receipt_ref,ProviderReceipt)
-        params={k.lower():v[0] for k,v in parse_qs(urlsplit(receipt.result.locator).query).items()}
-        stamp,ttl=params.get('x-tos-date'),params.get('x-tos-expires')
-        if stamp and ttl and ttl.isdigit() and datetime.strptime(stamp,'%Y%m%dT%H%M%SZ').replace(tzinfo=timezone.utc)+timedelta(seconds=int(ttl))<=datetime.now(timezone.utc):
+        if (receipt.provider == 'seedance' and receipt.source_generated_at is not None
+                and receipt.source_generated_at.tzinfo and receipt.source_generated_at+timedelta(days=30)<=datetime.now(timezone.utc)):
             narrative_sources.append({'sourceRunId':record['runId'],'contentHash':media.media.content_hash,
-                'purpose':'RETAINED_SOURCE_PROVENANCE','providerInput':False,'reason':'OFFICIAL_DELIVERY_EXPIRED'})
+                'purpose':'RETAINED_SOURCE_PROVENANCE','providerInput':False,'reason':'OFFICIAL_TRUST_EXPIRED'})
             continue
         review = current_candidate_review(p,record['runId'],check)
         if review.outcome != 'PASS':

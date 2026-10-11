@@ -1,11 +1,26 @@
 ---
 name: cinematic-screenplay-incubation
-description: Incubate a historical screen drama from evidence through character, story, scenes and dialogue, with a shared Dramatic Bible and bounded targeted revision. Use for complete screenplay creation or cross-scene creative repair; production remains downstream.
+description: Support Host-first full-film and scene screenplay creation, then source-bound dramaturgy, professional exploration and Host-selected revision; production remains downstream.
 ---
+
+## Original creation precedes craft study
+
+Use the real [Host-first entry](../../docs/host-first-creation.md). Initial context
+contains designated source, adopted facts, complete film framework where one
+exists, relevant long-arc memory and creative goal. The Host first writes a full
+original V1, without reading the craft, meta, review or professional solution
+bundles below as preconditions. Preserve it exactly. Then select only useful
+modules and professional support; the Host can retain all, further develop,
+combine, reconstruct or reduce. No revision or deletion is required to prove this
+Skill useful. These later modules do not become an advance aesthetic checklist.
+
+Formal source/rights compilation still governs Canon writes and production.
+A designated-source text candidate can be written before a professional creative
+interpretation package is settled; it never silently replaces that authority.
 
 ## Creative Source dispatch
 
-HISTORICAL retains the historical-first module and evidence rules below. LITERARY must first obtain a reviewed package through literary-source-analysis → philosophical-core → literary-adaptation → literature-to-cinema and `source.prepare_screenplay`. For LITERARY, replace only historical grounding with that package and exact screenplayInput; shared knowledge, continuity, scene craft and review checks remain active. Never apply Historical Scope/Spine as fictional truth requirements. PhilosophicalCore is an interpretive constraint, not a dialogue template. Follow [Creative Source](../../docs/creative-source.md); screenplay revisions cannot edit upstream decisions in place.
+For formal source compilation after autonomous candidate writing, HISTORICAL retains the historical-first module and evidence rules below. LITERARY obtains a reviewed package through literary-source-analysis → philosophical-core → literary-adaptation → literature-to-cinema and `source.prepare_screenplay`. For LITERARY, replace only historical grounding with that package and exact screenplayInput; shared knowledge, continuity, scene craft and review checks remain active. Never apply Historical Scope/Spine as fictional truth requirements. PhilosophicalCore is an interpretive constraint, not a dialogue template. Follow [Creative Source](../../docs/creative-source.md); screenplay revisions cannot edit upstream decisions in place.
 
 
 
@@ -18,7 +33,7 @@ remains a separate, unadopted sidecar until the user selects it.
 
 # Cinematic Screenplay Incubation · 影视编剧孵化
 
-Consume the unified `creativeRhythm` from the actual creation context before planning, even when source text is already supplied. Follow [narrative rhythm](../../docs/narrative-rhythm.md); Skills never read env directly. Pin this profile to the creative revision; refresh/resume keeps it, while a new revision reads current configuration.
+After complete V1, consume the unified `creativeRhythm` from the actual creation context for professional realization planning, even when source text is already supplied. Follow [narrative rhythm](../../docs/narrative-rhythm.md); Skills never read env directly. Pin this profile to the creative revision; refresh/resume keeps it, while a new revision reads current configuration.
 
 Own the creative working process from Historical Material to a readable, reviewed screenplay. The six modules below are stages of one Agent's work, not separate agents or an automatic skill chain. Preserve an already approved foundation; choose only the stages affected by the request.
 
@@ -28,15 +43,15 @@ The existing hierarchy is Work → Script → Episode → Scene → Shot; a Work
 
 Use supplied context first. For existing identities, read `work.get_work`, `script.get_script`, `episode.get_episode`, `scene.get_scene` only as needed. Use `context.build_context` for missing parent context. For material evidence gaps use `research.search_sources` and `research.verify_claim`; unresolved contested history requires an adaptation position, not silent certainty. Do not require a live domain object to write a requested standalone screenplay artifact.
 
-For an explicit persistent deliverable, apply the relevant existing owner stage's write rules after review. This Skill's own tool set is read-only; it does not automatically create Work, Script, Episode or Scene. A local creative E2E is actual authored work, not a mocked provider response, and does not require media generation.
+For an explicit persistent deliverable, apply the relevant existing owner stage's write rules after review. Formal domain reads remain read-only here; the screenplay tools retain local originals and decisions, without automatically creating Work, Script, Episode or Scene. A local creative E2E is actual authored work, not a mocked provider response, and does not require media generation.
 
-## Meta dramaturgy before incubation
+## Meta dramaturgy after the complete original
 
 For a new work derive a lightweight load profile, explicit narrative aperture, POV contract and style from the request and evidence, using [meta dramaturgy](references/meta-dramaturgy.md). These select emphasis within the existing twenty dimensions; they are not another mandatory exposition checklist. Core grounding/causality/character/knowledge/continuity/review remain active; conditional war, ensemble, logistics, parallel narrative or spectacle may be N/A. No subject, period, person, tragedy, restraint, silence or spectacle is the default model of a good screenplay. Test stories are replaceable fixtures, never production rules.
 
 For long work, use Global Bible → Episode Working Set → Scene Working Set. Read only relevant facts and creative constraints; author facts never automatically become character knowledge. Use [projection and dependency conventions](references/working-sets.md) to identify context and invalidated consumers before revising. Episode boundaries do not reset body, status, relationship, information or promises.
 
-## Plan → Execute → Review → Revise → Freeze
+## Create V1 → Preserve → Explore support → Host decision → Handoff
 
 Create a compact Dramatic Bible using [working state](references/bible.md). Keep one source of truth for historical constraints, characters, knowledge and continuity. Use stable local IDs before domain persistence; never pretend local IDs are durable entity IDs. Retain initial draft and review evidence. Read [craft controls](references/craft.md) for the relevant modules; all twenty dimensions receive an applicability decision, not twenty mandatory blocks of exposition.
 
@@ -76,7 +91,7 @@ Use a small number of purposeful motifs and a chosen narrative texture. Test whe
 
 Apply [layered review](references/review.md) to the complete draft and the Bible. Record `problem`, `severity`, `layer`, exact `evidence`, `recommendedRevisionScope`, then declare changed facts, owner, invalidated consumers, unaffected scopes and required rechecks before revising. Recheck affected dependencies even if their words remain unchanged; do not regenerate them automatically. A dialogue defect does not authorize whole-Work regeneration.
 
-Prefer focused revision rounds; a failed draft does not permanently stop the task. The Host may change strategy within the current scope without renewed creative approval. Each round may resolve several findings in their declared scopes. Review changed scenes and their dependencies, then recheck full-work coherence. Preserve before/after bodies and unchanged-scope hashes. Retain unresolved major defects as concrete findings; ordinary flaws do not prevent a usable text candidate. Avoid repeating an ineffective method. A clean draft needs no manufactured defect, but a requested incubation regression must demonstrate at least one genuine targeted improvement.
+The Host chooses revision scope after reading the complete work and advice. It may retain V1 unchanged, expand or reconstruct as well as make focused revisions. Preserve before/after bodies and unchanged-scope hashes. Review actual changed dependencies, without regenerating them automatically. Keep unresolved readings and limitations; ordinary artistic disagreement does not prevent a text candidate. A regression needs genuine creative work and comparison, not a forced improvement or manufactured defect.
 
 Before freeze, run the optional offline [artifact checker](scripts/check_incubation.py) when using the Bible convention. It verifies references, recorded continuity/knowledge, optional meta control records, projection references, revision scope and budget; it cannot judge acting, prose quality or historical truth. Machine success never substitutes for reading the complete script. Freeze records the exact revision and outstanding limitations; user artistic acceptance stays separate from author review.
 
@@ -110,3 +125,7 @@ Performance architecture validation is not screenplay artistic approval. A user-
 ## Actor-playable screenplay handoff (Screenplay R2)
 
 Read [screenplay playability and exact dialogue](../../docs/screenplay-playability.md). Audit every Scene/important Beat using PLAYABLE, LITERARY_ONLY, INTERNAL_STATE, AMBIGUOUS_DIALOGUE, EXPLANATORY_PROSE, OVERDIRECTED and ABSTRACT_EMOTION. Author the clean screenplay plus the existing-DPD playability sidecar; review dialogue in its body state before downstream handoff.
+
+## Local original and decision operations
+
+Use `screenplay.retain_context` and `screenplay.retain_thread` for exact source originals and classified long-arc notes; `screenplay.begin` returns the autonomous author packet. Preserve the complete original with `screenplay.retain_v1` before requesting `screenplay.support_packet`; retain real advisory text with `screenplay.retain_support`. The Host selects with `screenplay.decide`, then supplies a complete scene through `screenplay.shot_handoff`. These local candidate operations grant no formal adoption or production permission.

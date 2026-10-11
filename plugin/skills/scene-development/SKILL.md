@@ -1,7 +1,21 @@
 ---
 name: scene-development
-description: Develop scene dramaturgy and causal beats from an Episode, then assemble department references; dialogue, staging, art and execution retain their independent owners.
+description: Complete a Host-authored scene screenplay first, then support dramaturgy and source-bound professional realization; preserve independent formal owners.
 ---
+
+## Host-authored complete scene first
+
+Use [Host-first creation](../../docs/host-first-creation.md): the Host completes
+and preserves a whole scene V1 from the full film and relevant long-arc context
+before this professional dramaturgy support begins. Do not replace first creation
+with a beat checklist or selected fulcrum. Offer development, alternatives and
+their costs against the full original. The Host can retain it all or reject your
+recommendation. The formal owner rules below apply to department/Canon records,
+not a ban on the author's free candidate imagination. New cross-scene ideas remain
+proposals until the existing adoption authority accepts them.
+
+
+Existing ScreenplayInput, readiness and department prerequisites below govern formal source projection, formal persistence and preproduction after the autonomous candidate exists. They are not prerequisites for writing a designated-source V1. Formal safety/rights authorities remain unchanged.
 
 ## Creative Source applicability
 
@@ -160,3 +174,7 @@ Use the [peak/editorial contract](../../docs/dramatic-peak-editorial-contract.md
 ## Actor-playable screenplay handoff (Screenplay R2)
 
 Read [screenplay playability and exact dialogue](../../docs/screenplay-playability.md). For each important actor/Beat, author objective, obstacle, playable action, current state, turn and reaction. Resolve explanatory prose to a visible/audible carrier or intent metadata. Preserve exact approved Dialogue and explicit targets.
+
+## Local original and decision operations
+
+Use `screenplay.retain_context` and `screenplay.retain_thread` for exact source originals and classified long-arc notes; `screenplay.begin` returns the autonomous author packet. Preserve the complete original with `screenplay.retain_v1` before requesting `screenplay.support_packet`; retain real advisory text with `screenplay.retain_support`. The Host selects with `screenplay.decide`, then supplies a complete scene through `screenplay.shot_handoff`. These local candidate operations grant no formal adoption or production permission.

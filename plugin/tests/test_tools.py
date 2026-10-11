@@ -51,7 +51,7 @@ def test_missing_tool_fails() -> None:
 
 def test_every_registered_tool_has_stable_input_and_output_schema() -> None:
     plugin = DramaPlugin.load(ROOT, mock_data=MockDramaData())
-    assert len(plugin.tools.list()) == 52
+    assert len(plugin.tools.list()) == 60
     for tool in plugin.tools.list():
         assert tool.input_schema["type"] == "object"
         assert isinstance(tool.input_schema["required"], list)
@@ -182,7 +182,7 @@ async def test_tool_contracts_do_not_change_with_http_provider_bindings() -> Non
         providers.voice,
         providers.role_dubbing,
     )
-    assert mock_plugin.tools.describe() == http_registry.describe()
+    assert [d for d in mock_plugin.tools.describe() if not d['code'].startswith('screenplay.')] == http_registry.describe()
     for client in clients:
         await client.aclose()
 

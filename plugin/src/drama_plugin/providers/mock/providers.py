@@ -157,7 +157,9 @@ class MockMediaProvider:
         media = Media(id="media-imported", work_id=work_id, asset_id=asset_id, shot_id=shot_id, media_type=media_type, purpose=purpose, source_ref=source_ref or "mock:storage:imported", duration_ms=duration_ms, content=content)
         self.data.media.append(media)
         return media
-    async def resolve_media(self, media_id: str) -> MediaResolveResult:
+    async def resolve_media(self, media_id: str, *, provider_delivery: bool = False) -> MediaResolveResult:
+        if provider_delivery:
+            raise ProviderError('REFERENCE_PUBLIC_DELIVERY_UNCONFIGURED')
         await self.get_media(media_id)
         return MediaResolveResult(media_id=media_id, url=f"https://mock.invalid/media/{media_id}", expires_at=datetime.now(UTC) + timedelta(minutes=15), mime_type="application/octet-stream", size_bytes=0)
     async def download_media(self, media_id: str, destination: Path) -> MediaResolveResult:

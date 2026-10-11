@@ -9,7 +9,8 @@ import hashlib
 from typing import Callable, Literal, TypeVar
 
 import httpx
-from pydantic import JsonValue, TypeAdapter, ValidationError
+from pydantic import Field, JsonValue, TypeAdapter, ValidationError
+from drama_plugin.contracts.base import ContractModel
 
 from drama_plugin.config.text_composition import AuthorRole, TextCompositionConfig
 from drama_plugin.contracts.base import canonical_json, sha256_canonical
@@ -28,8 +29,6 @@ from drama_plugin.creative_engine.author_projection import (author_payload, cano
     direction_projection, professional_projection)
 
 T = TypeVar("T")
-CANON_CRAFT = ("cinematic-screenplay-incubation/references/craft.md",
-               "cinematic-screenplay-incubation/references/literary-craft.md")
 DIRECTION_CRAFT = ("shot-design/references/planning.md", "shot-design/references/shot-transitions.md")
 # Internal knowledge selection only, never a department execution DAG.
 PROFESSIONAL_CRAFT = {
@@ -598,29 +597,101 @@ class SkillAuthor:
             raise CapabilityAbsent("FORMAL_AUTHOR_SKILL_ABSENT") from None
 
 
+class HostSceneOriginal(ContractModel):
+    text: str = Field(min_length=1)
+
+
+class HostScreenplayDecision(ContractModel):
+    choice: Literal['KEEP_ALL', 'DEVELOP', 'RESTRUCTURE', 'REDUCE']
+    reason: str = Field(min_length=1)
+    text: str | None = None
+
+
+def validate_selected_screenplay(request: AuthorRequest | FilmAuthorRequest, result: CanonDraft | FilmCanon) -> None:
+    context = request.screenplay_context or {}
+    if context.get('schemaVersion') != 'scene-screenplay-shot-handoff-v1':
+        return
+    body = context.get('screenplay')
+    if not isinstance(body, dict):
+        raise ValueError('Missing selected screenplay')
+    actual = result.script.screenplay if body.get('scope') == 'FILM' else result.scene.scene_text if isinstance(result, CanonDraft) else None
+    if actual != body.get('text'):
+        raise AuthorResultFailure(failure('DTO_SCHEMA', 'HOST_SELECTED_SCREENPLAY_CHANGED', role='canon',
+            field_path=('script', 'screenplay') if body.get('scope') == 'FILM' else ('scene', 'sceneText'),
+            validator='host_selected_screenplay_exact_text'))
+
+
 class FormalCanonAuthor(SkillAuthor):
+    def film_original_system(self) -> str:
+        from drama_plugin.creative_engine.screenplay import HOST_AUTONOMOUS
+        return BOUNDARY + HOST_AUTONOMOUS + '\nWrite the whole autonomous film screenplay in text before any Work interpretation, Scene inventory or formal Canon records.'
+
+    async def film_original(self, request: AuthorRequest | FilmAuthorRequest,
+                            packet: dict[str, JsonValue]) -> HostSceneOriginal:
+        return await self.client.complete('canon', self.film_original_system(), request,
+            TypeAdapter(HostSceneOriginal), model_payload=packet, author_identity='host.film-original:v1')
+
+    def scene_original_system(self) -> str:
+        from drama_plugin.creative_engine.screenplay import HOST_AUTONOMOUS
+        return BOUNDARY + HOST_AUTONOMOUS + '\nWrite the whole independent scene in text. This is candidate authorship, not formal Canon projection.'
+
+    def scene_decision_system(self) -> str:
+        return BOUNDARY + '\nYou are the same Host author, after your complete V1 was preserved. Read it whole. ' + \
+            'Make your own artistic decision. KEEP_ALL is fully valid and supplies no replacement text. ' + \
+            'Any revision supplies the complete later film or scene according to scope, with its gains and costs. ' + \
+            'No forced change, shortening, restraint or detail quota. No advisory professional was requested ' + \
+            'by this batch port; use your own judgment. Interactive requested support uses screenplay.* before binding.'
+
+    def scene_execution_fingerprint(self) -> str:
+        return sha256_canonical([self.client.execution_fingerprint('canon', identity,
+            system + '\nOutput JSON schema:\n' + canonical_json(TypeAdapter(model).json_schema(by_alias=True)))
+            for identity, system, model in [('host.scene-original:v1', self.scene_original_system(), HostSceneOriginal),
+                ('host.scene-decision:v1', self.scene_decision_system(), HostScreenplayDecision)]])
+
+    async def scene_original(self, request: AuthorRequest | FilmAuthorRequest,
+                             packet: dict[str, JsonValue]) -> HostSceneOriginal:
+        return await self.client.complete('canon', self.scene_original_system(),
+            request, TypeAdapter(HostSceneOriginal), model_payload=packet,
+            author_identity='host.scene-original:v1')
+
+    async def scene_decision(self, request: AuthorRequest | FilmAuthorRequest,
+                             packet: dict[str, JsonValue]) -> HostScreenplayDecision:
+        return await self.client.complete('canon', self.scene_decision_system(),
+            request, TypeAdapter(HostScreenplayDecision), model_payload=packet,
+            author_identity='host.scene-decision:v1')
+
     def system_contract(self, *, film: bool = False) -> str:
-        authority = ("Own the complete film's Work interpretation, Script, ordered Scene structure, precise dialogue and character/dramatic meaning. Adapt the supplied Source and goal as a whole. Choose Scene structure within the supplied schema bounds; do not author Shot/camera/light design. Create semantic Scene and subject rows. Select dialogue speakers by ordinal from your authored subject roster; system assigns every Scene, subject and dialogue identity."
-            if film else "Own Work, Script, Scene, precise dialogue and character/dramatic meaning only. No Shot/camera/light design.")
-        return BOUNDARY + "\n" + authority + "\n" + self.knowledge(CANON_CRAFT)
+        from drama_plugin.creative_engine.screenplay import HOST_AUTONOMOUS
+        authority = ("Write the complete film director screenplay in Script.screenplay first, then derive Work interpretation and ordered Scene records from that completed original. Each sceneText is a complete continuous scene, not an excerpt, outline or shot list."
+            if film else "For the supplied scene write a complete continuous director screenplay in sceneText, using the complete film framework when supplied; preserve Script.screenplay as the full-film framework. For a new work first write the complete Script screenplay, then derive interpretation and scene records.")
+        # Original creation reads no Skill craft files. JSON ownership constrains
+        # persistence, not the author's cinematic imagination within prose.
+        return BOUNDARY + "\n" + HOST_AUTONOMOUS + "\n" + authority + "\nIf hostScreenplay supplies an exact selected full body, its first authorship and Host decision are already complete. Only derive semantic records: preserve that selected film Script.screenplay or scene sceneText byte-for-byte. An objection returns to the Host; do not create a replacement. Otherwise use your own cinematic knowledge in the screenplay body. Do not emit separate formal Shot or professional records. Select dialogue speakers by ordinal from the authored roster; system assigns exact identities."
 
     def execution_fingerprint(self, *, film: bool = False) -> str:
         from drama_plugin.creative_engine.author_projection import canon_schema
         schema = canon_schema(film=film)
-        return self.client.execution_fingerprint("canon", ("film" if film else "creative") + ".canon:v1:FormalCanonAuthor",
-            self.system_contract(film=film) + "\nOutput JSON schema:\n" + canonical_json(schema))
+        return sha256_canonical([self.client.execution_fingerprint("canon", ("film" if film else "creative") + ".canon:v1:FormalCanonAuthor",
+            self.system_contract(film=film) + "\nOutput JSON schema:\n" + canonical_json(schema)),
+            self.client.execution_fingerprint('canon', 'host.film-original:v1', self.film_original_system() +
+                '\nOutput JSON schema:\n' + canonical_json(TypeAdapter(HostSceneOriginal).json_schema(by_alias=True))),
+            self.scene_execution_fingerprint()])
 
     async def author(self, request: AuthorRequest) -> CanonDraft:
         request = AuthorRequest.model_validate(request.model_dump())
-        return await self.client.complete("canon", self.system_contract(), request, TypeAdapter(CanonDraft),
+        result = await self.client.complete("canon", self.system_contract(), request, TypeAdapter(CanonDraft),
             author_identity="creative.canon:v1:FormalCanonAuthor", model_schema=canon_schema(),
             model_payload=author_payload(request), project=lambda v: canon_projection(v, request))
+        validate_selected_screenplay(request, result)
+        return result
 
     async def author_film(self, request: FilmAuthorRequest) -> FilmCanon:
         request = FilmAuthorRequest.model_validate(request.model_dump())
-        return await self.client.complete("canon", self.system_contract(film=True), request, TypeAdapter(FilmCanon),
+        result = await self.client.complete("canon", self.system_contract(film=True), request, TypeAdapter(FilmCanon),
             author_identity="film.canon:v1:FormalCanonAuthor", model_schema=canon_schema(film=True),
             model_payload=author_payload(request), project=lambda v: canon_projection(v, request, film=True))
+        validate_selected_screenplay(request, result)
+        return result
 
 
 class FormalDirectionAuthor(SkillAuthor):

@@ -41,7 +41,7 @@ Historical Research Context
 
 ## Skill Core
 
-完整剧本创作优先使用 `cinematic-screenplay-incubation`（影视编剧孵化）：一个 Skill 内的六个阶段，共享本地 Dramatic Bible，并最多进行两轮精准修改。`work-creation` / `script-adaptation` 及 Episode / Scene 入口继续承担原有范围与正式写入规则。新的孵化 Skill 不新增 Domain、Tool 或生产链，独立作品无需先创建数据库对象。
+完整剧本与单场导演剧本以 Host 自主完成并保留完整 V1 为起点，再按作品需要请求专业支持，由 Host 决定完整保留、发展、融合、重构或删减。实际 `screenplay.*` 工具复用既有原件存储，保留来源、版本、建议和决策；`cinematic-screenplay-incubation` / `director` / `scene-development` 使用这一默认顺序，镜头设计消费完整所选场景。正式采用与生产权限仍由原有机制管理。见 [Host-first 创作入口](docs/host-first-creation.md)。
 
 
 ```text

@@ -47,6 +47,8 @@ class CreativeEngineCapabilities:
         self.versions, self.state, self.packages = versions, state, packages
         self.governor, self.findings = governor, findings
         self.canon_author, self.direction_author, self.professional_author = canon, direction, professional
+        from drama_plugin.creative_engine.screenplay import ScreenplayWorkshop
+        self.screenplays = ScreenplayWorkshop(versions.objects)
         self.route_selector = RouteSelector()
         self.runtime: RuntimeEngine | None = None
 
@@ -67,10 +69,13 @@ class CreativeEngineCapabilities:
             {Kind.SOURCE, Kind.WORK, Kind.SCRIPT, Kind.SCENE, Kind.SHOT})
         if any(self.versions.stale(ref) for ref in request.source_refs if self.versions.resolve(ref).kind in immutable_kinds):
             raise ValueError("CREATIVE_EXECUTION_INPUT_STALE")
+        input_identity = {"scope": inputs.scope.model_dump(mode="json", by_alias=True),
+            "refs": [ref.model_dump(mode="json", by_alias=True) for ref in request.source_refs],
+            "film_input": self.state.input(inputs.run_id).model_dump(mode="json", by_alias=True)}
+        if owner == Authority.PROFESSIONAL and cp.screenplay_ref is not None:
+            input_identity['scene_screenplay'] = cp.screenplay_ref.model_dump(mode="json", by_alias=True)
         return ExecutionInspection(revision=ExecutionRevision(fingerprint=fingerprint,
-            input_fingerprint=sha256_canonical({"scope": inputs.scope.model_dump(mode="json", by_alias=True),
-                "refs": [ref.model_dump(mode="json", by_alias=True) for ref in request.source_refs],
-                "film_input": self.state.input(inputs.run_id).model_dump(mode="json", by_alias=True)})),
+            input_fingerprint=sha256_canonical(input_identity)),
             retry_limit=AUTHOR_CONTENT_ATTEMPT_LIMIT,
             completed=inputs.operation_id in cp.completed_operations or self.versions.has_author_output(
                 inputs.operation_id, {Authority.CANON: "canon", Authority.DIRECTION: "direction", Authority.PROFESSIONAL: "professional"}[owner]))
@@ -98,7 +103,11 @@ class CreativeEngineCapabilities:
             raise CapabilityAbsent("FORMAL_DIRECTION_AUTHOR_CONFIGURATION_ABSENT")
         if not isinstance(self.direction_author, FormalDirectionAuthor):
             return None
-        inspection = self._inspection(inputs, Authority.DIRECTION, self.direction_author.execution_fingerprint())
+        from drama_plugin.creative_engine.backends import FormalCanonAuthor
+        fingerprint = self.direction_author.execution_fingerprint()
+        if isinstance(self.canon_author, FormalCanonAuthor):
+            fingerprint = sha256_canonical([fingerprint, self.canon_author.scene_execution_fingerprint()])
+        inspection = self._inspection(inputs, Authority.DIRECTION, fingerprint)
         request = self._request(inputs, Authority.DIRECTION)
         revising = self.state.input(inputs.run_id).revision is not None
         return ExecutionInspection(revision=inspection.revision,
@@ -162,6 +171,7 @@ class CreativeEngineCapabilities:
         canon = CanonDraft(work=work, script=script, scene=scene) if isinstance(work, WorkBody) and isinstance(
             script, ScriptBody) and isinstance(scene, SceneBody) else None
         return AuthorRequest(scope=inputs.scope, source=source.body, source_refs=checkpoint.refs,
+            screenplay_context=self.screenplays.objects.read_ref(checkpoint.screenplay_ref) if checkpoint.screenplay_ref else self.screenplays.bound_packet(value.screenplay_ref, work_id=inputs.scope.work_id, scene_id=inputs.scope.scene_id),
             canon=canon, shot=shot if isinstance(shot, ShotBody) else None, revision=value.revision if value.revision and value.revision.owner == owner else None)
 
     def _replay(self, inputs: CapabilityInput) -> CapabilityResult | None:
@@ -241,13 +251,30 @@ class CreativeEngineCapabilities:
                 return CapabilityResult(status=ResultStatus.FAILED, code="AUTHOR_ROUND_BOUND", recovery_class=RecoveryClass.HARD_BLOCK)
             self.state.save(inputs.run_id, inputs.scope, CreativeCheckpoint.model_validate(
                 {**cp.model_dump(), "author_rounds": cp.author_rounds + 1}))
+            from drama_plugin.creative_engine.backends import FormalCanonAuthor
+            if isinstance(self.canon_author, FormalCanonAuthor) and request.canon is None:
+                from drama_plugin.creative_engine.screenplay_author import native_film_original
+                request = request.model_copy(update={'screenplay_context': await native_film_original(
+                    self.screenplays, self.canon_author, request, operation=inputs.operation_id)})
+                cp = CreativeCheckpoint.model_validate({**self.state.checkpoint(inputs.run_id).model_dump(),
+                    'screenplay_ref': self.screenplays.objects.put('native-film-handoff:' + inputs.run_id, request.screenplay_context)})
+                self.state.save(inputs.run_id, inputs.scope, cp)
             try:
                 draft = CanonDraft.model_validate((await self.canon_author.author(request)).model_dump())
             except ValidationError as error:
                 from pydantic import JsonValue
                 schema = TypeAdapter(dict[str, JsonValue]).validate_python(TypeAdapter(CanonDraft).json_schema(by_alias=True))
                 raise AuthorResultFailure(validation_failure(error, role="canon", output_schema=schema)) from None
+            from drama_plugin.creative_engine.backends import validate_selected_screenplay
+            validate_selected_screenplay(request, draft)
             self.versions.retain_author_output(inputs.operation_id, "canon", request.source_refs, draft)
+        from drama_plugin.creative_engine.backends import validate_selected_screenplay
+        validate_selected_screenplay(request, draft)
+        original_sources = [r.model_dump(mode='json', by_alias=True) for r in request.source_refs]
+        self.screenplays.native_original(inputs.operation_id, work_id=inputs.scope.work_id,
+            scope='FILM', scene_id=None, text=draft.script.screenplay, source_refs=original_sources)
+        self.screenplays.native_original(inputs.operation_id, work_id=inputs.scope.work_id,
+            scope='SCENE', scene_id=inputs.scope.scene_id, text=draft.scene.scene_text, source_refs=original_sources)
         refs = [value.source_ref]
         for kind, body in ((Kind.WORK, draft.work), (Kind.SCRIPT, draft.script), (Kind.SCENE, draft.scene)):
             existing = next((self.versions.resolve(r) for r in cp.refs if self.versions.resolve(r).kind == kind), None)
@@ -286,6 +313,20 @@ class CreativeEngineCapabilities:
                 return CapabilityResult(status=ResultStatus.FAILED, code="AUTHOR_ROUND_BOUND", recovery_class=RecoveryClass.HARD_BLOCK)
             self.state.save(inputs.run_id, inputs.scope, CreativeCheckpoint.model_validate(
                 {**cp.model_dump(), "author_rounds": cp.author_rounds + 1}))
+            from drama_plugin.creative_engine.backends import FormalCanonAuthor
+            if isinstance(self.canon_author, FormalCanonAuthor) and request.canon is not None:
+                from drama_plugin.creative_engine.screenplay_author import native_scene_screenplay, native_film_decision
+                script_version = next((v for r in request.source_refs if (v := self.versions.resolve(r)).kind == Kind.SCRIPT), None)
+                if script_version and script_version.state != 'ADOPTED':
+                    request = request.model_copy(update={'screenplay_context': await native_film_decision(
+                        self.screenplays, self.canon_author, request, operation=inputs.operation_id,
+                        screenplay=request.canon.script.screenplay)})
+                request = request.model_copy(update={'screenplay_context': await native_scene_screenplay(
+                    self.screenplays, self.canon_author, request, operation=inputs.operation_id,
+                    scene_id=inputs.scope.scene_id or inputs.scope.work_id + ':scene')})
+                cp = CreativeCheckpoint.model_validate({**self.state.checkpoint(inputs.run_id).model_dump(),
+                    'screenplay_ref': self.screenplays.objects.put('native-scene-handoff:' + inputs.run_id, request.screenplay_context)})
+                self.state.save(inputs.run_id, inputs.scope, cp)
             try:
                 shot = ShotBody.model_validate((await self.direction_author.author(request)).model_dump())
             except ValidationError as error:

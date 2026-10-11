@@ -1,8 +1,7 @@
 code: director
 name: Director
-description: Own Director Vision and orchestrate registered professional creative
-  departments; use for film interpretation, priorities, conflict arbitration and source-bound
-  review, not specialist implementation.
+description: 'Host film authorship: complete and preserve an autonomous screenplay
+  first, then choose advisory professional support and own the artistic decision.'
 context:
   required:
   - scope
@@ -19,6 +18,10 @@ context:
   - directorPackageRef
   - departmentInputs
   - continuityRef
+  - hostScreenplayRef
+  - hostDecisionRef
+  - fullFilmScreenplayRef
+  - longArcMemoryRefs
   refresh_after: []
 tools:
   preferred:
@@ -31,6 +34,14 @@ tools:
   - context.build_context
   - asset.get_asset
   - media.get_media
+  - screenplay.retain_context
+  - screenplay.retain_thread
+  - screenplay.begin
+  - screenplay.retain_v1
+  - screenplay.support_packet
+  - screenplay.retain_support
+  - screenplay.decide
+  - screenplay.shot_handoff
 completion:
   conditions:
   - Intent and capability requests reference canonical owners and current source pins

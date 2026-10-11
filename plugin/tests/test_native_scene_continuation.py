@@ -88,7 +88,7 @@ async def test_native_video_reference_compiles_and_transfers_exact_reviewed_orig
     from drama_plugin.execution.contracts import RequestReference
     request_ref=RequestReference(binding_ref=next_task.execution_reference_refs[0],media_id=media.id,
         content_hash=media.content_hash,role='REFERENCE',kind='video')
-    assert await transport.reference_url(request_ref,op)=='https://result.invalid/clip.mp4'
+    assert await transport.reference_url(request_ref,op)=='https://storage.invalid/'+media.id
     with pytest.raises(ValueError,match='IDENTITY_MISMATCH'):
         await transport.reference_url(request_ref.model_copy(update={'content_hash':'0'*64}),op)
     with pytest.raises(Exception,match='LEDGER_REQUIRED'):

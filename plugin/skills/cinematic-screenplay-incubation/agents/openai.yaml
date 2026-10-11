@@ -1,4 +1,6 @@
 interface:
-  display_name: "影视编剧孵化"
-  short_description: "Incubate historical screenplays with targeted revision"
-  default_prompt: "Use $cinematic-screenplay-incubation to develop this historical material into a readable screenplay, shared Dramatic Bible and evidence-based targeted revision."
+  display_name: 影视编剧孵化
+  short_description: Preserve autonomous V1, then deepen it
+  default_prompt: Use $cinematic-screenplay-incubation to complete the autonomous
+    full screenplay V1 before craft reviews, preserve it, then choose support and
+    any subsequent Host revision. All material may be retained.

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from enum import Enum
+from datetime import datetime
 from typing import Annotated, Literal, Self
 
 from pydantic import Field, StrictInt, model_validator
@@ -113,7 +114,8 @@ class ProviderResult(RuntimeContract):
 
 
 class ProviderReceipt(ExecutionArtifact):
-    extension_fields = ("query_code", "http_status", "query_retryable", "usage", "last_frame_url")
+    extension_fields = ("query_code", "http_status", "query_retryable", "usage", "last_frame_url",
+                        "source_generated_at", "source_account_fingerprint")
     owner = "provider-receipt"
     operation_ref: ArtifactReference
     attempt_ref: ArtifactReference
@@ -130,6 +132,8 @@ class ProviderReceipt(ExecutionArtifact):
     query_retryable: bool | None = None
     usage: dict[str, int | float | str] | None = None
     last_frame_url: str | None = Field(default=None, min_length=1, max_length=2048)
+    source_generated_at: datetime | None = None
+    source_account_fingerprint: Hash | None = None
 
     @model_validator(mode="after")
     def receipt_shape(self) -> Self:

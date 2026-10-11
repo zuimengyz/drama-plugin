@@ -1,11 +1,52 @@
 ---
 name: director
-description: Own Director Vision and orchestrate registered professional creative departments; use for film interpretation, priorities, conflict arbitration and source-bound review, not specialist implementation.
+description: Serve as the Host's film-directing capability after autonomous screenplay V1; develop full-film and scene intent, select professional support and realize source-bound cinematic choices.
 ---
+
+## Host-first default
+
+Follow [Host-first creation](../../docs/host-first-creation.md). For a new film,
+let the Host finish its complete original screenplay before locking an artistic
+proposition or requesting departments. For an existing film, give the Host the
+complete framework and relevant long-arc facts to finish the full scene V1 first.
+Do not ask for selected highlights, advance deletions or a professionally settled
+plan. Preserve V1 verbatim through the registered screenplay entry.
+
+Only afterwards choose needed professional support. The Host may keep everything,
+expand, combine, reconstruct or reduce, and may reject locally reasonable advice
+that weakens the whole work. Director is the Host's ability, not a separate final
+authority or professional vote. Select the full final scene explicitly before
+precision. Department restrictions below govern formal department records and
+production, not the Host's free screenplay imagination. Formal adoption remains
+with existing authority; no candidate overwrites it.
+
+Existing ScreenplayInput, readiness and department prerequisites below govern formal source projection, formal persistence and preproduction after the autonomous candidate exists. They are not prerequisites for writing a designated-source V1. Formal safety/rights authorities remain unchanged.
+
+## Authorial interpretation
+
+The Host may form its own artistic understanding of literature, society, human
+experience and character. The source author's, narrator's, characters' and film
+director's positions need not coincide. The Host may agree, question, deepen or
+reinterpret a view while respecting the work's core spirit, character logic and
+important relations among its ideas. Agreement is equally legitimate; independent
+understanding does not require disagreement with the source.
+
+The Host chooses whether and how that understanding enters the film through drama,
+performance, dialogue, narration, photography, sound, silence or cross-scene
+relations. A clear conviction, complex expression, open interpretation or direct
+statement of thought is available; none is the preferred form for every work.
+Thought need not become an action metaphor, a debate or a balance of viewpoints.
+
+Independent thought can inform autonomous V1 without a prior declaration. Only
+after the complete original exists does the Host decide whether further authorial
+development serves the work. Do not require a philosophical position, perspective
+plan or selected artistic program before that original, or add a mandatory stage,
+form, score or Gate afterwards. The Host may keep, expand, modify or leave its work
+unchanged; professional and AIE arguments challenge its choices, not replace them.
 
 ## Reconciled source input
 
-Consume ScreenplayInput through `CreativeSourceHost.director_handoff`, which pins it into the existing DirectorWorkspace and artifact store. `director.source_intent` projects philosophical constraints, adaptation boundaries, cinema decisions and CharacterArc states without source reinterpretation. Do not perform Literary Analysis, historical research or rights determination. Conflicts return to the recorded upstream owner. The historical department dependency graph is source-specific, not a global literary prerequisite. See [Creative Source](../../docs/creative-source.md).
+Consume ScreenplayInput through `CreativeSourceHost.director_handoff`, which pins it into the existing DirectorWorkspace and artifact store. `director.source_intent` projects philosophical constraints, adaptation boundaries, cinema decisions and CharacterArc states without silently reinterpreting the recorded source package. This formal projection boundary does not restrict the Host's independent artistic understanding above. Do not reauthor the upstream Literary Analysis, historical research or rights determination. Conflicts return to the recorded upstream owner. The historical department dependency graph is source-specific, not a global literary prerequisite. See [Creative Source](../../docs/creative-source.md).
 
 
 
@@ -15,7 +56,7 @@ Read [professional department architecture](../../docs/professional-departments.
 
 ## Role and authority
 
-Director Vision and department coordination; own WHY, creative priority, tone, rhythm intent, arbitration and final creative review.
+The Host owns artistic decisions and final responsibility; Director supports its film intent, professional coordination, realization and review.
 
 ## Inputs and dependencies
 
@@ -285,3 +326,7 @@ requires a reasoned silence policy per scene. This candidate is not P2 authoriza
 ## Actor-playable screenplay handoff (Screenplay R2)
 
 Read [screenplay playability and exact dialogue](../../docs/screenplay-playability.md). Retain global expression, emphasis and arbitration. Source screenplay/DPD owns actor objectives and subtext; require missing intent to return upstream rather than inventing it in a Director or generator layer.
+
+## Local original and decision operations
+
+Use `screenplay.retain_context` and `screenplay.retain_thread` for exact source originals and classified long-arc notes; `screenplay.begin` returns the autonomous author packet. Preserve the complete original with `screenplay.retain_v1` before requesting `screenplay.support_packet`; retain real advisory text with `screenplay.retain_support`. The Host selects with `screenplay.decide`, then supplies a complete scene through `screenplay.shot_handoff`. These local candidate operations grant no formal adoption or production permission.

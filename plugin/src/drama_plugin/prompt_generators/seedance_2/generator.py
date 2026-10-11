@@ -73,7 +73,7 @@ def valid_coverage_path(path: str, duty: str, subject: str | None) -> bool:
 
 class Seedance2PromptGenerator:
     family = 'seedance_2'
-    version = '1'
+    version = '2'
     supported_modes: tuple[str, ...] = MODES
 
     def generate(self, ir: VisualPromptIR, rows: list[dict[str, Any]], *,
@@ -160,7 +160,7 @@ class Seedance2PromptGenerator:
             # guessing, pronoun rewriting, or replacement inside approved dialogue.
             for actor, label in subjects.items(): text = text.replace('{{actor:' + actor + '}}', label)
             if '{{actor:' in text: raise ValueError('UNRESOLVED:character:UNKNOWN_ACTOR_TOKEN')
-            if replace_aliases and aliases:
+            if replace_aliases and aliases and not context.get('actor_tokens_only', False):
                 pattern = '|'.join(('(?<![A-Za-z0-9_])' + re.escape(alias) + '(?![A-Za-z0-9_])'
                                     if alias.isascii() else re.escape(alias))
                                    for alias in sorted(aliases, key=len, reverse=True))
@@ -204,7 +204,7 @@ class Seedance2PromptGenerator:
                    atom.path if atom.path in audio else '')
             groups.setdefault(key, []).append(atom)
         selected = list(groups.values())
-        complex_clip = len(ir.video_temporal.action_progression) > 1
+        complex_clip = context.get('unit_layout', False) or len(ir.video_temporal.action_progression) > 1
 
         def render(groups_to_emit: list[list[PromptAtom]]) -> tuple[str, list[CoverageReceipt]]:
             text = ''.join(preamble)

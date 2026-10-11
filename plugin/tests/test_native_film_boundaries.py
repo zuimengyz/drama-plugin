@@ -663,7 +663,7 @@ async def test_native_same_narrator_relations_and_unowned_constraints_actual_req
     assert '<主体1>身份：Narrator' not in text and '<主体2>身份：Narrator' not in text
     assert 'Narrator is the same person across ages; groups remain non-individuated' in text
     assert '<主体1>身份：childhood mockers' in text, text
-    assert '<主体1>身份：Laugh; point casually' in text, text
+    assert '<主体1>动作：Laugh; point casually' in text, text
     assert '<主体2>身份：protagonist; voiceover narrator' in text
     assert 'UNVERIFIED' not in text and 'OFFLINE_PREVIEW' not in text
     assert rehearsal['voice']['voiceIdentityVerification']=='UNVERIFIED'
@@ -966,7 +966,7 @@ async def test_native_terminal_created_failure_revision_preserves_task_and_paid_
     assert len(creates)==3
 
 @pytest.mark.asyncio
-async def test_expired_official_reference_refreshes_exact_task_without_create(tmp_path,monkeypatch,media_files):
+async def test_expired_official_reference_delivers_managed_original_without_create(tmp_path,monkeypatch,media_files):
     from drama_plugin.execution.store import ExecutionStore
     from drama_plugin.execution.contracts import ProviderReceipt,RequestReference
     p,r,service,calls,creates,auth,_=await scenario(tmp_path,monkeypatch,media_files,authors=BoundaryAuthors())
@@ -991,9 +991,10 @@ async def test_expired_official_reference_refreshes_exact_task_without_create(tm
     monkeypatch.setattr(ExecutionStore,'get',expired)
     before=len(creates)
     url=await p.execution.transports['seedance'].reference_url(reference,op)
-    assert url=='https://result.invalid/video-0.mp4'
+    assert url=='https://storage.invalid/'+reference.media_id
     assert len(creates)==before
-    assert any(c.method=='GET' and c.url.path.endswith('/tasks/task-0') for c in calls)
+    assert any(c.method=='GET' and c.url.host=='storage.invalid' for c in calls)
+    assert not any(c.method=='GET' and c.url.path.endswith('/tasks/task-0') for c in calls)
     assert old_get(p.execution.store,media.receipt_ref,ProviderReceipt)==original
 
 @pytest.mark.asyncio

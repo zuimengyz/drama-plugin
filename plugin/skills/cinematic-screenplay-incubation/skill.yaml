@@ -1,7 +1,7 @@
 code: cinematic-screenplay-incubation
 name: Cinematic Screenplay Incubation
-description: Develop source-reconciled Historical or Literary screen drama; preserve
-  upstream authority.
+description: Complete and preserve the Host autonomous full screenplay V1, then deepen
+  it through requested support and an explicit Host decision.
 context:
   required:
   - creativeGoal
@@ -17,6 +17,10 @@ context:
   - historicalDramaticAffordances
   - screenplayInput
   - creativeSourceType
+  - hostScreenplayRef
+  - hostDecisionRef
+  - fullFilmScreenplayRef
+  - longArcMemoryRefs
   refresh_after: []
 tools:
   preferred:
@@ -28,12 +32,20 @@ tools:
   - episode.get_episode
   - scene.get_scene
   - context.build_context
+  - screenplay.retain_context
+  - screenplay.retain_thread
+  - screenplay.begin
+  - screenplay.retain_v1
+  - screenplay.support_packet
+  - screenplay.retain_support
+  - screenplay.decide
+  - screenplay.shot_handoff
 completion:
   conditions:
   - 'For HISTORICAL: A readable screenplay and compact Dramatic Bible preserve supported
     historical causality, character and information continuity.'
-  - All twenty creative dimensions have an evidenced applicability/review result,
-    with targeted revision bounded to two rounds.
+  - Complete original V1 is preserved before advisory craft review; the Host may keep,
+    develop, combine, restructure or reduce it without mandatory revisions.
   - Freeze identifies the reviewed revision and remaining limitations; mechanical
     validation does not imply user artistic acceptance or production approval.
   - Full-film handoff records readiness dimensions and historical opportunity decisions;

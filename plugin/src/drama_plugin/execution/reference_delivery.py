@@ -11,6 +11,7 @@ from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit
 import json
 import httpx
+from dataclasses import dataclass
 
 from drama_plugin.contracts.base import canonical_json, sha256_canonical
 from drama_plugin.contracts.video import ProviderTask
@@ -34,6 +35,78 @@ def require_trusted_time(generated: datetime) -> None:
         raise DefinitelyNotSubmitted('REFERENCE_PROVENANCE_UNVERIFIED')
     if now >= generated + timedelta(days=30):
         raise DefinitelyNotSubmitted('REFERENCE_TRUST_EXPIRED')
+
+
+@dataclass(frozen=True)
+class OriginalImageIdentity:
+    content_hash: str
+    byte_count: int
+    mime: str
+    kind: str = 'IMAGE'
+
+
+def adopted_original_image(adapter, media, asset, binding) -> OriginalImageIdentity:
+    """Validate an adopted original portrait without inventing video provenance.
+
+    Synchronous image creation has no video task ownership query. Its retained
+    successful receipt and producing Host's same-credential attestation are
+    required; these assert neither a numeric account ID nor a moderation grant.
+    """
+    def reject():
+        raise DefinitelyNotSubmitted('REFERENCE_ADOPTED_IMAGE_PROOF_REQUIRED')
+    try:
+        value = asset.content['specializedAsset']
+        design, adoption = value['designOriginal'], value['adoptionOriginal']
+        proof = media.content['originalImageProvenance']
+        receipt, attestation = proof['receipt'], proof['accountAttestation']
+        selected = next(r for r in design['referenceMedia'] if r['mediaId'] == media.id)
+        review = media.content['imageReview']
+        if (asset.asset_type.value != 'CHARACTER' or value['state'] != 'ADOPTED'
+                or sha256_canonical(design) != value['designRef']['fingerprint']
+                or sha256_canonical(adoption) != value['adoptionRef']['fingerprint']
+                or not all(value.get(k) == v for k, v in design.items())
+                or adoption['decision'] not in {'APPROVE', 'ADOPT'}
+                or adoption['subjectFingerprint'] != value['designRef']['fingerprint']
+                or adoption['referenceMediaIds'] != asset.reference_media_ids
+                or media.id not in asset.reference_media_ids
+                or binding.media.review_ref != 'asset-adoption:' + asset.id + ':' + value['adoptionRef']['fingerprint']
+                or (media.work_id, asset.work_id, adoption['workId'], design['workId']) != (binding.scope.work_id,) * 4
+                or binding.origin_scope.work_id != binding.scope.work_id
+                or (binding.source_scope is not None and (binding.source_scope.scene_id is not None
+                    or binding.source_scope.shot_id is not None))
+                or media.shot_id is not None or media.media_type.value != 'IMAGE'
+                or media.mime_type not in {'image/png', 'image/jpeg'}
+                or binding.subject_ids != (design['subjectId'],)
+                or media.content['subjectId'] != design['subjectId']
+                or selected['duty'] != 'IDENTITY_PORTRAIT'
+                or selected['sha256'] != media.content_hash or binding.media.content_hash != media.content_hash
+                or media.content['generationMode'] != 'TEXT_TO_IMAGE' or selected['generationMode'] != 'TEXT_TO_IMAGE'
+                or not media.content['unalteredOriginal'] or not selected['unalteredOriginal']
+                or media.content['sourceInputMediaIds'] or receipt['usage']['input_images'] != 0
+                or review['output_hash'] != media.content_hash or not review['checks']
+                or any(check != 'PASS' for check in review['checks'].values())
+                or media.content['reviewStatus'] != 'PASS' or media.content['usageMode'] != 'ADOPTED'
+                or receipt['status'] != 'COMPLETED' or receipt['diagnostics']['http_status'] != 200
+                or receipt['provider'] != 'ark' or receipt['credential_source'] != 'DRAMA_VIDEO_SEEDANCE_API_KEY'
+                or receipt['model'] not in {'doubao-seedream-5-0-pro-260628', 'doubao-seedream-5-0-260128'}
+                or receipt['model'] != selected['modelId'] or receipt['model'] != media.content['modelId']
+                or receipt['output_hash'] != media.content_hash or receipt['output_bytes'] != media.file_size
+                or receipt['mime_type'] != media.mime_type or receipt['task_id'] != selected['taskId']
+                or receipt['request_fingerprint'] != selected['sourceRequestFingerprint']
+                or receipt['request_fingerprint'] != media.content['sourceCompiledRequestFingerprint']
+                or attestation['evidence'] != 'HOST_OBSERVED_SYNCHRONOUS_CREATE_SAME_CONFIG'
+                or attestation['receiptFingerprint'] != sha256_canonical(receipt)
+                or proof['fingerprint'] != sha256_canonical({k:v for k,v in proof.items() if k != 'fingerprint'})):
+            reject()
+        if attestation['credentialFingerprint'] != credential_fingerprint(adapter):
+            raise DefinitelyNotSubmitted('REFERENCE_ACCOUNT_UNVERIFIED')
+        generated = datetime.fromtimestamp(receipt['created'], timezone.utc)
+        if datetime.fromisoformat(selected['generatedAt']) != generated:
+            reject()
+        require_trusted_time(generated)
+    except (KeyError, TypeError, StopIteration, ValueError):
+        reject()
+    return OriginalImageIdentity(media.content_hash, media.file_size, media.mime_type)
 
 
 async def verify_origin(adapter, root: Path, origin, receipt, attempt, content_hash: str) -> None:

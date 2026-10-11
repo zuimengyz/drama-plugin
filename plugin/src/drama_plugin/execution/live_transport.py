@@ -25,7 +25,7 @@ from drama_plugin.persistence.ledger import ProductionLedger
 
 def wire_payload(request: ProviderRequest, *, provider: str, resolution: str, aspect_ratio: str) -> dict[str, JsonValue]:
     referenced = (provider == 'seedance' and request.input_mode == 'reference' and bool(request.references)
-        and all(r.role == 'REFERENCE' and r.kind == 'video' for r in request.references))
+        and all(r.role == 'REFERENCE' and r.kind in {'image', 'video'} for r in request.references))
     endpoint = (provider == 'seedance' and request.input_mode == 'image_to_video'
         and tuple(r.role for r in request.references) == ('FIRST_FRAME',)
         and all(r.kind == 'image' for r in request.references))
@@ -61,7 +61,7 @@ def wire_payload(request: ProviderRequest, *, provider: str, resolution: str, as
                 # Quote/seal the immutable inputs, never an expiring delivery URL.
                 body['content'] += [{'type':r.kind+'_url', r.kind+'_url':{'url':
                     'media:'+r.media_id+':'+r.content_hash}, 'role':
-                    'reference_video' if r.role == 'REFERENCE' else r.role.lower()} for r in request.references]
+                    'reference_' + r.kind if r.role == 'REFERENCE' else r.role.lower()} for r in request.references]
         elif audio:
             raise CapabilityAbsent('PROVIDER_REQUIRED_NATIVE_AUDIO_UNSUPPORTED')
         return body
@@ -150,12 +150,13 @@ class TargetHttpTransport:
     def __init__(self, adapter: HttpVideoProvider, receipt_root: Path, *, ledger: ProductionLedger,
                  grant: ControlledLiveGrant | None = None, qualification_only: bool = False,
                  resolution: str = "720p", aspect_ratio: str = "16:9", environment: Mapping[str,str] | None = None,
-                 recovery_operation_ref: ArtifactReference | None = None, media_provider=None):
+                 recovery_operation_ref: ArtifactReference | None = None, media_provider=None, asset_provider=None):
         self.adapter,self.provider=adapter,adapter.provider
         self.resolution,self.aspect_ratio,self.environment=resolution,aspect_ratio,environment
         self.offline=qualification_only
         self.recovery_operation_ref=recovery_operation_ref
         self.media_provider=media_provider
+        self.asset_provider=asset_provider
         self.root,self.ledger,self.grant=receipt_root.resolve(),ledger,grant
         self.root.mkdir(parents=True,exist_ok=True)
         if qualification_only and not isinstance(adapter.client._transport,httpx.MockTransport):
@@ -207,6 +208,18 @@ class TargetHttpTransport:
                 (reference.media_id,reference.content_hash,reference.kind,reference.role)):
             raise ValueError('REFERENCE_BINDING_IDENTITY_MISMATCH')
         store = ExecutionStore(self.ledger)
+        if reference.kind == 'image' and binding.role == 'REFERENCE':
+            from drama_plugin.execution.reference_delivery import adopted_original_image
+            if self.media_provider is None or self.asset_provider is None:
+                raise DefinitelyNotSubmitted('REFERENCE_ADOPTED_IMAGE_PROOF_REQUIRED')
+            media = await self.media_provider.get_media(reference.media_id)
+            parts = binding.media.review_ref.split(':')
+            if len(parts) != 3 or parts[0] != 'asset-adoption':
+                raise DefinitelyNotSubmitted('REFERENCE_ADOPTED_IMAGE_PROOF_REQUIRED')
+            asset = await self.asset_provider.get_asset(parts[1])
+            identity = adopted_original_image(self.adapter, media, asset, binding)
+            return await managed_original_url(self.media_provider, self.adapter.client, identity,
+                RuntimeScope(work_id=media.work_id), media_id=reference.media_id)
         if binding.endpoint_frame_ref:
             from drama_plugin.generation.operation import continuation_frame
             from drama_plugin.persistence.stores import DurableGenerationArtifactStore
@@ -387,7 +400,7 @@ class TargetHttpTransport:
             body = dict(body)
             body['content'] = [body['content'][0]] + [{'type':ref.kind+'_url', ref.kind+'_url':{
                 'url':await self.reference_url(ref,operation)},'role':
-                'reference_video' if ref.role == 'REFERENCE' else ref.role.lower()} for ref in request.references]
+                'reference_' + ref.kind if ref.role == 'REFERENCE' else ref.role.lower()} for ref in request.references]
         spec=registry()['providers'][self.provider]
         endpoint=spec['create']
         if isinstance(endpoint,dict):
@@ -460,7 +473,7 @@ class TargetHttpTransport:
 def configured_http_transport(*, model:str, receipt_root:Path, ledger:ProductionLedger,
                               resolution:str, aspect_ratio:str, environment:Mapping[str,str]|None=None,
                               grant:ControlledLiveGrant|None=None,
-                              recovery_operation_ref:ArtifactReference|None=None, media_provider=None) -> TargetHttpTransport:
+                              recovery_operation_ref:ArtifactReference|None=None, media_provider=None, asset_provider=None) -> TargetHttpTransport:
     """Configuration chooses a model/provider; this factory never selects a fallback."""
     from drama_plugin.config.loader import load_config
     from drama_plugin.config.video_route import require_runtime_route
@@ -507,7 +520,7 @@ def configured_http_transport(*, model:str, receipt_root:Path, ledger:Production
     adapter=adapters[provider](model,configuration[provider],resolve=no_reference)
     transport=TargetHttpTransport(adapter,receipt_root,ledger=ledger,resolution=resolution,
         aspect_ratio=aspect_ratio,environment=environment,grant=grant,recovery_operation_ref=recovery_operation_ref,
-        media_provider=media_provider)
+        media_provider=media_provider,asset_provider=asset_provider)
     if recovery_operation_ref is not None:
         assert operation is not None and attempt is not None
         # UNKNOWN without an ACK can still use bounded recent-job recovery.

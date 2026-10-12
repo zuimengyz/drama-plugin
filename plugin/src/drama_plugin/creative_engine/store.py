@@ -8,7 +8,7 @@ from drama_plugin.creative_engine.contracts import scope_contains
 
 import json
 from pathlib import Path
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, TypeVar, Callable
 
 from drama_plugin.contracts.base import canonical_json, sha256_canonical
 from drama_plugin.contracts.source_pin import SourcePin
@@ -34,6 +34,12 @@ class CreativeVersionStore:
         self.io = native_io()
         self.index = self.root / "creative-index"
         self.index.mkdir(exist_ok=True)
+        self.on_retained: Callable[[VersionRef], None] | None = None
+
+    def published(self, ref: VersionRef) -> VersionRef:
+        if self.on_retained is not None:
+            self.on_retained(ref)  # Enqueue a pointer only after owner bytes commit.
+        return ref
 
     def _path(self, group: str, key: object) -> Path:
         reject_link(self.index)
@@ -209,11 +215,11 @@ class CreativeVersionStore:
                 if (retained.kind, retained.scope, retained.body, retained.source_refs, retained.adoption_decision_ref) != (
                         kind, scope, body, sources, adoption_decision):
                     raise ValueError("Creative operation identity conflict")
-                return retained.ref()
+                return self.published(retained.ref())
             head = self.head(identity)
             if kind == Kind.SOURCE and head is not None and self.resolve(head).body == body:
                 self.io.write(op_path, canonical_json(head))
-                return head
+                return self.published(head)
             fields = dict(schema_version="creative-version-v1", identity=identity,
                 version=1 if head is None else head.version + 1, kind=kind, authority=writer,
                 scope=scope, mode=RunMode.PRODUCTION if adoption_decision else RunMode.EXPERIMENT,
@@ -240,7 +246,7 @@ class CreativeVersionStore:
             for path in (self._path("version", [identity, ref.version]), self._path("fingerprint", fingerprint),
                          self._path("head", identity), op_path):
                 self.io.write(path, canonical_json(ref))
-            return ref
+            return self.published(ref)
 
     def invalidate(self, ref: VersionRef) -> None:
         self.resolve(ref)

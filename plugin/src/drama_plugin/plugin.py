@@ -232,6 +232,15 @@ class DramaPlugin:
         self.generation_capability.on_ready = self._bind_media_execution
         self.context = ContextBuilder(providers.context)
         self._http_clients = http_clients or []
+        from drama_plugin.film_storage.storage import FilmStorage
+        self.film_storage = FilmStorage.configured(self)
+        if self.film_storage is not None:
+            from drama_plugin.film_storage.tools import register_film_tools
+            register_film_tools(self.tools,self.film_storage)
+            self.creative_versions.on_retained=self.film_storage.creative_event
+            if self.ledger is not None:self.ledger.on_retained=self.film_storage.ledger_event
+            self.native_task_persistence.film_storage=self.film_storage
+            self.asset_sequence.film_storage=self.film_storage
         self._fish_client = (
             providers.role_dubbing.fish
             if isinstance(providers.role_dubbing, FishRoleDubbingProvider)
@@ -1963,10 +1972,13 @@ class DramaPlugin:
         return VideoProviderHost(self.providers.memory, self.providers.media, self.providers.asset, Path(cache))
 
     async def aclose(self) -> None:
+        if self.film_storage is not None:await self.film_storage.aclose()
         if self.providers.audio_semantic is not None:
             await self.providers.audio_semantic.aclose()
         for client in self._http_clients: await client.aclose()
         if self._fish_client is not None:
             await self._fish_client.aclose()
-    async def __aenter__(self) -> "DramaPlugin": return self
+    async def __aenter__(self) -> "DramaPlugin":
+        if self.film_storage is not None:await self.film_storage.start()
+        return self
     async def __aexit__(self, *_: object) -> None: await self.aclose()

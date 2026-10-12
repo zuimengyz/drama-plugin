@@ -13,14 +13,18 @@ from drama_plugin.exceptions import ConfigurationError
 if TYPE_CHECKING:
     from drama_plugin.creative_engine.store import CreativeVersionStore
     from drama_plugin.providers.base import MemoryProvider
+    from drama_plugin.film_storage.storage import FilmStorage
 
 
 class NativeTaskPersistence:
     def __init__(self, versions: CreativeVersionStore, memory: MemoryProvider):
         self.versions, self.memory = versions, memory
+        self.film_storage: FilmStorage | None = None
 
     @property
     def enabled(self) -> bool:
+        if self.film_storage is not None:
+            return True
         if not hasattr(self.memory,'persist_native_task'):
             return False
         http=getattr(self.memory,'http',None)
@@ -46,6 +50,8 @@ class NativeTaskPersistence:
                         or (v.kind == Kind.SCENE and v.scope.scene_id is not None)]}
 
     async def persist(self, refs: tuple[VersionRef, ...]) -> Work:
+        if self.film_storage is not None:
+            return await self.film_storage.persist_refs(refs)
         plan = self.plan(refs)
         method = getattr(self.memory, 'persist_native_task', None)
         if method is None:

@@ -70,7 +70,7 @@ def test_implicit_i2i_and_missing_explicit_input_are_rejected(tmp_path,monkeypat
         AssetChoice(asset_type='PROP',name='Prop',design={'wood':'worn'},reference_selections=(0,))
 
 
-def test_wire_uses_ordered_images_and_keeps_existing_reference_cap(tmp_path,monkeypatch):
+def test_wire_uses_ordered_images_and_bounded_four_actor_extension(tmp_path,monkeypatch):
     data,_=symbolic_input(tmp_path,monkeypatch)
     from drama_plugin.config.production_routes import selected
     model=selected()['image_model'];image=inline_image(data)
@@ -78,10 +78,37 @@ def test_wire_uses_ordered_images_and_keeps_existing_reference_cap(tmp_path,monk
     assert 'image' not in plain
     multi=image_payload(model,'Approved reference',(2560,1440),1,images=(image,image))
     assert multi['image']==[image,image]
+    assert image_payload(model,'Approved reference',(2560,1440),1,images=(image,)*4)['image']==[image]*4
     with pytest.raises(ValueError,match='REFERENCE_PLAN_CAP'):
-        image_payload(model,'Approved reference',(2560,1440),1,images=(image,)*4)
+        image_payload(model,'Approved reference',(2560,1440),1,images=(image,)*5)
     with pytest.raises(ValueError,match='DIMENSIONS'):
         inline_image(b'\x89PNG\r\n\x1a\n'+b'\0'*8+struct.pack('>II',1,1))
+
+
+def test_four_distinct_actors_keep_all_four_originals_in_ark_request(tmp_path,monkeypatch):
+    _,first=symbolic_input(tmp_path,monkeypatch)
+    base=reference_spec(first)
+    inputs={};refs=[]
+    for i in range(4):
+        path=tmp_path/f'symbolic-source-{i}'
+        data=b'\x89PNG\r\n\x1a\n'+struct.pack('>I',13)+b'IHDR'+struct.pack('>II',32,32)+bytes([i])
+        digest=hashlib.sha256(data).hexdigest();inputs[path]=data
+        receipt=tmp_path/f'source-{i}.json';name=f'inline:{digest}'
+        receipt.write_text(json.dumps({'name':name,'content_hash':digest,'transport':'EXACT_INLINE_BASE64_NO_UPLOAD'}))
+        refs.append(first.model_copy(update={'entity_key':f'actor-{i}','asset_id':f'adopted-{i}',
+            'media_id':f'media-{i}','content_hash':digest,'local_path':str(path),'upload_name':name,
+            'uploaded_hash':digest,'upload_receipt':str(receipt)}))
+    read=Path.read_bytes
+    monkeypatch.setattr(Path,'read_bytes',lambda p:inputs[p] if p in inputs else read(p))
+    spec=base.model_copy(update={'references':tuple(refs),'actors':tuple(base.actors[0].model_copy(
+        update={'entity_key':r.entity_key,'label':r.entity_key}) for r in refs),'prompt_ir':None,
+        'shot_type':'ESTABLISHING','reference_lock':{f'{r.asset_id}/{r.media_id}/{r.version}':r.content_hash for r in refs}})
+    compiled=compile_frame(spec);verify_compiled(compiled)
+    images=compiled['request']['body']['image']
+    assert len(images)==4
+    assert [hashlib.sha256(base64.b64decode(v.split(',',1)[1])).hexdigest() for v in images]==[r.content_hash for r in refs]
+    from drama_plugin.providers.ark_image import FOUR_REFERENCE_CAPABILITY
+    assert compiled['template']['graph_hash']==fp(FOUR_REFERENCE_CAPABILITY)
 
 
 @pytest.mark.asyncio

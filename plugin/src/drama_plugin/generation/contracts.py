@@ -180,8 +180,8 @@ class GenerationTask(ExtendedRuntimeContract):
     def operation_boundary(self) -> Self:
         if self.boundary and self.boundary.kind in ('CUT', 'MATCH') and self.continuation:
             raise ValueError('EDIT_BOUNDARY_CANNOT_INHERIT_CONTINUATION')
-        if self.boundary and self.boundary.kind in ('CUT', 'MATCH') and self.input_mode in ('image_to_video', 'first_last_frame'):
-            raise ValueError('EDIT_BOUNDARY_REQUIRES_NEW_SHOT_START')
+        # A new, reviewed opening image may begin a hard cut. Only inheritance
+        # of the predecessor's continuation frame is incompatible with that cut.
         if self.continuation and (not self.unit or self.input_mode != "image_to_video"
                 or self.return_last_frame is not True or len(self.execution_reference_refs or ()) != 1):
             raise ValueError("EXACT_CONTINUATION_FIRST_FRAME_REQUIRED")

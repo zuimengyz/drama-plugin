@@ -109,6 +109,70 @@ def adopted_original_image(adapter, media, asset, binding) -> OriginalImageIdent
     return OriginalImageIdentity(media.content_hash, media.file_size, media.mime_type)
 
 
+def reviewed_original_frame(adapter, media, binding) -> OriginalImageIdentity:
+    """Deliver a current-shot opening, independently of character asset adoption.
+
+    Exact source/edit mode and the current image review establish technical
+    delivery. They do not grant portrait trust. Edited images without human-style
+    faces are ordinary inputs; edited portraits require a separate official
+    trusted-asset route, never a fabricated text-to-image provenance.
+    """
+    def reject():
+        raise DefinitelyNotSubmitted('FIRST_FRAME_REVIEW_OR_PROVENANCE_REQUIRED')
+    try:
+        c = media.content
+        review, proof = c['imageReview'], c['originalImageProvenance']
+        receipt, attestation = proof['receipt'], proof['accountAttestation']
+        inputs = c['sourceInputMediaIds']
+        mode = c['generationMode']
+        if (binding.role != 'FIRST_FRAME' or binding.endpoint_frame_ref is not None
+                or binding.origin_scope != binding.scope
+                or media.media_type.value != 'IMAGE' or media.purpose != 'START_FRAME'
+                or media.mime_type not in {'image/png', 'image/jpeg'}
+                or media.work_id != binding.scope.work_id
+                or c['targetNativeSceneId'] != binding.scope.scene_id
+                or c['targetNativeShotId'] != binding.scope.shot_id
+                or binding.media.content_hash != media.content_hash
+                or review['scope'] != binding.scope.model_dump(mode='json')
+                or review['output_hash'] != media.content_hash
+                or binding.media.review_ref != 'image-review:' + sha256_canonical(review)
+                or review['state_ref'] != binding.state_ref.model_dump(mode='json')
+                or review['authority_refs'] != [r.model_dump(mode='json') for r in binding.authority_refs]
+                or not {'CURRENT_SCENE','OPENING_STATE','FACE_CLASSIFICATION'} <= set(review['checks'])
+                or any(v != 'PASS' for v in review['checks'].values())
+                or c['reviewStatus'] != 'PASS' or c['usageMode'] != 'ADOPTED'
+                or not c['unalteredOriginal']
+                or mode not in {'TEXT_TO_IMAGE','IMAGE_TO_IMAGE'}
+                or not isinstance(inputs,list) or len(inputs) != len(set(inputs))
+                or (mode == 'TEXT_TO_IMAGE') != (len(inputs) == 0)
+                or receipt['usage']['input_images'] != len(inputs)
+                or receipt['status'] != 'COMPLETED' or receipt['diagnostics']['http_status'] != 200
+                or receipt['provider'] != 'ark' or receipt['credential_source'] != 'DRAMA_VIDEO_SEEDANCE_API_KEY'
+                or receipt['model'] != c['modelId']
+                or receipt['output_hash'] != media.content_hash or receipt['output_bytes'] != media.file_size
+                or receipt['mime_type'] != media.mime_type
+                or receipt['request_fingerprint'] != c['sourceCompiledRequestFingerprint']
+                or attestation['evidence'] != 'HOST_OBSERVED_SYNCHRONOUS_CREATE_SAME_CONFIG'
+                or attestation['receiptFingerprint'] != sha256_canonical(receipt)
+                or proof['fingerprint'] != sha256_canonical({k:v for k,v in proof.items() if k != 'fingerprint'})):
+            reject()
+        if attestation['credentialFingerprint'] != credential_fingerprint(adapter):
+            raise DefinitelyNotSubmitted('REFERENCE_ACCOUNT_UNVERIFIED')
+        generated = datetime.fromtimestamp(receipt['created'], timezone.utc)
+        if generated > datetime.now(timezone.utc):
+            reject()
+        if c['faceContent'] == 'HUMAN_STYLE':
+            if mode != 'TEXT_TO_IMAGE' or receipt['model'] not in {
+                    'doubao-seedream-5-0-pro-260628', 'doubao-seedream-5-0-260128'}:
+                raise DefinitelyNotSubmitted('SEEDANCE_EDITED_PORTRAIT_TRUST_UNVERIFIED')
+            require_trusted_time(generated)
+        elif c['faceContent'] != 'NONE':
+            reject()
+    except (KeyError, TypeError, ValueError, AttributeError):
+        reject()
+    return OriginalImageIdentity(media.content_hash, media.file_size, media.mime_type)
+
+
 async def verify_origin(adapter, root: Path, origin, receipt, attempt, content_hash: str) -> None:
     """Authenticate historical ownership once; retain immutable task evidence.
 

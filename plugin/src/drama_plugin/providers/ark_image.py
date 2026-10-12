@@ -16,13 +16,18 @@ CAPABILITY: dict[str, Any] = dict(provider='ark', endpoint=ENDPOINT, models=SEED
 IMAGE_TO_IMAGE_CAPABILITY = {**CAPABILITY, 'input': 'image_to_image',
     'image': 'ordered_inline_base64', 'max_reference_images': 3,
     'evidence': 'https://docs.volcengine.com/docs/ark/image-generation-api?lang=zh'}
+# Four distinct adopted actors need four originals. Keep retained <=3-input
+# capability seals unchanged; the official Pro API permits up to ten inputs.
+FOUR_REFERENCE_CAPABILITY = {**IMAGE_TO_IMAGE_CAPABILITY, 'max_reference_images': 4}
 
 
-def image_capability(mode: str = 'text_to_image') -> dict[str, Any]:
+def image_capability(mode: str = 'text_to_image', *, reference_count: int = 0) -> dict[str, Any]:
+    if reference_count > 4:
+        raise ValueError('EXISTING_REFERENCE_PLAN_CAP_EXCEEDED')
     if mode == 'text_to_image':
         return CAPABILITY
     if mode == 'image_to_image':
-        return IMAGE_TO_IMAGE_CAPABILITY
+        return FOUR_REFERENCE_CAPABILITY if reference_count == 4 else IMAGE_TO_IMAGE_CAPABILITY
     raise ValueError('UNKNOWN_SEEDREAM_IMAGE_MODE')
 
 
@@ -86,7 +91,7 @@ def image_payload(model: str, prompt: str, size: tuple[int, int], seed: int,
         body.update(seed=seed, sequential_image_generation='disabled', stream=False)
     if images:
         import base64
-        if len(images)>3:
+        if len(images)>4:
             raise ValueError('EXISTING_REFERENCE_PLAN_CAP_EXCEEDED')
         for value in images:
             prefix, encoded=value.split(';base64,',1)
@@ -102,7 +107,9 @@ def binding(frame: dict[str, Any], evidence: dict[str, Any]) -> dict[str, Any]:
     from drama_plugin.visual.image_route import execution_identity
     verify_compiled(frame)
     config = credential()
-    capability=image_capability(frame['spec'].get('image_mode','text_to_image'))
+    spec=frame['spec']
+    count=1 if spec.get('edit_source') else len(spec.get('references',()))
+    capability=image_capability(spec.get('image_mode','text_to_image'),reference_count=count)
     return dict(execution=execution_identity(frame), operation='image.create',
                 provider_schema=capability, provider_schema_fingerprint=sha256_canonical(capability),
                 request_fingerprint=sha256_canonical(frame['request']),

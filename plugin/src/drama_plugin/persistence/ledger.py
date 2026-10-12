@@ -11,7 +11,7 @@ from enum import Enum
 import json
 from pathlib import Path
 import sqlite3
-from typing import Iterator, cast
+from typing import Iterator, cast, Callable
 
 from drama_plugin.contracts.base import canonical_json, sha256_canonical
 from drama_plugin.runtime.contracts import ArtifactReference, RuntimeContract, RuntimeRun, RuntimeScope, RuntimeState, validate_repair_history
@@ -80,6 +80,7 @@ class ProductionLedger:
         if not raw.is_absolute():
             raise ValueError("ProductionLedger path must be absolute across process restarts")
         self.path = raw.resolve()
+        self.on_retained: Callable[[str, ArtifactReference, RuntimeScope, str], None] | None = None
         if self.path.suffix not in {".sqlite", ".sqlite3", ".db"}:
             raise ValueError("ProductionLedger needs a named SQLite database file")
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -255,6 +256,11 @@ class ProductionLedger:
                      fingerprint: str, body: object) -> None:
         with self.transaction(write=True) as db:
             self._put_artifact(db, artifact_type, ref, scope, fingerprint, body)
+        self.notify_retained(artifact_type,ref,scope,fingerprint)
+
+    def notify_retained(self, artifact_type: str, ref: ArtifactReference, scope: RuntimeScope, fingerprint: str) -> None:
+        if self.on_retained is not None:
+            self.on_retained(artifact_type,ref,scope,fingerprint)
 
     @staticmethod
     def _put_artifact(db: sqlite3.Connection, artifact_type: str, ref: ArtifactReference,

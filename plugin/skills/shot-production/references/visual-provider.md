@@ -41,7 +41,7 @@ Technical retry is not Visual Revise. A completed generation increments `generat
 
 ## Image reference policy
 
-The currently inspected image adapter accepts `referenceCount ∈ {0, 1, 2, 3}`. Reject a binding that exceeds this capability; preserve all REQUIRED duties in the upstream Reference Plan and return `REFERENCE_CAPABILITY_CONFLICT` rather than silently omitting one. Do not construct a dynamic workflow.
+The inspected Ark Seedream image adapter accepts `referenceCount ∈ {0, 1, 2, 3, 4}`; retained non-Ark image adapters keep `referenceCount ∈ {0, 1, 2, 3}`. Reject a binding that exceeds its adapter capability; preserve all REQUIRED duties in the upstream Reference Plan and return `REFERENCE_CAPABILITY_CONFLICT` rather than silently omitting one. Do not construct a dynamic workflow.
 
 Consume the Reference Plan’s required and preferred duties and priorities; do not independently rank character, costume or scene identity. Formal references should originate from stable Drama Asset/Media identity rather than a prior provider session, an unexplained local file, or a PoC artifact.
 
@@ -51,6 +51,7 @@ Route by both generation intent and reference count:
 - 1: a verified official single-reference image generation or edit template.
 - 2: a verified official two-reference image generation or edit template.
 - 3: a verified official three-reference image generation or edit template.
+- 4: the inspected Ark official four-reference image edit projection, retaining four distinct raw source images.
 
 Use the Host adapter's current verified preference when it remains available and matches the intent. Discover a replacement official template only when that preference is missing or cannot perform the required intent. Do not create a saved, custom, or dynamic workflow.
 

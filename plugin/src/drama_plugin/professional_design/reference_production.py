@@ -128,6 +128,7 @@ class TargetReferenceProduction:
             self.ledger._put_artifact(db, OWNER, ref, value.scope, value.fingerprint, value)
             db.execute('INSERT OR REPLACE INTO ledger_index VALUES (?,?,?,?,?,?)',
                 (INDEX, value.run_id, value.scope.work_id, value.scope.scene_id, value.scope.shot_id, canonical_json(ref)))
+        self.ledger.notify_retained(OWNER,ref,value.scope,value.fingerprint)
         return value
 
     def item(self, value: ReferenceProductionRecord) -> dict[str, Any]:

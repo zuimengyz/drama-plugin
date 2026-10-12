@@ -208,6 +208,17 @@ class TargetHttpTransport:
                 (reference.media_id,reference.content_hash,reference.kind,reference.role)):
             raise ValueError('REFERENCE_BINDING_IDENTITY_MISMATCH')
         store = ExecutionStore(self.ledger)
+        if reference.kind == 'image' and binding.role == 'FIRST_FRAME' and binding.endpoint_frame_ref is None:
+            from drama_plugin.execution.reference_delivery import reviewed_original_frame
+            if self.provider != 'seedance' or self.media_provider is None:
+                raise CapabilityAbsent('FIRST_FRAME_DELIVERY_UNCONFIGURED')
+            media = await self.media_provider.get_media(reference.media_id)
+            identity = reviewed_original_frame(self.adapter, media, binding)
+            # Native creative Shot IDs can be carried in a Work-level retained
+            # image without pretending they are legacy business Shot IDs.
+            storage_scope = RuntimeScope(work_id=media.work_id, shot_id=media.shot_id)
+            return await managed_original_url(self.media_provider, self.adapter.client, identity,
+                storage_scope, media_id=reference.media_id)
         if reference.kind == 'image' and binding.role == 'REFERENCE':
             from drama_plugin.execution.reference_delivery import adopted_original_image
             if self.media_provider is None or self.asset_provider is None:

@@ -34,7 +34,8 @@ def select_frame_template(spec: FrameSpec) -> Template:
         factor = max(1, math.ceil(math.sqrt(minimum/(width*height))))
         return Template(name='ark-official-seedream', model=route['image_model'],
             evidence='Ark official image-generation-api and model-list; no realized quality claim',
-            graph_hash=sha256_canonical(image_capability(spec.image_mode)), graph_path='ark:image-generation-v1',
+            graph_hash=sha256_canonical(image_capability(spec.image_mode,
+                reference_count=len((spec.edit_source,) if spec.edit_source else spec.references))), graph_path='ark:image-generation-v1',
             image_slots=tuple(f'ref{i+1}' for i in range(len((spec.edit_source,) if spec.edit_source else spec.references))),
             prompt_node='prompt', output_size=(width*factor, height*factor),
             supported_types=(spec.shot_type,), http_provider='ark')

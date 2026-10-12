@@ -21,6 +21,7 @@ from drama_plugin.runtime.contracts import ArtifactReference
 if TYPE_CHECKING:
     from drama_plugin.hosts.director_artifacts import DirectorArtifactStore
     from drama_plugin.providers.base import AssetProvider, MediaProvider
+    from drama_plugin.film_storage.storage import FilmStorage
 
 
 class AssetChoice(ContractModel):
@@ -69,6 +70,7 @@ class SpecializedAssetSequence:
     def __init__(self, objects: DirectorArtifactStore, assets: AssetProvider, media: MediaProvider):
         self.objects, self.assets, self.media = objects, assets, media
         self._locks: dict[str, asyncio.Lock] = {}
+        self.film_storage: FilmStorage | None = None
 
     def bind_film(self, work_id: str, canon: FilmCanon, *, source_ref: ArtifactReference,
                   screenplay_ref: SourcePin | None = None) -> SourcePin:
@@ -122,6 +124,14 @@ class SpecializedAssetSequence:
             return False
         if asset.asset_type in {AssetType.STANDARD_FACE, AssetType.MASTER_CHARACTER_CARD}:
             return False
+        if value.get('filmStorageValidated') is True:
+            # V2 retains the complete concrete design as a verified Markdown file
+            # and small original adoption/source pins, rather than copying Package
+            # and Scene snapshots into the Asset row. The authoritative Service
+            # compatibility view supplies only the exact registered adopted version.
+            return bool(value.get('designMediaId') and value.get('designRef') and value.get('adoptionRef')
+                and (asset.asset_type!=AssetType.CHARACTER or value.get('subjectId') is not None)
+                and value.get('design') and asset.reference_media_ids)
         try:
             review = self._original(value, 'adoption')
             original = self._original(value, 'design')
@@ -148,8 +158,15 @@ class SpecializedAssetSequence:
 
     async def _available(self, work_id: str, *, query: str | None = None) -> list[Asset]:
         result = []
-        rows = {asset.id: asset for asset in await self.assets.list_assets()}
-        if query:
+        storage=getattr(self,'film_storage',None)
+        if storage is not None:
+            rows={}
+            for kind in ('CHARACTER','LOCATION','COSTUME','PROP','OTHER'):
+                for row in await storage.client.query('drama_asset',{'work_id':work_id,'asset_type':kind,'state':'ADOPTED'},100):
+                    rows[row['id']]=await self.assets.get_asset(row['id'])
+        else:
+            rows = {asset.id: asset for asset in await self.assets.list_assets()}
+        if query and storage is None:
             # Service's global list is bounded; an unrelated Work must not hide
             # an adopted version and cause repeat creation. Search exact pins.
             rows.update({asset.id: asset for asset in await self.assets.search_assets(query)})
@@ -402,7 +419,10 @@ class SpecializedAssetSequence:
             raise ValueError('ASSET_PREPARATION_NOT_SELECTED')
         item = next(r for r in packet['requirements'] if r['requirementKey'] == requirement_key)
         if item.get('reuseAssetId'):
-            return await self.assets.get_asset(item['reuseAssetId'])
+            reused=await self.assets.get_asset(item['reuseAssetId'])
+            storage=getattr(self,'film_storage',None)
+            if storage is not None:storage.scene_asset_event(reused,packet['sceneId'],preparation_ref)
+            return reused
         ref = SourcePin.model_validate(item['designRef'])
         original = self.objects.read_ref(ref)
         review = self.objects.read_ref(adoption_ref)
@@ -433,6 +453,8 @@ class SpecializedAssetSequence:
         fresh = await self.assets.get_asset(asset.id)
         if dump_contract(fresh) != dump_contract(asset) or not self._proof(fresh):
             raise ValueError('ASSET_REGISTRATION_READBACK_MISMATCH')
+        if self.film_storage is not None:
+            self.film_storage.asset_event(fresh)
         return fresh
 
     @staticmethod

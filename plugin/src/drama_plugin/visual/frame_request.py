@@ -86,7 +86,7 @@ class FrameSpec(Record):
     props: tuple[Prop, ...] = ()
     required: tuple[Text, ...] = Field(min_length=1)
     forbidden: tuple[Text, ...] = Field(min_length=1)
-    references: tuple[Reference, ...] = Field(max_length=3)
+    references: tuple[Reference, ...] = Field(max_length=4)
     # A frozen asset/version lock resolved before this campaign, not 'latest'.
     reference_lock: dict[str, Hash]
     # Must explicitly account for secondary omitted references within the cap.
@@ -142,8 +142,8 @@ def _unique(values: list[str], error: str) -> None:
 def _verify_graph(spec: FrameSpec, template: Template) -> None:
     if template.http_provider is not None:
         from drama_plugin.providers.ark_image import image_capability, image_payload
-        capability = image_capability(spec.image_mode)
         inputs = (spec.edit_source,) if spec.edit_source else spec.references
+        capability = image_capability(spec.image_mode,reference_count=len(inputs))
         slots = tuple(f'ref{i+1}' for i in range(len(inputs)))
         if (template.http_provider != 'ark' or template.graph_hash != sha256_canonical(capability)
                 or template.graph_path != 'ark:image-generation-v1' or template.api_workflow is not None
@@ -219,6 +219,8 @@ def compile_frame(spec: FrameSpec, template: Template | None = None) -> dict[str
         check_binding(spec)
     template = Template.model_validate(template.model_dump())
     inputs: tuple[EditSource | Reference, ...] = (spec.edit_source,) if spec.edit_source else spec.references
+    if template.http_provider != 'ark' and len(inputs) > 3:
+        raise ValueError('EXISTING_REFERENCE_PLAN_CAP_EXCEEDED')
     if spec.edit_source and (spec.references or spec.identity_bootstrap or spec.reference_members):
         raise ValueError('EDIT_SOURCE_CANNOT_MIX_WITH_IDENTITY_BOOTSTRAP_OR_REFERENCES')
     if len(template.image_slots) != len(inputs):

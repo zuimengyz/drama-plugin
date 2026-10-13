@@ -42,7 +42,7 @@ class ValidationIssue(BaseModel):
     beat_id: Identifier | None = Field(default=None, serialization_alias="beatId")
     spoken_id: Identifier | None = Field(default=None, serialization_alias="spokenId")
     expected_coverage_role: Literal["INTERACTIVE_PARTNER"] | None = Field(default=None, serialization_alias="expectedCoverageRole")
-    allowed_spoken_ids: tuple[Identifier, ...] | None = Field(default=None, max_length=100, serialization_alias="allowedSpokenIds")
+    allowed_spoken_ids: tuple[Identifier, ...] | None = Field(default=None, serialization_alias="allowedSpokenIds")
     domain: SourceDomain | None = None
 
 

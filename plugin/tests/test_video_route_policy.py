@@ -15,11 +15,11 @@ from drama_plugin.hosts.comfy_video import NODES, compile_request
 from test_video_selection import fixture
 from seedance_helpers import seed_fixture
 
-def policy(mode='PREFER', model='seedance-2.5', fallbacks=('minimax-h3','flux-3')):
+def policy(mode='PREFER', model='seedance-2-fast', fallbacks=('minimax-h3','vidu-q3-pro')):
  return Policy(mode=mode,preferred_model=model,fallbacks=fallbacks)
 def candidates(tmp_path):
  r,c,*_=fixture(tmp_path)
- return r,[c.model_copy(update={'candidate_id':key,'model':label,'variant':label}) for key,label in [('seedance-2.5','Seedance 2.5'),('minimax-h3','MiniMax H3'),('flux-3','FLUX 3')]]
+ return r,[c.model_copy(update={'candidate_id':key,'model':key,'variant':key,'capability':{'provider':provider}}) for key,provider in [('seedance-2-fast','seedance'),('minimax-h3','minimax'),('vidu-q3-pro','vidu')]]
 def test_identity():
  from drama_plugin.providers.video.registry import registry
  assert MODEL_KEYS=={canonical_model_key(n['model']) for n in NODES.values()} | set(registry()['models'])
@@ -46,7 +46,7 @@ def test_env_normalization():
  assert p.source=='PLUGIN_ENV_DEFAULT' and p.sequence()==('seedance-2.5','minimax-h3','flux-3')
 def test_prefer_qualification(tmp_path):
  r,cs=candidates(tmp_path);a=choose(r,cs,policy=policy())
- assert a['selected']=='seedance-2.5' and a['candidates']==[qualify(r,c) for c in cs]
+ assert a['selected']=='seedance-2-fast' and a['candidates']==[qualify(r,c) for c in cs]
  assert a['candidates'][0]['qualification']=='LIMITED_TRIAL'
  assert choose(r,cs,policy=policy(),trial=False)['selected'] is None
  assert choose(r,cs,policy=policy(),task_policy=policy('PIN','minimax-h3'),trial=False)['selected'] is None
@@ -55,7 +55,7 @@ def test_fallback(tmp_path):
  r,cs=candidates(tmp_path);cs[0]=cs[0].model_copy(update={'controls':(),'combinations':()})
  a=choose(r,cs,policy=policy());assert a['selected']=='minimax-h3'
  assert 'MISSING_REQUIRED_CONTROL' in a['route_policy_resolution']['attempts'][0]['reason']
- assert choose(r,cs,policy=policy(fallbacks=('flux-3','minimax-h3')))['selected']=='flux-3'
+ assert choose(r,cs,policy=policy(fallbacks=('vidu-q3-pro','minimax-h3')))['selected']=='vidu-q3-pro'
  assert choose(r,cs,policy=policy(fallbacks=()))['selected'] is None
  cs=[c.model_copy(update={'durations':()}) for c in cs]
  assert choose(r,cs,policy=policy())['selected'] is None
@@ -66,7 +66,7 @@ def test_pin(tmp_path,monkeypatch):
  def spy(r,c,**kw):called.append(c.model);return original(r,c,**kw)
  monkeypatch.setattr(v,'qualify',spy)
  a=choose(r,cs,policy=policy('PIN'))
- assert called==['Seedance 2.5'] and a['selected']=='seedance-2.5'
+ assert called==['seedance-2-fast'] and a['selected']=='seedance-2-fast'
  assert a['route_policy_resolution']['fallbacks_state']=='INACTIVE'
  cs[0]=cs[0].model_copy(update={'durations':()})
  assert choose(r,cs,policy=policy('PIN'))['selected'] is None
@@ -79,26 +79,23 @@ def test_price_and_dry_permission(tmp_path):
  r,cs=candidates(tmp_path);cs[0]=cs[0].model_copy(update={'cost':cs[0].cost.model_copy(update={'components':{'video':None}})})
  assert choose(r,cs,policy=policy('PIN'))['selected'] is None
  a=choose(r,cs,policy=policy('PIN'),dry_run=True)
- assert a['selected']=='seedance-2.5' and not a['candidates'][0]['eligible'] and a['route_policy_resolution']['dry_run_only']
+ assert a['selected']=='seedance-2-fast' and not a['candidates'][0]['eligible'] and a['route_policy_resolution']['dry_run_only']
  with pytest.raises(ValueError,match='INELIGIBLE'):seal_decision(r,cs[0],{},stage_id='offline',rationale='offline',comparisons=[],fallback='none',policy_resolution=a['route_policy_resolution'])
 
 def test_seal(tmp_path,monkeypatch):
  r,c,g,s,a=fixture(tmp_path);request=compile_request(r,c,g,s,a['bindings'],r.frozen_creative['motion_prompt'])
- policy_result=choose(r,[c],policy=policy('PIN','flux-3'))['route_policy_resolution']
- d=seal_decision(r,c,request,stage_id='offline',rationale='offline',comparisons=[],fallback='none',policy_resolution=policy_result,dry_run=True);frozen=deepcopy(d)
+ assert choose(r,[c],policy=policy('PIN','flux-3'))['selected'] is None
+ # Historical adapter metadata compiles, but cannot be sealed as a new choice.
+ with pytest.raises(ValueError,match='POLICY_SELECTION_MISMATCH'):
+  seal_decision(r,c,request,stage_id='offline',rationale='retained offline receipt',comparisons=[],fallback='none',dry_run=True)
  monkeypatch.setenv('DRAMA_PLUGIN_VIDEO_ROUTE_MODE','pin');monkeypatch.setenv('DRAMA_PLUGIN_VIDEO_MODEL_PREFERRED','seedance-2.5')
  assert load_config().video_route_policy.preferred_model=='seedance-2.5'
- verify_decision(d,allow_dry_run=True);assert d==frozen
- policy_result['effective_policy']['mode']='AUTO';assert d==frozen
- with pytest.raises(ValueError,match='DRY_RUN_REQUEST'):verify_decision(d)
- d['route_policy_resolution']['effective_policy']['preferred_model']='seedance-2.5'
- with pytest.raises(ValueError,match='DECISION_CHANGED'):verify_decision(d,allow_dry_run=True)
- d['fingerprint']=fp({k:v for k,v in d.items() if k!='fingerprint'})
- with pytest.raises(ValueError,match='POLICY_'):verify_decision(d,allow_dry_run=True)
+ with pytest.raises(ValueError,match='POLICY_SELECTION_MISMATCH'):
+  seal_decision(r,c,request,stage_id='offline',rationale='retained offline receipt',comparisons=[],fallback='none',dry_run=True)
 
 def test_reference(tmp_path):
  r,c,g,s,a=seed_fixture(tmp_path);r=r.model_copy(update={'reference_duties':()})
- with pytest.raises(ValueError):choose(r,[c],policy=policy('PIN'),dry_run=True)
+ assert choose(r,[c],policy=policy('PIN'),dry_run=True)['selected'] is None
 
 def test_architecture():
  root=Path(__file__).parents[1]
@@ -124,9 +121,8 @@ def test_cli(tmp_path):
  assert result.returncode!=0 and 'EXTERNAL_ROUTE_POLICY_CONFLICT' in result.stderr
  env.pop('DRAMA_PLUGIN_VIDEO_ROUTE_MODE');env.pop('DRAMA_PLUGIN_VIDEO_MODEL_PREFERRED')
  result=subprocess.run(cmd,env=env,capture_output=True,text=True)
- assert result.returncode==0,result.stderr
- sealed=json.loads((out/'sealed-request.json').read_text())
- assert sealed['route_policy_resolution']['source']=='TASK_OVERRIDE' and sealed['dry_run_only'] and not sealed['submission_allowed']
+ assert result.returncode!=0 and 'NO_EXECUTABLE_CANDIDATE' in result.stderr
+ assert not (out/'sealed-request.json').exists()
 
 @pytest.mark.asyncio
 async def test_formal_plan_entry_consumes_policy_before_write(tmp_path):
@@ -137,18 +133,21 @@ async def test_formal_plan_entry_consumes_policy_before_write(tmp_path):
  with pytest.raises(ValueError,match='NO_EXECUTABLE_CANDIDATE'):
   await save_route(m,'W',raw,policy=policy('PIN'))
  assert m.work.content==before
- await save_route(m,'W',raw,policy=policy('PIN','flux-3'))
- assert m.work.content['productionPolicy']['videoRoutePolicyResolution']['selected_model']=='flux-3'
+ with pytest.raises(ValueError,match='NO_EXECUTABLE_CANDIDATE'):
+  await save_route(m,'W',raw,policy=policy('PIN','flux-3'))
+ assert m.work.content==before
  assert choose_routes([route(tmp_path)],policy=policy('PIN'))['selected'] is None
 
 @pytest.mark.parametrize('authorization,budget',[('',1000),('OFFLINE',None),('OFFLINE',0)])
 def test_policy_is_not_stage_authorization(tmp_path,authorization,budget):
  from drama_plugin.visual import production
  r,c,g,s,a=fixture(tmp_path);choice=choose(r,[c],policy=policy('PIN','flux-3'))
- assert choice['selected']==c.candidate_id
- d=seal_decision(r,c,compile_request(r,c,g,s,a['bindings'],r.frozen_creative['motion_prompt']),stage_id='offline',rationale='offline',comparisons=[],fallback='none',policy_resolution=choice['route_policy_resolution'])
+ assert choice['selected'] is None
+ # A retired candidate does not become selectable through a budget grant.
+ with pytest.raises(ValueError,match='POLICY_SELECTION_MISMATCH'):
+  seal_decision(r,c,compile_request(r,c,g,s,a['bindings'],r.frozen_creative['motion_prompt']),stage_id='offline',rationale='retained offline receipt',comparisons=[],fallback='none')
  with pytest.raises(ValueError,match='EXPLICIT_STAGE_BUDGET_REQUIRED'):
-  production.new_stage(stage_id='offline',authorization_ref=authorization,budget_credits=budget,frames=[d],protected_targets=[])
+  production.new_stage(stage_id='offline',authorization_ref=authorization,budget_credits=budget,frames=[],protected_targets=[])
 
 
 def test_config_yaml_env_task(tmp_path):

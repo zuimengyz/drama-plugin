@@ -34,12 +34,12 @@ class SubtitleLocalization(RuntimeContract):
 class CanonScene(RuntimeContract):
     scene_id: Identifier
     scene: SceneBody
-    subtitle_localizations: tuple[SubtitleLocalization, ...] = Field(default=(), max_length=100)
+    subtitle_localizations: tuple[SubtitleLocalization, ...] = ()
 
 class FilmCanon(RuntimeContract):
     work: WorkBody
     script: ScriptBody
-    scenes: tuple[CanonScene, ...] = Field(min_length=1, max_length=12)
+    scenes: tuple[CanonScene, ...] = Field(min_length=1)
 
     @model_validator(mode='after')
     def identities(self) -> Self:
@@ -56,7 +56,7 @@ class DirectedShot(RuntimeContract):
     transition: Literal['cut', 'continuous', 'match'] = 'cut'
 
 class FilmDirection(RuntimeContract):
-    shots: tuple[DirectedShot, ...] = Field(min_length=1, max_length=12)
+    shots: tuple[DirectedShot, ...] = Field(min_length=1)
 
     @model_validator(mode='after')
     def identities(self) -> Self:
@@ -105,7 +105,7 @@ class FilmInput(ExtendedRuntimeContract):
     model: Identifier
     profile: DeliveryProfile
     rights_refs: tuple[ArtifactReference, ...] = Field(min_length=1, max_length=8)
-    subtitle_cues: tuple[SubtitleCue, ...] = Field(default=(), max_length=100)
+    subtitle_cues: tuple[SubtitleCue, ...] = ()
     max_cost_microunits: int = Field(default=0, ge=0)
     estimated_shot_cost_microunits: int = Field(default=0, ge=0)
     operation_duration_ms: int = Field(default=4000, ge=1000, le=15000)
@@ -129,7 +129,7 @@ class FilmCheckpoint(ExtendedRuntimeContract):
     canon_ref: ArtifactReference | None = None
     direction_ref: ArtifactReference | None = None
     plan_ref: ArtifactReference | None = None
-    units: tuple[ShotUnit, ...] = Field(default=(), max_length=12)
+    units: tuple[ShotUnit, ...] = ()
     graph: RoutePlan | None = None
     adoption_ref: ArtifactReference | None = None
     film_version: int = Field(default=1, ge=1)
@@ -147,13 +147,13 @@ class FilmCheckpoint(ExtendedRuntimeContract):
     scope_request_pin: SourcePin | None = None
     scope_decision_ref: ArtifactReference | None = None
     operation_task: GenerationTask | None = None
-    scene_media_run_ids: tuple[Identifier, ...] | None = Field(default=None, min_length=1, max_length=128)
-    scene_media_review_refs: tuple[ArtifactReference, ...] | None = Field(default=None, max_length=128)
+    scene_media_run_ids: tuple[Identifier, ...] | None = Field(default=None, min_length=1)
+    scene_media_review_refs: tuple[ArtifactReference, ...] | None = None
     scene_media_pending_tasks: tuple[GenerationTask, ...] | None = Field(default=None, max_length=3)
     scene_media_goal_hash: Identifier | None = None
     media_batch_ref: ArtifactReference | None = None
     media_batch_opening_review_ref: ArtifactReference | None = None
-    scene_media_revision_refs: tuple[ArtifactReference, ...] | None = Field(default=None,max_length=128)
+    scene_media_revision_refs: tuple[ArtifactReference, ...] | None = None
     completed: tuple[Identifier, ...] = Field(default=(), max_length=16)
 
 class FilmArtifact(RuntimeContract):
@@ -184,7 +184,7 @@ class FilmPlan(FilmArtifact):
     source_ref: VersionRef
     canon_ref: ArtifactReference
     direction_ref: ArtifactReference
-    unit_version_refs: tuple[tuple[VersionRef, ...], ...] = Field(max_length=12)
+    unit_version_refs: tuple[tuple[VersionRef, ...], ...]
     graph: RoutePlan
     languages: LanguageMetadata
 
@@ -202,7 +202,7 @@ class FinalFilmCandidate(FilmArtifact):
     owner = 'final-film-candidate'
     schema_version: Literal['final-film-candidate-v1'] = 'final-film-candidate-v1'
     plan_ref: ArtifactReference
-    shots: tuple[FilmShotBinding, ...] = Field(min_length=1, max_length=12)
+    shots: tuple[FilmShotBinding, ...] = Field(min_length=1)
     media: MediaIdentity
     canonical_media_ref: ArtifactReference | None = None
     subtitle_ref: ArtifactReference | None = None
@@ -227,7 +227,7 @@ class FinalCreativeReview(FilmArtifact):
     qualification: Literal['OFFLINE_FIXTURE', 'HUMAN', 'QUALIFIED_REVIEWER']
     outcome: Literal['PASS', 'REVISE', 'CAPABILITY_ABSENT']
     observations: tuple[ReviewObservation, ...] = Field(default=(), max_length=16)
-    affected_shots: tuple[Identifier, ...] = Field(default=(), max_length=12)
+    affected_shots: tuple[Identifier, ...] = ()
     @model_validator(mode='after')
     def revision(self) -> Self:
         if self.outcome == 'REVISE' and (not self.observations or not self.affected_shots):
@@ -253,7 +253,7 @@ class FilmRevisionFeedback(FilmArtifact):
     schema_version: Literal['film-revision-feedback-v1'] = 'film-revision-feedback-v1'
     candidate_ref: ArtifactReference
     decision_or_review_ref: ArtifactReference
-    requests: tuple[RevisionRequest, ...] = Field(min_length=1, max_length=12)
+    requests: tuple[RevisionRequest, ...] = Field(min_length=1)
 
 class FilmMediaBatch(FilmArtifact):
     """An authorized replacement production, retaining the preceding execution view."""
@@ -271,7 +271,7 @@ class FilmSegmentRevision(FilmArtifact):
     """Replace a candidate at one position; retain failed media, fees and deferred goals."""
     owner = 'film-segment-revision'
     schema_version: Literal['film-segment-revision-v1'] = 'film-segment-revision-v1'
-    slot: int = Field(ge=0,le=127)
+    slot: int = Field(ge=0)
     previous_run_id: Identifier
     replacement_run_id: Identifier
     review_ref: ArtifactReference

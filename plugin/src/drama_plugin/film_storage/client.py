@@ -12,7 +12,7 @@ class FilmClient:
         self.http=httpx.AsyncClient(base_url=base_url.rstrip('/'),headers={'Authorization':'Bearer '+token},
             timeout=180,trust_env=False,transport=transport)
     async def request(self,path:str,*,method:str='GET',params:dict[str,Any]|None=None,body:Any=None)->Any:
-        if path not in {'work','script','query','context','file','status','sync','file-index','existing-file'}:
+        if path not in {'work','script','query','query-page','context','file','status','sync','file-index','existing-file'}:
             raise ValueError('Film client is restricted to file/index storage')
         try:
             response=await self.http.request(method,'/api/tool/film/'+path,params=params,json=body)
@@ -27,6 +27,9 @@ class FilmClient:
         return cast(dict[str,int],await self.request('sync',method='POST',body={'rows':rows}))
     async def query(self,table:str,filters:dict[str,Any],limit:int=30)->list[dict[str,Any]]:
         return cast(list[dict[str,Any]],await self.request('query',method='POST',body={'table':table,'filters':filters,'limit':limit}))
+    async def query_page(self,table:str,filters:dict[str,Any],limit:int=30,cursor:str|None=None)->dict[str,Any]:
+        return cast(dict[str,Any],await self.request('query-page',method='POST',body={
+            'table':table,'filters':filters,'limit':limit,'cursor':cursor}))
     async def prompt_id(self,work:str,text:str)->str:
         from drama_plugin.contracts.base import sha256_canonical
         existing=await self.query('drama_media',{'work_id':work,'media_type':'DOCUMENT','purpose':'GENERATION_PROMPT','content_hash':hashlib.sha256(text.encode()).hexdigest()},1)

@@ -30,12 +30,18 @@ def register_film_tools(registry:Any,store:FilmStorage)->None:
         result=values[0];result['inputs']=sorted(await store.client.query('drama_request_input',{'request_id':request_id},100),key=lambda row:row['ordinal'])
         return result
     async def inputs(request_id:str)->list[dict[str,Any]]:return sorted(await store.client.query('drama_request_input',{'request_id':request_id},100),key=lambda row:row['ordinal'])
-    async def restore(work_id:str,scene_id:str|None=None)->dict[str,Any]:
-        return cast(dict[str,Any],await store.client.request('context',params={'work_id':work_id,**({'scene_id':scene_id} if scene_id else {})}))
+    async def scripts(work_id:str,scene_id:str|None=None,state:str|None=None,limit:int=30,cursor:str|None=None)->dict[str,Any]:
+        return await store.client.query_page('drama_script',{k:v for k,v in {
+            'work_id':work_id,'scene_id':scene_id,'state':state}.items() if v is not None},limit,cursor)
+    async def restore(work_id:str,scene_id:str|None=None,page_size:int=30,cursors:dict[str,str]|None=None)->dict[str,Any]:
+        import json
+        return cast(dict[str,Any],await store.client.request('context',params={'work_id':work_id,
+            'page_size':page_size,**({'scene_id':scene_id} if scene_id else {}),
+            **({'cursors':json.dumps(cursors)} if cursors is not None else {})}))
     async def get_file(media_id:str)->dict[str,Any]:return cast(dict[str,Any],await store.client.request('file',params={'media_id':media_id}))
     async def flush()->dict[str,Any]:return await store.flush()
     declarations:list[tuple[str,Callable[...,Awaitable[Any]],dict[str,Any],Any]]=[('get_work',get_work,{'work_id':str},dict[str,Any]),
-        ('get_script',get_script,{'work_id':str},dict[str,Any]),('characters',characters,{'work_id':str},list[dict[str,Any]]),
+        ('get_script',get_script,{'work_id':str},dict[str,Any]),('scripts',scripts,{'work_id':str},dict[str,Any]),('characters',characters,{'work_id':str},list[dict[str,Any]]),
         ('get_character',character,{'character_id':str},dict[str,Any]),('get_asset',asset,{'asset_id':str},dict[str,Any]),
         ('assets',assets,{'work_id':str},list[dict[str,Any]]),('scene_assets',scene_assets,{'scene_id':str},list[dict[str,Any]]),
         ('takes',takes,{'work_id':str},list[dict[str,Any]]),('get_request',get_request,{'request_id':str},dict[str,Any]),

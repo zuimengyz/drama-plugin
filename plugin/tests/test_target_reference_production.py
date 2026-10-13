@@ -228,6 +228,71 @@ async def test_intake_retry_uses_same_output_and_checks_dimensions(tmp_path,monk
 
 
 @pytest.mark.asyncio
+async def test_import_allowlist_failure_and_historical_terminal_recovery_never_resubmit(tmp_path,monkeypatch):
+    from drama_plugin.exceptions import MediaImportSourceError
+    from drama_plugin.runtime.contracts import CapabilityResult, ResultStatus, RecoveryClass
+    import drama_plugin.professional_design.reference_production as module
+    p,inp,child,value,a=await prepared(tmp_path,monkeypatch)
+    calls=[];fake_submission(monkeypatch,calls)
+    fake_persistence(monkeypatch,p)
+    imported=module.persist_media
+    async def denied(*args,**kwargs):
+        raise MediaImportSourceError('Outside fixture allowlist',error_code='INVALID_ARGUMENT')
+    monkeypatch.setattr(module,'persist_media',denied)
+    await quote_and_approve(p,child)
+    run=await p.reference_production.resume(child)
+    assert run.state==RuntimeState.WAITING_EXTERNAL and run.cursor==3
+    assert len(calls)==1
+    # Retained pre-fix checkpoint: the same local failure used to escape persist.
+    historical=run.model_copy(update={'state':RuntimeState.FAILED,'revision':run.revision+1,'wait_reason':None,
+        'last_result':CapabilityResult(status=ResultStatus.FAILED,code='CAPABILITY_EXECUTION_ERROR',
+            recovery_class=RecoveryClass.HARD_BLOCK,failure_stage='CAPABILITY_EXECUTION',
+            exception_type='MediaImportSourceError')})
+    p.runtime.store.save(historical,expected_revision=run.revision)
+    monkeypatch.setattr(module,'persist_media',imported)
+    recovered=await p.reference_production.resume(child)
+    assert recovered.state==RuntimeState.WAITING_EXTERNAL and recovered.cursor==4
+    assert len(calls)==1 and p.reference_production.get(child).delivery['persistenceStatus']=='VERIFIED'
+    ref=SourcePin.model_validate(p.reference_production.get(child).delivery['importRecoveryRef'])
+    original=p.asset_sequence.objects.read_ref(ref)
+    assert original['failedRun']==dump_contract(historical)
+    assert original['providerResubmitted'] is False
+    await p.reference_production.resume(child)
+    assert len(calls)==1 and not await p.providers.asset.list_assets()
+
+
+@pytest.mark.asyncio
+async def test_repaired_file_index_finishes_exact_registration_without_resubmission(tmp_path,monkeypatch):
+    from types import SimpleNamespace
+    from drama_plugin.exceptions import RemoteServiceError
+    p,inp,child,value,a=await prepared(tmp_path,monkeypatch)
+    calls=[];fake_submission(monkeypatch,calls);fake_persistence(monkeypatch,p)
+    await quote_and_approve(p,child);await p.reference_production.resume(child)
+    value=await pass_review(p,child)
+    accepted=p.asset_sequence.accept
+    async def conflict(*args,**kwargs):
+        raise RemoteServiceError('Prematurely adopted file index',status_code=400,error_code='INVALID_ARGUMENT')
+    monkeypatch.setattr(p.asset_sequence,'accept',conflict)
+    await p.decide_target_run(child,decision_id=p.runtime.decision_id(child),accepted=True,
+        source_ref=value.artifact_reference())
+    failed=await p.reference_production.resume(child)
+    assert failed.state==RuntimeState.FAILED and failed.cursor==6 and len(calls)==1
+    monkeypatch.setattr(p.asset_sequence,'accept',accepted)
+    mid=p.reference_production.get(child).delivery['mediaId']
+    class Client:
+        async def query(self,*args):
+            return [{'id':'candidate-index','work_id':failed.scope.work_id,'state':'CANDIDATE',
+                'design_media_id':None,'identity_key':'file:'+mid}]
+    p.film_storage=SimpleNamespace(client=Client())
+    recovered=await p.reference_production.resume(child)
+    assert recovered.state==RuntimeState.SUCCEEDED and len(calls)==1
+    value=p.reference_production.get(child)
+    assert value.asset_id and p.asset_sequence._proof(await p.providers.asset.get_asset(value.asset_id))
+    original=p.asset_sequence.objects.read_ref(SourcePin.model_validate(value.delivery['registrationRecoveryRef']))
+    assert original['failedRun']==dump_contract(failed) and original['providerResubmitted'] is False
+
+
+@pytest.mark.asyncio
 async def test_review_rejection_never_registers_or_auto_regenerates(tmp_path,monkeypatch):
     p,inp,child,value,a=await prepared(tmp_path,monkeypatch)
     calls=[];fake_submission(monkeypatch,calls);fake_persistence(monkeypatch,p)

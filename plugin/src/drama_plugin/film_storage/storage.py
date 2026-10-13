@@ -74,17 +74,19 @@ class FilmStorage:
         elif event['kind']=='CREATIVE':
             await self.persist_refs((VersionRef.model_validate(event['ref']),),event=identity,order=order)
         elif event['kind']=='NATIVE_SELECTED':
-            await self.persist_refs(tuple(VersionRef.model_validate(r) for r in event['refs']),event=identity,order=order)
+            await self.persist_refs(tuple(VersionRef.model_validate(r) for r in event['refs']),event=identity,order=order,
+                include_reviewed=event.get('includeReviewed',False))
         else:
             from drama_plugin.film_storage.projection import project_event
             await project_event(self,event,identity,order)
-    async def persist_refs(self,refs:tuple[VersionRef,...],*,event:str|None=None,order:int|None=None)->Work:
+    async def persist_refs(self,refs:tuple[VersionRef,...],*,event:str|None=None,order:int|None=None,include_reviewed:bool=False)->Work:
         versions=[self.resolve(r) for r in refs]
         work=versions[0].scope.work_id
         if any(v.scope.work_id!=work for v in versions):raise ValueError('FILM_STORAGE_CROSS_WORK')
         event=event or 'native-selected:'+sha256_canonical([dump_contract(r) for r in refs])
         if order is None:
-            queued=self.outbox.enqueue({'kind':'NATIVE_SELECTED','workId':work,'rendererVersion':2,'refs':[dump_contract(r) for r in refs]})
+            queued=self.outbox.enqueue({'kind':'NATIVE_SELECTED','workId':work,'rendererVersion':2,
+                'includeReviewed':include_reviewed,'refs':[dump_contract(r) for r in refs]})
             packet=json.loads((self.outbox.path/(queued+'.json')).read_text());order=packet['sourceOrder']
             event=queued
         sources=[v for v in versions if v.kind==Kind.SOURCE]
@@ -95,7 +97,7 @@ class FilmStorage:
             await self.client.rows([self.row('drama_work',event,order,id=work,title=source.body.goal[:255],
                 source_ref=canonical_json(dump_contract(source.ref())))])
         for v in versions:
-            if v.state!='ADOPTED' or v.scope.shot_id is not None:continue
+            if (v.state!='ADOPTED' and not (include_reviewed and v.state=='REVIEWED')) or v.scope.shot_id is not None:continue
             if v.kind not in {Kind.SCRIPT,Kind.SCENE}:continue
             if v.kind==Kind.SCRIPT and v.scope.scene_id is not None:continue
             scene=v.scope.scene_id
@@ -119,11 +121,13 @@ class FilmStorage:
                 markdown.encode(),event,order)
             await self.client.rows([self.row('drama_script',event,order,id=v.identity,version=v.version,
                 work_id=work,scene_id=scene,script_type='SCENE' if scene else 'FILM',title='单场导演剧本' if scene else '总导演剧本',
-                media_id=media,state='ADOPTED',adoption_ref=canonical_json(dump_contract(v.adoption_decision_ref)),original_fingerprint=v.fingerprint)])
+                media_id=media,state='ADOPTED' if v.state=='ADOPTED' else 'CANDIDATE',
+                adoption_ref=canonical_json(dump_contract(v.adoption_decision_ref)) if v.adoption_decision_ref else None,original_fingerprint=v.fingerprint)])
             # This pointer is the exact selected/adopted native original, not a
             # Service latest-version guess. Original adoption records stay intact.
-            await self.client.rows([self.row('drama_scene' if scene else 'drama_work',event+':selected',order+1,
-                id=scene or work,script_id=v.identity,script_version=v.version)])
+            if v.state=='ADOPTED':
+                await self.client.rows([self.row('drama_scene' if scene else 'drama_work',event+':selected',order+1,
+                    id=scene or work,script_id=v.identity,script_version=v.version)])
             result=await self.client.request('script',params={'work_id':work,**({'scene_id':scene} if scene else {}),
                 'script_id':v.identity,'version':v.version})
             if result['original_fingerprint']!=v.fingerprint or result['markdown']!=markdown:raise ValueError('FILM_SCREENPLAY_READBACK_CHANGED')

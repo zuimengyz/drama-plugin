@@ -53,6 +53,8 @@ async def resolve_mcp(decision: dict[str, Any], registry: MCPRegistry, *,
         required = decision.get('execution')
     if required is None:
         raise ValueError('MCP_CAPABILITY_UNAVAILABLE: sealed execution required')
+    if required.get('backend', {}).get('provider') == 'comfy_cloud':
+        raise ValueError('COMFY_CLOUD_RETIRED')
     matches = []
     for raw in await registry.discover():
         # Ignore every non-MCP surface, including a desktop advertising the model.
@@ -80,6 +82,8 @@ An ambiguous call leaves the original reservation for task/billing recovery.
 """
     if attempt['status'] != 'RESERVED' or attempt.get('job_id') is not None:
         raise ValueError('PERSISTED_UNUSED_RESERVATION_REQUIRED')
+    if attempt.get('execution_binding', {}).get('execution', {}).get('backend', {}).get('provider') == 'comfy_cloud':
+        raise ValueError('COMFY_CLOUD_RETIRED')
     from drama_plugin.visual.history import attempt_frame
     decision = attempt_frame(state, attempt)
     if decision.get('schema') == 'video-decision-v1':

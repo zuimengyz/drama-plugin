@@ -255,14 +255,26 @@ class FilmCapabilities:
         ids = [s.shot_id for s in direction.shots]
         groups = [tuple(ids[i:i+4]) for i in range(0,len(ids),4)]
         tasks.extend(DependencyTask(task_id=f'av-group-{i}',output='video',requires=g) for i,g in enumerate(groups))
-        tasks.append(DependencyTask(task_id='film-assembly',output='video',requires=tuple(f'av-group-{i}' for i in range(len(groups)))))
+        assembly_inputs = tuple(f'av-group-{i}' for i in range(len(groups)))
+        tier = 0
+        while len(assembly_inputs) > 4:
+            parents = []
+            for i in range(0, len(assembly_inputs), 4):
+                key = f'av-tier-{tier}-{i//4}'
+                tasks.append(DependencyTask(task_id=key, output='video', requires=assembly_inputs[i:i+4]))
+                parents.append(key)
+            assembly_inputs = tuple(parents)
+            tier += 1
+        tasks.append(DependencyTask(task_id='film-assembly',output='video',requires=assembly_inputs))
         tasks.append(DependencyTask(task_id='final-delivery',output='video',requires=('film-assembly',)))
         # A dependency on a later edit slot cannot be handled by this bounded sequential executor.
         for i,shot in enumerate(direction.shots):
             if not set(shot.requires) <= set(ids[:i]):
                 invalid('FILM_DIRECTION_DEPENDENCY_ORDER', ('shots', i, 'requires'))
         try:
-            graph = RoutePlan(route=value.route,tasks=tuple(tasks),max_tasks=32,max_depth=16,
+            # Manifest size follows the authored film. Fan-in remains bounded;
+            # spending, retries and Ledger byte admission still protect execution.
+            graph = RoutePlan(route=value.route,tasks=tuple(tasks),max_tasks=len(tasks),max_depth=len(tasks),
                 capability_available=value.route in (self.plugin.execution.transports if self.plugin.execution else {}),
                 authorization_required=bool(costs),cost_limit=max(estimated,value.max_cost_microunits) if native_media else value.max_cost_microunits)
         except ValidationError as error:

@@ -20,7 +20,7 @@ SYSTEM_FIELDS = frozenset({*MANAGED_FIELDS, 'artifactRef', 'subjectRef', 'source
     'adoptionDecisionRef', 'packageRef', 'dpdSnapshotRef', 'identity', 'id', 'beatId', 'beatIds',
     'spokenId', 'spokenIds', 'spokenContentId', 'eventId', 'targetEventId', 'speaker', 'actor', 'sceneId', 'shotId', 'sourceFingerprint'})
 TEXT: dict[str, JsonValue] = {'type': 'string', 'minLength': 1}
-SELECT: dict[str, JsonValue] = {'type': 'integer', 'minimum': 0, 'maximum': 99,
+SELECT: dict[str, JsonValue] = {'type': 'integer', 'minimum': 0,
     'description': 'Choose an ordinal from the supplied legal candidates; never construct an internal identifier.'}
 
 
@@ -28,8 +28,9 @@ def obj(fields: dict[str, JsonValue], required: tuple[str, ...] | None = None) -
     return {'type': 'object', 'properties': fields, 'required': list(required if required is not None else fields), 'additionalProperties': False}
 
 
-def arr(item: dict[str, JsonValue], minimum: int = 0, maximum: int = 100) -> dict[str, JsonValue]:
-    return {'type': 'array', 'items': item, 'minItems': minimum, 'maxItems': maximum}
+def arr(item: dict[str, JsonValue], minimum: int = 0, maximum: int | None = 100) -> dict[str, JsonValue]:
+    return {'type': 'array', 'items': item, 'minItems': minimum,
+            **({'maxItems': maximum} if maximum is not None else {})}
 
 
 def identity(kind: str, scope: object, ordinal: object) -> str:
@@ -102,9 +103,9 @@ def check(value: JsonValue, schema: dict[str, JsonValue], role: AuthorRole) -> N
                 if isinstance(contract, dict): walk(child, contract, (*path,key))
                 else: reject_nested(child, (*path,key))
         elif isinstance(v, list):
-            minimum, maximum = c.get('minItems',0), c.get('maxItems',100)
-            assert isinstance(minimum,int) and isinstance(maximum,int)
-            if len(v) < minimum or len(v) > maximum:
+            minimum, maximum = c.get('minItems',0), c.get('maxItems')
+            assert isinstance(minimum,int) and (maximum is None or isinstance(maximum,int))
+            if len(v) < minimum or maximum is not None and len(v) > maximum:
                 findings.append(failure('DTO_SCHEMA','AUTHOR_MODEL_ARRAY_BOUND',role=role,field_path=path,validator='model_semantic_contract'))
             item = c.get('items')
             if isinstance(item, dict):
@@ -124,10 +125,10 @@ def check(value: JsonValue, schema: dict[str, JsonValue], role: AuthorRole) -> N
 def canon_schema(*, film: bool = False) -> dict[str, JsonValue]:
     from drama_plugin.creative_engine.contracts import WorkBody, ScriptBody
     work = JSON.validate_python(TypeAdapter(WorkBody).json_schema(by_alias=True)); script = JSON.validate_python(TypeAdapter(ScriptBody).json_schema(by_alias=True))
-    scene = obj({'sceneText':TEXT,'subjects':arr(obj({'name':TEXT,'meaning':TEXT}),1),
-        'dialogue':arr(obj({'speakerSelection':SELECT,'text':TEXT,'mustKeep':{'type':'boolean','default':False}},('speakerSelection','text')))})
+    scene = obj({'sceneText':TEXT,'subjects':arr(obj({'name':TEXT,'meaning':TEXT}),1,None),
+        'dialogue':arr(obj({'speakerSelection':SELECT,'text':TEXT,'mustKeep':{'type':'boolean','default':False}},('speakerSelection','text')),0,None)})
     return obj({'work':work,'script':script, 'scenes' if film else 'scene':arr(obj({'scene':scene,
-        'subtitleLocalizations':arr(obj({'spokenSelection':SELECT,'subtitleLanguageSelection':SELECT,'text':TEXT}))},('scene',)),1,12) if film else scene})
+        'subtitleLocalizations':arr(obj({'spokenSelection':SELECT,'subtitleLanguageSelection':SELECT,'text':TEXT}),0,None)},('scene',)),1,None) if film else scene})
 
 
 def canon_projection(value: JsonValue, request: AuthorRequest | FilmAuthorRequest, *, film: bool = False) -> JsonValue:
@@ -165,7 +166,7 @@ def direction_schema(*, film: bool = False) -> dict[str, JsonValue]:
     from drama_plugin.creative_engine.contracts import ShotBody
     schema=JSON.validate_python(TypeAdapter(ShotBody).json_schema(by_alias=True)); assert isinstance(schema,dict)
     schema=deepcopy(schema); properties=object_value(schema['properties'])
-    properties.pop('spokenIds'); properties['spokenSelections']=arr(SELECT)
+    properties.pop('spokenIds'); properties['spokenSelections']=arr(SELECT,0,None)
     domains=object_value(properties['professionalDomains'])
     from drama_plugin.production.contracts import SourceDomain
     domains['items']={'type':'string','enum':[d.value for d in sorted(SourceDomain) if d.value not in {'CANON','DIRECTION'}]}
@@ -174,7 +175,7 @@ def direction_schema(*, film: bool = False) -> dict[str, JsonValue]:
     schema.pop('$defs',None)
     if film:
         return obj({'shots':arr(obj({'sceneSelection':SELECT,'shot':schema,'requiresSelections':arr(SELECT,0,4),
-            'transition':{'type':'string','enum':['cut','continuous','match'],'default':'cut'}},('sceneSelection','shot')),1,12)})
+            'transition':{'type':'string','enum':['cut','continuous','match'],'default':'cut'}},('sceneSelection','shot')),1,None)})
     return schema
 
 

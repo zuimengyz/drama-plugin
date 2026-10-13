@@ -23,7 +23,7 @@ from drama_plugin.visual import production as still
 from drama_plugin.visual.ark_submission import retained_receipt, submit_reserved
 from drama_plugin.media_delivery import MediaIdentity, persist_media, verify_media
 from drama_plugin.contracts.media import MediaType
-from drama_plugin.exceptions import ProviderError
+from drama_plugin.exceptions import ProviderError, MediaImportSourceError
 
 if TYPE_CHECKING:
     from drama_plugin.plugin import DramaPlugin
@@ -448,7 +448,7 @@ class TargetReferenceProduction:
                 sizes = {(s.get('width'), s.get('height')) for s in streams}
                 if tuple(value.frame['template']['output_size']) not in sizes:
                     raise ValueError('REFERENCE_OUTPUT_DIMENSIONS_MISMATCH')
-            except (httpx.HTTPError, ValueError, OSError):
+            except (httpx.HTTPError, ValueError, OSError, MediaImportSourceError):
                 return self.wait(value, 'REFERENCE_PERSISTENCE_RECOVERY_SAME_OUTPUT')
             stage = deepcopy(value.stage)
             stage['attempts'][0].update(delivery=delivery, persistence_status='VERIFIED', technical_status='PASS')
@@ -521,6 +521,75 @@ class TargetReferenceProduction:
             return self.success(self.save(value, asset_id=asset.id))
 
     async def resume(self, run_id: str) -> RuntimeRun:
+        # Older checkpoints classified a local import allowlist error as terminal.
+        # Recover only that exact completed reference at its persistence step;
+        # the immutable submission receipt and provider step are never replayed.
+        async with self.plugin.runtime.store.lock(run_id):
+            prior = self.plugin.runtime.store.load(run_id)
+            failed = prior.last_result
+            if (prior.workflow_id == WORKFLOW and prior.state == RuntimeState.FAILED
+                    and prior.cursor == 3 and failed is not None
+                    and failed.code == 'CAPABILITY_EXECUTION_ERROR'
+                    and failed.failure_stage == 'CAPABILITY_EXECUTION'
+                    and failed.exception_type == 'MediaImportSourceError'
+                    and prior.executing_action == reference_workflow().steps[3]):
+                value = self.get(run_id)
+                if (not value.receipt or value.receipt.get('status') != 'COMPLETED'
+                        or not value.stage or value.stage['attempts'][0]['status'] != 'COMPLETED'
+                        or value.receipt['output_hash'] != value.stage['attempts'][0]['output_hash']):
+                    raise ValueError('REFERENCE_IMPORT_RECOVERY_REQUIRES_SAME_COMPLETED_OUTPUT')
+                evidence = {'failedRun': dump_contract(prior),
+                    'completedReferenceRef': dump_contract(value.artifact_reference()),
+                    'outputHash': value.receipt['output_hash'], 'providerResubmitted': False}
+                recovery = self.sequence.objects.put(f'{run_id}:import-recovery:{prior.revision}', evidence)
+                result = await self.persist(CapabilityInput(run_id=run_id,
+                    operation_id=f'{run_id}:3', scope=prior.scope))
+                succeeded = result.status == ResultStatus.SUCCEEDED
+                if succeeded:
+                    value = self.get(run_id)
+                    delivery = {**value.delivery, 'importRecoveryRef': dump_contract(recovery)}
+                    stage = deepcopy(value.stage)
+                    stage['attempts'][0]['delivery'] = delivery
+                    result = self.success(self.save(value, delivery=delivery, stage=stage))
+                following = RuntimeRun.model_validate({**prior.model_dump(),
+                    'state': RuntimeState.READY if succeeded else RuntimeState.WAITING_EXTERNAL,
+                    'cursor': 4 if succeeded else 3, 'revision': prior.revision + 1,
+                    'step_attempts': 0 if succeeded else prior.step_attempts,
+                    'last_result': result, 'wait_reason': None if succeeded else 'EXTERNAL_RESULT_PENDING',
+                    'executing_action': None if succeeded else prior.executing_action})
+                self.plugin.runtime.store.save(following, expected_revision=prior.revision)
+            elif (prior.workflow_id == WORKFLOW and prior.state == RuntimeState.FAILED
+                    and prior.cursor == 6 and failed is not None
+                    and failed.code == 'CAPABILITY_EXECUTION_ERROR'
+                    and failed.failure_stage == 'CAPABILITY_EXECUTION'
+                    and failed.exception_type == 'RemoteServiceError'
+                    and prior.executing_action == reference_workflow().steps[6]
+                    and self.plugin.film_storage is not None):
+                value = self.get(run_id)
+                if (value.asset_id is not None or not value.adoption_ref or not value.delivery
+                        or not value.stage or not still.usable(value.stage['attempts'][0])):
+                    return prior
+                rows = await self.plugin.film_storage.client.query('drama_asset',
+                    {'media_id': value.delivery['mediaId']}, 1)
+                if (len(rows) != 1 or rows[0]['work_id'] != value.scope.work_id
+                        or rows[0]['state'] != 'CANDIDATE' or rows[0].get('design_media_id') is not None
+                        or rows[0]['identity_key'] != 'file:' + value.delivery['mediaId']):
+                    return prior
+                recovery = self.sequence.objects.put(f'{run_id}:registration-recovery:{prior.revision}',
+                    {'failedRun': dump_contract(prior), 'adoptedReferenceRef': dump_contract(value.artifact_reference()),
+                        'candidateIndexId': rows[0]['id'], 'providerResubmitted': False})
+                result = await self.register(CapabilityInput(run_id=run_id,
+                    operation_id=f'{run_id}:6', scope=prior.scope))
+                if result.status != ResultStatus.SUCCEEDED:
+                    return prior
+                value = self.get(run_id)
+                delivery = {**value.delivery, 'registrationRecoveryRef': dump_contract(recovery)}
+                stage = deepcopy(value.stage); stage['attempts'][0]['delivery'] = delivery
+                result = self.success(self.save(value, delivery=delivery, stage=stage))
+                following = RuntimeRun.model_validate({**prior.model_dump(), 'state': RuntimeState.READY,
+                    'cursor': 7, 'revision': prior.revision + 1, 'step_attempts': 0,
+                    'last_result': result, 'wait_reason': None, 'executing_action': None})
+                self.plugin.runtime.store.save(following, expected_revision=prior.revision)
         run = await self.plugin.runtime.recover_run(run_id)
         if run.workflow_id != WORKFLOW:
             raise ValueError('SPECIALIZED_REFERENCE_RUN_REQUIRED')

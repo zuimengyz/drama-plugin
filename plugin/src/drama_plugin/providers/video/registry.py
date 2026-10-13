@@ -30,6 +30,9 @@ def model_enabled_env(model: str) -> str:
 def model_enabled(model: str, environ: Mapping[str, str] | None = None) -> bool:
     """An explicit false/empty/invalid flag fails closed; old deployments default true."""
     env = os.environ if environ is None else environ
+    # Comfy-only legacy names are retained for reading historical receipts.
+    if model in registry()['legacy_model_keys'] and model not in registry()['models']:
+        return False
     return env.get(model_enabled_env(model), 'true').strip().lower() == 'true'
 
 

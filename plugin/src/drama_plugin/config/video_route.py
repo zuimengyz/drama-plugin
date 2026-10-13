@@ -117,6 +117,9 @@ def runtime_policy(policy: VideoRoutePolicy | None = None) -> VideoRoutePolicy:
 
 def provider_allowed(policy: VideoRoutePolicy, provider: str) -> bool:
     from drama_plugin.providers.video.registry import registry
+    # Keep the spelling parseable for old receipts, but never admit new work.
+    if provider == 'comfy_cloud':
+        return False
     if policy.provider == 'auto':
         return True
     if policy.provider == 'official':
@@ -127,6 +130,8 @@ def provider_allowed(policy: VideoRoutePolicy, provider: str) -> bool:
 def require_runtime_route(provider: str, model: str, *, policy: VideoRoutePolicy | None = None) -> None:
     """Live admission only; never use this to prevent polling a paid old task."""
     from drama_plugin.providers.video.registry import model_enabled, registry
+    if provider == 'comfy_cloud':
+        raise ValueError('COMFY_CLOUD_RETIRED')
     effective = runtime_policy(policy)
     key = canonical_model_key(model)
     if not provider_allowed(effective, provider):

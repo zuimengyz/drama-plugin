@@ -96,8 +96,8 @@ class CanonSubject(RuntimeContract):
 
 class SceneBody(RuntimeContract):
     scene_text: Text
-    dialogue: tuple[Dialogue, ...] = Field(default=(), max_length=100)
-    subjects: tuple[CanonSubject, ...] = Field(default=(), max_length=100)
+    dialogue: tuple[Dialogue, ...] = ()
+    subjects: tuple[CanonSubject, ...] = ()
 
     @model_serializer(mode="wrap")
     def historical_shape(self, handler: SerializerFunctionWrapHandler) -> dict[str, object]:
@@ -129,7 +129,7 @@ class ShotBody(RuntimeContract):
     camera_intent: Text
     editing_relation: Text
     performance_direction: Text
-    spoken_ids: tuple[Identifier, ...] = Field(default=(), max_length=100)
+    spoken_ids: tuple[Identifier, ...] = ()
     professional_domains: tuple[SourceDomain, ...] = Field(min_length=1, max_length=10)
 
     @model_validator(mode="after")
@@ -278,9 +278,9 @@ class DependencyTask(RuntimeContract):
 
 class RoutePlan(RuntimeContract):
     route: str
-    tasks: tuple[DependencyTask, ...] = Field(min_length=1, max_length=32)
-    max_tasks: int = Field(default=16, ge=1, le=32)
-    max_depth: int = Field(default=3, ge=1, le=16)
+    tasks: tuple[DependencyTask, ...] = Field(min_length=1)
+    max_tasks: int = Field(default=16, ge=1)
+    max_depth: int = Field(default=3, ge=1)
     capability_available: bool
     authorization_required: bool
     cost_limit: int = Field(ge=0)

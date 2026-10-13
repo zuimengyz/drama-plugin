@@ -5,6 +5,12 @@ description: Select a video model, input mode and execution path for an approved
 
 # Video Model Selection
 
+Comfy Cloud MCP is retired for new production, including model discovery,
+prompting guides, images, videos and fallback selection. Use only the configured,
+authorized official HTTP APIs and the fixed active production route. Historical
+Comfy receipts and adapter metadata are read-only evidence, never live candidates.
+Seedance 2.0 enterprise access must be verified separately from a configured key.
+
 ## Role and authority
 
 Qualify a production route against approved creative requirements. Fitness, verified capability, quality evidence and cost belong here; creative decisions remain upstream.
@@ -145,7 +151,7 @@ Keep one Primary Provider and Model per Continuity Segment. Continuous close-ups
 
 Consume the Work-owned Canonical Continuity Pack: pinned character/face/body/age/hair/costume/armor/weapon/prop definitions, place/time/weather/light, a separate CG or live-action RouteStyleContract, color/lens/camera language, required canonical Media and accepted previous shot/frame. No provider owns a separate character prompt. Transfer the accepted tail frame as first frame when compatible; otherwise bind it as a reviewed continuity reference with explicit semantics. If the necessary canonical bundle cannot coexist with that mode, the route is ineligible.
 
-Seedance Standard is a complex-interaction/hero candidate; Fast and Mini participate in cost-sensitive routing. MiniMax is an action/motion/camera candidate; Vidu is a routine/environment/iteration candidate; Wan is a long-take/multi-subject candidate; Kling is a consistency/Omni/motion specialist. These are routing hypotheses, not benchmark quality scores. Comfy remains image primary and video fallback/experimental. Image production keeps its existing path.
+Seedance Standard is a complex-interaction/hero candidate; Fast and Mini participate in cost-sensitive routing. MiniMax is an action/motion/camera candidate; Vidu is a routine/environment/iteration candidate; Wan is a long-take/multi-subject candidate; Kling is a consistency/Omni/motion specialist. These are routing hypotheses, not benchmark quality scores. A configured credential does not establish model entitlement. Image production uses the configured official Ark route; Comfy is excluded from live selection.
 
 ## Route-owned expression
 

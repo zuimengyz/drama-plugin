@@ -337,6 +337,8 @@ class DramaPlugin:
                                estimated_shot_cost_microunits: int = 0, workflow_id: str | None = None,
                                screenplay_session_id: str | None = None) -> RuntimeRun:
         """Film scope entry: only goal/source, owner metadata and execution policy."""
+        if route.replace('-', '_').lower() in {'comfy', 'comfy_cloud', 'comfy_cloud_mcp'}:
+            raise ConfigurationError('COMFY_CLOUD_RETIRED')
         if self.film is None:
             raise ConfigurationError("Film production requires durable ProductionLedger")
         if languages is None:
@@ -1967,7 +1969,7 @@ class DramaPlugin:
         return SpecializedAssetHost(self.config)
 
     def video_provider_host(self, cache: Path | str) -> Any:
-        """Host-neutral official HTTP lifecycle; Comfy MCP/image production stays intact."""
+        """Host-neutral official HTTP lifecycle; new production uses direct APIs."""
         from drama_plugin.hosts.http_video import VideoProviderHost
         return VideoProviderHost(self.providers.memory, self.providers.media, self.providers.asset, Path(cache))
 

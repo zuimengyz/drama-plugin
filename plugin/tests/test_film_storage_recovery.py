@@ -39,6 +39,38 @@ async def test_one_unresolved_history_does_not_block_other_retained_events(tmp_p
     assert calls==['unavailable']
 
 
+@pytest.mark.asyncio
+async def test_explicit_reviewed_screenplay_storage_never_changes_adopted_selection(tmp_path):
+    from types import SimpleNamespace
+    from drama_plugin.creative_engine.store import CreativeVersionStore
+    from drama_plugin.creative_engine.contracts import Authority,Kind,SourceBody,ScriptBody
+    from drama_plugin.runtime.contracts import RuntimeScope
+    versions=CreativeVersionStore(tmp_path/'creative')
+    scope=RuntimeScope(work_id='work')
+    source=versions.write(writer=Authority.SOURCE,kind=Kind.SOURCE,scope=scope,
+        body=SourceBody(goal='Original work',text='Designated original',spoken_language='ru'),sources=(),operation='source')
+    candidate=versions.write(writer=Authority.CANON,kind=Kind.SCRIPT,scope=scope,
+        body=ScriptBody(screenplay='Complete new independent screenplay'),sources=(source,),operation='candidate')
+    class Client:
+        def __init__(self):self.writes=[];self.documents={};self.work={'id':'work','title':'Original work','script_id':'adopted-v1','script_version':1}
+        async def query(self,table,filters,limit=30):return [self.work] if table=='drama_work' else []
+        async def document(self,work,purpose,identity,raw,event,order):self.documents[identity]=raw
+        async def rows(self,rows):self.writes.extend(rows)
+        async def request(self,path,params):
+            if path=='work':return self.work
+            row=next(r['fields'] for r in self.writes if r['table']=='drama_script')
+            return {'original_fingerprint':row['original_fingerprint'],'markdown':self.documents[row['media_id']].decode()}
+    client=Client();store=FilmStorage(SimpleNamespace(creative_versions=versions),client,tmp_path)
+    await store.persist_refs((source,candidate),include_reviewed=True)
+    assert store.outbox.pending()[0][1]['event']['includeReviewed'] is True
+    recovered=await store.flush()
+    assert recovered['pending']==0 and recovered['lastError'] is None
+    stored=next(r['fields'] for r in client.writes if r['table']=='drama_script')
+    assert stored['state']=='CANDIDATE' and stored['adoption_ref'] is None
+    assert not any(r['table']=='drama_work' for r in client.writes)
+    assert client.work['script_id']=='adopted-v1' and client.work['script_version']==1
+
+
 def test_current_owner_ledger_precedes_historical_archive_root(tmp_path: Path):
     import sqlite3
     from types import SimpleNamespace
@@ -54,6 +86,20 @@ def test_current_owner_ledger_precedes_historical_archive_root(tmp_path: Path):
     wire=native.with_name(native.name+'.receipts');wire.mkdir()
     (wire/'client.request.wire.json').write_text(json.dumps({'model':'actual-native-model','content':[]}))
     assert actual_wire(store,'client')['model']=='actual-native-model'
+
+
+@pytest.mark.asyncio
+async def test_reference_adoption_does_not_promote_file_index_before_registration(monkeypatch):
+    from types import SimpleNamespace
+    import drama_plugin.film_storage.projection as projection
+    body={'category':'ADOPTION','accepted':True,
+        'sourceRef':{'owner':'asset-reference-production','artifactRef':'reference','version':1}}
+    monkeypatch.setattr(projection,'ledger_body',lambda *args:(body,{'workId':'work','sceneId':'scene','shotId':None}))
+    class Client:
+        async def query(self,*args):
+            raise AssertionError('Candidate must remain available for specialized registration')
+    store=SimpleNamespace(client=Client())
+    await projection.project_event(store,{'kind':'LEDGER','type':'user-decision','ref':{'owner':'user-decision','artifactRef':'decision','version':1}},'event',1)
 
 
 @pytest.mark.asyncio

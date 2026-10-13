@@ -627,6 +627,8 @@ def qualify_route(route: ProductionRoute, *, now: datetime | None = None,
     now = now or datetime.now(timezone.utc)
     from drama_plugin.providers.video.registry import model_enabled
     reasons: list[str] = [] if model_enabled(c.model) else ['MODEL_DISABLED']
+    if candidate_provider(c) == 'comfy_cloud' or (route.execution and route.execution.backend.provider == 'comfy_cloud'):
+        reasons.append('COMFY_CLOUD_RETIRED')
     reasons.extend(content_binding_errors(c))
     if execution_target is not None and execution_target not in route.video_targets:
         reasons.append('VIDEO_OUTSIDE_ROUTE_SCOPE')

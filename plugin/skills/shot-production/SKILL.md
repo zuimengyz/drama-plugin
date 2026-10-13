@@ -5,6 +5,10 @@ description: Produce image, video, or audio media for an approved historical-dra
 
 # Shot Production
 
+Comfy Cloud MCP is retired: do not call it for discovery, prompt guidance,
+image/video generation or fallback. Use only configured, authorized official HTTP
+APIs. Preserve historical Comfy records without creating new Comfy operations.
+
 For new native production, consume narrative asset preparation from the existing
 Professional entry. Do not bypass a pending `specialized-asset-preparation` with
 temporary character/room prose. Resolve its exact requirements through Asset
@@ -304,7 +308,7 @@ A [visual route](../../docs/visual-route-contract.md) is separate from provider/
 
 For a qualified official video route, use the [unified video contract](../../docs/video-provider-contract.md) and `scripts/video_provider.py` Host entry. It uses the same Work route, stage authorization, exact reservation and Media completion as existing production. Skills supply creative requirements and stable references; provider translation, credentials and asynchronous vendor identity stay below the Host boundary.
 
-For uncertain submission, first perform finite automatic queries and resume any exactly recovered task. When none is recoverable, the current cumulative cost authorization may permit a bounded supplemental attempt on the same logical operation and unchanged request. Preserve the UNKNOWN attempt, count it as possibly charged, retain its full reservation, and append the new attempt with its exact approval and prior-attempt link. Never reset counts or reinterpret UNKNOWN as free/noncreation. No additional user task ID or absolute noncreation proof is needed within the authorized count and budget. After the authorized supplemental attempt is UNKNOWN, retain a queryable wait and do not add another submission. Expired media links never justify new generation. A retained candidate is not content approval or user adoption. Preserve the canonical continuity/style fingerprint in every attempt and result. Comfy image generation, OAuth, MCP and video fallback remain available through their existing Host path.
+For uncertain submission, first perform finite automatic queries and resume any exactly recovered task. When none is recoverable, the current cumulative cost authorization may permit a bounded supplemental attempt on the same logical operation and unchanged request. Preserve the UNKNOWN attempt, count it as possibly charged, retain its full reservation, and append the new attempt with its exact approval and prior-attempt link. Never reset counts or reinterpret UNKNOWN as free/noncreation. No additional user task ID or absolute noncreation proof is needed within the authorized count and budget. After the authorized supplemental attempt is UNKNOWN, retain a queryable wait and do not add another submission. Expired media links never justify new generation. A retained candidate is not content approval or user adoption. Preserve the canonical continuity/style fingerprint in every attempt and result. Historical Comfy evidence remains readable; it cannot authorize discovery, prompting, new generation or fallback through the retired MCP.
 
 When the supplemental result has completed the same business goal, use `reconcile_historical_unknown` for one bounded read and retain `COMPLETED_BY_SUPPLEMENT` together with `PENDING_RECONCILIATION`. Keep the original attempt and its original reserve attribution exactly once. The historical accounting record cannot reopen the completed goal, request another supplement or duplicate its reserve in a revision/new batch. No exact recovery or invoice means the old result/fee stays unknown, never zero or settled; this does not block an independently authorized current candidate.
 

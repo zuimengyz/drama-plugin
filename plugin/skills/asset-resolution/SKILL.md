@@ -5,6 +5,10 @@ description: Resolve stable reusable visual assets for a Work, Script, Episode, 
 
 # Asset Resolution
 
+New reference production uses only configured and authorized official HTTP APIs.
+Comfy Cloud MCP is retired for discovery, prompt guidance, generation and fallback.
+Keep historical Media/receipts readable without treating them as new route authority.
+
 For native narrative asset preparation, read the exact pending reference through
 `specialized_assets.read_preparation`. Resolve each missing requirement in that
 Scene before later Scenes: reuse accepted assets/references first, or use the

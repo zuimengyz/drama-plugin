@@ -277,6 +277,11 @@ async def project_event(store:Any,event:dict[str,Any],identity:str,order:int)->N
         # Only named candidate media covered by the existing decision may change state.
         source=body.get('sourceRef')
         if not isinstance(source,dict) or source.get('owner') not in {'media-binding','reviewed-av-candidate','final-film-candidate','av-derivative','asset-reference-production'}:return
+        if source.get('owner')=='asset-reference-production' and body.get('accepted'):
+            # The specialized register capability must persist the exact design
+            # and identity before its Asset event adopts the candidate image.
+            # Promoting the file index here prevents that same registration.
+            return
         candidate,_=ledger_body(store,source)
         media=candidate.get('media') or candidate.get('finalMedia') or candidate.get('delivery')
         if not isinstance(media,dict):return

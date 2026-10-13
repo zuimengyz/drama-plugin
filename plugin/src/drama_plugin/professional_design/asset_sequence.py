@@ -17,6 +17,7 @@ from drama_plugin.creative_engine.contracts import AuthorRequest, CanonDraft
 from drama_plugin.creative_engine.author_projection import subjects
 from drama_plugin.film.contracts import FilmCanon
 from drama_plugin.runtime.contracts import ArtifactReference
+from drama_plugin.production.contracts import SourceDomain
 
 if TYPE_CHECKING:
     from drama_plugin.hosts.director_artifacts import DirectorArtifactStore
@@ -222,6 +223,83 @@ class SpecializedAssetSequence:
         async with self._locks.setdefault('prepare:' + request.scope.work_id, asyncio.Lock()):
             return await self._prepare(request, author)
 
+    def _text_requirement(self, preparation_ref: SourcePin, requirement_key: str) -> tuple[dict[str, Any], dict[str, Any]]:
+        packet = self.objects.read_ref(preparation_ref)
+        if packet.get('schemaVersion') != 'specialized-asset-preparation-v1':
+            raise ValueError('ASSET_PREPARATION_REQUIRED')
+        selected = self.objects._path('asset-scene-design', [packet['narrativeRef']['fingerprint'], packet['sceneId']])
+        if not selected.exists() or SourcePin.model_validate(self.objects._read(selected)) != preparation_ref:
+            raise ValueError('ASSET_PREPARATION_NOT_SELECTED')
+        narrative = self.objects.read_ref(SourcePin.model_validate(packet['narrativeRef']))
+        if (narrative['workId'] != packet['workId']
+                or packet['sceneId'] not in {row['sceneId'] for row in narrative['canon']['scenes']}):
+            raise ValueError('ASSET_TEXT_HANDOFF_SCOPE_MISMATCH')
+        rows = [row for row in packet['requirements'] if row['requirementKey'] == requirement_key]
+        if len(rows) != 1:
+            raise ValueError('ASSET_TEXT_REQUIREMENT_MISMATCH')
+        item = rows[0]
+        if item.get('reuseAssetId') or item.get('assetType') == 'CHARACTER' or item.get('referenceRequired') is not False:
+            raise ValueError('ASSET_TEXT_HANDOFF_REQUIRES_UNREGISTERED_TEXT')
+        design_ref = SourcePin.model_validate(item['designRef'])
+        original = self.objects.read_ref(design_ref)
+        material = {k: v for k, v in item.items() if k not in {'designRef', 'requirementKey'}}
+        if original != material or design_ref.fingerprint != requirement_key:
+            raise ValueError('ASSET_TEXT_DESIGN_IDENTITY_MISMATCH')
+        return packet, item
+
+    async def retain_text_handoff(self, preparation_ref: SourcePin, requirement_key: str, *,
+                                  domains: tuple[SourceDomain, ...], rationale: str) -> SourcePin:
+        """Keep an exact text original with Professional, without registering an image Asset.
+
+        This transfers a pending storage duty, not artistic adoption or authorship.
+        The selected preparation and every existing visual child remain unchanged.
+        """
+        if self.film_storage is None:
+            raise ValueError('ASSET_TEXT_HANDOFF_REQUIRES_FILM_STORAGE')
+        async with self._locks.setdefault('text-handoff:' + requirement_key, asyncio.Lock()):
+            packet, item = self._text_requirement(preparation_ref, requirement_key)
+            accepted = await self._available(packet['workId'], query=requirement_key)
+            if any(row.content['specializedAsset'].get('requirementKey') == requirement_key for row in accepted):
+                raise ValueError('ASSET_TEXT_HANDOFF_ALREADY_REGISTERED')
+            domains = tuple(SourceDomain(domain) for domain in domains)
+            if not domains or len(set(domains)) != len(domains) or not rationale.strip():
+                raise ValueError('ASSET_TEXT_HANDOFF_TARGET_REQUIRED')
+            material = {'schemaVersion': 'specialized-asset-text-handoff-v1',
+                'workId': packet['workId'], 'sceneId': packet['sceneId'],
+                'preparationRef': dump_contract(preparation_ref), 'requirementKey': requirement_key,
+                'designRef': item['designRef'], 'domains': sorted(domain.value for domain in domains),
+                'rationale': rationale}
+            path = self.objects._path('asset-text-handoff', [preparation_ref.fingerprint, requirement_key])
+            ref = self.objects.put('specialized-asset-text-handoff:' + sha256_canonical(material), material)
+            with self.objects._writer():
+                if path.exists():
+                    retained = SourcePin.model_validate(self.objects._read(path))
+                    if self.objects.read_ref(retained) != material:
+                        raise ValueError('ASSET_TEXT_HANDOFF_CONFLICT')
+                    return retained
+                self.objects._write(path, dump_contract(ref))
+            return ref
+
+    def _text_handoff(self, preparation_ref: SourcePin, requirement_key: str) -> dict[str, Any] | None:
+        if self.film_storage is None:
+            return None
+        path = self.objects._path('asset-text-handoff', [preparation_ref.fingerprint, requirement_key])
+        if not path.exists():
+            return None
+        packet, item = self._text_requirement(preparation_ref, requirement_key)
+        ref = SourcePin.model_validate(self.objects._read(path))
+        handoff = self.objects.read_ref(ref)
+        if (handoff.get('schemaVersion') != 'specialized-asset-text-handoff-v1'
+                or handoff.get('workId') != packet['workId'] or handoff.get('sceneId') != packet['sceneId']
+                or handoff.get('preparationRef') != dump_contract(preparation_ref)
+                or handoff.get('requirementKey') != requirement_key or handoff.get('designRef') != item['designRef']):
+            raise ValueError('ASSET_TEXT_HANDOFF_IDENTITY_MISMATCH')
+        domains = [SourceDomain(domain).value for domain in handoff.get('domains', [])]
+        if not domains or len(set(domains)) != len(domains) or not handoff.get('rationale', '').strip():
+            raise ValueError('ASSET_TEXT_HANDOFF_TARGET_REQUIRED')
+        return {**item, 'handoffRef': dump_contract(ref), 'domains': domains,
+            'handoffRationale': handoff['rationale']}
+
     async def _prepare(self, request: AuthorRequest, author: AssetAuthor) -> AuthorRequest:
         ref = self.selected(request)
         if ref is None:
@@ -302,8 +380,14 @@ class SpecializedAssetSequence:
                 prepared = self.objects.put('specialized-asset-preparation:' + sha256_canonical(key), packet)
                 with self.objects._writer():
                     self.objects._write(path, dump_contract(prepared))
-            bindings = []
+            bindings, text_designs = [], []
             for item in packet['requirements']:
+                handoff = self._text_handoff(prepared, item['requirementKey'])
+                if handoff is not None:
+                    if any(a.content['specializedAsset'].get('requirementKey') == item['requirementKey'] for a in available):
+                        raise ValueError('ASSET_TEXT_HANDOFF_ALREADY_REGISTERED')
+                    text_designs.append(handoff)
+                    continue
                 existing = [a for a in available if a.content['specializedAsset'].get('requirementKey') == item['requirementKey']]
                 if not existing:
                     exact = await self._available(request.scope.work_id, query=item['requirementKey'])
@@ -327,10 +411,11 @@ class SpecializedAssetSequence:
                         'height': media.content.get('height'), 'durationMs': media.duration_ms,
                         'version': str(media.content.get('version', 1))})
                 bindings.append({**dump_contract(asset), 'resolvedMedia': resolved_media})
-            results.append({'sceneId': scene.scene_id, 'preparationRef': dump_contract(prepared), 'assets': bindings})
+            results.append({'sceneId': scene.scene_id, 'preparationRef': dump_contract(prepared),
+                'assets': bindings, 'textDesigns': text_designs})
         context = {**(request.professional_context or {}),
             'assetSequence': {'narrativeRef': dump_contract(ref), 'preparedScenes': results,
-                'currentAssets': results[-1]['assets']}}
+                'currentAssets': results[-1]['assets'], 'currentTextDesigns': results[-1]['textDesigns']}}
         return request.model_copy(update={'professional_context': context})
 
     def _project(self, ref: SourcePin, scene_id: str, roster: list[dict[str, Any]],
@@ -496,3 +581,8 @@ def register_asset_sequence_tools(registry: Any, sequence: SpecializedAssetSeque
         'Register one already adopted specialized asset; reuse exact accepted versions without regeneration.',
         accept, Asset, required={'preparation_ref': SourcePin, 'requirement_key': str, 'adoption_ref': SourcePin},
         optional={'reference_media_ids': tuple[str, ...]}, defaults={'reference_media_ids': ()}))
+    registry.register(_domain_tool('specialized_assets.retain_text_handoff',
+        'Retain an exact pending text design for Professional consumption without creating an image Asset.',
+        sequence.retain_text_handoff, SourcePin,
+        required={'preparation_ref': SourcePin, 'requirement_key': str,
+            'domains': tuple[SourceDomain, ...], 'rationale': str}))

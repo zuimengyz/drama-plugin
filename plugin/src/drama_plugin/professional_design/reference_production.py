@@ -508,7 +508,9 @@ class TargetReferenceProduction:
                 MediaIdentity(value.scope.work_id, MediaType.IMAGE, value.delivery['sourceRef'],
                     value.delivery['contentHash'], purpose=item['assetType']+'_REFERENCE',
                     media_id=value.delivery['mediaId']).check(formal)
-            original = self.sequence.objects.put('asset-reference-adoption:'+inputs.run_id,
+            # The complete run/proof remains inside the retained original. Keep
+            # the index key bounded so its SourcePin fits the formal SQL ref.
+            original = self.sequence.objects.put('asset-reference-adoption:'+sha256_canonical(inputs.run_id),
                 {'decision': 'ADOPT', 'workId': value.scope.work_id,
                     'subjectFingerprint': item['designRef']['fingerprint'],
                     'referenceMediaIds': list(media_ids),

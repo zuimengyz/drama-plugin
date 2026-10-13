@@ -86,6 +86,16 @@ new segments, each logical completion appears once, and no fixed prefix trim is
 allowed. Raw repeated performance needs regeneration; frame similarity never
 authorizes removing dialogue. Historical frozen requests/reviews are retained.
 Each new clip requires fresh exact financial terms within the shared user budget.
+Seedance 2.0 can select its output duration when the Host has not specified exact
+seconds: call the native `resolve_profile` with `duration_ms=None` (or omit it).
+The retained profile marks `durationMode=AUTO`; the request sends the documented
+`duration=-1`, not an assumed default from omitting the API field. The positive
+`requestedDurationMs` then denotes the provider maximum for budget/feasibility,
+not promised or observed length. Quote/reserve for that maximum; recover actual
+duration from returned media. Automatic selection remains within 4–15 seconds
+for Seedance 2.0, never proves full coverage of a longer authored Shot, and does
+not authorize automatic splitting, shortening dialogue, or new paid requests.
+Keep explicit fixed-duration requests and historical seals unchanged.
 A scoped `FilmSegmentRevision` consumes its own approved replacement intent once, together with fresh exact cost terms; never clear or reuse its predecessor's consumed intent. A RESERVED operation has not crossed dispatch and remains eligible for its original single submission. Only a retained local `RECOVERY_TRANSPORT_READ_ONLY` definitely-not-submitted refusal permits that same dispatch to reopen; UNKNOWN is never treated this way.
 A created task with an exact terminal FAILED receipt and no media may use the same scoped segment revision only within an explicit additional-create authorization and fresh costs. Preserve the task, failure, consumed intent and count; never fabricate a REVISE media review when no output exists. Do not weaken Provider moderation. Release a fee reserve only from source-pinned applicable billing evidence; policy-based reconciliation and the actual invoice remain separate. An UNKNOWN or running task cannot enter this path.
 A user-authorized replacement opening uses `restart_source_film_media` on the

@@ -47,15 +47,32 @@ class ProfessionalDesignResolver:
         return [{**row, 'content': {'specializedAsset': {k:v for k,v in object_value(object_value(row['content'])['specializedAsset']).items()
             if k not in {'designOriginal','adoptionOriginal','scenePreparationOriginal'}}}} for row in assets]
 
+    @staticmethod
+    def text_design_refs(request: AuthorRequest, domain: SourceDomain) -> list[dict[str, JsonValue]]:
+        """Project provenance only; the receiving Professional still authors the facts."""
+        sequence = (request.professional_context or {}).get('assetSequence')
+        if not isinstance(sequence, dict):
+            return []
+        from drama_plugin.creative_engine.author_projection import object_value, sequence as sequence_rows
+        rows = [object_value(row) for row in sequence_rows(sequence.get('currentTextDesigns', []))]
+        return [{'requirementKey': row['requirementKey'], 'designRef': row['designRef'],
+            'handoffRef': row['handoffRef']} for row in rows if domain.value in sequence_rows(row['domains'])]
+
     def asset_inheritance_current(self, request: AuthorRequest, designs: Iterable[DesignBody]) -> bool:
         bindings = self.asset_bindings(request)
         if bindings is None:
             return True
         sequence = (request.professional_context or {})['assetSequence']
         assert isinstance(sequence, dict)
-        return all(design.facts.get('assetBindings') == bindings
-            and design.facts.get('assetNarrativeRef') == sequence['narrativeRef']
-            for design in designs if design.domain in {SourceDomain.SUBJECTS, SourceDomain.WORLD, SourceDomain.REFERENCE})
+        for design in designs:
+            if design.domain in {SourceDomain.SUBJECTS, SourceDomain.WORLD, SourceDomain.REFERENCE}:
+                if (design.facts.get('assetBindings') != bindings
+                        or design.facts.get('assetNarrativeRef') != sequence['narrativeRef']):
+                    return False
+            text_refs = self.text_design_refs(request, design.domain)
+            if (text_refs or 'assetTextDesignRefs' in design.facts) and design.facts.get('assetTextDesignRefs', []) != text_refs:
+                return False
+        return True
 
     async def resolve(self, request: ProfessionalDesignRequest) -> ProfessionalDesignSelection:
         request = ProfessionalDesignRequest.model_validate(request.model_dump())
@@ -76,6 +93,8 @@ class ProfessionalDesignResolver:
         from drama_plugin.professional_design.provenance import reject_model_metadata
         designs = tuple(DesignBody.model_validate(item.model_dump()) for item in await self.author.design(checked))
         for item in designs:
+            if 'assetTextDesignRefs' in item.facts:
+                raise ValueError('PROFESSIONAL_SYSTEM_METADATA_MODEL_OWNERSHIP')
             reject_model_metadata(item.facts)
         return designs
 
@@ -88,6 +107,8 @@ class ProfessionalDesignResolver:
                 design: DesignBody, *, operation: str) -> VersionRef:
         from drama_plugin.creative_engine.contracts import Authority, Kind
         from drama_plugin.professional_design.provenance import reject_model_metadata
+        if 'assetTextDesignRefs' in design.facts:
+            raise ValueError('PROFESSIONAL_SYSTEM_METADATA_MODEL_OWNERSHIP')
         reject_model_metadata(design.facts)
         context = request.professional_context or {}
         refs: list[JsonValue] = []
@@ -106,6 +127,9 @@ class ProfessionalDesignResolver:
             locations = [r for r in bindings if r['assetType'] == 'LOCATION']
             if design.domain == SourceDomain.WORLD and len(locations) == 1:
                 design = design.model_copy(update={'facts': {**design.facts, 'locationAssetId': locations[0]['id']}})
+        text_refs = self.text_design_refs(request, design.domain)
+        if text_refs:
+            design = design.model_copy(update={'facts': {**design.facts, 'assetTextDesignRefs': text_refs}})
         return versions.write(writer=Authority.PROFESSIONAL, kind=Kind.PROFESSIONAL,
             scope=request.scope, body=design, sources=request.source_refs, operation=operation)
 

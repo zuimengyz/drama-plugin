@@ -1,0 +1,212 @@
+diff --git a/skills/shot-production/SKILL.md b/skills/shot-production/SKILL.md
+index 1f48177..425fd75 100644
+--- a/skills/shot-production/SKILL.md
++++ b/skills/shot-production/SKILL.md
+@@ -86,6 +86,16 @@ new segments, each logical completion appears once, and no fixed prefix trim is
+ allowed. Raw repeated performance needs regeneration; frame similarity never
+ authorizes removing dialogue. Historical frozen requests/reviews are retained.
+ Each new clip requires fresh exact financial terms within the shared user budget.
++Seedance 2.0 can select its output duration when the Host has not specified exact
++seconds: call the native `resolve_profile` with `duration_ms=None` (or omit it).
++The retained profile marks `durationMode=AUTO`; the request sends the documented
++`duration=-1`, not an assumed default from omitting the API field. The positive
++`requestedDurationMs` then denotes the provider maximum for budget/feasibility,
++not promised or observed length. Quote/reserve for that maximum; recover actual
++duration from returned media. Automatic selection remains within 4–15 seconds
++for Seedance 2.0, never proves full coverage of a longer authored Shot, and does
++not authorize automatic splitting, shortening dialogue, or new paid requests.
++Keep explicit fixed-duration requests and historical seals unchanged.
+ A scoped `FilmSegmentRevision` consumes its own approved replacement intent once, together with fresh exact cost terms; never clear or reuse its predecessor's consumed intent. A RESERVED operation has not crossed dispatch and remains eligible for its original single submission. Only a retained local `RECOVERY_TRANSPORT_READ_ONLY` definitely-not-submitted refusal permits that same dispatch to reopen; UNKNOWN is never treated this way.
+ A created task with an exact terminal FAILED receipt and no media may use the same scoped segment revision only within an explicit additional-create authorization and fresh costs. Preserve the task, failure, consumed intent and count; never fabricate a REVISE media review when no output exists. Do not weaken Provider moderation. Release a fee reserve only from source-pinned applicable billing evidence; policy-based reconciliation and the actual invoice remain separate. An UNKNOWN or running task cannot enter this path.
+ A user-authorized replacement opening uses `restart_source_film_media` on the
+diff --git a/src/drama_plugin/execution/capability.py b/src/drama_plugin/execution/capability.py
+index 2d7d1e9..c1c7405 100644
+--- a/src/drama_plugin/execution/capability.py
++++ b/src/drama_plugin/execution/capability.py
+@@ -627,9 +627,14 @@ class TargetExecution:
+                    media: MediaIdentity, recipe: FinishingRecipe | None, *, audio_expected: bool) -> TechnicalMediaReview:
+         plan = self.derived(operation.audio_plan_ref, AudioExecutionPlan)
+         profile = self.derived(operation.preparation_ref, GenerationPreparation).task.profile
++        duration_bounds = None
++        if profile and profile.duration_mode == 'AUTO':
++            from drama_plugin.providers.video.registry import automatic_duration_bounds_ms
++            duration_bounds = automatic_duration_bounds_ms(profile.model)
+         observation, findings = inspect(self.media, media, duration_ms=profile.requested_duration_ms if profile else plan.duration_ms,
+             tolerance_ms=recipe.duration_tolerance_ms if recipe else FinishingRecipe.model_fields["duration_tolerance_ms"].default, audio_expected=audio_expected,
+-            resolution=profile.resolution if profile else None, aspect_ratio=profile.aspect_ratio if profile else None)
++            resolution=profile.resolution if profile else None, aspect_ratio=profile.aspect_ratio if profile else None,
++            duration_bounds_ms=duration_bounds)
+         return TechnicalMediaReview.seal(scope=operation.scope, run_id=operation.run_id,
+             policy_version='technical-media-stream-duration-v2',
+             source_package_ref=operation.source_package_ref, operation_ref=checkpoint.operation_ref,
+diff --git a/src/drama_plugin/execution/live_transport.py b/src/drama_plugin/execution/live_transport.py
+index c25f8c9..422fb4d 100644
+--- a/src/drama_plugin/execution/live_transport.py
++++ b/src/drama_plugin/execution/live_transport.py
+@@ -45,7 +45,7 @@ def wire_payload(request: ProviderRequest, *, provider: str, resolution: str, as
+             or request.profile.aspect_ratio != aspect_ratio or request.profile.catalog_fingerprint != sha256_canonical(spec)):
+         raise ValueError('FROZEN_PROFILE_MISMATCH')
+     model=str(spec['vendor_model'])
+-    seconds=request.duration_ms//1000
++    seconds=-1 if request.profile and request.profile.duration_mode == 'AUTO' else request.duration_ms//1000
+     audio=request.profile.native_audio if request.profile else request.native_audio!='DISABLED' and True in spec['native_audio']
+     if request.native_audio=='REQUIRED' and not audio:
+         raise CapabilityAbsent('REQUIRED_NATIVE_AUDIO_UNSUPPORTED')
+diff --git a/src/drama_plugin/execution/media.py b/src/drama_plugin/execution/media.py
+index fa34521..10ba68d 100644
+--- a/src/drama_plugin/execution/media.py
++++ b/src/drama_plugin/execution/media.py
+@@ -126,7 +126,8 @@ def probe_intake_bytes(content: bytes) -> ProbeObservation | None:
+ 
+ def inspect(store: LocalMediaStore, media: MediaIdentity, *, duration_ms: int,
+             tolerance_ms: int, audio_expected: bool, resolution: str | None = None,
+-            aspect_ratio: str | None = None) -> tuple[ProbeObservation | None, tuple[str, ...]]:
++            aspect_ratio: str | None = None,
++            duration_bounds_ms: tuple[int, int] | None = None) -> tuple[ProbeObservation | None, tuple[str, ...]]:
+     failures: list[str] = []
+     try:
+         observation = probe(store.path(media))
+@@ -135,7 +136,13 @@ def inspect(store: LocalMediaStore, media: MediaIdentity, *, duration_ms: int,
+     except (OSError, ValueError, KeyError, subprocess.SubprocessError):
+         return None, ("CORRUPT_OR_UNREADABLE_MEDIA",)
+     measured_duration = observation.video_duration_ms if media.kind == 'VIDEO' and observation.video_duration_ms else observation.duration_ms
+-    if abs(measured_duration - duration_ms) > tolerance_ms:
++    if duration_bounds_ms is not None:
++        minimum, maximum = duration_bounds_ms
++        if not 0 < minimum <= maximum == duration_ms:
++            raise ValueError('INVALID_AUTOMATIC_DURATION_BOUNDS')
++        if not minimum - tolerance_ms <= measured_duration <= maximum + tolerance_ms:
++            failures.append('RESULT_DURATION_OUT_OF_RANGE')
++    elif abs(measured_duration - duration_ms) > tolerance_ms:
+         failures.append("RESULT_DURATION_MISMATCH")
+     if (media.kind == 'VIDEO' and audio_expected and observation.video_duration_ms and observation.audio_duration_ms
+             and abs(observation.video_duration_ms-observation.audio_duration_ms) > tolerance_ms):
+diff --git a/src/drama_plugin/film/preview.py b/src/drama_plugin/film/preview.py
+index 67b5cd9..4b7567a 100644
+--- a/src/drama_plugin/film/preview.py
++++ b/src/drama_plugin/film/preview.py
+@@ -68,7 +68,8 @@ async def next_unit_preview(p, run_id, *, duration_ms=None, spoken_range=None):
+         return {'simulation':True,'submitted':False,'nextUnit':target,'request':None,
+             'reason':'A real official endpoint must be bound after the predecessor review. Use the existing continuation entry.',
+             'references':refs['selected']}
+-    profile = resolve_profile(model=base.model,duration_ms=duration_ms or base.requested_duration_ms,
++    inherited_duration = None if base.duration_mode == 'AUTO' else base.requested_duration_ms
++    profile = resolve_profile(model=base.model,duration_ms=duration_ms if duration_ms is not None else inherited_duration,
+         resolution=base.resolution,ratio=base.aspect_ratio,native_audio=base.native_audio,
+         policy=operations.policy,mode='reference' if binding_refs else 'text_to_video')
+     # These explicit sentinels cannot pass normal admission. No decision is invented.
+diff --git a/src/drama_plugin/generation/contracts.py b/src/drama_plugin/generation/contracts.py
+index 3c25637..b82ce26 100644
+--- a/src/drama_plugin/generation/contracts.py
++++ b/src/drama_plugin/generation/contracts.py
+@@ -90,12 +90,16 @@ class OperationSelection(ExtendedRuntimeContract):
+         return sha256_canonical([package_ref.model_dump(mode="json",by_alias=True), self.model_dump(mode="json", by_alias=True, exclude={"scope_decision_ref"})])
+ 
+ 
+-class ExecutionProfile(RuntimeContract):
++class ExecutionProfile(ExtendedRuntimeContract):
++    extension_fields = ('duration_mode',)
+     provider: Identifier
+     model: Identifier
+     vendor_model_id: Identifier
+     mode: Literal["text_to_video", "reference", "image_to_video", "first_last_frame"]
+     requested_duration_ms: Annotated[StrictInt, Field(gt=0, le=3_600_000)]
++    # AUTO retains the maximum output bound for finance/feasibility, not a
++    # promised output length. The provider receives duration=-1.
++    duration_mode: Literal['AUTO'] | None = None
+     resolution: Literal["480p", "720p", "1080p"]
+     aspect_ratio: Literal["16:9", "9:16", "1:1", "4:3", "3:4", "21:9", "9:21", "adaptive"]
+     native_audio: bool
+@@ -105,6 +109,15 @@ class ExecutionProfile(RuntimeContract):
+     paid_retries: Literal[0] = 0
+     max_paid_operations: Literal[1] = 1
+ 
++    @model_validator(mode='after')
++    def bounded_automatic_duration(self) -> Self:
++        if self.duration_mode == 'AUTO':
++            from drama_plugin.providers.video.registry import automatic_duration_bounds_ms
++            _, maximum = automatic_duration_bounds_ms(self.model)
++            if self.provider != 'seedance' or self.requested_duration_ms != maximum:
++                raise ValueError('AUTO_DURATION_REQUIRES_PROVIDER_MAXIMUM_BOUND')
++        return self
++
+ 
+ class OwnerBindings(RuntimeContract):
+     adopted_refs: tuple[VersionRef, ...] = Field(min_length=5, max_length=32)
+diff --git a/src/drama_plugin/generation/operation.py b/src/drama_plugin/generation/operation.py
+index fe7fe2d..6c77af7 100644
+--- a/src/drama_plugin/generation/operation.py
++++ b/src/drama_plugin/generation/operation.py
+@@ -18,21 +18,25 @@ from drama_plugin.production.contracts import ProductionPackage, SourceReference
+ from drama_plugin.professional_design.performance_scope import (read_performance_scope, retain_performance_scope,
+     PerformanceProjectionScope, ProjectionEvidence, SubjectProjection)
+ from drama_plugin.performance_coverage import validate_shot_dpd_coverage, compose_partner_beats
+-from drama_plugin.providers.video.registry import registry
++from drama_plugin.providers.video.registry import registry, automatic_duration_bounds_ms
+ from drama_plugin.runtime.contracts import ArtifactReference, DecisionCategory, RuntimeScope
+ 
+ 
+-def resolve_profile(*, model: str, duration_ms: int, resolution: str, ratio: str,
++def resolve_profile(*, model: str, duration_ms: int | None = None, resolution: str, ratio: str,
+                     native_audio: bool, policy: VideoRoutePolicy, mode: str = "text_to_video") -> ExecutionProfile:
+     spec = registry()["models"][model]
+     provider = str(spec["provider"])
+     require_runtime_route(provider, model, policy=policy)
++    automatic = duration_ms is None
++    if duration_ms is None:
++        _, duration_ms = automatic_duration_bounds_ms(model)
+     if (duration_ms % 1000 or duration_ms // 1000 not in spec["durations"]
+             or resolution not in spec["resolutions"] or ratio not in spec["aspect_ratios"]
+             or mode not in spec["input_modes"] or native_audio not in spec["native_audio"]):
+         raise ValueError("REQUEST_UNSUPPORTED")
+     return ExecutionProfile.model_validate(dict(provider=provider, model=model, vendor_model_id=spec["vendor_model"],
+-        mode=mode, requested_duration_ms=duration_ms, resolution=resolution, aspect_ratio=ratio,
++        mode=mode, requested_duration_ms=duration_ms, duration_mode='AUTO' if automatic else None,
++        resolution=resolution, aspect_ratio=ratio,
+         native_audio=native_audio, catalog_fingerprint=sha256_canonical(spec), policy_fingerprint=sha256_canonical(policy)))
+ 
+ 
+@@ -267,7 +271,8 @@ class OperationResolver:
+         scope = package_scope(package)
+         self.camera_direction(package,task)
+         if require_current_profile:
+-            current = resolve_profile(model=profile.model, duration_ms=profile.requested_duration_ms,
++            current = resolve_profile(model=profile.model,
++                duration_ms=None if profile.duration_mode == 'AUTO' else profile.requested_duration_ms,
+                 resolution=profile.resolution, ratio=profile.aspect_ratio, native_audio=profile.native_audio,
+                 policy=self.policy, mode=profile.mode)
+             if current != profile:
+@@ -342,7 +347,8 @@ class OperationResolver:
+                 "aspectRatio": profile.aspect_ratio, "mode": profile.mode, "maxLogicalVideoOperations": 1,
+                 "paidReferences": 0, "paidRetries": 0}.items()):
+             raise ValueError("RIGHTS_PROCESSING_LIMIT")
+-        if "profile" in rights and rights["profile"] != profile.model_dump(mode="json", by_alias=True):
++        if (profile.duration_mode == 'AUTO' and 'profile' not in rights
++                or "profile" in rights and rights["profile"] != profile.model_dump(mode="json", by_alias=True)):
+             raise ValueError("RIGHTS_EXECUTION_PROFILE_MISMATCH")
+         if require_scope and any(value == "TECHNICAL_RISK_ACCEPTED" for _, value in unit.reference_disposition):
+             if unit.scope_decision_ref is None:
+diff --git a/src/drama_plugin/providers/video/registry.py b/src/drama_plugin/providers/video/registry.py
+index 4b59d78..cca2a61 100644
+--- a/src/drama_plugin/providers/video/registry.py
++++ b/src/drama_plugin/providers/video/registry.py
+@@ -15,6 +15,19 @@ def registry() -> dict[str, Any]:
+     return cast(dict[str, Any], json.loads(Path(__file__).with_name('registry.json').read_text()))
+ 
+ 
++def automatic_duration_bounds_ms(model: str) -> tuple[int, int]:
++    """Seedance 2.0 duration=-1 selects within its documented output range.
++
++    Kept outside historical catalog records so existing frozen fingerprints stay
++    readable. This capability does not increase any model's maximum duration.
++    https://docs.volcengine.com/docs/ark/create-video-generation-task-api?lang=zh
++    """
++    if model not in {'seedance-2-standard', 'seedance-2-fast', 'seedance-2-mini'}:
++        raise ValueError('AUTO_DURATION_UNSUPPORTED')
++    durations = registry()['models'][model]['durations']
++    return min(durations) * 1000, max(durations) * 1000
++
++
+ def model_keys() -> frozenset[str]:
+     data = registry()
+     return frozenset(set(data['models']) | set(data['legacy_model_keys']))

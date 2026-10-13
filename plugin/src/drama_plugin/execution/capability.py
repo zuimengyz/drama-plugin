@@ -627,9 +627,14 @@ class TargetExecution:
                    media: MediaIdentity, recipe: FinishingRecipe | None, *, audio_expected: bool) -> TechnicalMediaReview:
         plan = self.derived(operation.audio_plan_ref, AudioExecutionPlan)
         profile = self.derived(operation.preparation_ref, GenerationPreparation).task.profile
+        duration_bounds = None
+        if profile and profile.duration_mode == 'AUTO':
+            from drama_plugin.providers.video.registry import automatic_duration_bounds_ms
+            duration_bounds = automatic_duration_bounds_ms(profile.model)
         observation, findings = inspect(self.media, media, duration_ms=profile.requested_duration_ms if profile else plan.duration_ms,
             tolerance_ms=recipe.duration_tolerance_ms if recipe else FinishingRecipe.model_fields["duration_tolerance_ms"].default, audio_expected=audio_expected,
-            resolution=profile.resolution if profile else None, aspect_ratio=profile.aspect_ratio if profile else None)
+            resolution=profile.resolution if profile else None, aspect_ratio=profile.aspect_ratio if profile else None,
+            duration_bounds_ms=duration_bounds)
         return TechnicalMediaReview.seal(scope=operation.scope, run_id=operation.run_id,
             policy_version='technical-media-stream-duration-v2',
             source_package_ref=operation.source_package_ref, operation_ref=checkpoint.operation_ref,

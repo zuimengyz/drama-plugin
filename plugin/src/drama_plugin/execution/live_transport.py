@@ -45,7 +45,7 @@ def wire_payload(request: ProviderRequest, *, provider: str, resolution: str, as
             or request.profile.aspect_ratio != aspect_ratio or request.profile.catalog_fingerprint != sha256_canonical(spec)):
         raise ValueError('FROZEN_PROFILE_MISMATCH')
     model=str(spec['vendor_model'])
-    seconds=request.duration_ms//1000
+    seconds=-1 if request.profile and request.profile.duration_mode == 'AUTO' else request.duration_ms//1000
     audio=request.profile.native_audio if request.profile else request.native_audio!='DISABLED' and True in spec['native_audio']
     if request.native_audio=='REQUIRED' and not audio:
         raise CapabilityAbsent('REQUIRED_NATIVE_AUDIO_UNSUPPORTED')

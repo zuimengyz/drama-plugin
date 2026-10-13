@@ -15,6 +15,19 @@ def registry() -> dict[str, Any]:
     return cast(dict[str, Any], json.loads(Path(__file__).with_name('registry.json').read_text()))
 
 
+def automatic_duration_bounds_ms(model: str) -> tuple[int, int]:
+    """Seedance 2.0 duration=-1 selects within its documented output range.
+
+    Kept outside historical catalog records so existing frozen fingerprints stay
+    readable. This capability does not increase any model's maximum duration.
+    https://docs.volcengine.com/docs/ark/create-video-generation-task-api?lang=zh
+    """
+    if model not in {'seedance-2-standard', 'seedance-2-fast', 'seedance-2-mini'}:
+        raise ValueError('AUTO_DURATION_UNSUPPORTED')
+    durations = registry()['models'][model]['durations']
+    return min(durations) * 1000, max(durations) * 1000
+
+
 def model_keys() -> frozenset[str]:
     data = registry()
     return frozenset(set(data['models']) | set(data['legacy_model_keys']))

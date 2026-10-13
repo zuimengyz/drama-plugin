@@ -18,21 +18,25 @@ from drama_plugin.production.contracts import ProductionPackage, SourceReference
 from drama_plugin.professional_design.performance_scope import (read_performance_scope, retain_performance_scope,
     PerformanceProjectionScope, ProjectionEvidence, SubjectProjection)
 from drama_plugin.performance_coverage import validate_shot_dpd_coverage, compose_partner_beats
-from drama_plugin.providers.video.registry import registry
+from drama_plugin.providers.video.registry import registry, automatic_duration_bounds_ms
 from drama_plugin.runtime.contracts import ArtifactReference, DecisionCategory, RuntimeScope
 
 
-def resolve_profile(*, model: str, duration_ms: int, resolution: str, ratio: str,
+def resolve_profile(*, model: str, duration_ms: int | None = None, resolution: str, ratio: str,
                     native_audio: bool, policy: VideoRoutePolicy, mode: str = "text_to_video") -> ExecutionProfile:
     spec = registry()["models"][model]
     provider = str(spec["provider"])
     require_runtime_route(provider, model, policy=policy)
+    automatic = duration_ms is None
+    if duration_ms is None:
+        _, duration_ms = automatic_duration_bounds_ms(model)
     if (duration_ms % 1000 or duration_ms // 1000 not in spec["durations"]
             or resolution not in spec["resolutions"] or ratio not in spec["aspect_ratios"]
             or mode not in spec["input_modes"] or native_audio not in spec["native_audio"]):
         raise ValueError("REQUEST_UNSUPPORTED")
     return ExecutionProfile.model_validate(dict(provider=provider, model=model, vendor_model_id=spec["vendor_model"],
-        mode=mode, requested_duration_ms=duration_ms, resolution=resolution, aspect_ratio=ratio,
+        mode=mode, requested_duration_ms=duration_ms, duration_mode='AUTO' if automatic else None,
+        resolution=resolution, aspect_ratio=ratio,
         native_audio=native_audio, catalog_fingerprint=sha256_canonical(spec), policy_fingerprint=sha256_canonical(policy)))
 
 
@@ -267,7 +271,8 @@ class OperationResolver:
         scope = package_scope(package)
         self.camera_direction(package,task)
         if require_current_profile:
-            current = resolve_profile(model=profile.model, duration_ms=profile.requested_duration_ms,
+            current = resolve_profile(model=profile.model,
+                duration_ms=None if profile.duration_mode == 'AUTO' else profile.requested_duration_ms,
                 resolution=profile.resolution, ratio=profile.aspect_ratio, native_audio=profile.native_audio,
                 policy=self.policy, mode=profile.mode)
             if current != profile:
@@ -342,7 +347,8 @@ class OperationResolver:
                 "aspectRatio": profile.aspect_ratio, "mode": profile.mode, "maxLogicalVideoOperations": 1,
                 "paidReferences": 0, "paidRetries": 0}.items()):
             raise ValueError("RIGHTS_PROCESSING_LIMIT")
-        if "profile" in rights and rights["profile"] != profile.model_dump(mode="json", by_alias=True):
+        if (profile.duration_mode == 'AUTO' and 'profile' not in rights
+                or "profile" in rights and rights["profile"] != profile.model_dump(mode="json", by_alias=True)):
             raise ValueError("RIGHTS_EXECUTION_PROFILE_MISMATCH")
         if require_scope and any(value == "TECHNICAL_RISK_ACCEPTED" for _, value in unit.reference_disposition):
             if unit.scope_decision_ref is None:

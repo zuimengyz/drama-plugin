@@ -126,7 +126,8 @@ def probe_intake_bytes(content: bytes) -> ProbeObservation | None:
 
 def inspect(store: LocalMediaStore, media: MediaIdentity, *, duration_ms: int,
             tolerance_ms: int, audio_expected: bool, resolution: str | None = None,
-            aspect_ratio: str | None = None) -> tuple[ProbeObservation | None, tuple[str, ...]]:
+            aspect_ratio: str | None = None,
+            duration_bounds_ms: tuple[int, int] | None = None) -> tuple[ProbeObservation | None, tuple[str, ...]]:
     failures: list[str] = []
     try:
         observation = probe(store.path(media))
@@ -135,7 +136,13 @@ def inspect(store: LocalMediaStore, media: MediaIdentity, *, duration_ms: int,
     except (OSError, ValueError, KeyError, subprocess.SubprocessError):
         return None, ("CORRUPT_OR_UNREADABLE_MEDIA",)
     measured_duration = observation.video_duration_ms if media.kind == 'VIDEO' and observation.video_duration_ms else observation.duration_ms
-    if abs(measured_duration - duration_ms) > tolerance_ms:
+    if duration_bounds_ms is not None:
+        minimum, maximum = duration_bounds_ms
+        if not 0 < minimum <= maximum == duration_ms:
+            raise ValueError('INVALID_AUTOMATIC_DURATION_BOUNDS')
+        if not minimum - tolerance_ms <= measured_duration <= maximum + tolerance_ms:
+            failures.append('RESULT_DURATION_OUT_OF_RANGE')
+    elif abs(measured_duration - duration_ms) > tolerance_ms:
         failures.append("RESULT_DURATION_MISMATCH")
     if (media.kind == 'VIDEO' and audio_expected and observation.video_duration_ms and observation.audio_duration_ms
             and abs(observation.video_duration_ms-observation.audio_duration_ms) > tolerance_ms):

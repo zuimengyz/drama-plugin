@@ -1,0 +1,9 @@
+{
+  "importedModule": "/Users/zy/.codex/plugins/cache/drama-marketplace/drama-plugin/0.1.0+codex.20260921115202/src/drama_plugin/generation/operation.py",
+  "durationMode": "AUTO",
+  "budgetDurationUpperBoundMs": 15000,
+  "apiDuration": -1,
+  "model": "doubao-seedance-2-0-260128",
+  "generate_audio": true,
+  "providerCalls": 0
+}

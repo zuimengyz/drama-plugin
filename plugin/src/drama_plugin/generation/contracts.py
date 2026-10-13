@@ -90,12 +90,16 @@ class OperationSelection(ExtendedRuntimeContract):
         return sha256_canonical([package_ref.model_dump(mode="json",by_alias=True), self.model_dump(mode="json", by_alias=True, exclude={"scope_decision_ref"})])
 
 
-class ExecutionProfile(RuntimeContract):
+class ExecutionProfile(ExtendedRuntimeContract):
+    extension_fields = ('duration_mode',)
     provider: Identifier
     model: Identifier
     vendor_model_id: Identifier
     mode: Literal["text_to_video", "reference", "image_to_video", "first_last_frame"]
     requested_duration_ms: Annotated[StrictInt, Field(gt=0, le=3_600_000)]
+    # AUTO retains the maximum output bound for finance/feasibility, not a
+    # promised output length. The provider receives duration=-1.
+    duration_mode: Literal['AUTO'] | None = None
     resolution: Literal["480p", "720p", "1080p"]
     aspect_ratio: Literal["16:9", "9:16", "1:1", "4:3", "3:4", "21:9", "9:21", "adaptive"]
     native_audio: bool
@@ -104,6 +108,15 @@ class ExecutionProfile(RuntimeContract):
     paid_references: Literal[0] = 0
     paid_retries: Literal[0] = 0
     max_paid_operations: Literal[1] = 1
+
+    @model_validator(mode='after')
+    def bounded_automatic_duration(self) -> Self:
+        if self.duration_mode == 'AUTO':
+            from drama_plugin.providers.video.registry import automatic_duration_bounds_ms
+            _, maximum = automatic_duration_bounds_ms(self.model)
+            if self.provider != 'seedance' or self.requested_duration_ms != maximum:
+                raise ValueError('AUTO_DURATION_REQUIRES_PROVIDER_MAXIMUM_BOUND')
+        return self
 
 
 class OwnerBindings(RuntimeContract):

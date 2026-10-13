@@ -68,7 +68,8 @@ async def next_unit_preview(p, run_id, *, duration_ms=None, spoken_range=None):
         return {'simulation':True,'submitted':False,'nextUnit':target,'request':None,
             'reason':'A real official endpoint must be bound after the predecessor review. Use the existing continuation entry.',
             'references':refs['selected']}
-    profile = resolve_profile(model=base.model,duration_ms=duration_ms or base.requested_duration_ms,
+    inherited_duration = None if base.duration_mode == 'AUTO' else base.requested_duration_ms
+    profile = resolve_profile(model=base.model,duration_ms=duration_ms if duration_ms is not None else inherited_duration,
         resolution=base.resolution,ratio=base.aspect_ratio,native_audio=base.native_audio,
         policy=operations.policy,mode='reference' if binding_refs else 'text_to_video')
     # These explicit sentinels cannot pass normal admission. No decision is invented.

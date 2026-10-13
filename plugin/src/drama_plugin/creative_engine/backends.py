@@ -744,7 +744,7 @@ class FormalDirectionAuthor(SkillAuthor):
 class FormalProfessionalAuthor(SkillAuthor):
     # The execution identity covers this real diagnostic/feedback implementation
     # revision without changing the model's creative authority or output schema.
-    implementation_identity = "creative.professional:v1:FormalProfessionalAuthor:asset-inheritance-v3"
+    implementation_identity = "creative.professional:v1:FormalProfessionalAuthor:asset-inheritance-v4"
 
     async def design_assets(self, request: AuthorRequest) -> 'SceneAssetDraft':
         from drama_plugin.professional_design.asset_sequence import SceneAssetDraft
@@ -770,10 +770,15 @@ Every subject without an inherited identity needs one CHARACTER baseline selecte
 For inherited characters omit unchanged identity or select reuseSelection. A justified costume, makeup,
 age/state variation retains that person's identity and requires variantReason; do not recast them.
 For LOCATION/PROP/OTHER choose an applicable supplied asset for reuse, or design a genuinely new asset.
+Inventory current screenplay props as well as subjects. Prop Design owns object appearance;
+preserve a continuity-critical object's first-appearance baseline and select its supplied
+accepted parent for later uses. Keep handling/open/closed states separate. Required visual
+proof remains pending when spending is unavailable; do not downgrade it to a text handoff.
 Different places may share period materials without reusing physical layout. Request only necessary
 references through referenceRequired. Templates and candidates are not adopted identities. No media,
 adoption, machine identities, source refs, versions, workflow or provider instructions in the result.
-''' + self.knowledge(('specialized-asset-design/SKILL.md', 'asset-resolution/SKILL.md'))
+''' + self.knowledge(('specialized-asset-design/SKILL.md', 'prop-design/SKILL.md',
+                      'asset-planning/SKILL.md', 'asset-resolution/SKILL.md'))
         return await self.client.complete('professional', system, request, TypeAdapter(SceneAssetDraft),
             model_payload=payload, author_identity=self.implementation_identity + ':assets')
 
@@ -865,7 +870,8 @@ supplies referenceInputs; preserve those exact adopted identities, describe the
 approved change in edit_delta and what remains in preserve. Existing assets alone
 do not select image-to-image. An inherited text-rendered variation preserves its
 parent design; do not invent a new face or pretend an image input was delivered.
-''' + self.knowledge(('specialized-asset-design/SKILL.md', 'reference-strategy/SKILL.md'))
+''' + self.knowledge(('specialized-asset-design/SKILL.md', 'reference-strategy/SKILL.md')
+                      + (('prop-design/SKILL.md',) if requirement['assetType'] == 'PROP' else ()))
         return await self.client.complete('professional', system, request, TypeAdapter(FrameSpec),
             model_payload=payload, model_schema=schema, project=projection,
             author_identity=self.implementation_identity+':reference-artwork')

@@ -5,6 +5,16 @@ description: Resolve stable reusable visual assets for a Work, Script, Episode, 
 
 # Asset Resolution
 
+Resolve continuity-critical props from the screenplay-derived Asset Manifest and
+Prop Design original as stable PROP identities. Search within the current Work
+before creation; record the first narrative appearance and exact later consumers.
+Reuse the accepted asset/design version and verified reference Media for the same
+physical object. A new Shot, angle, open lid or change of carrier is a use/state,
+not a new baseline. Similar object names do not prove identity. When a required
+reference is absent, retain preparation as pending and use the existing reference
+production workflow only under applicable authorization. Never promote a text
+original or a failed video frame to an accepted visual asset.
+
 New reference production uses only configured and authorized official HTTP APIs.
 Comfy Cloud MCP is retired for discovery, prompt guidance, generation and fallback.
 Keep historical Media/receipts readable without treating them as new route authority.

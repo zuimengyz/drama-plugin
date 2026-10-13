@@ -23,6 +23,15 @@ Separate identity portrait, scale proof, environment topology, material, contact
 
 ## Outputs
 
+For a continuity-critical prop, cite the exact Prop Design and test its silhouette,
+scale, separable parts, material and needed contact surfaces. Choose only the
+views/state proofs the actual consumers need; do not prescribe a fixed reference
+count. Reuse the accepted baseline at later appearances. A character portrait's
+incidental object or an unreviewed video does not establish a prop identity.
+Track knowledge available to the Host separately from reference bytes actually
+bound to the Provider; textual projection cannot be reported as delivered image
+conditioning. Preserve unresolved delivery/capability constraints.
+
 Produce a versioned `Reference Plan` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.
 
 ## Forbidden authority

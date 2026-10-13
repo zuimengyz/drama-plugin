@@ -52,13 +52,33 @@ class CreativeVersionStore:
     def versions(self) -> tuple[CreativeVersion, ...]:
         """Verified owner bytes only; never infer authority from an index filename."""
         found = []
+        seen: set[tuple[str, int, str]] = set()
         for path in (self.root / "objects").glob("*.json"):
             reject_link(path)
             value = json.loads(path.read_text())
             if not isinstance(value, dict) or value.get("schemaVersion") != "creative-version-v1":
                 continue
-            version = CreativeVersion.model_validate({**value, "fingerprint": sha256_canonical(value)})
-            found.append(self.resolve(version.ref()))
+            if "fingerprint" in value:
+                # Other creative departments retain complete version exports as
+                # evidence in this shared owner. Their outer content hash is not
+                # the embedded creative seal. Verify both and require the exact
+                # canonical owner original; an export cannot become an original.
+                digest = sha256_canonical(value)
+                exported = self.objects.read_ref(SourcePin(
+                    key="creative-version-export:" + digest, kind="CANON", fingerprint=digest))
+                if exported != value:
+                    raise ValueError("Creative exported version content mismatch")
+                version = CreativeVersion.model_validate(exported)
+            else:
+                version = CreativeVersion.model_validate({**value, "fingerprint": sha256_canonical(value)})
+            original = self.resolve(version.ref())
+            if original != version:
+                raise ValueError("Creative exported version owner mismatch")
+            ref = version.ref()
+            key = (ref.identity, ref.version, ref.fingerprint)
+            if key not in seen:
+                seen.add(key)
+                found.append(original)
         return tuple(found)
 
     def head(self, identity: str) -> VersionRef | None:

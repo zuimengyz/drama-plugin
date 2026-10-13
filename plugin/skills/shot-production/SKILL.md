@@ -18,6 +18,16 @@ accepted character/location library references over whole-shot video reuse. A
 character reference's background carries no location authority, and reference
 capacity/delivery still use the selected model's existing checks.
 
+Include continuity-critical props in that preparation. Consume their Prop Design
+original and Asset Manifest, reuse the exact accepted PROP identity/design version
+and verified reference Media across relevant Shots/Scenes, and project the current
+handling/open/closed state separately. Before sealing, compare the final prompt
+and actual input bindings with the baseline: silhouette, scale, parts and material
+must survive without conflicting per-Shot reinvention. A reference in Host context
+is not evidence that its bytes were sent. Missing required proof holds only the
+affected production duty; keep unpaid preparation available. Historical sent
+prompts, candidates and their asset bindings remain immutable.
+
 For selected Seedance native audio/video production, resolve the current Sound and
 spoken-event design before freezing the request. Verify applicable delivery,
 space, environmental priority, dramatic transitions and performance in the final
@@ -294,6 +304,17 @@ frames require the reviewed reference and cannot use bootstrap to bypass identit
 review. Fixed reference limits remain unchanged.
 
 ## Use-based content review and autonomous recovery
+
+Review action rhythm against the source-pinned scene and final prompt as well as
+physical continuity. At normal playback, locate preparation, contact, completion
+and consequential holds; judge whether the intended speed contrast and partner
+response survive, including across technical joins. Unmotivated waiting, repeated
+starts or a habitual task stretched over a whole clip can lose meaning despite
+correct objects and action order. Name the observed interval and its consequence;
+do not certify rhythm from total seconds, a "quick" keyword or a contact sheet.
+Missing continuous playback/listening remains an explicit observation limit.
+Continuity-ready is not rhythm-approved. Return a material loss to existing
+Performance/Editorial/Clip planning; no automatic speed-up, paid retry or new Gate.
 
 Judge whether the shot works at normal viewing size, duration and in context. Natural occlusion, imprecise background/type detail, unlocked initial appearance preferences, minor costume/light/framing differences and unconfirmed contact do not by themselves block. An input still is not a magnifiable technical diagram. Do not infer an error from missing evidence. A major failure must describe the visible observation, the core requirement it breaks and why that affects this use; a category label alone is insufficient. Missing action-critical props, contradictory action causality, serious established identity/continuity errors, explicit distortion of important historical facts or severe normal-playback audio/visual defects remain failures.
 

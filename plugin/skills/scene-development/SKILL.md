@@ -74,6 +74,18 @@ For an authorized standalone candidate rewrite, use [whole-scene craft proof](..
 
 ## Discover the dramatic process and its center of attention
 
+### Action rhythm in the readable scene
+
+When rhythm carries a relationship, put its observable contrast in the complete
+scene screenplay itself: whose action is habitual/brisk, where someone hesitates
+or waits, what triggers the next action, and which actions can overlap. Let a hold
+have a particular purpose and release condition; restrained emotion does not
+require slow limbs. Neither equal beat durations nor speed everywhere is a rule.
+Do not leave this meaning only in a Bible, technical clip plan or prompt. Check
+the downstream handoff against these exact passages. For a locked screenplay,
+extract its existing rhythm into a source-pinned execution note; do not rewrite
+the scene or promote that note to a new screenplay without authorization.
+
 For literary development, use the adaptation's open opportunities as well as its
 preservation decisions. Begin with what people must accomplish in this particular
 world and what it costs them not to accomplish it. Event completion does not settle

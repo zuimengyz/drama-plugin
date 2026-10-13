@@ -23,6 +23,16 @@ Inventory only what shots actually consume. Distinguish reusable identity, costu
 
 ## Outputs
 
+Include screenplay-derived prop consumers, not only dialogue speakers. For each
+continuity-critical object, index its Prop Design original, first narrative Scene
+and all relevant Scene/Shot uses. Establish its baseline once, then resolve the
+same physical identity for later uses. Distinct objects of the same kind remain
+distinct; temporary open/closed or carried state stays with the current action.
+Require visual proof when silhouette, scale, separable construction, material or
+handling continuity cannot be established by text alone. Do not mark that proof
+optional merely to advance video production without an asset budget. Keep the
+reference duty pending and continue independent unpaid preparation.
+
 Produce a versioned `Asset Manifest` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.
 
 ## Forbidden authority

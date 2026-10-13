@@ -62,6 +62,9 @@ async def submit_reserved(work_id: str, attempt: dict[str, Any], frame: dict[str
     config = credential()
     assert config.api_key is not None
     secret = config.api_key.get_secret_value()
+    # Capture the credential actually used for this dispatch, before awaiting
+    # HTTP. Retained receipts above are never stamped with a current key.
+    credential_fingerprint = hashlib.sha256(secret.encode()).hexdigest()
     cache.mkdir(parents=True, exist_ok=True)
     active = client or httpx.AsyncClient(timeout=300, follow_redirects=False)
     try:
@@ -72,7 +75,8 @@ async def submit_reserved(work_id: str, attempt: dict[str, Any], frame: dict[str
             await active.aclose()
     receipt = dict(attempt_id=attempt['attempt_id'], work_id=work_id,
         request_fingerprint=sha256_canonical(attempt['request']),
-        credential_source='DRAMA_VIDEO_SEEDANCE_API_KEY', provider='ark',
+        credential_source='DRAMA_VIDEO_SEEDANCE_API_KEY',
+        credential_fingerprint=credential_fingerprint, provider='ark',
         model=frame['template']['model'], endpoint=config.base_url+ENDPOINT,
         diagnostics=seedance_error(response, secret))
     if response.status_code != 200:

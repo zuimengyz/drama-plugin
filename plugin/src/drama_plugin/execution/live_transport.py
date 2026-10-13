@@ -150,13 +150,15 @@ class TargetHttpTransport:
     def __init__(self, adapter: HttpVideoProvider, receipt_root: Path, *, ledger: ProductionLedger,
                  grant: ControlledLiveGrant | None = None, qualification_only: bool = False,
                  resolution: str = "720p", aspect_ratio: str = "16:9", environment: Mapping[str,str] | None = None,
-                 recovery_operation_ref: ArtifactReference | None = None, media_provider=None, asset_provider=None):
+                 recovery_operation_ref: ArtifactReference | None = None, media_provider=None, asset_provider=None,
+                 asset_originals=None):
         self.adapter,self.provider=adapter,adapter.provider
         self.resolution,self.aspect_ratio,self.environment=resolution,aspect_ratio,environment
         self.offline=qualification_only
         self.recovery_operation_ref=recovery_operation_ref
         self.media_provider=media_provider
         self.asset_provider=asset_provider
+        self.asset_originals=asset_originals
         self.root,self.ledger,self.grant=receipt_root.resolve(),ledger,grant
         self.root.mkdir(parents=True,exist_ok=True)
         if qualification_only and not isinstance(adapter.client._transport,httpx.MockTransport):
@@ -220,15 +222,41 @@ class TargetHttpTransport:
             return await managed_original_url(self.media_provider, self.adapter.client, identity,
                 storage_scope, media_id=reference.media_id)
         if reference.kind == 'image' and binding.role == 'REFERENCE':
-            from drama_plugin.execution.reference_delivery import adopted_original_image
+            from drama_plugin.execution.reference_delivery import (adopted_original_image,
+                adopted_prop_original_image, native_character_originals, native_adopted_character_image)
             if self.media_provider is None or self.asset_provider is None:
                 raise DefinitelyNotSubmitted('REFERENCE_ADOPTED_IMAGE_PROOF_REQUIRED')
             media = await self.media_provider.get_media(reference.media_id)
-            parts = binding.media.review_ref.split(':')
-            if len(parts) != 3 or parts[0] != 'asset-adoption':
+            if binding.media.review_ref.startswith('prop-asset-adoption:'):
+                from drama_plugin.contracts.source_pin import SourcePin
+                from drama_plugin.director import DirectorError
+                if self.provider != 'seedance' or self.asset_originals is None:
+                    raise DefinitelyNotSubmitted('REFERENCE_ADOPTED_PROP_PROOF_REQUIRED')
+                try:
+                    asset_id, proof_hash = binding.media.review_ref[len('prop-asset-adoption:'):].rsplit(':', 1)
+                    proof = self.asset_originals.read_ref(SourcePin(key='prop-original-image-proof:'+proof_hash,
+                        kind='DIRECTION', fingerprint=proof_hash))
+                    asset = await self.asset_provider.get_asset(asset_id)
+                except (ValueError, KeyError, OSError, DirectorError):
+                    raise DefinitelyNotSubmitted('REFERENCE_ADOPTED_PROP_PROOF_REQUIRED') from None
+                identity = adopted_prop_original_image(self.adapter, media, asset, binding, proof)
+                return await managed_original_url(self.media_provider, self.adapter.client, identity,
+                    RuntimeScope(work_id=media.work_id), media_id=reference.media_id)
+            if not binding.media.review_ref.startswith('asset-adoption:'):
                 raise DefinitelyNotSubmitted('REFERENCE_ADOPTED_IMAGE_PROOF_REQUIRED')
-            asset = await self.asset_provider.get_asset(parts[1])
-            identity = adopted_original_image(self.adapter, media, asset, binding)
+            try:
+                asset_id, _ = binding.media.review_ref[len('asset-adoption:'):].rsplit(':', 1)
+                asset = await self.asset_provider.get_asset(asset_id)
+            except (KeyError, ValueError):
+                raise DefinitelyNotSubmitted('REFERENCE_ADOPTED_IMAGE_PROOF_REQUIRED') from None
+            specialized = asset.content.get('specializedAsset', {})
+            if specialized.get('scenePreparationRef') or specialized.get('filmStorageValidated') is True:
+                if self.provider != 'seedance' or self.asset_originals is None:
+                    raise DefinitelyNotSubmitted('REFERENCE_ADOPTED_IMAGE_PROOF_REQUIRED')
+                proof = native_character_originals(self.ledger, self.asset_originals, asset)
+                identity = native_adopted_character_image(self.adapter, media, asset, binding, proof)
+            else:
+                identity = adopted_original_image(self.adapter, media, asset, binding)
             return await managed_original_url(self.media_provider, self.adapter.client, identity,
                 RuntimeScope(work_id=media.work_id), media_id=reference.media_id)
         if binding.endpoint_frame_ref:
@@ -484,7 +512,8 @@ class TargetHttpTransport:
 def configured_http_transport(*, model:str, receipt_root:Path, ledger:ProductionLedger,
                               resolution:str, aspect_ratio:str, environment:Mapping[str,str]|None=None,
                               grant:ControlledLiveGrant|None=None,
-                              recovery_operation_ref:ArtifactReference|None=None, media_provider=None, asset_provider=None) -> TargetHttpTransport:
+                              recovery_operation_ref:ArtifactReference|None=None, media_provider=None, asset_provider=None,
+                              asset_originals=None) -> TargetHttpTransport:
     """Configuration chooses a model/provider; this factory never selects a fallback."""
     from drama_plugin.config.loader import load_config
     from drama_plugin.config.video_route import require_runtime_route
@@ -531,7 +560,7 @@ def configured_http_transport(*, model:str, receipt_root:Path, ledger:Production
     adapter=adapters[provider](model,configuration[provider],resolve=no_reference)
     transport=TargetHttpTransport(adapter,receipt_root,ledger=ledger,resolution=resolution,
         aspect_ratio=aspect_ratio,environment=environment,grant=grant,recovery_operation_ref=recovery_operation_ref,
-        media_provider=media_provider,asset_provider=asset_provider)
+        media_provider=media_provider,asset_provider=asset_provider,asset_originals=asset_originals)
     if recovery_operation_ref is not None:
         assert operation is not None and attempt is not None
         # UNKNOWN without an ACK can still use bounded recent-job recovery.

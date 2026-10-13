@@ -113,6 +113,19 @@ Check applicable relations rather than isolated keywords:
 - **Repetition:** merge wording only when subject, time, scope, meaning and duty
   coincide. Keep necessary per-phase constraints, exact canonical speech and
   independent requirements even when they share a noun or similar words.
+- **Action rhythm:** compare exact scene passages → selected execution unit →
+  final provider-facing wording. Retain the actor's task, relative speed,
+  purposeful hold, release trigger and permitted overlap where each matters.
+  A token such as "quickly" is insufficient if other clauses require extended
+  waiting, serial micro-actions or a fresh approach before that same action.
+  Inspect inherited start/exit state text and duplicate editorial instructions
+  for accidental replay or holds. Check the whole Shot across units, not just
+  each unit's internal consistency. Do not convert restraint, camera HOLD,
+  age, physical clarity or an estimated Shot length into uniformly slow acting.
+  Record the source span and exact final prompt span for each material contrast,
+  with retained/lost/conflicting/unknown findings. Repair execution expression
+  and recompile through existing owners; do not change locked screenplay art,
+  impose equal seconds or replace one fixed timing rule with another.
 
 For each material conflict, retain the conflicting spans, their source/phase,
 why they cannot coexist and the proposed correction. The Host autonomously

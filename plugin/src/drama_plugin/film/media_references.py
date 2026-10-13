@@ -82,7 +82,8 @@ authority. Exact managed bytes/capacity/route are still checked by existing cons
                     media=dict(media_id=media['mediaId'],version=media['version'],content_hash=media['contentHash'],
                         kind=media['mediaType'].lower(),semantics=('identity',) if character else ('environment',),
                         width=width,height=height,duration=media.get('durationMs',0)/1000 if media.get('durationMs') else None,
-                        review_ref=value['adoptionRef']['key']+':'+value['adoptionRef']['fingerprint']),
+                        review_ref=('asset-adoption:'+asset['id']+':'+value['adoptionRef']['fingerprint']
+                            if character else value['adoptionRef']['key']+':'+value['adoptionRef']['fingerprint'])),
                     duties=(dict(role=role,necessity='REQUIRED',subject=subject,purpose=purpose),),
                     subject_ids=(subject,) if character else (),role='REFERENCE',
                     authorization_scope='ADOPTED_PRODUCTION_INPUT',authority_refs=(use,)))

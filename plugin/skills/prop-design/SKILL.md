@@ -23,6 +23,25 @@ Assign stable prop IDs to recurring weapons, flags, vessels, lamps, ropes, saddl
 
 ## Outputs
 
+Read the selected screenplay in narrative Scene order to identify manipulated,
+transferred or visually distinctive objects, including continuity across Shots
+within one Scene. Record first appearance, consumers and whether later mentions
+refer to the same physical object, a changed state or another instance. Similar
+names or a common maker do not establish identity. Background dressing need not
+become a separate reusable Asset.
+
+For a continuity-critical prop, author one baseline with function, silhouette,
+dimensions or relative scale, construction and separable parts, materials and
+recognizable surface features. Separate invariant identity from current open,
+closed, held, damaged or placed state. Explain design interpretations and pin
+user clarifications separately from screenplay/source facts. Hand this original
+to Asset Planning/Resolution for the existing PROP preparation and reference
+workflow. Establish the necessary visual proof at its first narrative appearance;
+later consumers reuse the accepted identity, version and verified Media. A new
+camera angle or handling state does not authorize redesigning or regenerating
+the object. Missing proof remains pending; text design alone is not observed
+visual consistency and does not authorize generation.
+
 Produce a versioned `Prop Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.
 
 ## Forbidden authority

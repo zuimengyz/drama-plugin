@@ -1627,7 +1627,8 @@ class DramaPlugin:
                 self.execution.transports[task.profile.provider] = configured_http_transport(model=task.profile.model,
                     receipt_root=self.ledger.path.parent/(self.ledger.path.name+".receipts"),ledger=self.ledger,
                     resolution=task.profile.resolution,aspect_ratio=task.profile.aspect_ratio,
-                    recovery_operation_ref=recovery_ref,media_provider=self.providers.media,asset_provider=self.providers.asset)
+                    recovery_operation_ref=recovery_ref,media_provider=self.providers.media,asset_provider=self.providers.asset,
+                    asset_originals=self.asset_sequence.objects)
             except CapabilityAbsent:
                 pass  # Exact owner reports absence; no alternative route.
 

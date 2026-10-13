@@ -174,7 +174,14 @@ class DesignBody(RuntimeContract):
             elif isinstance(value, list):
                 for child in value:
                     check(child)
-        check(self.facts)
+        # Resolver.persist attaches complete, already owned Asset records in
+        # these domains. Their design prose is retained provenance, not new
+        # Professional authorship. The author entry separately rejects this
+        # system field; only the exact root binding gets this exception.
+        asset_domains = {SourceDomain.SUBJECTS, SourceDomain.WORLD, SourceDomain.REFERENCE}
+        if 'assetBindings' in self.facts and self.domain not in asset_domains:
+            raise ValueError("Professional field authority violation")
+        check({key: value for key, value in self.facts.items() if key != 'assetBindings'})
         return self
 
 

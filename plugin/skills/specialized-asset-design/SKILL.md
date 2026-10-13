@@ -15,6 +15,14 @@ Establish a CHARACTER baseline only at that person's first appearance. Later Sce
 reuse it; justified variations select an accepted parent and retain identity/root,
 version, reason and sources. Reuse locations/props according to actual identity and
 artistic relation, rather than applying the character rule to every object.
+For a screenplay-derived continuity-critical PROP, consume the independent Prop
+Design original and Asset Manifest. Prepare its necessary reference at the first
+narrative appearance through the same existing asset sequence, then select
+reuseSelection for the same object in later Scenes. Keep current handling and
+open/closed state separate from its baseline. Do not replace a required prop
+reference with a text handoff merely because generation is not authorized;
+retain the unpaid candidate and pending duty instead. Prop Design owns the
+appearance; this sequence does not create a competing design.
 Preserve existing adoption and media. Unproven historical relations remain unknown.
 These rules govern post-selection professional design, not Host first writing.
 

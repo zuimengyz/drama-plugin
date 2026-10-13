@@ -23,6 +23,17 @@ Split only where an action state can be handed off clearly; never cut between un
 
 ## Outputs
 
+Before choosing boundaries, read the scene's action-rhythm passages and the
+Performance/Editorial realization. Group a continuous task and the contrast that
+gives it meaning; do not map each verb or beat to a separate generation. Neither
+equal shares of the Shot estimate nor the provider maximum determines clip length.
+Explain each necessary split through action, dialogue, support and recoverable
+state, including its cost to momentum. A boundary must not add another wait or
+restart preparation already completed. AUTO chooses output length, not dramatic
+pacing: preserve relative speed, purposeful holds and release triggers explicitly.
+If the scene genuinely needs equal rhythm, retain it with its source reason.
+Record remaining feasibility uncertainty rather than promise that AUTO will fit.
+
 Produce a versioned `Generation Clip Plan` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.
 
 ## Forbidden authority

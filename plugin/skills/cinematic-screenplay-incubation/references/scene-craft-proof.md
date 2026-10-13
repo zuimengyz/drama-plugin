@@ -20,6 +20,13 @@ For action passages, make the route, obstacle and opportunity recognizable befor
 
 ## Read, criticize, revise, hand off
 
+When action rhythm matters, make it readable in the scene's action prose, not
+only in downstream notes: contrast habitual efficiency with a particular wait,
+hesitation or aftermath; give the hold a release trigger and allow source-supported
+overlap. Follow [scene action rhythm](../../scene-development/SKILL.md#action-rhythm-in-the-readable-scene).
+Do not equalize beat lengths or treat restraint as generalized slowness. If the
+scene is locked, extract its existing intent for execution instead of rewriting it.
+
 Read all relevant original Scene and Shot expression before comparing; an old camera/action note may already contain the supposed innovation. Retain full source scope and hashes. Do not manufacture a weak old draft or count added length as improvement. A finding names a sentence/action, its reader-facing consequence and the smallest useful change. Preserve a substantive before/after; stop iterating when the next pass has no useful new intervention. Author judgment, independent textual critique, user acceptance and observed AV quality are different evidence.
 
 Select a few decisions for the existing Cinematic Intent sidecar: intent → source passage → performance/space realization → coverage/edit obligation → future observable result. Use existing priorities and source fingerprints. Candidate text owns candidate wording; DPD extracts objective, target and tactic; direction realizes behavior and camera; design supplies appearance and usable space; finishing consumes reviewed meaning and actual material. They cannot silently write rival dialogue or psychology. A text-only candidate stays outside formal Scene/Shot writes and paid production. No new DirectorBook entity is necessary.

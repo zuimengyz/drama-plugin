@@ -114,7 +114,8 @@ async def open_media_source(source_uri: str) -> AsyncIterator[OpenMediaSource]:
     parsed = urlsplit(source_uri)
     if parsed.scheme == "file":
         path = local_media_path(source_uri)
-        content_type = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
+        content_type = ('audio/mp4' if path.suffix.lower() == '.m4a' else
+                        mimetypes.guess_type(path.name)[0] or "application/octet-stream")
         with path.open("rb") as stream:
             yield OpenMediaSource(stream, path.name, content_type)
         return

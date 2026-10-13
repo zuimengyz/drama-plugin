@@ -74,6 +74,11 @@ Reject zero or multiple single-image inputs, partial start-end pairs, mixed mode
 
 Compile a compact motion prompt from Shot semantics. Retain only subject/body motion, facial micro-expression, camera motion, environment motion, speed/intensity, critical continuity, and forbidden semantic changes. Use the schema-authoritative semantic projection and verified provider-specific transport limits. No shared character cap and no silent truncation. Preserve all execution-critical direction; compact governance text only when meaning is retained.
 
+Before sealing or reserving the compiled video request, the Host performs
+[prompt conflict review](production-rules.md#prompt-conflict-review) on its final
+provider-facing text. Repair the responsible expression sources and recompile
+when required; do not append a parallel prompt or alter a historical request.
+
 For video review, inspect the dynamic process using playback or representative frames across the clip. Check identity, age/hair/costume, motion and anatomy, Shot semantic preservation, camera compliance, Scene stability, lighting, and prop state. A completed job or readable file is not content PASS. Let the Host replan or target a motion-prompt revision after a material content failure; a revision increments `generationCount`, while technical retry never does.
 
 ## Input and output handoff

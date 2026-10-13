@@ -80,6 +80,64 @@ Translate camera motion into representative static key-image intent:
 
 Do not ask one still image to depict elapsed camera movement.
 
+## Prompt conflict review
+
+The Host reviews each newly compiled provider-facing prompt before request sealing
+and reservation, and repeats the review after changes to prompt sources, technical
+unit boundaries, references or model projection. Read the actual final wording,
+including applicable negative instructions and audio controls, against the exact
+current source versions. Do not assess only the input Bible or an earlier draft.
+
+Check applicable relations rather than isolated keywords:
+
+- **State and time:** identify whose state each sentence describes and when it
+  applies. An open object that is later closed is a transition; requiring it to
+  stay open throughout the same closing action is a conflict. Separate entry,
+  current action and exit states, and inherited background from new events.
+- **Action and objects:** prerequisites, hand/tool contacts, load/support, object
+  identity and start/end consequences must fit the intended action. Distinguish
+  an object from its parts; motion cannot silently replace its geometry or create
+  another part. Keep the approved causal order and physical task.
+- **Space and camera:** check simultaneous spatial, framing and motion demands
+  against current blocking and camera sources. Distinct planned phases or a
+  designed cut are not simultaneous camera conflicts.
+- **Sound:** bind contact and vocal sounds to the current visible/off-screen
+  event, speaker or established environment and its timing. Distinguish restrained
+  performance, quiet background, local silence and a request for no sound. Do not
+  invent continuous noise, fixed loudness or new music to remove an ambiguity.
+  Check native-audio parameters against the selected sound plan; presence of an
+  audio track is not a claim about its audibility or synchronization quality.
+- **Scope and inputs:** check the selected unit's opening, ending and actual
+  reference duties. Do not replay completed events, advance future ones or claim
+  an unobserved reference state. Missing physical evidence remains unverified.
+- **Repetition:** merge wording only when subject, time, scope, meaning and duty
+  coincide. Keep necessary per-phase constraints, exact canonical speech and
+  independent requirements even when they share a noun or similar words.
+
+For each material conflict, retain the conflicting spans, their source/phase,
+why they cannot coexist and the proposed correction. The Host autonomously
+clarifies timing, separates inherited state from action and removes genuine
+duplication within existing professional execution-expression authority. Revise
+the corresponding source projection/Package as a new version and recompile;
+never patch a sealed FinalPromptArtifact, append an alternate raw request or
+silently drop required source obligations to make the check pass. If source
+originals themselves disagree, ask the responsible existing department to resolve
+that disagreement; do not rewrite the screenplay or Shot art in this review.
+
+Review the resulting final text again and retain its exact scope, source versions,
+prompt fingerprint, findings, corrections and disposition in existing preparation
+or review originals/Agent Run Context. If new compilation reintroduces a conflict,
+repair its responsible source or projection rather than repeating a cosmetic edit.
+If no permitted repair can resolve it, keep only the affected request unsubmitted
+and report the unresolved source issue; independent work can continue. Ordinary
+expression repairs need no additional user approval and grant no paid retry.
+
+After a changed prompt is ready, refresh its existing request seal and applicable
+cost terms normally; old prompts, requests, results and billing remain retained.
+An assessment covers only the exact final text reviewed and never proves Provider
+performance, media acceptance or user adoption. No new schema, database entity,
+Runtime review receipt or fixed artistic scale is introduced by this procedure.
+
 ## DPD visual projection boundary
 
 When the run includes an authoritative `DPDSnapshot`, translate it once into a provider-neutral `VisualPerformanceBrief` before compiling the Provider motion prompt. DPD remains intended dramatic authority; the brief only expresses observable performance. Do not copy stable face, age, hair, costume, location appearance, camera scale, lens, angle, composition, or camera movement into the brief. Combine the brief with those independently owned inputs only at materialization.

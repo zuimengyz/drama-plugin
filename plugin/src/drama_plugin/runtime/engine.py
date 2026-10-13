@@ -360,7 +360,7 @@ class RuntimeEngine:
                                                 child_ref: ArtifactReference | None = None) -> RuntimeRun:
         """Re-enter a verified completed result after local import configuration repair."""
         failed = self.store.load(run_id).last_result
-        if failed is None or failed.code not in {"EXTERNAL_RECONCILIATION_ERROR", "FORMAL_MEDIA_NOT_FOUND"}:
+        if failed is None or failed.code not in {"EXTERNAL_RECONCILIATION_ERROR", "FORMAL_MEDIA_NOT_FOUND", "FORMAL_MEDIA_IDENTITY_INVALID"}:
             raise ValueError("REPAIR_REQUIRES_EXACT_MEDIA_IMPORT_CONFIGURATION_FAILURE")
         return await self._repair_external_failure(run_id, expected_revision=expected_revision,
             capability_key=capability_key, decision_ref=decision_ref, code=failed.code,child_ref=child_ref)

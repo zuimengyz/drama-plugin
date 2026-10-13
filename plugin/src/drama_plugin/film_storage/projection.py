@@ -59,6 +59,10 @@ async def ensure_media(store:Any,media_id:str,event:str,order:int,*,delivery_pat
                 if len(exact)==1:return cast(dict[str,Any],exact[0])
             raise FilmStorageUnavailable('Exact canonical Media registration is not retained yet')
         media_id=found[0]
+        # A new Native video was already imported directly into Film V2.
+        # Resolve its canonical ID in that index before trying legacy import.
+        known=await store.client.query('drama_media',{'id':media_id},1)
+        if known:return cast(dict[str,Any],known[0])
     return cast(dict[str,Any],await store.client.request('existing-file',method='POST',body={
         'mediaId':media_id,'sourceEvent':event,'sourceOrder':order}))
 
@@ -132,20 +136,40 @@ async def request_for_attempt(store:Any,ref:dict[str,Any],event:str,order:int)->
     await project_inputs(store,op,rid,event,order,wire)
     return str(rid)
 
+def official_continuation_delivered(store:Any,binding:dict[str,Any],file:dict[str,Any],url:str,scope:dict[str,Any])->bool:
+    """An official tail URL is not a MinIO key; prove its exact retained lineage."""
+    ref=binding.get('endpointFrameRef')
+    if binding.get('role')!='FIRST_FRAME' or not isinstance(ref,dict) or ref.get('owner')!='continuation-frame':return False
+    try:
+        frame,frame_scope=ledger_body(store,ref,'continuation-frame')
+        receipt,receipt_scope=ledger_body(store,frame['receiptRef'],'provider-receipt')
+    except (FilmStorageUnavailable,KeyError,ValueError):return False
+    media=frame.get('media',{})
+    return bool(url and frame_scope==receipt_scope==scope==binding.get('scope')==frame.get('scope')==receipt.get('scope')
+        and receipt.get('state')=='SUCCEEDED' and receipt.get('provider')=='seedance'
+        and receipt.get('runId')==frame.get('runId') and receipt.get('lastFrameUrl')==url
+        and media.get('mediaId')==binding['media']['mediaId']
+        and media.get('contentHash')==binding['media']['contentHash']==file.get('content_hash')
+        and media.get('byteCount')==file.get('file_size') and media.get('kind')=='IMAGE'
+        and file.get('media_type')=='IMAGE' and file.get('storage_state')=='READY')
+
 async def project_inputs(store:Any,op:dict[str,Any],rid:str,event:str,order:int,wire:dict[str,Any]|None=None)->None:
-    delivered=[]
+    delivered=[];delivered_urls=[]
     if wire:
         from urllib.parse import urlsplit,unquote
         for part in wire.get('content',[]):
             if part.get('type')=='text':continue
             value=part.get(part.get('type',''),{})
-            delivered.append(unquote(urlsplit(value.get('url','')).path) if isinstance(value,dict) else '')
+            url=value.get('url','') if isinstance(value,dict) else ''
+            delivered_urls.append(url)
+            delivered.append(unquote(urlsplit(url).path))
     verified=[]
     for i,binding_ref in enumerate(op.get('referenceBindings',[])):
         binding,_=ledger_body(store,{'owner':'reference-execution-binding','artifactRef':binding_ref['artifactRef'],'version':binding_ref['version']})
         file=await ensure_media(store,binding['media']['mediaId'],event,order,delivery_path=delivered[i] if i<len(delivered) else None,expected_hash=binding['media']['contentHash'])
         verified.append(bool(wire and i<len(delivered) and (delivered[i].endswith('/'+file['object_key'])
-            or delivered[i].endswith('/'+file['id']))))
+            or delivered[i].endswith('/'+file['id'])
+            or official_continuation_delivered(store,binding,file,delivered_urls[i],op['scope']))))
         role=binding['role'];provider_role=role;kinds={d['role'] for d in binding.get('duties',[])}
         if role not in {'FIRST_FRAME','LAST_FRAME'}:
             role=('FIRST_FRAME' if file['purpose']=='FIRST_FRAME' else

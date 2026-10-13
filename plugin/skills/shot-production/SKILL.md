@@ -26,6 +26,22 @@ review notes and future/completed events out of executable prose. Preserve the
 native track by default and assess the heard result separately from compiler tests;
 do not introduce automatic TTS, fixed shot duration or a new approval gate.
 
+## Host review of generated prompts
+
+After every new or revised prompt is compiled, the Host must actively review the
+final provider-facing text and applicable negative instructions, reference duties,
+unit boundaries and audio parameters before sealing or reserving that request.
+Compiler success alone does not prove that its prose is consistent. Follow
+[prompt conflict review](references/production-rules.md#prompt-conflict-review).
+Resolve expression conflicts and redundant wording through new versions of the
+existing professional execution inputs and the same compiler, then review the
+result again. Preserve approved action, dialogue, timing, references and Shot art;
+return genuine source disagreements to their existing professional owner.
+Keep the assessment in existing preparation/review originals or Agent Run Context.
+This is Host creative preparation, not a new Runtime gate, user approval step or
+permission to spend. Historical sealed prompts and sent requests stay immutable;
+textual consistency never substitutes for actual media or sound review.
+
 For authorized native Film production, retain the original Film and completed
 children/operations. Read `source_film_status` before scheduling and report its
 Scene → Shot → phase coverage, adoption, remaining content and next boundary.

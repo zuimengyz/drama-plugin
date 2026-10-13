@@ -253,7 +253,7 @@ class ExternalRepairRecord(ExtendedRuntimeContract):
 
     @model_validator(mode="after")
     def bounded_external_failure(self) -> Self:
-        if (self.failed_result.code not in {"PROVIDER_UNKNOWN_WITHOUT_LOOKUP", "EXTERNAL_RECONCILIATION_ERROR", "FORMAL_MEDIA_NOT_FOUND", "GOVERNED_HARD_STOP", "EXECUTION_REVISION_CHANGED", 'TECHNICAL_MEDIA_FAILURE', 'HUMAN_REVIEW_CONTEXT_MISMATCH', 'FINANCIAL_AUTHORITY_ALREADY_CONSUMED', 'RECOVERY_TRANSPORT_READ_ONLY', 'HTTP_400', 'PROVIDER_DEFINITE_FAILURE', 'FILM_AUTHORITY_OR_CONTRACT_INVALID', 'SCENE_CONTINUATION_SCOPE_MISMATCH'}
+        if (self.failed_result.code not in {"PROVIDER_UNKNOWN_WITHOUT_LOOKUP", "EXTERNAL_RECONCILIATION_ERROR", "FORMAL_MEDIA_NOT_FOUND", "FORMAL_MEDIA_IDENTITY_INVALID", "GOVERNED_HARD_STOP", "EXECUTION_REVISION_CHANGED", 'TECHNICAL_MEDIA_FAILURE', 'HUMAN_REVIEW_CONTEXT_MISMATCH', 'FINANCIAL_AUTHORITY_ALREADY_CONSUMED', 'RECOVERY_TRANSPORT_READ_ONLY', 'HTTP_400', 'PROVIDER_DEFINITE_FAILURE', 'FILM_AUTHORITY_OR_CONTRACT_INVALID', 'SCENE_CONTINUATION_SCOPE_MISMATCH'}
                 or self.failed_result.status != ResultStatus.FAILED
                 or self.decision_ref.owner != "user-decision"):
             raise ValueError("External repair requires an exact supported failure and cost receipt")
@@ -264,6 +264,8 @@ class ExternalRepairRecord(ExtendedRuntimeContract):
         if self.failed_result.code in {'HTTP_400','PROVIDER_DEFINITE_FAILURE'} and (self.capability_key!='film.execute:v1' or self.cursor!=5 or self.revision_ref is None
                 or self.revision_ref.owner!='film-segment-revision'):
             raise ValueError('Definite provider failure requires its scoped Film revision')
+        if self.failed_result.code == 'FORMAL_MEDIA_IDENTITY_INVALID' and self.capability_key != 'execution.media_intake:v1':
+            raise ValueError('File identity repair requires the exact media intake step')
         if self.failed_result.code == 'TECHNICAL_MEDIA_FAILURE' and self.capability_key not in {'execution.media_review:v1','film.execute:v1'}:
             raise ValueError('Technical repair requires retained review owner output')
         if self.failed_result.code == 'HUMAN_REVIEW_CONTEXT_MISMATCH' and self.capability_key not in {'execution.media_review:v1','film.execute:v1'}:

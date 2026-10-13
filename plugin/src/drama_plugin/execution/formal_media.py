@@ -128,7 +128,22 @@ class FormalMediaStore(LocalMediaStore):
         return registration
 
     def _validate(self,item:Media,scope:RuntimeScope,media:MediaIdentity,source_ref:str)->None:
-        if (item.work_id,item.shot_id,item.source_ref,item.content_hash)!=(scope.work_id,scope.shot_id,source_ref,media.content_hash) or item.media_type.value!=media.kind or item.file_size!=media.byte_count or item.mime_type!=media.mime:
+        # Film V2 stores immutable files at Work scope; the existing Shot/Request
+        # relations carry their use. Its service view deliberately has no legacy
+        # shot_id. This does not relax file ownership, bytes or an explicit Shot.
+        film_file = (item.content.get('filmStorageVersion') == 2 and item.shot_id is None
+                     and source_ref == 'target-media:' + hashlib.sha256(
+                         (scope.work_id + media.content_hash).encode()).hexdigest())
+        shot_matches = item.shot_id == scope.shot_id or film_file
+        mime_matches = item.mime_type == media.mime
+        if (not mime_matches and film_file and self is not None and media.kind == 'AUDIO'
+                and media.mime == 'audio/mp4' and item.mime_type == 'audio/mp4a-latm'):
+            # Some host MIME databases mislabel .m4a. Recover only from this
+            # exact hash-verified, decodable AAC-in-MP4 file, never its suffix.
+            evidence = probe(self.path(media))
+            mime_matches = ('mp4' in evidence.container.split(',')
+                            and evidence.audio_codec == 'aac' and evidence.video_codec is None)
+        if not shot_matches or (item.work_id,item.source_ref,item.content_hash)!=(scope.work_id,source_ref,media.content_hash) or item.media_type.value!=media.kind or item.file_size!=media.byte_count or not mime_matches:
             raise ValueError('Formal Media registration identity/hash/MIME/size mismatch')
     async def register(self,media:MediaIdentity,*,scope:RuntimeScope,source_ref:ArtifactReference,
                        attempt_ref:ArtifactReference|None=None,package_ref:ArtifactReference|None=None,

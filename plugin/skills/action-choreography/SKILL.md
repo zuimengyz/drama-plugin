@@ -21,6 +21,17 @@ Approved action outcome; Blocking; Performance intent; Prop and Animal interacti
 
 Decompose action by physical changes: preparation, contact, support/load transfer, correction, consequence and recovery. Name actor, limb/side, receiver/object, grip establishment and release. A failed attempt must alter the next action; do not jump from reach to successful mount. Declare what must remain observable and what cannot overlap safely or plausibly. Complexity may propose coverage changes, never rewrite the event.
 
+At a critical transfer, work backwards from the receiving grip: where can the
+hands enter while the previous support still carries weight? Check intermediate
+poses, not only a plausible start and finish. Returning an object flat to a table
+does not leave finger clearance everywhere. Identify the supported region,
+accessible underside and free hand before releasing the table; cloth is a contact
+layer, not an invisible lifting sling. Retain assumptions about balance or material
+response as assumptions. For small contacts, establish a visible before/after
+difference and its cause: lifting a cup alone need not flatten curled paper, and
+reaching toward a sleeve does not prove it moved away from ink. Elaborate the
+approved action without adding a new dramatic event.
+
 ## Outputs
 
 Produce a versioned `Action Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.

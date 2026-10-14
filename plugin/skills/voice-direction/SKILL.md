@@ -21,6 +21,13 @@ Dialogue Bible; Performance DPD and Director intent; Blocking/listener distance;
 
 For each line identify whom it acts upon, spatial reach, attack, articulation, emphasis, pause function, release and after-line closure. High internal pressure need not become loudness; close address need not be whisper. Bound breath and intensity to physical load and injury. Preserve explicit overlap as an unresolved execution demand when unsupported; never convert it to invented sequential speech.
 
+Distinguish an actor's continuing speech from a pause that actually waits for a
+partner or contact. Give Sound and Editorial the exact line's entry/release
+relation and any protected phrase, without adding a second pause for the same
+event. Keep retrospective voice-over apart from the visible person's present
+mouth and task. A reading estimate can inform duration planning; it is not an
+observed voice or lip-sync interval.
+
 ## Outputs
 
 Produce a versioned `Voice Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.

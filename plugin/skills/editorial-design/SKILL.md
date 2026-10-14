@@ -19,7 +19,15 @@ Shot Bible; Performance; Sound/Music; Director rhythm intent.
 
 ## Professional decisions
 
-Name what a cut reveals or withholds and the event it must wait for. Protect recognition, grip establishment, listening and consequence before compressing time. A held shot needs changing attention, not a prescribed long-take quota. Plan J/L relations through sound refs and keep spatial orientation across boundaries. Record alternative coverage requests separately; editing intent is not measured media timing.
+Name what a cut reveals or withholds and the event it must wait for. Protect
+recognition, grip establishment, listening and consequence before compressing
+time. Distinguish necessary precedence from permissible overlap: listening,
+handling and speech need not each consume a separate time block. Estimate a
+playable duration range from the critical sequence, using a timed reading or
+rehearsal when available and marking untested estimates. Do not assign historical
+failure timestamps to the new design. Plan J/L relations through Sound refs and
+keep spatial orientation. Alternative coverage remains a proposal; actual
+sourceIn/sourceOut needs observed media boundaries, not this estimate.
 
 Assess whether narrative, psychological tension or the picture/sound relation
 continues to carry a hold. Meaningful stillness and silence need no minimum motion.

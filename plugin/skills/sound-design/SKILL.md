@@ -21,6 +21,14 @@ Environment physical spaces; Action/Crowd; Blocking; Dialogue/Voice; Director in
 
 Locate each sound source and listener perspective. Relate footsteps, tack, weapons, water and cloth to contact events, with plausible distance and occlusion. Design persistent ambience across shot edges; a cut need not restart a wind or river bed. Distinguish physical silence, withheld attention and absent score. Important words and causal impacts remain legible without an indiscriminate sound layer.
 
+Follow the same event relations as Action, Performance and Voice. One person's
+footsteps can cease while the other's continue; a held cup has no new set-down
+impact. Scope a contact sound to its authorized cause instead of importing a
+generic list of object noises. Keep explicitly authored offscreen or asynchronous
+relations, with their source and listening perspective. A visual pause does not
+silence the room or stop another speaker. Consume the current Voice decision for
+each spoken event; merely loading Sound does not create that decision.
+
 Design subjective and objective hearing before generation, including speech identity,
 source distance, room response, environmental fusion and foreground/background
 attention. Tie a change to a dramatic event: a cry can interrupt inward attention;

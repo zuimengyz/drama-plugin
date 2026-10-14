@@ -21,6 +21,14 @@ Scene Layout; Scene Beat and Dialogue Bibles; Performance objectives; Prop/Anima
 
 Stage who can see, hear, approach or interrupt whom. Tie each movement to an intention or external event; identify handoff giver/receiver and which hand or side matters. Preserve available paths and previous exit/next entry states. Keep a listener’s position legible even without a cut to them. Separate movement destination and timing from detailed force/grip mechanics.
 
+For an encounter, follow each participant separately through approach, noticing,
+yielding, passage and recovery. Specify who continues while another waits and the
+occupied space that must clear before resuming; a glance is not automatically a
+shared stop. Use the carried object's trailing edge as well as the person's body.
+Preserve simultaneous tasks where plausible instead of serializing every gesture.
+If a passage requires stopping both actors, reconcile that change with Performance
+and the approved event rather than disguise it as a camera convenience.
+
 ## Outputs
 
 Produce a versioned `Blocking Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.

@@ -19,7 +19,15 @@ Environment topology; Scene Beat Bible; approved people/objects and crowd intent
 
 ## Professional decisions
 
-Use the Environment zone graph rather than a second map. Set character start positions, relation distances, army placement, practical object locations and viable movement lanes. Distinguish a current placement from a permanent landmark. Give only useful functional scale; reserve space for an actor to turn, mount, pass or hand off.
+Use the Environment zone graph rather than a second map. Distinguish current
+placements from permanent landmarks. For a contested passage or handoff, sketch
+the relevant footprint at useful relative scale: include the carried object,
+hands and receiver, not just actor centres. Check the turn's swept space and a
+waiting position outside the through-path; a narrow lane need not fit two people
+abreast. Label assumed dimensions and show what would invalidate the arrangement.
+Keep this proof with the existing layout; hand Blocking the usable lane and
+release boundary, and Camera the visible landmarks. A clear plan does not prove
+body reach, vertical clearance or image readability.
 
 ## Outputs
 

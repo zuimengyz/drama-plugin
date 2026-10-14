@@ -18,11 +18,10 @@ artistic relation, rather than applying the character rule to every object.
 For a screenplay-derived continuity-critical PROP, consume the independent Prop
 Design original and Asset Manifest. Prepare its necessary reference at the first
 narrative appearance through the same existing asset sequence, then select
-reuseSelection for the same object in later Scenes. Keep current handling and
-open/closed state separate from its baseline. Do not replace a required prop
-reference with a text handoff merely because generation is not authorized;
-retain the unpaid candidate and pending duty instead. Prop Design owns the
-appearance; this sequence does not create a competing design.
+reuseSelection for the same object in later Scenes. Prop owns appearance; Action
+owns current handling/open/closed state. A structural view and a current-state
+proof serve different uses of that same identity. Keep a required reference
+pending when generation is unavailable rather than downgrading it to text.
 Preserve existing adoption and media. Unproven historical relations remain unknown.
 These rules govern post-selection professional design, not Host first writing.
 
@@ -59,6 +58,12 @@ Every concrete choice has a reason and original source references. Keep sourced
 constraints distinct from visual interpretation. If an interpretation conflicts
 with dramaturgy, return it upstream; appearance cannot revise identity. Design
 continuity changes against the specified arc stage; do not reveal later states early.
+At reuse, distinguish inherited identity, target costume/location and sourced
+temporary state. Read Look for fatigue, dirt or injury and Performance/Blocking
+for expression and pose; do not derive them from an identity image. A recognizably
+continuous face does not validate the clothes or room. If a take imports those
+incidental properties, preserve the accepted identity and repair the selected
+use with its existing owners; a failed take does not authorize recasting.
 HERO_CASTING changes prominence and expressive readability only. It cannot add
 muscle, broaden shoulders, beautify, reduce age or upgrade costume/social position.
 

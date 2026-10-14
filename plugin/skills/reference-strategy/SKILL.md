@@ -24,13 +24,22 @@ Separate identity portrait, scale proof, environment topology, material, contact
 ## Outputs
 
 For a continuity-critical prop, cite the exact Prop Design and test its silhouette,
-scale, separable parts, material and needed contact surfaces. Choose only the
-views/state proofs the actual consumers need; do not prescribe a fixed reference
-count. Reuse the accepted baseline at later appearances. A character portrait's
-incidental object or an unreviewed video does not establish a prop identity.
-Track knowledge available to the Host separately from reference bytes actually
-bound to the Provider; textual projection cannot be reported as delivered image
-conditioning. Preserve unresolved delivery/capability constraints.
+relative scale, parts, material and needed contact surfaces. For each selected consumer,
+judge what the reference establishes, what visible state it merely depicts and
+what belongs to the target design. A face reference does not choose this scene's
+costume or room; an open-body construction view does not set a closed-carry entry.
+State the intended carry and consequential exclusions in the existing reference
+duty, not a second design. A prohibition alone is not evidence that the model
+separates those properties. When competing visual cues matter, compare an already
+accepted suitable view or a target-state proof with route selection; do not
+automatically add references, discard good originals or redesign to fit a slot.
+
+Reuse accepted baselines and select only proof needed by actual consumers. One
+reviewed image may serve several evidenced duties. Track available Host knowledge,
+selected inputs and bytes actually sent separately, using the final request and
+its source bindings rather than an earlier preparation preview. Text conditioning
+and delivery success do not prove visual consistency; unknown evidence stays
+unknown. A portrait's incidental object does not establish that prop's identity.
 
 Produce a versioned `Reference Plan` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.
 

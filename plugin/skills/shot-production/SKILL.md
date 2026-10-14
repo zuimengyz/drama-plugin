@@ -20,13 +20,16 @@ capacity/delivery still use the selected model's existing checks.
 
 Include continuity-critical props in that preparation. Consume their Prop Design
 original and Asset Manifest, reuse the exact accepted PROP identity/design version
-and verified reference Media across relevant Shots/Scenes, and project the current
-handling/open/closed state separately. Before sealing, compare the final prompt
-and actual input bindings with the baseline: silhouette, scale, parts and material
-must survive without conflicting per-Shot reinvention. A reference in Host context
-is not evidence that its bytes were sent. Missing required proof holds only the
-affected production duty; keep unpaid preparation available. Historical sent
-prompts, candidates and their asset bindings remain immutable.
+and verified Media. Resolve the target entry, change and exit from current Action;
+an inherited result or a construction view is not another event to perform.
+Select only this unit's necessary facts from those originals; keep history and
+future action as context. Check that current state reaches the final projection,
+not merely an attached Bible. Repeated reminders are not stronger physical proof.
+Compare the final request's actual inputs with each reference's intended duty and
+target state; an earlier preview or available Host image is not proof of delivery.
+Preserve accepted identities and useful footage when a use fails; return the
+specific deviation to its owner. Missing required proof holds only the affected
+duty, with unpaid preparation available. Sent prompts and bindings stay immutable.
 
 For selected Seedance native audio/video production, resolve the current Sound and
 spoken-event design before freezing the request. Verify applicable delivery,

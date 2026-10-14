@@ -32,15 +32,22 @@ become a separate reusable Asset.
 
 For a continuity-critical prop, author one baseline with function, silhouette,
 dimensions or relative scale, construction and separable parts, materials and
-recognizable surface features. Separate invariant identity from current open,
-closed, held, damaged or placed state. Explain design interpretations and pin
-user clarifications separately from screenplay/source facts. Hand this original
-to Asset Planning/Resolution for the existing PROP preparation and reference
-workflow. Establish the necessary visual proof at its first narrative appearance;
-later consumers reuse the accepted identity, version and verified Media. A new
-camera angle or handling state does not authorize redesigning or regenerating
-the object. Missing proof remains pending; text design alone is not observed
-visual consistency and does not authorize generation.
+recognizable surface features. Distinguish the object, its separable parts and its
+current state: an open construction view can prove the same body's matching lid
+without authorizing an opening or closing in a later carrying shot. Cite the
+current Action for entry, permitted change and exit; keep grip/support mechanics
+with Action and placement with Layout. Wear or damage has a sourced history, not
+a new identity each time it becomes visible. Pin user clarifications separately
+from source facts and design interpretation; uncalibrated images establish
+proportions, not exact dimensions.
+
+Hand the baseline and its actual consumers to Asset Planning/Resolution. Establish
+necessary visual proof at first narrative use, then reuse accepted identity,
+version and Media. A changed state or angle is not a new asset. Preserve useful
+approved views; request another proof only for a concrete unmet use, not a complete
+view set. Missing proof stays pending and does not authorize generation. A sound
+baseline can coexist with failed handling in a take: revise the failing use rather
+than redesigning the object to match the generated mistake.
 
 Produce a versioned `Prop Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.
 

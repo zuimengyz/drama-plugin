@@ -94,6 +94,10 @@ Check applicable relations rather than isolated keywords:
   applies. An open object that is later closed is a transition; requiring it to
   stay open throughout the same closing action is a conflict. Separate entry,
   current action and exit states, and inherited background from new events.
+  Keep stable construction out of event numbering: an existing nailed joint is
+  not a new hammer strike. A preceding shot's lid closure is a closed entry for
+  carrying, not another closure. Conversely, a newly approved open-to-closed action
+  is legitimate; continuity does not freeze all states.
 - **Action and objects:** prerequisites, hand/tool contacts, load/support, object
   identity and start/end consequences must fit the intended action. Distinguish
   an object from its parts; motion cannot silently replace its geometry or create
@@ -110,6 +114,9 @@ Check applicable relations rather than isolated keywords:
 - **Scope and inputs:** check the selected unit's opening, ending and actual
   reference duties. Do not replay completed events, advance future ones or claim
   an unobserved reference state. Missing physical evidence remains unverified.
+  Check implied events across channels too: if the cup stays held until this
+  shot ends, a cup-set-down sound cannot silently perform the next shot's action.
+  Preserve intentional offscreen or asynchronous sound when its owner authored it.
 - **Repetition:** merge wording only when subject, time, scope, meaning and duty
   coincide. Keep necessary per-phase constraints, exact canonical speech and
   independent requirements even when they share a noun or similar words.

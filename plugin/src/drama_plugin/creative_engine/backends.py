@@ -39,9 +39,9 @@ PROFESSIONAL_CRAFT = {
     D.SUBJECTS: ("specialized-asset-design/SKILL.md",),
     D.WORLD: ("specialized-asset-design/SKILL.md", "scene-layout/SKILL.md"),
     D.PERFORMANCE: ("dramatic-performance-direction/SKILL.md",),
-    D.ACTION: ("action-choreography/SKILL.md",),
+    D.ACTION: ("blocking/SKILL.md", "action-choreography/SKILL.md"),
     D.CAMERA: ("cinematography/SKILL.md",), D.LIGHTING: ("lighting-design/SKILL.md",),
-    D.COLOR: ("color-design/SKILL.md",), D.SOUND: ("sound-design/SKILL.md",),
+    D.COLOR: ("color-design/SKILL.md",), D.SOUND: ("voice-direction/SKILL.md", "sound-design/SKILL.md"),
     D.EDITORIAL: ("editorial-design/SKILL.md",), D.REFERENCE: ("reference-strategy/SKILL.md",),
 }
 BOUNDARY = """You are a domain author, not a workflow owner. Produce only the requested
@@ -139,6 +139,12 @@ def professional_fact_schemas(definitions: dict[str, JsonValue]) -> dict[D, dict
             "projectionSubjects": {"type": "array", "minItems": 1, "items": subject}},
             ("sceneDPD", "beats", "lines", "projectionSubjects")),
         D.SOUND: object_schema({"ambience": rows({"design": text}, ("design",)), "orderingRules": strings,
+            # Existing audio consumer declarations, not a new event authority.
+            # The model adapter selects Canon lines and binds these identities.
+            "audio_events": rows({**{key: text for key in ("event_id", "spoken_content_id", "speaker_key",
+                    "performance", "space", "attention", "continuity")},
+                "delivery_mode": {"type": "string", "enum": ["VOICE_OVER", "ON_SCREEN", "OFF_SCREEN"]}},
+                ("event_id", "spoken_content_id", "speaker_key", "delivery_mode"), nonempty=False),
             "speechRelations": rows({"eventId": text, "targetEventId": text,
                 "relation": {"type": "string", "enum": [r.value for r in TemporalRelation]}},
                 ("eventId", "targetEventId", "relation"), nonempty=False)},
@@ -172,12 +178,12 @@ def professional_validation_schema() -> dict[str, JsonValue]:
     # These are the existing executable Professional paths, not creative answers.
     # The author chooses facts; the projection can only consume their typed leaves.
     descriptions = {
-        "ACTION": "actionPhases: ordered rows with beatId, action, entryState, observable and spokenIds (exact Canon IDs, possibly empty). Also physicalStateConstraints when needed.",
+        "ACTION": "actionPhases: executable units with beatId, action, entryState, observable and spokenIds (exact Canon IDs, possibly empty). A PERFORMANCE beat per actor does not require a separate unit: retain concurrent contact, listening and ongoing speech in the same action row. Physical substeps stay within that row unless an authored boundary needs separate execution. Also physicalStateConstraints when needed.",
         "CAMERA": "movement: object with policy; cameraPosition, height, pointOfView, lensIntention, axisAndScreenDirection as applicable.",
         "WORLD": "setting; weather, time, physicalWorldRules as applicable.",
         "SUBJECTS": "presentSubjects: rows with id, role, inSceneBehaviour; identityConstraints and absences as applicable.",
         "PERFORMANCE": "sceneDPD: authored SceneDPD context and direction only, no sceneId/sourceFingerprint/scope; beats: rows with id, actor, target, objective, obstacle, tactic, note, transitionTrigger, direction and physicalExpression (authored observable performance, never inferred psychology); lines: exact selected Canon spokenContentId and beatId with dramaticAction, observableIntent, continuity, changeFromPrevious and optional direction; projectionSubjects: SubjectProjection declarations. NON_INTERACTIVE_DESTINATION requires spatialPresenceOnly=true, behaviorExpansionForbidden=true and no response, dialogue, listener or objective/tactic obligations. Do not invent any destination behavior.",
-        "SOUND": "ambience: authored rows with design; orderingRules; optional speechRelations rows eventId/targetEventId (exact Canon spoken IDs), relation from existing TemporalRelation enum, no estimated timing or Source refs; silence/acousticSpace/contactTiedSound/dialogueAndLegibility as applicable. Authored silence is valid.",
+        "SOUND": "ambience: authored rows with design; orderingRules; optional audio_events bind current Voice delivery per exact spoken line, using delivery_mode and optional performance/space/attention/continuity, never new words or estimated timing. Optional speechRelations rows eventId/targetEventId (exact Canon spoken IDs), relation from existing TemporalRelation enum, no estimated timing or Source refs; silence/acousticSpace/contactTiedSound/dialogueAndLegibility as applicable. Authored silence is valid.",
         "LIGHTING": "sources; directionAndQuality; intensityRatios, constraints, nightContinuity as applicable.",
         "COLOR": "scenePalette; arc, constraints as applicable.",
         "EDITORIAL": "temporalStructure; compression, protectedEvents, spatialOrientation as applicable.",

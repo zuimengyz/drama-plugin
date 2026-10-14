@@ -315,6 +315,10 @@ class ExecutionProjection:
                 raise ValueError("UNIT_FIELD_NOT_EXECUTABLE")
             if domain == D.CAMERA and "movement" in ref.path:
                 slot = "video.camera_motion"
+            if domain == D.ACTION and ref.path[1:2] == ("physicalStateConstraints",):
+                # A constraint may be a string or nested/list leaves. Preserve
+                # its meaning instead of scheduling each leaf as another action.
+                slot = "preserve.physical_state"
             subject = None
             if domain == D.SUBJECTS and 'presentSubjects' not in ref.path:
                 # Constraints outside a subject row retain their authored scope.

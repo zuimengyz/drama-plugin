@@ -77,6 +77,8 @@ class ExactSources:
 
 def package_and_reader(count: int) -> tuple[ProductionPackage, PackageReader]:
     records: dict[str, JsonValue] = {
+        "shot": {"content": {"subjectAction": "One step.", "visualEntryState": "Standing.",
+            "visualExitState": "Stopped.", "cameraIntent": "Fixed view.", "editingRelation": "Hold."}},
         "ACTION": {"content": {"actionPhases": [{"beatId": "beat-0", "spokenIds": [],
             "entryState": "Standing.", "observable": "Stopped.", "action": "One step."}]}},
         "PERFORMANCE": {"content": {"beats": [{"id": "beat-0", "physicalExpression": "Turns."},
@@ -86,10 +88,10 @@ def package_and_reader(count: int) -> tuple[ProductionPackage, PackageReader]:
             "speechRelations": [{"eventId": "line-0", "targetEventId": "line-1", "relation": "BEFORE"}]}},
     }
     scope = PackageScope(work=ref(SourceOwner.WORK, "work"), scene=ref(SourceOwner.SCENE, "scene"),
-        shot=ref(SourceOwner.SHOT, "shot"))
+        shot=ref(SourceOwner.SHOT, "shot").model_copy(update={"fingerprint":sha256_canonical(records['shot'])}))
     sources = tuple(DomainReference(domain=SourceDomain(name), reference=SourceReference(
         owner=SourceOwner.PROFESSIONAL, artifact_ref=name, version=1,
-        fingerprint=sha256_canonical(body), path=("content",))) for name, body in sorted(records.items()))
+        fingerprint=sha256_canonical(body), path=("content",))) for name, body in sorted(records.items()) if name != 'shot')
     content = PackageContent(scope=scope, sources=sources,
         obligations=(scope.shot.model_copy(update={"path": ("content", "purpose")}),),
         generation_intent=GenerationIntent(duration_ms=4000,

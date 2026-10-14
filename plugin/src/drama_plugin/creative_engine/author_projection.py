@@ -244,6 +244,12 @@ def professional_schema() -> dict[str, JsonValue]:
             row=object_value(object_value(props['references'])['items']);p=object_value(row['properties']);p.pop('id');row['required']=[k for k in sequence(row['required']) if k!='id'];rename(row,'beatIds','beatSelections',arr(SELECT))
         if domain=='SOUND':
             row=object_value(object_value(props['speechRelations'])['items']);rename(row,'eventId','spokenSelection',SELECT);rename(row,'targetEventId','targetSpokenSelection',SELECT)
+            event=object_value(object_value(props['audio_events'])['items'])
+            event_props=object_value(event['properties'])
+            for key in ('event_id','spoken_content_id','speaker_key'):event_props.pop(key)
+            event_props['spokenSelection']=SELECT
+            event['required']=['spokenSelection','delivery_mode']
+            event['additionalProperties']=False
         if domain=='PERFORMANCE':
             scene=object_value(props['sceneDPD']); direction=object_value(object_value(scene['properties'])['direction'])
             p=object_value(direction['properties']);p.pop('interactionTarget',None);p['interactionTargetSelection']=SELECT
@@ -385,10 +391,19 @@ def professional_projection(value: JsonValue, request: AuthorRequest) -> JsonVal
         elif domain=='REFERENCE':
             facts['references']=[{**{k:v for k,v in object_value(raw).items() if k!='beatSelections'},'id':identity('reference',[request.scope.work_id,request.scope.scene_id,request.scope.shot_id],i),
                 'beatIds':[choose(v,beat_ids,'beatSelections') for v in sequence(object_value(raw)['beatSelections'])]} for i,raw in enumerate(sequence(facts['references']))]
-        elif domain=='SOUND' and 'speechRelations' in facts:
-            facts['speechRelations']=[{**{k:v for k,v in object_value(raw).items() if k not in {'spokenSelection','targetSpokenSelection'}},
+        elif domain=='SOUND':
+            if 'speechRelations' in facts:
+                facts['speechRelations']=[{**{k:v for k,v in object_value(raw).items() if k not in {'spokenSelection','targetSpokenSelection'}},
                 'eventId':object_value(choose(object_value(raw)['spokenSelection'],spoken,'spokenSelection'))['id'],
                 'targetEventId':object_value(choose(object_value(raw)['targetSpokenSelection'],spoken,'targetSpokenSelection'))['id']} for raw in sequence(facts['speechRelations'])]
+            if 'audio_events' in facts:
+                events: list[JsonValue]=[]
+                for raw in sequence(facts['audio_events']):
+                    event=object_value(raw)
+                    line=object_value(choose(event['spokenSelection'],spoken,'spokenSelection'))
+                    events.append({**{k:v for k,v in event.items() if k!='spokenSelection'},
+                        'event_id':line['id'],'spoken_content_id':line['id'],'speaker_key':line['speaker']})
+                facts['audio_events']=events
         output.append({'domain':domain,'facts':facts})
     return output
 

@@ -36,6 +36,14 @@ For serial video segments, elaborate `movement.phaseDirections` against the exis
 
 Produce a versioned `Camera Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.
 
+For the native handoff, put the chosen viewing position, contact sightline and
+occlusion conditions in `cameraPosition`, `height`, `lensIntention` or the current
+`movement` decision. `continuityInterpretation` explains the reasoning but is not
+an execution field. Preserve a concise usable decision in the former fields,
+without copying the whole explanation. Align `phaseDirections.phaseIndex` with
+the final Action execution units, not individual actors' beats or discarded
+substeps. A trigger and its visible consequence must belong to that same unit.
+
 ## Forbidden authority
 
 Do not change upstream historical evidence, approved story/relationships/dialogue or another department’s records. Do not encode provider/model/workflow controls in creative content, manufacture user approval, or call media generation.

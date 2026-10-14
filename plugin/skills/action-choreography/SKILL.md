@@ -24,8 +24,11 @@ Decompose action by physical changes: preparation, contact, support/load transfe
 At a critical transfer, work backwards from the receiving grip: where can the
 hands enter while the previous support still carries weight? Check intermediate
 poses, not only a plausible start and finish. Returning an object flat to a table
-does not leave finger clearance everywhere. Identify the supported region,
-accessible underside and free hand before releasing the table; cloth is a contact
+does not leave finger clearance everywhere. Describe the remaining support
+footprint and the hand's free approach to an accessible underside in that very
+pose; saying "slide underneath" is not proof of access. Resolve the path before
+transferring weight, without silently adding a support prop or changing geometry.
+Identify the supported region and free hand before releasing the table; cloth is a contact
 layer, not an invisible lifting sling. Retain assumptions about balance or material
 response as assumptions. For small contacts, establish a visible before/after
 difference and its cause: lifting a cup alone need not flatten curled paper, and
@@ -35,6 +38,17 @@ approved action without adding a new dramatic event.
 ## Outputs
 
 Produce a versioned `Action Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.
+
+For the native professional handoff, `actionPhases` rows are separately selected
+execution units. Physical substeps and each actor's Performance beat are not
+automatically separate units. Keep a continuous shot's causal substeps, parallel
+tasks and uninterrupted speech within its `action` row, with shared entry/exit
+states and all applicable spoken selections. Use multiple rows for an authored
+execution boundary, not to enumerate a mechanics checklist. Preserve simultaneous
+partner expression in the existing Performance `physicalExpression` field; the
+row's primary beat reference does not make other participants disappear. Deliver
+support/access conditions in these action leaves or `physicalStateConstraints`,
+so execution receives the decision rather than only a background explanation.
 
 ## Forbidden authority
 

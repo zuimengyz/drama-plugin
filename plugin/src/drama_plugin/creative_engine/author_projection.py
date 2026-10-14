@@ -61,6 +61,18 @@ def check(value: JsonValue, schema: dict[str, JsonValue], role: AuthorRole) -> N
     definitions = schema.get('$defs', {})
     assert isinstance(definitions, dict)
     findings = []
+    schema_fields: set[str] = set()
+    def collect_fields(node: JsonValue) -> None:
+        if isinstance(node, dict):
+            properties = node.get('properties')
+            if isinstance(properties, dict):
+                schema_fields.update(properties)
+            for child in node.values():
+                collect_fields(child)
+        elif isinstance(node, list):
+            for child in node:
+                collect_fields(child)
+    collect_fields(schema)
     def walk(v: JsonValue, c: dict[str, JsonValue], path: tuple[str | int, ...]) -> None:
         ref = c.get('$ref')
         if isinstance(ref, str):
@@ -98,7 +110,10 @@ def check(value: JsonValue, schema: dict[str, JsonValue], role: AuthorRole) -> N
             for key, child in v.items():
                 if key in SYSTEM_FIELDS or c.get('additionalProperties') is False and key not in properties:
                     findings.append(failure('DTO_SCHEMA', 'AUTHOR_SYSTEM_FIELD_FORBIDDEN', role=role,
-                        field_path=(*path,key if key in SYSTEM_FIELDS else '<extra>'), validator='system_field_ownership')); continue
+                        # A schema-owned name in the wrong layer is safe,
+                        # useful correction feedback. Arbitrary model keys
+                        # remain redacted; rejection is unchanged.
+                        field_path=(*path,key if key in SYSTEM_FIELDS or key in schema_fields else '<extra>'), validator='system_field_ownership')); continue
                 contract = properties.get(key)
                 if isinstance(contract, dict): walk(child, contract, (*path,key))
                 else: reject_nested(child, (*path,key))

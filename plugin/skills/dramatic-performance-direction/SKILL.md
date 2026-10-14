@@ -68,6 +68,11 @@ Create three sparse layers in temporary Agent state:
 - Beat DPD: current actor, target, objective, obstacle, tactic, authority/relationship position, internal activation, external control, and transition trigger.
 - Line DPD: the canonical `spokenContentId` and speaker, this line's dramatic action, observable intent, continuity/change, and only genuine Beat overrides.
 
+In the typed handoff, scene-wide `socialConstraints` belongs directly to
+`sceneDPD`; its nested `direction` carries the inheritable actor-direction values
+and `performanceBoundaries`. Keep these existing layers distinct rather than
+adding scene context keys to an actor-direction patch.
+
 Compose `Scene → Beat → Line` with the typed Core. Missing and null fields inherit; v1 has no scalar-reset syntax. A supplied list replaces the parent list, and an empty list clears it. Line wins over Beat, Beat wins over Scene. Any mismatched Scene or Beat reference is invalid. Keep the resulting `DPDSnapshot` and fingerprint together so downstream work can replay the same decision without reinterpreting the whole script.
 
 Use action and relationship language, not moral labels or a single emotion label. Realize the source-owned task through the existing Beat and Line: what does this person receive, seek, give or withhold from the actual or imagined addressee, and what relationship condition remains for the next beat? Connect continuation or change to an approved word, encounter or consequence; an anticipated response is not a response that has occurred. A tactic can serve one need while frustrating another. Locate the difficulty in doing or withholding something from this partner, not in displaying two emotions in sequence. When knowledge and objective seem opposed, compare an intentionally impossible desire with a misnamed task before returning a source conflict; do not silently replace either with concealment, victory or a setting activity.

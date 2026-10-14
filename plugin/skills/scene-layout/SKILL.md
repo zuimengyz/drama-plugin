@@ -33,6 +33,12 @@ body reach, vertical clearance or image readability.
 
 Produce a versioned `Scene Layout Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.
 
+In the native WORLD handoff, retain the selected arrangement and its usable
+clearance conditions in `setting` and `physicalWorldRules`. A deferred instruction
+to "check that it fits" is still unresolved. Distinguish a feasible arrangement
+under stated relative-scale assumptions from measured space; keep the critical
+occupied regions and release boundary available to Action and Camera consumers.
+
 ## Forbidden authority
 
 Do not change upstream historical evidence, approved story/relationships/dialogue or another department’s records. Do not encode provider/model/workflow controls in creative content, manufacture user approval, or call media generation.

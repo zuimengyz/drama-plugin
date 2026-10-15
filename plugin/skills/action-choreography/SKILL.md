@@ -39,14 +39,15 @@ approved action without adding a new dramatic event.
 
 Produce a versioned `Action Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.
 
-In the native handoff, each `actionPhases` row is a selected execution unit, not
-one mechanical substep or one actor's Beat. Keep a continuous take's causal
-sequence, concurrent partner tasks and uninterrupted speech in its `action`,
-with shared `entryState`, `observable` and applicable spoken selections. State
-what enables each transfer, what overlaps, and what completes the unit. Include
-necessary parallel physical expression here from the participants' Beat originals;
-the primary beat selection does not silence partners. Formal PERFORMANCE accepts
-`beats[*].physicalExpression`, not a top-level field of that name.
+In the native handoff, an `actionPhases` row is an execution unit, not an actor or
+mechanical substep. Its `action` carries the causal sequence, concurrent partner
+expression and uninterrupted speech against one `entryState` and `observable`
+end condition. Take expression from the participants' Beat originals; selecting
+one primary Beat does not serialize their tasks. A reused Beat carries only
+expression valid across its selected units; stage-local changes belong here.
+Before releasing a support, establish the receiving contact and its accessible
+approach in the current pose. Do not manufacture a new Beat or split merely to
+separate actors, physical substeps or estimated time windows.
 
 Use event-relative timing or estimated local windows where they clarify execution;
 never turn each window into another row. Separate a required repeated stroke from

@@ -81,14 +81,14 @@ Distinguish what a line does in the present exchange from what its words report 
 
 If rival readings produce the same realization, preserve their interpretive value without claiming distinct tactics. A montage, ritual or observational passage may sustain attention without a new turn in every beat; do not invent a response or movement to demonstrate development. Keep internal activation distinct from external control: high activation may remain highly controlled. `speakerKey` references identity; it does not duplicate age, rank, biography, personality, or Voice Profile.
 
-Locate each partner's receiving opportunity before, during and after a word or
-contact, including sourced non-response. Separate a meaningful held task from
-repeated business added to occupy time. Give Body, Voice and Editorial the same
-trigger and release, not serial reactions or extra pauses per department. Retain
-each actor's Beat `physicalExpression`; Action carries their concurrent visible
-relation in the current unit. Whole-shot SUBJECTS behavior is context, not a
-second action track. Do not add a top-level PERFORMANCE physicalExpression or
-put second-by-second timing in psychological DPD.
+Locate each partner's receiving opportunity around a word or contact, including
+sourced non-response. A held task needs meaning, not repeated business to fill
+time. Body, Voice and Editorial share its trigger and release, not extra pauses.
+Keep `physicalExpression` inside each Beat. If Action reuses that Beat, its
+expression must hold in every selected unit; give stage-local changes and
+concurrent partner expression to the current Action. Do not split a psychological
+Beat just for a physical substep or put second-by-second timing in DPD. Whole-shot
+SUBJECTS behavior remains context, not a second action track.
 
 Do not add speech speed, pitch, loudness, pause milliseconds, articulation, voice identity, provider prompt, model settings, camera or framing to DPD. Reuse the existing DPD fields; the R2 nested playability witnesses add source/carrier evidence without a second psychological authority. The separately owned Performance Bible may author gaze, posture, gesture, breath behavior and physical-state expression; Blocking owns paths/positions and Action owns physical mechanics. Voice Direction consumes that common performance truth for vocal delivery. Do not generate Audio/Visual Media, persist a new business entity, or invent a DPD-specific Tool.
 

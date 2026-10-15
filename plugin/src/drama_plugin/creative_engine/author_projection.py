@@ -255,6 +255,7 @@ def professional_schema() -> dict[str, JsonValue]:
             row=object_value(object_value(props['presentSubjects'])['items']); rename(row,'id','subjectSelection',SELECT)
         if domain=='ACTION':
             row=object_value(object_value(props['actionPhases'])['items']);rename(row,'beatId','beatSelection',SELECT);rename(row,'spokenIds','spokenSelections',arr(SELECT))
+            row['description']='One execution unit, not one actor or physical substep. Action carries the current causal sequence and concurrent partner expression between entryState and observable; beatSelection selects its primary performance Beat, not a separate turn for each actor.'
         if domain=='REFERENCE':
             row=object_value(object_value(props['references'])['items']);p=object_value(row['properties']);p.pop('id');row['required']=[k for k in sequence(row['required']) if k!='id'];rename(row,'beatIds','beatSelections',arr(SELECT))
         if domain=='SOUND':
@@ -270,6 +271,8 @@ def professional_schema() -> dict[str, JsonValue]:
             p=object_value(direction['properties']);p.pop('interactionTarget',None);p['interactionTargetSelection']=SELECT
             direction['required']=['interactionTargetSelection' if k=='interactionTarget' else k for k in sequence(direction['required'])]
             beat=object_value(object_value(props['beats'])['items']);p=object_value(beat['properties']);
+            p['physicalExpression']={**object_value(p['physicalExpression']),
+                'description':'Observable expression valid in every Action unit selecting this Beat. Stage-local changes belong in that unit action; psychological Beat boundaries need not follow physical substeps.'}
             for old in ('id','actor','target'): p.pop(old,None)
             beat['required']=[k for k in sequence(beat['required']) if k not in {'id','actor','target'}]
             p.update({'actorSelection':SELECT,'targetSelection':SELECT});beat['required']=[*sequence(beat['required']),'actorSelection','targetSelection']

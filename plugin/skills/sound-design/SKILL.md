@@ -42,8 +42,12 @@ with `spokenSelection`; the system binds IDs and speaker. Use existing delivery
 modes and performance/space/attention/continuity leaves for phrase-relative or
 estimated local timing. Do not invent `window_ms`. Put a segment's contact sound
 in existing `contactTiedSound` records with `phaseIndex` and `design`, not one
-unscoped whole-shot string. A deliberately continuous contact needs an explicit
-applicable record for each unit; persistent ambience stays shared. Silence can
+unscoped whole-shot string. Within one Action, use existing `spokenSelections`
+to bind narrower applicability; the system resolves these to `spokenIds` for
+selection, not a new time track. A deliberately continuous contact names all
+applicable utterances/units; persistent ambience stays shared. Keep
+`dialogueAndLegibility` and `orderingRules` to shared intelligibility: the selected
+utterance's delivery leaves own its local pause and vocal entry. Silence can
 withhold a layer without deleting the room. Keep a prelap or offscreen sound tied
 to its authored listening event rather than forcing visual synchrony. Verify these
 relations in the final request; native joint AV does not prove acoustic success,

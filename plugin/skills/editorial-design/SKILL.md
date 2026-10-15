@@ -47,10 +47,13 @@ provider clip duration nor a measured instruction to fill unused seconds.
 Produce a versioned `Editorial Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.
 
 For native execution, `temporalStructure` explains the whole Shot. Put current
-end/hold requirements in existing `protectedEvents` records scoped by `phaseIndex`;
-Action carries the selected sequence and shared windows. Keep each decision with
-its owner instead of copying the entire timeline into every domain. Do not put
-local timing into DPD or invent a parallel timing contract.
+end/hold requirements in existing `protectedEvents` records scoped by `phaseIndex`,
+with `spokenSelections` for narrower applicability within one Action; the system
+binds exact `spokenIds`. Action carries the selected sequence and shared windows.
+`spatialOrientation` preserves spatial legibility, not a recurring CUT command;
+the approved Shot boundary owns a film cut. Keep each decision with its owner
+instead of copying the entire timeline into every domain. Do not put local timing
+into DPD or invent a parallel timing contract.
 
 ## Forbidden authority
 

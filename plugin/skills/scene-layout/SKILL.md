@@ -39,7 +39,8 @@ body reach, vertical clearance or image readability.
 Produce a versioned `Scene Layout Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.
 
 In native WORLD, `setting` and `physicalWorldRules` retain the shared layout and
-lasting clearance constraints. Changing occupancy and release order go to the
+lasting clearance constraints. A rule's field name does not make a one-time
+process persistent: changing occupancy, object state and release order go to the
 current Action entry/action/exit, not global world rules. Keep assumed relative
 scale distinct from measurements; "check that it fits" remains unresolved.
 

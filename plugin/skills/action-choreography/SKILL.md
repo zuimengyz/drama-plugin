@@ -30,7 +30,8 @@ pose; saying "slide underneath" is not proof of access. Resolve the path before
 transferring weight, without silently adding a support prop or changing geometry.
 Identify the supported region and free hand before releasing the table; cloth is a contact
 layer, not an invisible lifting sling. Retain assumptions about balance or material
-response as assumptions. For small contacts, establish a visible before/after
+response as assumptions; do not assert drying or flattening without evidence of
+the change. For small contacts, establish a visible before/after
 difference and its cause: lifting a cup alone need not flatten curled paper, and
 reaching toward a sleeve does not prove it moved away from ink. Elaborate the
 approved action without adding a new dramatic event.

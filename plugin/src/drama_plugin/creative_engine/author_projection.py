@@ -5,6 +5,7 @@ identities. The exact authority request owns the ordinal map. Unknown selections
 are rejected; projections never repair, filter or invent creative facts.
 """
 from __future__ import annotations
+from collections.abc import Iterator
 from copy import deepcopy
 from drama_plugin.config.text_composition import AuthorRole
 from pydantic import JsonValue, TypeAdapter
@@ -22,6 +23,23 @@ SYSTEM_FIELDS = frozenset({*MANAGED_FIELDS, 'artifactRef', 'subjectRef', 'source
 TEXT: dict[str, JsonValue] = {'type': 'string', 'minLength': 1}
 SELECT: dict[str, JsonValue] = {'type': 'integer', 'minimum': 0,
     'description': 'Choose an ordinal from the supplied legal candidates; never construct an internal identifier.'}
+
+
+def event_scope_records(facts: dict[str, JsonValue], domain: JsonValue) -> Iterator[dict[str, JsonValue]]:
+    """Existing optional event containers whose consumer reads spokenIds.
+
+    Scope normalization only: never infer applicability from the design prose.
+    Do not traverse DPD's system-owned spoken coverage or arbitrary extensions.
+    """
+    fields = {'SOUND': ('contactTiedSound',), 'EDITORIAL': ('protectedEvents',)}
+    pending = [facts[key] for key in fields.get(domain, ()) if key in facts] if isinstance(domain, str) else []
+    while pending:
+        value = pending.pop()
+        if isinstance(value, dict):
+            yield value
+            pending.extend(value.values())
+        elif isinstance(value, list):
+            pending.extend(value)
 
 
 def obj(fields: dict[str, JsonValue], required: tuple[str, ...] | None = None) -> dict[str, JsonValue]:
@@ -256,9 +274,17 @@ def professional_schema() -> dict[str, JsonValue]:
         if domain=='ACTION':
             row=object_value(object_value(props['actionPhases'])['items']);rename(row,'beatId','beatSelection',SELECT);rename(row,'spokenIds','spokenSelections',arr(SELECT))
             row['description']='One execution unit, not one actor or physical substep. Action carries the current causal sequence and concurrent partner expression between entryState and observable; beatSelection selects its primary performance Beat, not a separate turn for each actor.'
+            object_value(props['physicalStateConstraints'])['description']='Lasting physical invariants only; changing contact, support and material state belong in the current action, with their cause, not a shared replay of the sequence.'
+        if domain=='WORLD':
+            object_value(props['physicalWorldRules'])['description']='Shared geometry and lasting constraints. Current occupancy and object changes belong to Action; a field named rule does not make a one-time event persistent.'
+        if domain=='EDITORIAL':
+            object_value(props['protectedEvents'])['description']='Current hold/end conditions: existing records with phaseIndex and design; spokenSelections narrows applicability within one Action. System binds exact spokenIds. Keep shared constraints shared.'
+            object_value(props['spatialOrientation'])['description']='Shared spatial legibility, not repeated cut instructions. Film cuts belong to authored Shot boundaries; technical continuation preserves the ongoing event.'
         if domain=='REFERENCE':
             row=object_value(object_value(props['references'])['items']);p=object_value(row['properties']);p.pop('id');row['required']=[k for k in sequence(row['required']) if k!='id'];rename(row,'beatIds','beatSelections',arr(SELECT))
         if domain=='SOUND':
+            object_value(props['contactTiedSound'])['description']='Causal contact records with phaseIndex and design; spokenSelections narrows applicability within one Action. System binds exact spokenIds. Ambience remains shared; no contact is invented to fill silence.'
+            object_value(props['dialogueAndLegibility'])['description']='Shared intelligibility only. Current delivery and pauses belong to the exact audio_events utterance, not a whole-shot narration instruction.'
             row=object_value(object_value(props['speechRelations'])['items']);rename(row,'eventId','spokenSelection',SELECT);rename(row,'targetEventId','targetSpokenSelection',SELECT)
             event=object_value(object_value(props['audio_events'])['items'])
             event_props=object_value(event['properties'])
@@ -422,6 +448,10 @@ def professional_projection(value: JsonValue, request: AuthorRequest) -> JsonVal
                     events.append({**{k:v for k,v in event.items() if k!='spokenSelection'},
                         'event_id':line['id'],'spoken_content_id':line['id'],'speaker_key':line['speaker']})
                 facts['audio_events']=events
+        for event in event_scope_records(facts, domain):
+            if 'spokenSelections' in event:
+                event['spokenIds'] = [object_value(choose(v, spoken, 'spokenSelections'))['id']
+                    for v in sequence(event.pop('spokenSelections'))]
         output.append({'domain':domain,'facts':facts})
     return output
 
@@ -509,6 +539,8 @@ def professional_candidate_view(rows: list[JsonValue], request: AuthorRequest) -
                         and b.get('event_id') == identifier and b.get('speaker_key') == spoken[words[identifier]].speaker
                         and ordinal(b, 'spoken_content_id', 'spokenSelection', words)):
                     b.pop('event_id'); b.pop('speaker_key')
+        for event in event_scope_records(facts, domain):
+            ordinal(event, 'spokenIds', 'spokenSelections', words)
     return candidates
 
 

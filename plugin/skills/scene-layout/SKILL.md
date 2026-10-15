@@ -20,7 +20,12 @@ Environment topology; Scene Beat Bible; approved people/objects and crowd intent
 ## Professional decisions
 
 Use the Environment zone graph rather than a second map. Distinguish current
-placements from permanent landmarks. For a contested passage or handoff, sketch
+placements from permanent landmarks. Compare alternate camera views against the
+same doorways, furniture, facing and object positions; changing viewpoint does
+not change the arrangement. A top view inferred from one image is a hypothesis,
+not recovered geometry. Multi-view sheets, panoramas or a simple plan can test
+consistency where needed; no tool or number of views is mandatory.
+For a contested passage or handoff, sketch
 the relevant footprint at useful relative scale: include the carried object,
 hands and receiver, not just actor centres. Check the turn's swept space and a
 waiting position outside the through-path; a narrow lane need not fit two people
@@ -33,11 +38,10 @@ body reach, vertical clearance or image readability.
 
 Produce a versioned `Scene Layout Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.
 
-In the native WORLD handoff, retain the selected arrangement and its usable
-clearance conditions in `setting` and `physicalWorldRules`. A deferred instruction
-to "check that it fits" is still unresolved. Distinguish a feasible arrangement
-under stated relative-scale assumptions from measured space; keep the critical
-occupied regions and release boundary available to Action and Camera consumers.
+In native WORLD, `setting` and `physicalWorldRules` retain the shared layout and
+lasting clearance constraints. Changing occupancy and release order go to the
+current Action entry/action/exit, not global world rules. Keep assumed relative
+scale distinct from measurements; "check that it fits" remains unresolved.
 
 ## Forbidden authority
 

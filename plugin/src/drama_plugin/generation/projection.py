@@ -59,9 +59,9 @@ class ExecutionProjection:
         self.reader = reader
 
     async def project(self, package: ProductionPackage, task: GenerationTask, plan: AudioExecutionPlan,
-                      selected: tuple[SelectedValue, ...]) -> PromptProjection:
+                      selected: tuple[SelectedValue, ...], *, legacy_scope: bool = False) -> PromptProjection:
         if task.unit is not None:
-            return await self._operation(package, task, selected, plan)
+            return await self._operation(package, task, selected, plan, legacy_scope=legacy_scope)
         facts: list[ExecutableFact] = []
         internal, diagnostics, aliases = [], [], []
 
@@ -207,12 +207,33 @@ class ExecutionProjection:
         return PromptProjection(ir, tuple(internal), tuple(diagnostics), tuple(aliases))
 
     async def _operation(self, package: ProductionPackage, task: GenerationTask,
-                         selected: tuple[SelectedValue, ...], plan: AudioExecutionPlan) -> PromptProjection:
+                         selected: tuple[SelectedValue, ...], plan: AudioExecutionPlan, *,
+                         legacy_scope: bool = False) -> PromptProjection:
         """Explicit finite leaf projection, scoped by production selection and receipt."""
         assert task.unit and task.profile
         facts: list[ExecutableFact] = []
         internal: list[CoverageEntry] = []
         diagnostics: list[ExecutionDiagnostic] = []
+        originals = await self.reader.selections(package)
+        multi_unit = any(i.selection.domain == D.ACTION and isinstance(i.value, dict)
+            and len(i.value.get('actionPhases', ())) > 1 for i in originals)
+        phase_camera = any(i.selection.domain == D.CAMERA and 'phaseDirections' in i.selection.reference.path
+            for i in selected)
+
+        def explicitly_scoped(item: SelectedValue) -> bool:
+            # Selection has already checked applicability. Inspect only structural
+            # scope on ancestors, never guess an event from words or case names.
+            ref = item.selection.reference
+            for original in originals:
+                base = original.selection.reference
+                if (base.artifact_ref, base.fingerprint) != (ref.artifact_ref, ref.fingerprint) or ref.path[:len(base.path)] != base.path:
+                    continue
+                value = original.value
+                for segment in ref.path[len(base.path):]:
+                    if isinstance(value, dict) and ('phaseIndex' in value or value.get('beatId') or value.get('spokenIds')):
+                        return True
+                    value = value[int(segment)] if isinstance(value, list) else value[segment]
+            return False
         slots = {D.ACTION: "video.action_progression", D.PERFORMANCE: "video.performance",
             D.WORLD: "environment.architecture", D.CAMERA: "camera.perspective",
             D.LIGHTING: "lighting.light_sources", D.COLOR: "secondary.color",
@@ -231,6 +252,18 @@ class ExecutionProjection:
             facts.append(fact)
         for item in selected:
             domain, ref = item.selection.domain, item.selection.reference
+            if not legacy_scope:
+                whole_event = multi_unit and (
+                    domain == D.SUBJECTS and ref.path[-1:] == ('inSceneBehaviour',) or
+                    domain == D.SOUND and 'contactTiedSound' in ref.path or
+                    domain == D.EDITORIAL and any(k in ref.path for k in
+                        ('temporalStructure', 'protectedEvents', 'compression')))
+                whole_camera = (phase_camera and domain == D.CAMERA and
+                    ref.path[-2:] == ('movement', 'policy'))
+                if (whole_event or whole_camera) and not explicitly_scoped(item):
+                    internal.append(CoverageEntry(fact_id='whole-shot-context:'+sha256_canonical(ref),
+                        domain=domain, source_ref=ref, obligation=O.QUALITY_SUPPORTING, status=S.INTERNAL_ONLY))
+                    continue
             # A Camera owner's explicitly named background is retained in the
             # package/selection, but never replayed in current-unit model prose.
             # Keep the frozen OperationSelection intact for recovery.

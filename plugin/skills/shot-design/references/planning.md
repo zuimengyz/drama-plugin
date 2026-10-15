@@ -32,7 +32,10 @@ Specify who/what the audience observes and bind what visibly happens to approved
 
 ## 5. Bind approved camera choices
 
-Consume Camera’s wide/medium/close/detail or another appropriate size by required information, performance, spatial relation, emotion, and action. Do not mechanically cycle sizes.
+Choose the information progression with Camera: space-to-detail may reveal a cause,
+detail-to-space may reframe its meaning; holding a two-shot can preserve a relation.
+Compare what wide/medium/close coverage reveals and withholds. No obligatory
+establishing view or wide-medium-close cycle follows from these options.
 
 Check Camera height/angle against context, blocking, editing, performance, spatial clarity, and subjective experience; reject simplistic “low equals powerful” formulas.
 
@@ -50,11 +53,26 @@ Consume Editorial’s cut/hold intent so planned Shot duration serves Scene, per
 
 ## 7. Preserve spatial continuity
 
-Track the 180-degree axis, screen direction, eyeline, relative position, movement direction, and environment geography. Crossing the axis is allowed only with an intentional narrative/visual reason and a design that prevents unintended confusion.
+Compare adjacent views against one layout: axis, real eyeline target, facing,
+screen direction and travel vector. A motivated axis crossing needs an audience
+reorientation, not a mirrored set. Multi-angle references preserve the same pose
+and occupancy unless an intervening action changes them; unseen geometry remains
+an assumption. Request a plan or alternate view only when it resolves uncertainty.
 
 ## 8. Preserve action and performance continuity
 
-For continuous action, track entry action, movement direction, hand/object state, character position, action phase, and exit action. Across Shots, preserve emotion, energy, attention, body orientation, and current intention unless the Scene supplies a cause for change.
+For each receiver compare predecessor exit with entry: position, facing, eyeline,
+motion, supporting hand/object state, camera endpoint and unfinished speech/task.
+A match cut carries the action phase; an ellipsis states what changed offscreen.
+Preserve emotion, attention and energy unless the Scene supplies a cause.
+
+Within a take, reconcile Action's ordered/parallel events, Performance's receiving
+opportunities, Voice's phrase entries and Editorial's holds/end condition. Use
+estimated local windows only where useful, with one shared reading of overlap.
+The technical clip boundary is neither a film cut nor an instruction to restart.
+Do not split a gesture into shots or invent repeated work to fill duration. Keep
+execution details in the current department leaves; Shot binds their intention
+and entry/exit, not a copied timeline or new timing fields.
 
 ## 9. Preserve visual and temporal references
 

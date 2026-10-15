@@ -39,16 +39,22 @@ approved action without adding a new dramatic event.
 
 Produce a versioned `Action Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.
 
-For the native professional handoff, `actionPhases` rows are separately selected
-execution units. Physical substeps and each actor's Performance beat are not
-automatically separate units. Keep a continuous shot's causal substeps, parallel
-tasks and uninterrupted speech within its `action` row, with shared entry/exit
-states and all applicable spoken selections. Use multiple rows for an authored
-execution boundary, not to enumerate a mechanics checklist. Preserve simultaneous
-partner expression in the existing Performance `physicalExpression` field; the
-row's primary beat reference does not make other participants disappear. Deliver
-support/access conditions in these action leaves or `physicalStateConstraints`,
-so execution receives the decision rather than only a background explanation.
+In the native handoff, each `actionPhases` row is a selected execution unit, not
+one mechanical substep or one actor's Beat. Keep a continuous take's causal
+sequence, concurrent partner tasks and uninterrupted speech in its `action`,
+with shared `entryState`, `observable` and applicable spoken selections. State
+what enables each transfer, what overlaps, and what completes the unit. Include
+necessary parallel physical expression here from the participants' Beat originals;
+the primary beat selection does not silence partners. Formal PERFORMANCE accepts
+`beats[*].physicalExpression`, not a top-level field of that name.
+
+Use event-relative timing or estimated local windows where they clarify execution;
+never turn each window into another row. Separate a required repeated stroke from
+an idle loop by its material result or dramatic purpose. Do not invent work to
+fill a clip. Current contact, support and visibility conditions belong in these
+action leaves; `physicalStateConstraints` holds lasting invariants, not a second
+recital of the sequence. A technical split inherits the actual release state,
+without restarting preparation; a film cut needs Shot/Editorial's authored boundary.
 
 ## Forbidden authority
 

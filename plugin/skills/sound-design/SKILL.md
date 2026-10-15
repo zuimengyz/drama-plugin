@@ -37,15 +37,17 @@ abrupt change, silence or retained ambience according to the scene, without a fi
 gain, duration or transition template. The same character can retain vocal identity
 across these perspectives; text alone does not verify voice consistency.
 
-For the native source-to-reviewed-media path, reuse Sound `audio_events` with exact
-`event_id` / `spoken_content_id` / `speaker_key`, existing delivery modes and concise
-performance, space, attention and continuity leaves. Scope ambient/contact/silence
-records to the current beat and, where one beat spans units, `phaseIndex`. Keep IDs,
-evidence and review status internal. Production compiles only applicable decisions
-through the model-specific adapter and verifies the final request. Native joint
-audio/video remains the default when selected; independent TTS/redubbing is a separate
-authorized route, not a Sound default. This handoff does not claim deterministic
-provider control or acoustic success before hearing the actual output.
+For the native author contract, `audio_events` selects the canonical utterance
+with `spokenSelection`; the system binds IDs and speaker. Use existing delivery
+modes and performance/space/attention/continuity leaves for phrase-relative or
+estimated local timing. Do not invent `window_ms`. Put a segment's contact sound
+in existing `contactTiedSound` records with `phaseIndex` and `design`, not one
+unscoped whole-shot string. A deliberately continuous contact needs an explicit
+applicable record for each unit; persistent ambience stays shared. Silence can
+withhold a layer without deleting the room. Keep a prelap or offscreen sound tied
+to its authored listening event rather than forcing visual synchrony. Verify these
+relations in the final request; native joint AV does not prove acoustic success,
+and independent TTS remains a separately authorized route.
 
 ## Outputs
 

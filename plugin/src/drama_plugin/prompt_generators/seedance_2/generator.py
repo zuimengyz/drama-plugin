@@ -116,7 +116,7 @@ class Seedance2PromptGenerator:
         counters = {'image': 0, 'video': 0, 'audio': 0}
         kind_name = {'image': '图片', 'video': '视频', 'audio': '音频'}
         coverage: dict[str, tuple[dict[str, Any], str, str]] = {}
-        preamble: list[str] = []
+        preamble: list[str] = [context['segment_timing']] if context.get('segment_timing') else []
         slots = []
         for ref in refs:
             kind = ref['kind']; counters[kind] += 1

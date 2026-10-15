@@ -31,7 +31,10 @@ Own actual shot purpose, subjects, coverage and entry/exit relation.
 
 ## Inputs and dependencies
 
-Camera, Blocking, Performance, Action, Lighting, Sound, Editorial and continuity refs under current Scene dramaturgy.
+Camera, Blocking, Performance, Action, Lighting, Sound, Editorial and continuity
+refs under current Scene dramaturgy. Use the [planning method](references/planning.md)
+to reconcile narrative scale, adjacent-view continuity and within-shot event rhythm;
+do not treat a provider segment as a new cinematic shot.
 
 ## Outputs
 

@@ -7,7 +7,7 @@ from typing import Any, cast
 
 from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.contracts.visual_prompt import VisualPromptIR
-from drama_plugin.generation.contracts import AudioExecutionPlan, Obligation, PromptIR
+from drama_plugin.generation.contracts import AudioExecutionPlan, ExecutionProfile, Obligation, PromptIR
 from drama_plugin.prompt_generators.contracts import AudioBinding, ProjectionAnnotations
 from drama_plugin.prompt_generators.registry import get_generator
 from drama_plugin.prompt_generators.seedance_2.policy import policy
@@ -26,6 +26,13 @@ class GeneratorPolicy:
 class ModelPolicyCatalog:
     """Read the real adapter capability catalog; no soft target masquerades as a limit."""
     def policy(self, model: str) -> GeneratorPolicy | None:
+        return self._policy(model, "t5r-seedance-unit-layout-v6")
+
+    def legacy_scope_policy(self, model: str) -> GeneratorPolicy | None:
+        """Exact previous policy for reading frozen preparations, never new compilation."""
+        return self._policy(model, "t5r-seedance-unit-layout-v5")
+
+    def _policy(self, model: str, adapter_version: str) -> GeneratorPolicy | None:
         spec = registry()["models"].get(model)
         if spec is None:
             return None
@@ -36,7 +43,7 @@ class ModelPolicyCatalog:
         except ValueError:
             return None
         material = {"model": model, "family": family, "generator_version": generator.version,
-                    "target_adapter_version": "t5r-seedance-unit-layout-v5",
+                    "target_adapter_version": adapter_version,
                     "generator_policy": policy(), "hard_limit": spec["prompt_limit"],
                     "native_audio": spec["native_audio"], "input_modes": spec["input_modes"],
                     "durations": spec["durations"]}
@@ -49,7 +56,7 @@ class SeedanceTargetAdapter:
     creative_authority = False
 
     def generate(self, ir: PromptIR, plan: AudioExecutionPlan, *, policy: GeneratorPolicy,
-                 input_mode: str, references=()) -> dict[str, Any]:
+                 input_mode: str, references=(), profile: ExecutionProfile | None = None) -> dict[str, Any]:
         rows, audio, mapping = [], [], {}
         count: dict[str, int] = {}
         subjects = sorted({fact.subject_id for fact in ir.facts if fact.subject_id and fact.domain == "SUBJECTS"})
@@ -139,10 +146,24 @@ class SeedanceTargetAdapter:
         generated = get_generator(policy.family).generate(cast(VisualPromptIR, view), rows,
             context={"mode": input_mode, "references": inputs, "native_audio": policy.native_audio and plan.native_audio_policy != "DISABLED",
                      "unit_layout": True,
+                     "segment_timing": self.segment_timing(profile),
                      "actor_tokens_only": True,
                      "annotations": ProjectionAnnotations(audio=tuple(audio)).model_dump(mode="json")},
             hard_limit=policy.hard_limit)
         return {**generated, "target_mapping": mapping}
+
+    @staticmethod
+    def segment_timing(profile: ExecutionProfile | None) -> str:
+        """Transport duration semantics only; creative windows remain literal owner text."""
+        if profile is None:
+            return ""
+        if profile.duration_mode == 'AUTO':
+            from drama_plugin.providers.video.registry import automatic_duration_bounds_ms
+            lo, hi = automatic_duration_bounds_ms(profile.model)
+            duration = f"本段自动时长范围{lo/1000:g}–{hi/1000:g}秒，上限不是填满目标"
+        else:
+            duration = f"本段生成时长{profile.requested_duration_ms/1000:g}秒"
+        return duration + "；下述时间窗是本段内的预计节拍，不代表切镜。保持注明的先后、并行与结束条件，不为凑时长补演或循环。"
 
 
 class ExactPromptTransfer:

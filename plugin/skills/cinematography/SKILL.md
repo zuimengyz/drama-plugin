@@ -19,7 +19,19 @@ Director Vision; Layout; Blocking; Performance; Action and Crowd Bibles.
 
 ## Professional decisions
 
-Choose what the audience must perceive before selecting movement or shot scale. Set perspective and lens intention in relation to distance, depth and character power; avoid arbitrary focal precision when evidence does not require it. Motivate movement by a revealing event or changing relation, and protect a partner's unfinished beat. Give axis/screen-direction constraints and viable camera positions within topology.
+Choose the information and relationship the audience must perceive, then the
+view. A wide view can disclose geography or isolation; a medium view can keep
+hands and partners together; a close view selects a reaction or detail while
+withholding space. Compare what each gains and loses, rather than cycling sizes.
+Height, angle, distance and depth work together: low does not automatically mean
+powerful. Motivate movement by a discovery or changing relation; a fixed view may
+let the action supply it. Protect the partner's unfinished beat.
+
+For alternate views, locate each camera against the same landmarks and action
+axis; preserve actor facing, eyeline targets and travel vectors in world space
+before checking their screen directions. A motivated axis crossing can use a
+visible crossing, neutral view or spatial re-establishment; state how the audience
+reorients. Reframing is not permission to relocate actors or mirror the set.
 
 Check the critical contact and its consequence from the proposed view, including
 actor/object occlusion at intervening poses. Framing four faces does not by itself
@@ -30,7 +42,14 @@ frame against the same action and listener task. Request a scoped staging or
 coverage alternative when needed; do not move a wall or require a close-up solely
 to certify every mechanical detail.
 
-For serial video segments, elaborate `movement.phaseDirections` against the existing Action phase. State the inherited camera condition, CONTINUE/START/CHANGE/STOP/HOLD decision, narrative trigger, motive, trajectory, extent and end state. Separate scene intent and preceding/following beats as background from this phase's execution. An approved exact `CameraExecutionDirection` can bind this scoped elaboration without replacing retained Canon or completed media. A file boundary is never a dramatic trigger. Use event or canonical phrase timing; numeric timing needs an actual phase-local source, not whole-Scene times or a uniform second rule. A particular beat may merit holding, but stillness is not a general fallback. These requirements express cinematic intent; only observed footage can prove the result.
+For serial segments, bind `movement.phaseDirections` to Action's final units:
+inherited view, CONTINUE/START/CHANGE/STOP/HOLD, trigger, trajectory, extent and
+end state. Tie start and stop to the same action/phrase and estimated local timing
+as Editorial, distinguishing estimates from measured footage. Whole-scene times
+cannot be reused as segment-local seconds. Keep preceding/following events as
+background; `movement.policy` is whole-shot intent when phase decisions exist.
+A file boundary is never a new dramatic trigger. An exact approved
+`CameraExecutionDirection` can bind this elaboration without replacing Canon.
 
 ## Outputs
 

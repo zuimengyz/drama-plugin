@@ -258,12 +258,14 @@ Performance architecture validation is not screenplay artistic approval. A user-
 
 ## Film editorial authority facet
 
-Judge a hold by its sustained narrative, psychological and audiovisual expression.
-Stillness, gaze, silence and a long take can remain purposeful without visible
-motion. Where expression ceases to develop, ask Editorial and Sound to consider
-shortening, restructuring or a different picture/sound relation. Do not impose a
-duration ceiling, motion quota or mandatory fast cuts. Retain these judgments in
-the existing department records; they are not new Runtime or approval gates.
+Judge the audience's changing knowledge, relationship and attention across a take.
+Shot reconciles coverage; Action/Performance own concurrent tasks, Camera the view,
+Voice/Sound the hearing, Editorial the protected hold and end. Arbitrate conflicts
+using that shared event relation rather than adding a master timeline. Stillness
+and silence can sustain thought without motion; where expression lapses, ask the
+owners to trim or reorganize. No fixed duration, reaction quota or extra business
+follows from generation capacity. Retain decisions in existing department records,
+not a new Runtime or approval gate.
 
 For work-level minimum coverage, event-protected cuts or dailies usability, read
 [film editorial authority](../../docs/film-editorial-authority.md). Reuse the existing

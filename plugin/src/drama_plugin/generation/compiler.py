@@ -146,7 +146,7 @@ class PromptCompiler:
         if final_ref is None:
             try:
                 generated = self.generator.generate(ir, plan, policy=policy, input_mode=task.input_mode,
-                    references=references.inputs)
+                    references=references.inputs, profile=task.profile)
             except ValueError as error:
                 code = str(error)
                 diagnostics.append(ExecutionDiagnostic(code="HARD_LIMIT_OVERFLOW" if "CRITICAL_BUDGET_OVERFLOW" in code
@@ -233,7 +233,11 @@ class PromptCompiler:
         package = self.packages.get(prepared.source_package_ref)
         selected = await self.reader.operations.selected(package, prepared.task, self.reader)
         plan = self.artifacts.get(prepared.audio_plan_ref, AudioExecutionPlan)
-        projection = await self.projection.project(package, prepared.task, plan, selected)
+        # Frozen v5 preparations retain their exact read view and prompt. This is
+        # an exact policy match, not a retry with relaxed drift/source checks.
+        previous = ModelPolicyCatalog().legacy_scope_policy(prepared.task.target_model)
+        legacy_scope = previous is not None and final.generator_policy_fingerprint == previous.fingerprint
+        projection = await self.projection.project(package, prepared.task, plan, selected, legacy_scope=legacy_scope)
         if projection.ir is None or any(d.required for d in projection.diagnostics):
             raise ValueError("OPERATION_PROJECTION_INVALID")
         ir = PromptIR.seal(**{**projection.ir.model_dump(exclude={"fingerprint", "execution_reference_refs"}),

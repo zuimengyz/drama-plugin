@@ -19,15 +19,21 @@ Shot Bible; Performance; Sound/Music; Director rhythm intent.
 
 ## Professional decisions
 
-Name what a cut reveals or withholds and the event it must wait for. Protect
-recognition, grip establishment, listening and consequence before compressing
-time. Distinguish necessary precedence from permissible overlap: listening,
-handling and speech need not each consume a separate time block. Estimate a
-playable duration range from the critical sequence, using a timed reading or
-rehearsal when available and marking untested estimates. Do not assign historical
-failure timestamps to the new design. Plan J/L relations through Sound refs and
-keep spatial orientation. Alternative coverage remains a proposal; actual
-sourceIn/sourceOut needs observed media boundaries, not this estimate.
+Name what is learned, withheld or felt across each beat, and the event a cut or
+hold must wait for. Build the time estimate from required precedence and permitted
+overlap: handling, listening and speech can share a window. Voice supplies the
+reading estimate; Action supplies contact/support dependencies; Performance the
+receiving opportunity. Protect intelligibility, recognition and consequence.
+Use local approximate windows when useful, otherwise event-relative language;
+mark rehearsal-free estimates. Neither equal blocks nor fixed seconds are required.
+
+Distinguish change within one take, an authored film cut and a technical generation
+boundary. A new file does not repeat a line, reset a grip or start a new push-in.
+State the shot's end condition and any expressive hold after it. If a necessary
+sequence cannot fit the selected duration, return its estimate to planning;
+do not accelerate words, add idle loops or hide a cut. Plan J/L relations through
+Sound and preserve screen direction. Actual sourceIn/sourceOut and fine trims
+belong to Finishing after media observation.
 
 Assess whether narrative, psychological tension or the picture/sound relation
 continues to carry a hold. Meaningful stillness and silence need no minimum motion.
@@ -39,6 +45,12 @@ provider clip duration nor a measured instruction to fill unused seconds.
 ## Outputs
 
 Produce a versioned `Editorial Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.
+
+For native execution, `temporalStructure` explains the whole Shot. Put current
+end/hold requirements in existing `protectedEvents` records scoped by `phaseIndex`;
+Action carries the selected sequence and shared windows. Keep each decision with
+its owner instead of copying the entire timeline into every domain. Do not put
+local timing into DPD or invent a parallel timing contract.
 
 ## Forbidden authority
 

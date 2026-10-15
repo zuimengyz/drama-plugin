@@ -25,9 +25,12 @@ For an encounter, follow each participant separately through approach, noticing,
 yielding, passage and recovery. Specify who continues while another waits and the
 occupied space that must clear before resuming; a glance is not automatically a
 shared stop. Use the carried object's trailing edge as well as the person's body.
-Preserve simultaneous tasks where plausible instead of serializing every gesture.
-If a passage requires stopping both actors, reconcile that change with Performance
-and the approved event rather than disguise it as a camera convenience.
+Preserve simultaneous tasks instead of serializing every gesture. A necessary
+wait ends on a visible clearance or partner event, not a preset pause. At a cut,
+hand off position, facing, eyeline target, travel direction and held-object state;
+the receiver continues that action phase unless an ellipsis is authored. A new
+camera side changes screen appearance, not world position. Reconcile any added
+shared stop with Performance and the approved event, not camera convenience.
 
 ## Outputs
 

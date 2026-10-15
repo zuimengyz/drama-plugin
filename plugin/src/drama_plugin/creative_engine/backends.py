@@ -490,8 +490,18 @@ class TextCompositionBackend:
         if (not request.source.source_document_language or not request.source.original_work_language
                 or request.source.language_metadata_ref is None):
             raise CapabilityAbsent("SOURCE_LANGUAGE_AUTHORITY_ABSENT")
+        source_size = len(canonical_json(model_payload if model_payload is not None else request).encode())
+        revision_task = None
+        if role == 'professional' and isinstance(request, AuthorRequest) and request.revision and model_payload is not None:
+            # Separate revisable candidates from inherited authority; move the
+            # existing task once, after all evidence, without duplicating it.
+            model_payload = dict(model_payload)
+            continuity = dict(cast(dict[str, JsonValue], model_payload.get('visualContinuity', {})))
+            revision_task = {'currentDesigns': continuity.pop('currentDesigns', []),
+                'revisionInstruction': model_payload.pop('revisionInstruction')}
+            model_payload['visualContinuity'] = continuity
         source = canonical_json(model_payload if model_payload is not None else request)
-        if len(source.encode()) > 2_000_000:
+        if source_size > 2_000_000:
             raise CapabilityAbsent("AUTHOR_INPUT_BOUND_EXCEEDED")
         messages = [{"role": "system", "content": system + "\nOutput JSON schema:\n" + canonical_json(
                 model_schema if model_schema is not None else result.json_schema(by_alias=True))},
@@ -520,6 +530,10 @@ class TextCompositionBackend:
                 feedback["allowedSpokenIdsByScene"] = {scene.scene_id: [line.id for line in scene.scene.dialogue]
                     for scene in request.canon.scenes}
             messages.append({"role": "user", "content": "Structural correction for the previous attempt. Produce a complete new domain result; do not patch or quote prior output.\n" + canonical_json(feedback)})
+        if revision_task is not None:
+            messages.append({'role': 'user', 'content':
+                'Revise this candidate against the preceding Source, Canon, Shot and inherited assets; its execution choices are not approved authority.\n'
+                + canonical_json(revision_task)})
         payload = {"model": self.config.model_for(role), "stream": False,
             "max_tokens": self.config.max_output_tokens,
             "messages": messages}
@@ -750,7 +764,7 @@ class FormalDirectionAuthor(SkillAuthor):
 class FormalProfessionalAuthor(SkillAuthor):
     # The execution identity covers this real diagnostic/feedback implementation
     # revision without changing the model's creative authority or output schema.
-    implementation_identity = "creative.professional:v1:FormalProfessionalAuthor:asset-inheritance-v4"
+    implementation_identity = "creative.professional:v1:FormalProfessionalAuthor:asset-inheritance-v4:revision-input-v1"
 
     async def design_assets(self, request: AuthorRequest) -> 'SceneAssetDraft':
         from drama_plugin.professional_design.asset_sequence import SceneAssetDraft

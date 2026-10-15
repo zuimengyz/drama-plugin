@@ -423,6 +423,92 @@ def professional_projection(value: JsonValue, request: AuthorRequest) -> JsonVal
     return output
 
 
+def professional_candidate_view(rows: list[JsonValue], request: AuthorRequest) -> list[JsonValue]:
+    """Read historical candidates in the current ordinal vocabulary, without repair.
+
+    Only unique exact Canon/bundle references are converted. Unresolved or
+    conflicting historical references remain visible as evidence; they never
+    become guessed selections or a new input admission rule. Prose is untouched.
+    """
+    assert request.canon is not None and request.shot is not None
+    roster = subjects(request.canon.scene)
+    spoken = [line for line in request.canon.scene.dialogue if line.id in request.shot.spoken_ids]
+    def unique(pairs: list[tuple[JsonValue, int]]) -> dict[str, int]:
+        return {key: index for key, index in pairs if isinstance(key, str)
+            and {i for k, i in pairs if k == key} == {index}}
+    people = unique([(s['id'], i) for i, s in enumerate(roster)])
+    targets = unique([(s[k], i) for i, s in enumerate(roster) for k in ('id', 'name')])
+    words = {line.id: i for i, line in enumerate(spoken)}
+    candidates = deepcopy(rows)
+    performances = [r['facts'] for r in candidates if isinstance(r, dict) and r.get('domain') == 'PERFORMANCE']
+    beats = object_value(performances[0]).get('beats', []) if len(performances) == 1 else []
+    beat_map = unique([(b.get('id'), i) for i, b in enumerate(beats) if isinstance(b, dict)]) if isinstance(beats, list) else {}
+    def ordinal(row: dict[str, JsonValue], old: str, new: str, menu: dict[str, int]) -> bool:
+        value = row.get(old)
+        if new in row:
+            return False
+        if isinstance(value, str) and value in menu:
+            row[new] = menu[value]
+        elif old in {'beatIds', 'spokenIds'} and isinstance(value, list) and all(isinstance(v, str) and v in menu for v in value):
+            row[new] = [menu[v] for v in value if isinstance(v, str)]
+        else:
+            return False
+        del row[old]
+        return True
+    def layer_targets(value: JsonValue) -> None:
+        if isinstance(value, dict):
+            ordinal(value, 'interactionTarget', 'interactionTargetSelection', targets)
+            for child in value.values():
+                layer_targets(child)
+        elif isinstance(value, list):
+            for child in value:
+                layer_targets(child)
+    for raw in candidates:
+        row = object_value(raw); facts = object_value(row['facts']); domain = row['domain']
+        if domain == 'PERFORMANCE':
+            layer_targets(facts)
+            for beat in sequence(facts.get('beats', [])):
+                b = object_value(beat)
+                if isinstance(b.get('id'), str) and b['id'] in beat_map: b.pop('id')
+                ordinal(b, 'actor', 'actorSelection', people)
+                ordinal(b, 'target', 'targetSelection', targets)
+            for line in sequence(facts.get('lines', [])):
+                b = object_value(line)
+                ordinal(b, 'spokenContentId', 'spokenSelection', words)
+                ordinal(b, 'beatId', 'beatSelection', beat_map)
+            for subject in sequence(facts.get('projectionSubjects', [])):
+                b = object_value(subject); identifier = b.get('subjectRef')
+                if isinstance(identifier, str) and ordinal(b, 'subjectRef', 'subjectSelection', people):
+                    s = roster[people[identifier]]
+                    if b.get('sourceTargetLabel') == s['name']: b.pop('sourceTargetLabel')
+                    if b.get('spokenIds') == [line.id for line in spoken if line.speaker == identifier]: b.pop('spokenIds')
+                ordinal(b, 'beatIds', 'beatSelections', beat_map)
+        elif domain == 'SUBJECTS':
+            for subject in sequence(facts.get('presentSubjects', [])):
+                ordinal(object_value(subject), 'id', 'subjectSelection', people)
+        elif domain == 'ACTION':
+            for phase in sequence(facts.get('actionPhases', [])):
+                b = object_value(phase)
+                ordinal(b, 'beatId', 'beatSelection', beat_map)
+                ordinal(b, 'spokenIds', 'spokenSelections', words)
+        elif domain == 'REFERENCE':
+            for reference in sequence(facts.get('references', [])):
+                b = object_value(reference); b.pop('id', None)
+                ordinal(b, 'beatIds', 'beatSelections', beat_map)
+        elif domain == 'SOUND':
+            for relation in sequence(facts.get('speechRelations', [])):
+                b = object_value(relation)
+                ordinal(b, 'eventId', 'spokenSelection', words)
+                ordinal(b, 'targetEventId', 'targetSpokenSelection', words)
+            for event in sequence(facts.get('audio_events', [])):
+                b = object_value(event); identifier = b.get('spoken_content_id')
+                if (isinstance(identifier, str) and identifier in words
+                        and b.get('event_id') == identifier and b.get('speaker_key') == spoken[words[identifier]].speaker
+                        and ordinal(b, 'spoken_content_id', 'spokenSelection', words)):
+                    b.pop('event_id'); b.pop('speaker_key')
+    return candidates
+
+
 def author_payload(request: AuthorRequest | FilmAuthorRequest) -> dict[str, JsonValue]:
     source=request.source.model_dump(mode='json',by_alias=True)
     source={k:v for k,v in source.items() if k not in {'originalOwnerRef','languageMetadataRef'}}
@@ -454,11 +540,11 @@ def author_payload(request: AuthorRequest | FilmAuthorRequest) -> dict[str, Json
                     'subjectSelection': next((i for i,s in enumerate(subjects(request.canon.scene))
                         if s['id'] == object_value(object_value(row['content'])['specializedAsset']).get('subjectId')), None)}
                     for row in sequence(object_value(context.get('assetSequence', {})).get('currentAssets', []))],
-                'currentDesigns': [{'domain':row['domain'], 'facts':JSON.validate_python({k:v
+                'currentDesigns': professional_candidate_view([{'domain':row['domain'], 'facts':JSON.validate_python({k:v
                     for k,v in object_value(creative_facts(row['facts'])).items()
                     if k not in {'continuityEvidence','continuityDesignRefs','locationBinding','assetBindings','assetNarrativeRef','locationAssetId'}})}
                     for row in sequence(context.get('currentDesigns', [])) if isinstance(row,dict)
-                    and row['domain'] in {d.value for d in request.shot.professional_domains}],
+                    and row['domain'] in {d.value for d in request.shot.professional_domains}], request),
                 'filmLook': [JSON.validate_python({k:v for k,v in object_value(row['design']).items()
                     if k not in {'workScope','sourcePins'}}) for row in sequence(context.get('filmLook', [])) if isinstance(row,dict)],
                 'locationCandidates': [{'selection':row['selection'], 'design':JSON.validate_python({k:v

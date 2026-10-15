@@ -27,7 +27,12 @@ For a continuity-critical prop, cite the exact Prop Design and test its silhouet
 relative scale, parts, material and needed contact surfaces. For each selected consumer,
 judge what the reference establishes, what visible state it merely depicts and
 what belongs to the target design. A face reference does not choose this scene's
-costume or room; an open-body construction view does not set a closed-carry entry.
+costume or room; its still mouth shape or pose does not direct current speech or
+listening. An open-body construction view does not set a closed-carry entry.
+In `designPurpose`/`inputDuty`, name the selected transferable properties, not a
+copy of the portrait's whole state or an old shot's action. Current Action,
+Performance and Voice own behavior; explicit performance or composition references
+may supply their approved properties without becoming identity-only references.
 State the intended carry and consequential exclusions in the existing reference
 duty, not a second design. A prohibition alone is not evidence that the model
 separates those properties. When competing visual cues matter, compare an already

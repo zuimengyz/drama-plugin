@@ -59,9 +59,11 @@ class ExecutionProjection:
         self.reader = reader
 
     async def project(self, package: ProductionPackage, task: GenerationTask, plan: AudioExecutionPlan,
-                      selected: tuple[SelectedValue, ...], *, legacy_scope: bool = False) -> PromptProjection:
+                      selected: tuple[SelectedValue, ...], *, legacy_scope: bool = False,
+                      legacy_reference_use: bool = False) -> PromptProjection:
         if task.unit is not None:
-            return await self._operation(package, task, selected, plan, legacy_scope=legacy_scope)
+            return await self._operation(package, task, selected, plan, legacy_scope=legacy_scope,
+                legacy_reference_use=legacy_reference_use)
         facts: list[ExecutableFact] = []
         internal, diagnostics, aliases = [], [], []
 
@@ -208,7 +210,7 @@ class ExecutionProjection:
 
     async def _operation(self, package: ProductionPackage, task: GenerationTask,
                          selected: tuple[SelectedValue, ...], plan: AudioExecutionPlan, *,
-                         legacy_scope: bool = False) -> PromptProjection:
+                         legacy_scope: bool = False, legacy_reference_use: bool = False) -> PromptProjection:
         """Explicit finite leaf projection, scoped by production selection and receipt."""
         assert task.unit and task.profile
         facts: list[ExecutableFact] = []
@@ -299,9 +301,15 @@ class ExecutionProjection:
                 if ref.artifact_ref.startswith(PREFIX):
                     binding = ReferenceExecutionBinding.model_validate(item.value)
                     if binding.role == 'REFERENCE' and binding.use_ref:
+                        # The owner may explicitly assign performance, pose,
+                        # composition or space. A blanket identity-only exclusion
+                        # would contradict that authority. Never edit duty prose.
+                        limit = (' Do not inherit its background, opening action, pose, lighting, camera progress or completed speech.'
+                            if legacy_scope or legacy_reference_use else
+                            ' Use only the assigned reference properties; all other properties follow the current target design.')
                         add(domain,binding.use_ref,
-                            'Retained source reference use: '+ '; '.join(d.purpose for d in binding.duties)+
-                            ' Do not inherit its background, opening action, pose, lighting, camera progress or completed speech.', 'preserve.reference_use')
+                            'Retained source reference use: '+ '; '.join(d.purpose for d in binding.duties)+limit,
+                            'preserve.reference_use')
                 internal.append(CoverageEntry(fact_id="reference-plan:"+sha256_canonical(ref), domain=domain,
                     source_ref=ref, obligation=O.EXECUTION_REQUIRED, status=S.NOT_APPLICABLE))
                 continue

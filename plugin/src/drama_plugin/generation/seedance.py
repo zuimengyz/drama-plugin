@@ -26,11 +26,15 @@ class GeneratorPolicy:
 class ModelPolicyCatalog:
     """Read the real adapter capability catalog; no soft target masquerades as a limit."""
     def policy(self, model: str) -> GeneratorPolicy | None:
-        return self._policy(model, "t5r-seedance-unit-layout-v6")
+        return self._policy(model, "t5r-seedance-unit-layout-v7")
 
     def legacy_scope_policy(self, model: str) -> GeneratorPolicy | None:
         """Exact previous policy for reading frozen preparations, never new compilation."""
         return self._policy(model, "t5r-seedance-unit-layout-v5")
+
+    def legacy_reference_use_policy(self, model: str) -> GeneratorPolicy | None:
+        """Frozen v6 used the former blanket reference exclusion."""
+        return self._policy(model, "t5r-seedance-unit-layout-v6")
 
     def _policy(self, model: str, adapter_version: str) -> GeneratorPolicy | None:
         spec = registry()["models"].get(model)

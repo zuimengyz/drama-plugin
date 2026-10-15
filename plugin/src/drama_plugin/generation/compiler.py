@@ -233,11 +233,14 @@ class PromptCompiler:
         package = self.packages.get(prepared.source_package_ref)
         selected = await self.reader.operations.selected(package, prepared.task, self.reader)
         plan = self.artifacts.get(prepared.audio_plan_ref, AudioExecutionPlan)
-        # Frozen v5 preparations retain their exact read view and prompt. This is
+        # Frozen v5/v6 preparations retain their exact read view and prompt. This is
         # an exact policy match, not a retry with relaxed drift/source checks.
         previous = ModelPolicyCatalog().legacy_scope_policy(prepared.task.target_model)
         legacy_scope = previous is not None and final.generator_policy_fingerprint == previous.fingerprint
-        projection = await self.projection.project(package, prepared.task, plan, selected, legacy_scope=legacy_scope)
+        reference_previous = ModelPolicyCatalog().legacy_reference_use_policy(prepared.task.target_model)
+        legacy_reference_use = reference_previous is not None and final.generator_policy_fingerprint == reference_previous.fingerprint
+        projection = await self.projection.project(package, prepared.task, plan, selected,
+            legacy_scope=legacy_scope, legacy_reference_use=legacy_reference_use)
         if projection.ir is None or any(d.required for d in projection.diagnostics):
             raise ValueError("OPERATION_PROJECTION_INVALID")
         ir = PromptIR.seal(**{**projection.ir.model_dump(exclude={"fingerprint", "execution_reference_refs"}),

@@ -282,6 +282,7 @@ def professional_schema() -> dict[str, JsonValue]:
             object_value(props['spatialOrientation'])['description']='Shared spatial legibility, not repeated cut instructions. Film cuts belong to authored Shot boundaries; technical continuation preserves the ongoing event.'
         if domain=='REFERENCE':
             row=object_value(object_value(props['references'])['items']);p=object_value(row['properties']);p.pop('id');row['required']=[k for k in sequence(row['required']) if k!='id'];rename(row,'beatIds','beatSelections',arr(SELECT))
+            object_value(p['inputDuty'])['description']='Name only the properties this reference supplies to this consumer. Incidental mouth shape, pose or completed action is not current performance authority. Explicitly approved performance/composition uses remain valid; target state and delivery retain their owners.'
         if domain=='SOUND':
             object_value(props['contactTiedSound'])['description']='Causal contact records with phaseIndex and design; spokenSelections narrows applicability within one Action. System binds exact spokenIds. Ambience remains shared; no contact is invented to fill silence.'
             object_value(props['dialogueAndLegibility'])['description']='Shared intelligibility only. Current delivery and pauses belong to the exact audio_events utterance, not a whole-shot narration instruction.'

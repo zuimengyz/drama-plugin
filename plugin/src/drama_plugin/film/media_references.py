@@ -7,7 +7,7 @@ from __future__ import annotations
 from drama_plugin.creative_engine.contracts import Kind
 from drama_plugin.contracts.location_design import SceneLocationBinding
 from drama_plugin.generation.sources import child
-from drama_plugin.production.references import ReferenceExecutionBinding
+from drama_plugin.production.references import ReferenceExecutionBinding, ADOPTED_CHARACTER_USE
 from drama_plugin.production_design import resolve_location_design
 from drama_plugin.runtime.contracts import RuntimeScope
 from drama_plugin.film.media_units import production_progress, completion, current_candidate_review
@@ -73,9 +73,12 @@ authority. Exact managed bytes/capacity/route are still checked by existing cons
                 # Do not guess probe data or reuse a template as a reference.
                 if not width or not height:
                     raise ValueError('ASSET_REFERENCE_PROBE_REQUIRED')
-                purpose = ('Accepted character identity; use target scene costume, state, lighting and physical location. Background is not a location reference.'
+                purpose = (ADOPTED_CHARACTER_USE
                     if character else 'Accepted physical space; apply current scene state and film lighting design.')
-                identity = sha256_canonical([scope.model_dump(mode='json',by_alias=True), asset['id'], media['mediaId'], use.model_dump(mode='json',by_alias=True)])
+                # A retained portrait may serve multiple units; each binding
+                # freezes the unit's own entry state. Old binding IDs stay readable.
+                identity = sha256_canonical([scope.model_dump(mode='json',by_alias=True), asset['id'], media['mediaId'],
+                    use.model_dump(mode='json',by_alias=True), selection.start_ref.model_dump(mode='json',by_alias=True)])
                 result.append(ReferenceExecutionBinding(binding_id='asset-'+identity,version=1,scope=scope,
                     source_scope=RuntimeScope(work_id=scope.work_id,scene_id=value['establishedSceneId']),
                     use_ref=use,state_ref=selection.start_ref,

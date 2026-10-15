@@ -67,6 +67,47 @@ class AssetPreparationPending(Exception):
             artifact_ref=self.ref.key + ':' + self.ref.fingerprint, version=1)
 
 
+def adopted_asset_original(value, name, read_pin) -> dict[str, Any]:
+    """Read the exact local or Service-retained original, never a current head."""
+    from drama_plugin.director import DirectorError
+    ref = SourcePin.model_validate(value[name + 'Ref'])
+    try:
+        return read_pin(ref)
+    except DirectorError:
+        raw = value.get(name + 'Original')
+        if not isinstance(raw, dict) or sha256_canonical(raw) != ref.fingerprint:
+            raise
+        return raw
+
+
+def adopted_asset_proof(asset: Asset, read_original) -> bool:
+    """Same retained adoption proof for assembly and its frozen consumers."""
+    value = asset.content.get('specializedAsset')
+    if not isinstance(value, dict) or value.get('state') != 'ADOPTED':
+        return False
+    if asset.asset_type in {AssetType.STANDARD_FACE, AssetType.MASTER_CHARACTER_CARD}:
+        return False
+    if value.get('filmStorageValidated') is True:
+        # V2 retains the complete concrete design as a verified Markdown file
+        # and small original adoption/source pins, rather than copying Package
+        # and Scene snapshots into the Asset row. The authoritative Service
+        # compatibility view supplies only the exact registered adopted version.
+        return bool(value.get('designMediaId') and value.get('designRef') and value.get('adoptionRef')
+            and (asset.asset_type!=AssetType.CHARACTER or value.get('subjectId') is not None)
+            and value.get('design') and asset.reference_media_ids)
+    try:
+        review = read_original(value, 'adoption')
+        original = read_original(value, 'design')
+    except (ValueError, KeyError, OSError):
+        return False
+    return (review.get('decision') in {'APPROVE', 'ADOPT'}
+        and review.get('workId') == asset.work_id
+        and review.get('subjectFingerprint') == sha256_canonical(original)
+        and all(value.get(k) == v for k, v in original.items())
+        and asset.asset_type == original.get('assetType')
+        and review.get('referenceMediaIds', []) == asset.reference_media_ids)
+
+
 class SpecializedAssetSequence:
     def __init__(self, objects: DirectorArtifactStore, assets: AssetProvider, media: MediaProvider):
         self.objects, self.assets, self.media = objects, assets, media
@@ -120,42 +161,15 @@ class SpecializedAssetSequence:
         return canon
 
     def _proof(self, asset: Asset) -> bool:
-        value = asset.content.get('specializedAsset')
-        if not isinstance(value, dict) or value.get('state') != 'ADOPTED':
-            return False
-        if asset.asset_type in {AssetType.STANDARD_FACE, AssetType.MASTER_CHARACTER_CARD}:
-            return False
-        if value.get('filmStorageValidated') is True:
-            # V2 retains the complete concrete design as a verified Markdown file
-            # and small original adoption/source pins, rather than copying Package
-            # and Scene snapshots into the Asset row. The authoritative Service
-            # compatibility view supplies only the exact registered adopted version.
-            return bool(value.get('designMediaId') and value.get('designRef') and value.get('adoptionRef')
-                and (asset.asset_type!=AssetType.CHARACTER or value.get('subjectId') is not None)
-                and value.get('design') and asset.reference_media_ids)
-        try:
-            review = self._original(value, 'adoption')
-            original = self._original(value, 'design')
-        except (ValueError, KeyError, OSError):
-            return False
-        return (review.get('decision') in {'APPROVE', 'ADOPT'}
-            and review.get('workId') == asset.work_id
-            and review.get('subjectFingerprint') == sha256_canonical(original)
-            and all(value.get(k) == v for k, v in original.items())
-            and asset.asset_type == original.get('assetType')
-            and review.get('referenceMediaIds', []) == asset.reference_media_ids)
+        return adopted_asset_proof(asset, self._original)
 
     def _original(self, value: dict[str, Any], name: str) -> dict[str, Any]:
         """Service-held exact originals survive loss of a local discovery cache."""
-        from drama_plugin.director import DirectorError
-        ref = SourcePin.model_validate(value[name + 'Ref'])
-        try:
-            return self.objects.read_ref(ref)
-        except DirectorError:
-            raw = value.get(name + 'Original')
-            if not isinstance(raw, dict) or sha256_canonical(raw) != ref.fingerprint:
-                raise
-            return raw
+        original = adopted_asset_original(value, name, self.objects.read_ref)
+        # Professional bindings keep pins, not duplicate original bodies. Retain
+        # restored evidence for their later consumers without changing adoption.
+        self.objects.put(value[name + 'Ref']['key'], original)
+        return original
 
     async def _available(self, work_id: str, *, query: str | None = None) -> list[Asset]:
         result = []

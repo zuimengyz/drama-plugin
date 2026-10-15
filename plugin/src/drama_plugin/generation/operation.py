@@ -187,6 +187,40 @@ class OperationResolver:
     def __init__(self, versions: CreativeVersionStore, ledger: ProductionLedger, policy: VideoRoutePolicy):
         self.versions, self.ledger, self.policy = versions, ledger, policy
 
+    def asset_character_use(self, binding, raw) -> None:
+        """A frozen adopted portrait is proved by its Asset owner, not a movie review.
+
+        Byte delivery/account checks remain with the existing reference resolver
+        and transport. This selects no extra asset and grants no new art authority.
+        """
+        from drama_plugin.contracts.asset import Asset
+        from drama_plugin.production.references import ADOPTED_CHARACTER_USE
+        from drama_plugin.professional_design.asset_sequence import adopted_asset_proof, adopted_asset_original
+        try:
+            asset = Asset.model_validate({k:v for k,v in raw.items() if k != 'resolvedMedia'})
+            value = asset.content['specializedAsset']
+            proof = adopted_asset_proof(asset, lambda value, name:
+                adopted_asset_original(value, name, self.read))
+            media = [m for m in raw['resolvedMedia'] if m['mediaId'] == binding.media.media_id]
+            if (not proof or asset.asset_type != 'CHARACTER' or asset.work_id != binding.scope.work_id
+                    or binding.authorization_scope != 'ADOPTED_PRODUCTION_INPUT' or binding.role != 'REFERENCE'
+                    or binding.subject_ids != (value['subjectId'],)
+                    or any(d.role != 'CHARACTER' or d.subject != value['subjectId'] or d.purpose != ADOPTED_CHARACTER_USE
+                        for d in binding.duties)
+                    or binding.media.kind != 'image' or binding.media.semantics != ('identity',)
+                    or binding.source_scope != RuntimeScope(work_id=asset.work_id, scene_id=value['establishedSceneId'])
+                    or binding.media.media_id not in asset.reference_media_ids or len(media) != 1
+                    or binding.media.review_ref != 'asset-adoption:' + asset.id + ':' + value['adoptionRef']['fingerprint']):
+                raise ValueError('REFERENCE_ASSET_USE_MISMATCH')
+            expected = media[0]
+            if (expected['mediaType'] != 'IMAGE' or expected['contentHash'] != binding.media.content_hash
+                    or expected['version'] != binding.media.version
+                    or (expected['width'], expected['height']) != (binding.media.width, binding.media.height)
+                    or binding.media.duration is not None):
+                raise ValueError('REFERENCE_ASSET_MEDIA_MISMATCH')
+        except (KeyError, TypeError, OSError) as error:
+            raise ValueError('REFERENCE_ASSET_PROOF_REQUIRED') from error
+
     def read(self, pin: SourcePin) -> dict[str, JsonValue]:
         return object_at(self.versions.objects.read_ref(pin))
 
@@ -637,6 +671,11 @@ class OperationResolver:
                 use = await reader.resolver.resolve(binding.use_ref)
                 if not isinstance(use, (str,dict)) or not use:
                     raise ValueError('REFERENCE_USE_AUTHORITY_REQUIRED')
+                if (binding.use_ref.path[:2] == ('content', 'assetBindings')
+                        and len(binding.use_ref.path) == 3 and any(d.role == 'CHARACTER' for d in binding.duties)):
+                    self.asset_character_use(binding, use)
+                    bound.append(SelectedValue(DomainReference(domain=SourceDomain.REFERENCE, reference=ref), value))
+                    continue
                 if any(d.role == 'CHARACTER' for d in binding.duties):
                     identity_uses = [r for r in binding.authority_refs if allowed(r) and
                         (r.path[-1:] == ('identityConstraints',) or r.path[-1:] == ('inputDuty',))]

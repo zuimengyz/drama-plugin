@@ -20,6 +20,9 @@ from drama_plugin.runtime.contracts import Identifier, ExtendedRuntimeContract, 
 
 PREFIX = "execution-reference:"
 
+ADOPTED_CHARACTER_USE = ("Accepted character identity; use target scene costume, state, lighting and physical location. "
+    "Background is not a location reference.")
+
 
 class FrozenVideoReference(VideoReference):
     model_config = ConfigDict(frozen=True, revalidate_instances="always")

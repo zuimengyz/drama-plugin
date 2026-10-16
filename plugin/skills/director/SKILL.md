@@ -258,6 +258,13 @@ Performance architecture validation is not screenplay artistic approval. A user-
 
 ## Film editorial authority facet
 
+For a substantial color or daypart revision, articulate its relation to the
+film's central contradiction and changing audience attention. Ask Color and
+Lighting to develop a perceptible arc and test its exceptions against the
+actual scenes. Darkness is not depth, and increasing light is not automatically
+redemption. Route necessary time changes to the Scene owner and retain their
+dependent revisions in the existing originals before new shooting.
+
 Judge the audience's changing knowledge, relationship and attention across a take.
 Shot reconciles coverage; Action/Performance own concurrent tasks, Camera the view,
 Voice/Sound the hearing, Editorial the protected hold and end. Arbitrate conflicts

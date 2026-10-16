@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import ClassVar, Literal, Self
 from pydantic import Field, JsonValue, ValidationInfo, model_validator
 from drama_plugin.contracts.base import sha256_canonical
-from drama_plugin.creative_engine.contracts import CanonDraft, SceneBody, ShotBody, SourceBody, VersionRef, WorkBody, ScriptBody, RoutePlan, RevisionRequest
+from drama_plugin.creative_engine.contracts import CanonDraft, SceneBody, ShotBody, SourceBody, VersionRef, WorkBody, ScriptBody, RoutePlan, RevisionRequest, MAX_CREATIVE_REFS
 from drama_plugin.execution.contracts import MediaIdentity, ReviewObservation
 from drama_plugin.contracts.source_pin import SourcePin
 from drama_plugin.generation.contracts import GenerationTask
@@ -117,7 +117,7 @@ class ShotUnit(RuntimeContract):
     production_run_id: Identifier | None = None
     generation_run_id: Identifier | None = None
     execution_run_id: Identifier | None = None
-    refs: tuple[VersionRef, ...] = Field(default=(), max_length=16)
+    refs: tuple[VersionRef, ...] = Field(default=(), max_length=MAX_CREATIVE_REFS)
     package_ref: ArtifactReference | None = None
     candidate_ref: ArtifactReference | None = None
     revision_depth: int = Field(default=0, ge=0, le=3)

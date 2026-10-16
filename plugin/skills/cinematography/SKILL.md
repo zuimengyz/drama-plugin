@@ -27,6 +27,25 @@ Height, angle, distance and depth work together: low does not automatically mean
 powerful. Motivate movement by a discovery or changing relation; a fixed view may
 let the action supply it. Protect the partner's unfinished beat.
 
+Simultaneous visibility is not simultaneous understanding. Decide which people
+or actions must coexist in the frame, then organize discovery through depth,
+focus, occlusion, light/color contrast and action timing with their owners. Deep
+focus can preserve competing relations; shallow focus can select attention while
+withholding another plane. Neither guarantees the viewer's attention. Motivate a
+focus change by an authored action or attention event; stable focus and a fixed
+frame may let the viewer discover the relation without a new cut or story turn.
+
+Distinguish the relevant optical choices: camera position/distance changes
+perspective; focal length changes field of view from that position. A dolly
+changes viewpoint, a zoom changes framing; coordinated dolly/zoom can preserve
+subject size while changing spatial relations. Viewing position, tilt/pan/roll
+and a diagonal arrangement of subjects are different choices; a diagonal line
+does not require a Dutch angle. Lens tilt changes the focus-plane relation and
+shift changes framing; neither means generic blur. Exposure duration, capture
+frame rate and playback speed have different effects on motion rendering.
+Use these distinctions for an observable intention, without numeric recipes or
+promising exact physical optical simulation in generated footage.
+
 For alternate views, locate each camera against the same landmarks and action
 axis; preserve actor facing, eyeline targets and travel vectors in world space
 before checking their screen directions. A motivated axis crossing can use a

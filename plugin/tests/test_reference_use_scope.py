@@ -241,7 +241,7 @@ def test_asset_candidate_producer_does_not_copy_portrait_state_or_make_location(
         return dict(id=identity,assetType=kind,content={'specializedAsset':dict(subjectId=subject,
             stableIdentity=subject,establishedSceneId='origin-scene',
             adoptionRef=dict(key='retained-adoption',fingerprint=hash_character*64),
-            state='INCIDENTAL_CLOSED_MOUTH',pose='INCIDENTAL_SEATED_POSE',background='INCIDENTAL_ROOM')},
+            state='ADOPTED',mouth='INCIDENTAL_CLOSED_MOUTH',pose='INCIDENTAL_SEATED_POSE',background='INCIDENTAL_ROOM')},
             resolvedMedia=[dict(mediaId=identity+'-media',version='1',contentHash=hash_character*64,
                 mediaType='IMAGE',width=1280,height=720)])
     subjects=NS(scope=scope,body=NS(facts={'presentSubjects':[{'id':'courier'}],
@@ -267,4 +267,4 @@ def test_asset_candidate_producer_does_not_copy_portrait_state_or_make_location(
     assert 'Background is not a location reference' in result[0].duties[0].purpose
     assert 'Accepted physical space' in result[1].duties[0].purpose
     assert result[0].media.review_ref=='asset-adoption:portrait:'+'a'*64
-    assert result[1].media.review_ref=='retained-adoption:'+'c'*64
+    assert result[1].media.review_ref=='asset-adoption:room:'+'c'*64

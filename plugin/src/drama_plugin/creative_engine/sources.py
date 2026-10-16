@@ -43,6 +43,12 @@ class NativeCreativeSources:
             raise ValueError("Exact unique creative version required")
         return found[0]
 
+    def bound_professionals(self, shot: CreativeVersion) -> tuple[CreativeVersion, ...]:
+        """Only this Shot's originals execute; Scene ancestors keep their own scope."""
+        return tuple(value for ref in self.refs for value in (self.store.resolve(ref),)
+            if value.kind == Kind.PROFESSIONAL and value.scope == shot.scope
+            and shot.ref() in value.source_refs)
+
     def project(self, artifact: CreativeVersion) -> OwnedSource:
         body, scope = artifact.body, artifact.scope
         content: dict[str, JsonValue]
@@ -181,13 +187,17 @@ class NativeCreativeSources:
                     owner=source.owner, artifact_ref=expected.artifact_ref))
         shot = self.version(Kind.SHOT)
         assert isinstance(shot.body, ShotBody)
-        domains = tuple(sorted({D.DIRECTION, *(request.domains or shot.body.professional_domains)}))
+        bound = self.bound_professionals(shot)
+        # A retained explicit selection can contain more departments than the
+        # original thin Shot requested. Preserve those exact bound originals;
+        # never infer departments from the platform registry or Scene ancestors.
+        defaults = {*shot.body.professional_domains, *(cast(DesignBody, v.body).domain for v in bound)}
+        domains = tuple(sorted({D.DIRECTION, *(request.domains or defaults)}))
         selected = [DomainReference(domain=D.DIRECTION, reference=self.direction(shot).reference("content"))]
         for domain in domains:
             if domain == D.DIRECTION:
                 continue
-            matches = [self.store.resolve(ref) for ref in self.refs if self.store.resolve(ref).kind == Kind.PROFESSIONAL
-                       and cast(DesignBody, self.store.resolve(ref).body).domain == domain]
+            matches = [v for v in bound if cast(DesignBody, v.body).domain == domain]
             if len(matches) != 1:
                 issues.append(AssemblyIssue(code=I.MISSING_REQUIRED_SOURCE, domain=domain,
                     owner=SourceOwner.PROFESSIONAL, artifact_ref="professional:" + domain.value))

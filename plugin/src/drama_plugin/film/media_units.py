@@ -30,9 +30,8 @@ def unit_for_task(p, cp, task):
 
 
 def phases_for(p, unit):
-    original = next(p.creative_versions.resolve(r) for r in unit.refs if
-        p.creative_versions.resolve(r).kind == Kind.PROFESSIONAL and
-        p.creative_versions.resolve(r).body.domain == 'ACTION')
+    from drama_plugin.film.media_references import professional
+    original = professional(p, unit, 'ACTION')
     return original, original.body.facts['actionPhases']
 
 

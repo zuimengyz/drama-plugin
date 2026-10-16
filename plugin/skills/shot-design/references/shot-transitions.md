@@ -14,6 +14,11 @@ Maintain movement vectors/eyeline in battle and multi-person dialogue; a deliber
 axis change needs visible reorientation. Match action preserves phase and contact;
 sound bridges must not falsely imply simultaneous or adjacent spaces.
 
+A graphic match may connect different times or places. Geometric resemblance or
+a concealed cut does not establish continuous action. Bind the approved Editorial
+relation and Shot intent: distinguish a continuing state from an omitted change
+or a deliberately unknown interval, without inventing events to bridge the gap.
+
 Validate adjacent coverage edges with preproduction.transition_completeness.
 Cross-scene transitions use the existing multi-scene EditorialRhythmPlan, with
 source fingerprint of the pinned episode/sequence; include the scene boundary

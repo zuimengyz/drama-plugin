@@ -15,8 +15,9 @@ from drama_plugin.contracts.base import sha256_canonical
 
 
 def professional(p, unit, domain):
-    return next(p.creative_versions.resolve(r) for r in unit.refs if
-        p.creative_versions.resolve(r).kind == Kind.PROFESSIONAL and p.creative_versions.resolve(r).body.domain == domain)
+    from drama_plugin.creative_engine.sources import NativeCreativeSources
+    native = NativeCreativeSources(p.creative_versions, unit.refs)
+    return next(v for v in native.bound_professionals(native.version(Kind.SHOT)) if v.body.domain == domain)
 
 
 def observed_identity_ages(facts):
@@ -43,13 +44,16 @@ def location_context(p, unit):
     return {'status':'RESOLVED_DESIGN','locationId':binding.location_ref.location_id,**resolved}
 
 
-def asset_reference_candidates(p, unit, selection):
+def asset_reference_candidates(p, unit, selection, *, asset_use_refs=()):
     """Project accepted library references through the existing binding contract.
 
 These precede whole-shot video reuse. Character backgrounds never acquire LOCATION
 authority. Exact managed bytes/capacity/route are still checked by existing consumers.
+Non-person costume/prop inputs require explicitly selected existing assetBindings
+leaves; their presence in a whole-Scene library is not a current-unit selection.
 """
     from drama_plugin.creative_engine.sources import NativeCreativeSources
+    from drama_plugin.production.contracts import SourceReference
     native = NativeCreativeSources(p.creative_versions, unit.refs, p.execution_references)
     subjects = professional(p, unit, 'SUBJECTS')
     scope = subjects.scope
@@ -57,43 +61,82 @@ authority. Exact managed bytes/capacity/route are still checked by existing cons
         if f.domain == 'SUBJECTS' and f.reference.path[1:2] == ('presentSubjects',)}
     active = {r['id'] for i,r in enumerate(subjects.body.facts['presentSubjects']) if i in indices}
     world = professional(p, unit, 'WORLD')
+    uses = tuple(SourceReference.model_validate(ref) for ref in asset_use_refs)
+    if len(set(uses)) != len(uses) or any(ref.owner != 'professional'
+            or ref.path[:2] != ('content', 'assetBindings') or len(ref.path) != 3
+            or not ref.path[2].isdigit() for ref in uses):
+        raise ValueError('EXACT_CURRENT_ASSET_USE_REQUIRED')
+    matched = set()
     result = []
-    for original in (subjects, world):
+    originals = [subjects, world]
+    if uses:
+        # REFERENCE may own a selected asset leaf too.  Do not require or project
+        # that department for historical character/location-only calls.
+        originals.extend(p.creative_versions.resolve(ref) for ref in unit.refs
+            if p.creative_versions.resolve(ref).kind == Kind.PROFESSIONAL
+            and p.creative_versions.resolve(ref).scope == scope
+            and p.creative_versions.resolve(ref).body.domain == 'REFERENCE')
+    for original in originals:
         source = native.project(original)
         for index, asset in enumerate(original.body.facts.get('assetBindings', [])):
             value = asset['content']['specializedAsset']
+            use = source.reference('content', 'assetBindings', str(index))
             character = original == subjects and asset['assetType'] == 'CHARACTER' and value['subjectId'] in active
             location = original == world and asset['assetType'] == 'LOCATION' and asset['id'] == world.body.facts.get('locationAssetId')
-            if not (character or location):
+            explicit = use in uses
+            costume = explicit and asset['assetType'] == 'COSTUME' and value.get('subjectId') in active
+            prop = explicit and asset['assetType'] == 'PROP'
+            if explicit:
+                if original.scope != scope or not (costume or prop):
+                    raise ValueError('EXACT_CURRENT_ASSET_USE_REQUIRED')
+                if not asset.get('resolvedMedia'):
+                    raise ValueError('ASSET_REFERENCE_PROBE_REQUIRED')
+                matched.add(use)
+            if not (character or location or costume or prop):
                 continue
-            use = source.reference('content', 'assetBindings', str(index))
-            role, subject = ('CHARACTER', value['subjectId']) if character else ('LOCATION', value['stableIdentity'])
+            if value.get('state') != 'ADOPTED':
+                raise ValueError('ASSET_REFERENCE_ADOPTION_REQUIRED')
+            role = 'CHARACTER' if character else 'LOCATION' if location else 'COSTUME' if costume else 'CONTINUITY'
+            subject = value['subjectId'] if character else value['stableIdentity']
+            semantics = (('identity',) if character else ('environment',) if location
+                else ('costume',) if costume else ('prop', 'continuity'))
             for media in asset.get('resolvedMedia', []):
                 width, height = media.get('width'), media.get('height')
+                if explicit and media.get('mediaType') != 'IMAGE':
+                    raise ValueError('ASSET_REFERENCE_IMAGE_REQUIRED')
                 # Do not guess probe data or reuse a template as a reference.
                 if not width or not height:
                     raise ValueError('ASSET_REFERENCE_PROBE_REQUIRED')
-                purpose = (ADOPTED_CHARACTER_USE
-                    if character else 'Accepted physical space; apply current scene state and film lighting design.')
+                purpose = (ADOPTED_CHARACTER_USE if character else
+                    'Accepted physical space; apply current scene state and film lighting design.' if location else
+                    'Selected accepted costume only; current actor, pose, action, light and physical location remain target-owned.' if costume else
+                    'Selected accepted prop construction and continuity only; use the current Action contact, support and entry state.')
+                review_ref = 'asset-adoption:'+asset['id']+':'+value['adoptionRef']['fingerprint']
                 # A retained portrait may serve multiple units; each binding
                 # freezes the unit's own entry state. Old binding IDs stay readable.
-                identity = sha256_canonical([scope.model_dump(mode='json',by_alias=True), asset['id'], media['mediaId'],
-                    use.model_dump(mode='json',by_alias=True), selection.start_ref.model_dump(mode='json',by_alias=True)])
+                identity_parts = [scope.model_dump(mode='json',by_alias=True), asset['id'], media['mediaId'],
+                    use.model_dump(mode='json',by_alias=True), selection.start_ref.model_dump(mode='json',by_alias=True)]
+                if not character:
+                    # New typed delivery pointers must not overwrite an older
+                    # immutable LOCATION binding under its previous identity.
+                    identity_parts.append(review_ref)
+                identity = sha256_canonical(identity_parts)
                 result.append(ReferenceExecutionBinding(binding_id='asset-'+identity,version=1,scope=scope,
                     source_scope=RuntimeScope(work_id=scope.work_id,scene_id=value['establishedSceneId']),
                     use_ref=use,state_ref=selection.start_ref,
                     media=dict(media_id=media['mediaId'],version=media['version'],content_hash=media['contentHash'],
-                        kind=media['mediaType'].lower(),semantics=('identity',) if character else ('environment',),
+                        kind=media['mediaType'].lower(),semantics=semantics,
                         width=width,height=height,duration=media.get('durationMs',0)/1000 if media.get('durationMs') else None,
-                        review_ref=('asset-adoption:'+asset['id']+':'+value['adoptionRef']['fingerprint']
-                            if character else value['adoptionRef']['key']+':'+value['adoptionRef']['fingerprint'])),
+                        review_ref=review_ref),
                     duties=(dict(role=role,necessity='REQUIRED',subject=subject,purpose=purpose),),
                     subject_ids=(subject,) if character else (),role='REFERENCE',
                     authorization_scope='ADOPTED_PRODUCTION_INPUT',authority_refs=(use,)))
+    if matched != set(uses):
+        raise ValueError('EXACT_CURRENT_ASSET_USE_REQUIRED')
     return tuple(result)
 
 
-def select_references(p, run_id, unit, selection, *, register=False):
+def select_references(p, run_id, unit, selection, *, register=False, asset_use_refs=()):
     progress = production_progress(p,run_id)
     package = p.production_packages.get(unit.package_ref)
     scope = RuntimeScope(work_id=package.scope.work.artifact_ref,scene_id=unit.scene_id,shot_id=unit.shot_id)
@@ -113,7 +156,7 @@ def select_references(p, run_id, unit, selection, *, register=False):
         currentTime=project_scoped_value(selection.execution_context,world_source.reference('content','time'),world.body.facts.get('time')),
         currentWeather=project_scoped_value(selection.execution_context,world_source.reference('content','weather'),world.body.facts.get('weather')))
     chosen, bindings, candidates, narrative_sources, excluded_sources, seen = [], [], [], [], [], set()
-    for binding in asset_reference_candidates(p, unit, selection):
+    for binding in asset_reference_candidates(p, unit, selection, asset_use_refs=asset_use_refs):
         candidates.append(binding)
         if register:
             bindings.append(p.execution_references.register(binding))
@@ -167,6 +210,7 @@ def select_references(p, run_id, unit, selection, *, register=False):
         if not source_ages:
             frozen_subjects=next(p.creative_versions.resolve(r) for r in source_task.owners.adopted_refs
                 if p.creative_versions.resolve(r).kind == Kind.PROFESSIONAL
+                and p.creative_versions.resolve(r).scope == media.scope
                 and p.creative_versions.resolve(r).body.domain == 'SUBJECTS')
             source_ages=observed_identity_ages(frozen_subjects.body.facts)
         age_mismatch = bool(target_ages and source_ages and source_ages != target_ages

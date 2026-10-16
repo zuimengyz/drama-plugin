@@ -115,10 +115,17 @@ class SpecializedAssetSequence:
         self.film_storage: FilmStorage | None = None
 
     def bind_film(self, work_id: str, canon: FilmCanon, *, source_ref: ArtifactReference,
-                  screenplay_ref: SourcePin | None = None) -> SourcePin:
-        """Called after full-film author selection, never before Host free writing."""
-        material = {'schemaVersion': 'specialized-asset-narrative-v1', 'workId': work_id,
+                  screenplay_ref: SourcePin | None = None, fresh_baseline: bool = False) -> SourcePin:
+        """Bind selected art without changing an older Run's narrative selection.
+
+        A fresh baseline is an explicit Host choice, not a character variation.
+        Its immutable narrative pin also scopes its asset identities; callers
+        retain and pass that exact pin to prepare. Legacy selection is unchanged.
+        """
+        material: dict[str, Any] = {'schemaVersion': 'specialized-asset-narrative-v1', 'workId': work_id,
             'sourceRef': dump_contract(source_ref), 'canon': dump_contract(canon)}
+        if fresh_baseline:
+            material['freshBaseline'] = True
         scene_refs = {}
         if screenplay_ref:
             packet = self.objects.read_ref(screenplay_ref)
@@ -129,6 +136,8 @@ class SpecializedAssetSequence:
                 scene_refs[body['sceneId']] = dump_contract(self.objects.put('asset-scene-screenplay:' + body['sceneId'], row))
         material['sceneScreenplayRefs'] = scene_refs
         ref = self.objects.put('specialized-asset-narrative:' + work_id, material)
+        if fresh_baseline:
+            return ref
         path = self.objects._path('asset-narrative', [work_id, sha256_canonical(canon.script)])
         with self.objects._writer():
             if path.exists():
@@ -139,7 +148,31 @@ class SpecializedAssetSequence:
             self.objects._write(path, dump_contract(ref))
         return ref
 
+    @staticmethod
+    def _fixed_narrative(request: AuthorRequest) -> SourcePin | None:
+        """Only retained system bindings select a family, never model prose."""
+        context = request.professional_context or {}
+        pins = []
+        sequence = context.get('assetSequence')
+        if isinstance(sequence, dict) and sequence.get('narrativeRef') is not None:
+            pins.append(SourcePin.model_validate(sequence['narrativeRef']))
+        rows = context.get('currentDesigns', [])
+        if not isinstance(rows, list):
+            raise ValueError('ASSET_NARRATIVE_BINDING_CONTEXT_MISMATCH')
+        for row in rows:
+            facts = row.get('facts') if isinstance(row, dict) else None
+            if isinstance(facts, dict):
+                value = facts.get('assetNarrativeRef')
+                if value is not None:
+                    pins.append(SourcePin.model_validate(value))
+        if len({(pin.key, pin.kind, pin.fingerprint) for pin in pins}) > 1:
+            raise ValueError('ASSET_NARRATIVE_BINDING_CONFLICT')
+        return pins[0] if pins else None
+
     def selected(self, request: AuthorRequest) -> SourcePin | None:
+        if fixed := self._fixed_narrative(request):
+            self._narrative(fixed, request)
+            return fixed
         if request.canon is None:
             return None
         path = self.objects._path('asset-narrative', [request.scope.work_id,
@@ -156,7 +189,8 @@ class SpecializedAssetSequence:
             raise ValueError('ASSET_NARRATIVE_SCOPE_MISMATCH')
         canon = FilmCanon.model_validate(raw['canon'])
         scene = next((s.scene for s in canon.scenes if s.scene_id == request.scope.scene_id), None)
-        if request.canon is None or canon.script != request.canon.script or scene != request.canon.scene:
+        if (request.canon is None or canon.work != request.canon.work
+                or canon.script != request.canon.script or scene != request.canon.scene):
             raise ValueError('ASSET_NARRATIVE_CANON_MISMATCH')
         return canon
 
@@ -171,7 +205,23 @@ class SpecializedAssetSequence:
         self.objects.put(value[name + 'Ref']['key'], original)
         return original
 
-    async def _available(self, work_id: str, *, query: str | None = None) -> list[Asset]:
+    def _fresh(self, ref: SourcePin | None) -> bool:
+        return bool(ref is not None and self.objects.read_ref(ref).get('freshBaseline') is True)
+
+    def _in_family(self, asset: Asset, ref: SourcePin | None) -> bool:
+        value = asset.content.get('specializedAsset', asset.content)
+        stored = value.get('narrativeRef') if isinstance(value, dict) else None
+        if self._fresh(ref):
+            assert ref is not None
+            return stored == dump_contract(ref)
+        # Fresh roots carry a separate native namespace. Historical Service-only
+        # rows need not have their narrative original cached locally, so do not
+        # make legacy discovery depend on reading that unrelated original.
+        identity = value.get('stableIdentity', '') if isinstance(value, dict) else ''
+        return not str(identity).startswith(('specialized-character:fresh:', 'specialized-asset:fresh:'))
+
+    async def _available(self, work_id: str, *, query: str | None = None,
+                         narrative_ref: SourcePin | None = None) -> list[Asset]:
         result = []
         storage=getattr(self,'film_storage',None)
         if storage is not None:
@@ -189,6 +239,8 @@ class SpecializedAssetSequence:
             if asset.work_id != work_id:
                 continue
             if asset.asset_type in {AssetType.STANDARD_FACE, AssetType.MASTER_CHARACTER_CARD}:
+                continue
+            if not self._in_family(asset, narrative_ref):
                 continue
             if self._proof(asset):
                 result.append(asset)
@@ -208,7 +260,8 @@ class SpecializedAssetSequence:
                         or asset.asset_type not in {'CHARACTER','COSTUME','LOCATION','PROP','OTHER'}
                         or asset.asset_type == 'CHARACTER' and not isinstance(subject, str)):
                     continue
-                identity = (self._character(work_id, str(subject)) if asset.asset_type == 'CHARACTER'
+                identity = (self._character(work_id, str(subject),
+                    narrative_ref.fingerprint if self._fresh(narrative_ref) and narrative_ref else None) if asset.asset_type == 'CHARACTER'
                     else original.get('stableIdentity'))
                 if not identity or not isinstance(original.get('design'), dict):
                     continue
@@ -223,8 +276,11 @@ class SpecializedAssetSequence:
         return result
 
     @staticmethod
-    def _character(work_id: str, subject_id: str) -> str:
-        return 'specialized-character:' + sha256_canonical([work_id, subject_id])
+    def _character(work_id: str, subject_id: str, family: str | None = None) -> str:
+        identity = [work_id, subject_id]
+        if family is not None:
+            identity.append(family)
+        return 'specialized-character:' + ('fresh:' if family is not None else '') + sha256_canonical(identity)
 
     def _latest(self, assets: list[Asset], identity: str) -> Asset | None:
         matches = [a for a in assets if a.content['specializedAsset']['stableIdentity'] == identity]
@@ -233,9 +289,13 @@ class SpecializedAssetSequence:
             raise ValueError('ASSET_ACCEPTED_VERSION_AMBIGUOUS')
         return max(matches, key=lambda a: a.content['specializedAsset']['revision'] or 0, default=None)
 
-    async def prepare(self, request: AuthorRequest, author: AssetAuthor) -> AuthorRequest:
+    async def prepare(self, request: AuthorRequest, author: AssetAuthor, *,
+                      narrative_ref: SourcePin | None = None) -> AuthorRequest:
         async with self._locks.setdefault('prepare:' + request.scope.work_id, asyncio.Lock()):
-            return await self._prepare(request, author)
+            fixed = self._fixed_narrative(request)
+            if narrative_ref is not None and fixed is not None and narrative_ref != fixed:
+                raise ValueError('ASSET_NARRATIVE_BINDING_CONFLICT')
+            return await self._prepare(request, author, narrative_ref=narrative_ref)
 
     def _text_requirement(self, preparation_ref: SourcePin, requirement_key: str) -> tuple[dict[str, Any], dict[str, Any]]:
         packet = self.objects.read_ref(preparation_ref)
@@ -272,7 +332,8 @@ class SpecializedAssetSequence:
             raise ValueError('ASSET_TEXT_HANDOFF_REQUIRES_FILM_STORAGE')
         async with self._locks.setdefault('text-handoff:' + requirement_key, asyncio.Lock()):
             packet, item = self._text_requirement(preparation_ref, requirement_key)
-            accepted = await self._available(packet['workId'], query=requirement_key)
+            accepted = await self._available(packet['workId'], query=requirement_key,
+                narrative_ref=SourcePin.model_validate(packet['narrativeRef']))
             if any(row.content['specializedAsset'].get('requirementKey') == requirement_key for row in accepted):
                 raise ValueError('ASSET_TEXT_HANDOFF_ALREADY_REGISTERED')
             domains = tuple(SourceDomain(domain) for domain in domains)
@@ -314,8 +375,9 @@ class SpecializedAssetSequence:
         return {**item, 'handoffRef': dump_contract(ref), 'domains': domains,
             'handoffRationale': handoff['rationale']}
 
-    async def _prepare(self, request: AuthorRequest, author: AssetAuthor) -> AuthorRequest:
-        ref = self.selected(request)
+    async def _prepare(self, request: AuthorRequest, author: AssetAuthor, *,
+                       narrative_ref: SourcePin | None = None) -> AuthorRequest:
+        ref = narrative_ref or self.selected(request)
         if ref is None:
             return request
         canon = self._narrative(ref, request)
@@ -323,14 +385,15 @@ class SpecializedAssetSequence:
         assert request.scope.scene_id is not None
         order = [s.scene_id for s in canon.scenes]
         target = order.index(request.scope.scene_id)
-        available = await self._available(request.scope.work_id, query=ref.key)
+        available = await self._available(request.scope.work_id, query=ref.key, narrative_ref=ref)
+        family = ref.fingerprint if self._fresh(ref) else None
         results = []
         for index, scene in enumerate(canon.scenes[:target + 1]):
             # A future variation cannot travel backwards merely because it exists.
             candidates = [a for a in available if a.content['specializedAsset']['establishedSceneId'] is None
                 or a.content['specializedAsset']['establishedSceneId'] in order[:index + 1]]
             roster: list[dict[str, Any]] = subjects(scene.scene)
-            bases = {s['id']: self._latest(candidates, self._character(request.scope.work_id, str(s['id']))) for s in roster}
+            bases = {s['id']: self._latest(candidates, self._character(request.scope.work_id, str(s['id']), family)) for s in roster}
             key = [ref.fingerprint, scene.scene_id]
             path = self.objects._path('asset-scene-design', key)
             if not path.exists():
@@ -404,7 +467,7 @@ class SpecializedAssetSequence:
                     continue
                 existing = [a for a in available if a.content['specializedAsset'].get('requirementKey') == item['requirementKey']]
                 if not existing:
-                    exact = await self._available(request.scope.work_id, query=item['requirementKey'])
+                    exact = await self._available(request.scope.work_id, query=item['requirementKey'], narrative_ref=ref)
                     available = list({a.id: a for a in (*available, *exact)}.values())
                     existing = [a for a in available if a.content['specializedAsset'].get('requirementKey') == item['requirementKey']]
                 if item.get('reuseAssetId'):
@@ -435,6 +498,7 @@ class SpecializedAssetSequence:
     def _project(self, ref: SourcePin, scene_id: str, roster: list[dict[str, Any]],
                  bases: dict[str, Asset | None], candidates: list[Asset], draft: SceneAssetDraft) -> dict[str, Any]:
         work = self.objects.read_ref(ref)['workId']
+        family = ref.fingerprint if self._fresh(ref) else None
         requirements = []
         claimed = set()
         for ordinal, choice in enumerate(draft.assets):
@@ -446,6 +510,8 @@ class SpecializedAssetSequence:
             if choice.reuse_selection is not None and choice.reuse_selection >= len(candidates):
                 raise ValueError('ASSET_REUSE_SELECTION_OUT_OF_RANGE')
             prior = candidates[choice.reuse_selection] if choice.reuse_selection is not None else None
+            if prior is not None and not self._in_family(prior, ref):
+                raise ValueError('ASSET_REUSE_FAMILY_MISMATCH')
             if choice.asset_type == 'CHARACTER':
                 assert isinstance(subject, str)
                 if subject in claimed:
@@ -455,6 +521,8 @@ class SpecializedAssetSequence:
                 if prior and (prior.asset_type != AssetType.CHARACTER or prior.content['specializedAsset']['subjectId'] != subject):
                     raise ValueError('ASSET_CHARACTER_INHERITANCE_MISMATCH')
                 prior = base or prior
+                if prior is not None and not self._in_family(prior, ref):
+                    raise ValueError('ASSET_REUSE_FAMILY_MISMATCH')
             if prior and prior.asset_type != choice.asset_type:
                 raise ValueError('ASSET_REUSE_TYPE_MISMATCH')
             if prior and not choice.variant_reason:
@@ -462,9 +530,12 @@ class SpecializedAssetSequence:
                 continue
             if choice.variant_reason and prior is None:
                 raise ValueError('ASSET_VARIANT_REQUIRES_ACCEPTED_PARENT')
+            object_identity = [work, scene_id, choice.asset_type, ordinal]
+            if family is not None:
+                object_identity.append(family)
             identity = (prior.content['specializedAsset']['stableIdentity'] if prior else
-                self._character(work, str(subject)) if choice.asset_type == 'CHARACTER' else
-                'specialized-asset:' + sha256_canonical([work, scene_id, choice.asset_type, ordinal]))
+                self._character(work, str(subject), family) if choice.asset_type == 'CHARACTER' else
+                'specialized-asset:' + ('fresh:' if family is not None else '') + sha256_canonical(object_identity))
             material = {'assetType': choice.asset_type, 'name': choice.name, 'design': choice.design,
                 'subjectId': subject, 'stableIdentity': identity,
                 'revision': (prior.content['specializedAsset']['revision'] or 0) + 1 if prior else 1,
@@ -517,8 +588,11 @@ class SpecializedAssetSequence:
         if not selected.exists() or SourcePin.model_validate(self.objects._read(selected)) != preparation_ref:
             raise ValueError('ASSET_PREPARATION_NOT_SELECTED')
         item = next(r for r in packet['requirements'] if r['requirementKey'] == requirement_key)
+        narrative_ref = SourcePin.model_validate(packet['narrativeRef'])
         if item.get('reuseAssetId'):
             reused=await self.assets.get_asset(item['reuseAssetId'])
+            if not self._in_family(reused, narrative_ref):
+                raise ValueError('ASSET_REUSE_FAMILY_MISMATCH')
             storage=getattr(self,'film_storage',None)
             if storage is not None:storage.scene_asset_event(reused,packet['sceneId'],preparation_ref)
             return reused
@@ -529,7 +603,7 @@ class SpecializedAssetSequence:
                 or review.get('subjectFingerprint') != ref.fingerprint
                 or review.get('referenceMediaIds', []) != list(reference_media_ids)):
             raise ValueError('ASSET_DESIGN_ADOPTION_MISMATCH')
-        known = [a for a in await self._available(packet['workId'], query=requirement_key)
+        known = [a for a in await self._available(packet['workId'], query=requirement_key, narrative_ref=narrative_ref)
                  if a.content['specializedAsset'].get('requirementKey') == requirement_key]
         if known:
             if len(known) != 1:

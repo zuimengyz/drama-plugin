@@ -25,17 +25,25 @@ from test_target_reference_production import evidence, reference_frame
 BYTES = b'unchanged-character-fixture'
 
 
-def fixture(monkeypatch, *, fingerprint=True):
+def fixture(monkeypatch, *, fingerprint=True, structured_face=False, checks=None, identity_override=None):
     monkeypatch.setenv('DRAMA_VIDEO_SEEDANCE_API_KEY', 'fixture-secret')
     monkeypatch.setenv('DRAMA_PLUGIN_ROUTE_IMAGE_MODEL', 'Doubao-Seedream-5.0-pro')
     narrative = SourcePin(key='fixture:narrative', kind='DESIGN', fingerprint='b'*64)
-    design = dict(assetType='CHARACTER', name='Fixture person', design={'face':'Distinct fixture face'},
+    face = ({'shape':'Distinct fixture shape', 'eyes_brows':'Distinct fixture eyes and brows',
+        'nose':'Distinct fixture nose', 'mouth':'Distinct fixture mouth', 'hair':'Independent fixture hair'}
+        if structured_face else 'Distinct fixture face')
+    design = dict(assetType='CHARACTER', name='Fixture person', design={'face':face},
         subjectId='person', stableIdentity='fixture-character', revision=1, establishedSceneId='S',
         inheritedFromAssetId=None, identityRootAssetId=None, variantReason=None, referenceRequired=True,
         narrativeRef=dump_contract(narrative))
     design_ref = SourcePin(key='fixture:design', kind='DIRECTION', fingerprint=fp(design))
     item = {**design, 'designRef':dump_contract(design_ref), 'requirementKey':fp(design)}
-    frame = compile_frame(reference_frame(item))
+    artwork_item = deepcopy(item)
+    if structured_face:
+        artwork_item['design']['face'] = '；'.join(face[key] for key in ('shape','eyes_brows','nose','mouth'))
+    if identity_override is not None:
+        artwork_item['design']['face'] = identity_override
+    frame = compile_frame(reference_frame(artwork_item))
     prep = dict(schemaVersion='specialized-asset-preparation-v1', workId='W', sceneId='S',
         narrativeRef=dump_contract(narrative), rationale='Offline proof fixture', requirements=[item])
     prep_ref = SourcePin(key='fixture:preparation', kind='DIRECTION', fingerprint=fp(prep))
@@ -60,7 +68,7 @@ def fixture(monkeypatch, *, fingerprint=True):
     still.record_result(stage, attempt_id=attempt['attempt_id'], status='COMPLETED', job_id=receipt['task_id'],
         output_hash=h, execution_receipt=correlation, evidence='Offline receipt fixture')
     still.record_review(stage, still.Review(attempt_id=attempt['attempt_id'], output_hash=h, reviewer='OFFLINE_FIXTURE',
-        evidence='Synthetic metadata, no visual quality claim', checks={'IDENTITY':'PASS','SINGLE_PERSON':'PASS'}))
+        evidence='Synthetic metadata, no visual quality claim', checks=checks or {'IDENTITY':'PASS','SINGLE_PERSON':'PASS'}))
     delivery = dict(persistenceStatus='VERIFIED', mediaId='M', contentHash=h, sourceRef='asset-reference:'+attempt['attempt_id'],
         technical={'streams':[{'width':1280,'height':720}]})
     before = ReferenceProductionRecord.seal(run_id='fixture-native-character', scope=RuntimeScope(work_id='W',scene_id='S'),
@@ -114,6 +122,72 @@ def test_compact_native_character_reads_exact_owners_and_keeps_identity(tmp_path
     identity=native_adopted_character_image(a,m,asset,b,real)
     assert identity.content_hash==m.content_hash and identity.byte_count==len(BYTES)
     assert m.content=={'filmStorageVersion':2} and ':' in asset.id
+
+
+FIRST_IDENTITY_CHECKS = dict(
+    SINGLE_SELECTED_PERSON='PASS', FACE_AND_BODY_READABILITY='PASS',
+    OLDER_AGE_GREY_HAIR_BEARD='PASS', CURRENT_WORKING_CLOTHING_LAYERS='PASS',
+    NATURAL_HANDS_FEET_AND_GROUNDED_POSE='PASS', FULL_BODY_CROP='PASS',
+    LIVE_ACTION_MATERIAL_AND_LIGHT='PASS')
+
+
+def test_structured_face_and_actual_first_identity_review_read_without_rewriting(tmp_path, monkeypatch):
+    a, media, asset, binding, proof = fixture(monkeypatch,
+        structured_face=True, checks=FIRST_IDENTITY_CHECKS)
+    ledger, originals = persist_originals(tmp_path, asset, proof)
+    before = deepcopy((dump_contract(asset), dump_contract(media), proof))
+    real = native_character_originals(ledger, originals, asset)
+    identity = native_adopted_character_image(a, media, asset, binding, real)
+    assert identity.content_hash == media.content_hash
+    assert real['referenceRecord']['stage']['attempts'][0]['review']['checks'] == FIRST_IDENTITY_CHECKS
+    assert 'IDENTITY' not in real['referenceRecord']['stage']['attempts'][0]['review']['checks']
+    assert (dump_contract(asset), dump_contract(media), proof) == before
+
+
+@pytest.mark.parametrize('missing_or_wrong', [
+    {'SINGLE_SELECTED_PERSON':'PASS'},
+    {'FACE_AND_BODY_READABILITY':'PASS'},
+    {'SINGLE_PERSON':'PASS','FACE_BODY_READABLE':'PASS'},
+    {'IDENTITY_APPEARS_OK':'PASS'},
+    {'SINGLE_SELECTED_PERSON':'PASS','FACE_AND_BODY_READABILITY':'UNKNOWN'},
+    {**FIRST_IDENTITY_CHECKS,'OLDER_AGE_GREY_HAIR_BEARD':'UNKNOWN'},
+])
+def test_first_identity_compatibility_does_not_accept_arbitrary_or_partial_reviews(monkeypatch, missing_or_wrong):
+    a, media, asset, binding, proof = fixture(monkeypatch,
+        structured_face=True, checks=missing_or_wrong)
+    with pytest.raises(DefinitelyNotSubmitted, match='REFERENCE_ADOPTED_IMAGE_PROOF_REQUIRED'):
+        native_adopted_character_image(a, media, asset, binding, proof)
+
+
+@pytest.mark.parametrize('change', ['shape','eyes_brows','nose','mouth'])
+def test_fully_sealed_artwork_cannot_replace_one_selected_face_leaf(monkeypatch, change):
+    parts = {'shape':'Distinct fixture shape', 'eyes_brows':'Distinct fixture eyes and brows',
+        'nose':'Distinct fixture nose', 'mouth':'Distinct fixture mouth'}
+    parts[change] = 'Another unselected facial relationship'
+    a, media, asset, binding, proof = fixture(monkeypatch,
+        structured_face=True, checks=FIRST_IDENTITY_CHECKS,
+        identity_override='；'.join(parts[key] for key in ('shape','eyes_brows','nose','mouth')))
+    # All native owner hashes/receipts refer to this sealed artwork. The exact
+    # selected design still rejects its one unauthorized changed facial leaf.
+    with pytest.raises(DefinitelyNotSubmitted, match='REFERENCE_ADOPTED_IMAGE_PROOF_REQUIRED'):
+        native_adopted_character_image(a, media, asset, binding, proof)
+
+
+@pytest.mark.parametrize('field,value', [('shape',None),('eyes_brows',[]),('nose',7),('mouth','  ')])
+def test_structured_face_projection_never_summarizes_missing_or_nontext_leaves(field, value):
+    from drama_plugin.execution.reference_delivery import _native_character_face_text
+    face = dict(shape='Selected shape', eyes_brows='Selected eyes', nose='Selected nose', mouth='Selected mouth')
+    face[field] = value
+    with pytest.raises(ValueError, match='NATIVE_CHARACTER_FACE_PROJECTION_REQUIRED'):
+        _native_character_face_text(face)
+
+
+def test_structured_face_with_valid_review_still_requires_the_captured_credential(monkeypatch):
+    a, media, asset, binding, proof = fixture(monkeypatch,
+        structured_face=True, checks=FIRST_IDENTITY_CHECKS)
+    a.settings.api_key = SecretStr('other-configured-key')
+    with pytest.raises(DefinitelyNotSubmitted, match='REFERENCE_ACCOUNT_UNVERIFIED'):
+        native_adopted_character_image(a, media, asset, binding, proof)
 
 
 def test_compact_asset_resolves_omitted_preparation_and_history_fields_from_adoption_owner(tmp_path,monkeypatch):
@@ -285,17 +359,17 @@ def test_human_confirmation_cannot_override_failed_visual_review(tmp_path,monkey
         native_adopted_character_image(a,m,asset,b,actual)
 
 
-def test_native_character_binding_producer_uses_asset_identity_without_changing_location_pointer(monkeypatch):
+def test_native_asset_binding_producer_uses_typed_asset_identity_for_character_and_location(monkeypatch):
     import drama_plugin.film.media_references as module
     import drama_plugin.creative_engine.sources as sources
     from drama_plugin.production.contracts import SourceReference
     subject=NS(scope=RuntimeScope(work_id='W',scene_id='S2',shot_id='K04'),body=NS(facts={
         'presentSubjects':[{'id':'person'}], 'assetBindings':[{'id':'image-asset:media:M','assetType':'CHARACTER',
-        'content':{'specializedAsset':dict(subjectId='person',stableIdentity='person',establishedSceneId='S',
+        'content':{'specializedAsset':dict(subjectId='person',stableIdentity='person',establishedSceneId='S',state='ADOPTED',
             adoptionRef=dict(key='asset-reference-adoption:hash',fingerprint='a'*64))},
         'resolvedMedia':[dict(mediaId='M',version='1',contentHash='b'*64,mediaType='IMAGE',width=1280,height=720)]}]}))
     world=NS(scope=subject.scope,body=NS(facts={'locationAssetId':'LOCATION','assetBindings':[{
-        'id':'LOCATION','assetType':'LOCATION','content':{'specializedAsset':dict(stableIdentity='room',establishedSceneId='S',
+        'id':'LOCATION','assetType':'LOCATION','content':{'specializedAsset':dict(stableIdentity='room',establishedSceneId='S',state='ADOPTED',
             adoptionRef=dict(key='location-old-adoption',fingerprint='c'*64))},
         'resolvedMedia':[dict(mediaId='ROOM',version='1',contentHash='d'*64,mediaType='IMAGE',width=1280,height=720)]}]}))
     class Native:
@@ -310,4 +384,4 @@ def test_native_character_binding_producer_uses_asset_identity_without_changing_
     p=NS(creative_versions=None,execution_references=None)
     result=module.asset_reference_candidates(p,NS(refs=()),selection)
     assert result[0].media.review_ref=='asset-adoption:image-asset:media:M:'+ 'a'*64
-    assert result[1].media.review_ref=='location-old-adoption:'+ 'c'*64
+    assert result[1].media.review_ref=='asset-adoption:LOCATION:'+ 'c'*64

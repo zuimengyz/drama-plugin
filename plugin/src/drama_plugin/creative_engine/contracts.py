@@ -24,6 +24,9 @@ class Authority(str, Enum):
 
 
 MAX_AUTHOR_ROUNDS = AUTHOR_CONTENT_ATTEMPT_LIMIT * len((Authority.CANON, Authority.DIRECTION, Authority.PROFESSIONAL))
+# Exact upstream Scene departments and their Shot realizations share one bounded
+# version graph. Only refs cross Runtime; source bodies remain with their owners.
+MAX_CREATIVE_REFS = 32
 
 
 class Kind(str, Enum):
@@ -320,7 +323,7 @@ class FilmInput(ExtendedRuntimeContract):
     approved_canon_refs: tuple[VersionRef, ...] = Field(default=(), max_length=3)
     route: RouteRequest = RouteRequest()
     revision: RevisionRequest | None = None
-    base_refs: tuple[VersionRef, ...] = Field(default=(), max_length=16)
+    base_refs: tuple[VersionRef, ...] = Field(default=(), max_length=MAX_CREATIVE_REFS)
     max_author_rounds: int = Field(default=MAX_AUTHOR_ROUNDS, ge=1, le=MAX_AUTHOR_ROUNDS)
     prior_revision_signatures: tuple[Hash, ...] = Field(default=(), max_length=3)
 
@@ -328,9 +331,9 @@ class FilmInput(ExtendedRuntimeContract):
 class CreativeIntegrityReconciliation(RuntimeContract):
     """One bounded reference-only publication journal per creative run."""
     parent: ArtifactReference
-    original_refs: tuple[VersionRef, ...] = Field(min_length=1, max_length=16)
+    original_refs: tuple[VersionRef, ...] = Field(min_length=1, max_length=MAX_CREATIVE_REFS)
     candidate: ArtifactReference | None = None
-    revised_refs: tuple[VersionRef, ...] = Field(default=(), max_length=16)
+    revised_refs: tuple[VersionRef, ...] = Field(default=(), max_length=MAX_CREATIVE_REFS)
 
     @model_validator(mode="after")
     def publication_shape(self) -> Self:
@@ -348,12 +351,12 @@ class CreativeIntegrityReconciliation(RuntimeContract):
 class CreativeCheckpoint(ExtendedRuntimeContract):
     extension_fields = ('screenplay_ref',)
     screenplay_ref: SourcePin | None = None
-    refs: tuple[VersionRef, ...] = Field(default=(), max_length=16)
+    refs: tuple[VersionRef, ...] = Field(default=(), max_length=MAX_CREATIVE_REFS)
     author_rounds: int = Field(default=0, ge=0, le=MAX_AUTHOR_ROUNDS)
     route_plan: RoutePlan | None = None
     decision_ref: ArtifactReference | None = None
     candidate_ref: ArtifactReference | None = None
-    candidate_version_refs: tuple[VersionRef, ...] = Field(default=(), max_length=16)
+    candidate_version_refs: tuple[VersionRef, ...] = Field(default=(), max_length=MAX_CREATIVE_REFS)
     package_ref: ArtifactReference | None = None
     child_runs: tuple[str, ...] = Field(default=(), max_length=4)
     completed_operations: tuple[str, ...] = Field(default=(), max_length=12)

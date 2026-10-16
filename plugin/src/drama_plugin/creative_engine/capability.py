@@ -177,9 +177,11 @@ class CreativeEngineCapabilities:
         professional = self.screenplays.professional_context(context, work_id=inputs.scope.work_id,
             scene_id=inputs.scope.scene_id) if owner == Authority.PROFESSIONAL else None
         if professional is not None:
+            shot_ref = next((v.ref() for v in versions if v.kind == Kind.SHOT), None)
             professional['currentDesigns'] = [{'ref': v.ref().model_dump(mode='json', by_alias=True),
                 'domain': v.body.domain.value, 'facts': v.body.facts} for v in versions
-                if v.kind == Kind.PROFESSIONAL and isinstance(v.body, DesignBody)]
+                if v.kind == Kind.PROFESSIONAL and isinstance(v.body, DesignBody)
+                and v.scope == inputs.scope and (shot_ref is None or shot_ref in v.source_refs)]
         # Preserve exact refs across native handoffs; author_payload omits them
         # from non-professional model inputs. Only this owner resolves the art.
         return AuthorRequest(scope=inputs.scope, source=source.body, source_refs=checkpoint.refs,
@@ -214,6 +216,13 @@ class CreativeEngineCapabilities:
             selected_refs = {value.source_ref, *refs}
             if any(parent not in selected_refs for ref in refs for parent in self.versions.resolve(ref).source_refs):
                 return self._blocked(inputs, GateCode.CANON_AUTHORITY_MISMATCH)
+            # Adoption remaps parents before descendants. A closed but unordered
+            # list must not retain reviewed parents beneath an adopted child.
+            seen = {value.source_ref}
+            for ref in refs:
+                if any(parent not in seen for parent in self.versions.resolve(ref).source_refs):
+                    return self._blocked(inputs, GateCode.CANON_AUTHORITY_MISMATCH)
+                seen.add(ref)
             revision = value.revision
             if revision:
                 target = self.versions.resolve(revision.target_ref)
@@ -383,8 +392,10 @@ class CreativeEngineCapabilities:
                         return result
                     return CapabilityResult(status=ResultStatus.WAITING_EXTERNAL, external_ref=pending.runtime_ref(),
                         recovery_class=RecoveryClass.WAIT_EXTERNAL, artifact_refs=(pending.runtime_ref(),))
-        required = set(request.shot.professional_domains)
-        bodies = [self.versions.resolve(r).body for r in cp.refs]
+        native = NativeCreativeSources(self.versions, cp.refs)
+        bound = native.bound_professionals(native.version(Kind.SHOT))
+        bodies = [v.body for v in bound]
+        required = {*request.shot.professional_domains, *(body.domain for body in bodies if isinstance(body, DesignBody))}
         current = {body.domain for body in bodies if isinstance(body, DesignBody)}
         inheritance_current = (self.professional_author is None or
             self.professional_author.asset_inheritance_current(request, (body for body in bodies if isinstance(body, DesignBody))))
@@ -393,8 +404,12 @@ class CreativeEngineCapabilities:
         if self.professional_author is None or self.professional_author.author is None:
             return self._absence(inputs, Authority.PROFESSIONAL.value)
         from pydantic import TypeAdapter
-        refs = tuple(r for r in cp.refs if self.versions.resolve(r).kind != Kind.PROFESSIONAL)
-        fixed_request = AuthorRequest.model_validate({**request.model_dump(), "source_refs": refs})
+        # Keep upstream department parents; replace only this Shot's realizations.
+        # The required-domain query does not rewrite the retained thin Shot.
+        refs = tuple(r for r in cp.refs if self.versions.resolve(r).kind != Kind.PROFESSIONAL
+            or self.versions.resolve(r).scope != inputs.scope)
+        fixed_request = AuthorRequest.model_validate({**request.model_dump(), "source_refs": refs,
+            "shot": {**request.shot.model_dump(), "professional_domains": tuple(sorted(required))}})
         author_operation = inputs.operation_id
         asset_bindings = self.professional_author.asset_bindings(fixed_request)
         if asset_bindings is not None:
@@ -505,22 +520,19 @@ class CreativeEngineCapabilities:
             return self._blocked(inputs, GateCode.CANON_AUTHORITY_MISMATCH)
         try:
             from drama_plugin.professional_design.provenance import ORDER, creative_facts, project_metadata
-            core = {r for r in cp.refs if self.versions.resolve(r).kind in ORDER}
             revised = []
             for ref in cp.refs:
                 artifact = self.versions.resolve(ref)
                 if isinstance(artifact.body, DesignBody):
-                    parents = {r for r in artifact.source_refs if self.versions.resolve(r).kind in ORDER}
-                    if artifact.scope != inputs.scope or parents != core:
-                        raise ValueError("PROFESSIONAL_SOURCE_PIN_AUTHORITY_MISMATCH")
-                    projected = project_metadata(artifact.body, self.versions, inputs.scope, artifact.source_refs)
+                    self._professional_core(artifact.ref(), cp.refs, inputs.scope)
+                    projected = project_metadata(artifact.body, self.versions, artifact.scope, artifact.source_refs)
                     if creative_facts(projected.facts) != creative_facts(artifact.body.facts):
                         raise ValueError("Integrity cannot change creative content")
                     if projected != artifact.body:
                         if artifact.state == "ADOPTED":
                             raise ValueError("Integrity cannot rewrite adopted content")
                         ref = self.versions.write(writer=Authority.PROFESSIONAL, kind=Kind.PROFESSIONAL,
-                            scope=inputs.scope, body=projected, sources=artifact.source_refs,
+                            scope=artifact.scope, body=projected, sources=artifact.source_refs,
                             operation=inputs.operation_id + ":metadata:" + ref.fingerprint)
                 revised.append(ref)
             cp = CreativeCheckpoint.model_validate({**cp.model_dump(), "refs": tuple(revised)})
@@ -538,16 +550,41 @@ class CreativeEngineCapabilities:
             self.findings.put_decision(decision, run_id=run.run_id)
         return self._success(cp)
 
+    def _professional_core(self, ref: VersionRef, refs: tuple[VersionRef, ...], scope: RuntimeScope) -> None:
+        """Validate each original at its own scope; only real ancestors may differ."""
+        from drama_plugin.professional_design.provenance import ORDER
+        artifact = self.versions.resolve(ref)
+        if not scope_contains(artifact.scope, scope):
+            raise ValueError("PROFESSIONAL_SOURCE_PIN_AUTHORITY_MISMATCH")
+        core = {r for r in refs for v in (self.versions.resolve(r),)
+            if v.kind in ORDER and scope_contains(v.scope, artifact.scope)}
+        parents = {r for r in artifact.source_refs if self.versions.resolve(r).kind in ORDER}
+        if parents != core:
+            raise ValueError("PROFESSIONAL_SOURCE_PIN_AUTHORITY_MISMATCH")
+        if artifact.scope != scope:
+            roots = [r for r in refs for v in (self.versions.resolve(r),)
+                if v.scope == scope and v.kind in {Kind.SHOT, Kind.PROFESSIONAL}]
+            seen: set[VersionRef] = set()
+            def collect(parent: VersionRef) -> None:
+                if parent in seen:
+                    return
+                if parent not in refs:
+                    raise ValueError("PROFESSIONAL_SOURCE_PIN_AUTHORITY_MISMATCH")
+                seen.add(parent)
+                for ancestor in self.versions.resolve(parent).source_refs:
+                    collect(ancestor)
+            for root in roots:
+                collect(root)
+            if ref not in seen:
+                raise ValueError("PROFESSIONAL_SOURCE_PIN_AUTHORITY_MISMATCH")
+
     def validate_candidate_integrity(self, cp: CreativeCheckpoint, scope: RuntimeScope) -> None:
         from drama_plugin.professional_design.provenance import ORDER, validate_metadata
-        core = {r for r in cp.refs if self.versions.resolve(r).kind in ORDER}
         for ref in cp.refs:
             artifact = self.versions.resolve(ref)
             if isinstance(artifact.body, DesignBody):
-                parents = {r for r in artifact.source_refs if self.versions.resolve(r).kind in ORDER}
-                if artifact.scope != scope or parents != core:
-                    raise ValueError("PROFESSIONAL_SOURCE_PIN_AUTHORITY_MISMATCH")
-                validate_metadata(artifact.body, self.versions, scope, artifact.source_refs)
+                self._professional_core(ref, cp.refs, scope)
+                validate_metadata(artifact.body, self.versions, artifact.scope, artifact.source_refs)
 
     async def reconcile_candidate_integrity(self, run_id: str, expected: ArtifactReference) -> RuntimeRun:
         """Explicit metadata-only revision at ADOPTION wait. Never invokes an author.
@@ -589,7 +626,6 @@ class CreativeEngineCapabilities:
                     {"parent": expected.model_dump(mode="json", by_alias=True),
                      "originalRefs": [r.model_dump(mode="json", by_alias=True) for r in original]}, scope=run.scope)
             revised = []
-            core = {r for r in original if self.versions.resolve(r).kind in ORDER}
             for ref in original:
                 artifact = self.versions.resolve(ref)
                 if not isinstance(artifact.body, DesignBody):
@@ -597,15 +633,16 @@ class CreativeEngineCapabilities:
                         raise ValueError("Integrity cannot revise Source/Canon/Shot")
                     revised.append(ref)
                     continue
-                parents = {r for r in artifact.source_refs if self.versions.resolve(r).kind in ORDER}
-                if artifact.scope != run.scope or parents != core:
-                    raise ValueError("Integrity cannot repair a wrong authority object")
-                projected = project_metadata(artifact.body, self.versions, run.scope, artifact.source_refs)
+                try:
+                    self._professional_core(ref, original, run.scope)
+                except ValueError as error:
+                    raise ValueError("Integrity cannot repair a wrong authority object") from error
+                projected = project_metadata(artifact.body, self.versions, artifact.scope, artifact.source_refs)
                 if creative_facts(projected.facts) != creative_facts(artifact.body.facts):
                     raise ValueError("Integrity cannot change creative content")
                 revised.append(ref if projected == artifact.body else self.versions.write(
-                    writer=Authority.PROFESSIONAL, kind=Kind.PROFESSIONAL, scope=run.scope, body=projected,
-                    sources=artifact.source_refs, operation=run_id + ":integrity:" + expected.artifact_ref + ":" + artifact.body.domain.value))
+                    writer=Authority.PROFESSIONAL, kind=Kind.PROFESSIONAL, scope=artifact.scope, body=projected,
+                    sources=artifact.source_refs, operation=run_id + ":integrity:" + expected.artifact_ref + ":" + ref.fingerprint))
             proposed = CreativeCheckpoint.model_validate({**cp.model_dump(), "refs": tuple(revised)})
             self.validate_candidate_integrity(proposed, run.scope)
             candidate = ArtifactReference(owner="creative-candidate", artifact_ref="creative-candidate:" + proposed.candidate_fingerprint(), version=1)

@@ -395,7 +395,8 @@ class OperationResolver:
         scene = next(v for v in originals if v.kind == Kind.SCENE)
         shot = next(v for v in originals if v.kind == Kind.SHOT)
         performance = next((v for v in originals if v.kind == Kind.PROFESSIONAL and
-            isinstance(v.body, DesignBody) and v.body.domain == "PERFORMANCE"), None)
+            isinstance(v.body, DesignBody) and v.body.domain == "PERFORMANCE"
+            and v.scope == shot.scope and shot.ref() in v.source_refs), None)
         if performance is None or not isinstance(scene.body, SceneBody) or not isinstance(shot.body, ShotBody):
             raise ValueError("NATIVE_PERFORMANCE_CAPABILITY_ABSENT")
         assert isinstance(performance.body, DesignBody)
@@ -696,8 +697,12 @@ class OperationResolver:
                         source_task = GenerationPreparation.model_validate(self.ledger.get_artifact('generation-preparation',op.preparation_ref)[0]).task
                         if review.outcome != 'PASS' or review.scope != binding.origin_scope or review.media.content_hash != binding.media.content_hash:
                             raise ValueError('REFERENCE_SOURCE_REVIEW_MISMATCH')
+                    source_shot = next(self.versions.resolve(r) for r in source_task.owners.adopted_refs
+                        if self.versions.resolve(r).kind == Kind.SHOT)
                     source_ids = {row['id'] for r in source_task.owners.adopted_refs for v in (self.versions.resolve(r),)
-                        if v.kind == Kind.PROFESSIONAL and v.body.domain == 'SUBJECTS' for row in v.body.facts['presentSubjects']}
+                        if v.kind == Kind.PROFESSIONAL and v.body.domain == 'SUBJECTS'
+                        and v.scope == source_shot.scope and source_shot.ref() in v.source_refs
+                        for row in v.body.facts['presentSubjects']}
                     if not set(binding.subject_ids) <= source_ids:
                         raise ValueError('REFERENCE_SOURCE_IDENTITY_MISMATCH')
                 if any(d.role == 'LOCATION' for d in binding.duties):
@@ -717,7 +722,12 @@ class OperationResolver:
                     review = CreativeMediaReview.model_validate_json(row[0])
                     op_body = self.ledger.get_artifact('execution-operation',review.operation_ref)[0]
                     source_task = GenerationPreparation.model_validate(self.ledger.get_artifact('generation-preparation',ExecutionOperation.model_validate(op_body).preparation_ref)[0]).task
-                    worlds = [self.versions.resolve(r) for r in source_task.owners.adopted_refs if self.versions.resolve(r).kind == Kind.PROFESSIONAL and self.versions.resolve(r).body.domain == 'WORLD']
+                    source_shot = next(self.versions.resolve(r) for r in source_task.owners.adopted_refs
+                        if self.versions.resolve(r).kind == Kind.SHOT)
+                    worlds = [self.versions.resolve(r) for r in source_task.owners.adopted_refs
+                        for v in (self.versions.resolve(r),) if v.kind == Kind.PROFESSIONAL
+                        and v.body.domain == 'WORLD' and v.scope == source_shot.scope
+                        and source_shot.ref() in v.source_refs]
                     source_location = SceneLocationBinding.model_validate(worlds[0].body.facts.get('locationBinding'))
                     if source_location.location_ref != target_location.location_ref or review.scope != binding.origin_scope:
                         raise ValueError('REFERENCE_LOCATION_SOURCE_MISMATCH')

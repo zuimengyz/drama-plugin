@@ -1143,7 +1143,8 @@ class DramaPlugin:
             selections = await self.prompt_compiler.reader.selections(package)
             reference = next(v for v in selections if v.selection.domain == 'REFERENCE' and isinstance(v.value,dict) and 'references' in v.value)
             subject = next(v.body.facts['presentSubjects'][0]['id'] for r in previous.owners.adopted_refs
-                for v in (self.creative_versions.resolve(r),) if v.kind == Kind.PROFESSIONAL and v.body.domain == 'SUBJECTS')
+                for v in (self.creative_versions.resolve(r),) if v.kind == Kind.PROFESSIONAL
+                and v.scope == source.scope and v.body.domain == 'SUBJECTS')
             duties = []
             dispositions = dict(previous.unit.reference_disposition)
             for row in reference.value['references']:
@@ -1428,6 +1429,7 @@ class DramaPlugin:
             raise ValueError("A completed reviewed Experiment candidate is required")
         value = self.creative.state.input(candidate_run_id)
         return self.create_film_run(work_id=candidate.scope.work_id, mode=RunMode.PRODUCTION,
+            scene_id=candidate.scope.scene_id, shot_id=candidate.scope.shot_id,
             source_ref=value.source_ref, base_refs=cp.refs, route=value.route, run_id=run_id,
             screenplay_ref=cp.screenplay_ref or value.screenplay_ref)
 

@@ -148,11 +148,26 @@ class TargetReferenceProduction:
         return dict(item)
 
     async def pending(self, preparation_ref: SourcePin, parent_run_id: str,
-                      request: AuthorRequest) -> CapabilityResult:
+                      request: AuthorRequest, *, requirement_key: str | None = None) -> CapabilityResult:
         packet = self.sequence.objects.read_ref(preparation_ref)
-        known = await self.sequence._available(request.scope.work_id, query=preparation_ref.key)
+        known = await self.sequence._available(request.scope.work_id, query=preparation_ref.key,
+            narrative_ref=SourcePin.model_validate(packet['narrativeRef']))
         keys = {a.content['specializedAsset'].get('requirementKey') for a in known}
-        item = next((r for r in packet['requirements'] if not r.get('reuseAssetId') and r['requirementKey'] not in keys), None)
+        if requirement_key is not None:
+            selected = self.sequence.objects._path('asset-scene-design',
+                [packet['narrativeRef']['fingerprint'], packet['sceneId']])
+            if (packet.get('schemaVersion') != 'specialized-asset-preparation-v1'
+                    or (packet['workId'], packet['sceneId']) != (request.scope.work_id, request.scope.scene_id)
+                    or not selected.exists()
+                    or SourcePin.model_validate(self.sequence.objects._read(selected)) != preparation_ref):
+                raise ValueError('REFERENCE_PREPARATION_AUTHORITY_MISMATCH')
+            item = next((r for r in packet['requirements'] if r['requirementKey'] == requirement_key), None)
+            if item is None or item.get('reuseAssetId') or item.get('referenceRequired') is not True:
+                raise ValueError('REFERENCE_REQUIREMENT_NOT_PENDING')
+            if requirement_key in keys:
+                raise ValueError('REFERENCE_REQUIREMENT_ALREADY_ACCEPTED')
+        else:
+            item = next((r for r in packet['requirements'] if not r.get('reuseAssetId') and r['requirementKey'] not in keys), None)
         if item is None:
             # Missing/invalid existing adopted media needs recovery, never replacement.
             return self.wait_ref(ArtifactReference(owner='specialized-asset-preparation',

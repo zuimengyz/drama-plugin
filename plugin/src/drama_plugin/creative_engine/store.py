@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, TypeVar, Callable
 
 from drama_plugin.contracts.base import canonical_json, sha256_canonical
 from drama_plugin.contracts.source_pin import SourcePin
+from drama_plugin.production.contracts import SourceDomain
 from drama_plugin.hosts.artifact_io import native_io, reject_link
 from drama_plugin.hosts.director_artifacts import DirectorArtifactStore
 from drama_plugin.runtime.contracts import ArtifactReference, RunMode, RuntimeScope, RuntimeContract
@@ -304,7 +305,7 @@ class CreativeVersionStore:
             version = self.resolve(shot)
             if not isinstance(version.body, ShotBody):
                 raise ValueError("Selection requires exact Shot")
-            by_domain: dict[object, list[VersionRef]] = {}
+            by_domain: dict[SourceDomain, list[VersionRef]] = {}
             for professional in self.versions():
                 if professional.kind != Kind.PROFESSIONAL:
                     continue
@@ -312,7 +313,7 @@ class CreativeVersionStore:
                         professional.state == version.state and professional.adoption_decision_ref == version.adoption_decision_ref):
                     assert isinstance(professional.body, DesignBody)
                     by_domain.setdefault(professional.body.domain, []).append(professional.ref())
-            required = version.body.professional_domains
+            required = tuple(sorted({*version.body.professional_domains, *by_domain}))
             if any(len(by_domain.get(domain, ())) != 1 for domain in required):
                 raise ValueError("Exact Professional selection unavailable or ambiguous")
             refs = (*version.source_refs, shot, *(by_domain[domain][0] for domain in required))

@@ -223,7 +223,8 @@ class TargetHttpTransport:
                 storage_scope, media_id=reference.media_id)
         if reference.kind == 'image' and binding.role == 'REFERENCE':
             from drama_plugin.execution.reference_delivery import (adopted_original_image,
-                adopted_prop_original_image, native_character_originals, native_adopted_character_image)
+                adopted_prop_original_image, native_asset_originals, native_adopted_character_image,
+                native_adopted_asset_image)
             if self.media_provider is None or self.asset_provider is None:
                 raise DefinitelyNotSubmitted('REFERENCE_ADOPTED_IMAGE_PROOF_REQUIRED')
             media = await self.media_provider.get_media(reference.media_id)
@@ -253,8 +254,11 @@ class TargetHttpTransport:
             if specialized.get('scenePreparationRef') or specialized.get('filmStorageValidated') is True:
                 if self.provider != 'seedance' or self.asset_originals is None:
                     raise DefinitelyNotSubmitted('REFERENCE_ADOPTED_IMAGE_PROOF_REQUIRED')
-                proof = native_character_originals(self.ledger, self.asset_originals, asset)
-                identity = native_adopted_character_image(self.adapter, media, asset, binding, proof)
+                proof = native_asset_originals(self.ledger, self.asset_originals, asset)
+                if asset.asset_type.value == 'CHARACTER':
+                    identity = native_adopted_character_image(self.adapter, media, asset, binding, proof)
+                else:
+                    identity = native_adopted_asset_image(self.adapter, media, asset, binding, proof)
             else:
                 identity = adopted_original_image(self.adapter, media, asset, binding)
             return await managed_original_url(self.media_provider, self.adapter.client, identity,

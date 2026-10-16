@@ -21,6 +21,27 @@ Director Vision; Character/Environment Art; Costume; Lighting.
 
 Track hue, value, saturation and warm/cool relationships over dramatic phases. Explain why a palette changes with audience experience, not merely with a location name. Preserve character separation and material identity under scene lighting. Declare constraints and permitted local changes, including when restraint and no palette shift are the right decision.
 
+Begin with the work's central contradiction and the audience's changing relation
+to its people. Form a film-wide color proposition, then test it against concrete
+scenes and a counterexample. A cold dominant world may contain ordinary warmth;
+grief need not make daylight dark, and dawn need not signify forgiveness. Follow
+the particular work rather than prescribing a genre palette or moral color code.
+
+Develop the arc through motivated warm/cool relations, saturation, tonal
+separation and the visible reach of light. Distinguish a material's stable color
+from how it appears under changing light. A transition can let a previously
+closed space become perceptible without turning it golden or repainting faces.
+Retain local contradictions when they carry dramatic meaning.
+
+Consider time of day as an expressive choice with Lighting and Director. Read
+the scene's actual chronology, work, travel, public activity and spoken cues
+before proposing dusk, night or dawn. Color cannot silently turn approved day
+into night. Put any necessary time revision through the existing Scene owner;
+carry its consequences into World, Lighting, Sound and adjacent scenes. Keep
+source-compatible palette decisions distinct from proposed time changes. Store
+the film's choices in its Color Script and current professional originals, not
+in this Skill or an appended generation prompt.
+
 ## Outputs
 
 Produce a versioned `Color Script` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.

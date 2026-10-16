@@ -12,6 +12,7 @@ from urllib.parse import urlsplit, urlunsplit
 import json
 import httpx
 from dataclasses import dataclass
+from collections.abc import Mapping
 
 from drama_plugin.contracts.base import canonical_json, sha256_canonical
 from drama_plugin.contracts.video import ProviderTask
@@ -109,7 +110,7 @@ def adopted_original_image(adapter, media, asset, binding) -> OriginalImageIdent
     return OriginalImageIdentity(media.content_hash, media.file_size, media.mime_type)
 
 
-def native_character_originals(ledger, objects, asset) -> dict:
+def native_asset_originals(ledger, objects, asset) -> dict:
     """Read exact Native owners instead of rebuilding proof in a Media index.
 
     The adopted Asset pins its original preparation/design/adoption. The adoption
@@ -163,6 +164,11 @@ def native_character_originals(ledger, objects, asset) -> dict:
         return result
     except (KeyError, TypeError, ValueError, OSError, AttributeError):
         raise DefinitelyNotSubmitted('REFERENCE_ADOPTED_IMAGE_PROOF_REQUIRED') from None
+
+
+def native_character_originals(ledger, objects, asset) -> dict:
+    """Compatibility name for the existing type-neutral Native owner reader."""
+    return native_asset_originals(ledger, objects, asset)
 
 
 def _historical_credential_key(record) -> list:
@@ -250,12 +256,56 @@ def _native_character_credential(adapter, production, proof) -> None:
         raise DefinitelyNotSubmitted('REFERENCE_ACCOUNT_UNVERIFIED') from None
 
 
+def _native_character_face_text(face: object) -> str:
+    """Project only the selected original's observable craniofacial leaves.
+
+    Hair remains its independent visual fact. The structured path is the exact
+    four-leaf projection used by the retained artwork, not a free-form synopsis.
+    Historical string originals keep their unchanged comparison.
+    """
+    if isinstance(face, str) and face.strip():
+        return face
+    if isinstance(face, dict):
+        leaves = [face.get(key) for key in ('shape', 'eyes_brows', 'nose', 'mouth')]
+        if all(isinstance(leaf, str) and leaf.strip() for leaf in leaves):
+            return '；'.join(leaf for leaf in leaves if isinstance(leaf, str))
+    raise ValueError('NATIVE_CHARACTER_FACE_PROJECTION_REQUIRED')
+
+
+def _native_character_identity_review(checks: Mapping[str, str]) -> bool:
+    """Read retained identity duties without renaming the actual review.
+
+    The native Review contract permits professional check names. A reviewed
+    single selected person with readable face/body is the explicit first-
+    identity combination; an arbitrary PASS or fuzzy label never substitutes.
+    All other checks remain subject to the caller's existing all-PASS test.
+    """
+    return (checks.get('IDENTITY') == 'PASS' or
+        all(checks.get(key) == 'PASS' for key in
+            ('SINGLE_SELECTED_PERSON', 'FACE_AND_BODY_READABILITY')))
+
+
 def native_adopted_character_image(adapter, media, asset, binding, proof) -> OriginalImageIdentity:
     """Validate an unchanged Native portrait against its real producing receipt.
 
     Compact Film Media need not repeat these originals. Missing historical
     credential evidence stays unverified; the bridge never manufactures it.
     """
+    return _native_adopted_image(adapter, media, asset, binding, proof, asset_type='CHARACTER')
+
+
+def native_adopted_asset_image(adapter, media, asset, binding, proof) -> OriginalImageIdentity:
+    """Deliver a Native non-person original under its actual asset duty.
+
+    Native records already retain the generating credential, immutable review
+    and real adoption decision. No portrait or caller-created proof is needed.
+    """
+    if asset.asset_type.value not in {'LOCATION', 'COSTUME', 'PROP'}:
+        raise DefinitelyNotSubmitted('REFERENCE_ADOPTED_IMAGE_PROOF_REQUIRED')
+    return _native_adopted_image(adapter, media, asset, binding, proof, asset_type=asset.asset_type.value)
+
+
+def _native_adopted_image(adapter, media, asset, binding, proof, *, asset_type: str) -> OriginalImageIdentity:
     from drama_plugin.contracts.base import dump_contract
     from drama_plugin.contracts.source_pin import SourcePin
     from drama_plugin.persistence.review import UserDecisionRecord
@@ -284,14 +334,39 @@ def native_adopted_character_image(adapter, media, asset, binding, proof) -> Ori
         attempt = next(a for a in stage['attempts'] if a['attempt_id'] == receipt['attempt_id'])
         review = still.current_review(attempt)
         actors = frame['spec']['actors']
-        if (asset.asset_type.value != 'CHARACTER' or value['state'] != 'ADOPTED'
+        character = asset_type == 'CHARACTER'
+        if character:
+            identity_text = _native_character_face_text(design['design']['face'])
+            ir_face = next(s['face']['text'] for s in frame['spec']['prompt_ir']['subjects']
+                if s['id'] == design['subjectId'])
+            frame_identity = (len(actors) == 1 and actors[0]['entity_key'] == design['subjectId']
+                and actors[0]['identity'] == identity_text and ir_face == identity_text
+                and actors[0]['visibility'] == 'FACE')
+            duty, subject, semantics = 'CHARACTER', design['subjectId'], {'identity'}
+        else:
+            # Native still artwork may express an object entirely through its
+            # sealed VisualPromptIR, without redundant low-level Prop fields.
+            # Its design pin, exact request/receipt and original review remain
+            # authoritative. Never invent a person or rewrite that request.
+            frame_identity = not actors and not frame['spec']['prompt_ir']['subjects']
+            if frame['spec']['props']:
+                frame_identity = frame_identity and {p['entity_key'] for p in frame['spec']['props']} == {design['stableIdentity']}
+            duty = {'LOCATION': 'LOCATION', 'COSTUME': 'COSTUME', 'PROP': 'CONTINUITY'}[asset_type]
+            subject = design['stableIdentity']
+            semantics = {'LOCATION': {'environment'}, 'COSTUME': {'costume'}, 'PROP': {'prop', 'continuity'}}[asset_type]
+            if (binding.source_scope is None or getattr(binding, 'use_ref', None) is None
+                    or getattr(binding, 'state_ref', None) is None
+                    or binding.use_ref not in getattr(binding, 'authority_refs', ())):
+                reject()
+        if (asset.asset_type.value != asset_type or value['state'] != 'ADOPTED'
                 or design != {k:v for k,v in item.items() if k not in {'designRef', 'requirementKey'}}
                 or any(k in value and value[k] != v for k,v in design.items())
                 or any(value.get(k) != design.get(k) for k in
                     ('assetType','name','design','subjectId','stableIdentity','revision','referenceRequired'))
                 or design_ref.fingerprint != sha256_canonical(design)
                 or item['designRef'] != dump_contract(design_ref) or item.get('reuseAssetId')
-                or design.get('assetType') != 'CHARACTER' or not design.get('subjectId')
+                or design.get('assetType') != asset_type
+                or (not design.get('subjectId') if asset_type in {'CHARACTER', 'COSTUME'} else design.get('subjectId') is not None)
                 or design.get('referenceRequired') is not True
                 or prep_ref.fingerprint != sha256_canonical(preparation)
                 or (value.get('scenePreparationRef') is not None
@@ -317,22 +392,21 @@ def native_adopted_character_image(adapter, media, asset, binding, proof) -> Ori
                 or production.asset_id not in (None, asset.id)
                 or media.id not in asset.reference_media_ids
                 or (media.work_id, asset.work_id, adoption['workId'], preparation['workId']) != (binding.scope.work_id,) * 4
-                or binding.role != 'REFERENCE' or binding.subject_ids != (design['subjectId'],)
+                or binding.role != 'REFERENCE' or binding.subject_ids != ((design['subjectId'],) if character else ())
                 or binding.authorization_scope != 'ADOPTED_PRODUCTION_INPUT'
                 or binding.origin_scope.work_id != binding.scope.work_id
                 or (binding.source_scope is not None and
                     (binding.source_scope.scene_id != design['establishedSceneId'] or binding.source_scope.shot_id is not None))
-                or not binding.duties or any(d.role != 'CHARACTER' or d.subject != design['subjectId'] for d in binding.duties)
-                or 'identity' not in binding.media.semantics
+                or not binding.duties or any(d.role != duty or d.subject != subject for d in binding.duties)
+                or (not semantics <= set(binding.media.semantics) if character else set(binding.media.semantics) != semantics)
                 or binding.media.review_ref != 'asset-adoption:' + asset.id + ':' + adoption_ref.fingerprint
                 or binding.media.content_hash != media.content_hash or binding.media.media_id != media.id
-                or media.shot_id is not None or media.media_type.value != 'IMAGE' or media.purpose != 'CHARACTER_REFERENCE'
+                or media.shot_id is not None or media.media_type.value != 'IMAGE' or media.purpose != asset_type + '_REFERENCE'
                 or media.mime_type not in {'image/png','image/jpeg'}
                 or delivery.get('persistenceStatus') != 'VERIFIED' or delivery['mediaId'] != media.id
                 or delivery['contentHash'] != media.content_hash or delivery['sourceRef'] != media.source_ref
                 or media.source_ref != 'asset-reference:' + attempt['attempt_id']
-                or len(actors) != 1 or actors[0]['entity_key'] != design['subjectId']
-                or actors[0]['identity'] != design['design']['face'] or actors[0]['visibility'] != 'FACE'
+                or not frame_identity
                 or frame['spec'].get('references') or frame['spec'].get('edit_source')
                 or frame['spec'].get('image_mode','text_to_image') != 'text_to_image'
                 or request.get('tool') != 'image.create' or request['body'].get('image')
@@ -348,7 +422,8 @@ def native_adopted_character_image(adapter, media, asset, binding, proof) -> Ori
                 or receipt['output_bytes'] != media.file_size or receipt['mime_type'] != media.mime_type
                 or attempt['job_id'] != receipt['task_id'] or receipt['usage'].get('input_images',0) != 0
                 or not still.usable(attempt) or review['output_hash'] != media.content_hash
-                or review['attempt_id'] != attempt['attempt_id'] or 'IDENTITY' not in review['checks']
+                or review['attempt_id'] != attempt['attempt_id']
+                or (not _native_character_identity_review(review['checks']) if character else not review['checks'])
                 or any(check != 'PASS' for check in review['checks'].values())):
             reject()
         validate_result_identity(attempt, receipt['correlation'], receipt['task_id'])
@@ -356,6 +431,8 @@ def native_adopted_character_image(adapter, media, asset, binding, proof) -> Ori
         if (target not in {(s.get('width'),s.get('height')) for s in delivery['technical']['streams']}
                 or (binding.media.width,binding.media.height) != target):
             reject()
+        if not character and not receipt.get('credential_fingerprint'):
+            raise DefinitelyNotSubmitted('REFERENCE_ACCOUNT_UNVERIFIED')
         _native_character_credential(adapter, production, proof)
         require_trusted_time(datetime.fromtimestamp(receipt['created'],timezone.utc))
     except (KeyError, TypeError, StopIteration, ValueError, AttributeError):

@@ -21,6 +21,15 @@ Environment Art; Camera; scene time/weather; Director visibility priorities; Pro
 
 Identify where light physically comes from and what it reveals or conceals. Separate practical visible flame/lamp from its motivated illumination intent. Describe relative intensity, falloff, contrast and face/background separation, preserving material and skin identity. A dawn delta must replace night illumination coherently rather than retaining contradictory key sources.
 
+Use dusk, night and dawn as changing relations between available sources and
+people's activity, not as ready-made emotional filters. At dusk, direct sun and
+cool sky are different sources; do not invent sunset entering a window on the
+wrong wall. At night, name the source that lets the required action remain
+readable. Let dawn develop through sky level, shadow separation and declining
+practical dominance, with faces and materials retaining their identity. Check
+the current Scene time and the neighboring transition; a palette request alone
+does not rewrite chronology or require every scene to become darker.
+
 ## Outputs
 
 Produce a versioned `Lighting Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.

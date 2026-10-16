@@ -42,6 +42,21 @@ while protecting necessary words and events. No fixed duration cap, automatic sp
 or fast-cut template follows from this assessment. Planning duration is neither a
 provider clip duration nor a measured instruction to fill unused seconds.
 
+Choose whether time continues, compresses, omits an interval, runs in parallel,
+repeats or changes order. Name what survives the transition, what is omitted and
+what remains unknown from the approved material. A later image may reinterpret
+an earlier one; repetition can expose a changed relation without requiring a
+recurring motif. An ellipsis may retain a meaningful gap rather than explain
+every cause; it does not authorize inventing an offscreen event.
+
+Montage works through relations between images and sounds, not simply rapid
+cuts or music synchronization. A graphic match can connect different times or
+places; match-on-action carries an action phase across views. A dissolve, morph
+or concealed cut is a means, not evidence of that relation or of continuous
+action. Choose the narrative relation before the transition effect. Hard cuts,
+deliberate discontinuity, long holds and energetic montage remain available when
+they serve the approved meaning; seamlessness is not the goal of every cut.
+
 ## Outputs
 
 Produce a versioned `Editorial Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.

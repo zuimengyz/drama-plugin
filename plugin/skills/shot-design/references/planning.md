@@ -63,7 +63,10 @@ an assumption. Request a plan or alternate view only when it resolves uncertaint
 
 For each receiver compare predecessor exit with entry: position, facing, eyeline,
 motion, supporting hand/object state, camera endpoint and unfinished speech/task.
-A match cut carries the action phase; an ellipsis states what changed offscreen.
+A match-on-action cut carries the action phase. A graphic match may connect
+different times or places without preserving the same physical state. Bind the
+approved Editorial relation: for an ellipsis, distinguish the supported offscreen
+change from what remains unknown rather than inventing the missing action.
 Preserve emotion, attention and energy unless the Scene supplies a cause.
 
 Within a take, reconcile Action's ordered/parallel events, Performance's receiving

@@ -22,6 +22,35 @@ Before listing Shots, decide:
 
 Prefer the smallest coherent set. Do not split every sentence or dialogue line.
 
+### When this group opens the work
+
+Apply after the complete original screenplay and selection, not as a condition for
+writing V1. Inherit the opening perception and purpose from the selected scene;
+ask what entering here lets the audience experience, and what an earlier or later
+entry would gain or lose. Return a needed narrative change to Host/Screenplay and
+Director rather than inventing a prologue in coverage or compilation.
+
+Coordinate the first effective image and sound: what does each make perceptible,
+whose attention do we share, and what remains unlocated or unexplained? They may
+coincide or arrive separately. With Sound, distinguish a withheld layer from an
+absent listening world; narration, music, silence and direct action are choices,
+not prescribed opening devices.
+
+Read the opening group through its handoff into the first scene's event. Track how
+discovery, a person's attention or response changes what the audience expects.
+Keep setup when it prepares or changes that encounter, rather than merely delaying
+it. With Performance and Editorial, hold while listening, tension or a sound/image
+relation develops; omit an interval when its process adds nothing necessary,
+preserving the causal and perceptual link. Neither novelty in every shot nor a
+fixed duration or shot count is required.
+
+Express the relation in existing purpose, requiredTransition, entry/exit and
+editingRelation, with concrete Camera, Sound, Performance and Editorial originals.
+Keep only current executable facts in the video request; titles and measured
+picture/sound edits go to Finishing. A technical continuation inherits the ongoing
+state, not another introduction. No separate opening plan or copied theory is
+needed downstream.
+
 ## 3. Give every Shot a narrative purpose
 
 Assign one or more concrete functions: establish space/power, reveal information, capture a decision or reaction, emphasize threat, create information disparity, preserve action continuity, or express relationship change. Delete or merge a Shot with no new visual, narrative, emotional, performance, or continuity function.

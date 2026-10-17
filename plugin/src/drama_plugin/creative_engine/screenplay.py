@@ -310,18 +310,18 @@ class ScreenplayWorkshop:
         return packet
 
     def bind_professional_context(self, handoff_ref: SourcePin, *, work_id: str,
-                                  scene_id: str, design_refs: tuple[SourcePin, ...]) -> SourcePin:
-        """Bind explicitly selected existing designs after the Host scene decision.
+                                  scene_id: str | None, design_refs: tuple[SourcePin, ...]) -> SourcePin:
+        """Bind selected designs after the Host film or scene decision.
 
         Preserve screenplay and evidence. No history scan, Canon adoption,
         competing design store or prewriting rules.
         """
         packet = self.bound_packet(handoff_ref, work_id=work_id, scene_id=scene_id)
         if packet is None or packet.get('schemaVersion') != 'scene-screenplay-shot-handoff-v1':
-            raise ValueError('Professional designs require a selected complete scene')
+            raise ValueError('Professional designs require a selected complete screenplay')
         updated = {**packet, 'professionalDesignRefs': [dump_contract(r) for r in design_refs]}
         self.professional_context(updated, work_id=work_id, scene_id=scene_id)
-        return self.objects.put('scene-professional-handoff:' + scene_id, updated)
+        return self.objects.put('scene-professional-handoff:' + (scene_id or work_id), updated)
 
     def professional_context(self, packet: dict[str, Any] | None, *, work_id: str,
                              scene_id: str | None) -> dict[str, Any]:
@@ -372,7 +372,7 @@ def register_screenplay_tools(registry: 'ToolRegistry', workshop: ScreenplayWork
     from drama_plugin.tools.catalog import _domain_tool
     async def retain_context(original: ContextOriginal) -> SourcePin:
         return workshop.retain_context(ContextOriginal.model_validate(original))
-    async def bind_professional_context(handoff_ref: SourcePin, work_id: str, scene_id: str,
+    async def bind_professional_context(handoff_ref: SourcePin, work_id: str, scene_id: str | None,
                                        design_refs: tuple[SourcePin, ...]) -> SourcePin:
         return workshop.bind_professional_context(SourcePin.model_validate(handoff_ref), work_id=work_id,
             scene_id=scene_id, design_refs=tuple(SourcePin.model_validate(r) for r in design_refs))
@@ -399,7 +399,7 @@ def register_screenplay_tools(registry: 'ToolRegistry', workshop: ScreenplayWork
     async def shot_handoff(session_id: str) -> dict[str, Any]: return workshop.shot_handoff(session_id)
     specs: list[tuple[str, ToolHandler, Any, dict[str, Any], dict[str, Any]]] = [
         ('bind_professional_context', bind_professional_context, SourcePin,
-            {'handoff_ref': SourcePin, 'work_id': str, 'scene_id': str, 'design_refs': tuple[SourcePin, ...]}, {}),
+            {'handoff_ref': SourcePin, 'work_id': str, 'scene_id': str | None, 'design_refs': tuple[SourcePin, ...]}, {}),
         ('retain_context', retain_context, SourcePin, {'original': ContextOriginal}, {}),
         ('retain_thread', retain_thread, SourcePin, {'thread': NarrativeThread}, {}),
         ('begin', begin, dict, {'session_id': str, 'work_id': str, 'scope': Literal['FILM', 'SCENE'], 'goal': str, 'source_refs': tuple[SourcePin, ...]},

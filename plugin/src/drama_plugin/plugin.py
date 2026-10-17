@@ -335,7 +335,8 @@ class DramaPlugin:
                                rights_refs: tuple[ArtifactReference, ...], route: str, model: str,
                                run_id: str, max_cost_microunits: int = 0,
                                estimated_shot_cost_microunits: int = 0, workflow_id: str | None = None,
-                               screenplay_session_id: str | None = None) -> RuntimeRun:
+                               screenplay_session_id: str | None = None,
+                               screenplay_ref: SourcePin | None = None) -> RuntimeRun:
         """Film scope entry: only goal/source, owner metadata and execution policy."""
         if route.replace('-', '_').lower() in {'comfy', 'comfy_cloud', 'comfy_cloud_mcp'}:
             raise ConfigurationError('COMFY_CLOUD_RETIRED')
@@ -350,6 +351,12 @@ class DramaPlugin:
         from drama_plugin.creative_engine.contracts import Authority, Kind
         if source.spoken_language != languages.spoken_language:
             raise ValueError("Source/Canon metadata must explicitly resolve spoken language")
+        if screenplay_session_id and screenplay_ref:
+            raise ValueError('Select a screenplay session or an exact retained handoff')
+        fixed_screenplay = screenplay_ref or (self.screenplays.bind_selection(screenplay_session_id,
+            work_id=work_id, scene_id=None) if screenplay_session_id else
+            self.screenplays.bind_context(work_id=work_id, scene_id=None))
+        self.screenplays.bound_packet(fixed_screenplay, work_id=work_id, scene_id=None)
         run = self.runtime.draft_run(work_id=work_id,mode=RunMode.PRODUCTION,workflow_id=workflow_id or film_media_workflow().workflow_id,run_id=run_id)
         source = type(source).model_validate({**source.model_dump(),
             "source_document_language":languages.source_document_language,
@@ -360,7 +367,7 @@ class DramaPlugin:
             scope=run.scope,body=source,sources=(),operation=run_id+":film-source")
         self.film.store.bind(run_id,run.scope,FilmInput(source_ref=source_ref,languages=languages,
             profile=profile,rights_refs=rights_refs,route=route,model=model,
-            screenplay_ref=self.screenplays.bind_selection(screenplay_session_id, work_id=work_id, scene_id=None) if screenplay_session_id else self.screenplays.bind_context(work_id=work_id, scene_id=None),
+            screenplay_ref=fixed_screenplay,
             max_cost_microunits=max_cost_microunits,estimated_shot_cost_microunits=estimated_shot_cost_microunits))
         try:
             existing = self.runtime.store.load(run_id)

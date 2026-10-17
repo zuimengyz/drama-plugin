@@ -19,6 +19,12 @@ Asset Manifest; approved department designs; Shot/Action duties.
 
 ## Professional decisions
 
+Treat learning cards and style studies as knowledge evidence. Their prompts,
+captions and director labels do not verify provenance, lens settings, character
+history or motion. Do not silently select their image bytes for production. An
+explicitly selected production reference must still have a scoped duty and obey
+the existing identity, source and input-selection mechanism.
+
 Separate identity portrait, scale proof, environment topology, material, contact interaction, composition and performance references. One attractive image cannot establish every role. Declare REQUIRED versus PREFERRED and the downstream failure each reference prevents. Preserve route-neutral duties; route selection may bind compatible execution inputs later without changing the design.
 
 ## Outputs

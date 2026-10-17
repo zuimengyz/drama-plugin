@@ -87,6 +87,9 @@ Preserve the existing source-bound enter/dispatch/review/resume loop. Report the
 
 ## Work-level directing authority
 
+Read [work aesthetic design](references/work-aesthetic-design.md) when deriving or
+applying a selected film's visual principles; examples are comparisons, not defaults.
+
 For full preproduction, follow [work-owned film grammar and Book responsibilities](../../docs/work-directing-authority.md).
 Create source-pinned film grammar and aesthetic criteria with sequence evolution,
 then render scene-specific direction from the existing department owners. Use the

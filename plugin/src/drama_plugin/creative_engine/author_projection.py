@@ -545,13 +545,29 @@ def professional_candidate_view(rows: list[JsonValue], request: AuthorRequest) -
     return candidates
 
 
+def film_look_view(request: AuthorRequest | FilmAuthorRequest) -> list[JsonValue]:
+    """Selected aesthetic meaning only; exact source pins stay with the owner."""
+    context = request.professional_context if isinstance(request, AuthorRequest) else request.screenplay_context
+    return [JSON.validate_python({k: v for k, v in object_value(row['design']).items()
+        if k not in {'workScope', 'sourcePins'}})
+        for row in sequence((context or {}).get('filmLook', []))
+        if isinstance(row, dict)]
+
+
+def screenplay_view(context: dict[str, JsonValue]) -> dict[str, JsonValue]:
+    value = {k: v for k, v in context.items() if k not in {'professionalDesignRefs', 'filmLook'}}
+    if isinstance(value.get('selectedSceneScreenplays'), list):
+        value['selectedSceneScreenplays'] = [screenplay_view(object_value(row))
+            for row in sequence(value['selectedSceneScreenplays'])]
+    return value
+
+
 def author_payload(request: AuthorRequest | FilmAuthorRequest) -> dict[str, JsonValue]:
     source=request.source.model_dump(mode='json',by_alias=True)
     source={k:v for k,v in source.items() if k not in {'originalOwnerRef','languageMetadataRef'}}
     result: dict[str,JsonValue]={'source':JSON.validate_python(source)}
     if request.screenplay_context is not None:
-        result['hostScreenplay'] = JSON.validate_python({k:v for k,v in request.screenplay_context.items()
-            if k != 'professionalDesignRefs'})
+        result['hostScreenplay'] = JSON.validate_python(screenplay_view(request.screenplay_context))
     if isinstance(request, AuthorRequest) and request.revision:
         # Findings are explicit scoped instructions, not provenance or invented IDs.
         result['revisionInstruction'] = request.revision.instruction
@@ -561,11 +577,15 @@ def author_payload(request: AuthorRequest | FilmAuthorRequest) -> dict[str, Json
             'spokenCandidates':[{'selection':i,'speakerSelection':next(j for j,s in enumerate(roster) if s['id']==line.speaker),'text':line.text,'mustKeep':line.must_keep} for i,line in enumerate(scene.dialogue)]}
     if isinstance(request,FilmAuthorRequest):
         result['productionGoal']=request.production_goal
+        if request.canon and (request.screenplay_context or {}).get('filmLook'):
+            result['filmLook'] = film_look_view(request)
         if request.canon:
             result['canon']={'work':JSON.validate_python(request.canon.work.model_dump(mode="json",by_alias=True)),'script':JSON.validate_python(request.canon.script.model_dump(mode="json",by_alias=True)),
                 'sceneCandidates':[{'selection':i,**scene_view(s.scene)} for i,s in enumerate(request.canon.scenes)]}
     elif request.canon:
         result['canon']={'work':JSON.validate_python(request.canon.work.model_dump(mode="json",by_alias=True)),'script':JSON.validate_python(request.canon.script.model_dump(mode="json",by_alias=True)),'scene':scene_view(request.canon.scene)}
+        if not request.shot and request.professional_context is not None:
+            result['filmLook'] = film_look_view(request)
         if request.shot:
             # This input exists only after selected Scene/Shot authority. Keep
             # full originals local, and semantic craft/ordinal choices on wire.
@@ -581,8 +601,7 @@ def author_payload(request: AuthorRequest | FilmAuthorRequest) -> dict[str, Json
                     if k not in {'continuityEvidence','continuityDesignRefs','locationBinding','assetBindings','assetNarrativeRef','locationAssetId'}})}
                     for row in sequence(context.get('currentDesigns', [])) if isinstance(row,dict)
                     and row['domain'] in {d.value for d in request.shot.professional_domains}], request),
-                'filmLook': [JSON.validate_python({k:v for k,v in object_value(row['design']).items()
-                    if k not in {'workScope','sourcePins'}}) for row in sequence(context.get('filmLook', [])) if isinstance(row,dict)],
+                'filmLook': film_look_view(request),
                 'locationCandidates': [{'selection':row['selection'], 'design':JSON.validate_python({k:v
                     for k,v in object_value(row['design']).items() if k not in {'id','revision','sceneRefs','parentLocationId','historicalBasis'}})}
                     for row in sequence(context.get('locationCandidates', [])) if isinstance(row,dict)]}

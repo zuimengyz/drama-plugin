@@ -19,6 +19,14 @@ Director Vision; Layout; Blocking; Performance; Action and Crowd Bibles.
 
 ## Professional decisions
 
+Interpret the selected Work grammar at this scene's perceptual state, including
+its applicability and exceptions. Relate the person to inhabited space and objects
+through visible scale, depth and attention; negative space alone does not express
+absence, and an object close-up cannot create unestablished significance. Preserve
+asset identity and layout while changing the view. Coordinate motivated light/color
+variation with those owners instead of demanding one exposure or palette for every
+shot. Choose what this view gains and gives up, including a listener's readability.
+
 Choose the information and relationship the audience must perceive, then the
 view. A wide view can disclose geography or isolation; a medium view can keep
 hands and partners together; a close view selects a reaction or detail while

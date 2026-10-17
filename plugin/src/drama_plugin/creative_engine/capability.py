@@ -175,15 +175,18 @@ class CreativeEngineCapabilities:
             script, ScriptBody) and isinstance(scene, SceneBody) else None
         context = self.screenplays.objects.read_ref(checkpoint.screenplay_ref) if checkpoint.screenplay_ref else self.screenplays.bound_packet(value.screenplay_ref, work_id=inputs.scope.work_id, scene_id=inputs.scope.scene_id)
         professional = self.screenplays.professional_context(context, work_id=inputs.scope.work_id,
-            scene_id=inputs.scope.scene_id) if owner == Authority.PROFESSIONAL else None
-        if professional is not None:
+            scene_id=inputs.scope.scene_id) if owner in {Authority.DIRECTION, Authority.PROFESSIONAL} else None
+        if owner == Authority.DIRECTION and professional is not None:
+            # Direction inherits selected Work meaning, not department originals.
+            professional = {'filmLook': professional['filmLook']}
+        if owner == Authority.PROFESSIONAL and professional is not None:
             shot_ref = next((v.ref() for v in versions if v.kind == Kind.SHOT), None)
             professional['currentDesigns'] = [{'ref': v.ref().model_dump(mode='json', by_alias=True),
                 'domain': v.body.domain.value, 'facts': v.body.facts} for v in versions
                 if v.kind == Kind.PROFESSIONAL and isinstance(v.body, DesignBody)
                 and v.scope == inputs.scope and (shot_ref is None or shot_ref in v.source_refs)]
         # Preserve exact refs across native handoffs; author_payload omits them
-        # from non-professional model inputs. Only this owner resolves the art.
+        # from model inputs; Canon never receives preselected aesthetic rules.
         return AuthorRequest(scope=inputs.scope, source=source.body, source_refs=checkpoint.refs,
             screenplay_context=context, professional_context=professional,
             canon=canon, shot=shot if isinstance(shot, ShotBody) else None, revision=value.revision if value.revision and value.revision.owner == owner else None)

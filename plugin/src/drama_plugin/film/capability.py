@@ -222,6 +222,13 @@ class FilmCapabilities:
                     request = request.model_copy(update={'screenplay_context': {
                         **(request.screenplay_context or {}), 'selectedSceneScreenplays': scenes}})
                     cp = self.save(inputs, screenplay_ref=self.plugin.screenplays.objects.put('native-film-scene-handoffs:' + inputs.run_id, request.screenplay_context))
+                context = request.screenplay_context or {}
+                selected = self.plugin.screenplays.professional_context(context,
+                    work_id=inputs.scope.work_id, scene_id=None)
+                # Ephemeral semantic input through the existing screenplay context;
+                # no new Film DTO, store or Canon/V1 aesthetic injection.
+                request = request.model_copy(update={'screenplay_context': {
+                    **context, 'filmLook': selected['filmLook']}})
                 direction = FilmDirection.model_validate((await self.direction_author.direct_film(request)).model_dump())
         else:
             direction = self.store.author(fixed,FilmDirection)

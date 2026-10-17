@@ -29,11 +29,12 @@ from drama_plugin.runtime.contracts import RecoveryClass
 from drama_plugin.contracts.dpd import SceneDPD, BeatDPD, LineDPD
 from drama_plugin.generation.contracts import TemporalRelation
 from drama_plugin.professional_design.performance_scope import SubjectProjection
-from drama_plugin.creative_engine.author_projection import (author_payload, canon_schema, canon_projection,
+from drama_plugin.creative_engine.author_projection import (author_payload, film_look_view, canon_schema, canon_projection,
     direction_projection, professional_projection)
 
 T = TypeVar("T")
-DIRECTION_CRAFT = ("shot-design/references/planning.md", "shot-design/references/shot-transitions.md")
+DIRECTION_CRAFT = ("shot-design/references/planning.md", "shot-design/references/shot-transitions.md",
+                   "director/references/work-aesthetic-design.md")
 # Internal knowledge selection only, never a department execution DAG.
 PROFESSIONAL_CRAFT = {
     D.SUBJECTS: ("specialized-asset-design/SKILL.md",),
@@ -784,7 +785,7 @@ class FormalProfessionalAuthor(SkillAuthor):
                 'name': object_value(row['asset'])['name'],
                 'design': asset_design(row['asset'])}
                 for row in asset_rows]}
-        payload['filmLook'] = [object_value(row)['design'] for row in sequence((request.professional_context or {}).get('filmLook', []))]
+        payload['filmLook'] = film_look_view(request)
         system = BOUNDARY + '''\nPost-selection Specialized Asset Design only. Design this narrative Scene's necessary assets.
 Every subject without an inherited identity needs one CHARACTER baseline selected by subjectSelection.
 For inherited characters omit unchanged identity or select reuseSelection. A justified costume, makeup,
@@ -869,6 +870,9 @@ adoption, machine identities, source refs, versions, workflow or provider instru
             value['prompt_ir'] = ir
             return cast(JsonValue, value)
         payload = author_payload(request)
+        # Asset proofs are Scene-scoped (no Shot), so visualContinuity is absent.
+        # Carry the same selected Work original as the asset-design author.
+        payload['filmLook'] = film_look_view(request)
         asset_payload: dict[str,Any] = {k: requirement[k] for k in
             ('assetType', 'name', 'design', 'variantReason')}
         asset_payload['referenceMode'] = requirement.get('referenceMode','text_to_image')

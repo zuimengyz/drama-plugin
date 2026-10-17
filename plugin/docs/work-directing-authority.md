@@ -30,6 +30,28 @@ The aesthetic constitution contains positive preferences, exclusions and context
 tests. Explain why an attractive image can violate this Work's meaning. Its rules
 belong to the Work sidecar and are never loaded as defaults for another Work.
 
+For the native selected-screenplay path, retain this existing WorkDirectingAuthority
+in the local original store and bind its exact SourcePin with
+`screenplay.bind_professional_context`. Use `scene_id=None` for a selected film
+handoff (Work design only), or the exact Scene for a selected scene handoff.
+Pass the returned handoff through the existing `screenplay_ref` input of
+`create_source_film_run` / `create_film_run`; a session ID alone binds the screenplay
+without this later design selection. The full-film Direction capability preserves
+the selected pins through scene handoffs, then supplies semantic Film Look to
+Direction. Scene Direction, asset design/reference authors and shot professional
+authors receive that selected basis; Canon and autonomous scene V1 do not.
+
+The Host reads Director's work-aesthetic-design reference; FormalDirectionAuthor
+loads it explicitly, because SkillAuthor does not recursively load Markdown links.
+Specialized Asset, Camera, Lighting and Color translate the selected rules into
+their existing contracts. Image proof authors use typed subject/environment,
+camera, lighting and preserve facts. Video authors use cameraPosition/lensIntention,
+lighting sources/directionAndQuality and scenePalette/arc/constraints. Reasoning in
+continuityInterpretation stays local. These are existing execution leaves, not a
+new style block or an instruction to concatenate a constitution into every prompt.
+Optional grain and final balancing remain with Finishing. Offline final-request
+checks establish delivery, not aesthetic merit or compliance by a generative model.
+
 `EditorialIntentHandoff` and `AdaptiveIntentHandoff` describe later inputs only.
 `AestheticPairwiseReviewContract` is a future evidence payload, not a new review
 entity: its eventual results can be pinned in existing CapabilityFeedback.evidence_refs,

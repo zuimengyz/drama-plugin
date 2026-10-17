@@ -58,6 +58,27 @@ Every concrete choice has a reason and original source references. Keep sourced
 constraints distinct from visual interpretation. If an interpretation conflicts
 with dramaturgy, return it upstream; appearance cannot revise identity. Design
 continuity changes against the specified arc stage; do not reveal later states early.
+
+Translate the selected Film Look into durable asset relationships: identifiable
+silhouette and construction, material response, local surface colors, and only
+source-justified wear or ornament. Characters, places and props may share a visual
+logic without identical colors or textures. Preserve distinctions needed to read
+the person, spatial layout and object use. Low saturation, dirt, photographic
+realism and sparse decoration are choices, not defaults. Prop Design remains the
+object's appearance owner. Do not manufacture a history from an attractive patina.
+
+For a reference proof, separate these durable facts from temporary illumination,
+pose and background. Keep approved face, construction and material legible; do not
+copy a dramatic shot's darkness or crop at the expense of the proof's duty. The
+current shot's Camera, Lighting and Color may later vary attention and illumination
+without repainting or redesigning the asset. In the existing typed image prompt,
+put selected appearance in subject/environment facts, view in camera, illumination
+in lighting, and concise necessary material/color relationships in preserve.
+Use edit_delta only for an approved edit. Essential aesthetics are not optional
+secondary_details; include only what this proof must render, without the work's
+literary rationale, style-name suffix or a second copy in every field. Finishing
+owns optional grain and final grading. Learning examples are not referenceInputs.
+
 At reuse, distinguish inherited identity, target costume/location and sourced
 temporary state. Read Look for fatigue, dirt or injury and Performance/Blocking
 for expression and pose; do not derive them from an identity image. A recognizably

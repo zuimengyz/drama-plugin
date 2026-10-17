@@ -96,7 +96,9 @@ async def native_scene_screenplay(workshop: ScreenplayWorkshop, author: FormalCa
         selected_text = selected.get('text') if isinstance(selected, dict) else None
         if isinstance(selected_text, str):
             framework = selected_text
-    identity = 'native-scene-context-v2:' + sha256_canonical([operation, scene_id, framework, incoming])
+    # A later visual design selection must not replace a preserved scene V1.
+    story_context = {k: v for k, v in incoming.items() if k != 'professionalDesignRefs'}
+    identity = 'native-scene-context-v2:' + sha256_canonical([operation, scene_id, framework, story_context])
     path = workshop._path(identity)
     if not path.exists():
         # Forward only the explicitly supplied legal context originals, with
@@ -161,4 +163,10 @@ async def native_scene_screenplay(workshop: ScreenplayWorkshop, author: FormalCa
         decision = await author.scene_decision(request, json.validate_python(decision_packet))
         workshop.decide(identity, choice=decision.choice, reason=decision.reason,
             text=decision.text, expected_revision=session.revision)
-    return json.validate_python(workshop.shot_handoff(identity))
+    handoff = workshop.shot_handoff(identity)
+    if incoming.get('professionalDesignRefs'):
+        # Inherit the explicitly bound Work design only after scene selection.
+        # The existing resolver verifies Work ownership and source fingerprints.
+        selected = workshop.professional_context(incoming, work_id=work_id, scene_id=None)
+        handoff['professionalDesignRefs'] = [row['ref'] for row in selected['filmLook']]
+    return json.validate_python(handoff)

@@ -30,8 +30,19 @@ artwork is supplied interactively, `frame_reference` accepts a complete typed
 FrameSpec with the exact target/design fingerprint, not a raw prompt. Native
 source authority is checked by this owner; `professional_sources` is reserved for
 the separate opt-in retained Still Knowledge receipt and must not be repurposed.
+If `read_reference.required_action` starts with `HOST_COMPLETE_REFERENCE_DESIGN`,
+continue the current Host task: load Specialized Asset Design, read the selected
+preparation and its professional context, complete the affected original (Prop
+Design owns prop appearance), and save the full replacement through
+`specialized_assets.revise_reference_designs`. Resume the parent creative Run to
+compile against the new selection. The reference wait is a handoff to the Host,
+not a terminal failure or a request for user approval. Existing facts are copied
+by code; the Host supplies missing design judgments, never raw Prompt patches.
 Use `quote_reference` for current request-bound quote/balance and one-operation
-budget. `decide_reference` delegates exact COST_APPROVAL/ADOPTION to the existing
+budget. If an unapproved retained request lacks already selected facts, code
+recompiles it from the original and returns `CURRENT_REFERENCE_QUOTE_REQUIRED`;
+read the refreshed request and obtain its matching quote. No design rewrite or
+extra user approval is required for this deterministic inheritance. `decide_reference` delegates exact COST_APPROVAL/ADOPTION to the existing
 Target decision owner. `resume_reference` advances that same child. Review actual
 retained pixels and record exact-hash checks/findings using `review_reference`;
 PASS alone does not adopt. Accepted candidates register through the existing

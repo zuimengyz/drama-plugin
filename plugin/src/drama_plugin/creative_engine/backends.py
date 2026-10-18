@@ -765,7 +765,7 @@ class FormalDirectionAuthor(SkillAuthor):
 class FormalProfessionalAuthor(SkillAuthor):
     # The execution identity covers this real diagnostic/feedback implementation
     # revision without changing the model's creative authority or output schema.
-    implementation_identity = "creative.professional:v1:FormalProfessionalAuthor:asset-inheritance-v4:revision-input-v1"
+    implementation_identity = "creative.professional:v1:FormalProfessionalAuthor:asset-inheritance-v5:revision-input-v1"
 
     async def design_assets(self, request: AuthorRequest) -> 'SceneAssetDraft':
         from drama_plugin.professional_design.asset_sequence import SceneAssetDraft
@@ -816,6 +816,8 @@ adoption, machine identities, source refs, versions, workflow or provider instru
         from drama_plugin.contracts.visual_prompt import VisualPromptIR
         from drama_plugin.contracts.source_pin import SourcePin
         from drama_plugin.config.production_routes import selected
+        from drama_plugin.professional_design.reference_design import design_leaves
+        design_leaves(requirement['design'])
         schema = deepcopy(TypeAdapter(FrameSpec).json_schema())
         ir_schema = deepcopy(TypeAdapter(VisualPromptIR).json_schema())
         schema.setdefault('$defs', {}).update(ir_schema.pop('$defs'))
@@ -868,7 +870,8 @@ adoption, machine identities, source refs, versions, workflow or provider instru
             ir['source_fingerprint'] = sha256_canonical(spec.model_dump(mode='json', exclude={'prompt_ir'}))
             value = spec.model_dump(mode='json')
             value['prompt_ir'] = ir
-            return cast(JsonValue, value)
+            from drama_plugin.professional_design.reference_design import inherit_design
+            return cast(JsonValue, inherit_design(FrameSpec.model_validate(value), requirement).model_dump(mode='json'))
         payload = author_payload(request)
         # Asset proofs are Scene-scoped (no Shot), so visualContinuity is absent.
         # Carry the same selected Work original as the asset-design author.

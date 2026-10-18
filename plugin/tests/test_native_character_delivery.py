@@ -25,20 +25,22 @@ from test_target_reference_production import evidence, reference_frame
 BYTES = b'unchanged-character-fixture'
 
 
-def fixture(monkeypatch, *, fingerprint=True, structured_face=False, checks=None, identity_override=None):
+def fixture(monkeypatch, *, fingerprint=True, structured_face=False, checks=None, identity_override=None, identity_alias=False, reviewer="OFFLINE_FIXTURE"):
     monkeypatch.setenv('DRAMA_VIDEO_SEEDANCE_API_KEY', 'fixture-secret')
     monkeypatch.setenv('DRAMA_PLUGIN_ROUTE_IMAGE_MODEL', 'Doubao-Seedream-5.0-pro')
     narrative = SourcePin(key='fixture:narrative', kind='DESIGN', fingerprint='b'*64)
     face = ({'shape':'Distinct fixture shape', 'eyes_brows':'Distinct fixture eyes and brows',
         'nose':'Distinct fixture nose', 'mouth':'Distinct fixture mouth', 'hair':'Independent fixture hair'}
         if structured_face else 'Distinct fixture face')
-    design = dict(assetType='CHARACTER', name='Fixture person', design={'face':face},
+    design = dict(assetType='CHARACTER', name='Fixture person', design={('identity' if identity_alias else 'face'):face},
         subjectId='person', stableIdentity='fixture-character', revision=1, establishedSceneId='S',
         inheritedFromAssetId=None, identityRootAssetId=None, variantReason=None, referenceRequired=True,
         narrativeRef=dump_contract(narrative))
     design_ref = SourcePin(key='fixture:design', kind='DIRECTION', fingerprint=fp(design))
     item = {**design, 'designRef':dump_contract(design_ref), 'requirementKey':fp(design)}
     artwork_item = deepcopy(item)
+    if identity_alias:
+        artwork_item['design']['face'] = artwork_item['design'].pop('identity')
     if structured_face:
         artwork_item['design']['face'] = '；'.join(face[key] for key in ('shape','eyes_brows','nose','mouth'))
     if identity_override is not None:
@@ -67,7 +69,7 @@ def fixture(monkeypatch, *, fingerprint=True, structured_face=False, checks=None
         receipt['credential_fingerprint'] = sha256(b'fixture-secret').hexdigest()
     still.record_result(stage, attempt_id=attempt['attempt_id'], status='COMPLETED', job_id=receipt['task_id'],
         output_hash=h, execution_receipt=correlation, evidence='Offline receipt fixture')
-    still.record_review(stage, still.Review(attempt_id=attempt['attempt_id'], output_hash=h, reviewer='OFFLINE_FIXTURE',
+    still.record_review(stage, still.Review(attempt_id=attempt['attempt_id'], output_hash=h, reviewer=reviewer,
         evidence='Synthetic metadata, no visual quality claim', checks=checks or {'IDENTITY':'PASS','SINGLE_PERSON':'PASS'}))
     delivery = dict(persistenceStatus='VERIFIED', mediaId='M', contentHash=h, sourceRef='asset-reference:'+attempt['attempt_id'],
         technical={'streams':[{'width':1280,'height':720}]})
@@ -385,3 +387,23 @@ def test_native_asset_binding_producer_uses_typed_asset_identity_for_character_a
     result=module.asset_reference_candidates(p,NS(refs=()),selection)
     assert result[0].media.review_ref=='asset-adoption:image-asset:media:M:'+ 'a'*64
     assert result[1].media.review_ref=='asset-adoption:LOCATION:'+ 'c'*64
+
+
+def test_native_identity_alias_and_exact_human_adoption_preserve_originals(tmp_path, monkeypatch):
+    checks={'USER_ACCEPTED_EXACT_CANDIDATE':'PASS','EXACT_BYTES_AND_FORMAL_READBACK':'PASS'}
+    a,m,asset,b,proof=fixture(monkeypatch,identity_alias=True,checks=checks,reviewer='HUMAN_APPROVAL_RECORDED_BY_HOST')
+    ledger,objects=persist_originals(tmp_path,asset,proof)
+    actual=native_character_originals(ledger,objects,asset)
+    before=deepcopy(actual)
+    assert native_adopted_character_image(a,m,asset,b,actual).content_hash==m.content_hash
+    assert actual==before and 'identity' in actual['designOriginal']['design']
+
+
+@pytest.mark.parametrize('reviewer,checks', [
+    ('HOST_SKILL_REVIEW',{'USER_ACCEPTED_EXACT_CANDIDATE':'PASS','EXACT_BYTES_AND_FORMAL_READBACK':'PASS'}),
+    ('HUMAN_APPROVAL_RECORDED_BY_HOST',{'USER_ACCEPTED_EXACT_CANDIDATE':'PASS'}),
+    ('HUMAN_APPROVAL_RECORDED_BY_HOST',{'USER_ACCEPTED_EXACT_CANDIDATE':'PASS','EXACT_BYTES_AND_FORMAL_READBACK':'FAIL'}),
+])
+def test_human_identity_authority_requires_exact_explicit_review(monkeypatch,reviewer,checks):
+    from drama_plugin.execution.reference_delivery import _native_character_identity_review
+    assert not _native_character_identity_review(checks,reviewer=reviewer)

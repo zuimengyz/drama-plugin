@@ -6,6 +6,8 @@ No legacy Work production stage or second production loop is involved.
 """
 from __future__ import annotations
 from copy import deepcopy
+from contextlib import AsyncExitStack
+import asyncio
 from pathlib import Path
 from typing import Any, Literal, Self, TYPE_CHECKING
 import httpx
@@ -147,9 +149,31 @@ class TargetReferenceProduction:
             raise ValueError('REFERENCE_DESIGN_CHANGED')
         return dict(item)
 
+    async def artwork_item(self, value: ReferenceProductionRecord) -> dict[str, Any]:
+        item = self.item(value)
+        if item.get('inheritedFromAssetId'):
+            parent = await self.sequence.assets.get_asset(item['inheritedFromAssetId'])
+            basis = parent.content.get('specializedAsset', {})
+            if (parent.work_id != value.scope.work_id or not self.sequence._proof(parent)
+                    or basis.get('stableIdentity') != item['stableIdentity']
+                    or basis.get('subjectId') != item['subjectId']):
+                raise ValueError('INHERITED_ASSET_IDENTITY_RECOVERY')
+            item = {**item, 'inheritedDesign': basis['design'], 'inheritedDesignRef': basis['designRef']}
+        return item
+
     async def pending(self, preparation_ref: SourcePin, parent_run_id: str,
                       request: AuthorRequest, *, requirement_key: str | None = None) -> CapabilityResult:
+        lock = self.sequence._locks.setdefault('prepare:' + request.scope.work_id, asyncio.Lock())
+        async with lock:
+            return await self._pending(preparation_ref, parent_run_id, request, requirement_key=requirement_key)
+
+    async def _pending(self, preparation_ref: SourcePin, parent_run_id: str,
+                       request: AuthorRequest, *, requirement_key: str | None = None) -> CapabilityResult:
         packet = self.sequence.objects.read_ref(preparation_ref)
+        selected = self.sequence.objects._path('asset-scene-design',
+            [packet['narrativeRef']['fingerprint'], packet['sceneId']])
+        if SourcePin.model_validate(self.sequence.objects._read(selected)) != preparation_ref:
+            raise ValueError('REFERENCE_PREPARATION_AUTHORITY_MISMATCH')
         known = await self.sequence._available(request.scope.work_id, query=preparation_ref.key,
             narrative_ref=SourcePin.model_validate(packet['narrativeRef']))
         keys = {a.content['specializedAsset'].get('requirementKey') for a in known}
@@ -173,6 +197,12 @@ class TargetReferenceProduction:
             return self.wait_ref(ArtifactReference(owner='specialized-asset-preparation',
                 artifact_ref=preparation_ref.key+':'+preparation_ref.fingerprint, version=1), 'EXISTING_ASSET_REFERENCE_RECOVERY')
         identity = parent_run_id+':asset-reference:'+item['requirementKey'][:24]
+        try:
+            prior = self.get(identity)
+        except KeyError:
+            prior = None
+        if prior is not None and prior.preparation_ref != preparation_ref:
+            identity += ':' + preparation_ref.fingerprint[:24]
         async with self.lock(identity):
             try:
                 run = self.plugin.runtime.store.load(identity)
@@ -286,39 +316,168 @@ class TargetReferenceProduction:
         async with self.lock(run_id):
             value = self.get(run_id)
             self.validate_frame(value, frame)
+            # Historical artwork stays frozen. Both new Host and model supply
+            # inherit the selected original through this same Target owner.
+            if value.frame is not None:
+                if compile_frame(frame) != value.frame:
+                    raise ValueError('REFERENCE_FRAME_ALREADY_SEALED')
+                return value
+            from drama_plugin.professional_design.reference_design import inherit_design, verify_design_delivery
+            item = await self.artwork_item(value)
+            from drama_plugin.professional_design.reference_design import DesignCompletionRequired
+            try:
+                frame = inherit_design(frame, item)
+            except DesignCompletionRequired as error:
+                self.complete_design(value, error)
+                return self.get(run_id)
+            self.validate_frame(value, frame)
             if frame.image_mode == 'image_to_image':
                 expected = await self.reference_inputs(value)
                 keys = ('entity_key','kind','asset_id','media_id','version','content_hash')
                 if [{k:getattr(r,k) for k in keys} for r in frame.references] != [{k:getattr(r,k) for k in keys} for r in expected]:
                     raise ValueError('REFERENCE_ADOPTED_INPUT_IDENTITY_CHANGED')
             compiled = compile_frame(frame)
-            if value.frame is not None and value.frame != compiled:
-                raise ValueError('REFERENCE_FRAME_ALREADY_SEALED')
+            try:
+                verify_design_delivery(compiled, item)
+            except DesignCompletionRequired as error:
+                self.complete_design(value, error)
+                return self.get(run_id)
             return self.save(value, frame=compiled)
+
+    async def revise_designs(self, preparation_ref: SourcePin,
+                             designs: dict[str, dict[str, JsonValue]]) -> SourcePin:
+        """Revise unadopted design originals, never a sealed request or paid run.
+
+        Keys are exact old requirement fingerprints. No model/media call and no
+        inherited spending; the existing pending path prepares new child runs.
+        """
+        from drama_plugin.professional_design.provenance import reject_model_metadata
+        packet = self.sequence.objects.read_ref(preparation_ref)
+        if packet.get('schemaVersion') != 'specialized-asset-preparation-v1' or not designs:
+            raise ValueError('REFERENCE_DESIGN_REVISION_REQUIRED')
+        work, scene = packet['workId'], packet['sceneId']
+        lock = self.sequence._locks.setdefault('prepare:' + work, asyncio.Lock())
+        async with lock, AsyncExitStack() as held:
+            selected = self.sequence.objects._path('asset-scene-design',
+                [packet['narrativeRef']['fingerprint'], scene])
+            if SourcePin.model_validate(self.sequence.objects._read(selected)) != preparation_ref:
+                raise ValueError('REFERENCE_PREPARATION_AUTHORITY_MISMATCH')
+            items = {r['requirementKey']: r for r in packet['requirements']}
+            if not set(designs) <= set(items):
+                raise ValueError('REFERENCE_DESIGN_REVISION_SCOPE_MISMATCH')
+            for key, design in designs.items():
+                if items[key].get('reuseAssetId') or not items[key]['referenceRequired']:
+                    raise ValueError('REFERENCE_REVISION_REQUIRES_PENDING_VISUAL_DESIGN')
+                reject_model_metadata(design)
+            with self.ledger.transaction() as db:
+                run_ids = [r['index_key'] for r in db.execute(
+                    'SELECT index_key FROM ledger_index WHERE index_type=? AND work_id=? AND scene_id=?',
+                    (INDEX, work, scene))]
+            for run_id in sorted(run_ids):
+                await held.enter_async_context(self.lock(run_id))
+                value = self.get(run_id)
+                if value.preparation_ref != preparation_ref:
+                    continue
+                if value.asset_id or value.adoption_ref:
+                    raise ValueError('REFERENCE_REVISION_CANNOT_REPLACE_ADOPTED_ASSET')
+                if value.stage is not None:
+                    failed_review = (value.receipt and value.receipt['status'] == 'COMPLETED'
+                        and value.delivery and value.stage['attempts'][0]['review_status'] == 'FAIL')
+                    not_created = value.receipt and value.receipt['status'] == 'NOT_CREATED'
+                    if not (failed_review or not_created):
+                        raise ValueError('REFERENCE_REVISION_IN_FLIGHT_OR_REVIEW_PENDING')
+            # Include externally adopted records, not only these local children.
+            available = await self.sequence._available(work, query=preparation_ref.key,
+                narrative_ref=SourcePin.model_validate(packet['narrativeRef']))
+            if any(a.content['specializedAsset'].get('requirementKey') in items for a in available):
+                raise ValueError('REFERENCE_REVISION_CANNOT_REPLACE_ADOPTED_ASSET')
+            changed = deepcopy(packet)
+            for item in changed['requirements']:
+                key = item['requirementKey']
+                if key not in designs:
+                    continue
+                original = self.sequence.objects.read_ref(SourcePin.model_validate(item['designRef']))
+                original['design'] = designs[key]
+                pin = self.sequence.objects.put(item['designRef']['key'], original)
+                item.update(design=designs[key], designRef=dump_contract(pin), requirementKey=pin.fingerprint)
+            if changed == packet:
+                return preparation_ref
+            following = self.sequence.objects.put(preparation_ref.key, changed)
+            with self.sequence.objects._writer():
+                if SourcePin.model_validate(self.sequence.objects._read(selected)) != preparation_ref:
+                    raise ValueError('REFERENCE_PREPARATION_AUTHORITY_MISMATCH')
+                self.sequence.objects._write(selected, dump_contract(following))
+            return following
+
+    def complete_design(self, value: ReferenceProductionRecord, error: ValueError) -> CapabilityResult:
+        # Existing author handoff, not a Runtime failure or user approval. Pins
+        # and full author context already live in this record/preparation.
+        return self.wait(value, 'HOST_COMPLETE_REFERENCE_DESIGN: ' + str(error) +
+            '. Read specialized_assets.read_preparation using the parent result preparation ArtifactReference; '
+            'use its referenceAuthorContext and selected originals to complete the '
+            'affected design through Specialized Asset Design (Prop Design for props). '
+            'Save the full replacement with specialized_assets.revise_reference_designs, '
+            'then resume the parent creative Run to prepare the new reference. '
+            'Complete this work in the current Host task; do not ask the user to write '
+            'a Prompt or approve routine completion. Do not invent source facts.')
+
+    async def ensure_design_delivery(self, value: ReferenceProductionRecord) -> ReferenceProductionRecord:
+        """Fill an unapproved request from its original, without a paid author call.
+
+        Ledger snapshots stay immutable. If source authorship is needed, hand it
+        back to the Host; never make the user patch a Prompt. Approved/reserved
+        requests keep their exact spending identity and existing recovery path.
+        """
+        from drama_plugin.professional_design.reference_design import (
+            DesignCompletionRequired, inherit_design, verify_design_delivery)
+        if value.frame is None:
+            return value
+        item = await self.artwork_item(value)
+        try:
+            verify_design_delivery(value.frame, item)
+            return value
+        except DesignCompletionRequired:
+            if (value.stage is not None or value.cost_ref is not None
+                    or self.plugin.runtime.store.load(value.run_id).state == RuntimeState.WAITING_USER
+                    or self.decision(value, DecisionCategory.COST_APPROVAL) is not None):
+                raise ValueError('REFERENCE_APPROVED_REQUEST_REQUIRES_EXISTING_RECOVERY')
+        try:
+            frame = inherit_design(FrameSpec.model_validate(value.frame['spec']), item)
+            self.validate_frame(value, frame)
+            compiled = compile_frame(frame)
+            verify_design_delivery(compiled, item)
+        except DesignCompletionRequired as error:
+            self.complete_design(value, error)
+            return self.get(value.run_id)
+        return self.save(value, frame=compiled, quote=None, balance=None,
+            execution_binding=None, budget=None, required_action='CURRENT_REFERENCE_QUOTE_REQUIRED')
 
     async def prepare(self, inputs: CapabilityInput) -> CapabilityResult:
         value = self.get(inputs.run_id)
         if value.frame is not None:
+            value = await self.ensure_design_delivery(value)
+            if (value.required_action or '').startswith('HOST_COMPLETE_REFERENCE_DESIGN:'):
+                return self.wait(value, value.required_action or '')
             return self.success(value)
-        item = self.item(value)
+        item = await self.artwork_item(value)
         if not item['referenceRequired']:
             return self.success(value)
-        author = self.plugin.professional_design.author
-        method = getattr(author, 'design_asset_reference', None)
-        if method is None:
-            return self.wait(value, 'SPECIALIZED_REFERENCE_ARTWORK_REQUIRED')
-        request = AuthorRequest.model_validate(self.sequence.objects.read_ref(value.author_context_ref))
-        if item.get('inheritedFromAssetId'):
-            parent=await self.sequence.assets.get_asset(item['inheritedFromAssetId'])
-            basis=parent.content.get('specializedAsset', {})
-            if (parent.work_id!=value.scope.work_id or not self.sequence._proof(parent)
-                    or basis.get('stableIdentity')!=item['stableIdentity']
-                    or basis.get('subjectId')!=item['subjectId']):
-                return self.wait(value,'INHERITED_ASSET_IDENTITY_RECOVERY')
-            item={**item,'inheritedDesign':basis['design']}
-        refs = await self.reference_inputs(value)
-        frame = await method(request,item,reference_inputs=refs) if refs else await method(request,item)
-        return self.success(await self.supply_frame(inputs.run_id, FrameSpec.model_validate(frame)))
+        from drama_plugin.professional_design.reference_design import DesignCompletionRequired, selected_leaves
+        try:
+            # Diagnose before invoking a reference artist. Preserve incomplete
+            # originals so the Host has exact, resumable work rather than a crash.
+            selected_leaves(item)
+            author = self.plugin.professional_design.author
+            method = getattr(author, 'design_asset_reference', None)
+            if method is None:
+                return self.wait(value, 'SPECIALIZED_REFERENCE_ARTWORK_REQUIRED')
+            request = AuthorRequest.model_validate(self.sequence.objects.read_ref(value.author_context_ref))
+            refs = await self.reference_inputs(value)
+            frame = await method(request,item,reference_inputs=refs) if refs else await method(request,item)
+            result = await self.supply_frame(inputs.run_id, FrameSpec.model_validate(frame))
+            return self.success(result) if result.frame is not None else self.wait(result, result.required_action or '')
+        except DesignCompletionRequired as error:
+            return self.complete_design(self.get(inputs.run_id), error)
 
     async def quote_reference(self, run_id: str, *, quote: dict[str, Any], balance: dict[str, Any],
                               budget: float, execution_binding: dict[str, Any]) -> ReferenceProductionRecord:
@@ -326,6 +485,12 @@ class TargetReferenceProduction:
             value = self.get(run_id)
             if value.frame is None or value.stage is not None or value.cost_ref is not None:
                 raise ValueError('UNRESERVED_COMPILED_REFERENCE_REQUIRED')
+            following = await self.ensure_design_delivery(value)
+            if following != value:
+                # Return refreshed artwork to the Host for a request-bound quote.
+                return following
+            if (value.required_action or '').startswith('HOST_COMPLETE_REFERENCE_DESIGN:'):
+                return value
             if self.plugin.runtime.store.load(run_id).state == RuntimeState.WAITING_USER:
                 raise ValueError('REFERENCE_QUOTE_ALREADY_PRESENTED_FOR_DECISION')
             from drama_plugin.visual.execution import validate_binding
@@ -378,6 +543,9 @@ class TargetReferenceProduction:
                 return self.success(value)
             if value.stage is not None:
                 return self.success(value)
+            value = await self.ensure_design_delivery(value)
+            if (value.required_action or '').startswith('HOST_COMPLETE_REFERENCE_DESIGN:'):
+                return self.wait(value, value.required_action or '')
             if not await self.formal_scope(value):
                 return self.wait(value, 'FORMAL_ASSET_WORK_SCOPE_REQUIRED')
             if not value.quote or not value.balance or not value.execution_binding:
@@ -630,6 +798,9 @@ def register_reference_tools(registry: Any, owner: TargetReferenceProduction | N
         return target().get(run_id)
     async def frame_reference(run_id: str, frame: FrameSpec) -> ReferenceProductionRecord:
         return await target().supply_frame(run_id, frame)
+    async def revise_reference_designs(preparation_ref: SourcePin,
+                                       designs: dict[str, dict[str, JsonValue]]) -> SourcePin:
+        return await target().revise_designs(preparation_ref, designs)
     async def quote_reference(run_id: str, quote: dict[str, Any], balance: dict[str, Any],
                               budget: float, execution_binding: dict[str, Any]) -> ReferenceProductionRecord:
         return await target().quote_reference(run_id, quote=quote, balance=balance,
@@ -648,6 +819,8 @@ def register_reference_tools(registry: Any, owner: TargetReferenceProduction | N
     for name, handler, result, required in (
         ('read_reference', read_reference, ReferenceProductionRecord, {'run_id': str}),
         ('frame_reference', frame_reference, ReferenceProductionRecord, {'run_id': str, 'frame': FrameSpec}),
+        ('revise_reference_designs', revise_reference_designs, SourcePin,
+            {'preparation_ref': SourcePin, 'designs': dict[str, dict[str, JsonValue]]}),
         ('quote_reference', quote_reference, ReferenceProductionRecord, {'run_id': str, 'quote': dict, 'balance': dict, 'budget': float, 'execution_binding': dict}),
         ('review_reference', review_reference, ReferenceProductionRecord, {'run_id': str, 'review': still.Review}),
         ('resume_reference', resume_reference, None, {'run_id': str}),

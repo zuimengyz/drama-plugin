@@ -93,6 +93,36 @@ provider projection. Retain sourceMap and promptFingerprint. Text validation is 
 visual quality review or spending approval. No provider enhancer may add design.
 Frozen approved prompts are read-only replay artifacts.
 
+## Executable reference inheritance
+
+For native `AssetChoice.design`, author visible single-line facts in the existing
+leaves: `roleLabel`, `apparentAge`, `identity` (or `face`, never both), `hair`,
+`body`, `costume`, `architecture`, `topology`, `workArea` (or `construction`),
+`material`, `materials`, `geometry`, `scale`, and `proof`. Use only applicable
+leaves; `proof` describes this still's view, not future motion. Keep rationale,
+source uncertainty and package bindings in `reason`, `rationale`, `sourceBoundary`
+and `characterPackage`; these are never sent as visible facts. For approved
+reference illumination use `referenceLighting` with the existing Lighting keys
+`time_of_day`, `light_sources`, `contrast`, `realism`. This is proof illumination,
+not a permanent asset property or a replacement for Shot Lighting.
+
+Target code copies these selected leaves into the existing typed image prompt
+and checks their delivery in the serialized request. Reference artwork must not
+re-author them in optional prose, backgrounds or edit corrections. If originals
+are incomplete, ambiguous or use unmapped fields, the Host reads the retained
+professional context and completes the affected original with this responsibility
+(or Prop Design for object appearance), in the current task. This is continuing
+author work, not a request for the user to repair a Prompt or a new approval gate.
+Preserve source uncertainty; do not invent historical facts or redesign identity.
+Unknown fields are never silently omitted or flattened into a prompt. Change
+the design original, not a sealed Prompt. Unadopted preparations can be revised through
+`specialized_assets.revise_reference_designs`; in-flight or adopted references
+retain their existing lifecycle and cannot be overwritten by that operation.
+After saving the full replacement, resume the parent creative Run; it reads the
+new selected preparation and compiles a fresh request automatically. Inspect the
+actual serialized request, then continue under the existing spending/review
+scope. Never finish the Host task merely by reporting this completion duty.
+
 Read current originals with `work.get_work`, `scene.get_scene`, `script.get_script`,
 `episode.get_episode`, `shot.get_shot`, `asset.get_asset`, `context.build_context`.
 Never create or overwrite Character Core.

@@ -188,7 +188,10 @@ class OperationResolver:
         self.versions, self.ledger, self.policy = versions, ledger, policy
 
     def asset_character_use(self, binding, raw) -> None:
-        """A frozen adopted portrait is proved by its Asset owner, not a movie review.
+        self.asset_reference_use(binding, raw, expected_type="CHARACTER")
+
+    def asset_reference_use(self, binding, raw, *, expected_type=None) -> None:
+        """A frozen adopted still is proved by its Asset owner, not a movie review.
 
         Byte delivery/account checks remain with the existing reference resolver
         and transport. This selects no extra asset and grants no new art authority.
@@ -201,13 +204,23 @@ class OperationResolver:
             value = asset.content['specializedAsset']
             proof = adopted_asset_proof(asset, lambda value, name:
                 adopted_asset_original(value, name, self.read))
+            kind = asset.asset_type.value
+            types = {'CHARACTER': ('CHARACTER', ('identity',)),
+                'LOCATION': ('LOCATION', ('environment',)),
+                'PROP': ('CONTINUITY', ('prop', 'continuity')),
+                'COSTUME': ('COSTUME', ('costume',))}
+            if kind not in types or expected_type is not None and kind != expected_type:
+                raise ValueError('REFERENCE_ASSET_USE_MISMATCH')
+            duty, semantics = types[kind]
+            character = kind == 'CHARACTER'
+            subject = value['subjectId'] if character else value['stableIdentity']
             media = [m for m in raw['resolvedMedia'] if m['mediaId'] == binding.media.media_id]
-            if (not proof or asset.asset_type != 'CHARACTER' or asset.work_id != binding.scope.work_id
+            if (not proof or asset.work_id != binding.scope.work_id
                     or binding.authorization_scope != 'ADOPTED_PRODUCTION_INPUT' or binding.role != 'REFERENCE'
-                    or binding.subject_ids != (value['subjectId'],)
-                    or any(d.role != 'CHARACTER' or d.subject != value['subjectId'] or d.purpose != ADOPTED_CHARACTER_USE
-                        for d in binding.duties)
-                    or binding.media.kind != 'image' or binding.media.semantics != ('identity',)
+                    or binding.subject_ids != ((subject,) if character else ())
+                    or any(d.role != duty or d.subject != subject
+                        or (character and d.purpose != ADOPTED_CHARACTER_USE) for d in binding.duties)
+                    or binding.media.kind != 'image' or binding.media.semantics != semantics
                     or binding.source_scope != RuntimeScope(work_id=asset.work_id, scene_id=value['establishedSceneId'])
                     or binding.media.media_id not in asset.reference_media_ids or len(media) != 1
                     or binding.media.review_ref != 'asset-adoption:' + asset.id + ':' + value['adoptionRef']['fingerprint']):
@@ -673,8 +686,8 @@ class OperationResolver:
                 if not isinstance(use, (str,dict)) or not use:
                     raise ValueError('REFERENCE_USE_AUTHORITY_REQUIRED')
                 if (binding.use_ref.path[:2] == ('content', 'assetBindings')
-                        and len(binding.use_ref.path) == 3 and any(d.role == 'CHARACTER' for d in binding.duties)):
-                    self.asset_character_use(binding, use)
+                        and len(binding.use_ref.path) == 3):
+                    self.asset_reference_use(binding, use)
                     bound.append(SelectedValue(DomainReference(domain=SourceDomain.REFERENCE, reference=ref), value))
                     continue
                 if any(d.role == 'CHARACTER' for d in binding.duties):

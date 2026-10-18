@@ -14,7 +14,8 @@ def select_image_rows(ir: VisualPromptIR, rows: list[dict[str, Any]]) -> tuple[l
     selected = []; omitted = []
     for row in rows:
         path = row['path']
-        needed = (path.startswith(('edit_delta[', 'preserve[', 'world.', 'blocking.', 'action.', 'positive_target['))
+        needed = (row['source'].startswith('asset-design/')
+                  or path.startswith(('edit_delta[', 'preserve[', 'world.', 'blocking.', 'action.', 'positive_target['))
                   or path in {'medium', 'environment.architecture', 'lighting.realism'}
                   or path.startswith('subject.') and path.rsplit('.', 1)[-1] in {'role', 'face', 'costume'})
         if needed:
@@ -51,13 +52,19 @@ def render_image(ir: VisualPromptIR, rows: list[dict[str, Any]]) -> str:
             if f'edit_delta[{i}].{delta.operation}' in values:
                 changes.append(f'- {delta.operation.capitalize()} {delta.region}: {delta.source_issue.text} → {delta.target_correction.text}')
         preservation = unique(texts('preserve[') + subjects() + texts('blocking.', 'action.'))
-        return '\n\n'.join([
+        sections = [
             'MUST CHANGE\n' + '\n'.join(changes),
             'PRESERVE\nKeep the supplied image unchanged except for the corrections above.\n' +
                 '\n'.join('- ' + text for text in preservation),
             section('TARGET RESULT', texts('world.') + texts('environment.architecture') +
                     [medium] + texts('lighting.realism', 'positive_target[')),
-        ])
+        ]
+        inherited = section('SELECTED ASSET DESIGN', [r['text'] for r in rows
+            if r['source'].startswith('asset-design/')
+            and not r['path'].startswith(('subject.', 'preserve[', 'environment.architecture', 'lighting.realism'))])
+        if inherited:
+            sections.append(inherited)
+        return '\n\n'.join(sections)
     # First/key frames are initial static targets, never source-image repairs.
     sections = [section('TARGET WORLD', texts('world.')),
                 section('SUBJECTS', subjects()),

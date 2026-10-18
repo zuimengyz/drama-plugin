@@ -272,7 +272,7 @@ def _native_character_face_text(face: object) -> str:
     raise ValueError('NATIVE_CHARACTER_FACE_PROJECTION_REQUIRED')
 
 
-def _native_character_identity_review(checks: Mapping[str, str]) -> bool:
+def _native_character_identity_review(checks: Mapping[str, str], *, reviewer: str = "") -> bool:
     """Read retained identity duties without renaming the actual review.
 
     The native Review contract permits professional check names. A reviewed
@@ -280,7 +280,13 @@ def _native_character_identity_review(checks: Mapping[str, str]) -> bool:
     identity combination; an arbitrary PASS or fuzzy label never substitutes.
     All other checks remain subject to the caller's existing all-PASS test.
     """
-    return (checks.get('IDENTITY') == 'PASS' or
+    # An explicit human acceptance of the exact displayed candidate is also
+    # identity authority. The caller still verifies the immutable ADOPTION
+    # decision, exact review, source record, receipt and all checks below.
+    human = (reviewer == 'HUMAN_APPROVAL_RECORDED_BY_HOST' and
+        checks.get('USER_ACCEPTED_EXACT_CANDIDATE') == 'PASS' and
+        checks.get('EXACT_BYTES_AND_FORMAL_READBACK') == 'PASS')
+    return (human or checks.get('IDENTITY') == 'PASS' or
         all(checks.get(key) == 'PASS' for key in
             ('SINGLE_SELECTED_PERSON', 'FACE_AND_BODY_READABILITY')))
 
@@ -336,7 +342,10 @@ def _native_adopted_image(adapter, media, asset, binding, proof, *, asset_type: 
         actors = frame['spec']['actors']
         character = asset_type == 'CHARACTER'
         if character:
-            identity_text = _native_character_face_text(design['design']['face'])
+            appearance = design['design']
+            if ('face' in appearance) == ('identity' in appearance):
+                reject()
+            identity_text = _native_character_face_text(appearance.get('face', appearance.get('identity')))
             ir_face = next(s['face']['text'] for s in frame['spec']['prompt_ir']['subjects']
                 if s['id'] == design['subjectId'])
             frame_identity = (len(actors) == 1 and actors[0]['entity_key'] == design['subjectId']
@@ -423,7 +432,7 @@ def _native_adopted_image(adapter, media, asset, binding, proof, *, asset_type: 
                 or attempt['job_id'] != receipt['task_id'] or receipt['usage'].get('input_images',0) != 0
                 or not still.usable(attempt) or review['output_hash'] != media.content_hash
                 or review['attempt_id'] != attempt['attempt_id']
-                or (not _native_character_identity_review(review['checks']) if character else not review['checks'])
+                or (not _native_character_identity_review(review['checks'], reviewer=review.get('reviewer', '')) if character else not review['checks'])
                 or any(check != 'PASS' for check in review['checks'].values())):
             reject()
         validate_result_identity(attempt, receipt['correlation'], receipt['task_id'])

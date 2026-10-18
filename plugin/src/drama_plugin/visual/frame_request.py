@@ -202,7 +202,8 @@ def _verify_graph(spec: FrameSpec, template: Template) -> None:
         raise ValueError("TEMPLATE_OUTPUT_SIZE_MISMATCH")
 
 
-def compile_frame(spec: FrameSpec, template: Template | None = None) -> dict[str, Any]:
+def compile_frame(spec: FrameSpec, template: Template | None = None, *,
+                  _legacy_ir_replay: bool = False) -> dict[str, Any]:
     # Revalidate even model_copy/update callers; Pydantic does not validate updates.
     spec = FrameSpec.model_validate(spec.model_dump())
     if template is None:
@@ -324,7 +325,8 @@ def compile_frame(spec: FrameSpec, template: Template | None = None) -> dict[str
         from drama_plugin.visual.prompt_ir import compile_ir
         if spec.prompt_normalization:
             raise ValueError('VISUAL_PROMPT_IR_POST_REWRITE_FORBIDDEN')
-        ir_compilation = compile_ir(spec.prompt_ir, provider_family=template.model)
+        ir_compilation = compile_ir(spec.prompt_ir, provider_family=template.model,
+                                    legacy_replay=_legacy_ir_replay)
         ir = ir_compilation['ir']
         source = spec.model_dump(mode='json', exclude={'prompt_ir'})
         if ir['source_fingerprint'] != sha256_canonical(source):
@@ -411,6 +413,20 @@ def compile_frame(spec: FrameSpec, template: Template | None = None) -> dict[str
 
 
 def verify_compiled(compiled: dict[str, Any]) -> None:
-    expected = compile_frame(FrameSpec.model_validate(compiled["spec"]), Template.model_validate(compiled["template"]))
-    if compiled != expected:
-        raise ValueError("STALE_OR_MODIFIED_FRAME_REQUEST")
+    try:
+        expected = compile_frame(FrameSpec.model_validate(compiled["spec"]), Template.model_validate(compiled["template"]))
+    except ValueError:
+        if compiled.get('prompt_ir_compilation') is None:
+            raise
+        expected = None
+    if compiled == expected:
+        return
+    # Only an exact complete old compilation may replay. New preparation above
+    # always uses the current constraint-preserving projection.
+    if compiled.get('prompt_ir_compilation') is not None:
+        historical = compile_frame(FrameSpec.model_validate(compiled["spec"]),
+                                   Template.model_validate(compiled["template"]),
+                                   _legacy_ir_replay=True)
+        if compiled == historical:
+            return
+    raise ValueError("STALE_OR_MODIFIED_FRAME_REQUEST")

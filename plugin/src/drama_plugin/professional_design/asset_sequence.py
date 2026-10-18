@@ -159,12 +159,19 @@ class SpecializedAssetSequence:
         rows = context.get('currentDesigns', [])
         if not isinstance(rows, list):
             raise ValueError('ASSET_NARRATIVE_BINDING_CONTEXT_MISMATCH')
+        upstream = []
         for row in rows:
             facts = row.get('facts') if isinstance(row, dict) else None
             if isinstance(facts, dict):
                 value = facts.get('assetNarrativeRef')
                 if value is not None:
-                    pins.append(SourcePin.model_validate(value))
+                    # Scene/Work originals contribute creative meaning. Their
+                    # historical asset family must not replace this Shot's
+                    # explicitly selected system binding.
+                    target = pins if facts.get('scope') == request.scope.model_dump(mode='json', by_alias=True) else upstream
+                    target.append(SourcePin.model_validate(value))
+        if not pins:
+            pins = upstream
         if len({(pin.key, pin.kind, pin.fingerprint) for pin in pins}) > 1:
             raise ValueError('ASSET_NARRATIVE_BINDING_CONFLICT')
         return pins[0] if pins else None

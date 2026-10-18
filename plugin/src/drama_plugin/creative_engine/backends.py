@@ -498,7 +498,13 @@ class TextCompositionBackend:
             # existing task once, after all evidence, without duplicating it.
             model_payload = dict(model_payload)
             continuity = dict(cast(dict[str, JsonValue], model_payload.get('visualContinuity', {})))
-            revision_task = {'currentDesigns': continuity.pop('currentDesigns', []),
+            from drama_plugin.creative_engine.author_projection import current_design_view
+            candidates = current_design_view(request, upstream=False)
+            inherited = current_design_view(request, upstream=True)
+            continuity.pop('currentDesigns', None)
+            if inherited:
+                continuity['currentDesigns'] = inherited
+            revision_task = {'currentDesigns': candidates,
                 'revisionInstruction': model_payload.pop('revisionInstruction')}
             model_payload['visualContinuity'] = continuity
         source = canonical_json(model_payload if model_payload is not None else request)
@@ -726,6 +732,7 @@ class FormalDirectionAuthor(SkillAuthor):
         system += ("professionalDomains only declares which downstream Professional Author designs the Shot needs. "
             "It does not describe Canon or Direction ownership. CANON and DIRECTION must never appear in professionalDomains. "
             "Use only the schema's professional domain values, once each, sorted lexicographically by domain value.\n")
+        system += "If selected upstream currentDesigns accompany an existing Shot, review that retained Shot against their new meaning. Consciously preserve valid existing choices or locally revise them; do not replace detailed department originals.\n"
         return system + self.knowledge(DIRECTION_CRAFT)
 
     def film_system_contract(self) -> str:
@@ -741,7 +748,7 @@ class FormalDirectionAuthor(SkillAuthor):
             raise CapabilityAbsent("DIRECTION_CANON_PREREQUISITE_ABSENT")
         shot = await self.client.complete("direction", self.system_contract(), request, TypeAdapter(ShotBody),
             model_schema=direction_model_schema(), author_identity="creative.direction:v1:FormalDirectionAuthor",
-            model_payload=author_payload(request), project=lambda v: direction_projection(v, request))
+            model_payload=author_payload(request, direction=True), project=lambda v: direction_projection(v, request))
         if not set(shot.spoken_ids) <= {line.id for line in request.canon.scene.dialogue}:
             raise AuthorResultFailure(failure("DIALOGUE_AUTHORITY", "DIRECTION_DIALOGUE_AUTHORITY_MISMATCH",
                 field_path=("spokenIds",), validator="FormalDirectionAuthor.canon_dialogue_authority"))
@@ -897,6 +904,9 @@ supplies referenceInputs; preserve those exact adopted identities, describe the
 approved change in edit_delta and what remains in preserve. Existing assets alone
 do not select image-to-image. An inherited text-rendered variation preserves its
 parent design; do not invent a new face or pretend an image input was delivered.
+For prompt_ir negative_constraints, positive_target must express the same limit
+as constraint. General realism or material prose cannot replace exclusions of
+captions, diagram labels or other unwanted contents. Preserve the selected limit.
 ''' + self.knowledge(('specialized-asset-design/SKILL.md', 'reference-strategy/SKILL.md')
                       + (('prop-design/SKILL.md',) if requirement['assetType'] == 'PROP' else ()))
         return await self.client.complete('professional', system, request, TypeAdapter(FrameSpec),
@@ -911,7 +921,11 @@ parent design; do not invent a new face or pretend an image input was delivered.
         system = BOUNDARY + "\nOwn only the requested professional domains " + canonical_json(domains) + ". Return a JSON array with one DesignBody for each required domain. Preserve exact Shot/Canon meaning and dialogue. PERFORMANCE lines select exactly selectedSpokenCandidates once each. Subjects select supplied Canon subjectCandidates. System derives their spoken inventory. Create semantic PERFORMANCE Beat rows with actorSelection and targetSelection; ACTION, lines and REFERENCE select their ordinal positions within this bundle. System assigns all beat/reference IDs. No subjectRef, id, beatId, spokenContentId, spokenIds, artifactRef or provenance in model output. No guessed strings or fuzzy matching. No Canon, Shot-intent, provider or workflow fields in professional facts.\n"
         system += "System authority projects provenance after authoring. Never output sourcePins, scope, Source/Work/Script/Scene/Shot refs or artifact identity/version/fingerprint objects, including inside nested facts. Author creative design facts only.\n"
         system += "Consume visualContinuity.assets: these are already adopted assets prepared in narrative order. Preserve inherited physical identities and references. Author only this Shot's state/behaviour/layout; do not recreate faces, replace identities or invent asset bindings. System binds the exact assets after authoring.\n"
+        system += "In currentDesigns, scope WORK or SCENE labels mark selected upstream professional authority, not this Shot's revisable candidates. Preserve their meaning while authoring only current Shot realization. Unlabelled currentDesigns and revision-task candidates belong to this Shot; only those candidates are being revised.\n"
         system += "At this post-selection stage, consume visualContinuity and the supplied screenplay evidence. Film Look is a work-owned basis, not a universal palette. OBSERVED_RESULT remains observed evidence, never Canon. CAMERA, LIGHTING and COLOR elaborate this Scene's inheritance or an intentional departure with its dramatic reason in continuityInterpretation. Motivate local light without silently replacing film-wide relationships. Production Design coherence is reconciliation among these owners, not a second author. WORLD selects locationSelection when a relevant locationCandidate is supplied, preserves its physical identity/layout, and describes current state; common materials/furniture types may be shared between different places. Character references prove identity only, not their background's location. Keep full reasoning in continuityInterpretation; executable finite fields express only this unit's concise, nonduplicated decisions. Shot intent/acting/action stay with their existing owners.\n"
+        system += "Resolve the supplied Shot purpose and requiredTransition through the requested owners: express each currently necessary visible or audible consequence in existing Action, Camera, Performance, Sound or Editorial facts. A purpose or future transition is not itself current action. Do not copy the entire Shot into executable prose.\n"
+        system += "PERFORMANCE LineDPD alone is internal direction, not video delivery. Realize necessary current listening, gaze, waiting and release consequences in existing Beat physicalExpression when shared, current Action when changing, or exact SOUND audio_events performance/attention/continuity when heard. Preserve the source meaning; do not enact psychology, future reactions, or a voice-over narrator's remembered action in the pictured subject. If another requested domain owns the consequence, coordinate that owner's existing facts rather than adding a second performance track.\n"
+        system += "EDITORIAL temporalStructure explains whole-Shot organization, not a timeline to replay in each segment. Put current holds and end conditions in existing protectedEvents scoped by phaseIndex (and spokenSelections where needed), Action observable or the exact Sound delivery. A condition present only in whole-Shot reasoning has not been delivered to a current request.\n"
         return system + self.knowledge(paths)
 
     def execution_fingerprint(self, request: AuthorRequest) -> str:

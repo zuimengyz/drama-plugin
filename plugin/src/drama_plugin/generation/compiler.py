@@ -60,11 +60,13 @@ class PromptCompiler:
             return {'simulation':True,'submitted':False,'productionAuthorized':False,'diagnostics':diagnostics,'request':None}
         prepared = artifacts.get(result.preparation_ref,GenerationPreparation)
         final = artifacts.get(prepared.final_prompt_ref,FinalPromptArtifact)
+        coverage = artifacts.get(final.coverage_ref, PromptCoverage)
         plan = artifacts.get(prepared.audio_plan_ref,AudioExecutionPlan)
         return {'simulation':True,'submitted':False,'productionAuthorized':False,'diagnostics':diagnostics,
             'packageRef':package_ref.model_dump(mode='json',by_alias=True),
             'request':TargetHttpTransport.preview(prepared,final,ledger=self.references.ledger),
             'speechEvents':[e.model_dump(mode='json',by_alias=True) for e in plan.speech_events],
+            'coverage':coverage.model_dump(mode='json',by_alias=True),
             'task':task.model_dump(mode='json',by_alias=True),'persistentPreparationCreated':False}
 
     async def compile(self, package_ref: ArtifactReference, task: GenerationTask = GenerationTask()) -> CompilationResult:
@@ -192,6 +194,18 @@ class PromptCompiler:
                 receipt = by_fact[canonical_id]
                 entries.append(CoverageEntry(fact_id=alias.fact_id, domain=alias.domain, source_ref=alias.source_ref,
                     obligation=alias.obligation, status=receipt.status, span=receipt.span))
+            # A source intention is not an executable instruction. Only a full,
+            # exact owner realization with a real generator receipt proves text
+            # delivery; paraphrase/applicability remains the Host's judgment.
+            for index, entry in enumerate(entries):
+                if not entry.fact_id.startswith('shot-obligation:'):
+                    continue
+                value = await self.reader.resolver.resolve(entry.source_ref)
+                realization = next((e for e in entries if e.status == S.TEXT_COVERED
+                    and e.fact_id in facts and isinstance(value, str)
+                    and facts[e.fact_id].text == value), None)
+                if realization is not None:
+                    entries[index] = entry.model_copy(update={'status':S.TEXT_COVERED, 'span':realization.span})
             if any(e.obligation == O.EXECUTION_REQUIRED and e.status == S.UNRESOLVED for e in entries):
                 diagnostics.append(ExecutionDiagnostic(code="EXECUTION_REQUIRED_MISSING", owner="prompt-compiler", domain=D.DIRECTION, required=True))
                 return result(ir=ir_ref, audio=audio_ref)
@@ -231,7 +245,8 @@ class PromptCompiler:
         if self.reader.operations is None:
             raise ValueError("OPERATION_RESOLVER_ABSENT")
         package = self.packages.get(prepared.source_package_ref)
-        selected = await self.reader.operations.selected(package, prepared.task, self.reader)
+        selected = await self.reader.operations.selected(package, prepared.task, self.reader,
+            legacy_unit_scope=self.catalog.uses_legacy_unit_scope(prepared.task.target_model, final.generator_policy_fingerprint))
         plan = self.artifacts.get(prepared.audio_plan_ref, AudioExecutionPlan)
         # Frozen v5/v6 preparations retain their exact read view and prompt. This is
         # an exact policy match, not a retry with relaxed drift/source checks.
@@ -263,7 +278,8 @@ class PromptCompiler:
             return (ExecutionDiagnostic(code="PACKAGE_STALE" if error.code.value == "VERSION_MISMATCH" else "EXECUTION_REQUIRED_MISSING",
                 owner=error.owner.value, domain=D.PERFORMANCE, required=True),)
         package = self.packages.get(prepared.source_package_ref)
-        selected = (await self.reader.operations.selected(package,prepared.task,self.reader) if prepared.task.unit
+        selected = (await self.reader.operations.selected(package,prepared.task,self.reader,
+            legacy_unit_scope=self.catalog.uses_legacy_unit_scope(prepared.task.target_model, final.generator_policy_fingerprint)) if prepared.task.unit
             else await self.reader.selections(package))
         checked = await self.references.resolve(package, prepared.task, selected,
             subjects={f.subject_id for f in ir.facts if f.subject_id})

@@ -15,7 +15,7 @@ def select_image_rows(ir: VisualPromptIR, rows: list[dict[str, Any]]) -> tuple[l
     for row in rows:
         path = row['path']
         needed = (row['source'].startswith('asset-design/')
-                  or path.startswith(('edit_delta[', 'preserve[', 'world.', 'blocking.', 'action.', 'positive_target['))
+                  or path.startswith(('edit_delta[', 'preserve[', 'world.', 'blocking.', 'action.', 'constraint[', 'positive_target['))
                   or path in {'medium', 'environment.architecture', 'lighting.realism'}
                   or path.startswith('subject.') and path.rsplit('.', 1)[-1] in {'role', 'face', 'costume'})
         if needed:
@@ -46,6 +46,8 @@ def render_image(ir: VisualPromptIR, rows: list[dict[str, Any]]) -> str:
         return output
     medium = MEDIUM[ir.task.visual_medium] if 'medium' in values else ''
     if ir.edit_delta:
+        limit_paths = ('constraint[', 'positive_target[') if any(
+            r['path'].startswith('constraint[') for r in rows) else ()
         changes = []
         for i, delta in enumerate(ir.edit_delta):
             # Render the typed operation, not a positive paraphrase of the issue.
@@ -57,11 +59,12 @@ def render_image(ir: VisualPromptIR, rows: list[dict[str, Any]]) -> str:
             'PRESERVE\nKeep the supplied image unchanged except for the corrections above.\n' +
                 '\n'.join('- ' + text for text in preservation),
             section('TARGET RESULT', texts('world.') + texts('environment.architecture') +
-                    [medium] + texts('lighting.realism', 'positive_target[')),
+                    [medium] + texts('lighting.realism', 'constraint[', 'positive_target[')),
         ]
         inherited = section('SELECTED ASSET DESIGN', [r['text'] for r in rows
             if r['source'].startswith('asset-design/')
-            and not r['path'].startswith(('subject.', 'preserve[', 'environment.architecture', 'lighting.realism'))])
+            and not r['path'].startswith(('subject.', 'preserve[', 'environment.architecture', 'lighting.realism')
+                                         + limit_paths)])
         if inherited:
             sections.append(inherited)
         return '\n\n'.join(sections)
@@ -72,5 +75,5 @@ def render_image(ir: VisualPromptIR, rows: list[dict[str, Any]]) -> str:
                 section('ENVIRONMENT', texts('environment.')),
                 section('CAMERA', texts('camera.')),
                 section('LIGHTING', texts('lighting.')),
-                section('TARGET LOOK', [medium] + texts('positive_target[', 'continuity[', 'preserve[', 'secondary['))]
+                section('TARGET LOOK', [medium] + texts('constraint[', 'positive_target[', 'continuity[', 'preserve[', 'secondary['))]
     return '\n\n'.join(s for s in sections if s)

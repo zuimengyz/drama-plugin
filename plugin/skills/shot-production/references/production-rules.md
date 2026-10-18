@@ -134,6 +134,18 @@ Check applicable relations rather than isolated keywords:
   and recompile through existing owners; do not change locked screenplay art,
   impose equal seconds or replace one fixed timing rule with another.
 
+When local action windows were requested, compare the complete authored windows
+and their sound/hold relations with the final serialized request. A duration
+preamble is not that evidence. Keep windows inside the current Action unit;
+they do not create cuts or more generation units. For a design revision, verify
+that the changed concrete facts replace their former execution text after fresh
+preparation. Current reference IDs or updated provenance alone do not prove this.
+A changed upstream interpretation returns to the existing Professional author.
+If it also invalidates the selected Shot's source lineage, the Host first returns
+to the existing Direction owner for source-bound review or revision, then prepares
+the professional bundle again; do not silently rebind or compile a stale Shot.
+Reference artwork light or framing must not override the target Shot.
+
 For each material conflict, retain the conflicting spans, their source/phase,
 why they cannot coexist and the proposed correction. The Host autonomously
 clarifies timing, separates inherited state from action and removes genuine
@@ -171,6 +183,18 @@ Use the normal-viewing, use-based review in SKILL.md. Check applicable core acti
 Reject the current candidate when necessary, then the Host chooses a better historical candidate or a materially changed production strategy within existing stage totals. One correction is a default suggestion, never an unrecoverable target budget. Append reassessment and planning history; do not require creative authorization or discard prior spending. Unknown facts remain unknown and prompt active observation only where relevant.
 
 ## Cross-Shot continuity review
+
+Before submission, use the existing PromptCoverage returned by request preview
+alongside the selected source originals. INTERNAL_ONLY is not evidence that a
+design reached the model; review its applicability before deciding it needs a
+creative handoff. Review each package purpose
+and requiredTransition for current applicability, and the Performance lines for
+necessary observable/listening consequences. Keep pure purpose, psychology and
+future action internal. Have the existing professional owner realize current
+necessary facts in Action, physicalExpression, Camera, Sound or scoped Editorial,
+then preview again; the Compiler does not invent that realization. Exact text
+coverage proves transmission only. A paraphrase still needs Host judgment, and
+neither a receipt nor a dry-run proves a successful performance.
 
 Compare only Shots that passed per-Shot review. Check:
 

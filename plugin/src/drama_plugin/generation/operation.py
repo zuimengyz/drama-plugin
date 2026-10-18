@@ -472,7 +472,7 @@ class OperationResolver:
         return dpd_pin, scope_pin, tuple(snapshot_pins)
 
     async def select_unit(self, package: ProductionPackage, reader: PackageReader, *, phase_index: int = 0,
-                          spoken_range: tuple[int,int] | None = None) -> OperationSelection:
+                          spoken_range: tuple[int,int] | None = None, legacy_unit_scope: bool = False) -> OperationSelection:
         selected = await reader.selections(package)
         action = next((v for v in selected if v.selection.domain == "ACTION" and isinstance(v.value, dict) and v.value.get("actionPhases")), None)
         if action is None:
@@ -591,12 +591,14 @@ class OperationResolver:
             # whole-Shot narration paragraph cannot apply to every speaker.
             voice_ref = None
         current, context = make_context(phase=phase, phases=action.value['actionPhases'], index=phase_index,
-            shot=shot, shot_ref=package.scope.shot, action_ref=base, facts=facts, values=values, voice_ref=voice_ref)
+            shot=shot, shot_ref=package.scope.shot, action_ref=base, facts=facts, values=values, voice_ref=voice_ref,
+            originals=selected, legacy_scope=legacy_unit_scope)
         return OperationSelection.model_validate(dict(beat_ids=(phase["beatId"],), action_refs=(action_ref,), spoken_ids=phase_spoken_ids,
             start_ref=start, end_ref=end, fact_refs=tuple(sorted(set(current), key=lambda f: (f.domain.value, f.reference.path))),
             reference_disposition=tuple(dispositions), execution_context=context, spoken_range=slice_record))
 
-    async def selected(self, package: ProductionPackage, task: GenerationTask, reader: PackageReader, *, admission_required: bool = True) -> tuple[SelectedValue, ...]:
+    async def selected(self, package: ProductionPackage, task: GenerationTask, reader: PackageReader, *, admission_required: bool = True,
+                       legacy_unit_scope: bool = False) -> tuple[SelectedValue, ...]:
         if admission_required:
             self.validate(package, task, require_scope=False)
         validate_continuation(self.ledger, task)
@@ -605,7 +607,7 @@ class OperationResolver:
         if unit.execution_context:
             from drama_plugin.generation.unit_scope import canonical_context
             fresh = await self.select_unit(package, reader, phase_index=int(unit.action_refs[0].path[-2]),
-                spoken_range=unit.spoken_range[:2] if unit.spoken_range else None)
+                spoken_range=unit.spoken_range[:2] if unit.spoken_range else None, legacy_unit_scope=legacy_unit_scope)
             if (canonical_context(fresh.execution_context) != canonical_context(unit.execution_context) or fresh.fact_refs != unit.fact_refs
                     or fresh.action_refs != unit.action_refs or fresh.beat_ids != unit.beat_ids or fresh.spoken_ids != unit.spoken_ids):
                 raise ValueError('UNIT_SCOPED_PROJECTION_DRIFT')

@@ -16,7 +16,7 @@ REF_FIELDS = {name: kind for kind in (Kind.SOURCE, Kind.WORK, Kind.SCRIPT, Kind.
 FLAT_FIELDS = {name: (kind, field) for kind in (Kind.SOURCE, Kind.WORK, Kind.SCRIPT, Kind.SCENE, Kind.SHOT)
                for field in ('identity', 'version', 'fingerprint')
                for name in (kind.value.lower() + field.title(), kind.value.lower() + '_' + field)}
-MANAGED_FIELDS = frozenset({'sourcePins', 'source_pins', 'scope', *REF_FIELDS, *FLAT_FIELDS})
+MANAGED_FIELDS = frozenset({'sourcePins', 'source_pins', 'scope', 'continuityDesignRefs', *REF_FIELDS, *FLAT_FIELDS})
 ORDER = (Kind.WORK, Kind.SCRIPT, Kind.SCENE, Kind.SHOT, Kind.SOURCE)
 JSON: TypeAdapter[JsonValue] = TypeAdapter(JsonValue)
 
@@ -69,6 +69,19 @@ def project_metadata(design: DesignBody, versions: CreativeVersionStore, scope: 
             for key, child in value.items():
                 if key in ('sourcePins', 'source_pins'):
                     output[key] = pins
+                elif key == 'continuityDesignRefs' and isinstance(child, list):
+                    selected: list[JsonValue] = []
+                    for raw in child:
+                        if isinstance(raw, dict) and 'identity' in raw:
+                            prior = VersionRef.model_validate(raw)
+                            matches = [ref for ref in refs if ref == prior
+                                or versions.resolve(ref).candidate_origin_ref == prior]
+                            if len(matches) != 1:
+                                raise ValueError('PROFESSIONAL_SOURCE_PIN_AUTHORITY_MISMATCH')
+                            selected.append(JSON.validate_python(matches[0].model_dump(mode='json', by_alias=True)))
+                        else:
+                            selected.append(raw)
+                    output[key] = selected
                 elif key == 'scope':
                     output[key] = scope_value
                 elif key in REF_FIELDS:
@@ -113,6 +126,22 @@ def validate_metadata(design: DesignBody, versions: CreativeVersionStore, scope:
                         raise ValueError('PROFESSIONAL_SOURCE_PIN_AUTHORITY_MISMATCH') from None
                     if len(set(actual)) != len(actual) or set(actual) != set(exact):
                         raise ValueError('PROFESSIONAL_SOURCE_PIN_AUTHORITY_MISMATCH')
+                elif key == 'continuityDesignRefs':
+                    # This existing resolver-owned field can also retain an
+                    # upstream Professional version. Such a version is an exact
+                    # source parent, not model-authored provenance or a head.
+                    from drama_plugin.contracts.source_pin import SourcePin
+                    if not isinstance(child, list):
+                        raise ValueError('PROFESSIONAL_SOURCE_PIN_AUTHORITY_MISMATCH')
+                    for raw in child:
+                        if isinstance(raw, dict) and 'identity' in raw:
+                            ref = VersionRef.model_validate(raw)
+                            original = versions.resolve(ref)
+                            if (ref not in refs or original.kind != Kind.PROFESSIONAL
+                                    or original.scope == scope):
+                                raise ValueError('PROFESSIONAL_SOURCE_PIN_AUTHORITY_MISMATCH')
+                        else:
+                            versions.objects.read_ref(SourcePin.model_validate(raw))
                 elif key == 'scope' or key in REF_FIELDS or key in FLAT_FIELDS:
                     if child != wanted:
                         raise ValueError('PROFESSIONAL_SOURCE_PIN_AUTHORITY_MISMATCH')

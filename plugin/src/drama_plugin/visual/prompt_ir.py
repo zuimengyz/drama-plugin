@@ -73,6 +73,12 @@ def compile_ir(raw: VisualPromptIR | dict[str, Any], *, provider_family: str,
             raise ValueError('VISUAL_PROMPT_NEGATIVE_NOT_CURRENT')
         if RANK[negative.positive_target.priority] > RANK[negative.constraint.priority]:
             raise ValueError('VISUAL_PROMPT_NEGATIVE_PRIORITY_LOSS')
+        # A target is authored as an equivalent, but priority alone cannot prove
+        # that equivalence. Static requests retain the selected current limit
+        # as well; an unrelated positive paraphrase must not erase its meaning.
+        # Keep historical frozen compilations byte-replayable, never rewrite them.
+        if task in STATIC and not legacy_replay:
+            add(f'constraint[{i}]', negative.constraint, negative.constraint.priority)
         add(f'positive_target[{i}]', negative.positive_target, negative.constraint.priority)
     for i, delta in enumerate(ir.edit_delta):
         # Never run positive normalization on source issues or edit operations.
@@ -153,12 +159,22 @@ def compile_ir(raw: VisualPromptIR | dict[str, Any], *, provider_family: str,
 
 
 def verify_compilation(record: dict[str, Any], prompt: str, *, legacy_replay: bool = False) -> None:
-    expected = compile_ir(record['ir'], provider_family=record['provider_family'],
-                          audio_supported=record['audio_supported'], hard_limit=record['hard_limit'],
-                          model=record['model'], limit_source=record['limit_source'],
-                          generator_context=record.get('generator_context'), legacy_replay=legacy_replay)
-    if expected != record or prompt != expected['prompt']:
-        raise ValueError('VISUAL_PROMPT_IR_COMPILATION_CHANGED')
+    modes = (legacy_replay,)
+    if not legacy_replay and record['ir']['task']['task_type'] in STATIC:
+        modes = (False, True)
+    for replay in modes:
+        try:
+            expected = compile_ir(record['ir'], provider_family=record['provider_family'],
+                                  audio_supported=record['audio_supported'], hard_limit=record['hard_limit'],
+                                  model=record['model'], limit_source=record['limit_source'],
+                                  generator_context=record.get('generator_context'), legacy_replay=replay)
+        except ValueError:
+            if len(modes) == 1:
+                raise
+            continue
+        if expected == record and prompt == expected['prompt']:
+            return
+    raise ValueError('VISUAL_PROMPT_IR_COMPILATION_CHANGED')
 
 
 def require_submission_ir(snapshot: dict[str, Any], request: dict[str, Any]) -> None:

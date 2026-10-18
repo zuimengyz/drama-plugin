@@ -440,8 +440,19 @@ class ExecutionProjection:
             syntax = {"BEFORE":"先于", "AFTER":"后于", "OVERLAP":"与其重叠", "INTERRUPT":"插入其声场", "CONTINUE_UNDER":"持续在其声音下方", "FADE_BEHIND":"渐弱到其声音之后"}[relation.relation.value]
             add(D.SOUND,relation.source_ref,f"{left}{syntax}{right}；这是这两次发声的关系，不增加或重复台词。","preserve.audio_relation")
         selected_refs = {f.source_ref for f in facts}
+        # Keep untransformed intention visible in the existing coverage report,
+        # without making the compiler author acting or copy a Shot essay.
+        internal.extend(CoverageEntry(fact_id='shot-obligation:'+sha256_canonical(ref),
+            domain=D.DIRECTION, source_ref=ref, obligation=O.QUALITY_SUPPORTING,
+            status=S.INTERNAL_ONLY) for ref in package.obligations)
         for item in await self.reader.selections(package):
             if item.selection.reference not in selected_refs:
+                if item.selection.domain == D.PERFORMANCE and isinstance(item.value, dict) and item.value.get('lines'):
+                    ref = child(item.selection.reference, 'lines')
+                    internal.append(CoverageEntry(fact_id='author-handoff:'+sha256_canonical(ref),
+                        domain=D.PERFORMANCE, source_ref=ref, obligation=O.QUALITY_SUPPORTING,
+                        status=S.INTERNAL_ONLY))
+                    continue
                 internal.append(CoverageEntry(fact_id="out:"+sha256_canonical(item.selection.reference),
                     domain=item.selection.domain, source_ref=item.selection.reference,
                     obligation=O.QUALITY_SUPPORTING, status=S.OUT_OF_UNIT))

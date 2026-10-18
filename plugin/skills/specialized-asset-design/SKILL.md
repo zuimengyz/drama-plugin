@@ -123,6 +123,12 @@ new selected preparation and compiles a fresh request automatically. Inspect the
 actual serialized request, then continue under the existing spending/review
 scope. Never finish the Host task merely by reporting this completion duty.
 
+In a typed image prompt, `negative_constraints.positive_target` must express the
+same selected limit as `constraint`; unrelated material or realism prose is not
+an equivalent for excluding captions or diagram labels. Review both against the
+serialized body. The current still compiler preserves the original limit with
+the target and removes exact repetition; do not duplicate it across other fields.
+
 Read current originals with `work.get_work`, `scene.get_scene`, `script.get_script`,
 `episode.get_episode`, `shot.get_shot`, `asset.get_asset`, `context.build_context`.
 Never create or overwrite Character Core.

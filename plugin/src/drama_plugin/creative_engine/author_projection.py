@@ -278,7 +278,8 @@ def professional_schema() -> dict[str, JsonValue]:
         if domain=='WORLD':
             object_value(props['physicalWorldRules'])['description']='Shared geometry and lasting constraints. Current occupancy and object changes belong to Action; a field named rule does not make a one-time event persistent.'
         if domain=='EDITORIAL':
-            object_value(props['protectedEvents'])['description']='Current hold/end conditions: existing records with phaseIndex and design; spokenSelections narrows applicability within one Action. System binds exact spokenIds. Keep shared constraints shared.'
+            object_value(props['temporalStructure'])['description']='Whole-Shot temporal organization. This reasoning is not automatically replayed per technical segment. Realize current necessary holds/end conditions in scoped protectedEvents, current Action observable or exact Sound delivery.'
+            object_value(props['protectedEvents'])['description']='Current hold/end conditions: existing records with phaseIndex and design; spokenSelections narrows applicability within one Action. System binds exact spokenIds. Include the observable release condition, not a fixed wait to fill duration. Keep shared constraints shared.'
             object_value(props['spatialOrientation'])['description']='Shared spatial legibility, not repeated cut instructions. Film cuts belong to authored Shot boundaries; technical continuation preserves the ongoing event.'
         if domain=='REFERENCE':
             row=object_value(object_value(props['references'])['items']);p=object_value(row['properties']);p.pop('id');row['required']=[k for k in sequence(row['required']) if k!='id'];rename(row,'beatIds','beatSelections',arr(SELECT))
@@ -554,6 +555,53 @@ def film_look_view(request: AuthorRequest | FilmAuthorRequest) -> list[JsonValue
         if isinstance(row, dict)]
 
 
+def current_design_is_upstream(row: dict[str, JsonValue], request: AuthorRequest) -> bool:
+    """Scope comes from retained system metadata, never author prose or a head."""
+    from drama_plugin.runtime.contracts import RuntimeScope
+    from drama_plugin.creative_engine.contracts import scope_contains
+    scope = object_value(row.get('facts', {})).get('scope')
+    if not isinstance(scope, dict):
+        return False  # Historical unscoped current candidates keep their view.
+    source = RuntimeScope.model_validate(scope)
+    return source != request.scope and scope_contains(source, request.scope)
+
+
+def current_design_view(request: AuthorRequest, *, upstream: bool | None = None,
+                        all_domains: bool = False) -> list[JsonValue]:
+    """Keep upstream authority distinct while reusing ordinal candidate views.
+
+    Each scope has its own Performance beat map. Mixing Scene and Shot bundles
+    before ordinal projection would make their independent beat IDs ambiguous.
+    Scope labels on the author wire contain no Runtime identities.
+    """
+    assert request.shot is not None
+    groups: dict[str, list[dict[str, JsonValue]]] = {}
+    from drama_plugin.contracts.base import canonical_json
+    for raw in sequence((request.professional_context or {}).get('currentDesigns', [])):
+        row = object_value(raw)
+        if not all_domains and row.get('domain') not in {domain.value for domain in request.shot.professional_domains}:
+            continue
+        inherited = current_design_is_upstream(row, request)
+        if upstream is not None and inherited != upstream:
+            continue
+        scope = object_value(row['facts']).get('scope')
+        # An absent historical scope belongs to the current candidate bundle.
+        key = canonical_json(scope if inherited else request.scope.model_dump(mode='json', by_alias=True))
+        groups.setdefault(key, []).append(row)
+    result: list[JsonValue] = []
+    for rows in groups.values():
+        view = professional_candidate_view([{'domain': row['domain'], 'facts': JSON.validate_python({k: v
+            for k, v in object_value(creative_facts(row['facts'])).items()
+            if k not in {'continuityEvidence', 'continuityDesignRefs', 'locationBinding', 'assetBindings',
+                'assetNarrativeRef', 'assetTextDesignRefs', 'locationAssetId', 'canonSubjectIds'}})} for row in rows], request)
+        for original, projected in zip(rows, view, strict=True):
+            if current_design_is_upstream(original, request):
+                scope = object_value(object_value(original['facts'])['scope'])
+                projected = {**object_value(projected), 'scope': 'SCENE' if scope.get('sceneId') else 'WORK'}
+            result.append(projected)
+    return result
+
+
 def screenplay_view(context: dict[str, JsonValue]) -> dict[str, JsonValue]:
     value = {k: v for k, v in context.items() if k not in {'professionalDesignRefs', 'filmLook'}}
     if isinstance(value.get('selectedSceneScreenplays'), list):
@@ -562,7 +610,7 @@ def screenplay_view(context: dict[str, JsonValue]) -> dict[str, JsonValue]:
     return value
 
 
-def author_payload(request: AuthorRequest | FilmAuthorRequest) -> dict[str, JsonValue]:
+def author_payload(request: AuthorRequest | FilmAuthorRequest, *, direction: bool = False) -> dict[str, JsonValue]:
     source=request.source.model_dump(mode='json',by_alias=True)
     source={k:v for k,v in source.items() if k not in {'originalOwnerRef','languageMetadataRef'}}
     result: dict[str,JsonValue]={'source':JSON.validate_python(source)}
@@ -596,11 +644,7 @@ def author_payload(request: AuthorRequest | FilmAuthorRequest) -> dict[str, Json
                     'subjectSelection': next((i for i,s in enumerate(subjects(request.canon.scene))
                         if s['id'] == object_value(object_value(row['content'])['specializedAsset']).get('subjectId')), None)}
                     for row in sequence(object_value(context.get('assetSequence', {})).get('currentAssets', []))],
-                'currentDesigns': professional_candidate_view([{'domain':row['domain'], 'facts':JSON.validate_python({k:v
-                    for k,v in object_value(creative_facts(row['facts'])).items()
-                    if k not in {'continuityEvidence','continuityDesignRefs','locationBinding','assetBindings','assetNarrativeRef','locationAssetId'}})}
-                    for row in sequence(context.get('currentDesigns', [])) if isinstance(row,dict)
-                    and row['domain'] in {d.value for d in request.shot.professional_domains}], request),
+                'currentDesigns': current_design_view(request, all_domains=direction),
                 'filmLook': film_look_view(request),
                 'locationCandidates': [{'selection':row['selection'], 'design':JSON.validate_python({k:v
                     for k,v in object_value(row['design']).items() if k not in {'id','revision','sceneRefs','parentLocationId','historicalBasis'}})}

@@ -26,7 +26,12 @@ class GeneratorPolicy:
 class ModelPolicyCatalog:
     """Read the real adapter capability catalog; no soft target masquerades as a limit."""
     def policy(self, model: str) -> GeneratorPolicy | None:
-        return self._policy(model, "t5r-seedance-unit-layout-v7")
+        return self._policy(model, "t5r-seedance-unit-layout-v9")
+
+    def uses_legacy_unit_scope(self, model: str, fingerprint: str) -> bool:
+        """Only exact frozen v5-v8 policies use their original selection algorithm."""
+        return any(p is not None and p.fingerprint == fingerprint for p in
+            (self._policy(model, f"t5r-seedance-unit-layout-v{version}") for version in range(5, 9)))
 
     def legacy_scope_policy(self, model: str) -> GeneratorPolicy | None:
         """Exact previous policy for reading frozen preparations, never new compilation."""
@@ -167,7 +172,7 @@ class SeedanceTargetAdapter:
             duration = f"本段自动时长范围{lo/1000:g}–{hi/1000:g}秒，上限不是填满目标"
         else:
             duration = f"本段生成时长{profile.requested_duration_ms/1000:g}秒"
-        return duration + "；下述时间窗是本段内的预计节拍，不代表切镜。保持注明的先后、并行与结束条件，不为凑时长补演或循环。"
+        return duration + "；保持下述动作与声音注明的先后、并行与结束条件，不为凑时长补演或循环。"
 
 
 class ExactPromptTransfer:

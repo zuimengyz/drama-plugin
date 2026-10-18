@@ -58,7 +58,60 @@ class ProfessionalDesignResolver:
         return [{'requirementKey': row['requirementKey'], 'designRef': row['designRef'],
             'handoffRef': row['handoffRef']} for row in rows if domain.value in sequence_rows(row['domains'])]
 
-    def asset_inheritance_current(self, request: AuthorRequest, designs: Iterable[DesignBody]) -> bool:
+    @staticmethod
+    def continuity_design_refs(request: AuthorRequest, versions: CreativeVersionStore | None = None) -> list[JsonValue]:
+        """Exact selected upstream designs, never a lookup of mutable heads.
+
+        Same-Shot currentDesigns are revisable candidates, not their own parents.
+        Scene/Work originals are inherited authority and must invalidate reuse.
+        """
+        from drama_plugin.creative_engine.contracts import DesignBody, Kind, VersionRef
+        context = request.professional_context or {}
+        refs: list[JsonValue] = []
+        for name in ('filmLook', 'locationCandidates'):
+            rows = context.get(name, [])
+            if isinstance(rows, list):
+                if versions is not None:
+                    from drama_plugin.contracts.source_pin import SourcePin
+                    for row in rows:
+                        if (isinstance(row, dict) and 'ref' in row and
+                                versions.objects.read_ref(SourcePin.model_validate(row['ref'])) != row.get('design')):
+                            raise ValueError('PROFESSIONAL_CONTINUITY_ORIGINAL_MISMATCH')
+                refs.extend(row['ref'] for row in rows if isinstance(row, dict) and 'ref' in row)
+        rows = context.get('currentDesigns', [])
+        if isinstance(rows, list):
+            for row in rows:
+                if not isinstance(row, dict) or 'ref' not in row:
+                    continue  # Historical author candidates have no system pin.
+                if versions is not None:
+                    original = versions.resolve(VersionRef.model_validate(row['ref']))
+                    if (original.kind != Kind.PROFESSIONAL or not isinstance(original.body, DesignBody)
+                            or row.get('domain') != original.body.domain.value or row.get('facts') != original.body.facts):
+                        raise ValueError('PROFESSIONAL_CURRENT_DESIGN_ORIGINAL_MISMATCH')
+                    if original.scope == request.scope:
+                        continue
+                elif isinstance(row.get('facts'), dict) and row['facts'].get('scope') == request.scope.model_dump(mode='json', by_alias=True):
+                    continue
+                if row['ref'] not in refs:
+                    refs.append(row['ref'])
+        return refs
+
+    @staticmethod
+    def creative_input_fingerprint(request: AuthorRequest) -> str | None:
+        """Refresh retained author output when actual selected design text changes."""
+        from drama_plugin.contracts.base import sha256_canonical
+        context = request.professional_context or {}
+        inputs = {key: context[key] for key in ('currentDesigns', 'filmLook', 'locationCandidates', 'assetSequence')
+            if context.get(key)}
+        return sha256_canonical(inputs) if inputs else None
+
+    def asset_inheritance_current(self, request: AuthorRequest, designs: Iterable[DesignBody],
+                                  versions: CreativeVersionStore | None = None) -> bool:
+        designs = tuple(designs)
+        refs = self.continuity_design_refs(request, versions)
+        if any((refs or 'continuityDesignRefs' in design.facts)
+                and design.facts.get('continuityDesignRefs', []) != refs for design in designs):
+            return False
         bindings = self.asset_bindings(request)
         if bindings is None:
             return True
@@ -111,11 +164,7 @@ class ProfessionalDesignResolver:
             raise ValueError('PROFESSIONAL_SYSTEM_METADATA_MODEL_OWNERSHIP')
         reject_model_metadata(design.facts)
         context = request.professional_context or {}
-        refs: list[JsonValue] = []
-        for name in ('filmLook', 'locationCandidates'):
-            rows = context.get(name, [])
-            assert isinstance(rows, list)
-            refs.extend(row['ref'] for row in rows if isinstance(row, dict))
+        refs = self.continuity_design_refs(request, versions)
         if refs:
             design = design.model_copy(update={'facts': {**design.facts, 'continuityDesignRefs': refs}})
         sequence = context.get('assetSequence')
@@ -130,8 +179,17 @@ class ProfessionalDesignResolver:
         text_refs = self.text_design_refs(request, design.domain)
         if text_refs:
             design = design.model_copy(update={'facts': {**design.facts, 'assetTextDesignRefs': text_refs}})
+        # Current upstream professional versions are real parents. A same-Shot
+        # candidate must never become a parent of its replacement identity.
+        from drama_plugin.creative_engine.contracts import VersionRef
+        parents = {ref.identity: ref for ref in request.source_refs
+            if not ((original := versions.resolve(ref)).kind == Kind.PROFESSIONAL and original.scope == request.scope)}
+        for ref in refs:
+            if isinstance(ref, dict) and 'identity' in ref:
+                parent = VersionRef.model_validate(ref)
+                parents[parent.identity] = parent
         return versions.write(writer=Authority.PROFESSIONAL, kind=Kind.PROFESSIONAL,
-            scope=request.scope, body=design, sources=request.source_refs, operation=operation)
+            scope=request.scope, body=design, sources=tuple(parents.values()), operation=operation)
 
 
 def professional_owner_domain(owner: str) -> SourceDomain | None:

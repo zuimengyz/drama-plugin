@@ -115,7 +115,12 @@ class CreativeEngineCapabilities:
         revising = self.state.input(inputs.run_id).revision is not None
         return ExecutionInspection(revision=inspection.revision,
             retry_limit=inspection.retry_limit,
-            completed=inspection.completed or (request.shot is not None and not revising))
+            completed=inspection.completed or (self._shot_current(request) and not revising))
+
+    def _shot_current(self, request: AuthorRequest) -> bool:
+        """Reuse requires the exact selected Shot and its unchanged parents."""
+        selected = [ref for ref in request.source_refs if self.versions.resolve(ref).kind == Kind.SHOT]
+        return request.shot is not None and len(selected) == 1 and not self.versions.stale(selected[0])
 
     def _author_required(self, inputs: CapabilityInput, owner: Authority) -> bool:
         request = self._request(inputs, owner)
@@ -126,7 +131,7 @@ class CreativeEngineCapabilities:
         revision = self.state.input(inputs.run_id).revision
         revising = revision is not None and revision.owner == owner
         return not ((owner == Authority.CANON and request.canon is not None or
-            owner == Authority.DIRECTION and request.shot is not None) and not revising)
+            owner == Authority.DIRECTION and self._shot_current(request)) and not revising)
 
     def _success(self, checkpoint: CreativeCheckpoint) -> CapabilityResult:
         return CapabilityResult(status=ResultStatus.SUCCEEDED,
@@ -179,12 +184,22 @@ class CreativeEngineCapabilities:
         if owner == Authority.DIRECTION and professional is not None:
             # Direction inherits selected Work meaning, not department originals.
             professional = {'filmLook': professional['filmLook']}
+            selected_shot = next((version for version in versions if version.kind == Kind.SHOT), None)
+            if selected_shot is not None and self.versions.stale(selected_shot.ref()):
+                # Only a source-invalidated existing Shot needs this bounded
+                # review context. Initial Direction retains its Work boundary;
+                # the Director reviews meaning, never reauthors departments.
+                professional['currentDesigns'] = [{'ref': version.ref().model_dump(mode='json', by_alias=True),
+                    'domain': version.body.domain.value, 'facts': version.body.facts} for version in versions
+                    if version.kind == Kind.PROFESSIONAL and isinstance(version.body, DesignBody)
+                    and version.scope != inputs.scope and scope_contains(version.scope, inputs.scope)]
         if owner == Authority.PROFESSIONAL and professional is not None:
             shot_ref = next((v.ref() for v in versions if v.kind == Kind.SHOT), None)
             professional['currentDesigns'] = [{'ref': v.ref().model_dump(mode='json', by_alias=True),
                 'domain': v.body.domain.value, 'facts': v.body.facts} for v in versions
                 if v.kind == Kind.PROFESSIONAL and isinstance(v.body, DesignBody)
-                and v.scope == inputs.scope and (shot_ref is None or shot_ref in v.source_refs)]
+                and scope_contains(v.scope, inputs.scope)
+                and (v.scope != inputs.scope or shot_ref is None or shot_ref in v.source_refs)]
         # Preserve exact refs across native handoffs; author_payload omits them
         # from model inputs; Canon never receives preselected aesthetic rules.
         return AuthorRequest(scope=inputs.scope, source=source.body, source_refs=checkpoint.refs,
@@ -326,7 +341,7 @@ class CreativeEngineCapabilities:
             return result
         cp, value = self.state.checkpoint(inputs.run_id), self.state.input(inputs.run_id)
         request = self._request(inputs, Authority.DIRECTION)
-        needs = request.shot is None or bool(value.revision and value.revision.owner in {Authority.CANON, Authority.DIRECTION})
+        needs = not self._shot_current(request) or bool(value.revision and value.revision.owner in {Authority.CANON, Authority.DIRECTION})
         if not needs:
             return self._success(self._save(inputs, cp))
         if self.direction_author is None:
@@ -363,7 +378,8 @@ class CreativeEngineCapabilities:
             raise AuthorResultFailure(failure("DIALOGUE_AUTHORITY", "DIRECTION_DIALOGUE_AUTHORITY_MISMATCH",
                 field_path=("spokenIds",), validator="CreativeEngineCapabilities.direction.canon_dialogue_authority"))
         self.versions.retain_author_output(inputs.operation_id, "direction", request.source_refs, shot)
-        refs = tuple(r for r in cp.refs if self.versions.resolve(r).kind not in {Kind.SHOT, Kind.PROFESSIONAL})
+        refs = tuple(r for r in cp.refs if (original := self.versions.resolve(r)).kind != Kind.SHOT
+            and (original.kind != Kind.PROFESSIONAL or original.scope != inputs.scope))
         ref = self.versions.write(writer=Authority.DIRECTION, kind=Kind.SHOT, scope=inputs.scope,
             body=shot, sources=refs, operation=inputs.operation_id)
         return self._success(self._save(inputs, cp, refs=(*refs, ref), author_rounds=self.state.checkpoint(inputs.run_id).author_rounds))
@@ -401,7 +417,8 @@ class CreativeEngineCapabilities:
         required = {*request.shot.professional_domains, *(body.domain for body in bodies if isinstance(body, DesignBody))}
         current = {body.domain for body in bodies if isinstance(body, DesignBody)}
         inheritance_current = (self.professional_author is None or
-            self.professional_author.asset_inheritance_current(request, (body for body in bodies if isinstance(body, DesignBody))))
+            self.professional_author.asset_inheritance_current(request,
+                (body for body in bodies if isinstance(body, DesignBody)), self.versions))
         if required <= current and inheritance_current and not (request.revision and request.revision.owner == Authority.PROFESSIONAL):
             return self._success(self._save(inputs, cp))
         if self.professional_author is None or self.professional_author.author is None:
@@ -418,6 +435,8 @@ class CreativeEngineCapabilities:
         if asset_bindings is not None:
             from drama_plugin.contracts.base import sha256_canonical
             author_operation += ':assets:' + sha256_canonical(asset_bindings)
+        if design_input := self.professional_author.creative_input_fingerprint(fixed_request):
+            author_operation += ':design:' + design_input
         designs = self.versions.author_output(author_operation, "professional", refs, TypeAdapter(tuple[DesignBody, ...]))
         if designs is None:
             if not self._round_allowed(inputs):

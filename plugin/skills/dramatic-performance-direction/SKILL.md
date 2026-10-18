@@ -123,3 +123,11 @@ Read [Embodiment contract](../../docs/character-embodiment.md). Use the unified 
 ## Actor-playable screenplay handoff (Screenplay R2)
 
 Read [screenplay playability and exact dialogue](../../docs/screenplay-playability.md). Consume the source-authored playable task and its line intent. Bind BeatDPD/LineDPD playability witnesses and exact dialogue hashes; do not infer a new objective from abstract emotion. Keep actor and listener tasks distinct.
+
+For execution, LineDPD is a source for the existing physical and sound owners,
+not a second Prompt track. Realize necessary current listening, waiting and release
+in Beat physicalExpression when shared, Action when changing, or exact Sound
+audio_events performance/attention/continuity when heard. Keep psychological
+explanation, future reactions and a narrator's remembered action internal; do not
+make the pictured actor enact them. Verify the chosen consequence in the final
+request, rather than treating a complete DPD as proof of delivery.

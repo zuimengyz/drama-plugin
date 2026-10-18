@@ -90,6 +90,11 @@ async def retained_graph(p, *, families=False):
         if families and body.domain=='SUBJECTS':
             body=body.model_copy(update={'facts':{**body.facts,'assetNarrativeRef':{
                 'key':'offline-fresh-shot-family','kind':'DIRECTION','fingerprint':'b'*64}}})
+        # This modern fixture explicitly records the already-consumed Scene
+        # originals. Unmarked historical bodies require author refresh when a
+        # new preparation explicitly supplies upstream design authority.
+        body = body.model_copy(update={'facts': {**body.facts,
+            'continuityDesignRefs': [r.model_dump(mode='json', by_alias=True) for r in refs[4:14]]}})
         refs.append(store.write(writer=Authority.PROFESSIONAL,kind=Kind.PROFESSIONAL,scope=scope,
             body=body,sources=parents,operation='shot-'+body.domain.value))
     assert len(refs)==25
@@ -193,7 +198,10 @@ async def test_unrelated_ancestor_scope_original_cannot_enter_adoption(tmp_path)
         scope=RuntimeScope(work_id=scope.work_id),body=DesignBody(domain='COLOR',facts={'scenePalette':['Unrelated.']}),
         sources=refs[:3],operation='unrelated-world-color')
     failed=await start(p,(*refs,unrelated),scope)
-    assert failed.state==RuntimeState.FAILED and failed.cursor==5
+    # Explicitly adding a new upstream design now first requires the existing
+    # Professional author to resolve it. The fixture refuses new authorship;
+    # the unrelated original cannot silently enter an adopted production graph.
+    assert failed.state==RuntimeState.FAILED and failed.cursor==3
     assert p.creative.state.checkpoint(failed.run_id).package_ref is None
 
 
@@ -241,8 +249,9 @@ async def test_professional_context_keeps_shot_family_without_relabeling_scene_a
     before={r:p.creative_versions.resolve(r) for r in refs}
     request=p.creative._request(CapabilityInput(run_id=run.run_id,operation_id='context-only',scope=scope),Authority.PROFESSIONAL)
     current=request.professional_context['currentDesigns']
-    assert len(current)==10 and len(request.source_refs)==25
-    assert all(row['facts']['scope']['shotId']==scope.shot_id for row in current)
+    assert len(current)==20 and len(request.source_refs)==25
+    assert sum(row['facts']['scope']['shotId']==scope.shot_id for row in current)==10
+    assert sum(row['facts']['scope']['shotId'] is None for row in current)==10
     family=SpecializedAssetSequence._fixed_narrative(request)
     assert family.key=='offline-fresh-shot-family' and family.fingerprint=='b'*64
     assert sum(p.creative_versions.resolve(r).scope.shot_id is None and

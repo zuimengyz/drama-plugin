@@ -49,6 +49,14 @@ def visual_ir(task='FIRST_FRAME', provider='Flux.2 [pro]'):
     return ir
 
 
+def verify_retained_ir_without_new_route_admission(frame, request):
+    # These retained Flux fixtures can verify IR/payload equality but cannot
+    # authorize new formal dispatch through a retired image route.
+    with pytest.raises(ValueError, match='HERO_KEYFRAME_ROUTE_REQUIRES_GPT_IMAGE2'):
+        require_submission_ir(frame, request)
+    require_submission_ir({'prompt_ir_compilation': frame['prompt_ir_compilation']}, request)
+
+
 @pytest.mark.parametrize('task', ['TEXT_TO_IMAGE', 'FIRST_FRAME', 'KEY_FRAME'])
 def test_static_contract_and_preserved_internal_intent(task):
     ir = visual_ir(task); before = deepcopy(ir)
@@ -56,7 +64,7 @@ def test_static_contract_and_preserved_internal_intent(task):
     assert 'man: 38–42 years old' in c['prompt']
     for text in ['19th century', 'old wool coat', 'gas street lamps', 'man left, girl right']:
         assert text in c['prompt']
-    assert 'hand can grip' not in c['prompt'] and 'no scars' not in c['prompt']
+    assert 'hand can grip' not in c['prompt'] and 'no scars' in c['prompt']
     assert 'intact natural skin' in c['prompt']
     assert ir == before and c['ir']['action']['non_current'] == before['action']['non_current']
     verify_compilation(c, c['prompt'])
@@ -136,7 +144,7 @@ def test_image_rework_preserves_typed_request_and_legacy_correction(tmp_path, ty
         ir['source_fingerprint'] = fp(spec.model_dump(mode='json', exclude={'prompt_ir'}))
         ir['subjects'] = [{**deepcopy(ir['subjects'][0]), 'id': a.entity_key} for a in spec.actors]
         spec = spec.model_copy(update={'prompt_ir': ir})
-    frame = compile_frame(spec, None if typed else template)
+    frame = compile_frame(spec, template)
     state = production.new_campaign([frame])
     first = production.reserve(state, spec.shot_id)
     outcome(state, first)
@@ -147,7 +155,7 @@ def test_image_rework_preserves_typed_request_and_legacy_correction(tmp_path, ty
     if typed:
         assert second['request'] == frame['request']
         assert second['request_fingerprint'] == fp(frame['request'])
-        require_submission_ir(frame, second['request'])
+        verify_retained_ir_without_new_route_admission(frame, second['request'])
     else:
         assert 'TARGETED CORRECTION:' in second['request']['workflow']['1']['inputs']['prompt']
 
@@ -161,11 +169,11 @@ def test_frame_integration_and_submission_gate(tmp_path):
         require_submission_ir(old, old['request'])
     ir = visual_ir(); ir['source_fingerprint'] = fp(spec.model_dump(mode='json', exclude={'prompt_ir'}))
     ir['subjects'] = [{**deepcopy(ir['subjects'][0]), 'id': a.entity_key} for a in spec.actors]
-    compiled = compile_frame(spec.model_copy(update={'prompt_ir': ir}))
+    compiled = compile_frame(spec.model_copy(update={'prompt_ir': ir}), template)
     verify_compiled(compiled)
-    require_submission_ir(compiled, compiled['request'])
-    assert compiled['request']['workflow']['271']['inputs']['prompt'] == compiled['prompt_ir_compilation']['prompt']
-    request = deepcopy(compiled['request']); request['workflow']['271']['inputs']['prompt'] += ' extra'
+    verify_retained_ir_without_new_route_admission(compiled, compiled['request'])
+    assert compiled['request']['workflow'][template.prompt_node]['inputs']['prompt'] == compiled['prompt_ir_compilation']['prompt']
+    request = deepcopy(compiled['request']); request['workflow'][template.prompt_node]['inputs']['prompt'] += ' extra'
     with pytest.raises(ValueError, match='PAYLOAD_MISMATCH'):
         require_submission_ir(compiled, request)
     ir['source_fingerprint'] = 'b'*64
@@ -203,9 +211,9 @@ def test_reference_edit_frame_preserves_operation_and_rejects_old_normalizer(tmp
     ir=visual_ir('REFERENCE_EDIT')
     ir['subjects']=[{**deepcopy(ir['subjects'][0]),'id':a.entity_key} for a in spec.actors]
     ir['source_fingerprint']=fp(spec.model_dump(mode='json',exclude={'prompt_ir'}))
-    compiled=compile_frame(spec.model_copy(update={'prompt_ir':ir}))
+    compiled=compile_frame(spec.model_copy(update={'prompt_ir':ir}),template)
     verify_compiled(compiled)
-    require_submission_ir(compiled,compiled['request'])
+    verify_retained_ir_without_new_route_admission(compiled,compiled['request'])
     assert 'Replace right background' in compiled['prompt_ir_compilation']['prompt']
     with pytest.raises(ValueError,match='POST_REWRITE_FORBIDDEN'):
         compile_frame(spec.model_copy(update={'prompt_ir':ir,'prompt_normalization':{'rules':[]}}),template)

@@ -85,8 +85,13 @@ def inherit_design(frame: FrameSpec, item: dict[str, Any]) -> FrameSpec:
     def fact(key: str) -> dict[str, str]:
         return dict(text=leaves[key], priority='CRITICAL', scope='CURRENT',
                     source=SOURCE_PREFIX + origins[key] + '/' + key)
-    # Material/shape cannot be re-authored in a second preserve list. These exact
-    # originals also survive the existing edit serializer for reference edits.
+    # Rebuild asset-owned facts, not the artist's distinct current relationships.
+    # Their source locators already passed the Fact contract; this handoff does
+    # not infer authority or resolve semantic conflicts from descriptive prose.
+    texts = set(leaves.values())
+    authored_preserve = [f for f in ir['preserve']
+        if f['scope'] == 'CURRENT' and f['priority'] == 'CRITICAL'
+        and not f['source'].startswith(SOURCE_PREFIX) and f['text'] not in texts]
     ir['preserve'] = []
     for key in leaves:
         if key in SUBJECT:
@@ -99,7 +104,9 @@ def inherit_design(frame: FrameSpec, item: dict[str, Any]) -> FrameSpec:
             ir['lighting'][key.split('.')[1]] = fact(key)
         else:
             ir['preserve'].append(fact(key))
-    texts = set(leaves.values())
+    for authored in authored_preserve:
+        if authored not in ir['preserve']:
+            ir['preserve'].append(authored)
     for group in ('secondary_details', 'continuity'):
         ir[group] = [f for f in ir[group] if f['text'] not in texts]
     if ir['edit_delta'] and not ir['preserve']:

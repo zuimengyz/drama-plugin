@@ -13,7 +13,7 @@ from drama_plugin.contracts.base import ContractModel, dump_contract, sha256_can
 from drama_plugin.contracts.asset import Asset, AssetType
 from drama_plugin.contracts.media import Media
 from drama_plugin.contracts.source_pin import SourcePin
-from drama_plugin.creative_engine.contracts import AuthorRequest, CanonDraft
+from drama_plugin.creative_engine.contracts import AuthorRequest, Authority, CanonDraft
 from drama_plugin.creative_engine.author_projection import subjects
 from drama_plugin.film.contracts import FilmCanon
 from drama_plugin.runtime.contracts import ArtifactReference
@@ -303,6 +303,115 @@ class SpecializedAssetSequence:
             if narrative_ref is not None and fixed is not None and narrative_ref != fixed:
                 raise ValueError('ASSET_NARRATIVE_BINDING_CONFLICT')
             return await self._prepare(request, author, narrative_ref=narrative_ref)
+
+    def candidate_parent(self, preparation_ref: SourcePin) -> SourcePin | None:
+        """Recognize a source-bound review candidate without selecting it."""
+        packet = self.objects.read_ref(preparation_ref)
+        if packet.get('schemaVersion') != 'specialized-asset-preparation-v1':
+            raise ValueError('ASSET_PREPARATION_REQUIRED')
+        path = self.objects._path('asset-scene-design', [packet['narrativeRef']['fingerprint'], packet['sceneId']])
+        if not path.exists():
+            raise ValueError('ASSET_PREPARATION_NOT_SELECTED')
+        selected = SourcePin.model_validate(self.objects._read(path))
+        if selected == preparation_ref:
+            return None
+        context = packet.get('referenceAuthorContext', {})
+        source = context.get('professionalContext', {}).get('assetPreparation', {}).get('revisionSourceRef')
+        # AuthorRequest aliases are camelCase; tolerate its retained native view.
+        if source is None:
+            source = context.get('professional_context', {}).get('assetPreparation', {}).get('revisionSourceRef')
+        parent = self.objects.read_ref(selected)
+        if (source != dump_contract(selected) or dump_contract(selected) not in packet.get('professionalBasisRefs', [])
+                or any(parent.get(k) != packet.get(k) for k in ('schemaVersion', 'workId', 'sceneId', 'narrativeRef'))
+                or not context.get('revision')):
+            raise ValueError('ASSET_PREPARATION_NOT_SELECTED')
+        return selected
+
+    async def revise_candidate(self, request: AuthorRequest, author: AssetAuthor, *,
+                               preparation_ref: SourcePin, asset_ids: tuple[str, ...]) -> SourcePin:
+        """Reassess selected accepted proofs through the existing formal author.
+
+        This creates an immutable candidate only. The active preparation index,
+        accepted assets and selected screenplay remain untouched.
+        """
+        async with self._locks.setdefault('prepare:' + request.scope.work_id, asyncio.Lock()):
+            if (not asset_ids or len(set(asset_ids)) != len(asset_ids) or request.revision is None
+                    or request.revision.owner != Authority.PROFESSIONAL):
+                raise ValueError('EXPLICIT_ASSET_REVISION_REQUIRED')
+            packet = self.objects.read_ref(preparation_ref)
+            if self.candidate_parent(preparation_ref) is not None:
+                raise ValueError('SELECTED_ASSET_PREPARATION_REQUIRED')
+            ref = SourcePin.model_validate(packet['narrativeRef'])
+            fixed = self._fixed_narrative(request)
+            if fixed is not None and fixed != ref:
+                raise ValueError('ASSET_NARRATIVE_BINDING_CONFLICT')
+            canon = self._narrative(ref, request)
+            if (packet['workId'], packet['sceneId']) != (request.scope.work_id, request.scope.scene_id):
+                raise ValueError('ASSET_REVISION_SCOPE_MISMATCH')
+            parents = [await self.assets.get_asset(identity) for identity in asset_ids]
+            requirements = packet['requirements']
+            for asset in parents:
+                value = asset.content.get('specializedAsset', {})
+                if (asset.work_id != request.scope.work_id or not self._proof(asset) or not self._in_family(asset, ref)
+                        or not any(r.get('reuseAssetId') == asset.id or r.get('requirementKey') == value.get('requirementKey')
+                            for r in requirements)):
+                    raise ValueError('ASSET_REVISION_ACCEPTED_PARENT_REQUIRED')
+            assert request.canon is not None
+            selected_subjects = {a.content['specializedAsset']['subjectId'] for a in parents if a.asset_type == AssetType.CHARACTER}
+            roster = [s for s in subjects(request.canon.scene) if s['id'] in selected_subjects]
+            if {s['id'] for s in roster} != selected_subjects:
+                raise ValueError('ASSET_REVISION_SUBJECT_SCOPE_MISMATCH')
+            bases = {s['id']: next(a for a in parents if a.asset_type == AssetType.CHARACTER
+                and a.content['specializedAsset']['subjectId'] == s['id']) for s in roster}
+            original_context = packet.get('referenceAuthorContext') or dump_contract(request)
+            original_request = AuthorRequest.model_validate(original_context)
+            if (request.screenplay_context is not None
+                    and request.screenplay_context != original_request.screenplay_context):
+                raise ValueError('ASSET_REVISION_SCREENPLAY_BINDING_MISMATCH')
+            context = {**(original_request.professional_context or {}), **(request.professional_context or {})}
+            context.pop('assetSequence', None)
+            context['assetPreparation'] = {'sceneOrdinal': next(i for i, s in enumerate(canon.scenes) if s.scene_id == packet['sceneId']),
+                'narrativeRef': dump_contract(ref), 'revisionSourceRef': dump_contract(preparation_ref),
+                'subjectCandidates': [{'selection': i, **s, 'inherited': dump_contract(bases[s['id']])} for i, s in enumerate(roster)],
+                'assetCandidates': [{'selection': i, 'asset': dump_contract(a)} for i, a in enumerate(parents)]}
+            scoped = request.model_copy(update={'scope': request.scope.model_copy(update={'shot_id': None}),
+                'shot': None, 'professional_context': context,
+                'screenplay_context': original_request.screenplay_context or request.screenplay_context})
+            method = getattr(author, 'design_assets', None)
+            if method is None:
+                from drama_plugin.execution.transport import CapabilityAbsent
+                raise CapabilityAbsent('SPECIALIZED_ASSET_AUTHOR_ABSENT')
+            draft = SceneAssetDraft.model_validate(dump_contract(await method(scoped)))
+            choices, claimed = [], set()
+            for choice in draft.assets:
+                ordinal = choice.reuse_selection
+                if ordinal is None and choice.asset_type == 'CHARACTER' and choice.subject_selection is not None and choice.subject_selection < len(roster):
+                    parent = bases[roster[choice.subject_selection]['id']]
+                    ordinal = parents.index(parent)
+                if ordinal is None or ordinal >= len(parents) or ordinal in claimed:
+                    raise ValueError('ASSET_REVISION_EXACT_PARENT_SELECTION_REQUIRED')
+                parent = parents[ordinal]
+                if parent.asset_type != choice.asset_type:
+                    raise ValueError('ASSET_REUSE_TYPE_MISMATCH')
+                claimed.add(ordinal)
+                stable = {k:v for k,v in parent.content['specializedAsset']['design'].items() if k not in {'proof', 'referenceLighting'}}
+                if any(k not in {'proof', 'referenceLighting'} and (k not in stable or stable[k] != v) for k,v in choice.design.items()):
+                    raise ValueError('ASSET_REVISION_STABLE_DESIGN_CHANGE')
+                # Proof and reference light are re-authored candidates, never
+                # inherited merely because an earlier FrameSpec selected them.
+                design = {**stable, **{k:v for k,v in choice.design.items() if k in {'proof', 'referenceLighting'}}}
+                choices.append(choice.model_copy(update={'reuse_selection': ordinal, 'design': design,
+                    'reference_required': True, 'variant_reason': choice.variant_reason or draft.rationale}))
+            if claimed != set(range(len(parents))):
+                raise ValueError('ASSET_REVISION_EXACT_PARENT_SELECTION_REQUIRED')
+            revised = self._project(ref, packet['sceneId'], roster, bases, parents,
+                draft.model_copy(update={'assets': tuple(choices)}))
+            revised['sceneScreenplayRef'] = packet.get('sceneScreenplayRef')
+            revised['professionalBasisRefs'] = [dump_contract(preparation_ref), *[row['ref']
+                for name in ('filmLook', 'locationCandidates') for row in context.get(name, [])]]
+            revised['referenceAuthorContext'] = dump_contract(scoped)
+            return self.objects.put('specialized-asset-preparation:' + sha256_canonical(
+                [dump_contract(preparation_ref), list(asset_ids), revised]), revised)
 
     def _text_requirement(self, preparation_ref: SourcePin, requirement_key: str) -> tuple[dict[str, Any], dict[str, Any]]:
         packet = self.objects.read_ref(preparation_ref)
@@ -666,8 +775,10 @@ def register_asset_sequence_tools(registry: Any, sequence: SpecializedAssetSeque
         if path.exists():
             selected = SourcePin.model_validate(sequence.objects._read(path))
             if (selected.key, selected.fingerprint) != (ref.key, ref.fingerprint):
-                raise ValueError('Asset preparation selection mismatch')
-            ref = selected
+                sequence.candidate_parent(ref)  # Exact review candidates are readable, never adopted here.
+                ref = ref.model_copy(update={'kind': selected.kind})
+            else:
+                ref = selected
         return {'preparationRef': dump_contract(ref), **packet}
     registry.register(_domain_tool('specialized_assets.read_preparation',
         'Read the exact pending scene asset requirements for the existing Asset Resolution owner.',

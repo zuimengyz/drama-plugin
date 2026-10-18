@@ -493,7 +493,8 @@ class TextCompositionBackend:
             raise CapabilityAbsent("SOURCE_LANGUAGE_AUTHORITY_ABSENT")
         source_size = len(canonical_json(model_payload if model_payload is not None else request).encode())
         revision_task = None
-        if role == 'professional' and isinstance(request, AuthorRequest) and request.revision and model_payload is not None:
+        if (role == 'professional' and isinstance(request, AuthorRequest) and request.shot is not None
+                and request.revision and model_payload is not None):
             # Separate revisable candidates from inherited authority; move the
             # existing task once, after all evidence, without duplicating it.
             model_payload = dict(model_payload)
@@ -772,7 +773,7 @@ class FormalDirectionAuthor(SkillAuthor):
 class FormalProfessionalAuthor(SkillAuthor):
     # The execution identity covers this real diagnostic/feedback implementation
     # revision without changing the model's creative authority or output schema.
-    implementation_identity = "creative.professional:v1:FormalProfessionalAuthor:asset-inheritance-v5:revision-input-v1"
+    implementation_identity = "creative.professional:v1:FormalProfessionalAuthor:asset-inheritance-v7:revision-input-v1"
 
     async def design_assets(self, request: AuthorRequest) -> 'SceneAssetDraft':
         from drama_plugin.professional_design.asset_sequence import SceneAssetDraft
@@ -780,8 +781,48 @@ class FormalProfessionalAuthor(SkillAuthor):
         context = object_value((request.professional_context or {})['assetPreparation'])
         subject_rows = [object_value(row) for row in sequence(context['subjectCandidates'])]
         asset_rows = [object_value(row) for row in sequence(context['assetCandidates'])]
+        def projection(raw: JsonValue) -> JsonValue:
+            from copy import deepcopy
+            value = deepcopy(object_value(raw))
+            for raw_choice in sequence(value.get('assets', [])):
+                choice = object_value(raw_choice)
+                if (choice.get('assetType', choice.get('asset_type')) != 'CHARACTER'
+                        or choice.get('subjectSelection', choice.get('subject_selection')) is not None):
+                    continue
+                ordinal = choice.get('reuseSelection', choice.get('reuse_selection'))
+                if type(ordinal) is not int:
+                    continue
+                parents = [object_value(row['asset']) for row in asset_rows if row['selection'] == ordinal]
+                if len(parents) != 1 or parents[0]['assetType'] != 'CHARACTER':
+                    continue
+                identity = object_value(object_value(parents[0]['content'])['specializedAsset']).get('subjectId')
+                selected = [row['selection'] for row in subject_rows if row['id'] == identity]
+                if len(selected) == 1:
+                    # The artist already selected this exact accepted parent.
+                    # Bind its redundant subject ordinal; do not infer a new
+                    # person or alter any authored appearance/view/light fact.
+                    choice.pop('subject_selection', None)
+                    choice['subjectSelection'] = selected[0]
+            return value
         def asset_design(raw: JsonValue) -> JsonValue:
             return object_value(object_value(object_value(raw)['content'])['specializedAsset'])['design']
+        # Existing reference-owner originals are candidate evidence, never a
+        # prefilled new FrameSpec. Keep view/light semantics on the author wire;
+        # exact IDs, sources, media paths and provider controls stay with owners.
+        artwork = {object_value(row['facts'])['assetId']: object_value(row['facts'])['frame']
+            for row in (request.professional_context or {}).get('currentDesigns', [])
+            if isinstance(row, dict) and row.get('domain') == 'REFERENCE'
+            and isinstance(row.get('facts'), dict) and 'assetId' in row['facts'] and 'frame' in row['facts']}
+        hidden = {'shot_id', 'shot_fingerprint', 'entity_key', 'id', 'source', 'source_fingerprint',
+            'professional_sources', 'references', 'reference_lock', 'reference_members', 'edit_source',
+            'scope_context', 'prompt_normalization', 'identity_bootstrap', 'image_mode',
+            'provider_family', 'task_type', 'input_mode', 'target_size', 'seed'}
+        def candidate_view(raw: JsonValue) -> JsonValue:
+            if isinstance(raw, dict):
+                return {key: candidate_view(value) for key, value in raw.items() if key not in hidden}
+            if isinstance(raw, list):
+                return [candidate_view(value) for value in raw]
+            return raw
         payload = author_payload(request)
         payload['assetPreparation'] = {
             'sceneOrdinal': context['sceneOrdinal'],
@@ -790,7 +831,9 @@ class FormalProfessionalAuthor(SkillAuthor):
                     if isinstance(row.get('inherited'), dict) else None} for row in subject_rows],
             'assetCandidates': [{'selection': row['selection'], 'assetType': object_value(row['asset'])['assetType'],
                 'name': object_value(row['asset'])['name'],
-                'design': asset_design(row['asset'])}
+                'design': asset_design(row['asset']),
+                **({'referenceArtworkCandidate': candidate_view(artwork[object_value(row['asset'])['id']])}
+                   if object_value(row['asset'])['id'] in artwork else {})}
                 for row in asset_rows]}
         payload['filmLook'] = film_look_view(request)
         system = BOUNDARY + '''\nPost-selection Specialized Asset Design only. Design this narrative Scene's necessary assets.
@@ -806,9 +849,29 @@ Different places may share period materials without reusing physical layout. Req
 references through referenceRequired. Templates and candidates are not adopted identities. No media,
 adoption, machine identities, source refs, versions, workflow or provider instructions in the result.
 ''' + self.knowledge(('specialized-asset-design/SKILL.md', 'prop-design/SKILL.md',
-                      'asset-planning/SKILL.md', 'asset-resolution/SKILL.md'))
+                      'asset-planning/SKILL.md', 'asset-resolution/SKILL.md')
+                      + (('reference-strategy/SKILL.md',) if request.revision is not None else ()))
+        if request.revision is not None:
+            system += '''\nThis is an explicit reference-plan reassessment, not first-appearance design.
+Return one candidate for each supplied accepted asset parent, selecting its reuseSelection
+and variantReason. Preserve its identity, costume, materials and necessary physical layout
+or construction. The parent's proof and referenceLighting are candidates to evaluate,
+not immutable viewing instructions. referenceArtworkCandidate is retained past artwork
+to assess, not a prefilled result or new authority for its composition and illumination.
+Reconsider what this still should let a viewer see
+under the selected Film Look and this proof's duty. Keep a reasonable existing choice
+when it serves that purpose; a different text or a different view is not a success metric.
+Author only proof and referenceLighting as revised design leaves; other supplied
+appearance facts remain unchanged or omitted for exact system inheritance. Explain
+the purpose, basis and tradeoff in SceneAssetDraft.rationale and AssetChoice.variant_reason,
+not by rewriting the inherited appearance's rationale or sourceBoundary. Keep
+reference_mode=text_to_image unless the supplied task explicitly selects image-to-image.
+Do not add wear, decoration,
+story actions or a generic cinematic suffix as substitutes for aesthetic translation.
+This candidate does not adopt an asset or authorize media production.
+'''
         return await self.client.complete('professional', system, request, TypeAdapter(SceneAssetDraft),
-            model_payload=payload, author_identity=self.implementation_identity + ':assets')
+            model_payload=payload, project=projection, author_identity=self.implementation_identity + ':assets')
 
     async def design_asset_reference(self, request: AuthorRequest, requirement: dict[str, Any],
                                      *, reference_inputs: tuple[Any, ...] = ()) -> 'FrameSpec':
@@ -847,6 +910,51 @@ adoption, machine identities, source refs, versions, workflow or provider instru
             definition = schema['$defs'][model]
             definition['properties'].pop(key)
             definition['required'].remove(key)
+        # The general IR can retain non-current source knowledge. A still
+        # reference's executable fields have stricter existing compiler duties;
+        # disclose them before authorship, without promoting returned facts.
+        for name, priorities in (('ReferenceCurrentCriticalFact', ['CRITICAL']),
+                                 ('ReferenceCurrentImportantFact', ['CRITICAL', 'IMPORTANT'])):
+            definition = deepcopy(schema['$defs']['Fact'])
+            definition['properties']['priority'] = {'type': 'string', 'enum': priorities}
+            definition['properties']['scope'] = {'type': 'string', 'const': 'CURRENT', 'default': 'CURRENT'}
+            schema['$defs'][name] = definition
+
+        def executable(model: str, keys: tuple[str, ...], *, critical: bool) -> None:
+            ref = {'$ref': '#/$defs/ReferenceCurrent' + ('Critical' if critical else 'Important') + 'Fact'}
+            for key in keys:
+                field = schema['$defs'][model]['properties'][key]
+                if field.get('type') == 'array':
+                    field['items'] = deepcopy(ref)
+                elif 'anyOf' in field:
+                    field['anyOf'] = [deepcopy(ref), {'type': 'null'}]
+                else:
+                    schema['$defs'][model]['properties'][key] = deepcopy(ref)
+
+        executable('World', ('era', 'location', 'historical_context', 'environment_rules'), critical=True)
+        executable('Subject', ('apparent_age', 'face', 'hair', 'beard', 'body_proportions'), critical=True)
+        executable('Subject', ('role', 'costume', 'visible_condition'), critical=False)
+        executable('Blocking', ('positions', 'orientation', 'contact', 'visible_relation'), critical=True)
+        executable('Action', ('current_visible_action', 'expression'), critical=True)
+        for model in ('Environment', 'Camera', 'Lighting'):
+            executable(model, tuple(schema['$defs'][model]['properties']), critical=False)
+        executable('EditDelta', ('source_issue', 'target_correction'), critical=True)
+        for key in ('continuity', 'preserve'):
+            ir_schema['properties'][key]['items'] = {'$ref': '#/$defs/ReferenceCurrentCriticalFact'}
+        if requirement['assetType'] == 'CHARACTER':
+            # FrameSpec permits empty actors for non-character artwork, while
+            # this existing reference contract requires exactly one person.
+            # Express that duty on the author wire rather than inventing a
+            # missing Actor from prose after the author has returned.
+            if 'actors' not in schema['required']:
+                schema['required'].append('actors')
+            schema['properties']['actors'].update(minItems=1, maxItems=1)
+            ir_schema['properties']['subjects'].update(minItems=1, maxItems=1)
+            for key in ('subjects', 'blocking', 'action'):
+                if key not in ir_schema['required']:
+                    ir_schema['required'].append(key)
+            for key, model in (('blocking', 'Blocking'), ('action', 'Action')):
+                ir_schema['properties'][key] = {'$ref': '#/$defs/' + model}
         def projection(raw: JsonValue) -> JsonValue:
             from drama_plugin.creative_engine.author_projection import object_value
             value: dict[str, Any] = deepcopy(object_value(raw))

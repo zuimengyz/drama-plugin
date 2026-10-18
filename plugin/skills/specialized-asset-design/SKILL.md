@@ -35,6 +35,31 @@ is explicitly required, with accepted reference_selections or the inherited
 parent. Do not infer the mode from available media. Retain parent identity design
 for text-rendered variants; I2I also retains its exact adopted identity image.
 
+Use the configured formal asset author for asset-plan authorship and the configured
+reference-artwork author for the still's realization. The Host supplies selected
+sources, calls those authors and reviews their work; it does not disable them and
+fill FrameSpec/prompt_ir as a substitute for this formal process. A retained author
+context proves available evidence, not author execution. Preserve the actual text
+request, raw response and selected candidate separately from the final image request.
+Without authorized text spending, prepare the evidence and report that author work
+is pending; do not label a Host-supplied frame as a formal author's result.
+
+An explicit reassessment of an already prepared asset uses
+`specialized_assets.revise_assets` with the source-bound request, current
+preparation_ref and scoped accepted asset_ids, rather than reusing the cached
+scene packet. This entry calls the configured asset author; it does not accept
+Host-written replacement design fields.
+Scope it to the requested accepted parents and retain their identity, costume,
+materials and necessary spatial or object structure. Let the formal asset author
+evaluate the old proof/view/light as candidates under the selected Film Look;
+the old FrameSpec is evidence to assess, not a new author output or an answer to
+copy. A reasonable choice may remain. Record its purpose, basis and tradeoff in
+the existing rationale/reason and its visible consequences in proof/referenceLighting.
+Keep this unadopted revision separate from the active preparation and adopted
+assets. Its fresh reference child then calls design_asset_reference to realize
+the newly authored plan; it must not be prefilled with the old FrameSpec. Review
+author execution, aesthetic reasoning and final-request delivery separately.
+
 Use `DramaPlugin.specialized_asset_host()` and the contracts in
 [Core Creative R1](../../docs/core-creative-r1.md). Own concrete CharacterAsset,
 CostumeAsset and SceneAsset decisions. Existing character-art, costume-design,
@@ -46,7 +71,9 @@ Pin its record, characterId, arcStage, behavior_pattern and social_position fiel
 Read Scene/Story Dramaturgy before SceneAsset. All assets also pin Director Intent
 and Source/World constraints. Missing context returns UPSTREAM_INFORMATION_REQUIRED.
 Never infer personality, belief, desire, fear, arc, relationships or dramatic purpose
-from a proposed look. Do not author blocking, camera, shots or editing.
+from a proposed look. Do not author scene blocking, movie camera plans, shots or
+editing. A still proof's viewing purpose and reference illumination stay within
+this asset/reference responsibility; they do not direct the later movie Shot.
 
 Runtime medium is fixed per Work. Read the saved movie pin; never change it or infer
 it from Historical/Literary, importance, provider, or individual asset. Global Style
@@ -109,10 +136,11 @@ not a permanent asset property or a replacement for Shot Lighting.
 Target code copies these selected leaves into the existing typed image prompt
 and checks their delivery in the serialized request. Reference artwork must not
 re-author them in optional prose, backgrounds or edit corrections. If originals
-are incomplete, ambiguous or use unmapped fields, the Host reads the retained
-professional context and completes the affected original with this responsibility
-(or Prop Design for object appearance), in the current task. This is continuing
-author work, not a request for the user to repair a Prompt or a new approval gate.
+are incomplete, ambiguous or use unmapped fields, the Host supplies the retained
+professional context to the configured asset author (or Prop Design for object
+appearance), then reviews the completed original. Do not replace that author's
+visual choices by filling its fields in Host code. This is continuing author work,
+not a request for the user to repair a Prompt or a new approval gate.
 Preserve source uncertainty; do not invent historical facts or redesign identity.
 Unknown fields are never silently omitted or flattened into a prompt. Change
 the design original, not a sealed Prompt. Unadopted preparations can be revised through

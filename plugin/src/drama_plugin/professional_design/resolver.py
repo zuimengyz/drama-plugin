@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from drama_plugin.professional_design.asset_sequence import SpecializedAssetSequence, AssetAuthor
 
 from drama_plugin.production.contracts import AssemblyValidation, SourceDomain
+from drama_plugin.contracts.source_pin import SourcePin
 from drama_plugin.professional_design.contracts import (
     ProfessionalDesignRequest, ProfessionalDesignSelection, ProfessionalReferenceCheck,
 )
@@ -36,6 +37,14 @@ class ProfessionalDesignResolver:
         if self.asset_sequence is None:
             return request
         return await self.asset_sequence.prepare(request, cast('AssetAuthor', self.author))
+
+    async def revise_assets(self, request: AuthorRequest, *, preparation_ref: SourcePin,
+                            asset_ids: tuple[str, ...]) -> SourcePin:
+        """Ask the existing asset author for an isolated, source-bound candidate."""
+        if self.asset_sequence is None:
+            raise ValueError('SPECIALIZED_ASSET_SEQUENCE_REQUIRED')
+        return await self.asset_sequence.revise_candidate(request, cast('AssetAuthor', self.author),
+            preparation_ref=preparation_ref, asset_ids=asset_ids)
 
     @staticmethod
     def asset_bindings(request: AuthorRequest) -> list[dict[str, JsonValue]] | None:

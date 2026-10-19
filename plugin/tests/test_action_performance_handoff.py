@@ -147,3 +147,26 @@ def test_stage_scope_does_not_open_new_performance_fields(fault):
         facts['beats'][1]['phaseIndex' if fault == 'beat-phase' else 'window_ms'] = 0
     with pytest.raises(AuthorResultFailure):
         professional_projection(raw, req)
+
+
+@pytest.mark.parametrize('action,expression', [
+    ('The courier makes a brisk full-arm push while keeping the hand fixed in handle space; the tool slides on the counter.',
+     'Controlled effort remains decisive at full amplitude.'),
+    ('The courier deliberately releases the packet into free flight toward the keeper.',
+     'The release is intentional; receiving support begins at the catch.'),
+    ('The courier waits with hands resting on the counter and listens without adding a gesture.',
+     'Stillness sustains attention to the keeper.'),
+])
+async def test_contextual_action_choices_survive_final_wire(tmp_path, monkeypatch, action, expression):
+    # Delivery coverage, not evidence that a model or actor performs these well.
+    req, raw = shared_beat_material()
+    raw[0]['facts']['actionPhases'][0]['action'] = action
+    raw[1]['facts']['beats'][1]['physicalExpression'] = expression
+    p, _, _, outputs = await pipeline(tmp_path, monkeypatch, req, raw)
+    try:
+        text = outputs[0]['wire']['content'][0]['text']
+        assert action in text
+        assert expression.rstrip('.') in text
+        assert not outputs[0]['ready'].provider_submission_allowed
+    finally:
+        await p.aclose()

@@ -21,16 +21,13 @@ Scene Layout; Scene Beat and Dialogue Bibles; Performance objectives; Prop/Anima
 
 Stage who can see, hear, approach or interrupt whom. Tie each movement to an intention or external event; identify handoff giver/receiver and which hand or side matters. Preserve available paths and previous exit/next entry states. Keep a listener’s position legible even without a cut to them. Separate movement destination and timing from detailed force/grip mechanics.
 
-For an encounter, follow each participant separately through approach, noticing,
-yielding, passage and recovery. Specify who continues while another waits and the
-occupied space that must clear before resuming; a glance is not automatically a
-shared stop. Use the carried object's trailing edge as well as the person's body.
-Preserve simultaneous tasks instead of serializing every gesture. A necessary
-wait ends on a visible clearance or partner event, not a preset pause. At a cut,
-hand off position, facing, eyeline target, travel direction and held-object state;
-the receiver continues that action phase unless an ellipsis is authored. A new
-camera side changes screen appearance, not world position. Reconcile any added
-shared stop with Performance and the approved event, not camera convenience.
+When passage or a handoff is uncertain, track each participant's task and the
+space occupied by the body and carried object. Choose who continues, yields or
+waits from the encounter; a glance alone does not establish a shared stop. A wait
+may end on clearance, a partner event or another authored reason. At a cut, pass
+on the relevant position, facing, target, travel and held-object state; a changed
+camera side changes the view, not the world placement. Resolve only the spatial
+relations needed by this shot rather than prescribing the same encounter stages.
 
 ## Outputs
 

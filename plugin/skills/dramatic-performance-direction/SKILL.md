@@ -17,7 +17,7 @@ Scene/Character/Dialogue, Director Performance Intent, Blocking and causal actio
 
 ## Outputs
 
-Performance Bible with DPD refs plus gesture, micro-action, listening, breathing and physical-state direction.
+Performance Bible with DPD refs and the observable behavior needed by the current task; gesture, listening, breath or stillness are available choices, not a checklist.
 
 ## Forbidden authority
 
@@ -25,7 +25,7 @@ Do not rewrite character identity, speech, spatial paths or detailed force/conta
 
 ## Quality gates
 
-Check actor and listener task, restraint, physical load and continuity per beat; internal pressure is independent of outward amplitude.
+Check actor and listener task, physical load, attention and continuity per beat. Choose outward scale from the situation; internal pressure and external control do not prescribe a gesture size or speed.
 
 ## Failure and escalation
 
@@ -80,6 +80,15 @@ Use action and relationship language, not moral labels or a single emotion label
 Distinguish what a line does in the present exchange from what its words report about another time. A retrospective admission need not mean the remembered person admits it to a partner. Give the next owner the particular relation and unresolved cost, not merely "more pressure" or "greater restraint". To develop an expressive realization, compare how the partner's continuing task is affected by what is received, missed or left unfinished. A small reaction can become legible through that relation and its aftermath; its size, a pause or a breath does not name its meaning. The Performance owner can explore bodily realizations within approved action, then retain details that serve the task rather than illustrate a psychological caption. A forceful, comic or ordinary action can carry complexity too.
 
 If rival readings produce the same realization, preserve their interpretive value without claiming distinct tactics. A montage, ritual or observational passage may sustain attention without a new turn in every beat; do not invent a response or movement to demonstrate development. Keep internal activation distinct from external control: high activation may remain highly controlled. `speakerKey` references identity; it does not duplicate age, rank, biography, personality, or Voice Profile.
+
+Choose movement, stillness and timing from what the actor is doing with the
+partner, object or thought. External control may appear as precise vigorous work,
+a withheld response or a quiet hold. A pause need not contain a visible breath or
+micro-action to be alive. Add secondary motion when it carries attention, load or
+an observed physical response; use no universal lead body part or delay. Evaluate
+the meaning at viewing speed before polishing small motion. Consult
+[contextual movement methods](../action-choreography/references/movement-methods.md)
+when reference or control limitations affect a bodily realization.
 
 Locate each partner's receiving opportunity around a word or contact, including
 sourced non-response. A held task needs meaning, not repeated business to fill

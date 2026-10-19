@@ -174,7 +174,7 @@ Runtime review receipt or fixed artistic scale is introduced by this procedure.
 
 When the run includes an authoritative `DPDSnapshot`, translate it once into a provider-neutral `VisualPerformanceBrief` before compiling the Provider motion prompt. DPD remains intended dramatic authority; the brief only expresses observable performance. Do not copy stable face, age, hair, costume, location appearance, camera scale, lens, angle, composition, or camera movement into the brief. Combine the brief with those independently owned inputs only at materialization.
 
-Map activation and control compositionally. In particular, high internal activation plus high external control normally calls for visible tension, low-amplitude movement, stable posture, restrained head/gesture behavior, and focused gaze rather than a large generic expression. High activation plus low control may permit larger, less stable movement. Never introduce an emotion classifier, facial-expression taxonomy, gesture library, or body-language DSL.
+Choose observable expression from the actor’s task, relationship, load and current stimulus. Activation and control qualify that choice; they do not map to a standard posture, motion amplitude or speed. A controlled actor can work vigorously, wait or withhold a response. Retain only the bodily cues that convey this situation, with any relevant timing and release condition. The same choice remains available to all downstream modalities without a second psychological interpretation.
 
 ## Per-Shot review and targeted revision
 

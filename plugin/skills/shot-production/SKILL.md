@@ -9,12 +9,23 @@ description: Produce image, video, or audio media for an approved historical-dra
 
 After adopted shot design and references are clear, the Host may call the installed
 `scenario-blender-expert` and `scenario-blender-blockout`; use
-`scenario-blender-animation` only when the shot needs articulated action. Discover
-and read their actual installed instructions/resources through
-`DramaPlugin.prepare_shot_preview(package_ref, task, previsualization=plan)`.
-CREATE/ADJUST returns the source-pinned handoff and skill locations; missing skills
-use the existing skill-installer with the returned repository paths. Their full
-sibling directories remain external to this Plugin. All Blender production and
+`scenario-blender-animation` only when the shot needs articulated action. Use
+`scenario-blender-rigging` when the actual skeleton, IK/FK controls or deformation
+cannot express the required contact or range; a rig is not needed for every proxy.
+For the selected external skills, read the relevant expert notes, procedure and
+critique, not just the function names. Their stylized defaults, fixed frame counts,
+beat quotas and demonstration thresholds are examples; current adopted medium,
+action and camera determine applicability. Distinguish a solver/rig fault, missing
+motion reference and an artistic choice before adding motion or prompt limits.
+`DramaPlugin.prepare_shot_preview(package_ref, task, previsualization=plan)`
+returns the source-pinned CREATE/ADJUST handoff and expert/blockout/animation
+locations. Read those actual installed instructions and resources; missing skills
+use the existing skill-installer with the returned repository paths. If rigging
+is needed, discover it through the Host skill registry or the same sibling skill
+root; install `skills/dcc/blender/scenario-blender-rigging` from the same source
+repository when absent, then read it. Record any additional skill version and
+actual module path in the external handoff notes. These full sibling directories
+remain external to this Plugin. All Blender production and
 inspection methods belong to those skills; use their local capabilities only.
 
 Receive the external result through ADOPT (handoffRef, outputs and inspection),

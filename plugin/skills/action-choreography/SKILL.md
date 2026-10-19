@@ -19,22 +19,48 @@ Approved action outcome; Blocking; Performance intent; Prop and Animal interacti
 
 ## Professional decisions
 
-Decompose action by physical changes: preparation, contact, support/load transfer, correction, consequence and recovery. Name actor, limb/side, receiver/object, grip establishment and release. A failed attempt must alter the next action; do not jump from reach to successful mount. Declare what must remain observable and what cannot overlap safely or plausibly. Complexity may propose coverage changes, never rewrite the event.
+Start from the character's current task, its target and resistance, the approved
+result, and what the audience needs to read. Choose an action scale and rhythm
+that fit ability, urgency, load and relationship. Literary restraint does not set
+a universal speed or amplitude; skilled work may be brisk and economical.
 
-At a critical transfer, work backwards from the receiving grip: where can the
-hands enter while the previous support still carries weight? Check intermediate
-poses, not only a plausible start and finish. Returning an object flat to a table
-does not leave finger clearance everywhere. Describe the remaining support
-footprint and the hand's free approach to an accessible underside in that very
-pose; saying "slide underneath" is not proof of access. Resolve the path before
-transferring weight, without silently adding a support prop or changing geometry.
-Identify the supported region and free hand before releasing the table; cloth is a contact
-layer, not an invisible lifting sling. Retain assumptions about balance or material
-response as assumptions; do not assert drying or flattening without evidence of
-the change. For small contacts, establish a visible before/after
-difference and its cause: lifting a cup alone need not flatten curled paper, and
-reaching toward a sleeve does not prove it moved away from ink. Elaborate the
-approved action without adding a new dramatic event.
+Resolve the relations that make this action possible:
+
+- **Support and force:** where weight rests, what initiates or resists movement,
+  and how momentum is absorbed or carried into the next action. A light precise
+  task may be hand-led; a load may recruit legs and trunk. Choose the sequence
+  from the task rather than prescribing feet → hips → shoulders for everyone.
+- **Contact and freedom:** identify the relevant surfaces and when each relation
+  begins, changes or ends. A grip can fix the hand in tool space while the tool
+  slides on the work; a sole can pivot about its loaded region. Name the motion
+  that remains possible, not merely “keep contact.”
+- **Transfer and release:** for a controlled handover or set-down, locate the
+  receiving support and an accessible approach before unloading. For a throw,
+  drop or jump, release creates flight; specify its consequence and subsequent
+  catch/landing only when part of the approved action. Inspect intermediate
+  access and reach when geometry makes them uncertain.
+- **Coordination:** describe the principal trajectory and how other limbs or
+  participants support, accommodate or oppose it. Distinguish simultaneous effort
+  from a useful delay; coordinated contact may need synchronized motion. A fixed
+  grip does not freeze shoulders, elbows, trunk or all relative transforms.
+- **Rhythm and result:** locate meaningful changes in effort, speed, attention or
+  material state. Repetition, a held task or continued motion may each be right.
+  Choose a recovery or pause because of the action, not to complete a standard
+  preparation/contact/impact/recovery template or fill an allotted duration.
+
+Use a relevant observed reference when the unresolved question is technique,
+weight transfer or timing. Record the observed relation and the limits of its
+transfer to this character, prop and shot. A still establishes shape or a pose,
+not a motion trajectory; a plausible proxy trajectory does not establish acting.
+Keep uncertain dimensions, loads and material responses explicit as hypotheses.
+
+Describe the selected causal action in readable prose: what the person does,
+what it changes and how that enables the next state. Keep short restrictions only
+where they resolve a consequential ambiguity in this shot. One failed render is
+evidence about that execution, not a rule for every actor or future shot.
+
+For method selection and source limitations, see
+[movement research and external execution](references/movement-methods.md).
 
 ## Outputs
 
@@ -46,9 +72,8 @@ expression and uninterrupted speech against one `entryState` and `observable`
 end condition. Take expression from the participants' Beat originals; selecting
 one primary Beat does not serialize their tasks. A reused Beat carries only
 expression valid across its selected units; stage-local changes belong here.
-Before releasing a support, establish the receiving contact and its accessible
-approach in the current pose. Do not manufacture a new Beat or split merely to
-separate actors, physical substeps or estimated time windows.
+Keep contact changes inside the current action, including intentional release.
+A mechanical substep alone does not require a new psychological Beat or execution unit.
 
 Use event-relative timing or estimated local windows where they clarify execution;
 never turn each window into another row. Separate a required repeated stroke from
@@ -64,11 +89,11 @@ Do not change upstream historical evidence, approved story/relationships/dialogu
 
 ## Quality gates
 
-Every result has an enabling contact and support; body/prop states bridge phases; injury and fatigue constrain execution; no physically impossible teleportation.
+The visible result follows from the authored effort, support, contact or deliberate release. Check transitions and recovery against the character’s actual condition; separate an execution fault from an unresolved observation.
 
 ## Failure and escalation
 
-Missing Blocking or object scale returns dependency failure; proposed event changes go to Screenplay/Director. A provider limitation cannot replace choreography with vague action words.
+Resolve missing placement or scale when it materially changes feasibility; otherwise state the working assumption. Proposed event changes go to Screenplay/Director. Diagnose whether a failed realization needs better reference, control or expression before adding more prompt restrictions.
 
 ## Source reads
 
@@ -76,7 +101,7 @@ Use supplied current originals first. For missing scoped context, read `work.get
 
 ## Route-owned expression
 
-Within the Director-selected route envelope, author anticipation, acceleration, impact, follow-through and environmental reaction. Preserve support/contact/weight and canonical outcomes. A character action signature does not propagate to other actors. Read [expression route contract](../../docs/expression-route-contract.md) when using character or action expression profiles.
+Within the Director-selected route envelope, select the preparation, acceleration, contact, follow-through or environmental response this action actually needs. Continuous work and quiet attention need not acquire an impact structure. Preserve physical causality and canonical outcomes. A character action signature does not propagate to other actors. Read [expression route contract](../../docs/expression-route-contract.md) when using character or action expression profiles.
 
 ## Character Package ownership
 

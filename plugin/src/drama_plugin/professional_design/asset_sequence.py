@@ -113,6 +113,7 @@ class SpecializedAssetSequence:
         self.objects, self.assets, self.media = objects, assets, media
         self._locks: dict[str, asyncio.Lock] = {}
         self.film_storage: FilmStorage | None = None
+        self.reference_production: Any = None
 
     def bind_film(self, work_id: str, canon: FilmCanon, *, source_ref: ArtifactReference,
                   screenplay_ref: SourcePin | None = None, fresh_baseline: bool = False) -> SourcePin:
@@ -315,17 +316,82 @@ class SpecializedAssetSequence:
         selected = SourcePin.model_validate(self.objects._read(path))
         if selected == preparation_ref:
             return None
+        if self._preparation_descends(selected, preparation_ref):
+            # A frozen production input remains readable after another exact
+            # reference adoption updated the same Scene's preparation.
+            return selected
         context = packet.get('referenceAuthorContext', {})
         source = context.get('professionalContext', {}).get('assetPreparation', {}).get('revisionSourceRef')
         # AuthorRequest aliases are camelCase; tolerate its retained native view.
         if source is None:
             source = context.get('professional_context', {}).get('assetPreparation', {}).get('revisionSourceRef')
+        source_ref = SourcePin.model_validate(source) if source is not None else None
         parent = self.objects.read_ref(selected)
-        if (source != dump_contract(selected) or dump_contract(selected) not in packet.get('professionalBasisRefs', [])
+        if (source_ref is None or not self._preparation_descends(selected, source_ref)
+                or source not in packet.get('professionalBasisRefs', [])
                 or any(parent.get(k) != packet.get(k) for k in ('schemaVersion', 'workId', 'sceneId', 'narrativeRef'))
                 or not context.get('revision')):
             raise ValueError('ASSET_PREPARATION_NOT_SELECTED')
         return selected
+
+    def _preparation_descends(self, selected: SourcePin, ancestor: SourcePin,
+                             seen: frozenset[str] = frozenset()) -> bool:
+        if selected == ancestor:
+            return True
+        if selected.fingerprint in seen or len(seen) >= 32:
+            return False
+        packet, basis = self.objects.read_ref(selected), self.objects.read_ref(ancestor)
+        if any(packet.get(k) != basis.get(k) for k in ('schemaVersion', 'workId', 'sceneId', 'narrativeRef')):
+            return False
+        for raw in packet.get('professionalBasisRefs', []):
+            if isinstance(raw, dict) and str(raw.get('key', '')).startswith('specialized-asset-preparation:'):
+                parent = SourcePin.model_validate(raw)
+                if self._preparation_descends(parent, ancestor, seen | {selected.fingerprint}):
+                    return True
+        return False
+
+    def _reference_requirement_selection(self, preparation_ref: SourcePin, item: dict[str, Any]):
+        packet = self.objects.read_ref(preparation_ref)
+        path = self.objects._path('asset-scene-design', [packet['narrativeRef']['fingerprint'], packet['sceneId']])
+        selected = SourcePin.model_validate(self.objects._read(path))
+        current = self.objects.read_ref(selected)
+        rows = list(current['requirements'])
+        matches = [i for i, row in enumerate(rows) if row['stableIdentity'] == item['stableIdentity']]
+        if len(matches) != 1:
+            raise ValueError('ASSET_REFERENCE_SELECTION_IDENTITY_MISMATCH')
+        index = matches[0]
+        if rows[index] == item:
+            return path, selected, current, rows, index
+        # The candidate must revise the current requirement or its proven
+        # ancestor, never silently replace an independently selected revision.
+        context = packet.get('referenceAuthorContext', {})
+        basis = context.get('professionalContext', context.get('professional_context', {}))
+        source = basis.get('assetPreparation', {}).get('revisionSourceRef')
+        if not source or not item.get('inheritedFromAssetId'):
+            raise ValueError('ASSET_REFERENCE_SELECTION_CONFLICT')
+        parent = self.objects.read_ref(SourcePin.model_validate(source))
+        baseline = [row for row in parent['requirements'] if row['stableIdentity'] == item['stableIdentity']]
+        if len(baseline) != 1 or rows[index] != baseline[0]:
+            raise ValueError('ASSET_REFERENCE_SELECTION_CONFLICT')
+        return path, selected, current, rows, index
+
+    def _select_reference_requirement(self, preparation_ref: SourcePin, item: dict[str, Any]) -> None:
+        """Merge only the just-adopted requirement; keep every other selected original."""
+        path, selected, current, rows, index = self._reference_requirement_selection(preparation_ref, item)
+        if rows[index] == item:
+            return
+        rows[index] = item
+        bases = list(current.get('professionalBasisRefs', []))
+        for pin in (selected, preparation_ref):
+            raw = dump_contract(pin)
+            if raw not in bases:
+                bases.append(raw)
+        revised = {**current, 'requirements': rows, 'professionalBasisRefs': bases}
+        ref = self.objects.put('specialized-asset-preparation:' + sha256_canonical(revised), revised)
+        with self.objects._writer():
+            if SourcePin.model_validate(self.objects._read(path)) != selected:
+                raise ValueError('ASSET_PREPARATION_SELECTION_CHANGED')
+            self.objects._write(path, dump_contract(ref))
 
     async def revise_candidate(self, request: AuthorRequest, author: AssetAuthor, *,
                                preparation_ref: SourcePin, asset_ids: tuple[str, ...]) -> SourcePin:
@@ -689,19 +755,29 @@ class SpecializedAssetSequence:
             'referenceRequired': bool(asset.reference_media_ids)}
 
     async def accept(self, preparation_ref: SourcePin, requirement_key: str, *, adoption_ref: SourcePin,
-                     reference_media_ids: tuple[str, ...] = ()) -> Asset:
+                     reference_media_ids: tuple[str, ...] = (), reference_record: Any = None) -> Asset:
         """Consume an existing artistic adoption. No candidate auto-promotion or generation."""
         async with self._locks.setdefault('accept:' + requirement_key, asyncio.Lock()):
             return await self._accept(preparation_ref, requirement_key,
-                adoption_ref=adoption_ref, reference_media_ids=reference_media_ids)
+                adoption_ref=adoption_ref, reference_media_ids=reference_media_ids,
+                reference_record=reference_record)
 
     async def _accept(self, preparation_ref: SourcePin, requirement_key: str, *, adoption_ref: SourcePin,
-                      reference_media_ids: tuple[str, ...]) -> Asset:
+                      reference_media_ids: tuple[str, ...], reference_record: Any = None) -> Asset:
         packet = self.objects.read_ref(preparation_ref)
         if packet.get('schemaVersion') != 'specialized-asset-preparation-v1':
             raise ValueError('ASSET_PREPARATION_REQUIRED')
         selected = self.objects._path('asset-scene-design', [packet['narrativeRef']['fingerprint'], packet['sceneId']])
-        if not selected.exists() or SourcePin.model_validate(self.objects._read(selected)) != preparation_ref:
+        review = self.objects.read_ref(adoption_ref)
+        if reference_record is not None:
+            if self.reference_production is None:
+                raise ValueError('REFERENCE_EXACT_USER_DECISION_REQUIRED')
+            self.reference_production.adopted_reference(reference_record, review, reference_media_ids)
+            self.candidate_parent(preparation_ref)
+            if (reference_record.preparation_ref != preparation_ref
+                    or reference_record.requirement_key != requirement_key):
+                raise ValueError('ASSET_DESIGN_ADOPTION_MISMATCH')
+        elif not selected.exists() or SourcePin.model_validate(self.objects._read(selected)) != preparation_ref:
             raise ValueError('ASSET_PREPARATION_NOT_SELECTED')
         item = next(r for r in packet['requirements'] if r['requirementKey'] == requirement_key)
         narrative_ref = SourcePin.model_validate(packet['narrativeRef'])
@@ -714,17 +790,30 @@ class SpecializedAssetSequence:
             return reused
         ref = SourcePin.model_validate(item['designRef'])
         original = self.objects.read_ref(ref)
-        review = self.objects.read_ref(adoption_ref)
         if (review.get('decision') not in {'APPROVE', 'ADOPT'} or review.get('workId') != packet['workId']
                 or review.get('subjectFingerprint') != ref.fingerprint
                 or review.get('referenceMediaIds', []) != list(reference_media_ids)):
             raise ValueError('ASSET_DESIGN_ADOPTION_MISMATCH')
+        if reference_record is not None:
+            self._reference_requirement_selection(preparation_ref, item)
         known = [a for a in await self._available(packet['workId'], query=requirement_key, narrative_ref=narrative_ref)
                  if a.content['specializedAsset'].get('requirementKey') == requirement_key]
         if known:
-            if len(known) != 1:
+            exact = [a for a in known if tuple(a.reference_media_ids) == reference_media_ids]
+            if len(exact) == 1:
+                if reference_record is not None and exact[0].content['specializedAsset']['adoptionRef'] != dump_contract(adoption_ref):
+                    raise ValueError('ASSET_REFERENCE_ALREADY_ADOPTED_BY_ANOTHER_DECISION')
+                if reference_record is not None:
+                    self._select_reference_requirement(preparation_ref, item)
+                    if self.film_storage is not None:
+                        self.film_storage.asset_event(exact[0])
+                return exact[0]
+            if len(known) != 1 or exact:
                 raise ValueError('ASSET_ACCEPTED_VERSION_AMBIGUOUS')
-            return known[0]
+            if reference_record is None:
+                return known[0]
+            if self.film_storage is None:
+                raise ValueError('REFERENCE_REPLACEMENT_REQUIRES_CURRENT_ASSET_STORAGE')
         if original['referenceRequired'] and not reference_media_ids:
             raise ValueError('ASSET_ADOPTED_REFERENCE_REQUIRED')
         for mid in reference_media_ids:
@@ -744,6 +833,8 @@ class SpecializedAssetSequence:
             raise ValueError('ASSET_REGISTRATION_READBACK_MISMATCH')
         if self.film_storage is not None:
             self.film_storage.asset_event(fresh)
+        if reference_record is not None:
+            self._select_reference_requirement(preparation_ref, item)
         return fresh
 
     @staticmethod

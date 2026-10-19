@@ -20,7 +20,7 @@ from drama_plugin.runtime.capabilities import TargetCapability
 from drama_plugin.runtime.contracts import (ActionKind, ArtifactReference, CapabilityInput,
     CapabilityResult, DecisionCategory, RecoveryClass, ResultStatus, RuntimeAction,
     RunMode, RuntimeContract, RuntimeRun, RuntimeScope, RuntimeState, RuntimeWorkflow, UserDecisionRequest)
-from drama_plugin.visual.frame_request import FrameSpec, compile_frame, verify_compiled
+from drama_plugin.visual.frame_request import FrameSpec, Template, compile_frame, verify_compiled
 from drama_plugin.visual import production as still
 from drama_plugin.visual.ark_submission import retained_receipt, submit_reserved
 from drama_plugin.media_delivery import MediaIdentity, persist_media, verify_media
@@ -33,6 +33,7 @@ if TYPE_CHECKING:
 WORKFLOW = 'specialized-asset-reference:v1'
 OWNER = 'asset-reference-production'
 INDEX = 'asset-reference-current'
+REUSE_INDEX = 'asset-reference-reuse-origin'
 PREFIX = 'specialized-assets.reference.'
 
 
@@ -101,6 +102,7 @@ class TargetReferenceProduction:
         self.plugin = plugin
         assert plugin.ledger is not None and plugin.execution is not None
         self.ledger, self.sequence = plugin.ledger, plugin.asset_sequence
+        self.sequence.reference_production = self
         self.cache = plugin.execution.media.directory / 'asset-references'
         self.lock = plugin.execution.store.lock
 
@@ -138,7 +140,7 @@ class TargetReferenceProduction:
         if (packet.get('schemaVersion') != 'specialized-asset-preparation-v1'
                 or (packet['workId'], packet['sceneId']) != (value.scope.work_id, value.scope.scene_id)):
             raise ValueError('REFERENCE_PREPARATION_AUTHORITY_MISMATCH')
-        self.preparation_authority(value.preparation_ref, self.plugin.runtime.store.load(value.run_id).mode)
+        self.record_authority(value)
         item = next(r for r in packet['requirements'] if r['requirementKey'] == value.requirement_key)
         if item.get('reuseAssetId'):
             raise ValueError('REFERENCE_REUSE_DOES_NOT_REQUIRE_GENERATION')
@@ -154,6 +156,139 @@ class TargetReferenceProduction:
             raise ValueError('REFERENCE_PREPARATION_AUTHORITY_MISMATCH') from error
         if parent is not None and (mode != RunMode.EXPERIMENT or production):
             raise ValueError('REFERENCE_PREPARATION_AUTHORITY_MISMATCH')
+
+    def reuse_origin(self, value: ReferenceProductionRecord) -> ReferenceProductionRecord | None:
+        """Read the owner's fixed input, never a caller flag or a cost approval."""
+        with self.ledger.transaction() as db:
+            row = db.execute('SELECT value_json FROM ledger_index WHERE index_type=? AND index_key=?',
+                (REUSE_INDEX, value.run_id)).fetchone()
+        if row is None:
+            return None
+        ref = ArtifactReference.model_validate_json(row['value_json'])
+        body, scope, fingerprint = self.ledger.get_artifact(OWNER, ref)
+        origin = ReferenceProductionRecord.model_validate(body)
+        run = self.plugin.runtime.store.load(value.run_id)
+        keys = ('run_id', 'scope', 'preparation_ref', 'requirement_key', 'author_context_ref', 'frame')
+        empty = ('stage', 'receipt', 'delivery', 'quote', 'balance', 'execution_binding',
+                 'budget', 'cost_ref', 'adoption_ref', 'asset_id', 'required_action')
+        if (ref.owner != OWNER or ref != origin.artifact_reference()
+                or scope != origin.scope or fingerprint != origin.fingerprint
+                or any(getattr(origin, k) != getattr(value, k) for k in keys)
+                or origin.frame is None or any(getattr(origin, k) is not None for k in empty)
+                or run.workflow_id != WORKFLOW or run.scope != origin.scope
+                or run.mode != RunMode.PRODUCTION):
+            raise ValueError('REFERENCE_REUSE_INPUT_MISMATCH')
+        return origin
+
+    def record_authority(self, value: ReferenceProductionRecord, *, production: bool = False) -> None:
+        if self.reuse_origin(value) is not None:
+            # The new entry fixes a complete Frame from this real selected or
+            # parent-bound candidate. It does not select/adopt the candidate.
+            self.sequence.candidate_parent(value.preparation_ref)
+            return
+        self.preparation_authority(value.preparation_ref,
+            self.plugin.runtime.store.load(value.run_id).mode, production=production)
+
+    def reuse_inputs(self, preparation_ref: SourcePin, author_context_ref: SourcePin,
+                    frame: FrameSpec) -> tuple[dict[str, Any], dict[str, Any]]:
+        packet = self.sequence.objects.read_ref(preparation_ref)
+        self.sequence.candidate_parent(preparation_ref)
+        request = AuthorRequest.model_validate(self.sequence.objects.read_ref(author_context_ref))
+        baseline = AuthorRequest.model_validate(packet['referenceAuthorContext'])
+        scope = RuntimeScope(work_id=packet['workId'], scene_id=packet['sceneId'])
+        stable = ('scope', 'source', 'source_refs', 'canon', 'shot', 'screenplay_context')
+        if (request.scope != scope or any(getattr(request, k) != getattr(baseline, k) for k in stable)
+                or (request.professional_context or {}).get('filmLook') !=
+                   (baseline.professional_context or {}).get('filmLook')):
+            raise ValueError('REFERENCE_REUSE_AUTHOR_CONTEXT_MISMATCH')
+        narrative = SourcePin.model_validate(packet['narrativeRef'])
+        fixed = self.sequence._fixed_narrative(request)
+        if fixed is not None and fixed != narrative:
+            raise ValueError('ASSET_NARRATIVE_BINDING_CONFLICT')
+        self.sequence._narrative(narrative, request)
+        matches = [r for r in packet['requirements'] if r['requirementKey'] == frame.shot_fingerprint]
+        if len(matches) != 1 or matches[0].get('reuseAssetId') or not matches[0]['referenceRequired']:
+            raise ValueError('REFERENCE_REQUIREMENT_NOT_PENDING')
+        item = matches[0]
+        original = self.sequence.objects.read_ref(SourcePin.model_validate(item['designRef']))
+        if (sha256_canonical(original) != item['requirementKey'] or original !=
+                {k: v for k, v in item.items() if k not in {'designRef', 'requirementKey'}}):
+            raise ValueError('REFERENCE_DESIGN_CHANGED')
+        self.validate_artwork(item, frame, item['requirementKey'])
+        from drama_plugin.contracts.visual_prompt import VisualPromptIR
+        subjects = VisualPromptIR.model_validate(frame.prompt_ir).subjects
+        if item['assetType'] == 'CHARACTER':
+            if len(frame.actors) != 1 or len(subjects) != 1:
+                raise ValueError('REFERENCE_SINGLE_SELECTED_IDENTITY_REQUIRED')
+        elif frame.actors or subjects:
+            raise ValueError('NON_CHARACTER_REFERENCE_MUST_NOT_INVENT_PEOPLE')
+        return packet, dict(item)
+
+    async def prepare_reference(self, run_id: str, preparation_ref: SourcePin,
+                                author_context_ref: SourcePin, frame: FrameSpec) -> ReferenceProductionRecord:
+        """Retain a new exact-Frame candidate; spending/review use the old workflow.
+
+        No selected index, author, old Run or Asset is changed. The initial
+        record and its typed input anchor are committed with the new Run before
+        any resume can invoke prepare. Repeating this identity is read-only.
+        """
+        frame = FrameSpec.model_validate(frame.model_dump())
+        packet = self.sequence.objects.read_ref(preparation_ref)
+        async with self.sequence._locks.setdefault('prepare:' + packet['workId'], asyncio.Lock()), self.lock(run_id):
+            try:
+                value = self.get(run_id)
+            except KeyError:
+                value = None
+            if value is not None:
+                origin = self.reuse_origin(value)
+                if (origin is None or value.preparation_ref != preparation_ref
+                        or value.author_context_ref != author_context_ref or origin.frame is None
+                        or compile_frame(frame, Template.model_validate(origin.frame['template'])) != origin.frame):
+                    raise ValueError('REFERENCE_REUSE_INPUT_MISMATCH')
+                return value
+            # A failed/paid/experimental or unrelated existing Run is not a new
+            # candidate. Creation is atomic, so there is no half-created replay.
+            try:
+                self.plugin.runtime.store.load(run_id)
+            except KeyError:
+                pass
+            else:
+                raise ValueError('REFERENCE_REUSE_REQUIRES_NEW_RUN')
+            packet, item = self.reuse_inputs(preparation_ref, author_context_ref, frame)
+            if item.get('inheritedFromAssetId'):
+                parent = await self.sequence.assets.get_asset(item['inheritedFromAssetId'])
+                basis = parent.content.get('specializedAsset', {})
+                if (parent.work_id != packet['workId'] or not self.sequence._proof(parent)
+                        or basis.get('stableIdentity') != item['stableIdentity']
+                        or basis.get('subjectId') != item['subjectId']):
+                    raise ValueError('INHERITED_ASSET_IDENTITY_RECOVERY')
+                item = {**item, 'inheritedDesign': basis['design'], 'inheritedDesignRef': basis['designRef']}
+            from drama_plugin.professional_design.reference_design import inherit_design, verify_design_delivery
+            if inherit_design(frame, item) != frame:
+                raise ValueError('REFERENCE_REUSE_REQUIRES_COMPLETE_ARTWORK')
+            if frame.image_mode == 'image_to_image':
+                expected = await self.reference_inputs_item(item, packet['workId'])
+                self.validate_reference_inputs(frame, expected)
+            compiled = compile_frame(frame)
+            verify_design_delivery(compiled, item)
+            from drama_plugin.visual.prompt_ir import require_submission_ir
+            require_submission_ir(compiled, compiled['request'])
+            run = self.plugin.runtime.draft_run(work_id=packet['workId'], scene_id=packet['sceneId'],
+                run_id=run_id, mode=RunMode.PRODUCTION, workflow_id=WORKFLOW)
+            value = ReferenceProductionRecord.seal(run_id=run_id, scope=run.scope,
+                preparation_ref=preparation_ref, requirement_key=item['requirementKey'],
+                author_context_ref=author_context_ref, frame=compiled)
+            ref = value.artifact_reference()
+            with self.sequence.objects._writer():
+                self.sequence.candidate_parent(preparation_ref)
+                with self.ledger.transaction(write=True) as db:
+                    self.ledger._insert_run(db, run)
+                    self.ledger._put_artifact(db, OWNER, ref, run.scope, value.fingerprint, value)
+                    for index in (INDEX, REUSE_INDEX):
+                        db.execute('INSERT INTO ledger_index VALUES (?,?,?,?,?,?)',
+                            (index, run_id, run.scope.work_id, run.scope.scene_id, None, canonical_json(ref)))
+            self.ledger.notify_retained(OWNER, ref, run.scope, value.fingerprint)
+            return value
 
     async def candidate_context(self, request: AuthorRequest, asset_ids: tuple[str, ...]) -> AuthorRequest:
         """Retain exact old artwork as revisable evidence, never as new artwork."""
@@ -304,11 +439,14 @@ class TargetReferenceProduction:
         return CapabilityResult(status=ResultStatus.SUCCEEDED, artifact_refs=(value.artifact_reference(),))
 
     def validate_frame(self, value: ReferenceProductionRecord, spec: FrameSpec) -> None:
-        item = self.item(value)
+        TargetReferenceProduction.validate_artwork(self.item(value), spec, value.requirement_key)
+
+    @staticmethod
+    def validate_artwork(item: dict[str, Any], spec: FrameSpec, requirement_key: str) -> None:
         if not item['referenceRequired']:
             raise ValueError('THIS_ASSET_REQUIRES_NO_REFERENCE_MEDIA')
         design = SourcePin.model_validate(item['designRef'])
-        if (spec.shot_id != 'asset-reference:'+value.requirement_key
+        if (spec.shot_id != 'asset-reference:'+requirement_key
                 or spec.shot_fingerprint != design.fingerprint or spec.professional_sources):
             raise ValueError('REFERENCE_FRAME_DESIGN_AUTHORITY_MISMATCH')
         # professional_sources is the opt-in retained Still Knowledge mapping
@@ -337,7 +475,9 @@ class TargetReferenceProduction:
 
     async def reference_inputs(self, value: ReferenceProductionRecord) -> tuple[Any, ...]:
         """Read accepted inputs only for an explicitly selected I2I requirement."""
-        item = self.item(value)
+        return await self.reference_inputs_item(self.item(value), value.scope.work_id)
+
+    async def reference_inputs_item(self, item: dict[str, Any], work_id: str) -> tuple[Any, ...]:
         if item.get('referenceMode','text_to_image') != 'image_to_image':
             return ()
         from drama_plugin.visual.frame_request import Reference
@@ -345,12 +485,12 @@ class TargetReferenceProduction:
         refs = []
         for asset_id in item['referenceAssetIds']:
             asset = await self.sequence.assets.get_asset(asset_id)
-            if asset.work_id != value.scope.work_id or not self.sequence._proof(asset):
+            if asset.work_id != work_id or not self.sequence._proof(asset):
                 raise ValueError('IMAGE_INPUT_REQUIRES_EXISTING_ADOPTED_ASSET')
             if len(asset.reference_media_ids) != 1:
                 raise ValueError('EXACT_SINGLE_ASSET_REFERENCE_SELECTION_REQUIRED')
             media = await self.plugin.providers.media.get_media(asset.reference_media_ids[0])
-            self.sequence._media_identity(media,value.scope.work_id)
+            self.sequence._media_identity(media,work_id)
             proof = await verify_media(self.plugin.providers.media,MediaIdentity.from_media(media),self.cache/'inputs')
             local = proof['cachePath']
             name = 'inline:'+proof['contentHash']
@@ -365,6 +505,12 @@ class TargetReferenceProduction:
                 uploaded_hash=proof['contentHash'],upload_receipt=str(receipt),
                 facts=canonical_json(design['design']),state='Exact adopted reference',review='PASS'))
         return tuple(refs)
+
+    @staticmethod
+    def validate_reference_inputs(frame: FrameSpec, expected: tuple[Any, ...]) -> None:
+        keys = ('entity_key','kind','asset_id','media_id','version','content_hash')
+        if [{k:getattr(r,k) for k in keys} for r in frame.references] != [{k:getattr(r,k) for k in keys} for r in expected]:
+            raise ValueError('REFERENCE_ADOPTED_INPUT_IDENTITY_CHANGED')
 
     async def supply_frame(self, run_id: str, frame: FrameSpec) -> ReferenceProductionRecord:
         async with self.lock(run_id):
@@ -387,9 +533,7 @@ class TargetReferenceProduction:
             self.validate_frame(value, frame)
             if frame.image_mode == 'image_to_image':
                 expected = await self.reference_inputs(value)
-                keys = ('entity_key','kind','asset_id','media_id','version','content_hash')
-                if [{k:getattr(r,k) for k in keys} for r in frame.references] != [{k:getattr(r,k) for k in keys} for r in expected]:
-                    raise ValueError('REFERENCE_ADOPTED_INPUT_IDENTITY_CHANGED')
+                self.validate_reference_inputs(frame, expected)
             compiled = compile_frame(frame)
             try:
                 verify_design_delivery(compiled, item)
@@ -504,6 +648,8 @@ class TargetReferenceProduction:
             verify_design_delivery(value.frame, item)
             return value
         except DesignCompletionRequired:
+            if self.reuse_origin(value) is not None:
+                raise ValueError('REFERENCE_REUSED_ARTWORK_IS_FROZEN')
             if (value.stage is not None or value.cost_ref is not None
                     or self.plugin.runtime.store.load(value.run_id).state == RuntimeState.WAITING_USER
                     or self.decision(value, DecisionCategory.COST_APPROVAL) is not None):
@@ -550,7 +696,7 @@ class TargetReferenceProduction:
                               budget: float, execution_binding: dict[str, Any]) -> ReferenceProductionRecord:
         async with self.lock(run_id):
             value = self.get(run_id)
-            self.preparation_authority(value.preparation_ref, self.plugin.runtime.store.load(run_id).mode, production=True)
+            self.record_authority(value, production=True)
             if value.frame is None or value.stage is not None or value.cost_ref is not None:
                 raise ValueError('UNRESERVED_COMPILED_REFERENCE_REQUIRED')
             following = await self.ensure_design_delivery(value)
@@ -607,8 +753,9 @@ class TargetReferenceProduction:
     async def reserve(self, inputs: CapabilityInput) -> CapabilityResult:
         async with self.lock(inputs.run_id):
             value = self.get(inputs.run_id)
-            if self.sequence.candidate_parent(value.preparation_ref) is not None:
+            if self.sequence.candidate_parent(value.preparation_ref) is not None and self.reuse_origin(value) is None:
                 return self.wait(value, 'REFERENCE_PREPARATION_NOT_SELECTED')
+            self.record_authority(value, production=True)
             if not self.item(value)['referenceRequired']:
                 return self.success(value)
             if value.stage is not None:
@@ -749,7 +896,10 @@ class TargetReferenceProduction:
         async with self.lock(inputs.run_id):
             value = self.get(inputs.run_id)
             if value.asset_id:
-                await self.sequence.assets.get_asset(value.asset_id)
+                asset = await self.sequence.assets.get_asset(value.asset_id)
+                if self.reuse_origin(value) is not None and (
+                        not value.delivery or asset.reference_media_ids != [value.delivery['mediaId']]):
+                    raise ValueError('ASSET_REGISTRATION_READBACK_MISMATCH')
                 return self.success(value)
             item = self.item(value)
             if not value.adoption_ref or item['referenceRequired'] and (
@@ -772,8 +922,60 @@ class TargetReferenceProduction:
                     'referenceProductionRef': dump_contract(value.artifact_reference()),
                     'userDecisionRef': dump_contract(value.adoption_ref)})
             asset = await self.sequence.accept(value.preparation_ref, value.requirement_key,
-                adoption_ref=original, reference_media_ids=media_ids)
+                adoption_ref=original, reference_media_ids=media_ids,
+                reference_record=value if self.reuse_origin(value) is not None else None)
+            # A same-design known Asset may still own its earlier picture.
+            # Do not report the new candidate adopted from that old result.
+            if self.reuse_origin(value) is not None and tuple(asset.reference_media_ids) != media_ids:
+                raise ValueError('ASSET_REGISTRATION_READBACK_MISMATCH')
             return self.success(self.save(value, asset_id=asset.id))
+
+    def adopted_reference(self, value: ReferenceProductionRecord, original: dict[str, Any],
+                          media_ids: tuple[str, ...]) -> None:
+        """Verify the exact existing approval before accepting a new reference version."""
+        retained, retained_scope, retained_fingerprint = self.ledger.get_artifact(OWNER, value.artifact_reference())
+        current = self.get(value.run_id)
+        if (ReferenceProductionRecord.model_validate(retained) != value or retained_scope != value.scope
+                or retained_fingerprint != value.fingerprint
+                or any(getattr(current, key) != getattr(value, key) for key in (
+                    'scope', 'preparation_ref', 'requirement_key', 'author_context_ref',
+                    'frame', 'receipt', 'delivery', 'stage', 'adoption_ref'))
+                or not value.adoption_ref or not value.delivery
+                or not value.receipt or not value.stage or not value.frame
+                or self.plugin.runtime.store.load(value.run_id).mode != RunMode.PRODUCTION
+                or self.plugin.runtime.store.load(value.run_id).workflow_id != WORKFLOW
+                or original.get('referenceProductionRef') != dump_contract(value.artifact_reference())
+                or original.get('userDecisionRef') != dump_contract(value.adoption_ref)
+                or tuple(original.get('referenceMediaIds', ())) != media_ids
+                or media_ids != (value.delivery['mediaId'],)):
+            raise ValueError('REFERENCE_EXACT_USER_DECISION_REQUIRED')
+        attempt = value.stage['attempts'][0]
+        review = still.current_review(attempt)
+        if (not still.usable(attempt) or value.delivery.get('persistenceStatus') != 'VERIFIED'
+                or value.receipt.get('status') != 'COMPLETED'
+                or value.delivery.get('contentHash') != value.receipt.get('output_hash')
+                or review.get('output_hash') != value.delivery.get('contentHash')
+                or review.get('attempt_id') != attempt.get('attempt_id')
+                or original.get('reviewOriginal') != review
+                or original.get('referenceContentHash') != value.delivery.get('contentHash')
+                or attempt.get('output_hash') != value.delivery.get('contentHash')
+                or value.receipt.get('request_fingerprint') != sha256_canonical(value.frame['request'])):
+            raise ValueError('REFERENCE_ADOPTION_REQUIRES_REVIEWED_PERSISTED_MEDIA')
+        raw, scope, fingerprint = self.ledger.get_artifact('user-decision', value.adoption_ref)
+        decision = UserDecisionRecord.model_validate(raw)
+        if (decision.artifact_reference() != value.adoption_ref or decision.scope != scope
+                or decision.fingerprint != fingerprint or scope != value.scope or not decision.accepted
+                or decision.run_id != value.run_id or decision.category != DecisionCategory.ADOPTION
+                or decision.source_ref is None):
+            raise ValueError('REFERENCE_EXACT_USER_DECISION_REQUIRED')
+        before_raw, before_scope, before_fingerprint = self.ledger.get_artifact(OWNER, decision.source_ref)
+        before = ReferenceProductionRecord.model_validate(before_raw)
+        if (before.artifact_reference() != decision.source_ref or before.scope != before_scope
+                or before.fingerprint != before_fingerprint or before.adoption_ref is not None
+                or any(getattr(before, key) != getattr(value, key) for key in (
+                    'run_id', 'scope', 'preparation_ref', 'requirement_key', 'author_context_ref',
+                    'frame', 'receipt', 'delivery', 'stage'))):
+            raise ValueError('REFERENCE_EXACT_USER_DECISION_REQUIRED')
 
     async def resume(self, run_id: str) -> RuntimeRun:
         # Older checkpoints classified a local import allowlist error as terminal.
@@ -864,6 +1066,9 @@ def register_reference_tools(registry: Any, owner: TargetReferenceProduction | N
             from drama_plugin.exceptions import ConfigurationError
             raise ConfigurationError('Target reference production requires configured durable ProductionLedger')
         return owner
+    async def prepare_reference(run_id: str, preparation_ref: SourcePin, author_context_ref: SourcePin,
+                                frame: FrameSpec) -> ReferenceProductionRecord:
+        return await target().prepare_reference(run_id, preparation_ref, author_context_ref, frame)
     async def read_reference(run_id: str) -> ReferenceProductionRecord:
         return target().get(run_id)
     async def frame_reference(run_id: str, frame: FrameSpec) -> ReferenceProductionRecord:
@@ -893,6 +1098,8 @@ def register_reference_tools(registry: Any, owner: TargetReferenceProduction | N
         return await current.plugin.decide_target_run(run_id, decision_id=decision_id,
             accepted=accepted, source_ref=source_ref)
     for name, handler, result, required in (
+        ('prepare_reference', prepare_reference, ReferenceProductionRecord,
+            {'run_id': str, 'preparation_ref': SourcePin, 'author_context_ref': SourcePin, 'frame': FrameSpec}),
         ('read_reference', read_reference, ReferenceProductionRecord, {'run_id': str}),
         ('frame_reference', frame_reference, ReferenceProductionRecord, {'run_id': str, 'frame': FrameSpec}),
         ('revise_assets', revise_assets, SourcePin,

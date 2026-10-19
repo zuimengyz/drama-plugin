@@ -79,6 +79,7 @@ async def store_asset(store:Any,asset:Any,event:str,order:int)->None:
             await ensure_scene(store,work,scene,event,order)
             await store.client.rows([store.row('drama_scene_asset',event,order,scene_id=scene,asset_id=asset.id,
                 purpose='CHARACTER_IDENTITY' if subject else 'SCENE_ASSET',source_ref=canonical_json(s['designRef']))])
+        await select_reference_asset(store, asset, event, order)
         return
     if subject and not await store.client.query('drama_character',{'id':subject},1):
         await store.client.rows([store.row('drama_character',event,order,id=subject,work_id=work,
@@ -110,6 +111,45 @@ async def store_asset(store:Any,asset:Any,event:str,order:int)->None:
         await ensure_scene(store,work,scene,event,order)
         await store.client.rows([store.row('drama_scene_asset',event,order,scene_id=scene,asset_id=asset.id,
             purpose='CHARACTER_IDENTITY' if subject else 'SCENE_ASSET',source_ref=canonical_json(s['designRef']))])
+    await select_reference_asset(store, asset, event, order)
+
+
+async def select_reference_asset(store:Any,asset:Any,event:str,order:int)->None:
+    """Project an exact Native image adoption into the existing current indices."""
+    from drama_plugin.execution.reference_delivery import native_asset_originals
+    from drama_plugin.professional_design.reference_production import ReferenceProductionRecord
+    from drama_plugin.contracts.source_pin import SourcePin
+    s=asset.content['specializedAsset']
+    adoption=store.plugin.asset_sequence.objects.read_ref(SourcePin.model_validate(s['adoptionRef']))
+    if not adoption.get('referenceProductionRef'):
+        return  # Existing historical owners retain their own selection policy.
+    proof=native_asset_originals(store.plugin.ledger,store.plugin.asset_sequence.objects,asset)
+    value=ReferenceProductionRecord.model_validate(proof['referenceRecord'])
+    if store.plugin.runtime.store.load(value.run_id).mode.value!='PRODUCTION':
+        return
+    store.plugin.reference_production.adopted_reference(value,adoption,tuple(asset.reference_media_ids))
+    current=await store.client.query('drama_asset',{'id':asset.id},1)
+    if len(current)!=1 or current[0]['state']!='ADOPTED':
+        raise ValueError('ASSET_REGISTRATION_READBACK_MISMATCH')
+    prior=await store.client.query('drama_asset',{'work_id':asset.work_id,
+        'identity_key':s['stableIdentity'],'state':'ADOPTED'},100)
+    if any(int(row['version'])>s['revision'] for row in prior):
+        raise ValueError('ASSET_REFERENCE_SELECTION_CONFLICT')
+    rows=[]
+    subject=s.get('subjectId')
+    if subject:
+        rows.append(store.row('drama_character',event+':reference-selection',order+1,
+            id=subject,adopted_asset_id=asset.id))
+    for row in prior:
+        if row['id']!=asset.id:
+            rows.append(store.row('drama_asset',event+':reference-selection',order+1,
+                id=row['id'],state='SUPERSEDED'))
+    if rows:
+        await store.client.rows(rows)
+    selected=await store.client.query('drama_asset',{'work_id':asset.work_id,
+        'identity_key':s['stableIdentity'],'state':'ADOPTED'},100)
+    if [row['id'] for row in selected]!=[asset.id]:
+        raise ValueError('ASSET_REFERENCE_SELECTION_READBACK_MISMATCH')
 
 async def request_for_attempt(store:Any,ref:dict[str,Any],event:str,order:int)->str:
     attempt,scope=ledger_body(store,ref);op,_=ledger_body(store,attempt['operationRef'])

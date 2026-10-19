@@ -102,7 +102,11 @@ async def test_formal_candidate_author_then_fresh_reference_authors_without_sele
         prompt = value.frame['request']['body']['prompt']
         assert all(text in prompt for text in row['design'].values() if isinstance(text, str))
         if not same:
-            assert value.frame['spec']['composition'] == row['design']['proof']
+            # New selected proof is inherited, but must not replace the fresh
+            # reference author's compatible viewing composition.
+            assert value.frame['spec']['composition'] == reference_frame(row).composition
+            from drama_plugin.professional_design.reference_design import verify_design_delivery
+            verify_design_delivery(value.frame, row)
         with pytest.raises(ValueError, match='REFERENCE_PREPARATION_AUTHORITY_MISMATCH'):
             await p.reference_production.quote_reference(child, quote={}, balance={}, budget=1, execution_binding={})
     assert len(author.reference_requests) == 2

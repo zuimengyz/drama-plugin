@@ -204,7 +204,9 @@ def test_reference_edit_keeps_selected_design_after_edit_serializer():
     inherited=inherit_design(spec.model_copy(update={'prompt_ir':raw}),item).prompt_ir
     inherited['task'].update(task_type='REFERENCE_EDIT',input_mode='reference')
     inherited['edit_delta']=[dict(operation='replace',region='shirt',source_issue=fact('White shirt'),target_correction=fact('Patched shirt'))]
-    inherited['preserve']=[fact('Keep the remaining source image')]
+    # Editing adds its preservation duty; it must not erase inherited proof
+    # facts now carried in the same existing preserve contract.
+    inherited['preserve'].append(fact('Keep the remaining source image'))
     out=compile_ir(inherited,provider_family='ark')
     verify_design_delivery({'prompt_ir_compilation':out,'request':{'body':{'prompt':out['prompt']}}},item)
     assert all(v in out['prompt'] for v in LIGHT.values())

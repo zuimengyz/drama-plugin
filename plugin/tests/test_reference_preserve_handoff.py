@@ -165,8 +165,8 @@ def test_reference_edit_fallback_still_preserves_outside_regions(selected_asset)
     old["source"] = "asset-design/" + "b" * 64 + "/material"
     following, _, body = edit_projection(artwork(item, [old]), item)
     assert old["text"] not in body["prompt"]
-    assert following.prompt_ir["preserve"] == [dict(
+    assert dict(
         text="Preserve the supplied image outside the explicit edit regions.",
-        priority="CRITICAL", scope="CURRENT", source="reference-proof-preservation")]
+        priority="CRITICAL", scope="CURRENT", source="reference-proof-preservation") in following.prompt_ir["preserve"]
     assert "Preserve the supplied image outside the explicit edit regions." in body["prompt"]
 

@@ -320,6 +320,12 @@ class TargetReferenceProduction:
             raise ValueError('REFERENCE_FRAME_CHARACTER_BINDING_MISMATCH')
         from drama_plugin.contracts.visual_prompt import VisualPromptIR
         ir = VisualPromptIR.model_validate(spec.prompt_ir)
+        from drama_plugin.visual.frame_request import prop_reference_bootstrap, prop_reference_subject
+        prop_subject = prop_reference_subject(spec)
+        if prop_subject is not None and (
+                item['assetType'] != 'PROP' or prop_subject != item['stableIdentity']
+                or spec.identity_bootstrap != prop_reference_bootstrap(item['stableIdentity'], design.fingerprint)):
+            raise ValueError('REFERENCE_FRAME_PROP_BINDING_MISMATCH')
         faces = {s.id: s.face.text for s in ir.subjects}
         if any(a.identity != faces.get(a.entity_key) for a in spec.actors):
             raise ValueError('REFERENCE_ARTWORK_IDENTITY_TEXT_DIVERGES')
@@ -460,6 +466,15 @@ class TargetReferenceProduction:
     def complete_design(self, value: ReferenceProductionRecord, error: ValueError) -> CapabilityResult:
         # Existing author handoff, not a Runtime failure or user approval. Pins
         # and full author context already live in this record/preparation.
+        if str(error).startswith('REFERENCE_VIEW_CONFLICT:'):
+            return self.wait(value, 'HOST_COMPLETE_REFERENCE_DESIGN: ' + str(error) +
+                '. Return the selected originals, retained referenceAuthorContext and conflicting '
+                'view assertions to the configured reference-artwork author through design_asset_reference. '
+                'Preserve asset identity, costume and stable structure; do not revise asset originals '
+                'to hide a viewing conflict. The Host supplies evidence and reviews the complete author '
+                'result, not a replacement FrameSpec/IR or Prompt. With separately authorized text '
+                'spending, receive that reviewed author Frame through the existing supply_frame entry '
+                'and resume. No automatic paid retry or compiler-authored compromise.')
         return self.wait(value, 'HOST_COMPLETE_REFERENCE_DESIGN: ' + str(error) +
             '. Read specialized_assets.read_preparation using the parent result preparation ArtifactReference; '
             'provide its retained referenceAuthorContext and selected originals to the configured '

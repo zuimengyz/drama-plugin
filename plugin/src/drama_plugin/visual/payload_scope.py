@@ -14,7 +14,32 @@ CONTROL = re.compile(r'(?i)(director constraints\s*:|audience[_ ]interpretation\
     r'misread[_ ]risk\s*[:=]|approval[_ ]metadata\s*[:=]|budget[_ ]credits\s*[:=]|'
     r'"?(?:assetBible|sourceMap|compilationFingerprint|approvedBy)"?\s*[:=])')
 FUTURE = re.compile(r'(?i)(future[_ ](?:scene|action|continuity)|later scene|后续S\d+|未来场景|后续镜头|下一场)')
+# A closed non-inheritance statement is reference metadata, not a future action.
+# This only classifies the phrase: it neither removes it nor makes an executable
+# field the right authoring location. Unrecognised wording still fails closed.
+NONINHERITANCE = re.compile(r'''
+    (?:^|[，,；;。.!?！？\n|])\s*
+    (?:
+        (?:(?:本|此|当前)(?:参考)?图|参考(?:图|姿态|照明|背景))?
+        不(?:应|可|得|会)?(?:成为|作为|继承为|沿用为)
+        (?:(?:角色)?永久属性(?:或|和|与))?
+        (?:后续镜头|未来场景|下一场|后续S\d+)(?:的)?(?:指令|规则|要求|设定)
+      |
+        (?:(?:this|the)\s+(?:reference\s+(?:image|pose|lighting|background)|
+                            temporary\s+(?:pose|lighting|background))\s+)?
+        (?:(?:is|are)\s+not\s+|(?:does|do)\s+not\s+become\s+|
+           (?:must|shall|should)\s+not\s+be(?:\s+(?:inherited|carried\s+forward)\s+as)?\s+)
+        (?:an?\s+)?(?:later\s+scenes?|future[_ ](?:scenes?|action|continuity))\s+
+        (?:instructions?|rules?|requirements?|constraints?)
+    )(?=\s*(?:$|[，,；;。.!?！？\n|]))
+''', re.IGNORECASE | re.VERBOSE)
 NONVISUAL = re.compile(r'(?i)(?:^|[\n;；])\s*(?:sound|dialogue|narration|music direction|声音|旁白|音乐)\s*[:=：]')
+
+
+def _future_execution(text: str) -> bool:
+    boundaries = tuple(match.span() for match in NONINHERITANCE.finditer(text))
+    return any(not any(start <= match.start() and match.end() <= end for start, end in boundaries)
+               for match in FUTURE.finditer(text))
 
 
 def review_text(text: str, task: str, *, authority_texts: tuple[str, ...] = (), audio: bool = True) -> None:
@@ -22,7 +47,7 @@ def review_text(text: str, task: str, *, authority_texts: tuple[str, ...] = (), 
         raise ValueError('VISUAL_PROVIDER_PAYLOAD_SCOPE_VIOLATION:task')
     if any(value and value in text for value in authority_texts):
         raise ValueError('VISUAL_PROVIDER_PAYLOAD_CONTAINS_AUTHORITY_CONTEXT')
-    if CONTROL.search(text) or FUTURE.search(text) or ((task != 'VIDEO' or not audio) and NONVISUAL.search(text)):
+    if CONTROL.search(text) or _future_execution(text) or ((task != 'VIDEO' or not audio) and NONVISUAL.search(text)):
         raise ValueError('VISUAL_PROVIDER_PAYLOAD_SCOPE_VIOLATION:unscoped source text')
     blocks = [line.strip() for line in text.splitlines() if line.strip()]
     if len(blocks) != len(set(blocks)):

@@ -913,11 +913,18 @@ This candidate does not adopt an asset or authorize media production.
         # The general IR can retain non-current source knowledge. A still
         # reference's executable fields have stricter existing compiler duties;
         # disclose them before authorship, without promoting returned facts.
-        for name, priorities in (('ReferenceCurrentCriticalFact', ['CRITICAL']),
-                                 ('ReferenceCurrentImportantFact', ['CRITICAL', 'IMPORTANT'])):
+        from drama_plugin.visual.prompt_ir import RANK
+        for name, minimum in (('ReferenceCurrentCriticalFact', 'CRITICAL'),
+                              ('ReferenceCurrentImportantFact', 'IMPORTANT'),
+                              ('ReferenceCurrentFact', 'SECONDARY')):
             definition = deepcopy(schema['$defs']['Fact'])
-            definition['properties']['priority'] = {'type': 'string', 'enum': priorities}
+            definition['properties']['priority'] = {'type': 'string', 'enum': [
+                priority for priority, rank in RANK.items() if rank <= RANK[minimum]]}
             definition['properties']['scope'] = {'type': 'string', 'const': 'CURRENT', 'default': 'CURRENT'}
+            definition['description'] = (
+                'A fact drawable in this current still, including a necessary current absence. '
+                'Reference applicability, department ownership and source interpretation are internal '
+                'notes for FrameSpec.omitted, not executable world, continuity or preserve facts.')
             schema['$defs'][name] = definition
 
         def executable(model: str, keys: tuple[str, ...], *, critical: bool) -> None:
@@ -941,6 +948,33 @@ This candidate does not adopt an asset or authorize media production.
         executable('EditDelta', ('source_issue', 'target_correction'), critical=True)
         for key in ('continuity', 'preserve'):
             ir_schema['properties'][key]['items'] = {'$ref': '#/$defs/ReferenceCurrentCriticalFact'}
+        schema['properties']['omitted']['description'] = (
+            'Internal reference exclusions, applicability boundaries, source uncertainty and '
+            'department responsibilities; these notes are not image contents. If a note also '
+            'imposes a current visible limit, express that limit separately in prompt_ir.')
+        schema['properties']['composition']['description'] = (
+            'The authored viewing summary. Realize its executable framing, picture-edge, crop and '
+            'attention relationships in the existing prompt_ir.camera fields as well; do not '
+            'substitute general readability or depth for an authored attention relationship.')
+        schema['$defs']['Camera']['properties']['framing']['description'] = (
+            'Current framing and viewer-attention relationships, including applicable picture-edge '
+            'placement and visual center. Refine the selected proof without contradicting its '
+            'explicit limits; being readable or in the middle ground does not specify visual priority.')
+        schema['$defs']['Camera']['properties']['readable_details']['description'] = (
+            'What must be identifiable in this still; readability is distinct from framing, '
+            'picture-edge placement and the visual center.')
+        # Static negative limits are current facts, but may keep any existing
+        # priority. Only their equivalent target must be at least as important.
+        negative = schema['$defs']['Negative']
+        for key in ('constraint', 'positive_target'):
+            negative['properties'][key] = {'$ref': '#/$defs/ReferenceCurrentFact'}
+        negative['allOf'] = [
+            {'if': {'properties': {'constraint': {'properties': {'priority': {'const': priority}}}}},
+             'then': {'properties': {'positive_target': {'properties': {'priority': {'enum': [
+                 target for target, rank in RANK.items() if rank <= minimum]}}}}}}
+            for priority, minimum in RANK.items() if minimum < RANK['SECONDARY']]
+        task_schema['properties']['subject_kind'] = {'type': 'string', 'const': (
+            'CHARACTER' if requirement['assetType'] == 'CHARACTER' else 'SCENE')}
         if requirement['assetType'] == 'CHARACTER':
             # FrameSpec permits empty actors for non-character artwork, while
             # this existing reference contract requires exactly one person.
@@ -955,6 +989,17 @@ This candidate does not adopt an asset or authorize media production.
                     ir_schema['required'].append(key)
             for key, model in (('blocking', 'Blocking'), ('action', 'Action')):
                 ir_schema['properties'][key] = {'$ref': '#/$defs/' + model}
+        else:
+            # The same owner rejects invented people for location/object proofs.
+            # Do not require human state; optional object/space state stays legal.
+            schema['properties']['actors']['maxItems'] = 0
+            ir_schema['properties']['subjects']['maxItems'] = 0
+        if requirement['assetType'] == 'PROP' and requirement.get('referenceMode', 'text_to_image') == 'text_to_image':
+            schema['properties']['props'].update(maxItems=1, description=(
+                'If present, the sole Prop is the selected asset being independently proved, '
+                'not a Shot prop requiring an earlier image of itself. Keep its visible state, '
+                'construction and placement. The system binds its entity_key to the exact '
+                'selected stable identity and design; do not add other focal props or a fake reference.'))
         def projection(raw: JsonValue) -> JsonValue:
             from drama_plugin.creative_engine.author_projection import object_value
             value: dict[str, Any] = deepcopy(object_value(raw))
@@ -976,6 +1021,13 @@ This candidate does not adopt an asset or authorize media production.
                         if requirement.get('inheritedFromAssetId') else 'First reference for this selected specialized character design')
             elif value.get('actors') or value['prompt_ir'].get('subjects'):
                 raise ValueError('NON_CHARACTER_REFERENCE_MUST_NOT_INVENT_PEOPLE')
+            if requirement['assetType'] == 'PROP' and mode == 'text_to_image' and value.get('props'):
+                from drama_plugin.visual.frame_request import prop_reference_bootstrap
+                if len(value['props']) != 1:
+                    raise ValueError('REFERENCE_PROP_SUBJECT_AMBIGUOUS')
+                entity = requirement['stableIdentity']
+                value['props'][0]['entity_key'] = entity
+                value['identity_bootstrap'] = prop_reference_bootstrap(entity, pin.fingerprint)
             value['prompt_ir']['task'].update(task_type='REFERENCE_EDIT' if mode=='image_to_image' else 'TEXT_TO_IMAGE',
                 input_mode='reference' if mode=='image_to_image' else 'text',
                 provider_family=selected()['image_model'])
@@ -985,8 +1037,7 @@ This candidate does not adopt an asset or authorize media production.
             ir['source_fingerprint'] = sha256_canonical(spec.model_dump(mode='json', exclude={'prompt_ir'}))
             value = spec.model_dump(mode='json')
             value['prompt_ir'] = ir
-            from drama_plugin.professional_design.reference_design import inherit_design
-            return cast(JsonValue, inherit_design(FrameSpec.model_validate(value), requirement).model_dump(mode='json'))
+            return cast(JsonValue, FrameSpec.model_validate(value).model_dump(mode='json'))
         payload = author_payload(request)
         # Asset proofs are Scene-scoped (no Shot), so visualContinuity is absent.
         # Carry the same selected Work original as the asset-design author.
@@ -1015,11 +1066,26 @@ parent design; do not invent a new face or pretend an image input was delivered.
 For prompt_ir negative_constraints, positive_target must express the same limit
 as constraint. General realism or material prose cannot replace exclusions of
 captions, diagram labels or other unwanted contents. Preserve the selected limit.
+Executable world, continuity and preserve facts describe only what this still must show.
+Put reference applicability, department responsibilities and source interpretation in
+the existing omitted notes, not in image prose. Keep valid current absences such as
+an unoccupied room or an excluded object in executable facts; do not erase their limits
+because an internal note discusses the same person or object. Do not demote a necessary
+visible fact to an internal note. Express composition's framing, edge placement and
+attention relationships in the existing camera facts as well: readable detail or middle
+ground is not a visual center. Retain compatible viewing refinements, but refer a real
+conflict with the selected proof back to its asset/reference author rather than supply
+contradictory instructions or ask the compiler to invent a compromise.
 ''' + self.knowledge(('specialized-asset-design/SKILL.md', 'reference-strategy/SKILL.md')
                       + (('prop-design/SKILL.md',) if requirement['assetType'] == 'PROP' else ()))
-        return await self.client.complete('professional', system, request, TypeAdapter(FrameSpec),
+        frame = await self.client.complete('professional', system, request, TypeAdapter(FrameSpec),
             model_payload=payload, model_schema=schema, project=projection,
             author_identity=self.implementation_identity+':reference-artwork')
+        # Inheritance is the existing asset owner's handoff, not malformed model
+        # output. Let a concrete view conflict reach its author-completion path
+        # instead of being wrapped as an unexpected text-backend failure.
+        from drama_plugin.professional_design.reference_design import inherit_design
+        return inherit_design(frame, requirement)
 
     def system_contract(self, request: AuthorRequest) -> str:
         if request.shot is None:

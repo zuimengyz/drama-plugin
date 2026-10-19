@@ -115,6 +115,46 @@ class FrameSpec(Record):
         return data
 
 
+_PROP_REFERENCE_BOOTSTRAP = 'Independent PROP reference from selected design '
+
+
+def prop_reference_bootstrap(entity_key: str, design_fingerprint: str) -> str:
+    """System-owned binding for the subject of an independent text-only proof."""
+    if (not isinstance(design_fingerprint, str) or not re.fullmatch(r'[0-9a-f]{64}', design_fingerprint)
+            or not isinstance(entity_key, str) or not entity_key.strip()
+            or '\n' in entity_key or '\r' in entity_key):
+        raise ValueError('REFERENCE_PROP_SUBJECT_BINDING_MISMATCH')
+    return _PROP_REFERENCE_BOOTSTRAP + design_fingerprint + ' for ' + entity_key
+
+
+def prop_reference_subject(spec: FrameSpec) -> str | None:
+    """Account only for the exact source-bound PROP being proved, not other props.
+
+    The reference owner also compares this binding with its selected original.
+    A marker is not source authority; partial or malformed bindings never become
+    the general character bootstrap or an omitted/selected image reference.
+    """
+    marker = spec.identity_bootstrap
+    if marker is None or not marker.startswith(_PROP_REFERENCE_BOOTSTRAP):
+        return None
+    match = re.fullmatch(re.escape(_PROP_REFERENCE_BOOTSTRAP)
+        + r'([0-9a-f]{64}) for ([^\r\n]+)', marker)
+    if match is None:
+        raise ValueError('REFERENCE_PROP_SUBJECT_BINDING_MISMATCH')
+    fingerprint, entity = match.groups()
+    task = (spec.prompt_ir or {}).get('task', {})
+    if (not isinstance(task, dict) or spec.shot_id != 'asset-reference:' + fingerprint
+            or spec.shot_fingerprint != fingerprint
+            or spec.image_mode != 'text_to_image'
+            or spec.references or spec.reference_lock or spec.reference_members or spec.edit_source
+            or spec.actors or (spec.prompt_ir or {}).get('subjects')
+            or task.get('task_type') != 'TEXT_TO_IMAGE' or task.get('input_mode') != 'text'
+            or task.get('subject_kind') != 'SCENE'
+            or sum(p.entity_key == entity for p in spec.props) != 1):
+        raise ValueError('REFERENCE_PROP_SUBJECT_BINDING_MISMATCH')
+    return entity
+
+
 class Template(Record):
     name: Text
     model: Text
@@ -255,6 +295,7 @@ def compile_frame(spec: FrameSpec, template: Template | None = None, *,
     _unique(members, 'AMBIGUOUS_SHARED_REFERENCE_IDENTITY')
     if set(spec.omitted) & set(refs):
         raise ValueError("REFERENCE_BOTH_SELECTED_AND_OMITTED")
+    prop_subject = prop_reference_subject(spec)
     for r in inputs:
         lock_key = (f"media/{r.media_id}" if isinstance(r, EditSource)
                     else f"{r.asset_id}/{r.media_id}/{r.version}")
@@ -278,13 +319,13 @@ def compile_frame(spec: FrameSpec, template: Template | None = None, *,
     for p in spec.props:
         if p.entity_key in refs and refs[p.entity_key].kind not in {'PROP', 'SCENE'}:
             raise ValueError("FOCAL_PROP_BOUND_TO_WRONG_REFERENCE_KIND")
-        if p.entity_key not in refs and p.entity_key not in spec.omitted:
+        if p.entity_key not in refs and p.entity_key not in spec.omitted and p.entity_key != prop_subject:
             raise ValueError("FOCAL_PROP_REFERENCE_UNACCOUNTED_FOR")
         if p.entity_key in refs and refs[p.entity_key].state != p.state:
             if not p.reference_delta:
                 raise ValueError("PROP_REFERENCE_STATE_CONFLICT")
             risks.add("STATE_TRANSITION:" + p.entity_key + ":" + p.state)
-        elif p.entity_key not in refs:
+        elif p.entity_key not in refs and p.entity_key != prop_subject:
             risks.add("OMITTED_PROP:" + p.entity_key + ":" + p.state)
     # No future motion or generic posture argument: one observable entry moment.
     parts = ["ONE cinematic frame at the Shot entry moment.",

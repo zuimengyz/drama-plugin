@@ -106,6 +106,18 @@ secondary_details; include only what this proof must render, without the work's
 literary rationale, style-name suffix or a second copy in every field. Finishing
 owns optional grain and final grading. Learning examples are not referenceInputs.
 
+For the formal reference handoff, executable world, continuity and preserve facts
+describe the current drawable image. Put reference applicability, department ownership
+and source uncertainty in the existing FrameSpec `omitted` notes; they are internal
+explanations. Keep a necessary current absence, such as an unoccupied space or an
+excluded object, in the executable image facts even when an internal note concerns
+that same person or object. Do not demote required visible content to an internal note.
+Realize the top-level composition's framing, picture-edge, crop and attention relations
+in the existing `prompt_ir.camera` facts. Readability and middle-ground depth do not
+establish a visual center. Refine the selected proof where compatible; return a real
+conflict to its asset/reference author rather than combine contradictory views or
+leave the compiler to design a compromise.
+
 At reuse, distinguish inherited identity, target costume/location and sourced
 temporary state. Read Look for fatigue, dirt or injury and Performance/Blocking
 for expression and pose; do not derive them from an identity image. A recognizably

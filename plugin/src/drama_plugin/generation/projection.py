@@ -300,14 +300,14 @@ class ExecutionProjection:
                 from drama_plugin.production.references import PREFIX, ReferenceExecutionBinding
                 if ref.artifact_ref.startswith(PREFIX):
                     binding = ReferenceExecutionBinding.model_validate(item.value)
-                    if binding.role == 'REFERENCE' and binding.use_ref:
+                    if binding.role == 'REFERENCE' and (binding.use_ref or binding.previsualization_ref):
                         # The owner may explicitly assign performance, pose,
                         # composition or space. A blanket identity-only exclusion
                         # would contradict that authority. Never edit duty prose.
                         limit = (' Do not inherit its background, opening action, pose, lighting, camera progress or completed speech.'
                             if legacy_scope or legacy_reference_use else
                             ' Use only the assigned reference properties; all other properties follow the current target design.')
-                        add(domain,binding.use_ref,
+                        add(domain,binding.use_ref or child(ref, 'duties'),
                             'Retained source reference use: '+ '; '.join(d.purpose for d in binding.duties)+limit,
                             'preserve.reference_use')
                 internal.append(CoverageEntry(fact_id="reference-plan:"+sha256_canonical(ref), domain=domain,

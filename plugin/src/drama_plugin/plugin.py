@@ -789,6 +789,24 @@ class DramaPlugin:
         from drama_plugin.film.media_references import select_references
         return select_references(self,run_id,self.source_film_unit_for_task(run_id,task),task.unit,register=register)
 
+    async def prepare_shot_preview(self, package_ref, task, *, previsualization=None, _compiler=None):
+        """Current request plus optional external Blender handoff/adoption.
+
+        The Host judges CREATE/ADJUST/ADOPT/REUSE/SKIP from current designs and retained
+        evidence. No decision is a universal gate or permission to submit media.
+        """
+        from drama_plugin.film.previsualization import prepare
+        compiler = _compiler or self.prompt_compiler
+        rehearsal, task = await prepare(self, package_ref, task, previsualization, compiler=compiler)
+        preview = await compiler.preview_request(package_ref, task)
+        return {**preview, 'previsualization': rehearsal}
+
+    def list_shot_previsualizations(self, *, scope):
+        """Find local, source-bound attachments in the existing creative object owner."""
+        from drama_plugin.film.previsualization import discover
+        value = scope.model_dump(mode='json', by_alias=True) if hasattr(scope, 'model_dump') else scope
+        return discover(self, value)
+
     async def preview_source_film_next_unit(self, run_id: str, *, duration_ms: int | None = None,
                                           spoken_range: tuple[int,int] | None = None) -> dict:
         from drama_plugin.film.preview import next_unit_preview

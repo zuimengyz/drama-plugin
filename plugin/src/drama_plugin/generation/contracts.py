@@ -174,7 +174,7 @@ class MediaBoundary(RuntimeContract):
 
 
 class GenerationTask(ExtendedRuntimeContract):
-    extension_fields = ("unit", "profile", "owners", "execution_reference_refs", "continuation", "return_last_frame", 'camera_direction_ref', 'boundary')
+    extension_fields = ("unit", "profile", "owners", "execution_reference_refs", "continuation", "return_last_frame", 'camera_direction_ref', 'boundary', 'previsualization_ref')
     kind: Literal["VIDEO"] = "VIDEO"
     target_model: Identifier = "seedance-2-standard"
     input_mode: Literal["text_to_video", "reference", "image_to_video", "first_last_frame"] = "text_to_video"
@@ -188,6 +188,7 @@ class GenerationTask(ExtendedRuntimeContract):
     return_last_frame: Literal[True] | None = None
     camera_direction_ref: ArtifactReference | None = None
     boundary: MediaBoundary | None = None
+    previsualization_ref: SourcePin | None = None
 
     @model_validator(mode="after")
     def operation_boundary(self) -> Self:

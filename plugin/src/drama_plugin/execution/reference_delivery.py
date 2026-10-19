@@ -437,8 +437,12 @@ def _native_adopted_image(adapter, media, asset, binding, proof, *, asset_type: 
             reject()
         validate_result_identity(attempt, receipt['correlation'], receipt['task_id'])
         target = tuple(frame['template']['output_size'])
+        # Width/height are optional on VideoReference. The retained byte-pinned
+        # production probe is authoritative when a compact binding omits them;
+        # a supplied conflicting dimension must still fail before delivery.
         if (target not in {(s.get('width'),s.get('height')) for s in delivery['technical']['streams']}
-                or (binding.media.width,binding.media.height) != target):
+                or binding.media.width is not None and binding.media.width != target[0]
+                or binding.media.height is not None and binding.media.height != target[1]):
             reject()
         if not character and not receipt.get('credential_fingerprint'):
             raise DefinitelyNotSubmitted('REFERENCE_ACCOUNT_UNVERIFIED')

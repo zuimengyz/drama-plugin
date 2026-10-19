@@ -6,6 +6,7 @@ of whether credentials exist. Query never creates an operation.
 """
 from __future__ import annotations
 from pathlib import Path
+from dataclasses import dataclass
 from typing import Literal, ClassVar
 from collections.abc import Mapping
 from urllib.parse import urlsplit
@@ -22,6 +23,13 @@ from drama_plugin.runtime.contracts import ArtifactReference, RuntimeContract, E
 from drama_plugin.generation.contracts import ExecutionProfile, GenerationPreparation, FinalPromptArtifact
 from drama_plugin.persistence.review import UserDecisionRecord
 from drama_plugin.persistence.ledger import ProductionLedger
+
+
+@dataclass(frozen=True)
+class ReferenceDeliveryContext:
+    """Read-only input delivery context; no operation, grant or submission."""
+    scope: RuntimeScope
+    model: str
 
 def wire_payload(request: ProviderRequest, *, provider: str, resolution: str, aspect_ratio: str) -> dict[str, JsonValue]:
     referenced = (provider == 'seedance' and request.input_mode == 'reference' and bool(request.references)
@@ -195,7 +203,25 @@ class TargetHttpTransport:
             return_last_frame=prepared.task.return_last_frame), provider=profile.provider,
             resolution=profile.resolution, aspect_ratio=profile.aspect_ratio)
 
-    async def reference_url(self, reference: RequestReference, operation: ExecutionOperation) -> str:
+    async def materialize_reference_payload(self, body, references, *, scope, model, operation=None):
+        """The same byte-checked delivery for unpaid preparation and dispatch.
+
+        URLs expire. Dispatch always resolves them again underneath the sealed
+        media/hash inputs and never treats a prepared payload as spending authority.
+        """
+        if not references:
+            return dict(body)
+        if operation is not None and (operation.scope != scope or operation.model != model):
+            raise ValueError('REFERENCE_DELIVERY_CONTEXT_MISMATCH')
+        context = operation or ReferenceDeliveryContext(scope, model)
+        result = dict(body)
+        result['content'] = [body['content'][0]] + [{'type': ref.kind+'_url',
+            ref.kind+'_url': {'url': await self.reference_url(ref, context)},
+            'role': 'reference_'+ref.kind if ref.role == 'REFERENCE' else ref.role.lower()}
+            for ref in references]
+        return result
+
+    async def reference_url(self, reference: RequestReference, operation: ExecutionOperation | ReferenceDeliveryContext) -> str:
         """Deliver exact reviewed native bytes with fresh storage access and original provenance."""
         from drama_plugin.execution.reference_delivery import verify_origin, managed_original_url
         from drama_plugin.execution.contracts import MediaBinding, CreativeMediaReview
@@ -210,6 +236,17 @@ class TargetHttpTransport:
                 (reference.media_id,reference.content_hash,reference.kind,reference.role)):
             raise ValueError('REFERENCE_BINDING_IDENTITY_MISMATCH')
         store = ExecutionStore(self.ledger)
+        if binding.previsualization_ref:
+            from drama_plugin.film.previsualization import validate_adopted
+            from drama_plugin.execution.reference_delivery import OriginalImageIdentity
+            if self.provider != 'seedance' or self.asset_originals is None or self.media_provider is None:
+                raise DefinitelyNotSubmitted('PREVIS_DELIVERY_UNCONFIGURED')
+            value = validate_adopted(self.asset_originals, binding.previsualization_ref, binding)
+            video = value['outputs']['video']
+            identity = OriginalImageIdentity(video['sha256'], video['bytes'], 'video/mp4', 'VIDEO')
+            media = await self.media_provider.get_media(reference.media_id)
+            return await managed_original_url(self.media_provider, self.adapter.client, identity,
+                RuntimeScope(work_id=media.work_id, shot_id=media.shot_id), media_id=reference.media_id)
         if reference.kind == 'image' and binding.role == 'FIRST_FRAME' and binding.endpoint_frame_ref is None:
             from drama_plugin.execution.reference_delivery import reviewed_original_frame
             if self.provider != 'seedance' or self.media_provider is None:
@@ -264,6 +301,8 @@ class TargetHttpTransport:
             return await managed_original_url(self.media_provider, self.adapter.client, identity,
                 RuntimeScope(work_id=media.work_id), media_id=reference.media_id)
         if binding.endpoint_frame_ref:
+            if not isinstance(operation, ExecutionOperation):
+                raise CapabilityAbsent('TRUSTED_NATIVE_ENDPOINT_OPERATION_REQUIRED')
             from drama_plugin.generation.operation import continuation_frame
             from drama_plugin.persistence.stores import DurableGenerationArtifactStore
             task = DurableGenerationArtifactStore(self.ledger).get(operation.preparation_ref,GenerationPreparation).task
@@ -439,11 +478,8 @@ class TargetHttpTransport:
         body=self.approved_payload(request)
         if not self.offline and self.grant and self.grant.cost_quote.request_fingerprint!=sha256_canonical(body):
             raise ValueError('Cost quote differs from final wire request')
-        if request.references:
-            body = dict(body)
-            body['content'] = [body['content'][0]] + [{'type':ref.kind+'_url', ref.kind+'_url':{
-                'url':await self.reference_url(ref,operation)},'role':
-                'reference_' + ref.kind if ref.role == 'REFERENCE' else ref.role.lower()} for ref in request.references]
+        body = await self.materialize_reference_payload(body, request.references,
+            scope=operation.scope, model=operation.model, operation=operation)
         spec=registry()['providers'][self.provider]
         endpoint=spec['create']
         if isinstance(endpoint,dict):

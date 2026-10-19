@@ -407,3 +407,18 @@ def test_native_identity_alias_and_exact_human_adoption_preserve_originals(tmp_p
 def test_human_identity_authority_requires_exact_explicit_review(monkeypatch,reviewer,checks):
     from drama_plugin.execution.reference_delivery import _native_character_identity_review
     assert not _native_character_identity_review(checks,reviewer=reviewer)
+
+
+@pytest.mark.parametrize('dimensions', [(None,None),(None,720),(1280,None)])
+def test_compact_binding_uses_retained_probe_when_dimensions_omitted(monkeypatch,dimensions):
+    a,m,asset,b,proof=fixture(monkeypatch)
+    b.media.width,b.media.height=dimensions
+    assert native_adopted_character_image(a,m,asset,b,proof).content_hash==m.content_hash
+
+
+@pytest.mark.parametrize('dimensions', [(1024,None),(None,1080)])
+def test_supplied_wrong_dimensions_still_reject(monkeypatch,dimensions):
+    a,m,asset,b,proof=fixture(monkeypatch)
+    b.media.width,b.media.height=dimensions
+    with pytest.raises(DefinitelyNotSubmitted):
+        native_adopted_character_image(a,m,asset,b,proof)

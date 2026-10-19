@@ -100,6 +100,16 @@ class PromptCompiler:
                 selected = await self.reader.operations.selected(package, task, self.reader,admission_required=not self._preview)
             else:
                 selected = await self.reader.selections(package)
+            if task.previsualization_ref or any(isinstance(v.value, dict) and v.value.get('previsualizationRef') for v in selected):
+                from types import SimpleNamespace
+                from drama_plugin.film.previsualization import validate_task
+                from drama_plugin.persistence.stores import DurableReferenceExecutionStore
+                operations = self.reader.operations
+                if operations is None:
+                    raise ValueError('PREVIS_OWNER_REQUIRED')
+                validate_task(SimpleNamespace(production_packages=self.packages,
+                    creative_versions=operations.versions,
+                    execution_references=DurableReferenceExecutionStore(operations.ledger)), package_ref, task)
             audio_result = self.audio.assemble(package, task, selected)
             diagnostics.extend(audio_result.diagnostics)
             if audio_result.plan is None:

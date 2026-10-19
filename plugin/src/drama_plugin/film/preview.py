@@ -85,7 +85,8 @@ async def next_unit_preview(p, run_id, *, duration_ms=None, spoken_range=None):
         profile=profile,unit=selection,owners=owners,execution_reference_refs=binding_refs or None,return_last_frame=True,boundary=boundary)
     compiler = PromptCompiler(p.production_packages,p.generation_artifacts,reader,p.prompt_compiler.catalog,
         media_reader=RetainedMediaReader(p,progress['mediaIndex']))
-    result = await compiler.preview_request(unit.package_ref,task)
+    # Reuse normal Shot preparation; no local render without a Host plan.
+    result = await p.prepare_shot_preview(unit.package_ref,task,_compiler=compiler)
     result.update(nextUnit=target,exitPreviousTailChain=True,references=refs['selected'],narrativeIdentitySources=refs['narrativeIdentitySources'],location=refs['location'],
         missingEvidence=refs['missingEvidence'],characterPackages=refs['characterPackages'],voice=refs['voice'],
         admission='NOT_RUN_NOT_AUTHORIZED',durationAuthority='Caller duration or inherited last execution profile for rehearsal only; not a per-phase timing rule.',

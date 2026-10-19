@@ -5,6 +5,25 @@ description: Produce image, video, or audio media for an approved historical-dra
 
 # Shot Production
 
+## Optional external Blender skills
+
+After adopted shot design and references are clear, the Host may call the installed
+`scenario-blender-expert` and `scenario-blender-blockout`; use
+`scenario-blender-animation` only when the shot needs articulated action. Discover
+and read their actual installed instructions/resources through
+`DramaPlugin.prepare_shot_preview(package_ref, task, previsualization=plan)`.
+CREATE/ADJUST returns the source-pinned handoff and skill locations; missing skills
+use the existing skill-installer with the returned repository paths. Their full
+sibling directories remain external to this Plugin. All Blender production and
+inspection methods belong to those skills; use their local capabilities only.
+
+Receive the external result through ADOPT (handoffRef, outputs and inspection),
+or REUSE its adopted previousRef; SKIP records the Host's reason and removes its
+video binding. Keep the returned task for existing Prompt compilation, Media
+reference delivery and configured Seedance production. External video supplies
+spatial/motion guidance; adopted images and professional designs retain their
+assigned duties. Scenario platform generation is outside this route.
+
 Comfy Cloud MCP is retired: do not call it for discovery, prompt guidance,
 image/video generation or fallback. Use only configured, authorized official HTTP
 APIs. Preserve historical Comfy records without creating new Comfy operations.

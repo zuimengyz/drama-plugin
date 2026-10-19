@@ -11,6 +11,7 @@ import re
 from pydantic import ConfigDict, Field, model_validator
 
 from drama_plugin.contracts.base import sha256_canonical
+from drama_plugin.contracts.source_pin import SourcePin
 from drama_plugin.contracts.cinematic import ReferenceRequirement
 from drama_plugin.contracts.video import VideoReference
 from drama_plugin.contracts.location_design import SceneLocationBinding
@@ -40,7 +41,7 @@ class ReferenceExecutionBinding(ExtendedRuntimeContract):
     No URL, syntax tag, API slot or request is accepted.
     """
     schema_version: Literal["reference-execution-binding-v1"] = "reference-execution-binding-v1"
-    extension_fields = ("endpoint_frame_ref", 'source_scope', 'use_ref', 'state_ref', 'location_binding')
+    extension_fields = ("endpoint_frame_ref", 'source_scope', 'use_ref', 'state_ref', 'location_binding', 'previsualization_ref')
     binding_id: Identifier
     version: int = Field(gt=0)
     scope: RuntimeScope
@@ -56,9 +57,14 @@ class ReferenceExecutionBinding(ExtendedRuntimeContract):
     use_ref: SourceReference | None = None
     state_ref: SourceReference | None = None
     location_binding: SceneLocationBinding | None = None
+    previsualization_ref: SourcePin | None = None
 
     @model_validator(mode="after")
     def execution_identity(self) -> Self:
+        if self.previsualization_ref and (self.role != 'REFERENCE' or self.media.kind != 'video'
+                or any(d.role not in ('COMPOSITION', 'CAMERA_MOTION', 'PERFORMANCE') for d in self.duties)
+                or set(self.media.semantics) - {'camera', 'motion'}):
+            raise ValueError('PREVIS_SPATIAL_MOTION_INPUT_ONLY')
         if self.source_scope and self.source_scope != self.scope:
             if self.source_scope.work_id != self.scope.work_id or self.use_ref is None or self.state_ref is None:
                 raise ValueError('CROSS_SCOPE_REFERENCE_REQUIRES_AUTHORED_USE_AND_STATE')

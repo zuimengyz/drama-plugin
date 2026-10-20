@@ -31,6 +31,71 @@ DUTIES = {'LOCATION': ('LOCATION', ('environment',)),
           'PROP': ('CONTINUITY', ('prop', 'continuity'))}
 
 
+def repaired_fixture(tmp_path, monkeypatch):
+    from drama_plugin.execution.reference_delivery import identity_repair_subject
+    a, media, asset, binding, proof = fixture(monkeypatch, 'PROP')
+    value = asset.content['specializedAsset']
+    record = ReferenceProductionRecord.model_validate(proof['referenceRecord'])
+    design = {**proof['designOriginal'], 'stableIdentity': 'specialized-asset:repaired'}
+    design_ref = SourcePin(key='fixture:repaired-design', kind='DIRECTION', fingerprint=fp(design))
+    item = {**design, 'designRef': dump_contract(design_ref), 'requirementKey': fp(design)}
+    repair = {**proof['preparationOriginal'], 'requirements': [item],
+        'professionalBasisRefs': [dump_contract(record.preparation_ref)],
+        'identityRepair': {'originRunId': record.run_id, 'originRequirementKey': record.requirement_key,
+                           'generatedAgain': False}}
+    repair_ref = SourcePin(key='fixture:identity-repair', kind='DIRECTION', fingerprint=fp(repair))
+    adoption = {**proof['adoptionOriginal'], 'subjectFingerprint': fp(design),
+        'identityRepairRef': dump_contract(repair_ref),
+        'originProductionRef': proof['adoptionOriginal']['referenceProductionRef']}
+    del adoption['referenceProductionRef']
+    adoption_ref = SourcePin(key='fixture:repaired-adoption', kind='DIRECTION', fingerprint=fp(adoption))
+    value.update(**design, designRef=dump_contract(design_ref), adoptionRef=dump_contract(adoption_ref))
+    binding.duties = (NS(role='CONTINUITY', subject=design['stableIdentity']),)
+    binding.media.review_ref = 'asset-adoption:' + asset.id + ':' + fp(adoption)
+    proof.update(designOriginal=design, adoptionOriginal=adoption)
+    ledger, objects = persist_originals(tmp_path, asset, proof)
+    objects.put(repair_ref.key, repair)
+    decision = UserDecisionRecord.seal(run_id=record.run_id, scope=record.scope,
+        decision_id=record.run_id + ':identity-repair', category='ADOPTION', accepted=True,
+        source_ref=identity_repair_subject(asset, adoption))
+    ledger.put_artifact('user-decision', decision.artifact_reference(), decision.scope, decision.fingerprint, decision)
+    ledger.put_index('asset-identity-repair-authorization', fp(adoption),
+                     decision.artifact_reference(), scope=record.scope)
+    return a, media, asset, binding, ledger, objects
+
+
+def test_repaired_prop_delivers_original_bytes_without_rewriting_generation(tmp_path, monkeypatch):
+    a, media, asset, binding, ledger, objects = repaired_fixture(tmp_path, monkeypatch)
+    proof = native_asset_originals(ledger, objects, asset)
+    record = proof['referenceRecord']
+    assert record['requirementKey'] != asset.content['specializedAsset']['designRef']['fingerprint']
+    assert proof['preparationOriginal']['requirements'][0]['stableIdentity'] != proof['designOriginal']['stableIdentity']
+    assert native_adopted_asset_image(a, media, asset, binding, proof).content_hash == sha256(BYTES).hexdigest()
+
+
+@pytest.mark.parametrize('change', ['no-authorization', 'wrong-origin', 'changed-material',
+    'changed-account', 'changed-hash', 'false-decision', 'wrong-duty', 'regenerated', 'changed-request'])
+def test_repaired_prop_still_requires_exact_authority_artwork_and_production(tmp_path, monkeypatch, change):
+    a, media, asset, b, ledger, objects = repaired_fixture(tmp_path, monkeypatch)
+    if change == 'no-authorization':
+        # A freshly persisted owner store without the separately accepted repair.
+        def missing(*args): raise KeyError('missing repair authorization')
+        monkeypatch.setattr(ledger, 'get_index', missing)
+        with pytest.raises(DefinitelyNotSubmitted): native_asset_originals(ledger, objects, asset)
+        return
+    proof = native_asset_originals(ledger, objects, asset)
+    if change == 'wrong-origin': proof['identityRepairOriginal']['identityRepair']['originRunId'] = 'unrelated'
+    if change == 'changed-material': proof['designOriginal']['design']['architecture'] = 'different artwork'
+    if change == 'changed-account': a.settings.api_key = SecretStr('other-account')
+    if change == 'changed-hash': b.media.content_hash = 'e' * 64
+    if change == 'false-decision': proof['identityRepairDecision']['accepted'] = False
+    if change == 'wrong-duty': b.duties = (NS(role='LOCATION', subject=proof['designOriginal']['stableIdentity']),)
+    if change == 'regenerated': proof['identityRepairOriginal']['identityRepair']['generatedAgain'] = True
+    if change == 'changed-request': proof['referenceRecord']['frame']['request']['body']['prompt'] = 'different'
+    with pytest.raises(DefinitelyNotSubmitted):
+        native_adopted_asset_image(a, media, asset, b, proof)
+
+
 def fixture(monkeypatch, kind, *, credential=True, failed_review=False):
     monkeypatch.setenv('DRAMA_VIDEO_SEEDANCE_API_KEY', 'fixture-secret')
     monkeypatch.setenv('DRAMA_PLUGIN_ROUTE_IMAGE_MODEL', 'Doubao-Seedream-5.0-pro')
@@ -223,3 +288,50 @@ async def test_transport_native_nonperson_reads_exact_owners_then_only_get(tmp_p
         else:
             assert await transport.reference_url(selected, NS(scope=b.scope)) == 'https://objects.example.com/native-asset.png'
             assert calls == ['GET']
+
+@pytest.mark.parametrize('change', ['valid', 'account', 'receipt', 'production', 'digest'])
+def test_submission_time_account_proof_is_bound_to_original(tmp_path, monkeypatch, change):
+    from drama_plugin.execution.reference_delivery import retain_observed_image_credential
+    a, media, asset, binding, proof = fixture(monkeypatch, 'PROP', credential=False)
+    ledger, objects = persist_originals(tmp_path, asset, proof)
+    production = ReferenceProductionRecord.model_validate(proof['referenceRecord'])
+    original = {'referenceRecord': proof['referenceRecord'], 'accountAttestation': {
+        'evidence': 'HOST_OBSERVED_SYNCHRONOUS_CREATE_SAME_CONFIG',
+        'credentialFingerprint': sha256(b'fixture-secret').hexdigest(),
+        'referenceProductionRef': dump_contract(production.artifact_reference()),
+        'receiptFingerprint': fp(production.receipt)}}
+    if change == 'account': original['accountAttestation']['credentialFingerprint'] = '0' * 64
+    if change == 'receipt': original['accountAttestation']['receiptFingerprint'] = '0' * 64
+    if change == 'production': original['referenceRecord'] = {}
+    original['fingerprint'] = fp(original)
+    if change == 'digest': original['fingerprint'] = '0' * 64
+    ref = objects.put('existing-observed-original', original)
+    def deliver():
+        retain_observed_image_credential(objects, proof, ref)
+        return native_adopted_asset_image(a, media, asset, binding, native_asset_originals(ledger, objects, asset))
+    if change == 'valid': assert deliver().content_hash == media.content_hash
+    else:
+        with pytest.raises(DefinitelyNotSubmitted): deliver()
+
+@pytest.mark.parametrize('change', ['valid', 'bytes', 'count', 'unreviewed', 'url', 'mode'])
+def test_native_edited_image_inputs_require_exact_retained_bytes(change):
+    import base64
+    from drama_plugin.execution.reference_delivery import _native_image_inputs_valid
+    frame={'spec':{'image_mode':'image_to_image','references':[{
+        'asset_id':'asset:original','media_id':'media:original','review':'PASS','state':'ADOPTED',
+        'content_hash':sha256(BYTES).hexdigest(),'uploaded_hash':sha256(BYTES).hexdigest()}]},
+        'request':{'body':{'image':['data:image/png;base64,'+base64.b64encode(BYTES).decode()]}}}
+    receipt={'usage':{'input_images':1}}
+    if change=='bytes':frame['spec']['references'][0]['content_hash']='0'*64
+    if change=='count':receipt['usage']['input_images']=0
+    if change=='unreviewed':frame['spec']['references'][0]['review']='FAIL'
+    if change=='url':frame['request']['body']['image']=['https://unverified.invalid/image.png']
+    if change=='mode':frame['spec']['image_mode']='text_to_image'
+    assert _native_image_inputs_valid(frame,receipt)==(change=='valid')
+
+@pytest.mark.parametrize('missing', [None, 'identity_continuity', 'reference_scope'])
+def test_existing_appearance_review_requires_identity_and_reference_scope(missing):
+    from drama_plugin.execution.reference_delivery import _native_character_identity_review
+    checks={k:'PASS' for k in ('identity_continuity','costume_materials','purpose_specific_composition','hands_and_grounding','reference_scope')}
+    if missing:del checks[missing]
+    assert _native_character_identity_review(checks)==(missing is None)

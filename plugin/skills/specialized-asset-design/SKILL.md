@@ -5,6 +5,10 @@ description: Author source-pinned character appearance, costume and scene assets
 
 # Specialized Asset Design
 
+Use [relational aesthetics](references/relational-aesthetics.md) in both asset
+planning and reference artwork. The formal author entry loads this resource
+directly so its methods reach the actual designer, not just the Host.
+
 After the complete film screenplay is selected, prepare assets in its narrative
 Scene order, independently of the requested shooting order. The native Professional
 entry uses `SpecializedAssetSequence`: read accepted assets, design the current
@@ -180,3 +184,9 @@ For opt-in STILL/LIVE_ACTION, `face.text` owns approved craniofacial relationshi
 Reference Plan coverage cites these exact leaves and character/arc stage; it does not create a second face description. Unknown hidden hairline/ears stay unconfirmed. Neither pores/wrinkles/asymmetry nor clean skin is a universal requirement. Do not infer a jaw, eyes, nose or complexion from occupation, personality, class or ethnicity. Modern casting choices must be explicit approved interpretation, never historical fact. Knowledge provenance never enters the restricted AssetDecision source_refs as character evidence. Existing character-art remains a compatibility view.
 
 Read [mapping and evidence profile](../../docs/still-professional-mapping.md) when preparing these still records. Knowledge remains LOCAL_EXPERIMENTAL until scoped A5 media evidence.
+
+For an additional styling or character-in-environment proof, use the existing
+AssetChoice `reference_role=SUPPLEMENT`, name its accepted parent and explain
+`variant_reason`. Reserve BASELINE for an intended identity baseline. A report
+saying “supplement” is insufficient: that role must reach the typed asset choice
+and retained design. A newer supplemental revision does not supersede identity.

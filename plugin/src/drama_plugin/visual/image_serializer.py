@@ -7,7 +7,7 @@ MEDIUM = {'LIVE_ACTION': 'Live-action cinematic still.', 'DESIGNED_CG': 'Designe
 
 
 def select_image_rows(ir: VisualPromptIR, rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
-    if not ir.edit_delta:
+    if not ir.edit_delta or ir.task.task_type == 'REFERENCE_EDIT':
         return rows, []
     # An edit is a delta over the supplied image. Keep identity/clothing anchors
     # and current relations, not a re-generation of every asset surface detail.
@@ -45,7 +45,7 @@ def render_image(ir: VisualPromptIR, rows: list[dict[str, Any]]) -> str:
                 output.append(subject.role.text + ': ' + '; '.join(unique(facts)))
         return output
     medium = MEDIUM[ir.task.visual_medium] if 'medium' in values else ''
-    if ir.edit_delta:
+    if ir.edit_delta and ir.task.task_type != 'REFERENCE_EDIT':
         limit_paths = ('constraint[', 'positive_target[') if any(
             r['path'].startswith('constraint[') for r in rows) else ()
         changes = []
@@ -76,4 +76,8 @@ def render_image(ir: VisualPromptIR, rows: list[dict[str, Any]]) -> str:
                 section('CAMERA', texts('camera.')),
                 section('LIGHTING', texts('lighting.')),
                 section('TARGET LOOK', [medium] + texts('constraint[', 'positive_target[', 'continuity[', 'preserve[', 'secondary['))]
+    if ir.edit_delta:
+        sections.insert(0, section('REFERENCE CHANGES',
+            [f'{delta.operation.capitalize()} {delta.region}: {delta.target_correction.text}'
+             for delta in ir.edit_delta]))
     return '\n\n'.join(s for s in sections if s)

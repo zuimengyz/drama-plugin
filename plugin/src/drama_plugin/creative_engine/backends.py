@@ -886,7 +886,8 @@ proof remains pending when spending is unavailable; do not downgrade it to a tex
 Different places may share period materials without reusing physical layout. Request only necessary
 references through referenceRequired. Templates and candidates are not adopted identities. No media,
 adoption, machine identities, source refs, versions, workflow or provider instructions in the result.
-''' + self.knowledge(('specialized-asset-design/SKILL.md', 'prop-design/SKILL.md',
+''' + self.knowledge(('specialized-asset-design/SKILL.md',
+                      'specialized-asset-design/references/relational-aesthetics.md', 'prop-design/SKILL.md',
                       'asset-planning/SKILL.md', 'asset-resolution/SKILL.md')
                       + (('reference-strategy/SKILL.md',) if request.revision is not None else ()))
         if request.revision is not None:
@@ -908,6 +909,7 @@ Do not add wear, decoration,
 story actions or a generic cinematic suffix as substitutes for aesthetic translation.
 This candidate does not adopt an asset or authorize media production.
 '''
+        system += '\nSet reference_role=SUPPLEMENT for an additional styling, material or contextual proof of an accepted identity, retaining reuseSelection and variantReason. Use BASELINE only when the task intends an identity baseline; a newer supplemental image must not replace it.\n'
         return await self.client.complete('professional', system, request, TypeAdapter(SceneAssetDraft),
             model_payload=payload, project=projection, author_identity=self.implementation_identity + ':assets')
 
@@ -1096,6 +1098,11 @@ asset types show that asset without inventing people. Keep identity, physical
 location and Film Look distinct. No adoption, provider choice or machine sources.
 Supply observable semantic FrameSpec facts and typed prompt_ir facts with their
 approved basis. Do not replace approved art with generic cinematic adjectives.
+The owner projects selected design leaves verbatim. Do not restate their face,
+costume, view or illumination in preserve. Reserve preserve for a necessary
+cross-object relation not already expressed in its owning field. When no further
+viewing refinement is needed, use the selected proof verbatim for composition and
+camera.framing so the handoff does not duplicate an equivalent viewing paragraph.
 Default to text-to-image. Only an explicitly selected image-to-image requirement
 supplies referenceInputs; preserve those exact adopted identities, describe the
 approved change in edit_delta and what remains in preserve. Existing assets alone
@@ -1114,7 +1121,8 @@ attention relationships in the existing camera facts as well: readable detail or
 ground is not a visual center. Retain compatible viewing refinements, but refer a real
 conflict with the selected proof back to its asset/reference author rather than supply
 contradictory instructions or ask the compiler to invent a compromise.
-''' + self.knowledge(('specialized-asset-design/SKILL.md', 'reference-strategy/SKILL.md')
+''' + self.knowledge(('specialized-asset-design/SKILL.md',
+                      'specialized-asset-design/references/relational-aesthetics.md', 'reference-strategy/SKILL.md')
                       + (('prop-design/SKILL.md',) if requirement['assetType'] == 'PROP' else ()))
         frame = await self.client.complete('professional', system, request, TypeAdapter(FrameSpec),
             model_payload=payload, model_schema=schema, project=projection,

@@ -5,6 +5,28 @@ description: Produce image, video, or audio media for an approved historical-dra
 
 # Shot Production
 
+## Required cross-shot continuity judgment
+
+Before each new media goal, the Host must supply `GenerationTask.crossShotContinuity`.
+Choose OPENING only when there is no preceding shot; otherwise name the exact
+predecessor shot and judge camera relation, inherited visible state, target state
+and a concrete reason. This is Host preparation, not another user approval.
+
+Use CONTINUE only for a genuine same-take endpoint continuation through the existing
+first-frame path. With a changed lens/viewpoint, prefer FRAME_REFERENCE: retain the
+reviewed predecessor's official tail via `retain_source_film_last_frame`, bind it
+as `REFERENCE` with `pictureFrameRef` and a narrowly authored continuity duty.
+The target camera owns the new framing; identity portraits retain identity duties.
+INDEPENDENT requires an explicit reason why prior picture is not useful, such as
+an unrelated place/time; do not mechanically require an image for every cut.
+
+If a predecessor is being replaced, use PENDING_PREDECESSOR. Prepare target designs
+locally but do not freeze a submittable request against the superseded result.
+Refresh the decision and exact media after that new predecessor is reviewed.
+`return_last_frame` requests an output; it never proves inherited input. Check the
+actual request slot/hash and compare outgoing/incoming action state before approval.
+Historical sealed runs remain recoverable; new goals without this judgment fail.
+
 ## Optional external Blender skills
 
 After adopted shot design and references are clear, the Host may call the installed

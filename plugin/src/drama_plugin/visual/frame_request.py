@@ -366,7 +366,14 @@ def compile_frame(spec: FrameSpec, template: Template | None = None, *,
         from drama_plugin.visual.prompt_ir import compile_ir
         if spec.prompt_normalization:
             raise ValueError('VISUAL_PROMPT_IR_POST_REWRITE_FORBIDDEN')
+        reference_context = None
+        if spec.prompt_ir['task']['task_type'] == 'REFERENCE_EDIT' and spec.references:
+            reference_context = {'reference_duties': [
+                f"Image {i}: {r.kind.lower()} reference. {r.facts}"
+                for i, r in enumerate(spec.references, 1)
+            ]}
         ir_compilation = compile_ir(spec.prompt_ir, provider_family=template.model,
+                                    generator_context=reference_context,
                                     legacy_replay=_legacy_ir_replay)
         ir = ir_compilation['ir']
         source = spec.model_dump(mode='json', exclude={'prompt_ir'})

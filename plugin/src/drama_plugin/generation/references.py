@@ -70,13 +70,13 @@ class ExecutionReferenceResolver:
             if binding.role not in expected_roles:
                 finding("REQUEST_UNSUPPORTED" if required else "OPTIONAL_REFERENCE_UNRESOLVED")
                 continue
-            if binding.endpoint_frame_ref:
+            if binding.endpoint_frame_ref or binding.picture_frame_ref:
                 from drama_plugin.generation.operation import continuation_frame
                 if self.ledger is None:
                     finding("REFERENCE_INPUT_UNRESOLVED")
                     continue
-                frame, source, _, _ = continuation_frame(self.ledger, binding.endpoint_frame_ref,
-                    allow_unverified_audio=bool(task.continuation and task.continuation.allow_unverified_audio))
+                frame, source, _, _ = continuation_frame(self.ledger, binding.endpoint_frame_ref or binding.picture_frame_ref,
+                    picture_only=bool(binding.picture_frame_ref), allow_unverified_audio=bool(task.continuation and task.continuation.allow_unverified_audio))
                 if (frame.scope != binding.origin_scope or frame.media.media_id != binding.media.media_id
                         or frame.media.content_hash != binding.media.content_hash):
                     finding("SCOPE_MISMATCH")

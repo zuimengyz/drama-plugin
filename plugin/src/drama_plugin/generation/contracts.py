@@ -173,8 +173,35 @@ class MediaBoundary(RuntimeContract):
     source_ref: SourceReference
 
 
+class CrossShotContinuity(RuntimeContract):
+    """Host judgment for a new shot, separate from same-take continuation."""
+    strategy: Literal['OPENING', 'FRAME_REFERENCE', 'CONTINUE', 'INDEPENDENT', 'PENDING_PREDECESSOR']
+    reason: Text
+    camera_relation: Text
+    inherited_state: Text
+    target_state: Text
+    predecessor_media_ref: ArtifactReference | None = None
+    predecessor_shot_id: Identifier | None = None
+    reference_ref: SourceReference | None = None
+
+    @model_validator(mode='after')
+    def judgment(self) -> Self:
+        if self.strategy == 'OPENING':
+            if self.predecessor_media_ref or self.reference_ref or self.predecessor_shot_id:
+                raise ValueError('OPENING_HAS_NO_PREDECESSOR')
+        elif not self.predecessor_shot_id:
+            raise ValueError('PREDECESSOR_SHOT_REQUIRED')
+        if self.strategy in ('FRAME_REFERENCE', 'CONTINUE') and not self.predecessor_media_ref:
+            raise ValueError('EXACT_PREDECESSOR_MEDIA_REQUIRED')
+        if self.strategy == 'FRAME_REFERENCE' and not self.reference_ref:
+            raise ValueError('CONTINUITY_REFERENCE_REQUIRED')
+        if self.strategy in ('INDEPENDENT', 'PENDING_PREDECESSOR') and self.reference_ref:
+            raise ValueError('UNSELECTED_CONTINUITY_REFERENCE')
+        return self
+
+
 class GenerationTask(ExtendedRuntimeContract):
-    extension_fields = ("unit", "profile", "owners", "execution_reference_refs", "continuation", "return_last_frame", 'camera_direction_ref', 'boundary', 'previsualization_ref')
+    extension_fields = ("unit", "profile", "owners", "execution_reference_refs", "continuation", "return_last_frame", 'camera_direction_ref', 'boundary', 'previsualization_ref', 'cross_shot_continuity')
     kind: Literal["VIDEO"] = "VIDEO"
     target_model: Identifier = "seedance-2-standard"
     input_mode: Literal["text_to_video", "reference", "image_to_video", "first_last_frame"] = "text_to_video"
@@ -188,6 +215,7 @@ class GenerationTask(ExtendedRuntimeContract):
     return_last_frame: Literal[True] | None = None
     camera_direction_ref: ArtifactReference | None = None
     boundary: MediaBoundary | None = None
+    cross_shot_continuity: CrossShotContinuity | None = None
     previsualization_ref: SourcePin | None = None
 
     @model_validator(mode="after")

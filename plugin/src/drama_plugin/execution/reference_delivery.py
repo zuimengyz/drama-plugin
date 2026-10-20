@@ -110,6 +110,55 @@ def adopted_original_image(adapter, media, asset, binding) -> OriginalImageIdent
     return OriginalImageIdentity(media.content_hash, media.file_size, media.mime_type)
 
 
+def identity_repair_subject(asset, adoption):
+    """Exact existing originals a human authorizes connecting, not new artwork."""
+    from drama_plugin.runtime.contracts import ArtifactReference
+    value = asset.content['specializedAsset']
+    body = {'assetId': asset.id, 'adoptionRef': value['adoptionRef'],
+            'identityRepairRef': adoption['identityRepairRef'],
+            'originProductionRef': adoption['originProductionRef']}
+    return ArtifactReference(owner='asset-identity-repair',
+        artifact_ref='asset-identity-repair:' + sha256_canonical(body), version=1)
+
+
+def _identity_repair_design(asset, adoption, production, preparation, repair, decision):
+    """A PROP identity alias may change only its stable ID, never the made image.
+
+    This is checked again at byte delivery, alongside every original production,
+    review, credential and media check. A repair-shaped index alone grants nothing.
+    """
+    from drama_plugin.contracts.base import dump_contract
+    from drama_plugin.contracts.source_pin import SourcePin
+    value = asset.content['specializedAsset']
+    pin = SourcePin.model_validate(adoption['identityRepairRef'])
+    original = next(x for x in preparation['requirements']
+                    if x['requirementKey'] == production.requirement_key)
+    rows = [x for x in repair['requirements']
+            if x['requirementKey'] == value['designRef']['fingerprint']]
+    if len(rows) != 1:
+        raise ValueError('IDENTITY_REPAIR_REQUIREMENT_MISMATCH')
+    selected = rows[0]
+    metadata = {'stableIdentity', 'designRef', 'requirementKey'}
+    if (asset.asset_type.value != 'PROP'
+            or pin.fingerprint != sha256_canonical(repair)
+            or repair['identityRepair']['originRunId'] != production.run_id
+            or repair['identityRepair']['originRequirementKey'] != production.requirement_key
+            or repair['identityRepair']['generatedAgain'] is not False
+            or dump_contract(production.preparation_ref) not in repair['professionalBasisRefs']
+            or (repair['workId'], repair['sceneId'], repair['narrativeRef']) !=
+               (preparation['workId'], preparation['sceneId'], preparation['narrativeRef'])
+            or {k:v for k,v in selected.items() if k not in metadata} !=
+               {k:v for k,v in original.items() if k not in metadata}
+            or selected['stableIdentity'] == original['stableIdentity']
+            or selected['stableIdentity'] != value['stableIdentity']
+            or selected['designRef'] != value['designRef']
+            or adoption['originProductionRef'] != dump_contract(production.artifact_reference())
+            or decision.scope != production.scope or decision.category.value != 'ADOPTION'
+            or not decision.accepted or decision.source_ref != identity_repair_subject(asset, adoption)):
+        raise ValueError('IDENTITY_REPAIR_AUTHORITY_OR_CONTENT_MISMATCH')
+    return selected
+
+
 def native_asset_originals(ledger, objects, asset) -> dict:
     """Read exact Native owners instead of rebuilding proof in a Media index.
 
@@ -140,7 +189,9 @@ def native_asset_originals(ledger, objects, asset) -> dict:
         originals = {name: objects.read_ref(SourcePin.model_validate(value[key]))
             for name, key in (('designOriginal', 'designRef'), ('adoptionOriginal', 'adoptionRef'))}
         adoption = originals['adoptionOriginal']
-        production = record(ArtifactReference.model_validate(adoption['referenceProductionRef']))
+        repaired = 'identityRepairRef' in adoption
+        production = record(ArtifactReference.model_validate(
+            adoption['originProductionRef' if repaired else 'referenceProductionRef']))
         if (value.get('scenePreparationRef') is not None
                 and SourcePin.model_validate(value['scenePreparationRef']) != production.preparation_ref):
             raise ValueError('REFERENCE_PREPARATION_IDENTITY_MISMATCH')
@@ -157,6 +208,23 @@ def native_asset_originals(ledger, objects, asset) -> dict:
         result = {**originals, 'referenceRecord': dump_contract(production),
             'userDecisionOriginal': dump_contract(decision),
             'decisionSourceRecord': dump_contract(before_adoption)}
+        if repaired:
+            repair = objects.read_ref(SourcePin.model_validate(adoption['identityRepairRef']))
+            repair_decision_ref = ArtifactReference.model_validate(ledger.get_index(
+                'asset-identity-repair-authorization', value['adoptionRef']['fingerprint']))
+            raw, repair_scope, repair_hash = ledger.get_artifact('user-decision', repair_decision_ref)
+            repair_decision = UserDecisionRecord.model_validate(raw)
+            if (repair_decision.artifact_reference() != repair_decision_ref
+                    or repair_decision.fingerprint != repair_hash or repair_decision.scope != repair_scope
+                    or ledger.load_run(repair_decision.run_id).scope != repair_scope):
+                raise ValueError('IDENTITY_REPAIR_DECISION_MISMATCH')
+            _identity_repair_design(asset, adoption, production, originals['preparationOriginal'],
+                                   repair, repair_decision)
+            result.update(identityRepairOriginal=repair, identityRepairDecision=dump_contract(repair_decision))
+        observed = objects._path('observed-image-credential', _historical_credential_key(production))
+        if observed.exists():
+            result['observedCredentialOriginal'] = objects.read_ref(
+                SourcePin.model_validate(objects._read(observed)))
         confirmation = objects._path('historical-image-credential', _historical_credential_key(production))
         if confirmation.exists():
             result['historicalCredentialConfirmation'] = objects.read_ref(
@@ -228,12 +296,44 @@ def retain_historical_character_credential(objects, proof, *, credential_fingerp
     return ref
 
 
+def retain_observed_image_credential(objects, proof, original_ref):
+    """Index an existing submission-time proof; never create account evidence."""
+    from drama_plugin.contracts.base import dump_contract
+    from drama_plugin.professional_design.reference_production import ReferenceProductionRecord
+    original = objects.read_ref(original_ref)
+    production = ReferenceProductionRecord.model_validate(proof['referenceRecord'])
+    _validate_observed_credential(production, original)
+    key = _historical_credential_key(production)
+    with objects._writer():
+        path = objects._path('observed-image-credential', key)
+        if path.exists() and objects._read(path) != dump_contract(original_ref):
+            raise ValueError('OBSERVED_CREDENTIAL_INDEX_CONFLICT')
+        objects._write(path, dump_contract(original_ref))
+    return original_ref
+
+
+def _validate_observed_credential(production, original):
+    from drama_plugin.contracts.base import dump_contract
+    attestation = original.get('accountAttestation', {})
+    if (original.get('fingerprint') != sha256_canonical({k:v for k,v in original.items() if k != 'fingerprint'})
+            or original.get('referenceRecord') != dump_contract(production)
+            or attestation.get('evidence') != 'HOST_OBSERVED_SYNCHRONOUS_CREATE_SAME_CONFIG'
+            or attestation.get('referenceProductionRef') != dump_contract(production.artifact_reference())
+            or attestation.get('receiptFingerprint') != sha256_canonical(production.receipt)):
+        raise DefinitelyNotSubmitted('REFERENCE_ACCOUNT_UNVERIFIED')
+    return attestation.get('credentialFingerprint')
+
+
 def _native_character_credential(adapter, production, proof) -> None:
     from drama_plugin.contracts.base import dump_contract
     receipt = production.receipt
     expected = credential_fingerprint(adapter)
     if 'credential_fingerprint' in receipt:
         if receipt['credential_fingerprint'] != expected:
+            raise DefinitelyNotSubmitted('REFERENCE_ACCOUNT_UNVERIFIED')
+        return
+    if 'observedCredentialOriginal' in proof:
+        if _validate_observed_credential(production, proof['observedCredentialOriginal']) != expected:
             raise DefinitelyNotSubmitted('REFERENCE_ACCOUNT_UNVERIFIED')
         return
     confirmation = proof.get('historicalCredentialConfirmation',{})
@@ -286,7 +386,10 @@ def _native_character_identity_review(checks: Mapping[str, str], *, reviewer: st
     human = (reviewer == 'HUMAN_APPROVAL_RECORDED_BY_HOST' and
         checks.get('USER_ACCEPTED_EXACT_CANDIDATE') == 'PASS' and
         checks.get('EXACT_BYTES_AND_FORMAL_READBACK') == 'PASS')
-    return (human or checks.get('IDENTITY') == 'PASS' or
+    appearance_revision = all(checks.get(key) == 'PASS' for key in
+        ('identity_continuity', 'costume_materials', 'purpose_specific_composition',
+         'hands_and_grounding', 'reference_scope'))
+    return (human or appearance_revision or checks.get('IDENTITY') == 'PASS' or
         all(checks.get(key) == 'PASS' for key in
             ('SINGLE_SELECTED_PERSON', 'FACE_AND_BODY_READABILITY')))
 
@@ -309,6 +412,33 @@ def native_adopted_asset_image(adapter, media, asset, binding, proof) -> Origina
     if asset.asset_type.value not in {'LOCATION', 'COSTUME', 'PROP'}:
         raise DefinitelyNotSubmitted('REFERENCE_ADOPTED_IMAGE_PROOF_REQUIRED')
     return _native_adopted_image(adapter, media, asset, binding, proof, asset_type=asset.asset_type.value)
+
+
+def _native_image_inputs_valid(frame, receipt):
+    """Verify retained inline image inputs against the exact submitted bytes."""
+    import base64
+    from hashlib import sha256
+    refs = frame['spec'].get('references', [])
+    images = frame['request']['body'].get('image', [])
+    if not refs:
+        return (not images and frame['spec'].get('image_mode', 'text_to_image') == 'text_to_image'
+                and receipt['usage'].get('input_images', 0) == 0)
+    if (frame['spec'].get('image_mode') != 'image_to_image'
+            or not isinstance(images, list) or len(images) != len(refs)
+            or receipt['usage'].get('input_images') != len(refs)):
+        return False
+    for ref, image in zip(refs, images):
+        if (ref.get('review') != 'PASS' or ref.get('state') != 'ADOPTED'
+                or not ref.get('asset_id') or not ref.get('media_id')
+                or not isinstance(image, str) or not image.startswith(('data:image/png;base64,','data:image/jpeg;base64,'))):
+            return False
+        try:
+            digest = sha256(base64.b64decode(image.split(',', 1)[1], validate=True)).hexdigest()
+        except (ValueError, TypeError):
+            return False
+        if digest != ref.get('content_hash') or digest != ref.get('uploaded_hash'):
+            return False
+    return True
 
 
 def _native_adopted_image(adapter, media, asset, binding, proof, *, asset_type: str) -> OriginalImageIdentity:
@@ -336,6 +466,14 @@ def _native_adopted_image(adapter, media, asset, binding, proof, *, asset_type: 
         design_ref, adoption_ref = (SourcePin.model_validate(value[k]) for k in ('designRef', 'adoptionRef'))
         prep_ref = production.preparation_ref
         item = next(r for r in preparation['requirements'] if r['requirementKey'] == production.requirement_key)
+        repaired = 'identityRepairRef' in adoption
+        selected_item = (_identity_repair_design(asset, adoption, production, preparation,
+            proof['identityRepairOriginal'], UserDecisionRecord.model_validate(proof['identityRepairDecision']))
+            if repaired else item)
+        produced_design_ref = SourcePin.model_validate(item['designRef'])
+        if produced_design_ref.fingerprint != sha256_canonical(
+                {k:v for k,v in item.items() if k not in {'designRef', 'requirementKey'}}):
+            reject()
         request = frame['request']
         attempt = next(a for a in stage['attempts'] if a['attempt_id'] == receipt['attempt_id'])
         review = still.current_review(attempt)
@@ -359,7 +497,7 @@ def _native_adopted_image(adapter, media, asset, binding, proof, *, asset_type: 
             # authoritative. Never invent a person or rewrite that request.
             frame_identity = not actors and not frame['spec']['prompt_ir']['subjects']
             if frame['spec']['props']:
-                frame_identity = frame_identity and {p['entity_key'] for p in frame['spec']['props']} == {design['stableIdentity']}
+                frame_identity = frame_identity and {p['entity_key'] for p in frame['spec']['props']} == {item['stableIdentity']}
             duty = {'LOCATION': 'LOCATION', 'COSTUME': 'COSTUME', 'PROP': 'CONTINUITY'}[asset_type]
             subject = design['stableIdentity']
             semantics = {'LOCATION': {'environment'}, 'COSTUME': {'costume'}, 'PROP': {'prop', 'continuity'}}[asset_type]
@@ -368,12 +506,12 @@ def _native_adopted_image(adapter, media, asset, binding, proof, *, asset_type: 
                     or binding.use_ref not in getattr(binding, 'authority_refs', ())):
                 reject()
         if (asset.asset_type.value != asset_type or value['state'] != 'ADOPTED'
-                or design != {k:v for k,v in item.items() if k not in {'designRef', 'requirementKey'}}
+                or design != {k:v for k,v in selected_item.items() if k not in {'designRef', 'requirementKey'}}
                 or any(k in value and value[k] != v for k,v in design.items())
                 or any(value.get(k) != design.get(k) for k in
                     ('assetType','name','design','subjectId','stableIdentity','revision','referenceRequired'))
                 or design_ref.fingerprint != sha256_canonical(design)
-                or item['designRef'] != dump_contract(design_ref) or item.get('reuseAssetId')
+                or selected_item['designRef'] != dump_contract(design_ref) or item.get('reuseAssetId')
                 or design.get('assetType') != asset_type
                 or (not design.get('subjectId') if asset_type in {'CHARACTER', 'COSTUME'} else design.get('subjectId') is not None)
                 or design.get('referenceRequired') is not True
@@ -389,7 +527,7 @@ def _native_adopted_image(adapter, media, asset, binding, proof, *, asset_type: 
                 or adoption['subjectFingerprint'] != design_ref.fingerprint
                 or adoption['referenceMediaIds'] != asset.reference_media_ids
                 or adoption['referenceContentHash'] != media.content_hash
-                or adoption['referenceProductionRef'] != dump_contract(production.artifact_reference())
+                or adoption['originProductionRef' if repaired else 'referenceProductionRef'] != dump_contract(production.artifact_reference())
                 or adoption['userDecisionRef'] != dump_contract(production.adoption_ref)
                 or adoption['reviewOriginal'] != review
                 or decision.artifact_reference() != production.adoption_ref
@@ -416,11 +554,10 @@ def _native_adopted_image(adapter, media, asset, binding, proof, *, asset_type: 
                 or delivery['contentHash'] != media.content_hash or delivery['sourceRef'] != media.source_ref
                 or media.source_ref != 'asset-reference:' + attempt['attempt_id']
                 or not frame_identity
-                or frame['spec'].get('references') or frame['spec'].get('edit_source')
-                or frame['spec'].get('image_mode','text_to_image') != 'text_to_image'
-                or request.get('tool') != 'image.create' or request['body'].get('image')
+                or frame['spec'].get('edit_source') or not _native_image_inputs_valid(frame, receipt)
+                or request.get('tool') != 'image.create'
                 or frame['spec']['shot_id'] != 'asset-reference:' + production.requirement_key
-                or frame['spec']['shot_fingerprint'] != design_ref.fingerprint
+                or frame['spec']['shot_fingerprint'] != produced_design_ref.fingerprint
                 or receipt['status'] != 'COMPLETED' or receipt['diagnostics']['http_status'] != 200
                 or receipt['provider'] != 'ark' or receipt['credential_source'] != 'DRAMA_VIDEO_SEEDANCE_API_KEY'
                 or receipt['model'] != request['body']['model'] or receipt['model'] != frame['template']['model']
@@ -429,7 +566,7 @@ def _native_adopted_image(adapter, media, asset, binding, proof, *, asset_type: 
                 or attempt['request'] != request or attempt['status'] != 'COMPLETED'
                 or receipt['output_hash'] != media.content_hash or attempt['output_hash'] != media.content_hash
                 or receipt['output_bytes'] != media.file_size or receipt['mime_type'] != media.mime_type
-                or attempt['job_id'] != receipt['task_id'] or receipt['usage'].get('input_images',0) != 0
+                or attempt['job_id'] != receipt['task_id']
                 or not still.usable(attempt) or review['output_hash'] != media.content_hash
                 or review['attempt_id'] != attempt['attempt_id']
                 or (not _native_character_identity_review(review['checks'], reviewer=review.get('reviewer', '')) if character else not review['checks'])
@@ -444,7 +581,7 @@ def _native_adopted_image(adapter, media, asset, binding, proof, *, asset_type: 
                 or binding.media.width is not None and binding.media.width != target[0]
                 or binding.media.height is not None and binding.media.height != target[1]):
             reject()
-        if not character and not receipt.get('credential_fingerprint'):
+        if not character and not receipt.get('credential_fingerprint') and 'observedCredentialOriginal' not in proof:
             raise DefinitelyNotSubmitted('REFERENCE_ACCOUNT_UNVERIFIED')
         _native_character_credential(adapter, production, proof)
         require_trusted_time(datetime.fromtimestamp(receipt['created'],timezone.utc))

@@ -755,6 +755,13 @@ class FilmCapabilities:
             # reconciling its existing child task, without re-entering goal creation.
             p._compose_media_owners(task, run_id=child.run_id)
         else:
+            if not task.cross_shot_continuity and slot == 0 and not task.continuation and not task.boundary:
+                from drama_plugin.generation.contracts import CrossShotContinuity
+                task = task.model_copy(update={'cross_shot_continuity':CrossShotContinuity(
+                    strategy='OPENING', reason='First unit of the adopted Film plan; no preceding unit.',
+                    camera_relation='Opening camera from adopted design', inherited_state='No predecessor',
+                    target_state='Current adopted opening state')})
+                self.save(inputs, operation_task=task)
             child = p.create_media_review_run(package_ref=unit.package_ref,task=task)
         if unit.generation_run_id != child.run_id:
             units = list(cp.units)

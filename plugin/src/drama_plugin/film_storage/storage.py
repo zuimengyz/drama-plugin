@@ -64,13 +64,20 @@ class FilmStorage:
     def row(table:str,event:str,order:int,**fields:Any)->dict[str,Any]:
         return {'table':table,'fields':{**fields,'source_event':event,'source_revision':1,'source_order':order}}
     async def project(self,event:dict[str,Any],identity:str,order:int)->None:
-        if event['kind']=='SCENE_ASSET':
+        if event['kind']=='ASSET_REFERENCE_SELECTION':
+            from drama_plugin.professional_design.reference_roles import project_selection
+            from drama_plugin.contracts.source_pin import SourcePin
+            await project_selection(self,SourcePin.model_validate(event['ref']),identity,order)
+        elif event['kind']=='SCENE_ASSET':
             from drama_plugin.film_storage.projection import ensure_scene
             asset=await self.plugin.providers.asset.get_asset(event['assetId'])
             if asset.work_id!=event['workId'] or not self.plugin.asset_sequence._proof(asset):raise ValueError('SCENE_ASSET_NOT_ADOPTED')
+            from drama_plugin.professional_design.reference_roles import reference_role
+            purpose=('SUPPLEMENTAL_APPEARANCE' if reference_role(self.plugin.asset_sequence,asset)=='SUPPLEMENT'
+                else 'CHARACTER_IDENTITY' if asset.asset_type=='CHARACTER' else 'SCENE_ASSET')
             await ensure_scene(self,event['workId'],event['sceneId'],identity,order)
             await self.client.rows([self.row('drama_scene_asset',identity,order,scene_id=event['sceneId'],asset_id=asset.id,
-                purpose='CHARACTER_IDENTITY' if asset.asset_type=='CHARACTER' else 'SCENE_ASSET',source_ref=canonical_json(event['sourceRef']))])
+                purpose=purpose,source_ref=canonical_json(event['sourceRef']))])
         elif event['kind']=='CREATIVE':
             await self.persist_refs((VersionRef.model_validate(event['ref']),),event=identity,order=order)
         elif event['kind']=='NATIVE_SELECTED':

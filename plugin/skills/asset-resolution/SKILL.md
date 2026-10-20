@@ -161,3 +161,14 @@ new face. Both modes require actual review and adoption. Unknown synchronous
 submission cannot be queried by pretending a video task ID is an image task.
 Recover the exact retained receipt/output or leave that uncertain attempt pending;
 never POST again on resume.
+
+## Baseline and supplemental appearance references
+
+Image adoption and identity selection are distinct. A closer styling, material,
+lighting or contextual proof that supplements an accepted person must be authored
+with `AssetChoice.reference_role=SUPPLEMENT` and its accepted parent plus
+`variant_reason`. Preserve the baseline for automatic identity selection; do not
+replace it merely because a supplemental image has a higher revision. Select a
+supplement only for its stated shot-specific purpose. Record role corrections
+through the existing asset owner with exact design/adoption pins and a real
+accepted selection decision; never rewrite original images, reviews or requests.

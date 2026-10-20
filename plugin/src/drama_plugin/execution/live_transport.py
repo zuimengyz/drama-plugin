@@ -258,7 +258,7 @@ class TargetHttpTransport:
             storage_scope = RuntimeScope(work_id=media.work_id, shot_id=media.shot_id)
             return await managed_original_url(self.media_provider, self.adapter.client, identity,
                 storage_scope, media_id=reference.media_id)
-        if reference.kind == 'image' and binding.role == 'REFERENCE':
+        if reference.kind == 'image' and binding.role == 'REFERENCE' and not binding.picture_frame_ref:
             from drama_plugin.execution.reference_delivery import (adopted_original_image,
                 adopted_prop_original_image, native_asset_originals, native_adopted_character_image,
                 native_adopted_asset_image)
@@ -300,6 +300,23 @@ class TargetHttpTransport:
                 identity = adopted_original_image(self.adapter, media, asset, binding)
             return await managed_original_url(self.media_provider, self.adapter.client, identity,
                 RuntimeScope(work_id=media.work_id), media_id=reference.media_id)
+        if binding.picture_frame_ref:
+            from drama_plugin.generation.operation import continuation_frame
+            frame, source, receipt, _ = continuation_frame(self.ledger, binding.picture_frame_ref, picture_only=True)
+            origin = store.get(source.operation_ref, ExecutionOperation)
+            if (binding.role != 'REFERENCE' or binding.origin_scope != source.scope
+                    or frame.media.content_hash != reference.content_hash or frame.media.media_id != reference.media_id
+                    or receipt.provider != self.provider or origin.model != operation.model):
+                raise CapabilityAbsent('TRUSTED_PICTURE_REFERENCE_REQUIRED')
+            url = urlsplit(receipt.last_frame_url)
+            if url.scheme != 'https' or not url.hostname or url.username or url.password:
+                raise ValueError('REFERENCE_DELIVERY_REQUIRES_HTTPS')
+            response = await self.adapter.client.get(receipt.last_frame_url)
+            response.raise_for_status()
+            from hashlib import sha256
+            if sha256(response.content).hexdigest() != reference.content_hash:
+                raise CapabilityAbsent('PICTURE_REFERENCE_BYTES_CHANGED')
+            return receipt.last_frame_url
         if binding.endpoint_frame_ref:
             if not isinstance(operation, ExecutionOperation):
                 raise CapabilityAbsent('TRUSTED_NATIVE_ENDPOINT_OPERATION_REQUIRED')

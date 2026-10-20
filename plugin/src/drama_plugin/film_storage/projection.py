@@ -70,7 +70,10 @@ async def store_asset(store:Any,asset:Any,event:str,order:int)->None:
     s=asset.content.get('specializedAsset')
     if not isinstance(s,dict) or s.get('state')!='ADOPTED' or not store.plugin.asset_sequence._proof(asset):
         raise ValueError('Only an actually registered, source-proved adopted asset can be projected as adopted')
+    from drama_plugin.professional_design.reference_roles import reference_role
     subject=s.get('subjectId');work=asset.work_id;identity=s['stableIdentity']
+    purpose=('SUPPLEMENTAL_APPEARANCE' if reference_role(store.plugin.asset_sequence,asset)=='SUPPLEMENT'
+        else 'CHARACTER_IDENTITY' if subject else 'SCENE_ASSET')
     if s.get('filmStorageValidated') is True:
         # The registered V2 asset already owns its immutable verified design MD.
         # Do not transcribe it into another competing representation on replay.
@@ -78,7 +81,7 @@ async def store_asset(store:Any,asset:Any,event:str,order:int)->None:
         if scene:
             await ensure_scene(store,work,scene,event,order)
             await store.client.rows([store.row('drama_scene_asset',event,order,scene_id=scene,asset_id=asset.id,
-                purpose='CHARACTER_IDENTITY' if subject else 'SCENE_ASSET',source_ref=canonical_json(s['designRef']))])
+                purpose=purpose,source_ref=canonical_json(s['designRef']))])
         await select_reference_asset(store, asset, event, order)
         return
     if subject and not await store.client.query('drama_character',{'id':subject},1):
@@ -87,7 +90,7 @@ async def store_asset(store:Any,asset:Any,event:str,order:int)->None:
     # Keep concrete design and small provenance in readable Markdown. No copied
     # ScenePreparationOriginal, Work, Package, prompt body or production snapshot.
     metadata={k:s[k] for k in ('subjectId','stableIdentity','revision','assetType','name','designRef','adoptionRef',
-        'inheritedFromAssetId','variantReason','sceneId','sources') if k in s}
+        'inheritedFromAssetId','variantReason','referenceRole','sceneId','sources') if k in s}
     metadata['referenceMediaIds']=list(asset.reference_media_ids)
     text='# '+asset.name+'\n\n## 具体设计\n\n```yaml\n'+yaml.safe_dump(s['design'],allow_unicode=True,sort_keys=False)+'```\n\n## 来源与采用引用\n\n```yaml\n'+yaml.safe_dump(metadata,allow_unicode=True,sort_keys=False)+'```\n'
     doc='asset-design:'+s['designRef']['fingerprint']
@@ -110,7 +113,7 @@ async def store_asset(store:Any,asset:Any,event:str,order:int)->None:
     if scene:
         await ensure_scene(store,work,scene,event,order)
         await store.client.rows([store.row('drama_scene_asset',event,order,scene_id=scene,asset_id=asset.id,
-            purpose='CHARACTER_IDENTITY' if subject else 'SCENE_ASSET',source_ref=canonical_json(s['designRef']))])
+            purpose=purpose,source_ref=canonical_json(s['designRef']))])
     await select_reference_asset(store, asset, event, order)
 
 
@@ -119,6 +122,7 @@ async def select_reference_asset(store:Any,asset:Any,event:str,order:int)->None:
     from drama_plugin.execution.reference_delivery import native_asset_originals
     from drama_plugin.professional_design.reference_production import ReferenceProductionRecord
     from drama_plugin.contracts.source_pin import SourcePin
+    from drama_plugin.professional_design.reference_roles import reference_role
     s=asset.content['specializedAsset']
     adoption=store.plugin.asset_sequence.objects.read_ref(SourcePin.model_validate(s['adoptionRef']))
     if not adoption.get('referenceProductionRef'):
@@ -131,8 +135,12 @@ async def select_reference_asset(store:Any,asset:Any,event:str,order:int)->None:
     current=await store.client.query('drama_asset',{'id':asset.id},1)
     if len(current)!=1 or current[0]['state']!='ADOPTED':
         raise ValueError('ASSET_REGISTRATION_READBACK_MISMATCH')
+    if reference_role(store.plugin.asset_sequence,asset)=='SUPPLEMENT':
+        return  # Adoption preserves this useful image without replacing identity.
     prior=await store.client.query('drama_asset',{'work_id':asset.work_id,
         'identity_key':s['stableIdentity'],'state':'ADOPTED'},100)
+    prior=[row for row in prior if reference_role(store.plugin.asset_sequence,
+        await store.plugin.providers.asset.get_asset(row['id']))=='BASELINE']
     if any(int(row['version'])>s['revision'] for row in prior):
         raise ValueError('ASSET_REFERENCE_SELECTION_CONFLICT')
     rows=[]
@@ -148,6 +156,8 @@ async def select_reference_asset(store:Any,asset:Any,event:str,order:int)->None:
         await store.client.rows(rows)
     selected=await store.client.query('drama_asset',{'work_id':asset.work_id,
         'identity_key':s['stableIdentity'],'state':'ADOPTED'},100)
+    selected=[row for row in selected if reference_role(store.plugin.asset_sequence,
+        await store.plugin.providers.asset.get_asset(row['id']))=='BASELINE']
     if [row['id'] for row in selected]!=[asset.id]:
         raise ValueError('ASSET_REFERENCE_SELECTION_READBACK_MISMATCH')
 

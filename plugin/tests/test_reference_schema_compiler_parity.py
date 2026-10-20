@@ -68,6 +68,8 @@ async def authored(item, raw):
 
     def receive(request):
         wire = json.loads(request.content)
+        knowledge = Path(__file__).resolve().parents[1] / 'skills/specialized-asset-design/references/relational-aesthetics.md'
+        assert knowledge.read_text() in wire['messages'][0]['content']
         schema = json.loads(wire['messages'][0]['content'].split('\nOutput JSON schema:\n')[-1])
         observed.append(schema)
         # The fixture is deliberately not validated here: negative tests must

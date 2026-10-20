@@ -136,7 +136,14 @@ def compile_ir(raw: VisualPromptIR | dict[str, Any], *, provider_family: str,
             return render_vidu(ir, selected)
         if task in STATIC:
             from drama_plugin.visual.image_serializer import render_image
-            return render_image(ir, selected)
+            rendered = render_image(ir, selected)
+            if task == 'REFERENCE_EDIT' and generator_context:
+                duties = generator_context.get('reference_duties', [])
+                if not isinstance(duties, list) or any(not isinstance(d, str) for d in duties):
+                    raise ValueError('INVALID_IMAGE_REFERENCE_DUTIES')
+                if duties:
+                    rendered = '\n'.join(duties) + '\n\n' + rendered
+            return rendered
         return heading + '\n' + '\n'.join(f"{r['priority']} {r['path']}: {r['text']}" for r in selected)
     full = render(rows)
     kept = list(rows)
@@ -155,7 +162,9 @@ def compile_ir(raw: VisualPromptIR | dict[str, Any], *, provider_family: str,
             'ir_fingerprint': fp(ir.model_dump(mode='json')), 'prompt': prompt, 'prompt_fingerprint': fp(prompt),
             'provider_family': provider_family, 'audio_supported': audio_supported,
             'hard_limit': hard_limit, 'model': model, 'limit_source': limit_source,
-            'retained': kept, 'omitted': omitted, 'prompt_budget': budget}
+            'retained': kept, 'omitted': omitted, 'prompt_budget': budget,
+            **({'generator_context': generator_context}
+               if task == 'REFERENCE_EDIT' and generator_context else {})}
 
 
 def verify_compilation(record: dict[str, Any], prompt: str, *, legacy_replay: bool = False) -> None:

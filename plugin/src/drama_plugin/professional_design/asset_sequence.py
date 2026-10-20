@@ -33,6 +33,7 @@ class AssetChoice(ContractModel):
     subject_selection: int | None = Field(default=None, ge=0)
     reuse_selection: int | None = Field(default=None, ge=0)
     variant_reason: str | None = Field(default=None, min_length=1)
+    reference_role: Literal['BASELINE', 'SUPPLEMENT'] = 'BASELINE'
     reference_required: bool = True
     reference_mode: Literal['text_to_image', 'image_to_image'] = 'text_to_image'
     reference_selections: tuple[int, ...] = Field(default=(), max_length=3)
@@ -291,7 +292,9 @@ class SpecializedAssetSequence:
         return 'specialized-character:' + ('fresh:' if family is not None else '') + sha256_canonical(identity)
 
     def _latest(self, assets: list[Asset], identity: str) -> Asset | None:
-        matches = [a for a in assets if a.content['specializedAsset']['stableIdentity'] == identity]
+        from .reference_roles import reference_role
+        matches = [a for a in assets if a.content['specializedAsset']['stableIdentity'] == identity
+                   and reference_role(self, a) == 'BASELINE']
         revisions = [a.content['specializedAsset']['revision'] for a in matches]
         if len(set(revisions)) != len(revisions):
             raise ValueError('ASSET_ACCEPTED_VERSION_AMBIGUOUS')
@@ -707,6 +710,8 @@ class SpecializedAssetSequence:
                     raise ValueError('ASSET_REUSE_FAMILY_MISMATCH')
             if prior and prior.asset_type != choice.asset_type:
                 raise ValueError('ASSET_REUSE_TYPE_MISMATCH')
+            if choice.reference_role == 'SUPPLEMENT' and (prior is None or not choice.variant_reason):
+                raise ValueError('SUPPLEMENT_REQUIRES_ACCEPTED_BASELINE')
             if prior and not choice.variant_reason:
                 requirements.append(self._reuse(prior))
                 continue
@@ -725,6 +730,10 @@ class SpecializedAssetSequence:
                 'identityRootAssetId': (prior.content['specializedAsset'].get('identityRootAssetId') or prior.id) if prior else None,
                 'variantReason': choice.variant_reason, 'referenceRequired': choice.reference_required,
                 'narrativeRef': dump_contract(ref)}
+            if choice.reference_role == 'SUPPLEMENT':
+                if prior is None or not choice.variant_reason:
+                    raise ValueError('SUPPLEMENT_REQUIRES_ACCEPTED_BASELINE')
+                material['referenceRole'] = 'SUPPLEMENT'
             if choice.reference_mode == 'image_to_image':
                 if not choice.reference_required:
                     raise ValueError('IMAGE_TO_IMAGE_REQUIRES_REFERENCE_PRODUCTION')
@@ -837,6 +846,11 @@ class SpecializedAssetSequence:
             self._select_reference_requirement(preparation_ref, item)
         return fresh
 
+    async def set_reference_selection(self, selection: dict[str, Any], decision_ref: ArtifactReference) -> SourcePin:
+        from .reference_roles import retain_selection
+        async with self._locks.setdefault('reference-selection:' + selection['identity'], asyncio.Lock()):
+            return await retain_selection(self, selection, decision_ref)
+
     @staticmethod
     def _media_identity(media: Media, work_id: str) -> None:
         import re
@@ -871,6 +885,10 @@ def register_asset_sequence_tools(registry: Any, sequence: SpecializedAssetSeque
             else:
                 ref = selected
         return {'preparationRef': dump_contract(ref), **packet}
+    registry.register(_domain_tool('specialized_assets.set_reference_selection',
+        'Retain an explicitly approved baseline and supplemental reference selection without rewriting image originals.',
+        sequence.set_reference_selection, SourcePin,
+        required={'selection': dict[str, JsonValue], 'decision_ref': ArtifactReference}))
     registry.register(_domain_tool('specialized_assets.read_preparation',
         'Read the exact pending scene asset requirements for the existing Asset Resolution owner.',
         read_preparation, dict, required={'reference': ArtifactReference}))

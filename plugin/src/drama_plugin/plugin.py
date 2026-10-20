@@ -1230,6 +1230,12 @@ class DramaPlugin:
             'return_last_frame':True, 'continuation':ContinuationInput(predecessor_media_ref=source_ref,frame_ref=frame_ref,
                 global_reference_ref=global_ref,context_fact_refs=continuation_context(task.unit,previous.unit),
                 allow_unverified_audio=True if allow_audio else None)})
+        from drama_plugin.generation.contracts import CrossShotContinuity
+        bound = bound.model_copy(update={'cross_shot_continuity':CrossShotContinuity(
+            strategy='CONTINUE', reason='Existing authored same-take continuation boundary',
+            camera_relation='Preserve actual endpoint framing and axis', inherited_state='Reviewed official predecessor endpoint',
+            target_state='Next selected action phase', predecessor_media_ref=source_ref,
+            predecessor_shot_id=source.scope.shot_id)})
         validate_continuation(self.ledger, bound)
         return bound
 
@@ -1597,6 +1603,8 @@ class DramaPlugin:
                 'returnLastFrame':task.return_last_frame})
         if task.camera_direction_ref is not None:
             identity_parts.append({'cameraDirectionRef':task.camera_direction_ref.model_dump(mode='json',by_alias=True)})
+        if task.cross_shot_continuity is not None:
+            identity_parts.append({'crossShotContinuity':task.cross_shot_continuity.model_dump(mode='json',by_alias=True)})
         identity = "media-proof:" + sha256_canonical(identity_parts)
         if offline_authorization and (offline_authorization.execution_mode != "OFFLINE_ONLY"
                 or offline_authorization.estimated_cost_microunits or offline_authorization.budget_microunits):
@@ -1608,6 +1616,8 @@ class DramaPlugin:
                 raise ValueError("Goal identity/input conflict")
             return existing
         except KeyError:
+            from drama_plugin.generation.cross_shot import validate_cross_shot
+            validate_cross_shot(self.ledger, scope, task, required=True)
             run = self.runtime.draft_run(work_id=scope.work_id,scene_id=scope.scene_id,shot_id=scope.shot_id,
                 mode=package.boundary.mode,workflow_id=MEDIA_WORKFLOW,run_id=identity)
             created = self.ledger.create_target_run(run,GovernanceInput(package_ref=package_ref),GenerationInput(task=task))

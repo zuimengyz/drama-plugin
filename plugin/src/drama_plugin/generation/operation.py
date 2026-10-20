@@ -55,7 +55,7 @@ def continuation_context(unit: OperationSelection, previous: OperationSelection)
         any(key in f.reference.path for key in contextual.get(f.domain, set())))
 
 
-def continuation_frame(ledger: ProductionLedger, ref: ArtifactReference, *, allow_unverified_audio: bool = False):
+def continuation_frame(ledger: ProductionLedger, ref: ArtifactReference, *, allow_unverified_audio: bool = False, picture_only: bool = False):
     """Validate native last-frame provenance through its exact successful task."""
     from drama_plugin.execution.store import ExecutionStore
     from drama_plugin.execution.contracts import ContinuationFrame, MediaBinding, ExecutionOperation, ProviderReceipt, CreativeMediaReview
@@ -80,7 +80,8 @@ def continuation_frame(ledger: ProductionLedger, ref: ArtifactReference, *, allo
         raise ValueError("PROVIDER_LAST_FRAME_PROVENANCE_MISMATCH")
     previous = ledger.get_artifact('generation-preparation', op.preparation_ref)[0]
     previous_task = GenerationPreparation.model_validate(previous).task
-    validate_predecessor_speech(previous_task.unit,review.observations,allow_unverified_audio=allow_unverified_audio)
+    if not picture_only:
+        validate_predecessor_speech(previous_task.unit,review.observations,allow_unverified_audio=allow_unverified_audio)
     return frame, source, receipt, previous_task
 
 
@@ -702,9 +703,9 @@ class OperationResolver:
                 if any(d.role == 'CHARACTER' for d in binding.duties):
                     from drama_plugin.execution.contracts import CreativeMediaReview, ExecutionOperation
                     from drama_plugin.generation.contracts import GenerationPreparation
-                    if binding.endpoint_frame_ref:
-                        _,_,_,source_task = continuation_frame(self.ledger,binding.endpoint_frame_ref,
-                            allow_unverified_audio=bool(task.continuation and task.continuation.allow_unverified_audio))
+                    if binding.endpoint_frame_ref or binding.picture_frame_ref:
+                        _,_,_,source_task = continuation_frame(self.ledger,binding.endpoint_frame_ref or binding.picture_frame_ref,
+                            picture_only=bool(binding.picture_frame_ref), allow_unverified_audio=bool(task.continuation and task.continuation.allow_unverified_audio))
                     else:
                         review = CreativeMediaReview.model_validate(self.ledger.get_artifact('creative-media-review',
                             ArtifactReference(owner='creative-media-review',artifact_ref=binding.media.review_ref,version=1))[0])

@@ -70,6 +70,7 @@ async def test_retained_artwork_is_candidate_evidence_without_machine_or_new_fra
             assert machine not in encoded
         skills = Path(__file__).resolve().parents[1] / 'skills'
         assert (skills / 'specialized-asset-design/SKILL.md').read_text() in wire['messages'][0]['content']
+        assert (skills / 'specialized-asset-design/references/relational-aesthetics.md').read_text() in wire['messages'][0]['content']
         assert (skills / 'reference-strategy/SKILL.md').read_text() in wire['messages'][0]['content']
         calls.append(wire)
         return httpx.Response(200, json={'choices': [{'finish_reason': 'stop', 'message': {

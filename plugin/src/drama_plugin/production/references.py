@@ -41,7 +41,7 @@ class ReferenceExecutionBinding(ExtendedRuntimeContract):
     No URL, syntax tag, API slot or request is accepted.
     """
     schema_version: Literal["reference-execution-binding-v1"] = "reference-execution-binding-v1"
-    extension_fields = ("endpoint_frame_ref", 'source_scope', 'use_ref', 'state_ref', 'location_binding', 'previsualization_ref')
+    extension_fields = ("endpoint_frame_ref", 'source_scope', 'use_ref', 'state_ref', 'location_binding', 'previsualization_ref', 'picture_frame_ref')
     binding_id: Identifier
     version: int = Field(gt=0)
     scope: RuntimeScope
@@ -58,9 +58,13 @@ class ReferenceExecutionBinding(ExtendedRuntimeContract):
     state_ref: SourceReference | None = None
     location_binding: SceneLocationBinding | None = None
     previsualization_ref: SourcePin | None = None
+    picture_frame_ref: ArtifactReference | None = None
 
     @model_validator(mode="after")
     def execution_identity(self) -> Self:
+        if self.picture_frame_ref and (self.role != 'REFERENCE' or self.media.kind != 'image'
+                or self.picture_frame_ref.owner != 'continuation-frame' or self.endpoint_frame_ref):
+            raise ValueError('PICTURE_REFERENCE_IS_NOT_FIRST_FRAME')
         if self.previsualization_ref and (self.role != 'REFERENCE' or self.media.kind != 'video'
                 or any(d.role not in ('COMPOSITION', 'CAMERA_MOTION', 'PERFORMANCE') for d in self.duties)
                 or set(self.media.semantics) - {'camera', 'motion'}):

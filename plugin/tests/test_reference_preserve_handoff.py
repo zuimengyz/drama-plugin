@@ -153,12 +153,13 @@ def test_reference_edit_keeps_authored_relation_outside_the_correction(selected_
     following, compilation, body = edit_projection(artwork(selected_asset, [authored]), selected_asset)
     assert authored in following.prompt_ir["preserve"]
     assert authored["text"] in body["prompt"]
-    assert "Keep the supplied image unchanged except for the corrections above." in body["prompt"]
+    assert "Keep the supplied image unchanged except for the corrections above." not in body["prompt"]
+    assert "CAMERA" in body["prompt"] and "LIGHTING" in body["prompt"]
     assert selected_asset["design"]["material"] in body["prompt"]
-    assert "MUST CHANGE" in body["prompt"] and compilation["ir"]["edit_delta"]
+    assert "REFERENCE CHANGES" in body["prompt"] and compilation["ir"]["edit_delta"]
 
 
-def test_reference_edit_fallback_still_preserves_outside_regions(selected_asset):
+def test_reference_edit_fallback_preserves_selected_attributes(selected_asset):
     item = deepcopy(selected_asset)
     item["design"].pop("material")
     old = fact(PROOF_LOOKS["celebratory"]["LOCATION"])
@@ -166,7 +167,7 @@ def test_reference_edit_fallback_still_preserves_outside_regions(selected_asset)
     following, _, body = edit_projection(artwork(item, [old]), item)
     assert old["text"] not in body["prompt"]
     assert dict(
-        text="Preserve the supplied image outside the explicit edit regions.",
+        text="Preserve selected identity, costume, materials and physical layout according to each reference duty.",
         priority="CRITICAL", scope="CURRENT", source="reference-proof-preservation") in following.prompt_ir["preserve"]
-    assert "Preserve the supplied image outside the explicit edit regions." in body["prompt"]
+    assert "Preserve selected identity, costume, materials and physical layout according to each reference duty." in body["prompt"]
 

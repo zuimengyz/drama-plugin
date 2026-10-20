@@ -74,6 +74,13 @@ def test_static_contract_and_preserved_internal_intent(task):
 def test_edit_corrections_survive_positive_projection(task):
     c = compile_ir(visual_ir(task), provider_family='Flux.2 [pro]')
     p = c['prompt']
+    if task == 'REFERENCE_EDIT':
+        assert p.startswith('REFERENCE CHANGES\n')
+        assert 'Correct man face: 38–42' in p and 'Replace right background' in p
+        assert 'wet stone road' in p and 'CAMERA' in p and 'LIGHTING' in p
+        assert 'Keep the supplied image unchanged' not in p
+        verify_compilation(c, p)
+        return
     assert p.startswith('MUST CHANGE\n')
     assert 'man appears too old → 38–42' in p and 'Correct man face' in p
     assert 'modern parking sign → continuous historical' in p and 'Replace right background' in p
@@ -217,3 +224,15 @@ def test_reference_edit_frame_preserves_operation_and_rejects_old_normalizer(tmp
     assert 'Replace right background' in compiled['prompt_ir_compilation']['prompt']
     with pytest.raises(ValueError,match='POST_REWRITE_FORBIDDEN'):
         compile_frame(spec.model_copy(update={'prompt_ir':ir,'prompt_normalization':{'rules':[]}}),template)
+
+
+def test_reference_duties_are_replayable_and_cannot_change_after_compilation():
+    context = {'reference_duties': ['Image 1: character identity only.', 'Image 2: room layout only.']}
+    c = compile_ir(visual_ir('REFERENCE_EDIT'), provider_family='Flux.2 [pro]', generator_context=context)
+    assert c['prompt'].startswith('\n'.join(context['reference_duties']))
+    assert c['prompt'].count('Image 1:') == c['prompt'].count('Image 2:') == 1
+    verify_compilation(c, c['prompt'])
+    altered = deepcopy(c)
+    altered['generator_context']['reference_duties'].reverse()
+    with pytest.raises(ValueError, match='VISUAL_PROMPT_IR_COMPILATION_CHANGED'):
+        verify_compilation(altered, altered['prompt'])

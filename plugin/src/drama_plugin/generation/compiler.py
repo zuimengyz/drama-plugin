@@ -62,9 +62,14 @@ class PromptCompiler:
         final = artifacts.get(prepared.final_prompt_ref,FinalPromptArtifact)
         coverage = artifacts.get(final.coverage_ref, PromptCoverage)
         plan = artifacts.get(prepared.audio_plan_ref,AudioExecutionPlan)
+        pending = bool(task.cross_shot_continuity and task.cross_shot_continuity.strategy == 'PENDING_PREDECESSOR')
+        if pending:
+            diagnostics.append({'code':'CROSS_SHOT_PREDECESSOR_NOT_READY','required':True})
+        wire = TargetHttpTransport.preview(prepared,final,ledger=self.references.ledger)
         return {'simulation':True,'submitted':False,'productionAuthorized':False,'diagnostics':diagnostics,
+            'draftRequest':wire if pending else None,
             'packageRef':package_ref.model_dump(mode='json',by_alias=True),
-            'request':TargetHttpTransport.preview(prepared,final,ledger=self.references.ledger),
+            'request':None if pending else wire,
             'speechEvents':[e.model_dump(mode='json',by_alias=True) for e in plan.speech_events],
             'coverage':coverage.model_dump(mode='json',by_alias=True),
             'task':task.model_dump(mode='json',by_alias=True),'persistentPreparationCreated':False}
@@ -94,6 +99,10 @@ class PromptCompiler:
             diagnostics.append(ExecutionDiagnostic(code="REQUEST_UNSUPPORTED", owner="model-capability", domain=D.DIRECTION, required=True))
             return result()
         try:
+            if task.cross_shot_continuity:
+                from drama_plugin.generation.cross_shot import validate_cross_shot
+                if not (self._preview and task.cross_shot_continuity.strategy == 'PENDING_PREDECESSOR'):
+                    validate_cross_shot(self.reader.operations.ledger, package_scope(package), task)
             if task.unit:
                 if self.reader.operations is None:
                     raise ValueError("OPERATION_RESOLVER_ABSENT")
@@ -149,7 +158,7 @@ class PromptCompiler:
                 else "EXECUTION_REQUIRED_MISSING", owner=error.owner.value, domain=D.CANON, required=True))
             return result()
         except ValueError as error:
-            diagnostics.append(ExecutionDiagnostic(code="SCOPE_DECISION_REQUIRED" if str(error) == "UNIT_SCOPE_DECISION_REQUIRED"
+            diagnostics.append(ExecutionDiagnostic(code=str(error) if str(error).startswith("CROSS_SHOT_") else "SCOPE_DECISION_REQUIRED" if str(error) == "UNIT_SCOPE_DECISION_REQUIRED"
                 else "SCOPE_MISMATCH" if any(s in str(error) for s in ("SCOPE", "VERSION", "ADOPT", "RIGHTS", "DECISION", "PROFILE"))
                 else "EXECUTION_REQUIRED_MISSING", owner="production-selection", domain=D.DIRECTION, required=True))
             return result()

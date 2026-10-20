@@ -166,7 +166,11 @@ def inherit_design(frame: FrameSpec, item: dict[str, Any]) -> FrameSpec:
         if authored not in ir['preserve']:
             ir['preserve'].append(authored)
     if ir['edit_delta'] and not ir['preserve']:
-        ir['preserve'] = [dict(text='Preserve the supplied image outside the explicit edit regions.',
+        preservation = (
+            'Preserve selected identity, costume, materials and physical layout according to each reference duty.'
+            if ir['task']['task_type'] == 'REFERENCE_EDIT'
+            else 'Preserve the supplied image outside the explicit edit regions.')
+        ir['preserve'] = [dict(text=preservation,
             priority='CRITICAL', scope='CURRENT', source='reference-proof-preservation')]
     # FrameSpec permits wrapped prose; Fact uses a single line. Preserve the
     # authored Frame verbatim and only serialize its line breaks as spaces.

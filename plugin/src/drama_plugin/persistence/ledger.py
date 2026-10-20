@@ -60,7 +60,7 @@ INDEX_TYPES = frozenset({
     "governance-maintenance", "generation-rebuild", "final-prompt-key",
     "execution-reference-current", "continuation-frame", "film-segment-dispatch-revision", "source-film-working-input", "source-film-candidate-reassessment",
     "media-proof-authorization", "media-proof-cost-terms", "human-media-review", "execution-recovery-authorization",
-    "creative-integrity-reconciliation", "asset-reference-current",
+    "creative-integrity-reconciliation", "asset-reference-current", "asset-identity-repair-authorization",
     "execution-input", "creative-input", "creative-checkpoint", "film-input", "film-checkpoint", "formal-media-current", "execution-live-grant",
 })
 
@@ -468,9 +468,9 @@ class ProductionLedger:
             from drama_plugin.execution.live_transport import FinancialTerms
             parsed_model = Authorization if index_type == "media-proof-authorization" else FinancialTerms
             value = parsed_model.model_validate(value.model_dump() if hasattr(value,"model_dump") else value)
-        elif index_type in {"latest-decision", "prepared", "final-prompt-key", "formal-media-current", "execution-live-grant", "human-media-review", "execution-recovery-authorization", "continuation-frame", "film-segment-dispatch-revision", "source-film-working-input", "source-film-candidate-reassessment"}:
+        elif index_type in {"asset-identity-repair-authorization", "latest-decision", "prepared", "final-prompt-key", "formal-media-current", "execution-live-grant", "human-media-review", "execution-recovery-authorization", "continuation-frame", "film-segment-dispatch-revision", "source-film-working-input", "source-film-candidate-reassessment"}:
             value = ArtifactReference.model_validate(value.model_dump() if hasattr(value, "model_dump") else value)
-            expected = {"latest-decision": "gate-decision", "prepared": "generation-preparation",
+            expected = {"asset-identity-repair-authorization": "user-decision", "latest-decision": "gate-decision", "prepared": "generation-preparation",
                 "final-prompt-key": "final-prompt", "formal-media-current": "formal-media-registration", "execution-live-grant": "controlled-live-grant", "human-media-review":"creative-media-review", "execution-recovery-authorization":"user-decision", "continuation-frame":"continuation-frame", "film-segment-dispatch-revision":"film-segment-revision", "source-film-working-input":"media-binding", "source-film-candidate-reassessment":"creative-media-review"}[index_type]
             if value.owner != expected or value.version != 1:
                 raise ValueError("Ledger index points to the wrong artifact owner")

@@ -124,3 +124,11 @@ overwrite adopted screenplay, Scene, assets or historical media through this fac
 Use the existing authorized adoption mechanism later; no new Canon object type or
 hard evaluation gate is introduced. User artistic acceptance stays separate from
 local text judgment and technical validation.
+
+## Scene-level professional collaboration
+
+For multi-view realization use [the V5 collaboration path](v5-scene-collaboration.md).
+Reconcile the selected encounter through Blocking, Camera and early Editorial
+proposals before locking coverage. Native film children now pin the same-scene
+coverage alongside their selected screenplay; existing children retain their old
+inputs. This adds contextual delivery, not independent author calls or adoption.

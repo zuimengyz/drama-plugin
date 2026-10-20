@@ -19,6 +19,16 @@ Scene Layout; Scene Beat and Dialogue Bibles; Performance objectives; Prop/Anima
 
 ## Professional decisions
 
+Work through the complete encounter before allocating action to views. Use the
+shared selected scene and ordered coverage supplied by Director/Host. Establish
+the relevant landmarks, occupied space, approach paths, facing and real attention
+targets; keep world placement distinct from the camera's changing view. Describe
+how a prop is supported and used before, across and after a proposed cut. When a
+view withholds an action, distinguish continued offscreen action from an omitted
+interval. Test a reveal along the proposed camera path with Camera and Editorial,
+including what occludes what at entry and exit. Offer staging alternatives with
+their dramatic effect; Host selects, and each owner updates its own original.
+
 Stage who can see, hear, approach or interrupt whom. Tie each movement to an intention or external event; identify handoff giver/receiver and which hand or side matters. Preserve available paths and previous exit/next entry states. Keep a listener’s position legible even without a cut to them. Separate movement destination and timing from detailed force/grip mechanics.
 
 When passage or a handoff is uncertain, track each participant's task and the

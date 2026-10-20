@@ -19,6 +19,16 @@ Director Vision; Layout; Blocking; Performance; Action and Crowd Bibles.
 
 ## Professional decisions
 
+Design a family of views of the selected scene, not isolated lens prescriptions.
+Read neighboring coverage and the shared Blocking/Editorial proposal before
+elaborating the current view. Compare the outgoing and incoming visual centers,
+landmarks, eye targets, camera height and viewing direction. Explain what motivates
+the spectator to reorient when scale or viewpoint changes. A changed focal length
+alone establishes neither a new perspective nor a readable connection. Keep
+movement start/stop and occlusion/revelation compatible with the action stage
+assigned to this view. Propose a different cut or staging when the desired view
+cannot disclose the relation; do not silently move people or advance their action.
+
 Interpret the selected Work grammar at this scene's perceptual state, including
 its applicability and exceptions. Relate the person to inhabited space and objects
 through visible scale, depth and attention; negative space alone does not express

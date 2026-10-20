@@ -604,6 +604,11 @@ def current_design_view(request: AuthorRequest, *, upstream: bool | None = None,
 
 def screenplay_view(context: dict[str, JsonValue]) -> dict[str, JsonValue]:
     value = {k: v for k, v in context.items() if k not in {'professionalDesignRefs', 'filmLook'}}
+    if isinstance(value.get('sceneDirection'), dict):
+        # Exact selected Canon/Direction pins stay in the immutable child input.
+        # Authors see the ordered semantic decisions, never infrastructure refs.
+        value['sceneDirection'] = {k: v for k, v in object_value(value['sceneDirection']).items()
+            if k != 'sourceRefs'}
     if isinstance(value.get('selectedSceneScreenplays'), list):
         value['selectedSceneScreenplays'] = [screenplay_view(object_value(row))
             for row in sequence(value['selectedSceneScreenplays'])]

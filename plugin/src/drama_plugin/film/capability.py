@@ -352,13 +352,33 @@ class FilmCapabilities:
         else:
             run = await p.runtime.run(run_id)
         return run.state == RuntimeState.SUCCEEDED
-    def scene_handoff_ref(self, cp: FilmCheckpoint, scene_id: str | None) -> SourcePin | None:
-        if cp.screenplay_ref is None:
-            return None
-        packet = self.plugin.screenplays.objects.read_ref(cp.screenplay_ref)
+    def scene_handoff_ref(self, cp: FilmCheckpoint, scene_id: str | None, *,
+                          work_id: str, shot_id: str) -> SourcePin:
+        """Pin same-scene coverage for professional realization, not a new author.
+
+        The immutable child input owns this snapshot. Recovery never substitutes
+        a newer neighboring Shot or changes an already-created child's context.
+        """
+        assert cp.direction_ref and cp.canon_ref
+        packet = self.plugin.screenplays.objects.read_ref(cp.screenplay_ref) if cp.screenplay_ref else {}
         scene = next((s for s in packet.get('selectedSceneScreenplays', ())
             if s['screenplay']['sceneId'] == scene_id), None)
-        return self.plugin.screenplays.objects.put('film-selected-scene:' + str(scene_id), scene) if scene else None
+        direction = self.store.author(cp.direction_ref, FilmDirection)
+        ordered = [s for s in direction.shots if s.scene_id == scene_id]
+        current = next(i for i, s in enumerate(ordered) if s.shot_id == shot_id)
+        context = scene or {'schemaVersion': 'native-screenplay-context-v1',
+            'workId': work_id, 'sceneId': scene_id}
+        context = {**context, 'sceneDirection': {
+            'sourceRefs': [ref.model_dump(mode='json', by_alias=True)
+                for ref in (cp.canon_ref, cp.direction_ref)],
+            'currentShotSelection': current,
+            'shots': [{'selection': i, 'transition': s.transition,
+                'shot': s.shot.model_dump(mode='json', by_alias=True, exclude={'spoken_ids'})}
+                for i, s in enumerate(ordered)],
+            'use': 'Shared selected coverage context. Execute only the current Shot; '
+                   'neighbor actions are not additional current instructions. Return '
+                   'incompatible staging/camera/cut proposals to Host before new adoption.'}}
+        return self.plugin.screenplays.objects.put('film-selected-scene:' + shot_id, context)
 
     def create_unit(self, inputs: CapabilityInput, slot: int) -> ShotUnit:
         p = self.plugin
@@ -390,7 +410,8 @@ class FilmCapabilities:
             p.create_film_run(work_id=scope.work_id,scene_id=scope.scene_id,shot_id=scope.shot_id,mode=RunMode.EXPERIMENT,
                 source_ref=refs[0],base_refs=tuple(refs),run_id=run_id,
                 route=RouteRequest(available_capabilities=('text_to_video',)),
-                screenplay_ref=self.scene_handoff_ref(cp, scope.scene_id))
+                screenplay_ref=self.scene_handoff_ref(cp, scope.scene_id,
+                    work_id=scope.work_id, shot_id=shot.shot_id))
         return ShotUnit(scene_id=shot.scene_id,shot_id=shot.shot_id,creative_run_id=run_id,refs=tuple(refs))
     async def prepare(self, inputs: CapabilityInput) -> CapabilityResult:
         cp = self.store.checkpoint(inputs.run_id)

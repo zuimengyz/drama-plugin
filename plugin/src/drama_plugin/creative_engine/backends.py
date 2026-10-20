@@ -34,7 +34,8 @@ from drama_plugin.creative_engine.author_projection import (author_payload, film
 
 T = TypeVar("T")
 DIRECTION_CRAFT = ("shot-design/references/planning.md", "shot-design/references/shot-transitions.md",
-                   "director/references/work-aesthetic-design.md")
+                   "director/references/work-aesthetic-design.md",
+                   "director/references/scene-collaboration.md")
 # Internal knowledge selection only, never a department execution DAG.
 PROFESSIONAL_CRAFT = {
     D.SUBJECTS: ("specialized-asset-design/SKILL.md",),
@@ -772,6 +773,7 @@ class FormalDirectionAuthor(SkillAuthor):
             "It does not describe Canon or Direction ownership. CANON and DIRECTION must never appear in professionalDomains. "
             "Use only the schema's professional domain values, once each, sorted lexicographically by domain value.\n")
         system += "If selected upstream currentDesigns accompany an existing Shot, review that retained Shot against their new meaning. Consciously preserve valid existing choices or locally revise them; do not replace detailed department originals.\n"
+        system += "Treat the complete scene as one encounter before selecting coverage. In shared sceneDirection context, neighboring actions and transitions are context, not extra actions for the current Shot. Propose contradictions to the Host; do not silently reconcile by changing another Shot.\n"
         return system + self.knowledge(DIRECTION_CRAFT)
 
     def film_system_contract(self) -> str:
@@ -1138,6 +1140,16 @@ contradictory instructions or ask the compiler to invent a compromise.
             raise CapabilityAbsent("PROFESSIONAL_SHOT_PREREQUISITE_ABSENT")
         domains = request.shot.professional_domains
         paths = tuple(p for domain in domains for p in PROFESSIONAL_CRAFT[domain])
+        # Method travels with actual professional calls; neighboring coverage is
+        # already in author_payload's immutable screenplay context.
+        shared_scene_instruction = (
+            "\nWhen hostScreenplay.sceneDirection is supplied, read the ordered scene "
+            "before elaborating this Shot. Blocking, Camera and Editorial must realize "
+            "one selected encounter: preserve world placement, action-stage allocation "
+            "and the intended audience transition. Neighbor descriptions are context, "
+            "not current executable actions. Return incompatible proposals to the Host; "
+            "do not silently advance a later action or redesign another Shot. Put only "
+            "current execution facts into existing domain fields, not whole scene prose.\n")
         system = BOUNDARY + "\nOwn only the requested professional domains " + canonical_json(domains) + ". Return a JSON array with one DesignBody for each required domain. Preserve exact Shot/Canon meaning and dialogue. PERFORMANCE lines select exactly selectedSpokenCandidates once each. Subjects select supplied Canon subjectCandidates. System derives their spoken inventory. Create semantic PERFORMANCE Beat rows with actorSelection and targetSelection; ACTION, lines and REFERENCE select their ordinal positions within this bundle. System assigns all beat/reference IDs. No subjectRef, id, beatId, spokenContentId, spokenIds, artifactRef or provenance in model output. No guessed strings or fuzzy matching. No Canon, Shot-intent, provider or workflow fields in professional facts.\n"
         system += "System authority projects provenance after authoring. Never output sourcePins, scope, Source/Work/Script/Scene/Shot refs or artifact identity/version/fingerprint objects, including inside nested facts. Author creative design facts only.\n"
         system += "Consume visualContinuity.assets: these are already adopted assets prepared in narrative order. Preserve inherited physical identities and references. Author only this Shot's state/behaviour/layout; do not recreate faces, replace identities or invent asset bindings. System binds the exact assets after authoring.\n"
@@ -1146,7 +1158,7 @@ contradictory instructions or ask the compiler to invent a compromise.
         system += "Resolve the supplied Shot purpose and requiredTransition through the requested owners: express each currently necessary visible or audible consequence in existing Action, Camera, Performance, Sound or Editorial facts. A purpose or future transition is not itself current action. Do not copy the entire Shot into executable prose.\n"
         system += "PERFORMANCE LineDPD alone is internal direction, not video delivery. Realize necessary current listening, gaze, waiting and release consequences in existing Beat physicalExpression when shared, current Action when changing, or exact SOUND audio_events performance/attention/continuity when heard. Preserve the source meaning; do not enact psychology, future reactions, or a voice-over narrator's remembered action in the pictured subject. If another requested domain owns the consequence, coordinate that owner's existing facts rather than adding a second performance track.\n"
         system += "EDITORIAL temporalStructure explains whole-Shot organization, not a timeline to replay in each segment. Put current holds and end conditions in existing protectedEvents scoped by phaseIndex (and spokenSelections where needed), Action observable or the exact Sound delivery. A condition present only in whole-Shot reasoning has not been delivered to a current request.\n"
-        return system + self.knowledge(paths)
+        return system + shared_scene_instruction + self.knowledge(paths)
 
     def execution_fingerprint(self, request: AuthorRequest) -> str:
         return self.client.execution_fingerprint("professional", self.implementation_identity,

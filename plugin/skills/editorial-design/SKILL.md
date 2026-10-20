@@ -7,7 +7,9 @@ description: Design event-protected cuts, holds and temporal organization from a
 
 ## Role and authority
 
-Design event-protected cuts, holds and temporal organization from approved coverage.
+Develop cuts, holds and temporal organization with Director, Blocking and Camera
+while coverage is provisional; project the Host-selected result from approved
+coverage into formal records.
 
 Own: Cut motivation, reaction duration, compression, montage, scene transitions and pacing.
 
@@ -15,9 +17,23 @@ Read [professional department architecture](../../docs/professional-departments.
 
 ## Inputs and dependencies
 
-Shot Bible; Performance; Sound/Music; Director rhythm intent.
+Selected complete scene and Director intent; provisional coverage and Blocking/
+Camera proposals for creative exploration. Formal records use current Shot Bible,
+Performance and Sound/Music originals.
 
 ## Professional decisions
+
+Read each adjacent pair as one audience experience. Locate a proposed outgoing
+action phase and incoming phase, the attention carried across them, and the
+relationship gained by cutting. Compare alternatives such as a reaction cut,
+action match, held view or meaningful ellipsis by their effect on this encounter.
+Identify duplicate action, missing consequence and accidental time jumps before
+production. An intentional repeat or discontinuity is valid when selected for its
+effect; identical state strings and frame similarity are not artistic evidence.
+Offer useful entry/exit handles without completing the next shot's action. If
+the actual footage ends later than the useful cut, distinguish that official tail
+from the editorial exit. Review revised neighbors together; finishing will measure
+the real source ranges and audio relationship after footage exists.
 
 Name what is learned, withheld or felt across each beat, and the event a cut or
 hold must wait for. Build the time estimate from required precedence and permitted

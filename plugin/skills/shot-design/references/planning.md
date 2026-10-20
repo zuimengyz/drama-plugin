@@ -75,6 +75,16 @@ prior stroke counts, camera locks and end holds to their original shot before
 choosing whether to retain them. Recompile the current originals and inspect a
 continuous temporary AV sequence; a stable motion curve alone cannot verify rhythm.
 
+### Reconcile the complete scene before precision
+
+Use [scene collaboration](../../director/references/scene-collaboration.md).
+Editorial participates on provisional coverage, before formal Shot records exist.
+Read the current ordered scene together, including the receiver of a changed
+exit. Preserve one selected revision of the scene solution across departments;
+do not join a new camera solution to an old action/cut solution. A common scene
+packet supplies context, while only this shot's selected execution facts enter
+its Prompt. Unresolved disagreement returns to the Host, not to text concatenation.
+
 ## 3. Give every Shot a narrative purpose
 
 Assign one or more concrete functions: establish space/power, reveal information, capture a decision or reaction, emphasize threat, create information disparity, preserve action continuity, or express relationship change. Delete or merge a Shot with no new visual, narrative, emotional, performance, or continuity function.

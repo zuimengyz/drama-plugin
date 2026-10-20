@@ -96,6 +96,12 @@ Read [professional department architecture](../../docs/professional-departments.
 
 The Host owns artistic decisions and final responsibility; Director supports its film intent, professional coordination, realization and review.
 
+For a multi-view scene, use [scene collaboration](references/scene-collaboration.md)
+before locking coverage. Own the whole encounter and audience progression; invite
+Blocking, Camera and Editorial to challenge the same provisional scene solution.
+Resolve their differences through the Host's artistic decision, then hand one
+selected revision to realization. Formal ownership does not forbid early proposals.
+
 ## Inputs and dependencies
 
 Pinned source/approved baseline, Historical/Adaptation boundary, registered department outputs.

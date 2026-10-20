@@ -24,6 +24,14 @@ Prefer the smallest coherent set. Do not split every sentence or dialogue line.
 
 ### When this group opens the work
 
+An opening redesign is first a Film/Screenplay decision. Apply the Director's
+[film-opening authorship](../../director/SKILL.md#film-opening-authorship) before
+coverage; do not treat the currently rendered shot as a required opening. Carry
+the selected entry event, spectator relationship and next encounter into this group.
+If only a local shot has been improved, report that scope instead of claiming a
+redesigned film opening. Reject a default safe sequence justified only by existing
+assets or easy generation; choose coverage for the selected dramatic experience.
+
 Apply after the complete original screenplay and selection, not as a condition for
 writing V1. Inherit the opening perception and purpose from the selected scene;
 ask what entering here lets the audience experience, and what an earlier or later
@@ -50,6 +58,22 @@ Keep only current executable facts in the video request; titles and measured
 picture/sound edits go to Finishing. A technical continuation inherits the ongoing
 state, not another introduction. No separate opening plan or copied theory is
 needed downstream.
+
+### Rhythm preference and usable duration
+
+Apply the current project's explicit rhythm preference to attention. A supplied
+6:4 preference favors effective story progression while preserving character,
+relation and resonance; do not impose that preference on unrelated projects. This is not a
+ratio of seconds and does not slow emotional action or accelerate speech. Use
+selection, overlap, ellipsis and motivated cuts to change pace. Keep a hold when
+its observed picture/sound relation earns the time.
+
+Name the intended editorial use separately from generation length. When a clip
+must be longer than the chosen cut, continue the same plausible task as handles;
+do not lengthen the useful action or impose an idle ending. In a revision, scope
+prior stroke counts, camera locks and end holds to their original shot before
+choosing whether to retain them. Recompile the current originals and inspect a
+continuous temporary AV sequence; a stable motion curve alone cannot verify rhythm.
 
 ## 3. Give every Shot a narrative purpose
 

@@ -6,18 +6,20 @@ description: Serve as the Host's film-directing capability after autonomous scre
 ## Host-first default
 
 Follow [Host-first creation](../../docs/host-first-creation.md). For a new film,
-let the Host finish its complete original screenplay before locking an artistic
-proposition or requesting departments. For an existing film, give the Host the
+let the actual screenplay author finish a complete original before locking
+production coverage. Supply relevant professional knowledge during creation.
+For an existing film, give the actual writer the
 complete framework and relevant long-arc facts to finish the full scene V1 first.
 Do not ask for selected highlights, advance deletions or a professionally settled
 plan. Preserve V1 verbatim through the registered screenplay entry.
 
-Only afterwards choose needed professional support. The Host may keep everything,
+Supply relevant professional methods and project authority to the actual writer
+from the start; select further professional support when it helps. The Host may keep everything,
 expand, combine, reconstruct or reduce, and may reject locally reasonable advice
-that weakens the whole work. Director is the Host's ability, not a separate final
-authority or professional vote. Select the full final scene explicitly before
+that weakens the whole work. Director design may be authored by the configured independent Direction author;
+the Host selects and reconciles it, without claiming its authorship. Select the full final scene explicitly before
 precision. Department restrictions below govern formal department records and
-production, not the Host's free screenplay imagination. Formal adoption remains
+production, not screenplay or director-treatment invention. Formal adoption remains
 with existing authority; no candidate overwrites it.
 
 Existing ScreenplayInput, readiness and department prerequisites below govern formal source projection, formal persistence and preproduction after the autonomous candidate exists. They are not prerequisites for writing a designated-source V1. Formal safety/rights authorities remain unchanged.
@@ -43,6 +45,36 @@ development serves the work. Do not require a philosophical position, perspectiv
 plan or selected artistic program before that original, or add a mandatory stage,
 form, score or Gate afterwards. The Host may keep, expand, modify or leave its work
 unchanged; professional and AIE arguments challenge its choices, not replace them.
+
+For sequence rhythm, consume the current project authorContext and the editorial-use
+method in [Shot Planning](../shot-design/references/planning.md). Project preferences may balance effective story progression with character and
+resonance; they are never a time quota or a prescribed action speed. The Host may revise shot-specific methods within the
+current authorization while retaining valid technical work.
+
+## Film-opening authorship
+
+When the user asks to design or reconstruct the film opening, work at screenplay
+and sequence scope before revising existing shots. Read the whole current script,
+its ending, source opening and relevant character arcs. Do not substitute a local
+motion repair, a more attractive first shot or a production-ready clip for this work.
+
+Do not default to conservative coverage because assets, rehearsals or prior shots
+already exist. When bold authorship is requested, actively develop materially
+different openings and choose the strongest audience experience the work can earn.
+Difference should change entry event, perspective, revelation or sound/image relation,
+not merely lenses or decoration. Write enough of each serious alternative to expose
+its consequences; state the selected gain and cost, without a compulsory scorecard.
+
+Make the opening establish a relationship with the whole film: what the spectator
+first trusts, notices or misunderstands, how that changes in the next encounter,
+and what the ending can later transform. Use all relevant cinematic means; neither
+spectacle nor restraint is a default measure of ambition. Production convenience
+may shape realization after the artistic choice, but cannot silently choose it.
+
+Select a complete rewritten passage and its transition into the ongoing screenplay.
+Record changed sources and invalidate affected coverage/request uses through existing
+owners. Distinguish selected writing, realized coverage and observed audiovisual
+result. A previous sample proves only the revision it actually depicts.
 
 ## Reconciled source input
 

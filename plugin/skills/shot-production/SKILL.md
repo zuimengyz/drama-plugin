@@ -338,16 +338,24 @@ review. Fixed reference limits remain unchanged.
 
 ## Use-based content review and autonomous recovery
 
-Review action rhythm against the source-pinned scene and final prompt as well as
-physical continuity. At normal playback, locate preparation, contact, completion
-and consequential holds; judge whether the intended speed contrast and partner
-response survive, including across technical joins. Unmotivated waiting, repeated
-starts or a habitual task stretched over a whole clip can lose meaning despite
-correct objects and action order. Name the observed interval and its consequence;
-do not certify rhythm from total seconds, a "quick" keyword or a contact sheet.
-Missing continuous playback/listening remains an explicit observation limit.
-Continuity-ready is not rhythm-approved. Return a material loss to existing
-Performance/Editorial/Clip planning; no automatic speed-up, paid retry or new Gate.
+Record the Host's use/skip reason for rehearsal against current adopted sources;
+load external methods for the actual uncertainty. A stable rig proves control,
+not natural effort. Compare loaded, releasing and next-task poses in the intended
+view, using diagnostic angles where contact or reach remains unclear. Prior stroke
+counts, camera locks and end holds remain shot-specific choices.
+
+At normal playback, judge action, speech, attention and sound across the coverage
+group. Frame samples and curves locate faults but cannot certify rhythm; record
+missing playback/listening as an observation limit. Keep meaningful stillness.
+When expression lapses, return the interval and consequence to existing
+Performance/Editorial/Clip planning. Update those originals and recompile; retire
+obsolete rehearsal bindings while preserving their history. No automatic speed-up
+or paid retry follows from this review.
+
+Separate generation length from intended editorial sourceIn/sourceOut. Do not
+stretch acting to fill a minimum clip. Test cuts and sound relations in continuous
+temporary AV; only an adopted motion guide goes into its declared reference slot.
+A temp mix or storyboard does not silently become a provider input.
 
 Judge whether the shot works at normal viewing size, duration and in context. Natural occlusion, imprecise background/type detail, unlocked initial appearance preferences, minor costume/light/framing differences and unconfirmed contact do not by themselves block. An input still is not a magnifiable technical diagram. Do not infer an error from missing evidence. A major failure must describe the visible observation, the core requirement it breaks and why that affects this use; a category label alone is insufficient. Missing action-critical props, contradictory action causality, serious established identity/continuity errors, explicit distortion of important historical facts or severe normal-playback audio/visual defects remain failures.
 
@@ -417,3 +425,11 @@ Current-age reference selection uses positive authored state or observed appeara
 A new professional-derived Package applies to new production. Completed native clips retain their exact frozen Package, Preparation, media hash and adopted Canon/Scene/Shot identity. Recovery verifies these immutable links separately from the current Package; it must not reject old completed clips merely because a later professional version exists or replace their frozen owners to pass validation.
 
 Changed reference purposes/authority versions create a new immutable target-use binding even when the source media and Action state are unchanged. Source-view descriptions such as a reference video's final close view are current identity evidence, not future Scene events to remove from the request.
+
+### Current-shot supply and local-reference timing
+
+Before compiling, map each adopted instruction to its actual owner: shared action sequence, individual visible behavior, camera, visible setting, or current sound. Supply each meaning once; do not fill multiple fields with the director paragraph. Optional fields can remain absent. Exact utterances come from Canon spoken IDs; performance text describes their relationship to action without quoting them again. Version/adoption history and cross-shot edit/sound work stay in the existing production records.
+
+A local motion reference is not the full performance clock. Place its supported action within the complete shot's entry, preparation, contact, release and cut; review the remaining actions at normal speed too. On adjoining shots, put a handoff/release/withdrawal on one side of the cut with an explicit matching state on the other. After inspecting the current rendered clip, adopt only the useful scope or keep it as director previs and SKIP its video input.
+
+When adopting a local video, set `referencePurpose` to its concrete supported interval and use. Set `referenceSemantics` to `["motion"]` when it supplies only action, `["camera"]` when it supplies only camera, or both when both are deliberately adopted. The default supports both for existing plans; it must not broaden an explicitly authored purpose.

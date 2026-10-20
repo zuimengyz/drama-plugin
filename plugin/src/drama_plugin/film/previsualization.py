@@ -26,6 +26,8 @@ REQUIRED = {
     SKILLS[0]: ('scripts/bx_review.py', 'scripts/bx_audit.py', 'scripts/bx_gui.py', 'references/bpy-reliability.md', 'references/blender-5.2-deltas.md'),
     SKILLS[1]: ('scripts/bx_blockout.py', 'scripts/bx_kits.py', 'references/contract.md', 'references/audits.md', 'references/handoff.md'),
     SKILLS[2]: ('scripts/bx_anim.py', 'references/procedures.md', 'references/critique.md'),
+    'scenario-blender-rigging': ('scripts/bx_rig.py', 'references/procedures.md', 'references/critique.md'),
+    'scenario-blender-previs-storyboard': ('scripts/bx_previs.py', 'references/expert-notes.md', 'references/procedures.md'),
 }
 
 
@@ -42,13 +44,15 @@ def _verify_files(value):
             raise ValueError('PREVIS_ATTACHMENT_HASH_MISMATCH')
 
 
-def external_skills(*, animation=False, roots=None):
+def external_skills(*, animation=False, rigging=False, storyboard=False, roots=None):
     """Discover a complete sibling installation; content hashes are its version.
 
     Never install or execute an unrelated provider automatically. Missing skills
     return the exact repository paths for the Host's existing skill-installer.
     """
-    names = SKILLS if animation else SKILLS[:2]
+    names = (*SKILLS[:2], *((SKILLS[2],) if animation else ()),
+        *(('scenario-blender-rigging',) if rigging else ()),
+        *(('scenario-blender-previs-storyboard',) if storyboard else ()))
     if roots is None:
         roots = [Path(v).expanduser() for v in os.environ.get('DRAMA_BLENDER_SKILLS_ROOT', '').split(os.pathsep) if v]
         roots += [Path.home()/'.agents/skills', Path(os.environ.get('CODEX_HOME', Path.home()/'.codex'))/'skills']
@@ -177,7 +181,8 @@ async def prepare(p,package_ref,task,plan=None,*,compiler=None):
     clean_refs=tuple(ref for ref,b in _bindings(p,task) if b.previsualization_ref is None)
     clean=task.model_copy(update={'execution_reference_refs':clean_refs or None,'previsualization_ref':None})
     if action in ('CREATE','ADJUST'):
-        skills=external_skills(animation=bool(plan.get('animation')))
+        skills=external_skills(animation=bool(plan.get('animation')), rigging=bool(plan.get('rigging')),
+            storyboard=bool(plan.get('storyboard')))
         sources=[dict(selection=v.selection.model_dump(mode='json',by_alias=True),value=v.value) for v in await compiler.reader.selections(package)]
         handoff=dict(schemaVersion=DECISION,createdAt=datetime.now(timezone.utc).isoformat(),scope=scope,sourceFingerprint=fingerprint,
             decision=action,reason=reason,packageRef=package_ref.model_dump(mode='json',by_alias=True),
@@ -197,7 +202,10 @@ async def prepare(p,package_ref,task,plan=None,*,compiler=None):
                 raise ValueError('PREVIS_HANDOFF_CHANGED')
             external=handoff['external']
             if external['status']!='AVAILABLE': raise ValueError('PREVIS_EXTERNAL_DEPENDENCIES_MISSING')
-            current=external_skills(animation=len(external['skills'])==3,roots=[external['root']])
+            selected_names={s['name'] for s in external['skills']}
+            current=external_skills(animation=SKILLS[2] in selected_names,
+                rigging='scenario-blender-rigging' in selected_names,
+                storyboard='scenario-blender-previs-storyboard' in selected_names,roots=[external['root']])
             if current.get('version')!=external['version']: raise ValueError('PREVIS_EXTERNAL_SKILLS_CHANGED')
             outputs={role:_file(Path(path)) for role,path in plan['outputs'].items()}
             if not {'project','video','handoff','invocation'}<=outputs.keys(): raise ValueError('PREVIS_DELIVERABLES_REQUIRED')
@@ -211,7 +219,7 @@ async def prepare(p,package_ref,task,plan=None,*,compiler=None):
                 raise ValueError('PREVIS_EXTERNAL_TOOL_CALLS_REQUIRED')
             module_paths = dict(bx_blockout=Path(external['root'])/SKILLS[1]/'scripts/bx_blockout.py',
                 bx_review=Path(external['root'])/SKILLS[0]/'scripts/bx_review.py')
-            if len(external['skills'])==3:
+            if SKILLS[2] in selected_names:
                 module_paths['bx_anim']=Path(external['root'])/SKILLS[2]/'scripts/bx_anim.py'
             if (invocation.get('sourceFingerprint')!=fingerprint or any(
                     Path(invocation.get('modules',{}).get(name,'')).resolve()!=path.resolve()
@@ -222,10 +230,20 @@ async def prepare(p,package_ref,task,plan=None,*,compiler=None):
             if (inspection.get('outcome')!='PASS' or inspection.get('videoSha256')!=outputs['video']['sha256']
                     or not inspection.get('continuousReview') or not inspection.get('notes')):
                 raise ValueError('PREVIS_CONTINUOUS_HOST_REVIEW_REQUIRED')
+            reference_purpose=plan.get('referencePurpose','')
+            if not isinstance(reference_purpose,str) or len(reference_purpose)>1000:
+                raise ValueError('PREVIS_REFERENCE_PURPOSE_INVALID')
+            reference_semantics=plan.get('referenceSemantics',['motion','camera'])
+            if (not isinstance(reference_semantics,list) or not reference_semantics
+                    or any(s not in ('motion','camera') for s in reference_semantics)
+                    or len(reference_semantics)!=len(set(reference_semantics))):
+                raise ValueError('PREVIS_REFERENCE_SEMANTICS_INVALID')
             probe=_probe(outputs['video']['path'])
             value=dict(schemaVersion=SCHEMA,createdAt=datetime.now(timezone.utc).isoformat(),scope=scope,sourceFingerprint=fingerprint,
                 packageRef=package_ref.model_dump(mode='json',by_alias=True),decision=action,reason=reason,use='ADOPTED_VIDEO_INPUT',
-                external=external,outputs=outputs,inspection=inspection,probe=probe,supersedes=handoff.get('supersedes'))
+                external=external,outputs=outputs,inspection=inspection,probe=probe,
+                referencePurpose=reference_purpose.strip(),referenceSemantics=reference_semantics,
+                supersedes=handoff.get('supersedes'))
             result_ref=_put(p,value)
         else:
             result_ref=SourcePin.model_validate(plan['previousRef'])
@@ -247,11 +265,13 @@ async def prepare(p,package_ref,task,plan=None,*,compiler=None):
         if media.content_hash!=value['outputs']['video']['sha256']: raise ValueError('PREVIS_IMPORTED_BYTES_MISMATCH')
         authority=task.unit.action_refs if task.unit else (package.scope.shot,)
         binding=ReferenceExecutionBinding(binding_id='external-previs:'+result_ref.fingerprint,version=1,scope=package_scope(package),
-            media=dict(media_id=media.id,version='1',content_hash=media.content_hash,kind='video',semantics=('motion','camera'),
+            media=dict(media_id=media.id,version='1',content_hash=media.content_hash,kind='video',
+                semantics=tuple(value.get('referenceSemantics',('motion','camera'))),
                 duration=value['probe']['durationMs']/1000,width=value['probe']['width'],height=value['probe']['height'],
                 review_ref='previsualization:'+result_ref.fingerprint),
             duties=tuple(dict(role=role,subject=scope['shotId'],purpose=purpose,necessity='REQUIRED') for role,purpose in (
-                ('CAMERA_MOTION','预演视频仅约束本镜空间、构图、摄影机关系、运动路径和事件先后；不继承代理几何、标记色、材质或预演照明；身份外观服从正式图像参考，光色与表演服从当前已采用专业设计。'),)),
+                ('CAMERA_MOTION' if 'camera' in value.get('referenceSemantics',('motion','camera')) else 'PERFORMANCE',
+                 value.get('referencePurpose') or '视频提供空间、构图、运动路径和事件先后；人物外观取自正式图像，材质与光色按本镜文字。'),)),
             role='REFERENCE',authorization_scope='ADOPTED_PRODUCTION_INPUT',authority_refs=authority,previsualization_ref=result_ref)
         binding_ref=p.execution_references.register(binding)
         clean=clean.model_copy(update={'execution_reference_refs':(*clean_refs,binding_ref)})

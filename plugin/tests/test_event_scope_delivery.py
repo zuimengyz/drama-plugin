@@ -148,7 +148,7 @@ async def test_final_wire_respects_scope_without_losing_identity_ambience_or_con
     try:
         for i,row in enumerate(out):
             prompt=row['wire']['content'][0]['text']
-            assert row['wire']['duration']==8 and '本段生成时长8秒' in prompt
+            assert row['wire']['duration']==8 and '本段生成时长8秒' not in prompt
             assert 'Courier' in prompt and 'Keeper' in prompt and prompt.count('PERSISTENT_WIND')==1
             assert ('WHOLE_COURIER_BEHAVIOR' in prompt)==single
             assert ('UNSCOPED_CONTACT' in prompt)==(single and not scoped)

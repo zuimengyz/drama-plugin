@@ -303,12 +303,18 @@ class ExecutionProjection:
                     if binding.role == 'REFERENCE' and (binding.use_ref or binding.previsualization_ref):
                         # The owner may explicitly assign performance, pose,
                         # composition or space. A blanket identity-only exclusion
-                        # would contradict that authority. Never edit duty prose.
+                        # would contradict that authority. Authored duty prose stays literal;
+                        # only the system-owned character-use constant has localized syntax.
                         limit = (' Do not inherit its background, opening action, pose, lighting, camera progress or completed speech.'
                             if legacy_scope or legacy_reference_use else
-                            ' Use only the assigned reference properties; all other properties follow the current target design.')
+                            '')
+                        from drama_plugin.production.references import ADOPTED_CHARACTER_USE
+                        purposes = [
+                            '人物图提供身份外观；服装、状态、姿态、灯光与所处位置按本镜设计，背景不作场景参考。'
+                            if d.purpose == ADOPTED_CHARACTER_USE else d.purpose
+                            for d in binding.duties]
                         add(domain,binding.use_ref or child(ref, 'duties'),
-                            'Retained source reference use: '+ '; '.join(d.purpose for d in binding.duties)+limit,
+                            '; '.join(purposes)+limit,
                             'preserve.reference_use')
                 internal.append(CoverageEntry(fact_id="reference-plan:"+sha256_canonical(ref), domain=domain,
                     source_ref=ref, obligation=O.EXECUTION_REQUIRED, status=S.NOT_APPLICABLE))
@@ -435,10 +441,11 @@ class ExecutionProjection:
             # Temporal relations bind utterance events, including two utterances
             # by the same narrator. Exact approved text identifies each event in
             # the model prompt; IDs and source evidence remain in the sealed plan.
-            left = '台词『'+line_text[first.event_id]+'』'
-            right = '台词『'+line_text[second.event_id]+'』'
+            event_order = {event.event_id: index + 1 for index, event in enumerate(plan.speech_events)}
+            left = f'第{event_order[first.event_id]}次发声'
+            right = f'第{event_order[second.event_id]}次发声'
             syntax = {"BEFORE":"先于", "AFTER":"后于", "OVERLAP":"与其重叠", "INTERRUPT":"插入其声场", "CONTINUE_UNDER":"持续在其声音下方", "FADE_BEHIND":"渐弱到其声音之后"}[relation.relation.value]
-            add(D.SOUND,relation.source_ref,f"{left}{syntax}{right}；这是这两次发声的关系，不增加或重复台词。","preserve.audio_relation")
+            add(D.SOUND,relation.source_ref,f"{left}{syntax}{right}。","preserve.audio_relation")
         selected_refs = {f.source_ref for f in facts}
         # Keep untransformed intention visible in the existing coverage report,
         # without making the compiler author acting or copy a Shot essay.

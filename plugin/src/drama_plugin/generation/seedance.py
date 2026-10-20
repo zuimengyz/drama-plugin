@@ -170,9 +170,10 @@ class SeedanceTargetAdapter:
             from drama_plugin.providers.video.registry import automatic_duration_bounds_ms
             lo, hi = automatic_duration_bounds_ms(profile.model)
             duration = f"本段自动时长范围{lo/1000:g}–{hi/1000:g}秒，上限不是填满目标"
-        else:
-            duration = f"本段生成时长{profile.requested_duration_ms/1000:g}秒"
-        return duration + "；保持下述动作与声音注明的先后、并行与结束条件，不为凑时长补演或循环。"
+            return duration + "；按所述动作与声音结束条件完成。"
+        # Fixed duration is already an interface parameter. Authored action
+        # windows remain in their source leaves; no generic pacing reminder.
+        return ""
 
 
 class ExactPromptTransfer:

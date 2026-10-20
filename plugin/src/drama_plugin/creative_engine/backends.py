@@ -190,7 +190,17 @@ def professional_validation_schema() -> dict[str, JsonValue]:
         "EDITORIAL": "temporalStructure; compression, protectedEvents, spatialOrientation as applicable.",
         "REFERENCE": "references: rows with id, priority REQUIRED|PREFERRED, beatIds explicit applicability, designPurpose and inputDuty (Professional reference duty, never Shot purpose). An explicit empty list is allowed only when no reference is required; required duties never disappear because binding is absent.",
     }
-    facts["description"] = "Executable authored fields by domain: " + canonical_json(descriptions)
+    facts["description"] = (
+        "Supply only current-shot executable meaning in each domain, not the whole director paragraph. "
+        "ACTION owns the shared event sequence; SUBJECTS owns each subject's distinct visible behavior; "
+        "PERFORMANCE adds only an observable nuance not already stated in ACTION. "
+        "CAMERA owns framing/movement, WORLD owns visible surroundings, SOUND owns actual current sounds. "
+        "Do not broadcast the same paragraph into these fields or fill absent optional fields with generic advice. "
+        "Exact dialogue comes from selected Canon spoken IDs, not repeated quotations in visual fields. "
+        "Version history, adoption/provenance, external-document instructions and cross-shot postproduction "
+        "remain in their existing records, not executable leaves. Reference inputDuty states only the "
+        "properties that this input supplies. Executable authored fields by domain: "
+    ) + canonical_json(descriptions)
     schemas = professional_fact_schemas(definitions)
     design["allOf"] = [{"if": {"properties": {"domain": {"const": domain.value}}},
         "then": {"properties": {"facts": contract}}} for domain, contract in schemas.items()]
@@ -669,11 +679,10 @@ class FormalCanonAuthor(SkillAuthor):
         return BOUNDARY + HOST_AUTONOMOUS + '\nWrite the whole independent scene in text. This is candidate authorship, not formal Canon projection.'
 
     def scene_decision_system(self) -> str:
-        return BOUNDARY + '\nYou are the same Host author, after your complete V1 was preserved. Read it whole. ' + \
+        return BOUNDARY + '\nYou are the original screenplay author, reviewing your preserved complete draft and supplied feedback. Read it whole. ' + \
             'Make your own artistic decision. KEEP_ALL is fully valid and supplies no replacement text. ' + \
             'Any revision supplies the complete later film or scene according to scope, with its gains and costs. ' + \
-            'No forced change, shortening, restraint or detail quota. No advisory professional was requested ' + \
-            'by this batch port; use your own judgment. Interactive requested support uses screenplay.* before binding.'
+            'No forced change, shortening, restraint or detail quota. Use explicitly supplied director feedback and project authorContext. Preserve a complete revised body.'
 
     def scene_execution_fingerprint(self) -> str:
         return sha256_canonical([self.client.execution_fingerprint('canon', identity,
@@ -728,6 +737,35 @@ class FormalCanonAuthor(SkillAuthor):
 
 
 class FormalDirectionAuthor(SkillAuthor):
+    async def film_treatment(self, request: AuthorRequest | FilmAuthorRequest,
+                             packet: dict[str, JsonValue]) -> HostSceneOriginal:
+        """Independent full-film director writing before formal Shot projection.
+
+        Proposals to change screenplay are feedback, never silent Canon writes.
+        """
+        system = ("You are the film director-design author. Read the complete screenplay, "
+            "project authorContext and designated source. Write a complete scene-by-scene "
+            "director screenplay: spectator position, performance tasks, staging, concrete "
+            "coverage, sound, editing, transitions and content-derived estimated durations. "
+            "Cover every scene, not an opening sample or outline. You may propose script "
+            "changes with reasons in a separate feedback section; only the Host-selected "
+            "reconciled version is later projected into production. Do not silently change "
+            "dialogue or facts. Advisory methods support your own substantive artistic choices. "
+            "Do not infer creative restrictions from existing assets or previous renders.\n")
+        creation_scope = (
+            "\nThis call is full-film creative development, not formal Shot projection. "
+            "The reference documents' adopted-source and department-write restrictions "
+            "apply to later formal records, not to proposing substantive screenplay changes. "
+            "Use the project's actual adaptation authority. Explain the scope and dramatic "
+            "reason for formal choices; do not turn examples or past repair advice into "
+            "universal bans. Estimate time from playable actions and natural speech, and "
+            "label estimates as untested until an actual read or playback exists. "
+            "Return only the requested JSON object with the complete prose in its text field. "
+            "Do not put Markdown outside that JSON object.")
+        return await self.client.complete('direction', self.knowledge(DIRECTION_CRAFT) + system + creation_scope,
+            request, TypeAdapter(HostSceneOriginal), model_payload=packet,
+            author_identity='film.director-treatment:v1')
+
     def system_contract(self) -> str:
         system = BOUNDARY + "\nOwn Shot intent, coverage, blocking/camera intention, editing relation and Shot performance direction. Do not change Canon/dialogue or author detailed professional designs. spokenSelections must choose only supplied Canon spoken candidates. System assigns exact spoken IDs; never output internal IDs.\n"
         system += ("professionalDomains only declares which downstream Professional Author designs the Shot needs. "

@@ -236,3 +236,15 @@ async def test_frozen_v8_exact_scope_reads_back_without_weakening_new_scope_or_s
         assert any(row.code == 'SCOPE_MISMATCH' and row.required for row in diagnostics)
     finally:
         await p.aclose()
+
+@pytest.mark.asyncio
+async def test_retained_owner_punctuation_is_not_rewritten_as_semicolons(tmp_path, monkeypatch):
+    req, raw = material(single=True)
+    exact = 'Ответ: «Сейчас.» Then listen; keep the room quiet.'
+    sound(raw)['ambience'] = [{'design': exact}]
+    p, compiler, package, rows = await pipeline(tmp_path, monkeypatch, req, raw)
+    try:
+        assert exact in rows[0]['wire']['content'][0]['text']
+        assert 'Сейчас;' not in rows[0]['wire']['content'][0]['text']
+    finally:
+        await p.aclose()

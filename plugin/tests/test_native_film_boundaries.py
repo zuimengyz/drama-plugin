@@ -657,14 +657,15 @@ async def test_native_same_narrator_relations_and_unowned_constraints_actual_req
     rehearsal=await p.preview_source_film_next_unit(r)
     assert rehearsal.get('request'), rehearsal
     text=rehearsal['request']['content'][0]['text']
-    assert '台词『Я знал это с рождения.』后于台词『Я был смешон.』' in text
-    assert '这是这两次发声的关系，不增加或重复台词' in text
+    assert '第2次发声后于第1次发声。' in text
+    assert text.count('用ru{Я был смешон.}') == 1
+    assert text.count('用ru{Я знал это с рождения.}') == 1
     assert 'actor的声音' not in text and 'school-voice' not in text and 'school-second' not in text
     assert '<主体1>身份：Narrator' not in text and '<主体2>身份：Narrator' not in text
     assert 'Narrator is the same person across ages; groups remain non-individuated' in text
     assert '<主体1>身份：childhood mockers' in text, text
-    assert '<主体1>动作：Laugh; point casually' in text, text
-    assert '<主体2>身份：protagonist; voiceover narrator' in text
+    assert '<主体1>动作：Laugh and point casually.' in text, text
+    assert '<主体2>身份：protagonist and voiceover narrator' in text
     assert 'UNVERIFIED' not in text and 'OFFLINE_PREVIEW' not in text
     assert rehearsal['voice']['voiceIdentityVerification']=='UNVERIFIED'
     assert len(creates)==1  # only the existing mock opening, no preview POST

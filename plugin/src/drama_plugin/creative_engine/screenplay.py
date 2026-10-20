@@ -1,8 +1,8 @@
-"""Host-authored screenplay sidecars on the existing immutable creative artifact IO.
+"""Author originals and Host-selected screenplay sidecars on the existing immutable creative artifact IO.
 
 No agent, model, Runtime loop, Canon write, evaluation gate or media operation.
-The entry returns an autonomous author packet. Support is available only after
-the complete V1 has been retained; the Host explicitly selects the final text.
+The entry returns an autonomous author packet with project and professional context.
+Revision advice is retained after the complete V1; the Host explicitly selects the final text.
 """
 from __future__ import annotations
 
@@ -17,17 +17,20 @@ from drama_plugin.hosts.director_artifacts import DirectorArtifactStore
 from drama_plugin.hosts.artifact_io import reject_link
 from drama_plugin.tools.registry import ToolRegistry, ToolHandler
 
-HOST_AUTONOMOUS = """Create a complete original director screenplay V1 as the author.
+HOST_AUTONOMOUS = """Create a complete original screenplay as the actual author.
 Use the designated source, adopted facts, full-film framework and creative goal.
 First finish the whole work or whole scene. Do not first submit an artistic
 selection plan, selected highlights, mandatory deletions or a locked realization.
-Explore with your own literary and cinematic knowledge. No professional craft
-bundle, previous candidate solution, criticism or aesthetic checklist is supplied
-at this stage. V1 may fully develop action, interaction, words, thought, narration,
+Explore with your own literary and cinematic knowledge. Use explicitly supplied project adaptation authority, creative preferences,
+professional context and feedback as inputs. Distinguish binding user boundaries
+from advisory methods and historical candidates; neither examples nor tools choose
+the story for you. V1 may fully develop action, interaction, words, thought, narration,
 space, performance and sound/image imagination as the work needs. No fixed count,
 brevity, restraint, silence or deletion preference. Preserve V1 verbatim before
 requesting professional support. Afterwards you may keep it completely, expand,
 combine, restructure or remove material. Advice never automatically changes it.
+When an independent author is called, its output belongs to that author; the Host
+coordinates, reviews and selects rather than claiming that authorship.
 Candidate invention is not adopted fact. Formal adoption remains with the existing
 authority; this workspace grants no production, media or persistence permission.
 """
@@ -168,7 +171,8 @@ class ScreenplayWorkshop:
     def begin(self, *, session_id: str, work_id: str, scope: Literal['FILM', 'SCENE'], goal: str,
               source_refs: tuple[SourcePin, ...], scene_id: str | None = None,
               full_film_ref: SourcePin | None = None, memory_tags: tuple[str, ...] = (),
-              memory_refs: tuple[SourcePin, ...] = (), memory_refs_only: bool = False) -> dict[str, Any]:
+              memory_refs: tuple[SourcePin, ...] = (), memory_refs_only: bool = False,
+              author_context: dict[str, Any] | None = None) -> dict[str, Any]:
         sources = [self._read(ref, 'screenplay-context-v1') for ref in source_refs]
         if not sources or any(s['workId'] != work_id for s in sources):
             raise ValueError('Screenplay source work mismatch or missing source')
@@ -182,7 +186,8 @@ class ScreenplayWorkshop:
         packet = {'schemaVersion': 'autonomous-screenplay-context-v1', 'workId': work_id,
             'scope': scope, 'sceneId': scene_id, 'goal': goal, 'instruction': HOST_AUTONOMOUS,
             'sources': [{'ref': dump_contract(ref), **s} for ref, s in zip(source_refs, sources, strict=True)],
-            'longArcMemory': memory, 'professionalGuidance': [], 'historicalCandidates': []}
+            'longArcMemory': memory, 'professionalGuidance': [], 'historicalCandidates': [],
+            'authorContext': author_context or {}}
         context_ref = self.objects.put('screenplay-packet:' + session_id, packet)
         session = ScreenplaySession(session_id=session_id, work_id=work_id, scope=scope,
             scene_id=scene_id, goal=goal, context_ref=context_ref, full_film_ref=full_film_ref)
@@ -381,12 +386,13 @@ def register_screenplay_tools(registry: 'ToolRegistry', workshop: ScreenplayWork
     async def begin(session_id: str, work_id: str, scope: Literal['FILM', 'SCENE'], goal: str,
                     source_refs: tuple[SourcePin, ...], scene_id: str | None = None,
                     full_film_ref: SourcePin | None = None, memory_tags: tuple[str, ...] = (),
-                    memory_refs: tuple[SourcePin, ...] = (), memory_refs_only: bool = False) -> dict[str, Any]:
+                    memory_refs: tuple[SourcePin, ...] = (), memory_refs_only: bool = False,
+              author_context: dict[str, Any] | None = None) -> dict[str, Any]:
         return workshop.begin(session_id=session_id, work_id=work_id, scope=scope, goal=goal,
             source_refs=tuple(SourcePin.model_validate(r) for r in source_refs), scene_id=scene_id,
             full_film_ref=SourcePin.model_validate(full_film_ref) if full_film_ref is not None else None,
             memory_tags=memory_tags, memory_refs=tuple(SourcePin.model_validate(r) for r in memory_refs),
-            memory_refs_only=memory_refs_only)
+            memory_refs_only=memory_refs_only, author_context=author_context)
     async def retain_v1(session_id: str, text: str, expected_revision: int = 0) -> SourcePin:
         return workshop.retain_v1(session_id, text, expected_revision=expected_revision)
     async def support_packet(session_id: str, specialty: str, question: str) -> dict[str, Any]:
@@ -403,7 +409,7 @@ def register_screenplay_tools(registry: 'ToolRegistry', workshop: ScreenplayWork
         ('retain_context', retain_context, SourcePin, {'original': ContextOriginal}, {}),
         ('retain_thread', retain_thread, SourcePin, {'thread': NarrativeThread}, {}),
         ('begin', begin, dict, {'session_id': str, 'work_id': str, 'scope': Literal['FILM', 'SCENE'], 'goal': str, 'source_refs': tuple[SourcePin, ...]},
-            {'scene_id': str | None, 'full_film_ref': SourcePin | None, 'memory_tags': tuple[str, ...], 'memory_refs': tuple[SourcePin, ...], 'memory_refs_only': bool}),
+            {'scene_id': str | None, 'full_film_ref': SourcePin | None, 'memory_tags': tuple[str, ...], 'memory_refs': tuple[SourcePin, ...], 'memory_refs_only': bool, 'author_context': dict[str, Any] | None}),
         ('retain_v1', retain_v1, SourcePin, {'session_id': str, 'text': str}, {'expected_revision': int}),
         ('support_packet', support_packet, dict, {'session_id': str, 'specialty': str, 'question': str}, {}),
         ('retain_support', retain_support, SourcePin, {'session_id': str, 'specialty': str, 'text': str, 'expected_revision': int}, {}),

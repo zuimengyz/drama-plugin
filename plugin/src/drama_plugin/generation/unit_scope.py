@@ -224,4 +224,16 @@ def project_scoped_value(context, ref, value):
         return value
     if not isinstance(value, str) or any(not 0 <= a < b <= len(value) for a, b in fragment.spans):
         raise ValueError('UNIT_SOURCE_SPAN_INVALID')
-    return '; '.join(value[a:b] for a, b in fragment.spans)
+    # Span boundaries select meaning, not punctuation. When adjacent retained
+    # clauses were separated only by punctuation, preserve those original bytes
+    # (including a full stop inside quoted speech). Only an omitted clause needs
+    # a replacement separator.
+    parts = [value[fragment.spans[0][0]:fragment.spans[0][1]]]
+    for (_, previous_end), (start, end) in zip(fragment.spans, fragment.spans[1:]):
+        gap = value[previous_end:start]
+        parts.append(gap if re.fullmatch(r'(?:[\s;；,，.。]|\band\b|\bthen\b)*', gap, re.I) else '; ')
+        parts.append(value[start:end])
+    last_end = fragment.spans[-1][1]
+    if re.fullmatch(r'[\s;；,，.。]*', value[last_end:]):
+        parts.append(value[last_end:])
+    return ''.join(parts)

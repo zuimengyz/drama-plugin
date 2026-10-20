@@ -153,3 +153,21 @@ async def test_shared_delivery_preserves_continuation_operation_context(tmp_path
     assert result['content'][1]['role']=='first_frame'
     with pytest.raises(ValueError,match='REFERENCE_DELIVERY_CONTEXT_MISMATCH'):
         await TargetHttpTransport.materialize_reference_payload(transport,{},[ref],scope=scope,model='other',operation=operation)
+
+
+def test_optional_external_skills_are_selected_by_name(tmp_path):
+    for name, files in REQUIRED.items():
+        folder = tmp_path / name
+        for rel in ('SKILL.md', *files):
+            f = folder / rel
+            f.parent.mkdir(parents=True, exist_ok=True)
+            f.write_text('fixture')
+    result = external_skills(rigging=True, storyboard=True, roots=[tmp_path])
+    names = {s['name'] for s in result['skills']}
+    assert names == {*SKILLS[:2], 'scenario-blender-rigging', 'scenario-blender-previs-storyboard'}
+    assert SKILLS[2] not in names
+    all_skills = external_skills(animation=True, rigging=True, storyboard=True, roots=[tmp_path])
+    assert len(all_skills['skills']) == 5
+    (tmp_path / 'scenario-blender-rigging/scripts/bx_rig.py').unlink()
+    assert external_skills(rigging=True, roots=[tmp_path])['status'] == 'DEPENDENCIES_MISSING'
+    assert external_skills(roots=[tmp_path])['status'] == 'AVAILABLE'

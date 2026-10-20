@@ -3,16 +3,18 @@ name: cinematic-screenplay-incubation
 description: Support Host-first full-film and scene screenplay creation, then source-bound dramaturgy, professional exploration and Host-selected revision; production remains downstream.
 ---
 
-## Original creation precedes craft study
+## Real author inputs and collaboration
 
-Use the real [Host-first entry](../../docs/host-first-creation.md). Initial context
-contains designated source, adopted facts, complete film framework where one
-exists, relevant long-arc memory and creative goal. The Host first writes a full
-original V1, without reading the craft, meta, review or professional solution
-bundles below as preconditions. Preserve it exactly. Then select only useful
-modules and professional support; the Host can retain all, further develop,
-combine, reconstruct or reduce. No revision or deletion is required to prove this
-Skill useful. These later modules do not become an advance aesthetic checklist.
+Use the [existing author entry](../../docs/host-first-creation.md). Identify whether
+Host or a configured independent author actually writes each body. Provide source,
+project adaptation authority, creative preferences, selected professional methods
+and feedback through `authorContext`; they participate in first creation rather
+than arriving only after the author has committed to a restricted draft. Advisory
+methods leave room for the author to choose scenes, words, actions and structure.
+Preserve the complete raw author output before Host edits. Director treatment may
+return screenplay changes; reconcile both complete bodies before adoption, then
+project exact selected sources into scene/shot production. Record actual authorship
+and selected differences, not just that a call succeeded.
 
 Formal source/rights compilation still governs Canon writes and production.
 A designated-source text candidate can be written before a professional creative
@@ -33,7 +35,7 @@ remains a separate, unadopted sidecar until the user selects it.
 
 # Cinematic Screenplay Incubation · 影视编剧孵化
 
-After complete V1, consume the unified `creativeRhythm` from the actual creation context for professional realization planning, even when source text is already supplied. Follow [narrative rhythm](../../docs/narrative-rhythm.md); Skills never read env directly. Pin this profile to the creative revision; refresh/resume keeps it, while a new revision reads current configuration.
+During screenplay creation and director design, consume the unified `creativeRhythm` from the actual creation context for professional realization planning, even when source text is already supplied. Follow [narrative rhythm](../../docs/narrative-rhythm.md); Skills never read env directly. Pin this profile to the creative revision; refresh/resume keeps it, while a new revision reads current configuration.
 
 Own the creative working process from Historical Material to a readable, reviewed screenplay. The six modules below are stages of one Agent's work, not separate agents or an automatic skill chain. Preserve an already approved foundation; choose only the stages affected by the request.
 
@@ -68,6 +70,14 @@ Turn traits into behavior under pressure, disagreement, humiliation, uncertainty
 ### 3. Story & Rhythm
 
 Derive thesis, narrative POV and the smallest coherent scope from the causal spine. Build story and episode jobs before selecting counts. Compare Beat → Scene → Sequence → Episode → Multi-Episode Arc; each episode records its start/end state, turn, peak, breathing space, after-effect and next pressure. Track pressure, development, breathing, escalation, turn, climax and aftermath as changes in options and knowledge, not timing quotas. Review adjacent scenes for repeated argument, meeting, battle or emotional peak. A quiet scene still changes something; do not remove needed causality merely to accelerate.
+
+For an authorized film-opening redesign, apply the Director's
+[film-opening authorship](../director/SKILL.md#film-opening-authorship) at the script
+level. Reconsider the entry event and spectator position against the complete film
+and ending before preserving the existing first scene. Select a complete opening
+passage and its continuation; retain before/after text and affected downstream
+references. Reusable assets and successful technical tests remain available without
+obliging the new screenplay to keep their former dramatic role.
 
 ### 4. Scene & Dialogue
 

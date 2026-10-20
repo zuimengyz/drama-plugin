@@ -46,11 +46,11 @@ async def test_duration_preamble_does_not_claim_unwritten_windows_and_preserves_
         text = row['wire']['content'][0]['text']
         preamble = text.split('\n', 1)[0]
         assert '下述时间窗' not in preamble and '预计节拍' not in preamble
-        assert '保持下述动作与声音注明的先后、并行与结束条件' in preamble
-        assert '不为凑时长补演或循环' in preamble
+        assert '保持下述动作与声音注明的先后、并行与结束条件' not in preamble
+        assert '不为凑时长补演或循环' not in preamble
         assert row['wire']['duration'] == (-1 if duration is None else 8)
         assert ('自动时长范围4–15秒，上限不是填满目标' in preamble) == (duration is None)
-        assert ('本段生成时长8秒' in preamble) == (duration is not None)
+        assert '本段生成时长8秒' not in preamble
         assert ('0–2s: the keeper supports the packet' in text) == windows
         assert ('2–5s: the courier speaks while the keeper holds it still.' in text) == windows
         assert ('5–8s: the packet is supported by the keeper' in text) == windows

@@ -2,7 +2,7 @@
 
 Interactive Host sessions can request advice and bind their chosen full scene.
 The native batch default writes and preserves the whole film before Canon
-projection and the whole scene before Direction, each followed by a Host decision.
+projection and the whole scene before Direction, each followed by an author revision decision; Host adoption remains separate.
 It supplies those exact candidates to formal projection and realization.
 """
 from pydantic import JsonValue, TypeAdapter
@@ -17,7 +17,7 @@ from drama_plugin.creative_engine.screenplay import ContextOriginal, ScreenplayW
 async def native_film_decision(workshop: ScreenplayWorkshop, author: FormalCanonAuthor,
                                request: AuthorRequest | FilmAuthorRequest, *, operation: str,
                                screenplay: str) -> dict[str, JsonValue]:
-    """The complete film original already exists; preserve, then ask its Host."""
+    """The complete film original already exists; preserve, then ask its author."""
     incoming = request.screenplay_context or {}
     if incoming.get('schemaVersion') == 'scene-screenplay-shot-handoff-v1':
         return incoming
@@ -29,7 +29,8 @@ async def native_film_decision(workshop: ScreenplayWorkshop, author: FormalCanon
         rows = incoming.get('longArcMemory')
         refs = tuple(SourcePin.model_validate(r['ref']) for r in rows if isinstance(r, dict)) if isinstance(rows, list) else ()
         workshop.begin(session_id=identity, work_id=request.scope.work_id, scope='FILM',
-            goal=request.source.goal, source_refs=(source,), memory_refs=refs, memory_refs_only=True)
+            goal=request.source.goal, source_refs=(source,), memory_refs=refs, memory_refs_only=True,
+            author_context=incoming.get('authorContext', {}))
     session = workshop.load(identity)
     if session.original_v1_ref is None:
         workshop.retain_v1(identity, screenplay, expected_revision=session.revision)
@@ -58,7 +59,8 @@ async def native_film_original(workshop: ScreenplayWorkshop, author: FormalCanon
         rows = incoming.get('longArcMemory')
         refs = tuple(SourcePin.model_validate(r['ref']) for r in rows if isinstance(r, dict)) if isinstance(rows, list) else ()
         workshop.begin(session_id=identity, work_id=request.scope.work_id, scope='FILM',
-            goal=request.source.goal, source_refs=(source,), memory_refs=refs, memory_refs_only=True)
+            goal=request.source.goal, source_refs=(source,), memory_refs=refs, memory_refs_only=True,
+            author_context=incoming.get('authorContext', {}))
     session = workshop.load(identity)
     packet = workshop.objects.read_ref(session.context_ref)
     if session.original_v1_ref is None:
@@ -150,7 +152,8 @@ async def native_scene_screenplay(workshop: ScreenplayWorkshop, author: FormalCa
             if isinstance(row, dict)) if isinstance(memory, list) else ()
         workshop.begin(session_id=identity, work_id=work_id, scope='SCENE', scene_id=scene_id,
             goal=request.source.goal, source_refs=tuple(refs), full_film_ref=film,
-            memory_refs=memory_refs, memory_refs_only=True)
+            memory_refs=memory_refs, memory_refs_only=True,
+            author_context=(incoming_context.get('authorContext', {}) if isinstance(incoming_context, dict) else {}))
     session = workshop.load(identity)
     context = workshop.objects.read_ref(session.context_ref)
     if session.original_v1_ref is None:

@@ -1,11 +1,13 @@
 # Host-first creation and screenplay continuity
 
-The Host is the author. Director is its film-making capability, not an independent
-committee that takes creative authority. First create the complete original V1.
-Only then study professional suggestions and choose a final version. Keeping all
-of V1, developing it, combining expressions, reconstructing it and reducing it are
-equally available. No first-draft selection plan, mandatory revision, aesthetic
-score, deletion quota or default preference for silence/shortness is required.
+The Host coordinates authorship, review, reconciliation and adoption. When the
+configured FormalCanonAuthor or FormalDirectionAuthor is called, retain its actual
+input/output and identify that independent author; do not label it Host-written.
+When the Host writes a body itself, record that separately. Project permission,
+creative preferences, professional context and user feedback reach the real author
+through explicit `authorContext`, with source/version evidence retained by the caller.
+Methods are advice, user boundaries remain binding, and old production choices do
+not become permanent constraints. The author chooses substantial story and form.
 
 ## Actual entry and timing
 
@@ -21,9 +23,9 @@ For a new complete film or a scene in an existing film:
    metadata supplied by the caller, not a new adoption decision. Existing source
    and rights authorities still govern formal writes and production.
 2. Call `screenplay.begin`. A scene includes the **complete film framework**, not
-   only neighbors. The returned author packet has no professional guidance or
-   historical candidate solutions. Do not load craft checklists, competing old
-   drafts or criticism into first creation. The author can use its own knowledge.
+   only neighbors. Pass project-specific `author_context` with adaptation authority, creative
+   preferences and selected professional guidance. Do not silently inject old
+   candidate solutions; supply them only when explicitly relevant and labelled.
 3. Write the whole film/scene and call `screenplay.retain_v1` with its exact text.
    The text is immutable. A complete scene has action, interaction, speech or
    silence and an internal dramatic history; it is not an outline or shot list.
@@ -48,10 +50,12 @@ score or production advance in this facet.
 
 ## Existing automated native author paths
 
-`FormalCanonAuthor` now supplies the autonomous creation instruction directly;
-it does **not** read incubation craft or literary-craft files before first writing.
+`FormalCanonAuthor` supplies the autonomous creation instruction and preserves the
+explicit authorContext through native film and scene calls. `film_treatment` on the
+existing FormalDirectionAuthor writes a complete director treatment before formal
+Shot projection; proposed screenplay changes return as feedback for reconciliation.
 For a new work, the single-scene and complete-film capabilities first request a
-free whole-film body, retain it verbatim, and request the Host's decision in a
+free whole-film body, retain it verbatim, and request the same writer's revision decision in a
 separate call. Only afterwards does the existing Canon author derive the structured
 Work, Script and Scene records. The selected `Script.screenplay` must match exactly;
 a different body is rejected before the formal version is written. There is no
@@ -67,7 +71,8 @@ An existing complete film original can likewise be retained and selected; an
 already adopted film framework stays the formal source. Before formal Direction,
 the default formal author writes a complete independent
 scene original from the full-film framework, preserves it, then makes a separate
-Host decision. This also runs when an existing adopted Scene skipped Canon
+author revision decision. The Host must identify this as model-authored selection;
+formal adoption and human-delegated creative coordination remain separate. This also runs when an existing adopted Scene skipped Canon
 creation. Full-film Direction receives all selected complete scene bodies. Explicit
 scene sessions reuse their chosen text exactly. These bounded text author calls
 reuse the existing author/backend and capability; they add no Runtime loop or

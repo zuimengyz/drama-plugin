@@ -389,7 +389,17 @@ def _native_character_identity_review(checks: Mapping[str, str], *, reviewer: st
     appearance_revision = all(checks.get(key) == 'PASS' for key in
         ('identity_continuity', 'costume_materials', 'purpose_specific_composition',
          'hands_and_grounding', 'reference_scope'))
-    return (human or appearance_revision or checks.get('IDENTITY') == 'PASS' or
+    # The native still Review permits literal professional check names. These
+    # explicit combinations retain the same single-person/readability duties;
+    # they neither relabel the stored review nor accept an arbitrary PASS.
+    professional_identity = any(all(checks.get(key) == 'PASS' for key in group) for group in (
+        ('single_identity', 'crop_face_body_and_hands', 'hands_and_support',
+         'selected_costume_and_materials'),
+        ('selected_face_hair_body', 'single_person_neutral_state', 'face_hands_crop',
+         'costume_color_patches_cuff'),
+        ('selected_visual_identity_or_object', 'material_and_shape',
+         'crop_and_visible_details', 'ground_or_support_contact', 'no_unwanted_people_or_text')))
+    return (human or appearance_revision or professional_identity or checks.get('IDENTITY') == 'PASS' or
         all(checks.get(key) == 'PASS' for key in
             ('SINGLE_SELECTED_PERSON', 'FACE_AND_BODY_READABILITY')))
 
@@ -513,7 +523,9 @@ def _native_adopted_image(adapter, media, asset, binding, proof, *, asset_type: 
                 or design_ref.fingerprint != sha256_canonical(design)
                 or selected_item['designRef'] != dump_contract(design_ref) or item.get('reuseAssetId')
                 or design.get('assetType') != asset_type
-                or (not design.get('subjectId') if asset_type in {'CHARACTER', 'COSTUME'} else design.get('subjectId') is not None)
+                or (not design.get('subjectId') if asset_type in {'CHARACTER', 'COSTUME'} else
+                    design.get('subjectId') is not None and design['subjectId'] not in {
+                        s['id'] for s in preparation.get('referenceAuthorContext', {}).get('canon', {}).get('scene', {}).get('subjects', ())})
                 or design.get('referenceRequired') is not True
                 or prep_ref.fingerprint != sha256_canonical(preparation)
                 or (value.get('scenePreparationRef') is not None

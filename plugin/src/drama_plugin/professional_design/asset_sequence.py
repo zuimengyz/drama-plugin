@@ -686,6 +686,7 @@ class SpecializedAssetSequence:
         family = ref.fingerprint if self._fresh(ref) else None
         requirements = []
         claimed = set()
+        represented_objects = set()
         for ordinal, choice in enumerate(draft.assets):
             from drama_plugin.professional_design.provenance import reject_model_metadata
             reject_model_metadata(choice.design)
@@ -708,6 +709,11 @@ class SpecializedAssetSequence:
                 prior = base or prior
                 if prior is not None and not self._in_family(prior, ref):
                     raise ValueError('ASSET_REUSE_FAMILY_MISMATCH')
+            elif subject is not None and choice.asset_type in {'LOCATION', 'PROP', 'OTHER'}:
+                # Canon subjects also name places and objects. The independent
+                # asset artist owns their concrete type; one shared object
+                # subject may legitimately yield several distinct props.
+                represented_objects.add(subject)
             if prior and prior.asset_type != choice.asset_type:
                 raise ValueError('ASSET_REUSE_TYPE_MISMATCH')
             if choice.reference_role == 'SUPPLEMENT' and (prior is None or not choice.variant_reason):
@@ -749,7 +755,7 @@ class SpecializedAssetSequence:
             requirements.append({**material, 'designRef': dump_contract(design_ref),
                 'requirementKey': design_ref.fingerprint})
         for s in roster:
-            if s['id'] not in claimed:
+            if s['id'] not in claimed and s['id'] not in represented_objects:
                 base = bases[s['id']]
                 if base is None:
                     raise ValueError('FIRST_APPEARANCE_CHARACTER_DESIGN_REQUIRED')

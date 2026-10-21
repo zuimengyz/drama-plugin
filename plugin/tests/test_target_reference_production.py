@@ -97,6 +97,32 @@ async def quote_and_approve(p, child):
         source_ref=value.artifact_reference())
 
 
+@pytest.mark.asyncio
+async def test_unreserved_reference_recovers_exact_work_read_failure(tmp_path, monkeypatch):
+    from drama_plugin.exceptions import RemoteServiceError
+    p, _, child, value, _ = await prepared(tmp_path, monkeypatch)
+    from drama_plugin.professional_design.reference_design import inherit_design
+    item = p.reference_production.item(value)
+    child += ':scope-failure'
+    await p.reference_production.prepare_reference(child, value.preparation_ref,
+        value.author_context_ref, inherit_design(reference_frame(item), item))
+    async def unavailable(_):
+        raise RemoteServiceError('Interrupted exact Work read', status_code=503, error_code='UNAVAILABLE')
+    monkeypatch.setattr(p.reference_production, 'formal_scope', unavailable)
+    failed = await p.reference_production.resume(child)
+    assert failed.state == RuntimeState.FAILED and failed.cursor == 1
+    assert p.reference_production.get(child).stage is None
+    async def exact_scope(_):
+        return True
+    monkeypatch.setattr(p.reference_production, 'formal_scope', exact_scope)
+    recovered = await p.reference_production.resume(child)
+    assert recovered.state == RuntimeState.WAITING_EXTERNAL and recovered.cursor == 1
+    fixed = p.reference_production.get(child)
+    assert fixed.stage is None and fixed.cost_ref is None and fixed.receipt is None
+    assert fixed.frame['request'] == value.frame['request']
+    assert fixed.required_action == 'CURRENT_REFERENCE_QUOTE_REQUIRED'
+
+
 def fake_submission(monkeypatch, calls):
     import drama_plugin.professional_design.reference_production as module
     async def submit(work,attempt,frame,cache):

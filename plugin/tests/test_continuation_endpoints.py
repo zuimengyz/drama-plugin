@@ -152,6 +152,64 @@ async def following(p,run_id,service,first,phase,*,bind=True):
 
 
 @pytest.mark.asyncio
+async def test_exact_user_adoption_accepts_endpoint_without_erasing_revise(tmp_path,monkeypatch,media_files):
+    from drama_plugin.execution.contracts import CreativeMediaReview
+    from drama_plugin.generation.operation import continuation_frame,user_adopted_endpoint_source
+    from drama_plugin.persistence.review import UserDecisionRecord
+    from drama_plugin.runtime.contracts import DecisionCategory
+    p,parent,service,calls,creates,auth,authors=await scenario(tmp_path,monkeypatch,media_files)
+    unit=p.film.store.checkpoint(parent).units[0]
+    child=unit.generation_run_id
+    run=await p.runtime.run(child)
+    if run.cursor==2:
+        await p.decide_target_run(child,decision_id=p.runtime.decision_id(child),accepted=True,source_ref=unit.package_ref)
+        run=await p.runtime.run(child)
+    assert run.state==RuntimeState.WAITING_USER and run.cursor==9
+    op,cp,media=completion(p,child)
+    context=p.execution.review_context(op,media.media,media.canonical_media_ref)
+    finding=ReviewObservation(code='OBSERVED_BLOCKING_VARIATION',owner='blocking',finding='The visible step has a different direction.',
+        required_revision='Reconcile the remaining blocking against the actual retained endpoint.')
+    await p.provide_human_media_review(child,media_ref=cp.progress.video_ref,context_hash=context,
+        response=ReviewResponse('REVISE',(finding,)))
+    frame_ref=await p.retain_source_film_last_frame(child)
+    rejected=p.execution.store.checkpoint(op.artifact_reference()).progress.video_creative_ref
+    with pytest.raises(ValueError,match='REVIEWED_CONTINUATION_PREDECESSOR_REQUIRED'):
+        continuation_frame(p.ledger,frame_ref)
+    def decision(run_id,scope,label,category,accepted,source):
+        record=UserDecisionRecord.seal(run_id=run_id,scope=scope,decision_id=run_id+':'+label,
+            category=category,accepted=accepted,source_ref=source)
+        return p.reviews.put_user_decision(record)
+    decision(child,media.scope,'declined',DecisionCategory.ADOPTION,False,media.canonical_media_ref)
+    decision(child,media.scope,'cost-only',DecisionCategory.COST_APPROVAL,True,media.canonical_media_ref)
+    decision(child,media.scope,'package-only',DecisionCategory.ADOPTION,True,unit.package_ref)
+    decision(parent,p.runtime.store.load(parent).scope,'other-run',DecisionCategory.ADOPTION,True,media.canonical_media_ref)
+    assert not user_adopted_endpoint_source(p.ledger,media)
+    creates_before=len(creates)
+    decision(child,media.scope,'exact-media',DecisionCategory.ADOPTION,True,media.canonical_media_ref)
+    frame,bound,receipt,task=continuation_frame(p.ledger,frame_ref)
+    assert bound==media and frame.predecessor_media_ref==cp.progress.video_ref
+    assert p.execution.store.get(rejected,CreativeMediaReview).outcome=='REVISE'
+    assert p.execution.store.checkpoint(op.artifact_reference()).progress.video_creative_ref==rejected
+    with pytest.raises(ValueError,match='REVIEWED_CONTINUATION_PREDECESSOR_REQUIRED'):
+        continuation_frame(p.ledger,frame_ref,picture_only=True)
+    from types import SimpleNamespace
+    from drama_plugin.generation.cross_shot import validate_cross_shot
+    from drama_plugin.generation.contracts import CrossShotContinuity
+    judgment=CrossShotContinuity(strategy='CONTINUE',reason='The exact retained variation was adopted.',
+        camera_relation='Same view.',inherited_state='Accepted endpoint.',target_state='Next authored event.',
+        predecessor_shot_id=media.scope.shot_id,predecessor_media_ref=cp.progress.video_ref)
+    target=SimpleNamespace(cross_shot_continuity=judgment,
+        continuation=SimpleNamespace(predecessor_media_ref=cp.progress.video_ref))
+    validate_cross_shot(p.ledger,media.scope,target)
+    with pytest.raises(ValueError,match='CROSS_SHOT_PREDECESSOR_REVIEW_REQUIRED'):
+        validate_cross_shot(p.ledger,media.scope.model_copy(update={'shot_id':'unrelated-shot'}),target)
+    independent=SimpleNamespace(cross_shot_continuity=judgment.model_copy(update={'strategy':'INDEPENDENT'}),continuation=None)
+    with pytest.raises(ValueError,match='CROSS_SHOT_PREDECESSOR_IS_TARGET'):
+        validate_cross_shot(p.ledger,media.scope,independent)
+    assert len(creates)==creates_before
+
+
+@pytest.mark.asyncio
 async def test_three_segments_advance_actual_wire_and_progress_and_idempotent_assembly(tmp_path,monkeypatch,media_files):
     p,r,service,calls,creates,auth,authors=await scenario(tmp_path,monkeypatch,media_files)
     cp=p.film.store.checkpoint(r);first=cp.units[0].generation_run_id;package_ref=cp.units[0].package_ref

@@ -52,10 +52,11 @@ class Authors:
 
     async def design(self, request: AuthorRequest):
         self.calls.append("professional")
-        return (DesignBody(domain="SUBJECTS", facts={"character_ref": "visitor", "face_structure": "Approved visible visitor face"}),
+        designs = (DesignBody(domain="SUBJECTS", facts={"character_ref": "visitor", "face_structure": "Approved visible visitor face"}),
             DesignBody(domain="CAMERA", facts={"perspective": "Both people visible", "camera_movement": "Fixed"}),
             DesignBody(domain="WORLD", facts={"location_identity": "A passage with a door", "topology": "Door behind listener"}),
             DesignBody(domain="SOUND", facts={"ambience": "Quiet air", "silence_design": "Hold silence after speech"}))
+        return tuple(d for d in designs if d.domain in request.shot.professional_domains)
 
 
 @pytest.fixture(autouse=True)
@@ -204,8 +205,16 @@ async def test_revision_routes_exact_owner_stales_rebuild_and_retains_history(tm
     assert (await p.shot_assembler.validate_sources(old_package)).status == "UNRESOLVED"
     for selection in old_package.sources:
         await p.prompt_compiler.reader.resolver.resolve(selection.reference)
-    new_target = refs(p, revision.run_id, kind)[0]
+    new_target = next(r for r in refs(p, revision.run_id, kind) if r.identity == target.identity)
     assert new_target.version > target.version
+    if owner == Authority.PROFESSIONAL:
+        before = {p.creative_versions.resolve(r).body.domain:r for r in cp.refs
+            if p.creative_versions.resolve(r).kind == Kind.PROFESSIONAL}
+        after = {p.creative_versions.resolve(r).body.domain:r for r in updated.refs
+            if p.creative_versions.resolve(r).kind == Kind.PROFESSIONAL}
+        assert set(after) == set(before)
+        assert all(after[d] == before[d] and not p.creative_versions.stale(after[d])
+            for d in before if d != original.body.domain)
 
 
 @pytest.mark.parametrize("violation", ["work", "scene", "shot", "professional", "version"])

@@ -14,6 +14,33 @@ from drama_plugin.film.media_units import production_progress, completion, curre
 from drama_plugin.contracts.base import sha256_canonical
 
 
+def native_reference_dimensions(p, asset, media):
+    """Read a compact index's missing dimensions from its exact retained probe.
+
+    This does not confer delivery or artistic authority. The dispatch owner still
+    validates the full adoption, request, receipt, account and managed bytes.
+    """
+    from types import SimpleNamespace
+    from drama_plugin.execution.reference_delivery import native_asset_originals
+    proof = native_asset_originals(p.ledger, p.creative_versions.objects,
+                                  SimpleNamespace(content=asset['content']))
+    record = proof['referenceRecord']
+    delivery = record.get('delivery') or {}
+    target = tuple((record.get('frame') or {}).get('template', {}).get('output_size', ()))
+    sizes = {(s.get('width'), s.get('height'))
+             for s in delivery.get('technical', {}).get('streams', [])}
+    if (delivery.get('persistenceStatus') != 'VERIFIED'
+            or delivery.get('mediaId') != media['mediaId']
+            or delivery.get('contentHash') != media['contentHash']
+            or record['scope']['workId'] != asset['workId']
+            or len(target) != 2 or not all(isinstance(n, int) and n > 0 for n in target)
+            or target not in sizes
+            or media.get('width') not in (None, target[0])
+            or media.get('height') not in (None, target[1])):
+        raise ValueError('ASSET_REFERENCE_PROBE_REQUIRED')
+    return target
+
+
 def professional(p, unit, domain):
     from drama_plugin.creative_engine.sources import NativeCreativeSources
     native = NativeCreativeSources(p.creative_versions, unit.refs)
@@ -106,7 +133,7 @@ leaves; their presence in a whole-Scene library is not a current-unit selection.
                     raise ValueError('ASSET_REFERENCE_IMAGE_REQUIRED')
                 # Do not guess probe data or reuse a template as a reference.
                 if not width or not height:
-                    raise ValueError('ASSET_REFERENCE_PROBE_REQUIRED')
+                    width, height = native_reference_dimensions(p, asset, media)
                 purpose = (ADOPTED_CHARACTER_USE if character else
                     'Accepted physical space; apply current scene state and film lighting design.' if location else
                     'Selected accepted costume only; current actor, pose, action, light and physical location remain target-owned.' if costume else

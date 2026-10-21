@@ -29,3 +29,22 @@ def test_exact_nonperson_asset_use_requires_matching_originals(monkeypatch,kind,
     if change:
         with pytest.raises(ValueError):op.asset_reference_use(binding,raw)
     else:op.asset_reference_use(binding,raw)
+
+
+def test_character_use_requires_exact_selected_professional_purpose(monkeypatch):
+    from test_native_character_delivery import fixture as character_fixture
+    _,media,asset,binding,proof=character_fixture(monkeypatch)
+    raw=dump_contract(asset)
+    raw['resolvedMedia']=[dict(mediaId=media.id,mediaType='IMAGE',contentHash=media.content_hash,
+        version='1',width=binding.media.width,height=binding.media.height)]
+    binding.media.version='1';binding.media.kind='image';binding.media.duration=None
+    binding.source_scope=NS()  # Use actual established-scene scope below.
+    from drama_plugin.runtime.contracts import RuntimeScope
+    binding.source_scope=RuntimeScope(work_id=asset.work_id,scene_id='S')
+    binding.duties[0].purpose='Exact selected identity purpose'
+    objects={raw['content']['specializedAsset'][n+'Ref']['fingerprint']:proof[n+'Original']
+        for n in ('design','adoption')}
+    op=OperationResolver(NS(objects=NS(read_ref=lambda pin:objects[pin.fingerprint])),None,None)
+    with pytest.raises(ValueError):op.asset_reference_use(binding,raw)
+    op.asset_reference_use(binding,raw,authored_purposes=('Exact selected identity purpose',))
+    with pytest.raises(ValueError):op.asset_reference_use(binding,raw,authored_purposes=('Unrelated purpose',))

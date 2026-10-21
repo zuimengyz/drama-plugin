@@ -4,7 +4,7 @@ from drama_plugin.production.references import ReferenceExecutionBinding
 from drama_plugin.persistence.stores import DurableReferenceExecutionStore
 from drama_plugin.execution.contracts import MediaBinding, CreativeMediaReview
 from drama_plugin.execution.store import ExecutionStore
-from drama_plugin.generation.operation import continuation_frame
+from drama_plugin.generation.operation import continuation_frame, user_adopted_endpoint_source
 
 
 def validate_cross_shot(ledger, scope, task, *, required=False):
@@ -33,7 +33,10 @@ def validate_cross_shot(ledger, scope, task, *, required=False):
             raise ValueError('CROSS_SHOT_PREDECESSOR_SCOPE_MISMATCH')
         cp = store.checkpoint(source.operation_ref)
         review = store.get(cp.progress.video_creative_ref, CreativeMediaReview) if cp.progress.video_creative_ref else None
-        if not review or review.outcome != 'PASS' or review.media != source.media:
+        accepted_endpoint = (review is not None and review.outcome == 'REVISE'
+            and decision.strategy == 'CONTINUE' and source.scope == scope
+            and user_adopted_endpoint_source(ledger, source))
+        if not review or not (review.outcome == 'PASS' or accepted_endpoint) or review.media != source.media:
             raise ValueError('CROSS_SHOT_PREDECESSOR_REVIEW_REQUIRED')
     if decision.strategy == 'INDEPENDENT':
         if task.continuation:

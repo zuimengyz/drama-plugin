@@ -161,6 +161,25 @@ def test_first_identity_compatibility_does_not_accept_arbitrary_or_partial_revie
         native_adopted_character_image(a, media, asset, binding, proof)
 
 
+@pytest.mark.parametrize('keys', [
+    ('single_identity','crop_face_body_and_hands','hands_and_support','selected_costume_and_materials'),
+    ('selected_face_hair_body','single_person_neutral_state','face_hands_crop','costume_color_patches_cuff'),
+    ('selected_visual_identity_or_object','material_and_shape','crop_and_visible_details',
+     'ground_or_support_contact','no_unwanted_people_or_text'),
+])
+def test_literal_professional_identity_checks_require_complete_observed_combination(monkeypatch, keys):
+    checks = dict.fromkeys(keys, 'PASS')
+    a, media, asset, binding, proof = fixture(monkeypatch, checks=checks)
+    original = deepcopy(proof)
+    assert native_adopted_character_image(a, media, asset, binding, proof).content_hash == media.content_hash
+    assert proof == original
+    for omitted in keys:
+        partial = {k:v for k,v in checks.items() if k != omitted}
+        a, media, asset, binding, proof = fixture(monkeypatch, checks=partial)
+        with pytest.raises(DefinitelyNotSubmitted):
+            native_adopted_character_image(a, media, asset, binding, proof)
+
+
 @pytest.mark.parametrize('change', ['shape','eyes_brows','nose','mouth'])
 def test_fully_sealed_artwork_cannot_replace_one_selected_face_leaf(monkeypatch, change):
     parts = {'shape':'Distinct fixture shape', 'eyes_brows':'Distinct fixture eyes and brows',

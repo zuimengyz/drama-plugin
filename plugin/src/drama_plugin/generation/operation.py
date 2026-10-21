@@ -55,6 +55,37 @@ def continuation_context(unit: OperationSelection, previous: OperationSelection)
         any(key in f.reference.path for key in contextual.get(f.domain, set())))
 
 
+def user_adopted_endpoint_source(ledger: ProductionLedger, source) -> bool:
+    """Honor exact retained-media adoption without rewriting its creative review.
+
+    This qualifies an accepted endpoint, not a portrait/scenery reference. A
+    failed technical result, another Run, or a package/cost approval is not an
+    adoption of these immutable media bytes.
+    """
+    from drama_plugin.persistence.review import UserDecisionRecord
+    from drama_plugin.execution.contracts import TechnicalMediaReview
+    from drama_plugin.execution.store import ExecutionStore
+    if source.canonical_media_ref is None:
+        return False
+    store = ExecutionStore(ledger)
+    technical = store.checkpoint(source.operation_ref).progress.current_video_technical_ref
+    if technical is None:
+        return False
+    checked = store.get(technical, TechnicalMediaReview)
+    if (checked.outcome != 'PASS' or checked.media != source.media or checked.scope != source.scope
+            or checked.operation_ref != source.operation_ref or checked.attempt_ref != source.attempt_ref):
+        return False
+    with ledger.transaction() as db:
+        rows = db.execute("SELECT body_json FROM immutable_artifact WHERE artifact_type='user-decision'").fetchall()
+    for row in rows:
+        receipt = UserDecisionRecord.model_validate_json(row[0])
+        if (receipt.accepted and receipt.category == DecisionCategory.ADOPTION
+                and receipt.run_id == source.run_id and receipt.scope == source.scope
+                and receipt.source_ref in (source.artifact_reference(), source.canonical_media_ref)):
+            return True
+    return False
+
+
 def continuation_frame(ledger: ProductionLedger, ref: ArtifactReference, *, allow_unverified_audio: bool = False, picture_only: bool = False):
     """Validate native last-frame provenance through its exact successful task."""
     from drama_plugin.execution.store import ExecutionStore
@@ -68,7 +99,9 @@ def continuation_frame(ledger: ProductionLedger, ref: ArtifactReference, *, allo
     op = store.get(source.operation_ref, ExecutionOperation)
     review_ref = store.checkpoint(source.operation_ref).progress.video_creative_ref
     review = store.get(review_ref, CreativeMediaReview) if review_ref else None
-    if (review is None or review.outcome != 'PASS' or review.operation_ref != source.operation_ref
+    accepted_endpoint = (review is not None and review.outcome == 'REVISE' and not picture_only
+                         and user_adopted_endpoint_source(ledger, source))
+    if (review is None or not (review.outcome == 'PASS' or accepted_endpoint) or review.operation_ref != source.operation_ref
             or review.media != source.media or review.scope != source.scope):
         raise ValueError('REVIEWED_CONTINUATION_PREDECESSOR_REQUIRED')
     if (not receipt.last_frame_url or receipt.state != "SUCCEEDED" or receipt.result is None
@@ -191,7 +224,7 @@ class OperationResolver:
     def asset_character_use(self, binding, raw) -> None:
         self.asset_reference_use(binding, raw, expected_type="CHARACTER")
 
-    def asset_reference_use(self, binding, raw, *, expected_type=None) -> None:
+    def asset_reference_use(self, binding, raw, *, expected_type=None, authored_purposes=()) -> None:
         """A frozen adopted still is proved by its Asset owner, not a movie review.
 
         Byte delivery/account checks remain with the existing reference resolver
@@ -220,16 +253,22 @@ class OperationResolver:
                     or binding.authorization_scope != 'ADOPTED_PRODUCTION_INPUT' or binding.role != 'REFERENCE'
                     or binding.subject_ids != ((subject,) if character else ())
                     or any(d.role != duty or d.subject != subject
-                        or (character and d.purpose != ADOPTED_CHARACTER_USE) for d in binding.duties)
+                        or (character and d.purpose not in (ADOPTED_CHARACTER_USE, *authored_purposes)) for d in binding.duties)
                     or binding.media.kind != 'image' or binding.media.semantics != semantics
                     or binding.source_scope != RuntimeScope(work_id=asset.work_id, scene_id=value['establishedSceneId'])
                     or binding.media.media_id not in asset.reference_media_ids or len(media) != 1
                     or binding.media.review_ref != 'asset-adoption:' + asset.id + ':' + value['adoptionRef']['fingerprint']):
                 raise ValueError('REFERENCE_ASSET_USE_MISMATCH')
             expected = media[0]
+            dimensions = (expected['width'], expected['height'])
+            if None in dimensions:
+                from types import SimpleNamespace
+                from drama_plugin.film.media_references import native_reference_dimensions
+                dimensions = native_reference_dimensions(SimpleNamespace(ledger=self.ledger,
+                    creative_versions=self.versions), raw, expected)
             if (expected['mediaType'] != 'IMAGE' or expected['contentHash'] != binding.media.content_hash
                     or expected['version'] != binding.media.version
-                    or (expected['width'], expected['height']) != (binding.media.width, binding.media.height)
+                    or dimensions != (binding.media.width, binding.media.height)
                     or binding.media.duration is not None):
                 raise ValueError('REFERENCE_ASSET_MEDIA_MISMATCH')
         except (KeyError, TypeError, OSError) as error:
@@ -690,7 +729,10 @@ class OperationResolver:
                     raise ValueError('REFERENCE_USE_AUTHORITY_REQUIRED')
                 if (binding.use_ref.path[:2] == ('content', 'assetBindings')
                         and len(binding.use_ref.path) == 3):
-                    self.asset_reference_use(binding, use)
+                    purposes = tuple([await reader.resolver.resolve(r) for r in binding.authority_refs
+                        if allowed(r) and r.path[:2] == ('content', 'references')
+                        and len(r.path) == 4 and r.path[-1] == 'inputDuty'])
+                    self.asset_reference_use(binding, use, authored_purposes=purposes)
                     bound.append(SelectedValue(DomainReference(domain=SourceDomain.REFERENCE, reference=ref), value))
                     continue
                 if any(d.role == 'CHARACTER' for d in binding.duties):

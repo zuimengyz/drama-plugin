@@ -985,6 +985,34 @@ class TargetReferenceProduction:
             prior = self.plugin.runtime.store.load(run_id)
             failed = prior.last_result
             if (prior.workflow_id == WORKFLOW and prior.state == RuntimeState.FAILED
+                    and prior.cursor == 1 and failed is not None
+                    and failed.code == 'CAPABILITY_EXECUTION_ERROR'
+                    and failed.failure_stage == 'CAPABILITY_EXECUTION'
+                    and failed.exception_type == 'RemoteServiceError'
+                    and prior.executing_action == reference_workflow().steps[1]):
+                value = self.get(run_id)
+                # A Work registration/read can fail after its same-ID envelope
+                # committed. Recheck that exact scope before reservation; never
+                # reopen a paid attempt, approval or provider submission here.
+                if (value.frame is None or value.stage is not None or value.cost_ref is not None
+                        or value.receipt is not None or value.delivery is not None
+                        or value.adoption_ref is not None or value.asset_id is not None
+                        or not await self.formal_scope(value)):
+                    return prior
+                self.sequence.objects.put(f'{run_id}:scope-recovery:{prior.revision}',
+                    {'failedRun': dump_contract(prior), 'referenceRef': dump_contract(value.artifact_reference()),
+                        'exactWorkReadback': value.scope.work_id, 'providerResubmitted': False})
+                result = await self.reserve(CapabilityInput(run_id=run_id,
+                    operation_id=f'{run_id}:1', scope=prior.scope))
+                if result.status != ResultStatus.WAITING_EXTERNAL:
+                    return prior
+                waiting_user = result.recovery_class == RecoveryClass.USER_DECISION
+                following = RuntimeRun.model_validate({**prior.model_dump(),
+                    'state': RuntimeState.WAITING_USER if waiting_user else RuntimeState.WAITING_EXTERNAL,
+                    'revision': prior.revision + 1, 'last_result': result,
+                    'wait_reason': 'USER_DECISION_PENDING' if waiting_user else 'EXTERNAL_RESULT_PENDING'})
+                self.plugin.runtime.store.save(following, expected_revision=prior.revision)
+            elif (prior.workflow_id == WORKFLOW and prior.state == RuntimeState.FAILED
                     and prior.cursor == 3 and failed is not None
                     and failed.code == 'CAPABILITY_EXECUTION_ERROR'
                     and failed.failure_stage == 'CAPABILITY_EXECUTION'

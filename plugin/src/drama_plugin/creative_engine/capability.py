@@ -424,10 +424,22 @@ class CreativeEngineCapabilities:
         if self.professional_author is None or self.professional_author.author is None:
             return self._absence(inputs, Authority.PROFESSIONAL.value)
         from pydantic import TypeAdapter
-        # Keep upstream department parents; replace only this Shot's realizations.
+        target_domain = None
+        if request.revision and request.revision.owner == Authority.PROFESSIONAL:
+            target = self.versions.resolve(request.revision.target_ref)
+            if target.kind == Kind.PROFESSIONAL and target.scope == inputs.scope:
+                if not inheritance_current:
+                    raise ValueError('SCOPED_REVISION_REQUIRES_CURRENT_ASSET_INHERITANCE')
+                assert isinstance(target.body, DesignBody)
+                target_domain = target.body.domain
+                required = {target_domain}
+        # A same-Shot one-owner observation must not reauthor unrelated current
+        # domains. In particular, changing silent performance cannot mint a new
+        # Action identity and sever already paid adjacent-phase continuity.
         # The required-domain query does not rewrite the retained thin Shot.
         refs = tuple(r for r in cp.refs if self.versions.resolve(r).kind != Kind.PROFESSIONAL
-            or self.versions.resolve(r).scope != inputs.scope)
+            or self.versions.resolve(r).scope != inputs.scope
+            or target_domain is not None and self.versions.resolve(r).body.domain != target_domain)
         fixed_request = AuthorRequest.model_validate({**request.model_dump(), "source_refs": refs,
             "shot": {**request.shot.model_dump(), "professional_domains": tuple(sorted(required))}})
         author_operation = inputs.operation_id

@@ -31,6 +31,28 @@ DUTIES = {'LOCATION': ('LOCATION', ('environment',)),
           'PROP': ('CONTINUITY', ('prop', 'continuity'))}
 
 
+@pytest.mark.parametrize('kind', ['LOCATION', 'PROP'])
+def test_native_object_subject_keeps_canon_link_without_person_duties(monkeypatch, kind):
+    a, media, asset, binding, proof = fixture(monkeypatch, kind, object_subject='canonical-object')
+    assert not binding.subject_ids
+    assert native_adopted_asset_image(a, media, asset, binding, proof).content_hash == media.content_hash
+    a, media, asset, binding, proof = fixture(monkeypatch, kind,
+        object_subject='unbound-object', bind_object_subject=False)
+    with pytest.raises(DefinitelyNotSubmitted):
+        native_adopted_asset_image(a, media, asset, binding, proof)
+
+
+def test_compact_index_dimensions_use_exact_retained_native_probe(tmp_path, monkeypatch):
+    from drama_plugin.film.media_references import native_reference_dimensions
+    a, media, asset, binding, proof = fixture(monkeypatch, 'LOCATION')
+    ledger, objects = persist_originals(tmp_path, asset, proof)
+    p = NS(ledger=ledger, creative_versions=NS(objects=objects))
+    row = {'mediaId':media.id, 'contentHash':media.content_hash, 'width':None, 'height':None}
+    assert native_reference_dimensions(p, dump_contract(asset), row) == (binding.media.width, binding.media.height)
+    for changed in ({**row,'contentHash':'e'*64}, {**row,'width':1}, {**row,'mediaId':'unrelated'}):
+        with pytest.raises(ValueError): native_reference_dimensions(p, dump_contract(asset), changed)
+
+
 def repaired_fixture(tmp_path, monkeypatch):
     from drama_plugin.execution.reference_delivery import identity_repair_subject
     a, media, asset, binding, proof = fixture(monkeypatch, 'PROP')
@@ -96,12 +118,13 @@ def test_repaired_prop_still_requires_exact_authority_artwork_and_production(tmp
         native_adopted_asset_image(a, media, asset, b, proof)
 
 
-def fixture(monkeypatch, kind, *, credential=True, failed_review=False):
+def fixture(monkeypatch, kind, *, credential=True, failed_review=False,
+            object_subject=None, bind_object_subject=True):
     monkeypatch.setenv('DRAMA_VIDEO_SEEDANCE_API_KEY', 'fixture-secret')
     monkeypatch.setenv('DRAMA_PLUGIN_ROUTE_IMAGE_MODEL', 'Doubao-Seedream-5.0-pro')
     narrative = SourcePin(key='fixture:fresh-narrative', kind='DIRECTION', fingerprint='b'*64)
     design = dict(assetType=kind, name='Selected ' + kind, design={'architecture': 'Selected source-bound visible structure'},
-        subjectId='person' if kind == 'COSTUME' else None, stableIdentity='specialized-asset:fresh:fixture-' + kind,
+        subjectId='person' if kind == 'COSTUME' else object_subject, stableIdentity='specialized-asset:fresh:fixture-' + kind,
         revision=1, establishedSceneId='S', inheritedFromAssetId=None, identityRootAssetId=None,
         variantReason=None, referenceRequired=True, narrativeRef=dump_contract(narrative))
     design_ref = SourcePin(key='fixture:design', kind='DIRECTION', fingerprint=fp(design))
@@ -115,6 +138,9 @@ def fixture(monkeypatch, kind, *, credential=True, failed_review=False):
     assert frame['spec']['actors'] == [] and frame['spec']['props'] == []
     prep = dict(schemaVersion='specialized-asset-preparation-v1', workId='W', sceneId='S',
                 narrativeRef=dump_contract(narrative), rationale='Offline native fixture', requirements=[item])
+    if object_subject and bind_object_subject:
+        prep['referenceAuthorContext'] = {'canon': {'scene': {'subjects': [
+            {'id': object_subject, 'name': 'Canonical object', 'meaning': 'Bound non-person subject'}]}}}
     prep_ref = SourcePin(key='fixture:preparation', kind='DIRECTION', fingerprint=fp(prep))
     stage = still.new_stage(stage_id='fixture-' + kind, authorization_ref='fixture-cost', budget_credits=1,
                            budget_unit='CNY', frames=[frame], protected_targets=[])

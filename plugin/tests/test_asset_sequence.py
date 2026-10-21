@@ -55,6 +55,28 @@ class Author:
             DesignBody(domain='WORLD', facts={'setting':'This scene physical space'}))
 
 
+def test_nonhuman_canon_subjects_keep_independently_authored_asset_types(tmp_path, monkeypatch):
+    p = plugin(tmp_path, monkeypatch, Author())
+    canon = film()
+    ref = p.asset_sequence.bind_film('offline-sequence', canon,
+        source_ref=ArtifactReference(owner='source-owner', artifact_ref='offline-source', version=1))
+    roster = [{'id': key, 'name': key, 'meaning': 'A canonical subject'}
+        for key in ('person', 'room', 'instruments')]
+    choices = (
+        AssetChoice(asset_type='CHARACTER', name='Person', subject_selection=0, design={'face':'Distinct face'}),
+        AssetChoice(asset_type='LOCATION', name='Room', subject_selection=1, design={'architecture':'One room'}),
+        AssetChoice(asset_type='PROP', name='First instrument', subject_selection=2, design={'construction':'First object'}),
+        AssetChoice(asset_type='PROP', name='Second instrument', subject_selection=2, design={'construction':'Second object'}),
+    )
+    draft = SceneAssetDraft(assets=choices, rationale='Independent types for people, places and objects')
+    result = p.asset_sequence._project(ref, 's-1', roster, {r['id']:None for r in roster}, [], draft)
+    assert [row['assetType'] for row in result['requirements']] == ['CHARACTER', 'LOCATION', 'PROP', 'PROP']
+    assert len({row['stableIdentity'] for row in result['requirements']}) == 4
+    with pytest.raises(ValueError, match='FIRST_APPEARANCE_CHARACTER_DESIGN_REQUIRED'):
+        p.asset_sequence._project(ref, 's-1', roster, {r['id']:None for r in roster}, [],
+            SceneAssetDraft(assets=choices[1:], rationale='Missing the actual person'))
+
+
 def plugin(tmp_path, monkeypatch, author):
     import drama_plugin.plugin as module
     monkeypatch.setattr(module, 'load_config', lambda _: DramaPluginConfig())

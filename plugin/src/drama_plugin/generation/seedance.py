@@ -26,7 +26,12 @@ class GeneratorPolicy:
 class ModelPolicyCatalog:
     """Read the real adapter capability catalog; no soft target masquerades as a limit."""
     def policy(self, model: str) -> GeneratorPolicy | None:
-        return self._policy(model, "t5r-seedance-unit-layout-v9")
+        return self._policy(model, "t5r-seedance-unit-layout-v10")
+
+    def uses_legacy_endpoint_projection(self, model: str, fingerprint: str) -> bool:
+        """Read-only recovery of exact pre-v10 frozen projections."""
+        return any(p is not None and p.fingerprint == fingerprint for p in
+            (self._policy(model, f"t5r-seedance-unit-layout-v{version}") for version in range(5, 10)))
 
     def uses_legacy_unit_scope(self, model: str, fingerprint: str) -> bool:
         """Only exact frozen v5-v8 policies use their original selection algorithm."""

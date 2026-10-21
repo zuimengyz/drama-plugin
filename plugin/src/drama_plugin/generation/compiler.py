@@ -274,7 +274,9 @@ class PromptCompiler:
         reference_previous = ModelPolicyCatalog().legacy_reference_use_policy(prepared.task.target_model)
         legacy_reference_use = reference_previous is not None and final.generator_policy_fingerprint == reference_previous.fingerprint
         projection = await self.projection.project(package, prepared.task, plan, selected,
-            legacy_scope=legacy_scope, legacy_reference_use=legacy_reference_use)
+            legacy_scope=legacy_scope, legacy_reference_use=legacy_reference_use,
+            legacy_endpoint_projection=self.catalog.uses_legacy_endpoint_projection(
+                prepared.task.target_model, final.generator_policy_fingerprint))
         if projection.ir is None or any(d.required for d in projection.diagnostics):
             raise ValueError("OPERATION_PROJECTION_INVALID")
         ir = PromptIR.seal(**{**projection.ir.model_dump(exclude={"fingerprint", "execution_reference_refs"}),

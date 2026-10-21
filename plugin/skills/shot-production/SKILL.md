@@ -510,3 +510,26 @@ it cannot certify the input's ambiguous shapes or a future model result. Record
 which uncertainty justified using or skipping it. If generation violates the
 chain, retain the exact interval, source/request and observed consequence, route
 the issue to the responsible owner, and respect the current retry authorization.
+
+## Mandatory Host review of the compiled request
+
+Before submission, the Host must read the complete actual compiled text and selected
+input roles/hashes, not only a source package, summary, schema PASS or earlier
+preview. Retain a review against the exact Package/Preparation/final-prompt
+fingerprint and reference bindings using existing preparation/review records.
+Review temporal scope (entry, interval, transition, ending, invariant), identity
+through movement and occlusion, speech-relative performance, and whether required
+reference findings actually reached the request. Missing or stale review means
+not ready to submit. Any changed owner, binding or compiled text requires review
+again. This is a required Host procedure within the existing production flow, not
+a new Runtime gate or user approval and not automatic semantic certification.
+
+When a conflict is found, the Host must intervene: revise the responsible original
+or binding, compile again, and review the whole affected trajectory. Never patch
+a sealed prompt or append an override. Preserve the previous versions and findings.
+Check absolute terms such as “always” against intended release/change; do not
+ban these terms globally. Camera stability must not freeze an actor's entry pose.
+For a group reference, verify distinguishable subject anchors and the same body
+before, during and after consequential occlusion. Counts alone cannot catch one
+actor acquiring another's face. Local diagrams prove authored constraints only;
+model compliance and playback/listening remain untested until actual production.

@@ -113,3 +113,18 @@ accepted predecessor and actual input route. Do not silently retouch it, add an
 unsupported reference slot, or turn a still into proof of motion. Prohibitions
 against new copies may reinforce the target action but cannot identify an
 ambiguous reference object or guarantee generation behavior.
+
+## Group identity and delivered interpretation
+
+For a selected group image, bind each intended person to distinct visible evidence
+in that exact current reference, using supported appearance and initial region
+where useful. A screen region locates entry; it is not a permanent identity once
+the person moves. Do not invent hidden face features or add portraits by default.
+
+Keep evidence uncertainty in the source duty. Verify execution-critical findings
+about similar objects, identity or inherited state in the actual compiled request,
+with their source and input role. A retained duty or global-context record alone
+does not prove delivery. Endpoint duties describe what the selected frame proves;
+its pose is an opening state, not a whole-clip instruction. If a required finding
+is absent or conflicts, return it to its owner/projection and recompile rather
+than copying all review metadata into the model prompt.

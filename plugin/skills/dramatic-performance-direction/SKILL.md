@@ -159,3 +159,14 @@ audio_events performance/attention/continuity when heard. Keep psychological
 explanation, future reactions and a narrator's remembered action internal; do not
 make the pictured actor enact them. Verify the chosen consequence in the final
 request, rather than treating a complete DPD as proof of delivery.
+
+## Preserve stage attribution through compilation
+
+For changing expression or attention, keep the actor, received stimulus, current
+spoken ID or action stage, partner and release condition together through the
+existing Performance/Action/Sound handoff. A list flattened by field name must
+not make a later answer precede the question. Put stage-local visible changes in
+the current Action or speech event; keep only truly shared expression in reused
+Beat fields. Inspect final execution text against the actual ordered exchange.
+Do not invent a fixed emotion-to-face template, extra gestures or pauses to fill
+each stage; retain meaningful listening and stillness where already sufficient.

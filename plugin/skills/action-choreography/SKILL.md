@@ -145,3 +145,14 @@ When reach, occlusion or simultaneous tasks are uncertain, inspect or sketch the
 approach, receiving contact and release in the intended view. An accepted entry
 still alone does not justify skipping this check. A proxy verifies its stated
 geometry/support assumptions, not model compliance or natural performance.
+
+## State scope and occluded continuity
+
+For each changing relation, state the interval over which it holds and the event
+that ends it. “Held until receiving support, then released” differs from “always
+held.” Keep genuine lasting invariants; do not repeat entry-only support as one.
+Trace the same actor and prop before hiding, through the authored hidden path and
+after reappearance. Occlusion is neither an identity reset nor evidence of a
+second object. Coordinate the path with Blocking and existing identity evidence;
+never invent invisible contact as an observed fact. Recheck the whole affected
+actor/prop chain after a narrow repair, including the next hand task.

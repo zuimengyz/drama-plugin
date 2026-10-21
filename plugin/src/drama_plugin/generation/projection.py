@@ -60,10 +60,10 @@ class ExecutionProjection:
 
     async def project(self, package: ProductionPackage, task: GenerationTask, plan: AudioExecutionPlan,
                       selected: tuple[SelectedValue, ...], *, legacy_scope: bool = False,
-                      legacy_reference_use: bool = False) -> PromptProjection:
+                      legacy_reference_use: bool = False, legacy_endpoint_projection: bool = False) -> PromptProjection:
         if task.unit is not None:
             return await self._operation(package, task, selected, plan, legacy_scope=legacy_scope,
-                legacy_reference_use=legacy_reference_use)
+                legacy_reference_use=legacy_reference_use, legacy_endpoint_projection=legacy_endpoint_projection)
         facts: list[ExecutableFact] = []
         internal, diagnostics, aliases = [], [], []
 
@@ -210,7 +210,7 @@ class ExecutionProjection:
 
     async def _operation(self, package: ProductionPackage, task: GenerationTask,
                          selected: tuple[SelectedValue, ...], plan: AudioExecutionPlan, *,
-                         legacy_scope: bool = False, legacy_reference_use: bool = False) -> PromptProjection:
+                         legacy_scope: bool = False, legacy_reference_use: bool = False, legacy_endpoint_projection: bool = False) -> PromptProjection:
         """Explicit finite leaf projection, scoped by production selection and receipt."""
         assert task.unit and task.profile
         facts: list[ExecutableFact] = []
@@ -300,7 +300,9 @@ class ExecutionProjection:
                 from drama_plugin.production.references import PREFIX, ReferenceExecutionBinding
                 if ref.artifact_ref.startswith(PREFIX):
                     binding = ReferenceExecutionBinding.model_validate(item.value)
-                    if binding.role == 'REFERENCE' and (binding.use_ref or binding.previsualization_ref):
+                    if (not legacy_endpoint_projection and binding.role in ('FIRST_FRAME', 'LAST_FRAME')
+                            and binding.use_ref) or (
+                            binding.role == 'REFERENCE' and (binding.use_ref or binding.previsualization_ref)):
                         # The owner may explicitly assign performance, pose,
                         # composition or space. A blanket identity-only exclusion
                         # would contradict that authority. Authored duty prose stays literal;
@@ -396,8 +398,24 @@ class ExecutionProjection:
             # This physical constraint is derived from the real endpoint binding,
             # independently of the opening camera plan retained as context.
             endpoint = next(i for i in selected if i.selection.reference in task.execution_reference_refs)
-            add(D.CAMERA, child(endpoint.selection.reference, "endpointState"),
-                endpoint.value['endpointState'], "video.camera_motion")
+            if legacy_endpoint_projection:
+                # Exact frozen preparations keep their historical read view.
+                add(D.CAMERA, child(endpoint.selection.reference, "endpointState"),
+                    endpoint.value['endpointState'], "video.camera_motion")
+            else:
+                add(D.ACTION, child(endpoint.selection.reference, "endpointState"),
+                    '仅开场继承，后续状态按本段动作变化：' + endpoint.value['endpointState'],
+                    "video.start_state")
+                if ((task.boundary is None or task.boundary.kind == 'CONTINUE')
+                        and not task.camera_direction_ref
+                        and not any(f.slot == 'video.camera_motion' for f in facts)):
+                    # CONTINUE retains the preceding camera state when completed
+                    # whole-shot camera instructions were scoped out. Actor pose
+                    # must not fill the required camera slot.
+                    add(D.CAMERA, task.boundary.source_ref if task.boundary else
+                        child(endpoint.selection.reference, 'role'),
+                        '摄影连续承接前段末尾，不重演已完成的摄影变化。',
+                        'video.camera_motion')
         if task.camera_direction_ref:
             timing, source = self.reader.operations.camera_direction(package,task)
             labels = {'scene_context':'BACKGROUND ONLY, scene intent',

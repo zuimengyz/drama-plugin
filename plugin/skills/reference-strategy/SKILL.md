@@ -77,3 +77,23 @@ For opt-in STILL/LIVE_ACTION use `reference_roles` entries with exact entity/med
 Use distinct entity keys for character/costume/scene and obey the selected adapter's inspected cap: four raw images for the Ark Seedream frame route, three for retained non-Ark routes. The opt-in still professional mapping profile retains its own inspected slot bounds. Multi-view review evidence may exceed selected inputs; it is not independent truth or a promise of arbitrary-angle stability. In `requirements.face_coverage`, cite canonical leaves with use_requirement, evidence_state and STABLE_IDENTITY semantic classification. REQUIRED unconfirmed facts block that use. Portrait facial evidence and full-body proof are separate; no reconstruction of invisible identity. Reference Strategy owns duties, never the face facts.
 
 Read [mapping and evidence profile](../../docs/still-professional-mapping.md) when preparing these still records. Knowledge remains LOCAL_EXPERIMENTAL until scoped A5 media evidence.
+
+## Repeated subjects and competing visible states
+
+When several selected images depict the same recurring actor, map each depicted
+instance to one existing subject. For an intended single person, state that the
+portrait and scene appearances are the same individual, not additional bodies.
+Preserve authored twins, doubles, reflections or crowds rather than imposing a
+universal face-count ban. Give supplementary views only their needed duties.
+
+Compare use-purpose prose with actual execution semantics, subject bindings and
+compiled reference preamble. A layout-only view must not regain identity, costume
+or current-action authority through a broad default. Choose the compatible
+existing duty (for example COMPOSITION) and version the binding with its new
+authority; never silently strip a required proof. Latest visible endpoint state
+and authored offscreen reconstruction must remain distinguishable.
+
+Inspect incidental portrait actions as competing cues. Name the target prop/body
+state and consequential exclusions in the responsible originals; an identity
+reference is not a performance instruction. Negative wording alone cannot prove
+that these cues will be separated by generation.

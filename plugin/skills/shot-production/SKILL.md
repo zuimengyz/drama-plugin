@@ -467,3 +467,24 @@ Before compiling, map each adopted instruction to its actual owner: shared actio
 A local motion reference is not the full performance clock. Place its supported action within the complete shot's entry, preparation, contact, release and cut; review the remaining actions at normal speed too. On adjoining shots, put a handoff/release/withdrawal on one side of the cut with an explicit matching state on the other. After inspecting the current rendered clip, adopt only the useful scope or keep it as director previs and SKIP its video input.
 
 When adopting a local video, set `referencePurpose` to its concrete supported interval and use. Set `referenceSemantics` to `["motion"]` when it supplies only action, `["camera"]` when it supplies only camera, or both when both are deliberately adopted. The default supports both for existing plans; it must not broaden an explicitly authored purpose.
+
+## Single-actor trajectories and endpoint-state review
+
+For a continuity-sensitive shot with repeated identity references, require the
+final projection to carry the authored cross-image identity mapping and one
+body trajectory for each intended single actor. When that actor moves from
+background to foreground, specify the vacated origin and the same body arriving;
+a short no-duplicate-face/body restriction may reinforce this, not replace it.
+Do not apply that restriction to intentionally doubled people or reflections.
+
+Check the opening, intervening action and ending for each critical prop contact
+against the actual predecessor. Express the positive relation (such as a held
+instrument below the mouth), the allowed change and any forbidden reset. Preserve
+natural motion; do not invent a recovery action to hide a state mismatch.
+
+Read the actual compiled reference preamble as well as the action prose. Repair
+conflicting reference semantics and owner facts, then recompile; do not append
+an override to a sealed request. Offline checks establish mapping and design
+consistency only. Review future actual entrance/transition/end frames for duplicate
+bodies and contact resets, and playback for motion and speech. Record untested
+generation efficacy as unknown; no generic negative phrase guarantees success.

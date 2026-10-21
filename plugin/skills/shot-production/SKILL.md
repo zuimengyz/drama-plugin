@@ -488,3 +488,25 @@ an override to a sealed request. Offline checks establish mapping and design
 consistency only. Review future actual entrance/transition/end frames for duplicate
 bodies and contact resets, and playback for motion and speech. Record untested
 generation efficacy as unknown; no generic negative phrase guarantees success.
+
+## Critical prop transfer review
+
+For a consequential set-down or handover, consume Action's same-instance chain
+and Reference's similar-object findings. Review the final request for entry-only
+grips accidentally expressed as permanent states. Ensure a scoped “禁止复制”
+restriction, when needed, accompanies the positive receiving support and release
+rather than substituting for them; do not append it to a sealed request.
+
+Review applicable milestones: before movement, receiving contact, release, the
+next hand task and the endpoint. Track the same object across both its former
+and new locations, including the other hand and nearby container. Verify not
+only that a placement occurs but that the old holder no longer retains a copy.
+Shared contact during a real handover is allowed; occlusion is UNKNOWN, not proof
+of disappearance or duplication. Use normal playback for consequential motion
+and samples to locate faults; separate speech review from prop review.
+
+A free sketch or proxy can check count conservation, supports and accessibility;
+it cannot certify the input's ambiguous shapes or a future model result. Record
+which uncertainty justified using or skipping it. If generation violates the
+chain, retain the exact interval, source/request and observed consequence, route
+the issue to the responsible owner, and respect the current retry authorization.

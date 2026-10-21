@@ -97,3 +97,19 @@ Inspect incidental portrait actions as competing cues. Name the target prop/body
 state and consequential exclusions in the responsible originals; an identity
 reference is not a performance instruction. Negative wording alone cannot prove
 that these cues will be separated by generation.
+
+## Similar objects in a continuity input
+
+For the target's critical prop transfer, inspect relevant hands, containers and
+nearby lookalike shapes in the selected actual reference. Distinguish the tracked
+prop, confirmed other objects, reflections/parts and unresolved shapes; record
+where and why an identification is uncertain. Do not assume a container is empty,
+call a narrow shape another prop without evidence, or erase an accepted detail.
+
+Separate visible evidence from intended instance count. If ambiguity affects the
+transfer, state the scoped conflict and the proof still needed in the existing
+reference duty; a useful closer observation may remain Host-only. Preserve the
+accepted predecessor and actual input route. Do not silently retouch it, add an
+unsupported reference slot, or turn a still into proof of motion. Prohibitions
+against new copies may reinforce the target action but cannot identify an
+ambiguous reference object or guarantee generation behavior.

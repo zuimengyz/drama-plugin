@@ -125,3 +125,23 @@ Read [mapping and evidence profile](../../docs/still-professional-mapping.md) wh
 ## Actor-playable screenplay handoff (Screenplay R2)
 
 Read [screenplay playability and exact dialogue](../../docs/screenplay-playability.md). Resolve causal mechanics for the approved playable action, preserving actor/target/negation/contact. Missing action meaning returns to its owner rather than being created for model convenience.
+
+## Critical prop identity through transfers
+
+For a continuity-critical prop that changes grip, support or location, trace the
+same physical instance through the relevant action milestones. Record its
+current holder/hand, receiving support, release condition and destination in the
+existing Action original. After release, state what the former hand holds (or
+that it is free) and whether another hand ever receives this object. Temporary
+shared support is legitimate during a handover; it is not a second object.
+
+Use a concise, scoped prohibition where duplication is a concrete risk: for
+example, “禁止复制这把弓；放入盒中后，双手及琴旁不得再出现它。” Pair it with
+the positive transfer, not a list of generic bans. Preserve authored multiples,
+reflections, disassembly and deliberate drops. Keep entry-only grips out of
+whole-shot invariants and identity descriptions that could freeze a later state.
+
+When reach, occlusion or simultaneous tasks are uncertain, inspect or sketch the
+approach, receiving contact and release in the intended view. An accepted entry
+still alone does not justify skipping this check. A proxy verifies its stated
+geometry/support assumptions, not model compliance or natural performance.

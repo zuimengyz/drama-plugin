@@ -193,6 +193,8 @@ class CreativeVersionStore:
                 assert isinstance(candidate.body, DesignBody)
                 validate_metadata(candidate.body, self, candidate.scope, candidate.source_refs)
             else:
+                from drama_plugin.professional_design.lighting_fields import align_lighting_fields
+                body = align_lighting_fields(body)
                 validate_metadata(body, self, scope, sources, required=False)
             body = project_metadata(body, self, scope, sources)
         phase = "production" if adoption_decision else "candidate"

@@ -47,6 +47,10 @@ class AudioPerformanceAssembler:
                 and i.selection.reference.path[1:2] == ('audio_events',) and isinstance(i.value,dict)]
             events=[]
             for i in unit_lines:
+                if task.native_audio != 'DISABLED' and not i.value.get('language'):
+                    return AudioAssembly(None, (ExecutionDiagnostic(code='EXECUTION_REQUIRED_MISSING',
+                        owner='production-language', domain=D.SOUND,
+                        source_ref=i.selection.reference, required=True),))
                 declared=[d for d in declarations if d.value.get('spoken_content_id') == i.value['id']]
                 if len(declared)>1 or declared and (declared[0].value.get('speaker_key') != i.value['speakerKey']
                         or declared[0].value.get('event_id') != i.value['id']):

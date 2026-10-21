@@ -101,6 +101,7 @@ class SceneBody(RuntimeContract):
     scene_text: Text
     dialogue: tuple[Dialogue, ...] = ()
     subjects: tuple[CanonSubject, ...] = ()
+    production_dialogue_refs: tuple[SourcePin, ...] = ()
 
     @model_serializer(mode="wrap")
     def historical_shape(self, handler: SerializerFunctionWrapHandler) -> dict[str, object]:
@@ -108,6 +109,9 @@ class SceneBody(RuntimeContract):
         body = cast(dict[str, object], handler(self))
         if not self.subjects:
             body.pop("subjects", None)
+        if not self.production_dialogue_refs:
+            body.pop("production_dialogue_refs", None)
+            body.pop("productionDialogueRefs", None)
         return body
 
     @model_validator(mode="after")
@@ -168,15 +172,23 @@ class DesignBody(RuntimeContract):
             raise ValueError("Cross-professional field authority violation")
         forbidden = {"dialogue", "scene_text", "screenplay", "interpretation", "purpose",
                      "required_transition", "spokenContent", "approvedSceneText", "dialogue_text"}
-        def check(value: JsonValue) -> None:
+        def check(value: JsonValue, path: tuple[str, ...] = ()) -> None:
             if isinstance(value, dict):
-                if forbidden & value.keys():
+                allowed = set()
+                if (self.domain == SourceDomain.PERFORMANCE and len(path) == 4
+                        and path[0] == 'beats' and path[2] == 'responseInterpretations'):
+                    # This is the actor's received-response judgment in the
+                    # existing DPD contract, never Work interpretation authorship.
+                    from drama_plugin.contracts.scene_dramaturgy import ResponseInterpretation
+                    ResponseInterpretation.model_validate(value)
+                    allowed.add('interpretation')
+                if (forbidden - allowed) & value.keys():
                     raise ValueError("Professional field authority violation")
-                for child in value.values():
-                    check(child)
+                for key, child in value.items():
+                    check(child, (*path, key))
             elif isinstance(value, list):
-                for child in value:
-                    check(child)
+                for index, child in enumerate(value):
+                    check(child, (*path, str(index)))
         # Resolver.persist attaches complete, already owned Asset records in
         # these domains. Their design prose is retained provenance, not new
         # Professional authorship. The author entry separately rejects this

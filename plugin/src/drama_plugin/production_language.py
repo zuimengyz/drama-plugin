@@ -114,6 +114,37 @@ def compile_localization(line: ProductionDialogueLine, intent: SemanticDialogueI
         'languagePolicy':profile.spoken_language_policy,'sourceOriginalLanguage':profile.source_original_language,'resolvedProductionLanguage':profile.resolved_production_language},'artisticQualityJudged':False}
 
 
+def native_scene_speech(rows: Sequence[dict[str, Any]], authorizations: Sequence[SpeechLanguageAuthorization],
+                        profile: ProductionLanguageProfile, *, work_id: str, scene_id: str,
+                        spoken_language: str) -> list[dict[str, Any]]:
+    """Project exact approved renditions without rewriting Canon review text.
+
+    A Scene may localize only the lines currently selected for production.
+    Unbound lines remain visible as context but have no executable language.
+    The projection depends on immutable Scene refs, never a current Shot.
+    """
+    validate_profile(profile)
+    if profile.work_id != work_id or profile.resolved_production_language != spoken_language:
+        raise ValueError('WORK_LANGUAGE_BINDING_MISMATCH')
+    canonical = {row['id']: row for row in rows}
+    if len(canonical) != len(rows):raise ValueError('DUPLICATE_DIALOGUE_IDENTITY')
+    bound = {}
+    for authorization in authorizations:
+        a=SpeechLanguageAuthorization.model_validate(dump_contract(authorization))
+        validate_localization(a.line,a.intent,a.profile,for_speech=True)
+        line=a.line
+        if a.profile != profile:raise ValueError('STALE_LOCALIZATION_BINDING')
+        if line.line_id in bound:raise ValueError('DUPLICATE_LOCALIZATION_BINDING')
+        row=canonical.get(line.line_id)
+        if (row is None or line.scene_id != scene_id or line.character_id != row['speakerKey']
+                or line.review_text != row['text']):
+            raise ValueError('CANON_LOCALIZATION_BINDING_MISMATCH')
+        bound[line.line_id]=line
+    return [{**row,'text':bound[row['id']].production_text if row['id'] in bound else row['text'],
+             'language':spoken_language if row['id'] in bound else None,
+             'spokenLanguage':spoken_language if row['id'] in bound else None} for row in rows]
+
+
 def compile_subtitle_track(track: SubtitleTrack, lines: Sequence[ProductionDialogueLine], intents: Sequence[SemanticDialogueIntent], profile: ProductionLanguageProfile, context: Any) -> dict[str,Any]:
     track=SubtitleTrack.model_validate(dump_contract(track));validate_profile(profile)
     if not profile.subtitles.enabled:raise ValueError('SUBTITLES_DISABLED')

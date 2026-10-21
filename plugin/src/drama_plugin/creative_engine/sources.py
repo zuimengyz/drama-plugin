@@ -66,6 +66,18 @@ class NativeCreativeSources:
                     "deliveryMode": "speech"} for line in body.dialogue],
                 "spokenLanguagePolicy": source.spoken_language_policy,
                 "subtitleLanguages": list(source.subtitle_languages)}
+            if body.production_dialogue_refs:
+                from drama_plugin.contracts.production_language import SpeechLanguageAuthorization
+                from drama_plugin.hosts.production_language import ProductionLanguageHost
+                from drama_plugin.production_language import native_scene_speech
+                profile = ProductionLanguageHost(self.store.root).read_work(scope.work_id)
+                content['spokenContent'] = TypeAdapter(JsonValue).validate_python(native_scene_speech(
+                    content['spokenContent'],  # type: ignore[arg-type]
+                    tuple(SpeechLanguageAuthorization.model_validate(self.store.objects.read_ref(pin))
+                          for pin in body.production_dialogue_refs), profile,
+                    work_id=scope.work_id, scene_id=scope.scene_id or '', spoken_language=source.spoken_language))
+                content['productionDialogueRefs'] = [json_object(pin.model_dump(mode='json', by_alias=True))
+                                                     for pin in body.production_dialogue_refs]
         elif isinstance(body, ShotBody):
             owner, identity = SourceOwner.SHOT, scope.shot_id
             content = {"purpose": body.purpose, "requiredTransition": body.required_transition,

@@ -198,8 +198,15 @@ class SpecializedAssetSequence:
             raise ValueError('ASSET_NARRATIVE_SCOPE_MISMATCH')
         canon = FilmCanon.model_validate(raw['canon'])
         scene = next((s.scene for s in canon.scenes if s.scene_id == request.scope.scene_id), None)
+        # Speech authorization pointers do not revise appearance, screenplay or
+        # the accepted asset family. Exact speech admission is checked separately
+        # by the Target Scene projection; all actual Canon prose still matches.
+        current_scene = request.canon.scene if request.canon is not None else None
+        if scene is not None and current_scene is not None:
+            scene = scene.model_copy(update={'production_dialogue_refs': ()})
+            current_scene = current_scene.model_copy(update={'production_dialogue_refs': ()})
         if (request.canon is None or canon.work != request.canon.work
-                or canon.script != request.canon.script or scene != request.canon.scene):
+                or canon.script != request.canon.script or scene != current_scene):
             raise ValueError('ASSET_NARRATIVE_CANON_MISMATCH')
         return canon
 

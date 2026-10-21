@@ -12,6 +12,12 @@ class ProductionLanguageHost:
     def __init__(self,root: str | Path):
         self.store=DirectorArtifactStore(root)
 
+    def read_work(self, work_id: str) -> ProductionLanguageProfile:
+        profile=ProductionLanguageProfile.model_validate(self.store._read(self.store._path('work-language',work_id)))
+        if profile.work_id!=work_id:raise ValueError('WORK_LANGUAGE_BINDING_MISMATCH')
+        validate_profile(profile)
+        return profile
+
     def bind_work(self,work_id: str,config: DramaPluginConfig,artifacts: Sequence[SourceArtifact],metadata: Sequence[SourceLanguageMetadata],designated: str) -> ProductionLanguageProfile:
         path=self.store._path('work-language',work_id)
         with self.store._writer():

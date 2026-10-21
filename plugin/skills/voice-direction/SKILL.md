@@ -42,6 +42,16 @@ Do not change upstream historical evidence, approved story/relationships/dialogu
 
 All exact line IDs, words and speakers survive; recipient resolves; delivery changes have dramatic causes; native performance reuse remains possible.
 
+Read each important entry against the current speaker's received event and the
+partner's listening task, rather than copying one generic turn-taking instruction
+across all lines. Share its release with Performance/Action/Editorial: receiving
+may occur during speech, and a sourced non-response need not create a new gap.
+Check that an indicated third person does not silently become the vocal addressee,
+and that pressure in the common DPD has not become an independently invented vocal
+emotion. Use the cross-owner handoff checks in the
+[received-action and attention review](../dramatic-performance-direction/references/received-action-review.md)
+when the delivery depends on a reaction or attention transfer.
+
 ## Failure and escalation
 
 Return wording to Dialogue and psychology to Performance; missing identity to voice-identity. Do not select a TTS model, synthesize or replace accepted native sound.

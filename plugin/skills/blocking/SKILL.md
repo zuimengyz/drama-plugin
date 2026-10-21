@@ -51,6 +51,18 @@ Do not change upstream historical evidence, approved story/relationships/dialogu
 
 Positions form a continuous path; eyelines have real targets; handoffs do not duplicate objects; stillness has a playable relation.
 
+For an attention-bearing cut, compare the selected outgoing state with the
+incoming address: who is attending to whom, what can reach them and when that
+target changes. A changed view does not supply an unperformed turn of attention.
+Locate a necessary transfer on the outgoing or incoming side, or retain the
+selected ellipsis/offscreen interval with its limits; do not automatically add a
+head turn at every cut. Distinguish the person addressed from a person or object
+indicated by a gesture. Keep support, facing and world position consistent while
+Performance supplies the expressive realization. A still frame establishes
+visible head orientation, not exact eye fixation or the meaning of a look.
+Use the relevant boundary checks in the
+[received-action and attention review](../dramatic-performance-direction/references/received-action-review.md).
+
 ## Failure and escalation
 
 Return impossible placement to Layout; complex mechanics to Action; altered causal outcome to Screenplay. No final complex Action without resolved Blocking.

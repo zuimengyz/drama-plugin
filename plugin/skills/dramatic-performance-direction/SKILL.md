@@ -77,6 +77,25 @@ Compose `Scene → Beat → Line` with the typed Core. Missing and null fields i
 
 Use action and relationship language, not moral labels or a single emotion label. Realize the source-owned task through the existing Beat and Line: what does this person receive, seek, give or withhold from the actual or imagined addressee, and what relationship condition remains for the next beat? Connect continuation or change to an approved word, encounter or consequence; an anticipated response is not a response that has occurred. A tactic can serve one need while frustrating another. Locate the difficulty in doing or withholding something from this partner, not in displaying two emotions in sequence. When knowledge and objective seem opposed, compare an intentionally impossible desire with a misnamed task before returning a source conflict; do not silently replace either with concealment, victory or a setting activity.
 
+At a consequential turn, read `changeFromPrevious` back from this Line's speaker:
+what has this actor already received, and how does the present attempt continue
+or change? Keep the partner's later answer or consequence with that partner's
+own direction. A Beat transition may name its next release condition without
+claiming it has happened. Distinguish a fact recalled in speech, an expectation
+based on prior knowledge and a stimulus arriving now; each can affect acting,
+but they do not give the pictured actor the same event to perform.
+
+Realize that relation in the separate Performance Bible: the speaker's current
+outward address, the listener's opportunity to receive or withhold, and what
+continues into the next action. Select face, gaze, posture, activity or stillness
+for this encounter. First read whether the already selected activity or stillness
+carries the partner relation; a held instrument alone does not settle that question
+and does not create an obligation to add a facial change. Neither a new expression
+at every line nor a hidden emotion made visibly explicit is required. Where a
+material receiving or attention relation remains omitted or ambiguous in the handoff, use the
+[received-action and attention review](references/received-action-review.md)
+to inspect the actual handoff, not just the completeness of the DPD.
+
 Distinguish what a line does in the present exchange from what its words report about another time. A retrospective admission need not mean the remembered person admits it to a partner. Give the next owner the particular relation and unresolved cost, not merely "more pressure" or "greater restraint". To develop an expressive realization, compare how the partner's continuing task is affected by what is received, missed or left unfinished. A small reaction can become legible through that relation and its aftermath; its size, a pause or a breath does not name its meaning. The Performance owner can explore bodily realizations within approved action, then retain details that serve the task rather than illustrate a psychological caption. A forceful, comic or ordinary action can carry complexity too.
 
 If rival readings produce the same realization, preserve their interpretive value without claiming distinct tactics. A montage, ritual or observational passage may sustain attention without a new turn in every beat; do not invent a response or movement to demonstrate development. Keep internal activation distinct from external control: high activation may remain highly controlled. `speakerKey` references identity; it does not duplicate age, rank, biography, personality, or Voice Profile.

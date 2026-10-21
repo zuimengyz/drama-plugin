@@ -107,6 +107,18 @@ This is Host creative preparation, not a new Runtime gate, user approval step or
 permission to spend. Historical sealed prompts and sent requests stay immutable;
 textual consistency never substitutes for actual media or sound review.
 
+For a performance-bearing exchange, trace its consequential receiving and attention
+events into the existing final execution projection. A referenced DPD or complete
+Bible is not evidence that the request retained the selected listener behavior,
+current speaker, cue/release or adjacent-shot entry. Read the projected action and
+sound in order: what reaches which actor before this response, and what remains
+future context? Keep the addressee distinct from a gesture's referent. Repair a
+lost relation through its existing professional owner and recompile; do not append
+a second psychological prompt or repeat every source note. Apply the
+[received-action and attention review](../dramatic-performance-direction/references/received-action-review.md)
+only to the relevant turns and boundaries. An offline execution excerpt checks a
+design handoff; it is neither an actual provider-request review nor observed acting.
+
 For authorized native Film production, retain the original Film and completed
 children/operations. Read `source_film_status` before scheduling and report its
 Scene → Shot → phase coverage, adoption, remaining content and next boundary.

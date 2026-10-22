@@ -21,6 +21,13 @@ Resolve source refs before assembling Opening → authored beats → Ending. Pre
 
 ## Outputs
 
+Carry the Host's source-grounded shot reading with the professional execution
+prose that expresses it. Distinguish present dramatic meaning from adjacent events
+excluded from execution; excluding those events must not erase why this shot matters.
+Use existing source/projection records and the
+[shot-context expression method](../shot-production/SKILL.md#shot-context-in-the-final-prompt),
+without adding fields, gates or an independent interpretation here.
+
 The existing source-pinned CinematicShotSpec, its source/visual fingerprints, unresolved requirements and projection coverage evidence. Department originals remain independently versioned.
 
 ## Forbidden authority

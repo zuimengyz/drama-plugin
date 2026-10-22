@@ -39,6 +39,14 @@ relations. A clear conviction, complex expression, open interpretation or direct
 statement of thought is available; none is the preferred form for every work.
 Thought need not become an action metaphor, a debate or a balance of viewpoints.
 
+For a shot entering video production, distill the relevant Work, screenplay and
+adjacent-shot meaning into a brief contextual reading for the existing handoff:
+the present predicament, consequential relationships and intended audience understanding.
+Keep interpretation alive alongside the chosen audiovisual expression; neither a
+plot recap nor an action checklist can replace it. Follow the
+[shot-context expression method](../shot-production/SKILL.md#shot-context-in-the-final-prompt)
+within current directing work, without a separate deliverable or approval stage.
+
 Independent thought can inform autonomous V1 without a prior declaration. Only
 after the complete original exists does the Host decide whether further authorial
 development serves the work. Do not require a philosophical position, perspective

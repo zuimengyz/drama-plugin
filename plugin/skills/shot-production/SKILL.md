@@ -93,6 +93,31 @@ do not introduce automatic TTS, fixed shot duration or a new approval gate.
 
 ## Host review of generated prompts
 
+### Shot context in the final prompt
+
+Include a source-grounded shot reading in the final video-model text, in at most
+two concise paragraphs. From the current Work, screenplay, Director intent and
+relevant adjacent shots, select the predicament, relationships and expressive
+stakes that change how this shot should be understood. Keep that meaning explicit;
+do not reduce it to generic mood adjectives, a synopsis or another action list.
+Let the selected performance, framing, light, sound or hold answer that reading,
+without prescribing a fixed scene template or requiring every department to be named.
+
+Identify prior events as circumstances already established and later events only
+as interpretive limits when needed. Neither becomes something to stage in this
+shot. Keep uncertainty and the character's current arc stage; do not invent a
+revelation, reconciliation or emotional resolution to make the reading tidier.
+Use current source/owner prose in the existing handoff and compilation path;
+do not paste an untraced explanation onto an already sealed request.
+
+During the existing full-text Host review, read the actual provider request's
+text after projection and any compression. Check that the brief reading survives
+there and that the concrete design supports it without extra events or conflicting
+directions. Merge repeated explanation and action wording, retaining necessary
+identity, reference-use and continuity constraints. Keep source pins and local
+labels in review metadata. This is part of current authoring and review, not a
+new step, schema requirement, automated check or submission blocker.
+
 After every new or revised prompt is compiled, the Host must actively review the
 final provider-facing text and applicable negative instructions, reference duties,
 unit boundaries and audio parameters before sealing or reserving that request.

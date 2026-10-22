@@ -54,6 +54,9 @@ class PromptCompiler:
         artifacts = GenerationArtifactStore()
         compiler = PromptCompiler(self.packages,artifacts,self.reader,self.catalog,
             media_reader=self.references.media_reader,_preview=True)
+        if task.prompt_expression_ref:
+            from drama_plugin.generation.expression import PromptExpression
+            artifacts.put(self.artifacts.get(task.prompt_expression_ref, PromptExpression))
         result = await compiler.compile(package_ref,task)
         diagnostics = [d.model_dump(mode='json',by_alias=True) for d in artifacts.diagnostics(result.diagnostics_ref)]
         if result.preparation_ref is None:
@@ -75,6 +78,9 @@ class PromptCompiler:
             'task':task.model_dump(mode='json',by_alias=True),'persistentPreparationCreated':False}
 
     async def compile(self, package_ref: ArtifactReference, task: GenerationTask = GenerationTask()) -> CompilationResult:
+        if task.prompt_expression_ref:
+            from drama_plugin.generation.expression import compile_expression
+            return await compile_expression(self, package_ref, task)
         package = self.packages.get(package_ref)
         diagnostics: list[ExecutionDiagnostic] = []
 

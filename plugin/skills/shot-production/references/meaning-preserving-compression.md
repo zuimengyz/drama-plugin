@@ -30,6 +30,13 @@ from actor motion, and intended focus/light changes separate from stable relatio
 Avoid cryptic abbreviation and pronouns with competing antecedents. Do not delete
 negative constraints merely because positive prose sounds similar.
 
+Preserve the [shot-context reading](../SKILL.md#shot-context-in-the-final-prompt)
+as at most two concise paragraphs in the final model text. Present circumstances,
+relationships and expressive intent are distinct meanings, not disposable duplicates
+of an action list. Merge repeated explanations while retaining their audiovisual
+consequence; prior/future events remain context, never added shot action. This
+uses the same source mapping and Host reread, without an extra compression stage.
+
 ## Bidirectional Host review
 
 For each original semantic unit record its source span, candidate span(s),
@@ -50,13 +57,24 @@ requires a separate source-bound decision, not hidden semantic loss.
 
 ## Boundary to later execution
 
-Keep these files as reviewed expression candidates while the current compiler
-cannot formally retain and bind the transformation. Do not edit a sealed request,
-replace its text at submission, or falsely label a manual compact candidate a
-native compiler output. Later adoption must preserve the full baseline and exact
-transformation and use the established authorized preparation/review path. Review
-the actual final payload and bindings again before any separately authorized
-submission. Skill enhancement alone grants no external processing or spending.
+The native Target compiler supports a pinned `PromptExpression` through
+`GenerationTask.prompt_expression_ref`. Compile the complete baseline first;
+retain its exact final artifact, task fingerprint, input references and text hash.
+The Host supplies the reviewed expression and source-to-target span mapping as
+an immutable expression artifact, with review basis and excluded local labels.
+Compile the expression task through the same compiler, never by replacing text
+inside a sealed request. Each expression compile first recompiles the full native
+baseline; source/task/policy or input changes must invalidate the old expression.
+
+Keep baseline coverage separate from transformed coverage. `HOST_MAPPED` records
+Host-reviewed paraphrase spans; it is not verbatim `TEXT_COVERED` or automatic
+semantic proof. The expression retains precise multi-span judgments, while the
+coverage span may bound them for the consuming fact. Retain both final artifacts,
+the expression, audio plan and preparation in the existing generation store.
+Check the actual final wire text, parameters and reference order/bytes after
+compilation. No runtime run, rights decision, spending or submission follows
+from expression retention alone. If a consumer lacks this support, keep the
+candidate offline; do not create a text-replacement fallback.
 
 ## Remove local bookkeeping without losing meaning
 

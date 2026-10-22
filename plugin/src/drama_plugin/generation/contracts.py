@@ -201,7 +201,7 @@ class CrossShotContinuity(RuntimeContract):
 
 
 class GenerationTask(ExtendedRuntimeContract):
-    extension_fields = ("unit", "profile", "owners", "execution_reference_refs", "continuation", "return_last_frame", 'camera_direction_ref', 'boundary', 'previsualization_ref', 'cross_shot_continuity')
+    extension_fields = ("unit", "profile", "owners", "execution_reference_refs", "continuation", "return_last_frame", 'camera_direction_ref', 'boundary', 'previsualization_ref', 'cross_shot_continuity', 'prompt_expression_ref')
     kind: Literal["VIDEO"] = "VIDEO"
     target_model: Identifier = "seedance-2-standard"
     input_mode: Literal["text_to_video", "reference", "image_to_video", "first_last_frame"] = "text_to_video"
@@ -217,9 +217,12 @@ class GenerationTask(ExtendedRuntimeContract):
     boundary: MediaBoundary | None = None
     cross_shot_continuity: CrossShotContinuity | None = None
     previsualization_ref: SourcePin | None = None
+    prompt_expression_ref: ArtifactReference | None = None
 
     @model_validator(mode="after")
     def operation_boundary(self) -> Self:
+        if self.prompt_expression_ref and self.prompt_expression_ref.owner != "prompt-expression":
+            raise ValueError("PROMPT_EXPRESSION_REFERENCE_OWNER")
         if self.boundary and self.boundary.kind in ('CUT', 'MATCH') and self.continuation:
             raise ValueError('EDIT_BOUNDARY_CANNOT_INHERIT_CONTINUATION')
         # A new, reviewed opening image may begin a hard cut. Only inheritance
@@ -280,6 +283,7 @@ class PromptIR(DerivedArtifact):
 
 class CoverageStatus(str, Enum):
     TEXT_COVERED = "TEXT_COVERED"
+    HOST_MAPPED = "HOST_MAPPED"
     REFERENCE_COVERED = "REFERENCE_COVERED"
     INTERNAL_ONLY = "INTERNAL_ONLY"
     OPTIONAL_OMITTED = "OPTIONAL_OMITTED"
@@ -301,11 +305,11 @@ class CoverageEntry(RuntimeContract):
     def coverage_evidence(self) -> Self:
         if self.span is not None and self.span[0] >= self.span[1]:
             raise ValueError("Coverage span must be positive")
-        if self.status == CoverageStatus.TEXT_COVERED and self.span is None:
+        if self.status in {CoverageStatus.TEXT_COVERED, CoverageStatus.HOST_MAPPED} and self.span is None:
             raise ValueError("Text coverage requires its final Prompt span")
         if self.status == CoverageStatus.REFERENCE_COVERED and self.input_ref is None:
             raise ValueError("Reference coverage requires an executable input reference")
-        if self.status not in {CoverageStatus.TEXT_COVERED, CoverageStatus.REFERENCE_COVERED} and self.span is not None:
+        if self.status not in {CoverageStatus.TEXT_COVERED, CoverageStatus.HOST_MAPPED, CoverageStatus.REFERENCE_COVERED} and self.span is not None:
             raise ValueError("Omitted/internal obligations cannot claim final text coverage")
         return self
 
@@ -316,9 +320,11 @@ class PromptCoverage(DerivedArtifact):
 
 
 class FinalPromptArtifact(DerivedArtifact):
-    extension_fields = ("task_fingerprint",)
+    extension_fields = ("task_fingerprint", "baseline_final_ref", "expression_ref")
     owner = "final-prompt"
     task_fingerprint: Hash | None = None
+    baseline_final_ref: ArtifactReference | None = None
+    expression_ref: ArtifactReference | None = None
     task: GenerationTask
     model_family: Identifier
     generator_policy_fingerprint: Hash
@@ -335,6 +341,12 @@ class FinalPromptArtifact(DerivedArtifact):
 
     @model_validator(mode="after")
     def coverage_owner(self) -> Self:
+        if bool(self.baseline_final_ref) != bool(self.expression_ref):
+            raise ValueError("EXPRESSION_BASELINE_REQUIRED")
+        if self.task.prompt_expression_ref != self.expression_ref:
+            raise ValueError("EXPRESSION_FINAL_TASK_MISMATCH")
+        if self.expression_ref and (self.expression_ref.owner != "prompt-expression" or self.baseline_final_ref.owner != "final-prompt"):
+            raise ValueError("EXPRESSION_FINAL_REFERENCE_MISMATCH")
         if self.coverage_ref.owner != "prompt-coverage":
             raise ValueError("FinalPrompt requires the Target coverage reference")
         return self

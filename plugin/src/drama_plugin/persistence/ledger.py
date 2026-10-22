@@ -36,6 +36,7 @@ ARTIFACT_TYPES: dict[str, tuple[str, str, RetentionClass]] = {
     "prompt-ir": ("target-prompt-ir-v1", "generation", RetentionClass.PRODUCTION_REQUIRED),
     "prompt-coverage": ("prompt-coverage-v1", "generation", RetentionClass.PRODUCTION_REQUIRED),
     "final-prompt": ("final-prompt-v1", "generation", RetentionClass.PRODUCTION_REQUIRED),
+    "prompt-expression": ("prompt-expression-v1", "generation", RetentionClass.PRODUCTION_REQUIRED),
     "audio-plan": ("audio-execution-plan-v1", "generation", RetentionClass.PRODUCTION_REQUIRED),
     "generation-preparation": ("generation-preparation-v1", "generation", RetentionClass.PRODUCTION_REQUIRED),
     'camera-execution-direction': ('camera-execution-direction-v1','generation',RetentionClass.PRODUCTION_REQUIRED),
@@ -278,7 +279,9 @@ class ProductionLedger:
         from drama_plugin.production.references import ReferenceExecutionBinding
         from drama_plugin.persistence.review import UserDecisionRecord
         from drama_plugin.professional_design.reference_production import ReferenceProductionRecord
+        from drama_plugin.generation.expression import PromptExpression
         models: dict[str, type[RuntimeContract]] = {
+            "prompt-expression": PromptExpression,
             "production-package": ProductionPackage,
             "assembly-validation": AssemblyValidation,
             "reference-execution-binding": ReferenceExecutionBinding,
@@ -379,7 +382,7 @@ class ProductionLedger:
                         raise ValueError("Missing immutable Film lineage")
                     return models[link.owner].model_validate_json(row["body_json"])
                 validate_film_links(film, resolve_film_link)
-            if artifact_type in {"prompt-ir", "prompt-coverage", "final-prompt",
+            if artifact_type in {"prompt-expression", "prompt-ir", "prompt-coverage", "final-prompt",
                                  "audio-plan", "generation-preparation", 'camera-execution-direction'} or artifact_type in EXECUTION_TYPES:
                 derived = cast(DerivedArtifact, checked)
                 source = db.execute("""SELECT work_id,scene_id,shot_id FROM immutable_artifact

@@ -254,7 +254,9 @@ class DurableReviewStore:
 
 
 from drama_plugin.generation.contracts import CameraExecutionDirection
-DERIVED_TYPES = (PromptIR, PromptCoverage, FinalPromptArtifact, AudioExecutionPlan, GenerationPreparation, CameraExecutionDirection)
+from drama_plugin.generation.expression import PromptExpression
+
+DERIVED_TYPES = (PromptExpression, PromptIR, PromptCoverage, FinalPromptArtifact, AudioExecutionPlan, GenerationPreparation, CameraExecutionDirection)
 
 
 class DurableGenerationArtifactStore:

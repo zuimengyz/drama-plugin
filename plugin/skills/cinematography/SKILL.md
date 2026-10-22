@@ -125,3 +125,21 @@ Author camera energy in response to the selected character action and Director i
 For the opt-in STILL/LIVE_ACTION profile, author one visible `intent` per existing field, with separate reason/constraints/criteria. Decide the required subjects, hands, contacts and landmarks in `spatial_readability` before `shot_scale_philosophy`. Keep observer relation (`camera_point_of_view`), height, distance and optical-axis/depth relation (`perspective`) distinct: a low camera can remain level. `subject_hierarchy` owns framing and attention; symmetry and centered framing are valid choices. `lens_intention.intent` may be an ordered list of spatial effect, current focus plane and permitted softness decisions. Do not invent millimeters from genre or promise exact optical simulation. Resolve distance/lens/readability conflicts against Layout, not by moving actors. Replace generic cinematic praise with observable choices at the authoring source; the mapper cannot polish them. No focus pulls or camera-motion facts enter this still profile.
 
 Read [mapping and evidence profile](../../docs/still-professional-mapping.md) when preparing these still records. Knowledge remains LOCAL_EXPERIMENTAL until scoped A5 media evidence.
+
+## Realized exit to a changed view
+
+When continuity depends on a predecessor's exit, inspect its approach and last
+visible travel, not only the empty endpoint. Locate both cameras, shared landmarks,
+travel path and threshold on one scoped sketch; distinguish observed relations
+from new-view assumptions. Express the chosen path in world relations and the
+new frame's entry, facing and exit. “Same side” or “existing route” alone is
+insufficient when the view could put the camera in the actor's path. A changed
+screen vector is valid only with a readable spatial reorientation. Check the
+whole door/occluder sweep against the intended final visible subjects.
+
+When a foreground actor leaves and a distant partner continues, decide readable
+planes at approach, response, crossing and aftermath. Specify stable depth or a
+motivated focus transfer in existing lens/movement leaves; keep the final subject
+readable after the foreground disappears. Do not require a focus pull or numeric
+lens recipe for every shot. A proxy tests spatial feasibility, not future optical
+compliance or measured set geometry.

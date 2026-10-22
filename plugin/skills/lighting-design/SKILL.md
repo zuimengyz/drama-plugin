@@ -55,3 +55,17 @@ Use supplied current originals first. For missing scoped context, read `work.get
 In the STILL/LIVE_ACTION profile, keep visible/implied source, motivation, direction/softness, relative intensity, contrast and falloff as independent decisions under the existing keys. `day_night_continuity` supplies current time. Light reveals authored skin/material; it does not supply skin identity, scars or a fixed facial highlight. Contact shadows are conditional on light and visibility, not compulsory darkness under every contact. No automatic rim, bloom, fill or imperfection recipe. Approved intent leaves alone are projected; reasons and observation questions remain internal.
 
 Read [mapping and evidence profile](../../docs/still-professional-mapping.md) when preparing these still records. Knowledge remains LOCAL_EXPERIMENTAL until scoped A5 media evidence.
+
+## Restoring a baseline from a different viewpoint
+
+Compare the selected accepted baseline's face/material illumination and background
+separation, not merely its visible lamp colors. Map the motivated source to the
+new view's face side, working hands and background; name the allowed window/door
+contribution through the relevant action stages. Preserve justified variation
+without replacing a baseline with a generic warm/cool filter.
+
+Check whether selected image bytes visibly compete with the target illumination.
+Reference exclusions and complete field projection do not remove those cues. With
+Reference Strategy, justify whether scoped baseline evidence or a different input
+is needed; do not automatically add images. Keep transmission, executable source
+relations and actual light matching as separate review conclusions.

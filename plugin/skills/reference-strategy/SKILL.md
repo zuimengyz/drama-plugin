@@ -128,3 +128,16 @@ does not prove delivery. Endpoint duties describe what the selected frame proves
 its pose is an opening state, not a whole-clip instruction. If a required finding
 is absent or conflicts, return it to its owner/projection and recompile rather
 than copying all review metadata into the model prompt.
+
+## Endpoint evidence versus trajectory and light
+
+For a changed viewpoint after an actor exits, an empty tail cannot prove the exit
+vector, turn or doorway geography. Inspect the last visible motion as Host evidence,
+and record which relations the selected inputs can and cannot carry. Keep a local
+sketch distinct from an actual provider input. Do not make every cut require video.
+
+If a lighting baseline is selected, bind its exact current media with a narrow
+LOOK/style duty and explicitly exclude its people, action, props and framing when
+those are not intended. Check the compiled preamble for regained identity or
+continuity authority. Visible competing light remains a risk even when reference
+duties exclude it; state the residual uncertainty instead of claiming separation.

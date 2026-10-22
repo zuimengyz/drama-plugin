@@ -533,3 +533,42 @@ For a group reference, verify distinguishable subject anchors and the same body
 before, during and after consequential occlusion. Counts alone cannot catch one
 actor acquiring another's face. Local diagrams prove authored constraints only;
 model compliance and playback/listening remain untested until actual production.
+
+## Host verification of changed-view continuity
+
+For an exit followed by a new view, compare the actual outgoing travel interval,
+new camera/path relation and target exit, not just two endpoint frames. If geometry
+is unresolved, use a scoped free sketch/proxy to test that relation; inability to
+prove face identity or lighting is not a reason to skip a useful geometry check.
+Keep assumptions explicit and do not claim an empty tail establishes motion.
+
+Read the compiled request for compatible world path, screen entry/exit, occluder
+sweep, final focus/readability and motivated light. Check actual selected input
+roles against their visible competing cues. Record separately: source projected,
+design feasible in the inspected sketch, and future media result unverified.
+Host must repair conflicts in the responsible original/binding and recompile;
+a projection PASS or a prohibition does not discharge the spatial/visual review.
+Retain the exact prompt and input hashes with the reviewed sketch version in the
+existing preparation notes. This adds no Runtime gate, automatic approval, paid
+call or fixed shot template.
+
+## Compression after complete prompt compilation
+
+When shortening an approved or reviewed prompt, first retain the complete native
+compiled text with its source/package and input-binding hashes. Read
+[meaning-preserving compression](references/meaning-preserving-compression.md).
+Derive deduplicated and compact expression candidates from that exact original,
+never from a summary or directly from upstream designs while skipping the full
+prompt. Keep the sealed request unchanged. Character targets are advisory: no
+truncation, silent omissions or automatic preference for the shortest candidate.
+
+## Model-facing context must be self-contained
+
+Exclude local task/shot/version identifiers, run names, paths, approval labels and
+provenance hashes from model-facing prose unless they are explicitly required
+visible/spoken story content. Keep them in Host metadata. Replace their creative
+meaning with concrete state, direction, timing or the exact bound reference ordinal;
+“match shot K02” is not an executable lighting instruction. Do not merely delete
+the identifier and lose the relation. Review all authored and compiler-added prose,
+including reference preambles, for unresolved local shorthand. Defined character
+aliases and actual provider reference tokens remain valid when unambiguous.

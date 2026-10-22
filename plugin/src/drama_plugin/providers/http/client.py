@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json as json_module
 from pathlib import Path
 from typing import Any, BinaryIO
@@ -39,7 +40,20 @@ class HttpProviderClient:
         if not path:
             raise ConfigurationError(f"No HTTP endpoint configured for operation: {operation}")
         try:
-            response = await self.client.request(method, path, params=params, json=json)
+            # Only idempotent input reads may recover a stale service connection.
+            # Never retry imports, writes, model calls, or an unlisted operation.
+            attempts = 2 if method == "GET" and operation in {"get_media", "get_asset", "resolve_media"} else 1
+            for index in range(attempts):
+                try:
+                    response = await self.client.request(method, path, params=params, json=json)
+                except (httpx.TimeoutException, httpx.NetworkError, httpx.RemoteProtocolError):
+                    if index + 1 == attempts:
+                        raise
+                else:
+                    if response.status_code not in {500, 502, 503, 504} or index + 1 == attempts:
+                        break
+                    await response.aclose()
+                await asyncio.sleep(0.2)
             response.raise_for_status()
             return response.json()
         except httpx.HTTPStatusError as exc:

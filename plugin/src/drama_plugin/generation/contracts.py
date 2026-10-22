@@ -499,8 +499,21 @@ class AudioExecutionPlan(DerivedArtifact):
         return self
 
 
+class ExecutionFailureDetails(RuntimeContract):
+    """Structural diagnostics only: no exception messages, locals, URLs or payloads."""
+    stage: Identifier
+    request_started: bool | None = None
+    exception_types: tuple[Identifier, ...] = Field(max_length=8)
+    error_codes: tuple[Identifier, ...] = Field(default=(), max_length=8)
+    traceback_frames: tuple[Identifier, ...] = Field(max_length=32)
+    http_status: Annotated[StrictInt, Field(ge=100, le=599)] | None = None
+    request_id: Identifier | None = None
+    official_error_code: Identifier | None = None
+
+
 class ExecutionDiagnostic(ExtendedRuntimeContract):
-    extension_fields = ("recovery_class", "external_ref")
+    extension_fields = ("recovery_class", "external_ref", "failure_details")
+    failure_details: ExecutionFailureDetails | None = None
     code: Identifier
     owner: Identifier
     domain: SourceDomain

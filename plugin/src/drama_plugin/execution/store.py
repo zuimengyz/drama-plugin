@@ -259,6 +259,14 @@ class ExecutionStore:
         }
         for field, value in updates.items():
             if isinstance(value, ArtifactReference):
+                if field == 'last_failure_ref':
+                    from drama_plugin.persistence.stores import DurableGenerationArtifactStore
+                    diagnostics = DurableGenerationArtifactStore(self.ledger).diagnostics(value)
+                    _, scope, _ = self.ledger.get_artifact('execution-diagnostic', value)
+                    if (scope != self.get(ref, ExecutionOperation).scope or not diagnostics
+                            or any(d.external_ref != ref or d.failure_details is None for d in diagnostics)):
+                        raise ExecutionIntegrityError('EXECUTION_PROGRESS_OPERATION_MISMATCH', 'Failure belongs to another operation')
+                    continue
                 artifact = self.get(value, expected[field])
                 if getattr(artifact, "operation_ref", None) != ref:
                     raise ExecutionIntegrityError("EXECUTION_PROGRESS_OPERATION_MISMATCH", "Execution stage belongs to another operation")
@@ -280,7 +288,8 @@ class ExecutionStore:
                     raise ExecutionIntegrityError('TECHNICAL_REINSPECTION_SCOPE_INVALID','Exact retained duration-only failure required')
             for field, value in updates.items():
                 old = getattr(prior, field)
-                if isinstance(old, (ArtifactReference, MediaIdentity)) and old != value:
+                if (isinstance(old, (ArtifactReference, MediaIdentity)) and old != value
+                        and not (field == 'last_failure_ref' and isinstance(value, ArtifactReference))):
                     raise ExecutionIntegrityError("EXECUTION_PROGRESS_IMMUTABLE_CONFLICT", "Completed execution stage is immutable")
                 if field in {"intake_attempts", "query_attempts", "unknown_lookup_attempts"} and isinstance(value, int) and value < (getattr(prior, field) or 0):
                     raise ExecutionIntegrityError("EXECUTION_RECOVERY_ATTEMPTS_REWOUND", "Recovery attempts cannot go backwards")

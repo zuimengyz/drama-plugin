@@ -33,6 +33,41 @@ class CapabilityAbsent(RuntimeError):
     pass
 
 
+class RecoveryIdentityUnavailable(RuntimeError):
+    """No supported exact remote identity; absence of a task is not established."""
+
+
+def failure_details(error: BaseException, *, stage: str = "EXECUTION_SUBMIT"):
+    import re
+    from drama_plugin.generation.contracts import ExecutionFailureDetails
+    from drama_plugin.providers.video.diagnostics import identifier
+    types, codes, frames, seen = [], [], [], set()
+    status = None
+    current = error
+    while current is not None and id(current) not in seen and len(types) < 8:
+        seen.add(id(current))
+        types.append(type(current).__name__)
+        code = getattr(current, 'code', None) or getattr(current, 'error_code', None)
+        if isinstance(code, str) and re.fullmatch(r'[A-Z][A-Z0-9_:.]{0,199}', code):
+            codes.append(code)
+        status = status or getattr(current, 'http_status', None) or getattr(current, 'status_code', None)
+        trace = current.__traceback__
+        while trace is not None:
+            code = trace.tb_frame.f_code
+            # No absolute path, source line, frame locals or exception text.
+            frame = f"{Path(code.co_filename).name}:{code.co_name}:{trace.tb_lineno}"
+            frames.append(re.sub(r"\s", "_", frame)[-256:])
+            trace = trace.tb_next
+        current = current.__cause__ or (None if current.__suppress_context__ else current.__context__)
+    details = getattr(error, "provider_diagnostics", {})
+    return ExecutionFailureDetails(stage=getattr(error, "submission_stage", stage),
+        request_started=getattr(error, "request_started", None),
+        exception_types=tuple(types), error_codes=tuple(codes), traceback_frames=tuple(frames[-32:]),
+        http_status=details.get("http_status") or status,
+        request_id=identifier(details.get("request_id"), ""),
+        official_error_code=identifier(details.get("official_error_code"), ""))
+
+
 class IntakeTransient(RuntimeError):
     pass
 

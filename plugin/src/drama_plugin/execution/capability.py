@@ -22,6 +22,7 @@ from drama_plugin.execution.review import CreativeReviewer, HumanReviewer, Revie
 from drama_plugin.execution.store import ExecutionStore, OperationCheckpoint, ExecutionIntegrityError
 from drama_plugin.execution.transport import (
     CapabilityAbsent, DefinitelyNotSubmitted, IntakeTransient, PossiblySubmitted, ProviderTransport, serialize_request,
+    RecoveryIdentityUnavailable, failure_details,
 )
 from drama_plugin.generation.contracts import AudioExecutionPlan, DerivedArtifact, FinalPromptArtifact, GenerationPreparation, ExecutionDiagnostic
 from drama_plugin.generation.operation import OperationResolver
@@ -93,6 +94,11 @@ class TargetExecution:
     def _diagnostic(self, inputs: CapabilityInput, code: str) -> ArtifactReference:
         return DurableGenerationArtifactStore(self.store.ledger).retain_diagnostics((ExecutionDiagnostic(
             code=code, owner="target-execution", domain=SourceDomain.REFERENCE, required=True),), scope=inputs.scope)
+
+    def _failure(self, inputs: CapabilityInput, code: str, error: BaseException, operation_ref: ArtifactReference, *, stage="EXECUTION_SUBMIT") -> ArtifactReference:
+        return DurableGenerationArtifactStore(self.store.ledger).retain_diagnostics((ExecutionDiagnostic(
+            code=code, owner="target-execution", domain=SourceDomain.REFERENCE, required=True,
+            external_ref=operation_ref, failure_details=failure_details(error, stage=stage)),), scope=inputs.scope)
 
     def _hard(self, inputs: CapabilityInput, code: str, *refs: ArtifactReference) -> CapabilityResult:
         return CapabilityResult(status=ResultStatus.FAILED, code=code,
@@ -335,9 +341,13 @@ class TargetExecution:
                     try:
                         recovered = await transport.recover_unknown(operation, attempt) if isinstance(transport, TargetHttpTransport) else None
                         self.store.progress(op_ref, unknown_lookup_last_code='EXACT_ACK_RECOVERED' if recovered else 'NO_EXACT_TASK_RECOVERED')
-                    except Exception:
+                    except RecoveryIdentityUnavailable:
                         recovered = None
-                        self.store.progress(op_ref, unknown_lookup_last_code='TASK_LOOKUP_TRANSIENT')
+                        self.store.progress(op_ref, unknown_lookup_last_code='PROVIDER_TASK_ID_REQUIRED')
+                    except Exception as error:
+                        recovered = None
+                        self.store.progress(op_ref, unknown_lookup_last_code='TASK_LOOKUP_TRANSIENT',
+                            last_failure_ref=self._failure(inputs, 'TASK_LOOKUP_TRANSIENT', error, op_ref, stage='UNKNOWN_LOOKUP'))
                     if recovered:
                         self.store.receipt(op_ref, recovered)
                         previous = recovered
@@ -459,13 +469,25 @@ class TargetExecution:
                     receipt = await transport.submit(operation, attempt, request)
                 except DefinitelyNotSubmitted as error:
                     self.store.definite_not_submitted(op_ref)
-                    self.store.progress(op_ref, query_last_code=error.code)
-                    return self._hard(inputs, error.code, op_ref)
+                    detail = self._failure(inputs, error.code, error, op_ref)
+                    self.store.progress(op_ref, query_last_code=error.code, last_failure_ref=detail)
+                    return self._hard(inputs, error.code, op_ref, detail)
                 except BaseException as error:
+                    if getattr(error, 'request_started', None) is False:
+                        code = ('REFERENCE_INPUT_UNAVAILABLE' if getattr(error, 'submission_stage', None)
+                            == 'REFERENCE_MATERIALIZATION' else 'PRE_SUBMISSION_FAILED')
+                        self.store.definite_not_submitted(op_ref)
+                        detail = self._failure(inputs, code, error, op_ref)
+                        self.store.progress(op_ref, query_last_code=code, last_failure_ref=detail)
+                        if not isinstance(error, Exception):
+                            raise
+                        return self._hard(inputs, code, op_ref, detail)
                     self.store.unknown(op_ref)
+                    code = error.code if isinstance(error, PossiblySubmitted) else "PROVIDER_SUBMISSION_UNCERTAIN"
+                    self.store.progress(op_ref, query_last_code=code,
+                        last_failure_ref=self._failure(inputs, code, error, op_ref))
                     if not isinstance(error, Exception):
                         raise
-                    self.store.progress(op_ref, query_last_code=error.code if isinstance(error, PossiblySubmitted) else "PROVIDER_SUBMISSION_UNCERTAIN")
                     receipt = None
             else:
                 assert checkpoint is not None
@@ -484,11 +506,14 @@ class TargetExecution:
                     query_attempts=checkpoint.progress.query_attempts + 1)
                 try:
                     receipt = await transport.query(operation, attempt, previous)
-                except (ValueError, KeyError):
-                    return self._hard(inputs, "PROVIDER_RECEIPT_IDENTITY_INVALID", op_ref)
-                except Exception:
+                except (ValueError, KeyError) as error:
+                    detail = self._failure(inputs, "PROVIDER_RECEIPT_IDENTITY_INVALID", error, op_ref, stage='RECEIPT_QUERY')
+                    self.store.progress(op_ref, last_failure_ref=detail)
+                    return self._hard(inputs, "PROVIDER_RECEIPT_IDENTITY_INVALID", op_ref, detail)
+                except Exception as error:
                     self.store.unknown(op_ref)
-                    self.store.progress(op_ref, query_last_code="PROVIDER_QUERY_TRANSIENT")
+                    self.store.progress(op_ref, query_last_code="PROVIDER_QUERY_TRANSIENT",
+                        last_failure_ref=self._failure(inputs, "PROVIDER_QUERY_TRANSIENT", error, op_ref, stage='RECEIPT_QUERY'))
                     receipt = None
             if receipt is None:
                 governed = self._govern(inputs, (GateCode.SUBMISSION_UNCERTAIN,), op_ref,

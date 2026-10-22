@@ -15,7 +15,7 @@ from pydantic import Field, JsonValue, TypeAdapter
 from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.contracts.video import ProviderTask, CostEstimate
 from drama_plugin.execution.contracts import ExecutionOperation, ProviderAttempt, ProviderRequest, ProviderReceipt, ProviderResult, RequestReference
-from drama_plugin.execution.transport import CapabilityAbsent, DefinitelyNotSubmitted, PossiblySubmitted, IntakeTransient
+from drama_plugin.execution.transport import CapabilityAbsent, DefinitelyNotSubmitted, PossiblySubmitted, IntakeTransient, RecoveryIdentityUnavailable
 from drama_plugin.execution.media import atomic_write
 from drama_plugin.providers.video.base import HttpVideoProvider, SafeProviderError
 from drama_plugin.providers.video.registry import registry
@@ -159,7 +159,7 @@ class TargetHttpTransport:
                  grant: ControlledLiveGrant | None = None, qualification_only: bool = False,
                  resolution: str = "720p", aspect_ratio: str = "16:9", environment: Mapping[str,str] | None = None,
                  recovery_operation_ref: ArtifactReference | None = None, media_provider=None, asset_provider=None,
-                 asset_originals=None):
+                 asset_originals=None, retained_media=None):
         self.adapter,self.provider=adapter,adapter.provider
         self.resolution,self.aspect_ratio,self.environment=resolution,aspect_ratio,environment
         self.offline=qualification_only
@@ -167,6 +167,7 @@ class TargetHttpTransport:
         self.media_provider=media_provider
         self.asset_provider=asset_provider
         self.asset_originals=asset_originals
+        self.retained_media=retained_media
         self.root,self.ledger,self.grant=receipt_root.resolve(),ledger,grant
         self.root.mkdir(parents=True,exist_ok=True)
         if qualification_only and not isinstance(adapter.client._transport,httpx.MockTransport):
@@ -219,6 +220,10 @@ class TargetHttpTransport:
             ref.kind+'_url': {'url': await self.reference_url(ref, context)},
             'role': 'reference_'+ref.kind if ref.role == 'REFERENCE' else ref.role.lower()}
             for ref in references]
+        if any(part.get('image_url', {}).get('url', '').startswith('data:') for part in result['content'][1:]):
+            from drama_plugin.contracts.base import canonical_json
+            if len(canonical_json(result).encode()) > 64 * 1024 * 1024:
+                raise CapabilityAbsent('REFERENCE_INLINE_REQUEST_TOO_LARGE')
         return result
 
     async def reference_url(self, reference: RequestReference, operation: ExecutionOperation | ReferenceDeliveryContext) -> str:
@@ -308,6 +313,16 @@ class TargetHttpTransport:
                     or frame.media.content_hash != reference.content_hash or frame.media.media_id != reference.media_id
                     or receipt.provider != self.provider or origin.model != operation.model):
                 raise CapabilityAbsent('TRUSTED_PICTURE_REFERENCE_REQUIRED')
+            if self.retained_media is not None:
+                # The official URL expires before the original's trust window.
+                # Reuse its exact retained bytes, never an extracted/re-encoded frame.
+                await verify_origin(self.adapter, self.root, origin, receipt,
+                    store.get(source.attempt_ref, ProviderAttempt), source.media.content_hash)
+                from drama_plugin.providers.video.image_delivery import image_data_url
+                data = self.retained_media.path(frame.media).read_bytes()
+                if len(data) >= 30 * 1024 * 1024:
+                    raise CapabilityAbsent('REFERENCE_IMAGE_TOO_LARGE_FOR_INLINE_DELIVERY')
+                return image_data_url(data, frame.media.mime)
             url = urlsplit(receipt.last_frame_url)
             if url.scheme != 'https' or not url.hostname or url.username or url.password:
                 raise ValueError('REFERENCE_DELIVERY_REQUIRES_HTTPS')
@@ -418,8 +433,11 @@ class TargetHttpTransport:
     def _path(self,attempt:ProviderAttempt)->Path:
         return self.root/(attempt.client_identity+'.json')
     def reconciliation_receipt(self, attempt: ProviderAttempt, receipt: ProviderReceipt | None) -> ProviderReceipt | None:
-        if receipt is None and self._path(attempt).exists():
-            receipt=ProviderReceipt.model_validate_json(self._path(attempt).read_bytes())
+        if receipt is None:
+            for path in (self._path(attempt), self.root/(attempt.client_identity+'.ack.json')):
+                if path.exists():
+                    receipt=ProviderReceipt.model_validate_json(path.read_bytes())
+                    break
         if receipt is not None and (receipt.operation_ref,receipt.attempt_ref,receipt.provider,
                 receipt.client_identity,receipt.request_fingerprint,receipt.scope,receipt.run_id,receipt.source_package_ref) != (
                 attempt.operation_ref,attempt.artifact_reference(),attempt.provider,
@@ -451,27 +469,29 @@ class TargetHttpTransport:
             source_account_fingerprint=credential_fingerprint(self.adapter) if self.provider == 'seedance' and state == 'SUCCEEDED' else None)
 
     async def recover_unknown(self, operation: ExecutionOperation, attempt: ProviderAttempt) -> ProviderReceipt | None:
-        """Bounded caller queries recent jobs; only an exact echoed identity binds."""
+        """Recover only the exact retained ACK; a recent-job list cannot bind it.
+
+        Our local client identity/fingerprint are not sent to or echoed by Ark.
+        A list search therefore proves neither correspondence nor task absence.
+        """
+        if attempt.operation_ref != operation.artifact_reference():
+            raise ValueError('PROVIDER_RECEIPT_IDENTITY_MISMATCH')
         prior = self.reconciliation_receipt(attempt, None)
         if prior is not None:
             return prior
-        if self.provider != 'seedance':
-            return None
-        raw = await self.adapter._http('GET', '/contents/generations/tasks',
-            params={'page_num': '1', 'page_size': '500'})
-        matches = [item for item in raw.get('items', [])
-            if item.get('client_request_id') == attempt.client_identity
-            and item.get('request_fingerprint') == attempt.request_fingerprint]
-        if len(matches) != 1:
-            return None
-        task = ProviderTask(provider=self.provider, model=operation.model,
-            client_request_id=attempt.client_identity, request_fingerprint=attempt.request_fingerprint,
-            status='UNKNOWN')
-        task = self.adapter.normalize(matches[0], task)
-        receipt = self.receipt(operation, attempt, task)
-        atomic_write(self._path(attempt), receipt.model_dump_json(by_alias=True).encode())
-        return receipt
+        raise RecoveryIdentityUnavailable('PROVIDER_TASK_ID_REQUIRED')
     async def submit(self,operation:ExecutionOperation,attempt:ProviderAttempt,request:ProviderRequest)->ProviderReceipt:
+        # Per-call evidence: entering SUBMITTING does not prove a POST started.
+        evidence = {'stage': 'PRE_SUBMISSION', 'request_started': False}
+        try:
+            return await self._submit(operation, attempt, request, evidence)
+        except BaseException as error:
+            error.submission_stage = evidence['stage']
+            error.request_started = evidence['request_started']
+            error.provider_diagnostics = evidence.get('provider_diagnostics', {})
+            raise
+
+    async def _submit(self, operation, attempt, request, evidence) -> ProviderReceipt:
         if self.recovery_operation_ref is not None and (self.recovery_operation_ref != operation.artifact_reference()
                 or attempt.ordinal != 2):
             raise DefinitelyNotSubmitted('RECOVERY_TRANSPORT_READ_ONLY')
@@ -485,18 +505,24 @@ class TargetHttpTransport:
             if checkpoint.state!=OperationState.SUBMITTING or checkpoint.attempt_ref!=attempt.artifact_reference() or registered!=self.grant.artifact_reference().model_dump(mode='json',by_alias=True):
                 raise CapabilityAbsent('TARGET_EXECUTION_DISPATCH_CLAIM_REQUIRED')
         path=self._path(attempt)
-        if path.exists():
-            prior=ProviderReceipt.model_validate_json(path.read_bytes())
+        prior=self.reconciliation_receipt(attempt, None)
+        if prior is not None:
+            # An existing ACK establishes an earlier dispatch, even if this
+            # read-only query fails before making a request in the current call.
+            evidence.update(stage='RECEIPT_QUERY', request_started=True)
             result=await self.query(operation,attempt,prior)
-            assert result
+            if result is None:
+                raise PossiblySubmitted('PROVIDER_QUERY_UNRESOLVED')
             return result
         if request.operation_ref!=operation.artifact_reference() or sha256_canonical(request)!=attempt.request_fingerprint:
             raise ValueError('Operation request mismatch')
         body=self.approved_payload(request)
         if not self.offline and self.grant and self.grant.cost_quote.request_fingerprint!=sha256_canonical(body):
             raise ValueError('Cost quote differs from final wire request')
+        evidence['stage'] = 'REFERENCE_MATERIALIZATION'
         body = await self.materialize_reference_payload(body, request.references,
             scope=operation.scope, model=operation.model, operation=operation)
+        evidence['stage'] = 'PRE_SUBMISSION'
         spec=registry()['providers'][self.provider]
         endpoint=spec['create']
         if isinstance(endpoint,dict):
@@ -511,11 +537,16 @@ class TargetHttpTransport:
         # Capture what is actually sent, without credentials. Historical requests
         # remain frozen; only new attempts get this immutable dispatch evidence.
         from drama_plugin.contracts.base import canonical_json
+        evidence['stage'] = 'WIRE_CAPTURE'
         atomic_write(self.root/(attempt.client_identity+'.'+sha256_canonical(body)+'.wire.json'), canonical_json(body).encode())
+        evidence.update(stage='PROVIDER_POST', request_started=True)
         try:
             response=await self.adapter.client.post(self.adapter.settings.base_url+str(endpoint),json=body,headers=headers)
-        except httpx.TransportError:
-            raise PossiblySubmitted('TRANSPORT_UNCERTAIN') from None
+        except httpx.TransportError as error:
+            raise PossiblySubmitted('TRANSPORT_UNCERTAIN') from error
+        if self.provider == 'seedance':
+            from drama_plugin.providers.video.diagnostics import seedance_error
+            evidence['provider_diagnostics'] = seedance_error(response, self.adapter.settings.api_key.get_secret_value())
         if response.status_code>=500 or response.status_code==408:
             raise PossiblySubmitted('HTTP_'+str(response.status_code), http_status=response.status_code)
         if response.status_code>=300:
@@ -525,15 +556,26 @@ class TargetHttpTransport:
                 atomic_write(self.root/(attempt.client_identity+'.rejection.json'),
                     canonical_json(seedance_error(response,self.adapter.settings.api_key.get_secret_value())).encode())
             raise DefinitelyNotSubmitted('HTTP_'+str(response.status_code), http_status=response.status_code)
+        evidence['stage'] = 'PROVIDER_ACK'
         try:
             raw=TypeAdapter(dict[str,JsonValue]).validate_python(response.json())
             task=ProviderTask(provider=self.provider,model=operation.model,client_request_id=attempt.client_identity,
                 request_fingerprint=attempt.request_fingerprint,status='UNKNOWN')
+            if self.provider == 'seedance':
+                # Persist Ark's create-response identity before optional parsing
+                # can fail. No prompt, signed URL or response body is retained.
+                from drama_plugin.providers.video.diagnostics import identifier
+                remote_id = identifier(raw.get('id'), self.adapter.settings.api_key.get_secret_value())
+                if remote_id:
+                    ack = self.receipt(operation, attempt,
+                        task.model_copy(update={'provider_task_id': remote_id, 'status': 'RUNNING'}))
+                    atomic_write(self.root/(attempt.client_identity+'.ack.json'), ack.model_dump_json(by_alias=True).encode())
             task=self.adapter.normalize(raw,task)
             receipt=self.receipt(operation,attempt,task)
-        except (ValueError,TypeError,KeyError):
-            raise PossiblySubmitted('PROVIDER_ACK_INVALID') from None
+        except (ValueError,TypeError,KeyError) as error:
+            raise PossiblySubmitted('PROVIDER_ACK_INVALID') from error
         # Preserve real task identity before returning ACK to execution owner.
+        evidence['stage'] = 'RECEIPT_PERSIST'
         atomic_write(path,receipt.model_dump_json(by_alias=True).encode())
         return receipt
     async def query(self,operation:ExecutionOperation,attempt:ProviderAttempt,receipt:ProviderReceipt|None)->ProviderReceipt|None:
@@ -570,7 +612,7 @@ def configured_http_transport(*, model:str, receipt_root:Path, ledger:Production
                               resolution:str, aspect_ratio:str, environment:Mapping[str,str]|None=None,
                               grant:ControlledLiveGrant|None=None,
                               recovery_operation_ref:ArtifactReference|None=None, media_provider=None, asset_provider=None,
-                              asset_originals=None) -> TargetHttpTransport:
+                              asset_originals=None, retained_media=None) -> TargetHttpTransport:
     """Configuration chooses a model/provider; this factory never selects a fallback."""
     from drama_plugin.config.loader import load_config
     from drama_plugin.config.video_route import require_runtime_route
@@ -617,9 +659,10 @@ def configured_http_transport(*, model:str, receipt_root:Path, ledger:Production
     adapter=adapters[provider](model,configuration[provider],resolve=no_reference)
     transport=TargetHttpTransport(adapter,receipt_root,ledger=ledger,resolution=resolution,
         aspect_ratio=aspect_ratio,environment=environment,grant=grant,recovery_operation_ref=recovery_operation_ref,
-        media_provider=media_provider,asset_provider=asset_provider,asset_originals=asset_originals)
+        media_provider=media_provider,asset_provider=asset_provider,asset_originals=asset_originals,
+        retained_media=retained_media)
     if recovery_operation_ref is not None:
         assert operation is not None and attempt is not None
-        # UNKNOWN without an ACK can still use bounded recent-job recovery.
+        # UNKNOWN without an ACK remains unresolved; no heuristic list matching.
         # Supplementary POSTs remain fenced by a fresh exact cost receipt.
     return transport

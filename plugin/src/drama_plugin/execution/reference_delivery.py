@@ -823,7 +823,7 @@ async def managed_original_url(provider, client: httpx.AsyncClient, identity, sc
     except RemoteServiceError as exc:
         code = ('REFERENCE_PUBLIC_DELIVERY_UNCONFIGURED' if exc.error_code == 'UNRESOLVABLE_MEDIA'
                 else 'REFERENCE_DELIVERY_UNAVAILABLE')
-        raise DefinitelyNotSubmitted(code) from None
+        raise DefinitelyNotSubmitted(code) from exc
     now = datetime.now(timezone.utc)
     if (delivery.media_id != media_id or delivery.size_bytes != identity.byte_count
             or delivery.mime_type != identity.mime or not delivery.expires_at.tzinfo
@@ -850,8 +850,8 @@ async def managed_original_url(provider, client: httpx.AsyncClient, identity, sc
                 digest.update(chunk)
         finally:
             await response.aclose()
-    except httpx.HTTPError:
-        raise DefinitelyNotSubmitted('REFERENCE_DELIVERY_UNREACHABLE') from None
+    except httpx.HTTPError as exc:
+        raise DefinitelyNotSubmitted('REFERENCE_DELIVERY_UNREACHABLE') from exc
     if size != identity.byte_count or digest.hexdigest() != identity.content_hash:
         raise DefinitelyNotSubmitted('REFERENCE_ORIGINAL_BYTES_MISMATCH')
     if delivery.expires_at <= datetime.now(timezone.utc) + timedelta(minutes=2):

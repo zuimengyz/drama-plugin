@@ -1038,6 +1038,7 @@ class DramaPlugin:
         from drama_plugin.execution.contracts import ExecutionOperation,ProviderAttempt,OperationState,HistoricalUnknownAccounting
         from drama_plugin.generation.contracts import GenerationPreparation
         from drama_plugin.execution.live_transport import TargetHttpTransport
+        from drama_plugin.execution.transport import RecoveryIdentityUnavailable
         op=self.execution.store.get(operation_ref,ExecutionOperation);cp=self.execution.store.checkpoint(operation_ref)
         if cp.progress.historical_unknown_accounting_ref:return cp.progress.historical_unknown_accounting_ref
         if cp.state!=OperationState.SUCCEEDED or not cp.progress.video_ref or len(cp.progress.attempt_history or ())!=1:
@@ -1050,6 +1051,7 @@ class DramaPlugin:
             if isinstance(transport,TargetHttpTransport):
                 recovered=await transport.recover_unknown(op,self.execution.store.get(old.attempt_ref,ProviderAttempt))
             if recovered:code='EXACT_TASK_RECOVERED_ACCOUNTING_PENDING'
+        except RecoveryIdentityUnavailable:code='PROVIDER_TASK_ID_REQUIRED_ACCOUNTING_PENDING'
         except Exception:code='TASK_LOOKUP_TRANSIENT_ACCOUNTING_PENDING'
         receipt_ref=self.execution.store.put(recovered) if recovered else None
         record=HistoricalUnknownAccounting.seal(scope=op.scope,run_id=op.run_id,source_package_ref=op.source_package_ref,
@@ -1665,7 +1667,7 @@ class DramaPlugin:
                     receipt_root=self.ledger.path.parent/(self.ledger.path.name+".receipts"),ledger=self.ledger,
                     resolution=task.profile.resolution,aspect_ratio=task.profile.aspect_ratio,
                     recovery_operation_ref=recovery_ref,media_provider=self.providers.media,asset_provider=self.providers.asset,
-                    asset_originals=self.asset_sequence.objects)
+                    asset_originals=self.asset_sequence.objects,retained_media=self.execution.media)
             except CapabilityAbsent:
                 pass  # Exact owner reports absence; no alternative route.
 

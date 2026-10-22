@@ -387,7 +387,8 @@ class HistoricalUnknownAccounting(ExecutionArtifact):
 
 
 class OperationProgress(ExtendedRuntimeContract):
-    extension_fields = ("attempt_history", "unknown_lookup_attempts", "unknown_lookup_last_code", 'video_technical_repair_ref', 'historical_unknown_accounting_ref')
+    extension_fields = ("attempt_history", "unknown_lookup_attempts", "unknown_lookup_last_code", 'video_technical_repair_ref', 'historical_unknown_accounting_ref', 'last_failure_ref')
+    last_failure_ref: ArtifactReference | None = None
     historical_unknown_accounting_ref: ArtifactReference | None = None
     video_technical_repair_ref: ArtifactReference | None = None
     attempt_history: tuple[AttemptHistory, ...] | None = Field(default=None, max_length=1)

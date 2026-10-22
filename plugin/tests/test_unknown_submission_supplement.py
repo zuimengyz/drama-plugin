@@ -240,9 +240,10 @@ async def test_historical_unknown_business_completion_and_accounting_pending_do_
     assert record.business_state=='COMPLETED_BY_SUPPLEMENT' and record.accounting_state=='PENDING_RECONCILIATION'
     assert record.unknown_attempt_ref==old.artifact_reference() and record.completed_by_media_ref==before.progress.video_ref
     assert record.reserved_cost_microunits==before.progress.attempt_history[0].reserved_cost_microunits
-    assert len(calls)==requests+1 and sum(r.method=='POST' for r in calls)==posts==2
+    assert record.query_code == 'PROVIDER_TASK_ID_REQUIRED_ACCOUNTING_PENDING'
+    assert len(calls)==requests and sum(r.method=='POST' for r in calls)==posts==2
     assert await p.reconcile_historical_unknown(op.artifact_reference())==ref
-    assert len(calls)==requests+1
+    assert len(calls)==requests
     after=p.execution.store.checkpoint(op.artifact_reference())
     assert after.state==before.state and after.receipt_ref==before.receipt_ref
     assert after.progress.attempt_history==before.progress.attempt_history

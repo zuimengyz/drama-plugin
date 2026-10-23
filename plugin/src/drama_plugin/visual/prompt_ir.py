@@ -101,8 +101,8 @@ def compile_ir(raw: VisualPromptIR | dict[str, Any], *, provider_family: str,
         generated = get_generator('seedance_2').generate(ir, rows, context=generator_context, hard_limit=hard_limit)
         prompt = generated['prompt']
         review_text(prompt, scope_task, audio=audio_supported)
-        from drama_plugin.hosts.prompt_budget import budget_prompt
-        _, budget = budget_prompt(prompt, prompt, model=model, limit=hard_limit, source=limit_source)
+        from drama_plugin.hosts.prompt_budget import check_prompt_limit
+        _, budget = check_prompt_limit(prompt, model=model, limit=hard_limit, source=limit_source)
         budget['soft_budget'] = 'UNVALIDATED'
         return {'schema': 'visual-prompt-compilation-v1', 'ir': ir.model_dump(mode='json'),
                 'ir_fingerprint': fp(ir.model_dump(mode='json')), 'prompt_fingerprint': fp(prompt),
@@ -155,8 +155,8 @@ def compile_ir(raw: VisualPromptIR | dict[str, Any], *, provider_family: str,
                 omitted.append({'path': row['path'], 'reason': 'SECONDARY_BUDGET'})
                 if len(render(kept)) <= hard_limit:
                     break
-    from drama_plugin.hosts.prompt_budget import budget_prompt
-    prompt, budget = budget_prompt(full, render(kept), model=model, limit=hard_limit, source=limit_source)
+    from drama_plugin.hosts.prompt_budget import check_prompt_limit
+    prompt, budget = check_prompt_limit(render(kept), model=model, limit=hard_limit, source=limit_source)
     review_text(prompt, scope_task, audio=audio_supported)
     return {'schema': 'visual-prompt-compilation-v1', 'ir': ir.model_dump(mode='json'),
             'ir_fingerprint': fp(ir.model_dump(mode='json')), 'prompt': prompt, 'prompt_fingerprint': fp(prompt),

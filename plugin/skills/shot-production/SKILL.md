@@ -111,7 +111,7 @@ Use current source/owner prose in the existing handoff and compilation path;
 do not paste an untraced explanation onto an already sealed request.
 
 During the existing full-text Host review, read the actual provider request's
-text after projection and any compression. Check that the brief reading survives
+text after final writing and projection. Check that the brief reading survives
 there and that the concrete design supports it without extra events or conflicting
 directions. Merge repeated explanation and action wording, retaining necessary
 identity, reference-use and continuity constraints. Keep source pins and local
@@ -124,7 +124,7 @@ unit boundaries and audio parameters before sealing or reserving that request.
 Compiler success alone does not prove that its prose is consistent. Follow
 [prompt conflict review](references/production-rules.md#prompt-conflict-review).
 Resolve expression conflicts and redundant wording through new versions of the
-existing professional execution inputs and the same compiler, then review the
+source-based final writing or responsible professional execution inputs and the same compiler, then review the
 result again. Preserve approved action, dialogue, timing, references and Shot art;
 return genuine source disagreements to their existing professional owner.
 Keep the assessment in existing preparation/review originals or Agent Run Context.
@@ -577,15 +577,17 @@ Retain the exact prompt and input hashes with the reviewed sketch version in the
 existing preparation notes. This adds no Runtime gate, automatic approval, paid
 call or fixed shot template.
 
-## Compression after complete prompt compilation
+## Write the final video Prompt once
 
-When shortening an approved or reviewed prompt, first retain the complete native
-compiled text with its source/package and input-binding hashes. Read
-[meaning-preserving compression](references/meaning-preserving-compression.md).
-Derive deduplicated and compact expression candidates from that exact original,
-never from a summary or directly from upstream designs while skipping the full
-prompt. Keep the sealed request unchanged. Character targets are advisory: no
-truncation, silent omissions or automatic preference for the shortest candidate.
+Use [unified final writing](references/final-video-prompt-writing.md) in the existing
+final-writing/compilation handoff. Read current approved professional originals,
+not just an older Prompt. Directly organize one complete current draft by the
+information owners, merge synonymous requirements and resolve conflicts through
+their authoritative sources. Keep professional originals and historical drafts.
+Revise the responsible module, never append an override, raw Bible or repair list.
+Do not run compression, shortening, polishing or normalization over the completed
+draft as a second semantic pass. No 500-character cut-off or fixed reduction ratio.
+The real provider hard limit is measured without truncation or automatic deletion.
 
 ## Model-facing context must be self-contained
 
@@ -597,3 +599,19 @@ meaning with concrete state, direction, timing or the exact bound reference ordi
 the identifier and lose the relation. Review all authored and compiler-added prose,
 including reference preambles, for unresolved local shorthand. Defined character
 aliases and actual provider reference tokens remain valid when unambiguous.
+
+
+## Model-facing people and relationships use descriptive aliases
+
+In non-spoken model-facing prose, prohibit personal proper names and relationships
+expressed through those names. Use source-supported role or appearance plus a
+stable alias, for example “年长琴手 Y” rather than “雅科夫”. Apply this to the
+brief shot reading, identity/action/performance, sound instructions and reference
+preambles; do not reintroduce a name in parentheses or a translated spelling.
+Preserve who acts on, listens to or depends on whom, not the proper-name wording.
+Read [person aliases and relation preservation](references/model-facing-person-aliases.md)
+when preparing or reviewing such a prompt. Keep approved exact dialogue/on-screen
+text and original source identity outside this prose rewrite; never silently edit
+locked lines. The existing full compiled-request Host review checks the result.
+This changes expression instructions only: no new schema, gate, media call or
+retroactive edit of historical prompts and accepted footage.

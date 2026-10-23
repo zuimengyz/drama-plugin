@@ -26,7 +26,7 @@ class GeneratorPolicy:
 class ModelPolicyCatalog:
     """Read the real adapter capability catalog; no soft target masquerades as a limit."""
     def policy(self, model: str) -> GeneratorPolicy | None:
-        return self._policy(model, "t5r-seedance-unit-layout-v10")
+        return self._policy(model, "t5r-seedance-unit-layout-v11")
 
     def uses_legacy_endpoint_projection(self, model: str, fingerprint: str) -> bool:
         """Read-only recovery of exact pre-v10 frozen projections."""
@@ -70,8 +70,10 @@ class SeedanceTargetAdapter:
     creative_authority = False
 
     def generate(self, ir: PromptIR, plan: AudioExecutionPlan, *, policy: GeneratorPolicy,
-                 input_mode: str, references=(), profile: ExecutionProfile | None = None) -> dict[str, Any]:
-        rows, audio, mapping = [], [], {}
+                 input_mode: str, references=(), profile: ExecutionProfile | None = None, writing=None) -> dict[str, Any]:
+        rows, audio, mapping, modules = [], [], {}, {}
+        if writing is not None and writing.source_ir_fingerprint != ir.fingerprint:
+            raise ValueError('FINAL_WRITING_SOURCE_CHANGED')
         count: dict[str, int] = {}
         subjects = sorted({fact.subject_id for fact in ir.facts if fact.subject_id and fact.domain == "SUBJECTS"})
         # Arrange a native unit as space/time, cast, current action, photography,
@@ -131,6 +133,12 @@ class SeedanceTargetAdapter:
                 priority="CRITICAL" if fact.obligation == Obligation.EXECUTION_REQUIRED else "OPTIONAL",
                 required=fact.obligation == Obligation.EXECUTION_REQUIRED))
             mapping[path] = fact.fact_id
+            modules[path] = ('ending' if slot == 'video.end_state' else
+                'action' if slot in ('video.start_state', 'subject.current_visible_action') else
+                {'WORLD':'space', 'SUBJECTS':'people', 'REFERENCE':'references',
+                 'ACTION':'action', 'PERFORMANCE':'action', 'CAMERA':'camera',
+                 'LIGHTING':'lighting', 'COLOR':'lighting', 'SOUND':'sound',
+                 'EDITORIAL':'action', 'DIRECTION':'context'}.get(fact.domain.value, 'action'))
             if slot == "video.audio_requirements" and plan.native_audio_policy != "DISABLED":
                 event = next((e for e in plan.speech_events if e.spoken_content_id and
                     fact.source_ref.artifact_ref == e.source_ref.artifact_ref and
@@ -160,6 +168,8 @@ class SeedanceTargetAdapter:
         generated = get_generator(policy.family).generate(cast(VisualPromptIR, view), rows,
             context={"mode": input_mode, "references": inputs, "native_audio": policy.native_audio and plan.native_audio_policy != "DISABLED",
                      "unit_layout": True,
+                     "modules": modules, "source_ids": mapping,
+                     "final_writing": writing,
                      "segment_timing": self.segment_timing(profile),
                      "actor_tokens_only": True,
                      "annotations": ProjectionAnnotations(audio=tuple(audio)).model_dump(mode="json")},

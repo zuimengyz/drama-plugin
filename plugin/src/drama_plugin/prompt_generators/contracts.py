@@ -47,7 +47,7 @@ class PromptAtom(Record):
 
 class CoverageReceipt(Record):
     obligation_id: str
-    status: Literal['TEXT_COVERED', 'REFERENCE_COVERED', 'MEDIA_COVERED']
+    status: Literal['TEXT_COVERED', 'HOST_MAPPED', 'REFERENCE_COVERED', 'MEDIA_COVERED']
     span: tuple[int, int]
     input_tag: str | None = None
     input_hash: str | None = None

@@ -1,7 +1,7 @@
 from copy import deepcopy
 import pytest
 from drama_plugin.visual.payload_scope import compile_payload, review_text
-from drama_plugin.hosts.prompt_budget import budget_prompt
+from drama_plugin.hosts.prompt_budget import check_prompt_limit
 
 
 def context(task, fields):
@@ -37,9 +37,9 @@ def test_video_current_clip_audio_capability_and_budget():
     result = compile_payload('VIDEO', full, audio=True)
     assert '女孩抓住男人右肘' in result['prompt'] and '抓握保持' in result['prompt']
     assert '下一场' not in result['prompt'] and '观众' not in result['prompt']
-    assert budget_prompt(result['prompt'], result['prompt'], model='test', limit=2000, source='test')[1]['status'] == 'FIT'
+    assert check_prompt_limit(result['prompt'], model='test', limit=2000, source='test')[1]['status'] == 'FIT'
     with pytest.raises(ValueError, match='PROVIDER_PROMPT_BUDGET_EXCEEDED'):
-        budget_prompt(result['prompt'], result['prompt'], model='test', limit=10, source='test')
+        check_prompt_limit(result['prompt'], model='test', limit=10, source='test')
 
 
 def test_dedup_and_final_duplicate_guard():

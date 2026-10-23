@@ -200,8 +200,30 @@ class CrossShotContinuity(RuntimeContract):
         return self
 
 
+class PromptParagraph(RuntimeContract):
+    """Host final writing from professional decisions, not a rewritten final prompt."""
+    module: Literal['context', 'references', 'people', 'space', 'action', 'camera', 'lighting', 'sound', 'ending']
+    text: Text
+    fact_ids: tuple[Identifier, ...] = Field(default=(), max_length=128)
+    source_refs: tuple[SourceReference, ...] = Field(default=(), max_length=32)
+
+
+class FinalPromptWriting(DerivedArtifact):
+    owner = 'final-prompt-writing'
+    source_ir_fingerprint: Hash
+    paragraphs: tuple[PromptParagraph, ...] = Field(min_length=1, max_length=64)
+
+    @model_validator(mode='after')
+    def bounded_context(self) -> Self:
+        if sum(p.module == 'context' for p in self.paragraphs) > 2:
+            raise ValueError('PROMPT_CONTEXT_AT_MOST_TWO_PARAGRAPHS')
+        if any('\n\n' in p.text for p in self.paragraphs if p.module == 'context'):
+            raise ValueError('PROMPT_CONTEXT_ONE_PARAGRAPH_PER_ENTRY')
+        return self
+
+
 class GenerationTask(ExtendedRuntimeContract):
-    extension_fields = ("unit", "profile", "owners", "execution_reference_refs", "continuation", "return_last_frame", 'camera_direction_ref', 'boundary', 'previsualization_ref', 'cross_shot_continuity', 'prompt_expression_ref')
+    extension_fields = ("unit", "profile", "owners", "execution_reference_refs", "continuation", "return_last_frame", 'camera_direction_ref', 'boundary', 'previsualization_ref', 'cross_shot_continuity', 'prompt_expression_ref', 'final_writing_ref')
     kind: Literal["VIDEO"] = "VIDEO"
     target_model: Identifier = "seedance-2-standard"
     input_mode: Literal["text_to_video", "reference", "image_to_video", "first_last_frame"] = "text_to_video"
@@ -217,10 +239,15 @@ class GenerationTask(ExtendedRuntimeContract):
     boundary: MediaBoundary | None = None
     cross_shot_continuity: CrossShotContinuity | None = None
     previsualization_ref: SourcePin | None = None
+    # Deserialization only: immutable historical preparations still reference it.
+    # No new compilation executes the retired baseline/compression path.
     prompt_expression_ref: ArtifactReference | None = None
+    final_writing_ref: ArtifactReference | None = None
 
     @model_validator(mode="after")
     def operation_boundary(self) -> Self:
+        if self.final_writing_ref and self.final_writing_ref.owner != 'final-prompt-writing':
+            raise ValueError('FINAL_WRITING_REFERENCE_OWNER')
         if self.prompt_expression_ref and self.prompt_expression_ref.owner != "prompt-expression":
             raise ValueError("PROMPT_EXPRESSION_REFERENCE_OWNER")
         if self.boundary and self.boundary.kind in ('CUT', 'MATCH') and self.continuation:

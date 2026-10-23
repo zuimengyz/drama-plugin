@@ -27,6 +27,14 @@ excluded from execution; excluding those events must not erase why this shot mat
 Use existing source/projection records and the
 [shot-context expression method](../shot-production/SKILL.md#shot-context-in-the-final-prompt),
 without adding fields, gates or an independent interpretation here.
+The final writer follows [single-owner modules and inheritance](../shot-production/references/final-video-prompt-writing.md);
+project approved decisions there without redesigning or filling empty columns.
+
+For later model-facing prose, carry each canonical person and consequential
+relationship through the existing [descriptive-alias method](../shot-production/references/model-facing-person-aliases.md).
+Keep proper names in source/Host provenance; retain source-supported identity,
+actor/recipient relations and exact approved dialogue. Check compiler-added
+reference and context prose too, without changing Canon or adding an alias field.
 
 The existing source-pinned CinematicShotSpec, its source/visual fingerprints, unresolved requirements and projection coverage evidence. Department originals remain independently versioned.
 

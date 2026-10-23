@@ -8,7 +8,7 @@ lifecycle = "LEGACY_COMPATIBILITY"
 from typing import Any
 from drama_plugin.contracts.base import dump_contract, sha256_canonical
 from drama_plugin.visual.cinematic import verify_frozen
-from drama_plugin.hosts.prompt_budget import compact_prose, prompt_limit, budget_prompt, PROVENANCE
+from drama_plugin.hosts.prompt_budget import prompt_limit, check_prompt_limit, PROVENANCE
 from drama_plugin.visual.payload_scope import review_compiled
 
 
@@ -69,15 +69,14 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
     from drama_plugin.production_language import native_dialogue_spec
     spec = native_dialogue_spec(spec, r.production_dialogue)
     raw = dump_contract(spec); all_fields = leaves(raw)
-    manifest: dict[str, Any] = {}; sections: list[str] = []; compact_sections: list[str] = []
+    manifest: dict[str, Any] = {}; sections: list[str] = []
     missing_references: list[str] = []
     from drama_plugin.hosts.comfy_video import NODES
     semantics = NODES[inspected['class_type']]
     prompt_field = semantics['prompt']
     duration_field = semantics['duration']
-    def append(full: str, compact: str) -> None:
+    def append(full: str) -> None:
         sections.append(full)
-        compact_sections.append(compact)
     def mark(path: str, destination: str, field: str, reason: str, critical: bool = True) -> None:
         matched = {k:v for k,v in all_fields.items() if k == path or k.startswith(path+'.') or k.startswith(path+'[')}
         for key,value in matched.items():
@@ -87,14 +86,7 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
                 'source_hash': sha256_canonical(value)}
     def emit(title: str, path: str, value: Any) -> None:
         if value is not None and value != []:
-            titles = {'GLOBAL VISUAL / WORLD': '视觉', 'OPENING STATE': '开场', 'BEHAVIOR ANCHOR': '行为锚',
-                      'ACTOR DIRECTION / SHARED PERFORMANCE INTENT': '表演', 'CAMERA': '摄影',
-                      'ACTIVE LIGHT': '光', 'SECONDARY MOTION': '次动作', 'ENVIRONMENT INTERACTION': '环境互动',
-                      'STABILITY / DO NOT CHANGE': '连续约束', 'SOURCE SOUND': '声音', 'ENDING STATE': '结束',
-                      'PERFORMANCE objective': '目的', 'PERFORMANCE interactionTarget': '对象',
-                      'PERFORMANCE intendedBelief': '希望对方相信', 'PERFORMANCE concealed': '隐藏', 'PERFORMANCE emotionalArc': '情绪'}
-            append(title + ': ' + prose(executable(value)), titles.get(title, title) + ':' +
-                   compact_prose(executable(value), performance=path == 'performance.directorPerformance'))
+            append(title + ': ' + prose(executable(value)))
         mark(path, 'PROMPT', prompt_field, f'完整保留于 {title}；不生成第二套时间轴')
         for field in list(manifest):
             if field.startswith(path + '.') and field.rsplit('.', 1)[-1] in INTERNAL_FIELDS:
@@ -105,8 +97,7 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
     if spec.expression_direction is not None:
         from drama_plugin.expression import project_action_expression
         expression = project_action_expression([dump_contract(x) for x in spec.performance.beats], spec.expression_direction)
-        append('ROUTE-OWNED EXPRESSION / ONLY ' + spec.expression_direction.core.identity + ': ' + prose(expression),
-               '仅角色' + spec.expression_direction.core.identity + ':' + compact_prose(expression))
+        append('ROUTE-OWNED EXPRESSION / ONLY ' + spec.expression_direction.core.identity + ': ' + prose(expression))
         mark('expressionDirection', 'UPSTREAM_LOCK', 'frozen', '冻结的角色路线与导演幅度约束；只投影该角色，不改变剧情事件')
         mark('expressionDirection.director', 'PROMPT', prompt_field, '导演、动作和摄影原文投影；不生成新动作')
         mark('expressionDirection.profile.design.actionSignature', 'PROMPT', prompt_field, '角色专属动作语言')
@@ -133,10 +124,9 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
                     f'{d.speaker_key} → {d.target}: "{text}"；{d.delivery}；after: {d.after_line}')
         if r.production_dialogue:
             dialogue = f'language={r.production_dialogue[0].profile.resolved_production_language} ' + dialogue
-        append('AUDIO / DIALOGUE ' + dialogue, '对白' + dialogue)
+        append('AUDIO / DIALOGUE ' + dialogue)
         if d.voice_performance:
-            append('NATIVE VOICE DIRECTION / SAME PERFORMANCE: ' + prose(executable(dump_contract(d.voice_performance))),
-                   '声音表演:' + compact_prose(executable(dump_contract(d.voice_performance)), performance=True))
+            append('NATIVE VOICE DIRECTION / SAME PERFORMANCE: ' + prose(executable(dump_contract(d.voice_performance))))
         mark(f'dialogue[{i}]','PROMPT',prompt_field,'仅说当前覆盖片段；整句正文保留为 Canon，不重复整句')
         if d.text_range is not None:
             manifest[f'dialogue[{i}].text']['executed_text_range'] = list(d.text_range)
@@ -166,12 +156,10 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
             destination = 'PROMPT' if duty.status == 'EQUIVALENT' else 'REFERENCE'
             mark(f'referenceRequirements[{i}]',destination,duty.provider_slot,duty.evidence)
             if duty.status == 'EQUIVALENT':
-                append(f'EXPLICIT REFERENCE SUBSTITUTE {duty.role}: {duty.equivalent_text}',
-                       f'参考替代{duty.role}:{duty.equivalent_text}')
+                append(f'EXPLICIT REFERENCE SUBSTITUTE {duty.role}: {duty.equivalent_text}')
             else:
                 append(f'REFERENCE DUTY {duty.provider_slot}: {duty.role} / {duty.subject} / {duty.purpose}; '
-                       '仅承担所列职责，不默认复制原图姿态或构图。',
-                       f'参考{duty.provider_slot}:{duty.role}/{duty.subject}/{duty.purpose}；仅此职责，不默认复制姿态构图。')
+                       '仅承担所列职责，不默认复制原图姿态或构图。')
         else:
             mark(f'referenceRequirements[{i}]','NOT_APPLICABLE','none','PREFERRED未提供；不是已履行',False)
             if ref.necessity == 'REQUIRED':
@@ -185,10 +173,9 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
     if authority is not None:
         from drama_plugin.hosts.specialized_asset import authority_semantics
         asset_text = authority_semantics(authority)
-        append('ASSET CONTINUITY:\n' + asset_text, '资产连续:\n' + asset_text)
+        append('ASSET CONTINUITY:\n' + asset_text)
     # Unified scope review precedes the existing prompt-budget gate.
     full_prompt = review_compiled('\n\n'.join(sections), 'VIDEO')
-    compact_prompt = review_compiled('\n'.join(compact_sections), 'VIDEO')
     result: dict[str, Any] = {'schema':'provider-semantic-projection-v1','prompt':full_prompt,
               # Map iteration order is not a creative instruction. Formal JSON
               # storage may reorder object keys; the audit manifest must not drift.
@@ -239,7 +226,7 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
         validate_projection(result)
         return {**result, 'fingerprint':sha256_canonical(result)}
     # All reference/wrapper text is already included, so reserve exactly zero.
-    result['prompt'], budget = budget_prompt(result['prompt'], compact_prompt,
+    result['prompt'], budget = check_prompt_limit(result['prompt'],
         model=getattr(c, 'model', semantics['model']), limit=limit, source=source)
     result['prompt_budget'] = budget
     from drama_plugin.visual.positive_projection import normalize
@@ -247,16 +234,10 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
     if normalization is not None:
         result['normalization'] = {**normalization, 'pre_normalization_budget': budget}
         # Positive wording can grow: retain the final provider hard-limit gate.
-        result['prompt'], result['prompt_budget'] = budget_prompt(result['prompt'], result['prompt'],
+        result['prompt'], result['prompt_budget'] = check_prompt_limit(result['prompt'],
             model=getattr(c, 'model', semantics['model']), limit=limit, source=source)
     result['scope_review'] = {'gate': 'VISUAL_PROVIDER_SCOPE_REVIEW', 'task': 'VIDEO',
                               'prompt_fingerprint': sha256_canonical(result['prompt'])}
-    if budget['status'] == 'COMPRESSIBLE':
-        for item in result['manifest']:
-            path = item['canonical_field']
-            if (path.startswith('performance.directorPerformance.') or '.voicePerformance.' in path) and path.rsplit('.', 1)[-1] in PROVENANCE:
-                item.update(destination='UPSTREAM_LOCK', provider_field='frozen', required_for_execution=False,
-                            reason='审计标识保留在完整意图与封存中，不发送给模型')
     if missing_references:
         error = ValueError('REQUIRED_REFERENCE_UNFULFILLED')
         # Diagnostic only. Never return a successful projection for missing media.
@@ -269,6 +250,8 @@ def project(r: Any, c: Any, inspected: dict[str, Any]) -> dict[str, Any]:
 def validate_projection(projection: dict[str, Any]) -> None:
     budget = projection.get('prompt_budget')
     if budget:
+        # COMPRESSIBLE is read-only compatibility for frozen old projections;
+        # the current limit checker never emits it or chooses another draft.
         if (budget['finalCharacters'] != len(projection['prompt']) or budget['status'] not in {'FIT', 'COMPRESSIBLE'}
                 or (budget['hardMaxPromptCharacters'] is not None
                     and len(projection['prompt']) + budget['reservedPromptCharacters'] > budget['hardMaxPromptCharacters'])):

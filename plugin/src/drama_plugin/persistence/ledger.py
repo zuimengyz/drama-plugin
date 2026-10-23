@@ -37,6 +37,7 @@ ARTIFACT_TYPES: dict[str, tuple[str, str, RetentionClass]] = {
     "prompt-coverage": ("prompt-coverage-v1", "generation", RetentionClass.PRODUCTION_REQUIRED),
     "final-prompt": ("final-prompt-v1", "generation", RetentionClass.PRODUCTION_REQUIRED),
     "prompt-expression": ("prompt-expression-v1", "generation", RetentionClass.PRODUCTION_REQUIRED),
+    "final-prompt-writing": ("final-prompt-writing-v1", "generation", RetentionClass.PRODUCTION_REQUIRED),
     "audio-plan": ("audio-execution-plan-v1", "generation", RetentionClass.PRODUCTION_REQUIRED),
     "generation-preparation": ("generation-preparation-v1", "generation", RetentionClass.PRODUCTION_REQUIRED),
     'camera-execution-direction': ('camera-execution-direction-v1','generation',RetentionClass.PRODUCTION_REQUIRED),
@@ -272,7 +273,7 @@ class ProductionLedger:
         # table as an arbitrary JSON/Canon payload sink by supplying a known tag.
         from drama_plugin.generation.contracts import (
             AudioExecutionPlan, DerivedArtifact, ExecutionDiagnostic, FinalPromptArtifact,
-            GenerationPreparation, PromptCoverage, PromptIR, CameraExecutionDirection,
+            GenerationPreparation, PromptCoverage, PromptIR, CameraExecutionDirection, FinalPromptWriting,
         )
         from drama_plugin.governance.contracts import GateDecision, GateFinding
         from drama_plugin.production.contracts import AssemblyValidation, ProductionPackage
@@ -282,6 +283,7 @@ class ProductionLedger:
         from drama_plugin.generation.expression import PromptExpression
         models: dict[str, type[RuntimeContract]] = {
             "prompt-expression": PromptExpression,
+            "final-prompt-writing": FinalPromptWriting,
             "production-package": ProductionPackage,
             "assembly-validation": AssemblyValidation,
             "reference-execution-binding": ReferenceExecutionBinding,

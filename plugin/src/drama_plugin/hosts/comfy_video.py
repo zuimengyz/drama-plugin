@@ -250,11 +250,11 @@ def validate_capability(c: Candidate, r: Requirements, inspected: dict[str, Any]
                 raise ValueError('BOOLEAN_PARAMETER_REQUIRED:' + key)
             if field['type'] == 'STRING' and not isinstance(value, str):
                 raise ValueError('STRING_PARAMETER_REQUIRED:' + key)
-        from drama_plugin.hosts.prompt_budget import prompt_limit, budget_prompt
+        from drama_plugin.hosts.prompt_budget import prompt_limit, check_prompt_limit
         limit, source = prompt_limit(cap, semantics, c.variant)
         # Final complete prompt check; opaque legacy prompts cannot be safely
         # structurally rewritten, so they fail explicitly if still over budget.
-        budget_prompt(prompt, prompt, model=c.model, limit=limit, source=source)
+        check_prompt_limit(prompt, model=c.model, limit=limit, source=source)
     if is_seed:
         params = c.parameters
         if inspected['class_type'] == 'ByteDance2ReferenceNodeV2' and params.get('model.task_type') != 'reference':

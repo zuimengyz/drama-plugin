@@ -10,7 +10,7 @@ from drama_plugin.contracts.base import dump_contract, sha256_canonical as fp
 from drama_plugin.hosts.specialized_asset import (compile_authority_context, validate_authority_context,
     validate_visual_submission, bind_video_request, authority_semantics)
 from drama_plugin.hosts.cinematic_projection import project, validate_projection
-from drama_plugin.hosts.prompt_budget import budget_prompt
+from drama_plugin.hosts.prompt_budget import check_prompt_limit
 from test_specialized_asset import fixture
 from test_official_video_providers import request
 from cinematic_projection_helpers import projection_requirements
@@ -32,15 +32,16 @@ def real_authority(tmp_path, monkeypatch):
 
 
 def diagnostic(frozen, context):
-    node = json.loads((ROOT / 'prompt-budget/vidu-current-node.json').read_text())['data'][0]
     r = projection_requirements(frozen, sound='NATIVE_AUDIO', authority_context=context)
-    c = NS(parameters={'model.audio': True}, model='Vidu Q3 Turbo', variant='viduq3-turbo', capability={'node_schema': node})
+    # Isolate authority transfer from hard-limit behavior. The production node's
+    # 2000-character bound no longer triggers automatic structural shortening.
+    c = NS(parameters={'model.audio': True}, model='test', variant='viduq3-turbo', capability={'maxPromptCharacters':10000})
     with pytest.raises(ValueError, match='REQUIRED_REFERENCE_UNFULFILLED') as failure:
         project(r, c, {'class_type': 'Vidu3ImageToVideoNode'})
     return failure.value.projection
 
 
-def test_real_9736_authority_context_and_provider_budget(real_authority):
+def test_authority_context_stays_separate_without_budget_rewrite(real_authority):
     work, frozen, context = real_authority
     before = deepcopy(frozen)
     assert sum(len(a['receipt']['prompt']) for a in context['assets']) == 9736
@@ -50,9 +51,11 @@ def test_real_9736_authority_context_and_provider_budget(real_authority):
     validate_visual_submission(work, payload, authority_context=context, creative_intent=frozen)
     validate_visual_submission(work, {'videoRequest': {'inputMode': 'text_to_video', 'prompt': result['prompt']}},
                                authority_context=context, creative_intent=frozen)
-    assert len(result['prompt']) <= 2000
+    assert 2000 < len(result['prompt']) < 10000
     assert '后续S05' not in result['prompt']
-    assert result['prompt_budget']['hardMaxPromptCharacters'] == 2000
+    assert result['prompt_budget']['hardMaxPromptCharacters'] == 10000
+    with pytest.raises(ValueError, match='PROVIDER_PROMPT_BUDGET_EXCEEDED'):
+        check_prompt_limit(result['prompt'], model='test', limit=2000, source='test')
     for asset in context['assets']:
         assert asset['receipt']['prompt'] not in result['prompt']
         assert asset['executableSemantic'] in result['prompt']
@@ -104,7 +107,7 @@ def test_pollution_fails_final_budget(real_authority):
     result = diagnostic(frozen, context)
     polluted = result['prompt'] + '\n' + '\n'.join(a['receipt']['prompt'] for a in context['assets'])
     with pytest.raises(ValueError, match='PROVIDER_PROMPT_BUDGET_EXCEEDED'):
-        budget_prompt(polluted, polluted, model='Vidu Q3 Turbo', limit=2000, source='runtime_node_schema')
+        check_prompt_limit(polluted, model='Vidu Q3 Turbo', limit=2000, source='runtime_node_schema')
 
 
 async def test_generic_video_and_http_payload_only_send_executable_semantics(tmp_path, monkeypatch):

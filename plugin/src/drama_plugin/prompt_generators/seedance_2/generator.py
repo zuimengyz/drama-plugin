@@ -28,6 +28,8 @@ LABELS = {'start_state': '开场', 'end_state': '终态', 'performance': '表演
           'hair': '头发', 'body_proportions': '体型', 'apparent_age': '年龄', 'costume': '服装',
           'visible_condition': '当前状态', 'beard': '胡须', 'role': '身份'}
 ABSTRACT = {'sad', 'angry', 'alienated', 'lonely', '悲伤', '愤怒', '孤独', '疏离'}
+MODULES = {'context':'处境与意图', 'references':'参考用途', 'people':'人物', 'space':'空间',
+           'action':'动作与表演', 'camera':'摄影', 'lighting':'灯光与色彩', 'sound':'声音', 'ending':'结束状态'}
 
 
 def atoms_from_rows(ir: VisualPromptIR, rows: list[dict[str, Any]]) -> list[PromptAtom]:
@@ -116,7 +118,7 @@ class Seedance2PromptGenerator:
         counters = {'image': 0, 'video': 0, 'audio': 0}
         kind_name = {'image': '图片', 'video': '视频', 'audio': '音频'}
         coverage: dict[str, tuple[dict[str, Any], str, str]] = {}
-        preamble: list[str] = [context['segment_timing']] if context.get('segment_timing') else []
+        preamble: list[str] = []
         slots = []
         for ref in refs:
             kind = ref['kind']; counters[kind] += 1
@@ -133,7 +135,10 @@ class Seedance2PromptGenerator:
                 raise ValueError('UNRESOLVED:reference-strategy:SUBJECT_BINDING_REQUIRED')
             prefix = '与'.join(subjects[s] for s in joint) if joint else subjects.get(actor, '') if actor is not None else ''
             duties = '、'.join(ROLE[x] for x in ref['semantics'])
-            preamble.append(f'{prefix}仅参考 {tag} 的{duties}。')
+            # Source-based final writing specifies inheritance per information
+            # type. Do not prepend a blanket copying instruction to that writing.
+            if not context.get('final_writing'):
+                preamble.append(f'{prefix}仅参考 {tag} 的{duties}。')
             if ref['slot'] in {'first_frame', 'last_frame'}:
                 preamble.append(f'{tag} 作为' + ('首帧' if ref['slot'] == 'first_frame' else '尾帧') + '约束。')
             for excluded in binding.get('must_not_carry', ()):
@@ -207,6 +212,8 @@ class Seedance2PromptGenerator:
         complex_clip = context.get('unit_layout', False) or len(ir.video_temporal.action_progression) > 1
 
         def render(groups_to_emit: list[list[PromptAtom]]) -> tuple[str, list[CoverageReceipt]]:
+            if context.get('unit_layout'):
+                return render_modules(groups_to_emit)
             text = ''.join(preamble)
             receipts = []
             for group in groups_to_emit:
@@ -223,14 +230,95 @@ class Seedance2PromptGenerator:
                         receipts.append(CoverageReceipt(obligation_id=atom.obligation_id, status='TEXT_COVERED', span=(start, end)))
             return text, receipts
 
-        full, _ = render(selected)
+        def render_modules(groups_to_emit):
+            """One final serialization, never a render-then-shorten pass.
+
+            Host writing is pinned to professional IR facts, not to an older
+            generated prompt. Without writing, preserve the selected leaves in
+            the same modules. No inference, fuzzy merge or raw-source append.
+            """
+            writing = context.get('final_writing')
+            buckets = {key: [] for key in MODULES}
+            if preamble:
+                buckets['references'].append((''.join(preamble), ()))
+            if writing:
+                source_ids = context['source_ids']
+                by_source = {source_ids[a.path]: a for a in atoms}
+                for paragraph in writing.paragraphs:
+                    unknown = set(paragraph.fact_ids) - by_source.keys()
+                    if unknown:
+                        raise ValueError('FINAL_WRITING_SOURCE_CHANGED')
+                    # Protected speech is inserted from the exact audio owner;
+                    # the Host writes its position, not a paraphrased copy.
+                    text = paragraph.text
+                    used_speech = set()
+                    for source, atom in by_source.items():
+                        token = '{{speech:' + source + '}}'
+                        if token in text:
+                            if atom.path not in audio or source not in paragraph.fact_ids:
+                                raise ValueError('FINAL_WRITING_SPEECH_SOURCE_CHANGED')
+                            text = text.replace(token, phrase(atom))
+                            used_speech.add(atom.path)
+                    if '{{speech:' in text:
+                        raise ValueError('FINAL_WRITING_SPEECH_SOURCE_CHANGED')
+                    text = literal(text, replace_aliases=False)
+                    bindings = []
+                    for source in paragraph.fact_ids:
+                        atom = by_source[source]
+                        if atom.path in audio and audio[atom.path].kind in ('DIALOGUE','VOICE_OVER','OFF_SCREEN') and atom.path not in used_speech:
+                            raise ValueError('FINAL_WRITING_EXACT_SPEECH_REQUIRED')
+                        bindings.append((atom, 'HOST_MAPPED'))
+                    buckets[paragraph.module].append((text, bindings))
+            else:
+                for group in groups_to_emit:
+                    module = context['modules'][group[0].path]
+                    buckets[module].append((phrase(group[0]), [(a, 'TEXT_COVERED') for a in group]))
+            if context.get('segment_timing'):
+                buckets['ending'].append((context['segment_timing'], ()))
+            text, receipts = '', []
+            for module, title in MODULES.items():
+                if not buckets[module]:
+                    continue
+                text += ('\n\n' if text else '') + '【' + title + '】\n'
+                # Identical authored clauses share one span within their module.
+                # Semantic merges are the Host's source-based writing decision.
+                emitted = {}
+                for clause, bindings in buckets[module]:
+                    if clause not in emitted:
+                        if emitted: text += '\n'
+                        start = len(text); text += clause
+                        emitted[clause] = (start, len(text))
+                    span = emitted[clause]
+                    for atom, status in bindings:
+                        receipts.append(CoverageReceipt(obligation_id=atom.obligation_id,
+                            status=status, span=span))
+            # Exact clause locations stay in the writing. Coverage bounds all
+            # mapped locations when a mixed source leaf spans several modules.
+            merged = {}
+            for receipt in receipts:
+                previous = merged.get(receipt.obligation_id)
+                merged[receipt.obligation_id] = receipt if previous is None else receipt.model_copy(
+                    update={'span':(min(previous.span[0], receipt.span[0]), max(previous.span[1], receipt.span[1]))})
+            return text, list(merged.values())
+
+        full, receipts = render(selected)
+        prompt = full
         omitted: list[dict[str, str]] = []
-        for group in reversed(list(selected)):
-            if len(render(selected)[0]) <= hard_limit: break
-            if all(a.priority == 'OPTIONAL' and not a.required for a in group):
-                selected.remove(group)
-                omitted.extend({'path': a.path, 'reason': 'APPROVED_OPTIONAL_BUDGET'} for a in group)
-        prompt, receipts = render(selected)
+        if not context.get('unit_layout'):
+            # Historical VisualPromptIR compatibility. Native final writing
+            # serializes once and never drops a selected professional decision.
+            for group in reversed(list(selected)):
+                if len(render(selected)[0]) <= hard_limit: break
+                if all(a.priority == 'OPTIONAL' and not a.required for a in group):
+                    selected.remove(group)
+                    omitted.extend({'path': a.path, 'reason': 'APPROVED_OPTIONAL_BUDGET'} for a in group)
+            prompt, receipts = render(selected)
+        if context.get('final_writing'):
+            from collections import Counter
+            expected = Counter(a.text for a in atoms if a.path in audio
+                and audio[a.path].kind in ('DIALOGUE', 'VOICE_OVER', 'OFF_SCREEN'))
+            if any(prompt.count(text) != count for text, count in expected.items()):
+                raise ValueError('FINAL_WRITING_EXACT_SPEECH_CHANGED')
         if len(prompt) > hard_limit:
             raise ValueError('SEEDANCE_CRITICAL_BUDGET_OVERFLOW:RETURN_TO_PLANNING')
         covered = [r.obligation_id for r in receipts]
@@ -251,5 +339,6 @@ class Seedance2PromptGenerator:
                     retained=[r for r in rows if r['path'] in covered], omitted=omitted,
                     statistics=dict(obligations_total=len(atoms), text_covered=sum(r.status == 'TEXT_COVERED' for r in receipts),
                         reference_covered=sum(r.status == 'REFERENCE_COVERED' for r in receipts),
+                        host_mapped=sum(r.status == 'HOST_MAPPED' for r in receipts),
                         omitted_optional=len(omitted), uncovered_required=0,
                         semantic_duplicates=sum(len(g)-1 for g in groups.values()), chars_before_budget=len(full), chars_after=len(prompt)))

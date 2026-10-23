@@ -229,17 +229,13 @@ async def test_warning_continues_and_required_overflow_hs4(generation_fixture, m
     assert decision.risk_families == (HardStopFamily.HS4,)
 
 
-async def test_optional_budget_omitted_warning_not_hard_stop(generation_fixture, monkeypatch):
+async def test_final_writing_budget_never_auto_drops_selected_design(generation_fixture, monkeypatch):
     change_bible(generation_fixture, "color-design", [("palette", {"scene_palettes": "可选颜色细节" * 200})])
     plugin = load(generation_fixture)
     policy = plugin.prompt_compiler.catalog.policy("seedance-2-standard")
     monkeypatch.setattr(plugin.prompt_compiler.catalog, "policy", lambda _: replace(policy, hard_limit=900, fingerprint="c" * 64))
     run = await prepare(plugin)
-    assert run.state == RuntimeState.SUCCEEDED
-    final, _, _ = artifacts(plugin, run)
-    coverage = plugin.generation_artifacts.get(final.coverage_ref, PromptCoverage)
-    assert any(e.status == CoverageStatus.OPTIONAL_OMITTED for e in coverage.entries)
-    assert all(e.status != CoverageStatus.UNRESOLVED for e in coverage.entries if e.obligation == "EXECUTION_REQUIRED")
+    assert run.state != RuntimeState.SUCCEEDED
 
 
 async def test_generator_absent_and_required_tts_are_capability_absent(generation_fixture):

@@ -7,7 +7,7 @@ from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.generation.audio import AudioPerformanceAssembler, package_scope
 from drama_plugin.generation.contracts import (
     AudioExecutionPlan, CoverageEntry, CoverageStatus as S, ExecutionDiagnostic, FinalPromptArtifact,
-    GenerationPreparation, GenerationTask, Obligation as O, PromptCoverage, PromptIR,
+    GenerationPreparation, GenerationTask, FinalPromptWriting, Obligation as O, PromptCoverage, PromptIR,
 )
 from drama_plugin.generation.projection import ExecutionProjection
 from drama_plugin.generation.seedance import ModelPolicyCatalog, SeedanceTargetAdapter
@@ -54,9 +54,8 @@ class PromptCompiler:
         artifacts = GenerationArtifactStore()
         compiler = PromptCompiler(self.packages,artifacts,self.reader,self.catalog,
             media_reader=self.references.media_reader,_preview=True)
-        if task.prompt_expression_ref:
-            from drama_plugin.generation.expression import PromptExpression
-            artifacts.put(self.artifacts.get(task.prompt_expression_ref, PromptExpression))
+        if task.final_writing_ref:
+            artifacts.put(self.artifacts.get(task.final_writing_ref, FinalPromptWriting))
         result = await compiler.compile(package_ref,task)
         diagnostics = [d.model_dump(mode='json',by_alias=True) for d in artifacts.diagnostics(result.diagnostics_ref)]
         if result.preparation_ref is None:
@@ -78,15 +77,19 @@ class PromptCompiler:
             'task':task.model_dump(mode='json',by_alias=True),'persistentPreparationCreated':False}
 
     async def compile(self, package_ref: ArtifactReference, task: GenerationTask = GenerationTask()) -> CompilationResult:
-        if task.prompt_expression_ref:
-            from drama_plugin.generation.expression import compile_expression
-            return await compile_expression(self, package_ref, task)
         package = self.packages.get(package_ref)
         diagnostics: list[ExecutionDiagnostic] = []
 
         def result(prepared=None, ir=None, audio=None):
             return CompilationResult(prepared, self.artifacts.retain_diagnostics(tuple(diagnostics),
                 scope=package_scope(package)), ir, audio)
+
+        if task.prompt_expression_ref:
+            # Keep frozen history readable, never silently execute or ignore its
+            # retired second-pass transform for a new preparation.
+            diagnostics.append(ExecutionDiagnostic(code='EXECUTION_REQUIRED_MISSING',
+                owner='retired-prompt-expression', domain=D.DIRECTION, required=True))
+            return result()
 
         policy = self.catalog.policy(task.target_model)
         if policy is None:
@@ -143,6 +146,13 @@ class PromptCompiler:
             if projection.ir is None:
                 return result(audio=audio_ref)
             ir = projection.ir
+            writing = self.artifacts.get(task.final_writing_ref, FinalPromptWriting) if task.final_writing_ref else None
+            if writing:
+                if writing.source_package_ref != package_ref:
+                    raise ValueError('FINAL_WRITING_PACKAGE_MISMATCH')
+                for paragraph in writing.paragraphs:
+                    for source in paragraph.source_refs:
+                        await self.reader.resolver.resolve(source)
             references = await self.references.resolve(package, task, selected,
                 subjects={f.subject_id for f in ir.facts if f.subject_id})
             diagnostics.extend(references.diagnostics)
@@ -173,7 +183,7 @@ class PromptCompiler:
         if final_ref is None:
             try:
                 generated = self.generator.generate(ir, plan, policy=policy, input_mode=task.input_mode,
-                    references=references.inputs, profile=task.profile)
+                    references=references.inputs, profile=task.profile, writing=writing)
             except ValueError as error:
                 code = str(error)
                 diagnostics.append(ExecutionDiagnostic(code="HARD_LIMIT_OVERFLOW" if "CRITICAL_BUDGET_OVERFLOW" in code
@@ -226,11 +236,11 @@ class PromptCompiler:
                 if not entry.fact_id.startswith('shot-obligation:'):
                     continue
                 value = await self.reader.resolver.resolve(entry.source_ref)
-                realization = next((e for e in entries if e.status == S.TEXT_COVERED
+                realization = next((e for e in entries if e.status in {S.TEXT_COVERED, S.HOST_MAPPED}
                     and e.fact_id in facts and isinstance(value, str)
                     and facts[e.fact_id].text == value), None)
                 if realization is not None:
-                    entries[index] = entry.model_copy(update={'status':S.TEXT_COVERED, 'span':realization.span})
+                    entries[index] = entry.model_copy(update={'status':realization.status, 'span':realization.span})
             if any(e.obligation == O.EXECUTION_REQUIRED and e.status == S.UNRESOLVED for e in entries):
                 diagnostics.append(ExecutionDiagnostic(code="EXECUTION_REQUIRED_MISSING", owner="prompt-compiler", domain=D.DIRECTION, required=True))
                 return result(ir=ir_ref, audio=audio_ref)
@@ -299,7 +309,11 @@ class PromptCompiler:
         except (KeyError, ValueError, OSError):
             return (ExecutionDiagnostic(code="SCOPE_MISMATCH", owner="production-selection", domain=D.DIRECTION, required=True),)
         try:
-            await self.reader.validate_execution_refs(tuple(f.source_ref for f in ir.facts) + ir.execution_reference_refs,
+            writing_refs = ()
+            if prepared.task.final_writing_ref:
+                writing = self.artifacts.get(prepared.task.final_writing_ref, FinalPromptWriting)
+                writing_refs = tuple(r for p in writing.paragraphs for r in p.source_refs)
+            await self.reader.validate_execution_refs(tuple(f.source_ref for f in ir.facts) + ir.execution_reference_refs + writing_refs,
                 work_id=ir.scope.work_id)
         except SourceReadError as error:
             return (ExecutionDiagnostic(code="PACKAGE_STALE" if error.code.value == "VERSION_MISMATCH" else "EXECUTION_REQUIRED_MISSING",

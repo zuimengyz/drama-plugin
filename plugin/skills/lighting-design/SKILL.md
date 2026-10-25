@@ -27,6 +27,18 @@ change alone does not authorize relighting a source or inventing a new time.
 
 Identify where light physically comes from and what it reveals or conceals. Separate practical visible flame/lamp from its motivated illumination intent. Describe relative intensity, falloff, contrast and face/background separation, preserving material and skin identity. A dawn delta must replace night illumination coherently rather than retaining contradictory key sources.
 
+Develop light quality as well as source direction. Relate the effective source's
+extent, any motivated diffusion or reflected contribution, and nearby absorbing
+surfaces to the transition across face, neck, clothes and room. A small visible
+practical does not explain a broad soft face light by itself. Use established
+surfaces; do not invent a new window to justify a preferred effect. Choose where
+highlights broaden or stay small, where midtones turn into shadow, and which
+shadow planes remain distinguishable. Sweat or polished wood can retain localized
+reflection without making the whole surface bright. Softness is neither blur nor
+equal fill; a hard source can also carry rich tonal transitions. Choose according
+to the encounter, not a universal cinematic-light recipe. Judge these relationships
+in the output, separately from whether lamps and named colors are present.
+
 Use dusk, night and dawn as changing relations between available sources and
 people's activity, not as ready-made emotional filters. At dusk, direct sun and
 cool sky are different sources; do not invent sunset entering a window on the

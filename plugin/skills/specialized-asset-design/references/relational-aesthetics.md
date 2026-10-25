@@ -11,8 +11,16 @@ Retain successful properties; revise one causally connected problem group.
 For a character, design the visible whole: hair around the face, collar joining
 neck and shoulders, garment weight and fit, hands and supported posture. Select
 the features that read at the proof's distance. A close face proof and a full-body
-costume proof need different detail. Age, labor and wear require source support;
-neither beautification nor exaggerated decay is a default.
+costume proof need different detail. For a sourced age, reconcile the chosen
+face/neck volumes, hair distribution and color, body capacity and garment fit as
+one person. An older capable body need not acquire a youthful face; age need not
+mean weakness. Choose a few mutually supporting visible distinctions rather than
+adding wrinkles, grime or an age number beside an incompatible casting image.
+People of the same age vary: these are authored choices, not anatomical rules.
+Current attention and exertion come from Performance/Look, not permanent identity.
+If the whole reads at the intended distance, more surface detail may weaken it.
+Labor and wear still require source support; neither beautification nor exaggerated
+decay is a default.
 
 For a person in a place, identify an observable attention object and a purposeful
 hand/body relation when the proof needs performance. An identity proof may look

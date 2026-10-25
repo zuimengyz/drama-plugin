@@ -28,6 +28,25 @@ Use `drama_plugin.visual.frame_request.FrameSpec`, `Template`, and `compile_fram
 The concrete JSON fields are defined in `src/drama_plugin/visual/frame_request.py`.
 Do not construct a second raw request beside the compiled request.
 
+Write the selected still as a visible hierarchy through the existing typed facts.
+Keep identity/age together with its few selected visible cues; current attention
+belongs to the performance-bearing subject/action, viewing access to Camera, and
+light quality/tonal transitions to Lighting. Translate a professional choice into
+its observable consequence, not a list of adjectives or every department's essay.
+Replace ambiguous source wording rather than appending a corrective paragraph to
+a sealed prompt. Retain required content; word count is not an artistic test.
+
+When an output misses the intent, distinguish a decision never made, an ambiguous
+or lost expression, and a clear delivered requirement the model did not realize.
+For an authorized narrow comparison, freeze the other facts and actual request
+parameters, alter one connected issue group, and retain both complete prompts and
+outputs. Report uncontrolled seed and changes elsewhere in the image. A single
+improvement supports that sample, not a learned model rule. Repeated misses of a
+clear delivered requirement show unreliable realization in the tested setup;
+view compatibility, expression and sampling remain possible contributors, not
+proof of a universal model limit. Do not respond with unlimited repetitions,
+new synonyms or unapproved retries.
+
 For each actor, bind the stable entity key to a distinct label, reviewed identity,
 age/hair/beard, active costume, and this Shot's position/pose/action/gaze/visibility.
 For a subjective Shot, mark the viewpoint actor POV, with visible hand/sleeve facts;

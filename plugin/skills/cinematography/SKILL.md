@@ -24,6 +24,15 @@ to choose the spectator's access to occupied people before fixing views. State
 what the selected view gives up. Keeping every face equally lit and unobstructed
 can turn an encounter into a display; withholding is a choice, not a new style rule.
 
+For selected gaze readability, relate eye target, head angle, camera height and
+available light: a downward task may hide the eyes from this view. Propose a
+compatible view with Performance/Lighting rather than silently raising the actor's
+gaze toward the audience. Preserve purposeful unreadability when selected. Choose
+the depth relation between the working body and inhabited background, including
+separation or flattening when intended; selective focus alone cannot supply that
+choice. Judge the face, hand and environment at
+normal viewing scale, not only as separate detail crops.
+
 Design a family of views of the selected scene, not isolated lens prescriptions.
 Read neighboring coverage and the shared Blocking/Editorial proposal before
 elaborating the current view. Compare the outgoing and incoming visual centers,

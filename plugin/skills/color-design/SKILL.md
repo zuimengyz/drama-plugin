@@ -39,6 +39,16 @@ from how it appears under changing light. A transition can let a previously
 closed space become perceptible without turning it golden or repainting faces.
 Retain local contradictions when they carry dramatic meaning.
 
+With Lighting, locate how warm and cool contributions meet in a material's
+midtones, highlights and shadows. Decide their relative reach and saturation,
+not just two hue names: a warm face against a cold wall can become a cutout when
+the intervening planes share no light or color relation. Separation or a sharp
+boundary may instead be the intended effect. Across encounters, change or retain
+these relations through source balance, position and view; preserve local skin
+and garment identity. Finishing can change perceived color and tone; do not assume
+it will resolve an unaddressed material conflict, or infer from a successful
+correction that the original material choice was appropriate.
+
 Consider time of day as an expressive choice with Lighting and Director. Read
 the scene's actual chronology, work, travel, public activity and spoken cues
 before proposing dusk, night or dawn. Color cannot silently turn approved day

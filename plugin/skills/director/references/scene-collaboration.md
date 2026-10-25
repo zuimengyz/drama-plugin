@@ -19,6 +19,15 @@ permanent posture, expression or face. Being alive need not mean gesturing: skil
 absorption, held readiness, listening and an uncompleted task can sustain a body.
 Do not substitute dishevelment, pores or exaggerated emotion for this relation.
 
+When a person's attention matters, select what the spectator should be able to
+notice: a readable gaze toward a task, a listening body, or purposeful withholding.
+Let Performance establish the attention and Camera/Lighting make its chosen
+evidence available without replacing it with a pose. Character vitality is not
+synonymous with open eyes, agitation or sadness. Judge the occupied person and the
+world continuing around them together; an attractive isolated face can lose that
+relation. Return an unrealized choice to its actual owner before assuming that
+more descriptive prose will restore it.
+
 Blocking explores these people in shared space. Camera proposes where the viewer
 stands in relation to them and what remains unavailable. Editorial participates
 now, asking when continuing or changing view changes experience. Production Design

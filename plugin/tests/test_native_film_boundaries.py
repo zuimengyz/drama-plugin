@@ -217,7 +217,16 @@ async def descriptor(p,r,unit,phase=0,mode='text_to_video',spoken_range=None,all
         'requestRef':request.model_dump(mode='json',by_alias=True),'decisionRef':receipt.model_dump(mode='json',by_alias=True)})
     owners=OwnerBindings(adopted_refs=unit.refs,dpd_pin=dpd,performance_scope_pin=projection,snapshot_pins=snapshots,
         rights_pin=rights,rights_request_ref=request,rights_decision_ref=receipt,adoption_decision_ref=shot.adoption_decision_ref)
-    return GenerationTask(target_model=profile.model,input_mode=mode,native_audio='REQUIRED' if profile.native_audio else 'DISABLED',profile=profile,unit=selection,owners=owners,return_last_frame=True)
+    from drama_plugin.film.media_units import completion
+    previous_id=(cp.scene_media_run_ids or (p.source_film_media_opening(r),))[-1]
+    previous=completion(p,previous_id)
+    judgment=None
+    if previous:
+        judgment=dict(strategy='INDEPENDENT',reason='Fixture selects the authored cut, including montage within one Shot owner',
+            camera_relation='New authored viewpoint in the same film',inherited_state='Reviewed predecessor state',
+            target_state='Current selected entry',predecessor_shot_id=previous[2].scope.shot_id,
+            predecessor_media_ref=previous[1].progress.video_ref)
+    return GenerationTask(target_model=profile.model,input_mode=mode,native_audio='REQUIRED' if profile.native_audio else 'DISABLED',profile=profile,unit=selection,owners=owners,return_last_frame=True,cross_shot_continuity=judgment)
 
 
 async def execute(p,r,task,unit,auth,observations=()):
@@ -812,7 +821,10 @@ async def test_native_wrong_age_input_revision_at_later_content_slot_retains_his
     await p.resume_source_film_run(r)
     original=p.generation_artifacts.get(op.preparation_ref,GenerationPreparation).model_dump_json()
     replacement=await descriptor(p,r,school,mode='text_to_video')
-    replacement=replacement.model_copy(update={'boundary':bad.boundary})
+    # Revising this slot retains its original predecessor, not the rejected
+    # candidate that happens to be last in the current production list.
+    replacement=replacement.model_copy(update={'boundary':bad.boundary,
+        'cross_shot_continuity':bad.cross_shot_continuity})
     await p.revise_source_film_segment(r,slot=3,task=replacement)
     current=p.film.store.checkpoint(r).scene_media_run_ids[-1]
     assert current!=child.run_id and len(creates)==5

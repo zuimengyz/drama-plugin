@@ -66,14 +66,16 @@ For method selection and source limitations, see
 
 Produce a versioned `Action Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.
 
-In the native handoff, an `actionPhases` row is an execution unit, not an actor or
-mechanical substep. Its `action` carries the causal sequence, concurrent partner
-expression and uninterrupted speech against one `entryState` and `observable`
-end condition. Take expression from the participants' Beat originals; selecting
-one primary Beat does not serialize their tasks. A reused Beat carries only
-expression valid across its selected units; stage-local changes belong here.
-Keep contact changes inside the current action, including intentional release.
-A mechanical substep alone does not require a new psychological Beat or execution unit.
+In the native handoff, `actionPhases` preserve causal analysis, not a request count
+or a series of mandatory holds. Their `action` names required precedence and
+permitted overlap with partner expression and uninterrupted speech; `entryState`
+and `observable` delimit the analysis, not an instruction to pause at each end.
+Host/Clip Planning may select several consecutive rows into one execution unit
+through existing `OperationSelection.action_refs`. Keep their source rows intact;
+first entry and last outcome bound that unit. A psychological Beat can span rows,
+and a mechanical substep needs neither a new Beat nor a new request. Stage-local
+expression stays scoped; concurrent events must be authored as concurrent rather
+than inferred from row order. Old single-row selections retain their old meaning.
 
 Use event-relative timing or estimated local windows where they clarify execution;
 never turn each window into another row. Separate a required repeated stroke from

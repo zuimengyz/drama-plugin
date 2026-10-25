@@ -56,7 +56,9 @@ python skills/cinematic-finishing/scripts/edit_picture.py PLAN.json SOURCES.json
 
 The current bounded implementation supports equal-size, square-pixel sources with
 one picture and one audio stream, hard picture cuts, and synchronized native audio
-trims. It rejects unreviewed plans, changed hashes/Canon/duration, extra tracks,
+trims. By default it rejects unreviewed plans; explicit `--preview-only` permits a
+local DRAFT observation copy without promoting review or adoption. Both paths reject
+changed hashes/Canon/duration, extra tracks,
 mixed geometry, rotations, missing audio and conflicting retained output. It makes
 a new H.264/AAC candidate; picture re-encoding is explicit. It cannot perform J/L
 sound edits, dubbing, stabilization, color grading, retiming or visual repair.

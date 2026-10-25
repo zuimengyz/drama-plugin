@@ -166,7 +166,9 @@ def task_for(p,package):
         fact_refs=tuple(DomainReference(domain=d,reference=leaf(d,*path)) for d,path in selected),
         reference_disposition=tuple((r['id'],'TECHNICAL_RISK_ACCEPTED') for r in reference.body.facts['references']))
     profile=resolve_profile(model='seedance-2-fast',duration_ms=4000,resolution='720p',ratio='16:9',native_audio=True,policy=p.config.video_route_policy)
-    return GenerationTask(target_model=profile.model,input_mode=profile.mode,native_audio='REQUIRED',unit=unit,profile=profile,owners=owners)
+    return GenerationTask(target_model=profile.model,input_mode=profile.mode,native_audio='REQUIRED',unit=unit,profile=profile,owners=owners,
+        cross_shot_continuity=dict(strategy='OPENING',reason='Fixture opening shot, no prior cinematic shot',
+            camera_relation='Authored opening viewpoint',inherited_state='No predecessor',target_state='Authored opening preparation'))
 
 
 async def prepare_goal(p,package,task, *, offline=True, quote_available=True):

@@ -39,6 +39,12 @@ on the relevant position, facing, target, travel and held-object state; a change
 camera side changes the view, not the world placement. Resolve only the spatial
 relations needed by this shot rather than prescribing the same encounter stages.
 
+Before coverage freezes, expose contact/support transfers, occlusion paths and
+new-view uncertainty to Shot/Camera. Distinguish simultaneous partner work from
+physical precedence; do not make each person's task wait for the previous actor
+by default. Select a reachable staging/view or useful coverage with Host, keeping
+unseen mechanics explicit as assumptions rather than invented observed facts.
+
 ## Outputs
 
 Produce a versioned `Blocking Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.

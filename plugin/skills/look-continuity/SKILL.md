@@ -19,6 +19,15 @@ Character Art; Performance; approved action and Costume states; continuity ledge
 
 ## Professional decisions
 
+Compare the approved persistent appearance, the last trustworthy observation of
+the relevant body region and the target scene delta separately. Cite the actual
+source/time and visibility: an actor who has left the frame has not lost their
+costume or fatigue state. Apparent skin roughness, cloth sheen or color changes
+under a new light are not automatically makeup or costume changes. Resolve that
+ambiguity with Lighting/Color and the asset owner before authoring a delta; leave
+uncertain properties unclaimed. Carry the smallest evidenced state change into
+the target design, not every incidental defect in an adopted clip.
+
 Separate persistent hair/beard identity from loosened strands, sweat, dust, wetness and makeup states. Localize each wound and its visible consequences without inventing a medical diagnosis. Track what accumulates, dries, is wiped, becomes mud or remains hidden by costume. Fatigue can alter skin and breath without changing facial identity. Specify from/until bounds and changed_by events for every meaningful delta.
 
 ## Outputs

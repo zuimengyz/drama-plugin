@@ -37,3 +37,16 @@ def test_opening_cannot_masquerade_as_predecessor_reference():
 def test_reference_requires_exact_source_and_binding():
     with pytest.raises(ValueError, match='EXACT_PREDECESSOR_MEDIA_REQUIRED'):
         decision('FRAME_REFERENCE', predecessor_shot_id='k1')
+
+
+@pytest.mark.parametrize('boundary_kind', [None, 'CONTINUE', 'WRONG_PREDECESSOR'])
+def test_same_shot_cut_needs_exact_authored_boundary(boundary_kind):
+    from drama_plugin.runtime.contracts import ArtifactReference
+    ref=ArtifactReference(owner='media-binding',artifact_ref='prior')
+    boundary=None if boundary_kind is None else SimpleNamespace(
+        kind='CUT' if boundary_kind=='WRONG_PREDECESSOR' else boundary_kind,
+        predecessor_media_ref=ref.model_copy(update={'artifact_ref':'other'}) if boundary_kind=='WRONG_PREDECESSOR' else ref)
+    task=SimpleNamespace(cross_shot_continuity=decision('INDEPENDENT',
+        predecessor_shot_id=scope.shot_id,predecessor_media_ref=ref),boundary=boundary,continuation=None)
+    with pytest.raises(ValueError,match='CROSS_SHOT_PREDECESSOR_IS_TARGET'):
+        validate_cross_shot(None,scope,task,required=True)

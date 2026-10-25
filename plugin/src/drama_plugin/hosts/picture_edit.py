@@ -27,12 +27,15 @@ def _hash(path: Path) -> str:
 
 
 def render_picture_edit(plan: PictureEditPlan, paths: dict[str, Path], directory: Path,
-                        *, current_canon_fingerprint: str, fps: int = 24) -> dict[str, Any]:
+                        *, current_canon_fingerprint: str, fps: int = 24,
+                        preview_only: bool = False) -> dict[str, Any]:
     """Hard cuts with native synchronized audio; J/L audio edits remain in sound finishing.
 
     Explicitly re-encodes a new candidate. Rejects unsupported stream layouts/geometry
     instead of silently dropping tracks, cropping, stretching or inventing silence.
-    Call only for an authorized local assembly after actual source performance review.
+    Call only for an authorized local assembly. Explicit preview_only permits a
+    DRAFT for observation without changing review or adoption. Source, Canon,
+    duration and stream checks apply equally to previews.
     """
     plan = PictureEditPlan.model_validate(dump_contract(plan))
     if fps not in {24, 25, 30}:
@@ -41,7 +44,7 @@ def render_picture_edit(plan: PictureEditPlan, paths: dict[str, Path], directory
         raise ValueError('Exact source path mapping required')
     hashes = {key: _hash(path) for key, path in paths.items()}
     handoff = picture_edit_handoff(plan, current_sources=hashes, canon_fingerprint=current_canon_fingerprint)
-    if not handoff['assemblyReady']:
+    if not handoff['assemblyReady'] and not preview_only:
         raise ValueError('Picture assembly requires reviewed source audio/dialogue and plan')
     info = {key: _probe(path) for key, path in paths.items()}
     dimensions = set()
@@ -66,6 +69,8 @@ def render_picture_edit(plan: PictureEditPlan, paths: dict[str, Path], directory
     recipe = {'plan': dump_contract(plan), 'fps': fps, 'renderer': 'picture-edit-hardcuts-v1',
               'audioPolicy': 'SYNCHRONIZED_NATIVE_TRIMS', 'outputCodec': 'h264/aac',
               'ffmpeg': _run(['ffmpeg', '-version']).decode().splitlines()[0]}
+    if preview_only:
+        recipe['purpose'] = 'DRAFT_OBSERVATION_PREVIEW'
     fingerprint = sha256_canonical(recipe)
     directory = directory.resolve()
     output = directory / ('picture-' + fingerprint + '.mp4')
@@ -104,7 +109,8 @@ def render_picture_edit(plan: PictureEditPlan, paths: dict[str, Path], directory
     record = {'recipeFingerprint': fingerprint, 'recipe': recipe, 'output': str(output),
               'outputHash': _hash(output), 'duration': actual, 'expectedDuration': expected,
               'sourceHashes': hashes, 'sourceMutation': False, 'reencoded': True,
-              'status': 'LOCAL_CANDIDATE_REVIEW_AND_PERSISTENCE_PENDING',
+              'status': ('DRAFT_OBSERVATION_PREVIEW' if preview_only
+                         else 'LOCAL_CANDIDATE_REVIEW_AND_PERSISTENCE_PENDING'),
               'audioReview': 'UNKNOWN', 'fullPlaybackReview': 'UNKNOWN', 'userAdoption': 'UNCHANGED'}
     journal.write_text(json.dumps(record, ensure_ascii=False, indent=2) + '\n')
     return record

@@ -11,7 +11,8 @@ p.add_argument('sources',type=Path,help='JSON Media ID to absolute local path ma
 p.add_argument('--current-canon-fingerprint',required=True)
 p.add_argument('--output',required=True,type=Path)
 p.add_argument('--fps',default=24,type=int)
+p.add_argument('--preview-only',action='store_true',help='Local DRAFT observation copy; no review or adoption claim')
 a=p.parse_args()
 print(json.dumps(render_picture_edit(PictureEditPlan.model_validate_json(a.plan.read_text()),
     {k:Path(v) for k,v in json.loads(a.sources.read_text()).items()},a.output,
-    current_canon_fingerprint=a.current_canon_fingerprint,fps=a.fps),ensure_ascii=False,indent=2))
+    current_canon_fingerprint=a.current_canon_fingerprint,fps=a.fps,preview_only=a.preview_only),ensure_ascii=False,indent=2))

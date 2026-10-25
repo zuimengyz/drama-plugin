@@ -100,7 +100,10 @@ def test_explicit_required_asset_use_cannot_disappear_without_an_image(monkeypat
     if change=='empty':asset['resolvedMedia']=[]
     if change=='missing':asset.pop('resolvedMedia')
     if change=='video':asset['resolvedMedia'][0]['mediaType']='VIDEO'
-    if change=='unprobed':asset['resolvedMedia'][0]['width']=None
+    if change=='unprobed':
+        asset['resolvedMedia'][0]['width']=None
+        def absent_probe(*args):raise ValueError('ASSET_REFERENCE_PROBE_REQUIRED')
+        monkeypatch.setattr(module,'native_reference_dimensions',absent_probe)
     with pytest.raises(ValueError,match='ASSET_REFERENCE_(PROBE|IMAGE)_REQUIRED'):
         module.asset_reference_candidates(p,u,s,asset_use_refs=(use(4),))
 

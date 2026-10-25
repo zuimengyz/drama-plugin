@@ -69,6 +69,32 @@ the affected neighbors and any later use of the changed state. Reuse the existin
 support/decision and SequencePackage/EditorialRhythmPlan mechanisms; no new
 department, score, universal Gate or mandatory model call is required.
 
+## Choose a realizable viewing experience
+
+While coverage is provisional, bring the current route's verified duration/input
+capabilities and observed task risks into the same creative exchange. This is
+feasibility evidence, not a model choice inside the screenplay or a request to
+fill the provider window. Host retains the artistic choice. Compare a coherent
+single generation, motivated film coverage/ellipsis, and same-shot technical
+continuation when relevant; name what each lets us see and what it risks losing.
+
+With Action/Blocking distinguish necessary precedence from simultaneous work;
+with Performance/Voice estimate receiving and speech time; with Editorial ask
+what continues to justify watching after an action completes. Separate the natural
+performance estimate, useful editorial interval and technical output allowance.
+Approximate windows are rehearsal-free hypotheses, not fixed shot-length rules.
+A long take remains available when its sustained experience earns its cost.
+
+Before committing a view, examine consequential hand contacts, support transfers,
+occlusion/reappearance and newly exposed geometry with Camera/Reference Strategy.
+Choose what must remain legible and what may be withheld; fewer visible details
+are not automatically safer or more cinematic. A real cut can avoid witnessing
+an unneeded handling interval, but it must preserve the required consequence.
+Technical continuation buys more output time by resampling the same people,
+objects, light and sound; it cannot supply the purpose of a film cut. Do not add
+empty waiting to create a recoverable handoff. Record the selected tradeoff in
+existing Shot/department originals and the execution selection, not a new gate.
+
 ## Real author and execution handoff
 
 For formal native film children, `hostScreenplay.sceneDirection` supplies the

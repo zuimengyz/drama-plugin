@@ -47,7 +47,7 @@ class RetainedMediaReader:
     async def get_media(self, identity): return self.media[identity]
 
 
-async def next_unit_preview(p, run_id, *, duration_ms=None, spoken_range=None):
+async def next_unit_preview(p, run_id, *, duration_ms=None, spoken_range=None, phase_indices=None, reference_refs=None):
     progress = production_progress(p,run_id); target = progress['nextUnit']
     if target is None: return {'simulation':True,'submitted':False,'nextUnit':None}
     cp = p.film.store.checkpoint(run_id)
@@ -57,8 +57,18 @@ async def next_unit_preview(p, run_id, *, duration_ms=None, spoken_range=None):
     ledger = PreviewLedger(p.ledger,bindings)
     operations = OperationResolver(p.creative_versions,ledger,p.operation_resolver.policy)
     reader = PackageReader(NativeCreativeSources(p.creative_versions,unit.refs,bindings),operations=operations)
-    selection = await operations.select_unit(package,reader,phase_index=target['phaseIndex'],spoken_range=spoken_range)
-    refs = select_references(p,run_id,unit,selection)
+    if phase_indices is None and target.get('phaseIndices'):
+        phase_indices = tuple(target['phaseIndices'])
+    selection = await operations.select_unit(package,reader,phase_index=target['phaseIndex'],
+        phase_indices=phase_indices,spoken_range=spoken_range)
+    if phase_indices is not None:
+        if phase_indices[0] != target['phaseIndex']:
+            raise ValueError('UNIT_GROUP_MUST_START_AT_REMAINING_CONTENT')
+        target = {**target,'phaseIndices':list(phase_indices),'beatIds':list(selection.beat_ids),
+            'spokenIds':list(selection.spoken_ids),
+            'content':' '.join([str(await reader.resolver.resolve(ref)) for ref in selection.action_refs]),
+            'exitState':await reader.resolver.resolve(selection.end_ref)}
+    refs = select_references(p,run_id,unit,selection,reference_refs=reference_refs)
     binding_refs = tuple(bindings.register(b) for b in refs['candidates'])
     current = progress['currentUnit']
     previous = completion(p,current['runId']) if current else None

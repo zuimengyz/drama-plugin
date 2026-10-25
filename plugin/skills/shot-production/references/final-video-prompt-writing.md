@@ -74,3 +74,26 @@ Offline textual checks do not validate video performance, lighting or sound.
 The former `promptExpressionRef` baseline/compression compiler is retired. Its
 schema remains only to read frozen historical records; new compilation does not
 execute it. There is no compression fallback under another name.
+
+For a grouped execution selection, synthesize the selected analysis rows as one
+continuous viewing experience. Preserve authored concurrency and causal order;
+intermediate analysis endpoints are not extra holds, cuts or restarts. Keep the
+first entry, final outcome, consequential contact/occlusion facts and selected
+camera behavior. Natural-time rationale and the comparison of rejected coverage
+alternatives stay in the professional originals; only current execution choices
+enter this request. Technical output duration does not prescribe the final edit.
+A cut between two generated cinematic shots stays in Editorial's assembly choice;
+the next request starts directly in its selected view and inherited physical state.
+Do not turn that cut into an additional camera transition inside the new shot.
+## Cross-shot source responsibilities
+
+Write from the selected current state and approved visual design, not from an
+assumption that every predecessor pixel is authoritative. Preserve each bound
+reference's narrowed duty and order in the compiled preamble. A Host-observed
+sample that is not a delivered input must not receive an image placeholder or
+be described as the model's first frame. For a selected original video with a
+time-localized observation, identify the relevant state without implying that
+only that interval is sent. Keep evidence provenance, adoption history and defect
+analysis outside the final text; express only the consequential positive target
+state and reference use. Neither these instructions nor a narrow semantic label
+guarantee visual disentanglement; review the actual motion separately.

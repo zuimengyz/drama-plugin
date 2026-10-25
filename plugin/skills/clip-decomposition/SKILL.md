@@ -19,7 +19,7 @@ Shot/Editorial; Action and Performance; Asset/Reference Plan; continuity ledger.
 
 ## Professional decisions
 
-Split only where an action state can be handed off clearly; never cut between unresolved support and its immediate consequence without a continuity bridge. Keep canonical Shot/Coverage IDs and name clip consumers separately. Allocate meaningful performance, dialogue and transition time; model duration caps are later feasibility constraints, not artistic rhythm.
+Split only where an action state can be handed off clearly; never cut between unresolved support and its immediate consequence without a continuity bridge. Keep canonical Shot/Coverage IDs and name clip consumers separately. Allocate meaningful performance, dialogue and transition time; verified model duration/input limits inform provisional coverage and are rechecked at execution; they do not define artistic rhythm.
 
 ## Outputs
 
@@ -33,6 +33,26 @@ restart preparation already completed. AUTO chooses output length, not dramatic
 pacing: preserve relative speed, purposeful holds and release triggers explicitly.
 If the scene genuinely needs equal rhythm, retain it with its source reason.
 Record remaining feasibility uncertainty rather than promise that AUTO will fit.
+
+Retain a Host-selected grouping in the existing Editorial facts as optional
+`generationGroups: [{phaseIndices: [0, 1], reason: "selected viewing tradeoff"}]`.
+These are explicit Clip Plan selections, not new Shot identities or a timing
+state machine. Indices refer to the current Action original; revise both together.
+The native opening selector and next-unit preview consume these groups. Records
+without them retain historical single-row selection; no automatic regrouping of
+adopted work occurs. Duration remains the separately selected execution profile.
+
+Use the existing native `OperationResolver.select_unit(..., phase_indices=(...))`
+to bind a Host-selected consecutive group of Action analysis rows; `phase_index`
+retains the legacy single-row choice. This explicit selection does not infer
+parallel action, film cuts or duration. Keep the selected action/beat/line refs,
+first entry and last outcome; pass the chosen technical duration separately.
+For a technical continuation, retain the exact predecessor and continuing
+camera, support, action and audio state. For film coverage, use authored Shots
+and editorial relations rather than disguising a new view as a technical child.
+The remaining-content read view is an inventory, not an instruction to generate
+each remaining Phase. Record intended edit use separately; actual trims wait for
+footage. Historical frozen selections are not automatically regrouped.
 
 Produce a versioned `Generation Clip Plan` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.
 

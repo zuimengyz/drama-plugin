@@ -218,7 +218,7 @@ class ExecutionProjection:
         diagnostics: list[ExecutionDiagnostic] = []
         originals = await self.reader.selections(package)
         multi_unit = any(i.selection.domain == D.ACTION and isinstance(i.value, dict)
-            and len(i.value.get('actionPhases', ())) > 1 for i in originals)
+            and len(i.value.get('actionPhases', ())) > len(task.unit.action_refs) for i in originals)
         phase_camera = any(i.selection.domain == D.CAMERA and 'phaseDirections' in i.selection.reference.path
             for i in selected)
 
@@ -254,6 +254,11 @@ class ExecutionProjection:
             facts.append(fact)
         for item in selected:
             domain, ref = item.selection.domain, item.selection.reference
+            if (len(task.unit.action_refs) > 1 and domain == D.ACTION and 'actionPhases' in ref.path
+                    and ref.path[-1] in ('entryState', 'observable') and ref not in (task.unit.start_ref,task.unit.end_ref)):
+                internal.append(CoverageEntry(fact_id='analysis-state:'+sha256_canonical(ref),
+                    domain=domain,source_ref=ref,obligation=O.QUALITY_SUPPORTING,status=S.INTERNAL_ONLY))
+                continue
             if not legacy_scope:
                 whole_event = multi_unit and (
                     domain == D.SUBJECTS and ref.path[-1:] == ('inSceneBehaviour',) or
@@ -417,22 +422,22 @@ class ExecutionProjection:
                         '摄影连续承接前段末尾，不重演已完成的摄影变化。',
                         'video.camera_motion')
         if task.camera_direction_ref:
-            timing, source = self.reader.operations.camera_direction(package,task)
-            labels = {'scene_context':'BACKGROUND ONLY, scene intent',
-                'preceding_beat_context':'BACKGROUND ONLY, already completed; do not perform again',
-                'following_beat_context':'BACKGROUND ONLY, later beat; do not perform in this segment',
-                'inherited_state':'CURRENT SEGMENT, inherited camera state', 'decision':'CURRENT SEGMENT, camera decision',
-                'trigger':'CURRENT SEGMENT, narrative trigger; segment boundary is not a trigger',
-                'motivation':'CURRENT SEGMENT, dramatic motivation', 'trajectory':'CURRENT SEGMENT, camera trajectory',
-                'amplitude':'CURRENT SEGMENT, movement extent', 'end_state':'CURRENT SEGMENT, final camera state'}
-            for key,label in labels.items():
-                if key in {'scene_context', 'preceding_beat_context', 'following_beat_context'}:
-                    ref = child(source,CameraPhaseTiming.model_fields[key].alias or key)
-                    internal.append(CoverageEntry(fact_id='camera-background:'+sha256_canonical(ref),
-                        domain=D.CAMERA,source_ref=ref,obligation=O.QUALITY_SUPPORTING,status=S.OUT_OF_UNIT))
-                    continue
-                add(D.CAMERA,child(source,CameraPhaseTiming.model_fields[key].alias or key),
-                    label+': '+getattr(timing,key),'video.camera_motion')
+            for timing, source in self.reader.operations.camera_direction(package,task):
+                labels = {'scene_context':'BACKGROUND ONLY, scene intent',
+                    'preceding_beat_context':'BACKGROUND ONLY, already completed; do not perform again',
+                    'following_beat_context':'BACKGROUND ONLY, later beat; do not perform in this segment',
+                    'inherited_state':'CURRENT SEGMENT, inherited camera state', 'decision':'CURRENT SEGMENT, camera decision',
+                    'trigger':'CURRENT SEGMENT, narrative trigger; segment boundary is not a trigger',
+                    'motivation':'CURRENT SEGMENT, dramatic motivation', 'trajectory':'CURRENT SEGMENT, camera trajectory',
+                    'amplitude':'CURRENT SEGMENT, movement extent', 'end_state':'CURRENT SEGMENT, final camera state'}
+                for key,label in labels.items():
+                    if key in {'scene_context', 'preceding_beat_context', 'following_beat_context'}:
+                        ref = child(source,CameraPhaseTiming.model_fields[key].alias or key)
+                        internal.append(CoverageEntry(fact_id='camera-background:'+sha256_canonical(ref),
+                            domain=D.CAMERA,source_ref=ref,obligation=O.QUALITY_SUPPORTING,status=S.OUT_OF_UNIT))
+                        continue
+                    add(D.CAMERA,child(source,CameraPhaseTiming.model_fields[key].alias or key),
+                        label+': '+getattr(timing,key),'video.camera_motion')
         for ref in task.unit.action_refs:
             if ref not in {f.source_ref for f in facts}:
                 add(D.ACTION, ref, await self.reader.resolver.resolve(ref), "video.action_progression")

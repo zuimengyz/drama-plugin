@@ -131,6 +131,39 @@ than copying all review metadata into the model prompt.
 
 ## Endpoint evidence versus trajectory and light
 
+For a cross-shot handoff, distinguish five authorities in the existing Reference
+Plan: the approved stable design; state actually observed in a named source;
+the official technical continuation endpoint; other useful observation frames;
+and the interval selected by Editorial for the film. They may overlap, but none
+automatically grants the others. An adopted clip can contain a duplicated bow,
+wrong fabric or unwanted light without revising the approved design. Identify
+the affected property and decide whether to omit that input, use a less conflicting
+existing source, or retain a narrowly justified duty with its residual risk.
+
+For a non-tail observation, retain the original media ID/hash and source file,
+the timestamp (and frame/PTS when known), extraction method and observed-image
+hash, plus the visible fact and uncertainty. A still proves a visible state, not
+the preceding contact or motion. Keep Host evidence separate from delivered
+inputs. Never register a sampled frame as an official continuation endpoint.
+If the native route cannot deliver that frame, an eligible original video may
+carry the selected state with a time-localized duty; acknowledge that the whole
+video is sent and may carry competing cues. Otherwise keep it as Host evidence
+and disclose the missing model-visible proof. Do not fabricate eligibility.
+
+Before fixing coverage, inspect the contact, occlusion and new-view claims needed
+at the cut: which hand supports which object, what remains visible during closure
+or transfer, and which surfaces/exit relations the new camera reveals. Use only
+the observations needed to resolve those claims. A container visible closed does
+not prove its latch, contents or unseen side; an empty tail proves no carry pose.
+Choose the cinematic cut and target state with Shot/Blocking/Editorial first;
+technical continuation remains a separate option under the accepted T1/T2 design.
+
+Freeze the chosen binding order, exact bytes and narrow semantics, then compare
+them with the compiled preamble and request slots. Discovery is a suggestion, not
+authority to append or replace an explicit selection. Keep source analysis and
+excluded anomalies in the professional evidence; only the selected transferable
+properties and consequential target-state instructions belong in the Prompt.
+
 For a changed viewpoint after an actor exits, an empty tail cannot prove the exit
 vector, turn or doorway geography. Inspect the last visible motion as Host evidence,
 and record which relations the selected inputs can and cannot carry. Keep a local

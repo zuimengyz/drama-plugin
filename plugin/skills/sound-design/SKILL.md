@@ -55,6 +55,16 @@ and independent TTS remains a separately authorized route.
 
 ## Outputs
 
+When Editorial selects source ranges, distinguish visual exit from acoustic exit.
+A room, breath or source-music phrase may bridge a film cut; a technical file edge
+does not motivate a fresh attack, silence or fade. Give Finishing the intended
+listener perspective and causal relation, then conform against actual audio.
+Do not prelap an unplayed instrument or coin impact merely to hide a seam. With
+mixed native tracks, a bridge also carries their speech and contact sounds: choose
+a supported donor interval and disclose competing events rather than call it an
+isolated ambience stem. If hearing is unavailable, a rendered experiment remains
+UNKNOWN; waveform continuity alone cannot establish musical or dramatic success.
+
 Produce a versioned `Sound Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.
 
 ## Forbidden authority

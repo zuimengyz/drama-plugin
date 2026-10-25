@@ -25,7 +25,13 @@ def validate_cross_shot(ledger, scope, task, *, required=False):
             raise ValueError('OPENING_PREDECESSOR_CONFLICT')
         return
     if decision.predecessor_shot_id == scope.shot_id and decision.strategy != 'CONTINUE':
-        raise ValueError('CROSS_SHOT_PREDECESSOR_IS_TARGET')
+        # Native/historical montage may contain authored cuts under one Shot
+        # owner. The native caller also validates the boundary source authority
+        # and immediate predecessor; Shot ID equality alone is not continuation.
+        if (not task.boundary or task.boundary.kind not in {'CUT', 'MATCH'}
+                or not decision.predecessor_media_ref
+                or task.boundary.predecessor_media_ref != decision.predecessor_media_ref):
+            raise ValueError('CROSS_SHOT_PREDECESSOR_IS_TARGET')
     if decision.predecessor_media_ref:
         store = ExecutionStore(ledger)
         source = store.get(decision.predecessor_media_ref, MediaBinding)

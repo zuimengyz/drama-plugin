@@ -118,3 +118,24 @@ def test_edit_gate_before_output(media,defect):
     if defect=='duration':plan.sources[0].duration=20
     with pytest.raises(ValueError):render_picture_edit(plan,paths,tmp/'blocked',current_canon_fingerprint=canon)
     assert not (tmp/'blocked').exists()
+
+
+def test_authorized_draft_preview_keeps_unknown_review_and_source_checks(media):
+    plan,paths,tmp=media
+    plan.status='DRAFT';plan.audio_review='UNKNOWN'
+    frozen=plan.model_dump_json()
+    result=render_picture_edit(plan,paths,tmp/'preview',current_canon_fingerprint='a'*64,preview_only=True)
+    assert result['status']=='DRAFT_OBSERVATION_PREVIEW'
+    assert result['audioReview']==result['fullPlaybackReview']=='UNKNOWN'
+    assert result['userAdoption']=='UNCHANGED' and plan.model_dump_json()==frozen
+    assert result['recipe']['plan']['status']=='DRAFT'
+    assert abs(result['duration']-2)<.1
+    # Preview is an observation purpose, never a waiver of current source facts.
+    for defect in ('canon','hash','range'):
+        changed=plan.model_copy(deep=True)
+        if defect=='hash':changed.sources[0].content_hash='0'*64
+        if defect=='range':changed.picture_edit[0].source_out=3
+        with pytest.raises(ValueError):
+            render_picture_edit(changed,paths,tmp/defect,
+                current_canon_fingerprint='b'*64 if defect=='canon' else 'a'*64,preview_only=True)
+        assert not (tmp/defect).exists()

@@ -167,7 +167,7 @@ def scoped_spans(text, places, ages, *, final_phase, path, entered_places=frozen
 
 
 def make_context(*, phase, phases, index, shot, shot_ref, action_ref, facts, values, voice_ref,
-                 originals=(), legacy_scope=False):
+                 originals=(), legacy_scope=False, final_index=None):
     places, ages = phase_labels(phase)
     previous_places, _ = phase_labels(phases[index-1]) if index else (set(), set())
     entered_places = places & previous_places
@@ -192,7 +192,7 @@ def make_context(*, phase, phases, index, shot, shot_ref, action_ref, facts, val
         if (not isinstance(value, str) or fact.domain in ('ACTION', 'REFERENCE') or ref.owner == 'scene'
                 or ref == voice_ref):
             current.append(fact); continue
-        spans = scoped_spans(value, places, ages, final_phase=index == len(phases)-1, path=ref.path,
+        spans = scoped_spans(value, places, ages, final_phase=(index if final_index is None else final_index) == len(phases)-1, path=ref.path,
             entered_places=entered_places, explicitly_current=not legacy_scope and explicitly_current(ref),
             legacy_scope=legacy_scope)
         if spans:

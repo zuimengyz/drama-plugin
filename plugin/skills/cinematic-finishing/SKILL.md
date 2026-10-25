@@ -131,6 +131,24 @@ For authorized picture assembly, use the bounded local [sequence execution and r
 
 Consume executable Sequence audio/edit obligations separately from design readiness. Bind the actual output hash to FilmReview; UNKNOWN sound or missing normal AV coverage cannot become REVIEWED. Keep produced, reviewed and user-adopted states distinct.
 
+Conform each proposed cut to the actual outgoing and incoming source ranges.
+Use half-open sourceIn/sourceOut seconds; retain exact Media/hash and frame-time
+evidence for the last included image, not the excluded out point. Record completed,
+omitted and unresolved actions in matchAction/cutReason. Compare next-entry state
+separately from the generation's official endpoint and from stable visual design.
+Never substitute a film trim for a ContinuationFrame, or silently regenerate a
+neighbor from it. An adopted source is not an endorsement of every source frame.
+
+For an authorized local trial with incomplete listening, use edit_picture.py
+--preview-only with the existing DRAFT PictureEditPlan. This produces an observation
+copy without changing audioReview, approval or adoption. All source/Canon/range
+checks still apply. The normal reviewed-assembly path remains unchanged. In either
+case, audioCarry is an obligation: record the actual donor range, timeline placement
+and envelope in the existing sound recipe, or explicitly leave it unfulfilled.
+Do not describe synchronized native hard trims as completed J/L editing. Retain a
+picture/native-audio baseline beside the sound candidate when comparison is
+needed; evaluate the full passage before calling a bridge artistically successful.
+
 ## Intended transitions are upstream requirements
 
 Consume shot-design's EditorialRhythmPlan.transitions as intended continuity, including time/space and sound carry. Finishing owns the actual measured-media cut and PictureEditPlan. Do not treat a planned match action or prelap as already observed or executed. Return infeasible continuity to its owner and retain actual Media evidence.

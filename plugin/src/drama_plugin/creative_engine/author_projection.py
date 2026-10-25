@@ -273,7 +273,7 @@ def professional_schema() -> dict[str, JsonValue]:
             row=object_value(object_value(props['presentSubjects'])['items']); rename(row,'id','subjectSelection',SELECT)
         if domain=='ACTION':
             row=object_value(object_value(props['actionPhases'])['items']);rename(row,'beatId','beatSelection',SELECT);rename(row,'spokenIds','spokenSelections',arr(SELECT))
-            row['description']='One execution unit, not one actor or physical substep. Action carries the current causal sequence and concurrent partner expression between entryState and observable; beatSelection selects its primary performance Beat, not a separate turn for each actor.'
+            row['description']='One source-bound action analysis phase, not a request or duration allocation. Action states necessary precedence and permitted overlap between entryState and observable. A selected generationGroups entry can bind several consecutive phases into one execution unit; beatSelection selects the primary performance Beat, not a separate turn for each actor. Intermediate analysis states do not require pauses.'
             object_value(props['physicalStateConstraints'])['description']='Lasting physical invariants only; changing contact, support and material state belong in the current action, with their cause, not a shared replay of the sequence.'
         if domain=='WORLD':
             object_value(props['physicalWorldRules'])['description']='Shared geometry and lasting constraints. Current occupancy and object changes belong to Action; a field named rule does not make a one-time event persistent.'

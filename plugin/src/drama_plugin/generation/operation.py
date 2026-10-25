@@ -140,23 +140,28 @@ def validate_segment_progress(unit: OperationSelection, predecessors: tuple[Oper
     seen_actions, seen_spoken = set(unit.action_refs), set(unit.spoken_ids)
     def phase(selection):
         ref = selection.action_refs[0]
-        if (len(selection.action_refs) != 1 or len(ref.path) < 3
-                or ref.path[-3] != 'actionPhases' or ref.path[-1] != 'action' or not ref.path[-2].isdigit()):
+        key = (ref.owner,ref.artifact_ref,ref.version,ref.fingerprint,ref.path[:-2])
+        refs = selection.action_refs
+        if any(len(r.path) < 3 or r.path[-3] != 'actionPhases' or r.path[-1] != 'action'
+               or not r.path[-2].isdigit() or (r.owner,r.artifact_ref,r.version,r.fingerprint,r.path[:-2]) != key for r in refs):
             raise ValueError('CONTINUATION_PHASE_CONTRACT_REQUIRED')
-        return (ref.owner,ref.artifact_ref,ref.version,ref.fingerprint,ref.path[:-2]), int(ref.path[-2])
-    key, index = phase(unit)
+        indices = tuple(int(r.path[-2]) for r in refs)
+        if indices != tuple(range(indices[0],indices[-1]+1)) or len(indices)>1 and selection.spoken_range:
+            raise ValueError('CONTINUATION_PHASE_CONTRACT_REQUIRED')
+        return key, indices[0], indices[-1]
+    key, index, last = phase(unit)
     current = unit
     for previous in predecessors:
-        previous_key, previous_index = phase(previous)
+        previous_key, previous_index, previous_last = phase(previous)
         if key != previous_key and allow_new_action:
             if index != 0 or current.spoken_range and current.spoken_range[0] != 0 or seen_spoken.intersection(previous.spoken_ids):
                 raise ValueError('NEW_ACTION_MUST_START_WITH_NEW_CONTENT')
             return
-        same_phase_slice = (key == previous_key and index == previous_index
+        same_phase_slice = (key == previous_key and index == last == previous_index == previous_last
             and current.spoken_range is not None and previous.spoken_range is not None
             and current.spoken_range[0] == previous.spoken_range[1]
             and current.spoken_range[2] == previous.spoken_range[2])
-        next_phase = (index == previous_index + 1
+        next_phase = (index == previous_last + 1
             and (current.spoken_range is None or current.spoken_range[0] == 0)
             and (previous.spoken_range is None or previous.spoken_range[1] == previous.spoken_range[2]))
         if key != previous_key or not (same_phase_slice or next_phase):
@@ -165,6 +170,7 @@ def validate_segment_progress(unit: OperationSelection, predecessors: tuple[Oper
             raise ValueError('CONTINUATION_CONTENT_OVERLAP')
         seen_actions.update(previous.action_refs); seen_spoken.update(previous.spoken_ids)
         index = previous_index
+        last = previous_last
         current = previous
 
 
@@ -299,13 +305,12 @@ class OperationResolver:
             source_ref=camera.ref().runtime_ref(),
             terms_hash=sha256_canonical([v.model_dump(mode='json',by_alias=True) for v in (package.artifact_reference(),task.unit,camera.ref())]),allow_parent_scope=True)
         rows = tuple(CameraPhaseTiming.model_validate(v) for v in camera.body.facts['movement']['phaseDirections'])
-        phase = int(task.unit.action_refs[0].path[-2])
-        selected = [(i, row) for i, row in enumerate(rows) if row.phase_index == phase]
-        if len(selected) != 1 or len({row.phase_index for row in rows}) != len(rows):
+        phases = tuple(int(ref.path[-2]) for ref in task.unit.action_refs)
+        selected = [(i, row) for phase in phases for i, row in enumerate(rows) if row.phase_index == phase]
+        if len(selected) != len(phases) or len({row.phase_index for row in rows}) != len(rows):
             raise ValueError('CAMERA_DIRECTION_PHASE_MISMATCH')
-        i, timing = selected[0]
-        source = NativeCreativeSources(self.versions,core).project(camera).reference('content','movement','phaseDirections',str(i))
-        return timing, source
+        original = NativeCreativeSources(self.versions,core).project(camera)
+        return tuple((timing,original.reference('content','movement','phaseDirections',str(i))) for i,timing in selected)
 
     def decision(self, ref: ArtifactReference, *, category: DecisionCategory, scope: RuntimeScope,
                  source_ref: ArtifactReference, terms_hash: str | None = None, allow_parent_scope: bool = False) -> UserDecisionRecord:
@@ -511,20 +516,44 @@ class OperationResolver:
         dpd_pin = self.versions.objects.put("adopted-dpd-binding:"+sha256_canonical(body), body)
         return dpd_pin, scope_pin, tuple(snapshot_pins)
 
-    async def select_unit(self, package: ProductionPackage, reader: PackageReader, *, phase_index: int = 0,
+    async def select_unit(self, package: ProductionPackage, reader: PackageReader, *, phase_index: int | None = None,
+                          phase_indices: tuple[int, ...] | None = None,
                           spoken_range: tuple[int,int] | None = None, legacy_unit_scope: bool = False) -> OperationSelection:
+        # Host selects coverage; analysis rows neither schedule requests nor set duration.
+        # Without a selected Clip Plan, omission retains historical single-phase projection.
         selected = await reader.selections(package)
         action = next((v for v in selected if v.selection.domain == "ACTION" and isinstance(v.value, dict) and v.value.get("actionPhases")), None)
         if action is None:
             raise ValueError("NATIVE_OPERATION_UNIT_CAPABILITY_ABSENT")
+        if phase_index is None:
+            phase_index = 0
+            if phase_indices is None:
+                # Existing Clip Planning owner can select the opening group.
+                # No plan means the historical first-row behavior, not an inferred merge.
+                groups = [g for item in selected if item.selection.domain == 'EDITORIAL' and isinstance(item.value, dict)
+                    for g in item.value.get('generationGroups', []) if next(iter(g.get('phaseIndices', [])), None) == 0]
+                if groups:
+                    if len(groups) != 1:
+                        raise ValueError('UNIT_PHASE_SELECTION_INVALID')
+                    phase_indices = tuple(groups[0]['phaseIndices'])
         if isinstance(phase_index, bool) or not 0 <= phase_index < len(action.value["actionPhases"]):
             raise ValueError("NATIVE_OPERATION_PHASE_OUT_OF_RANGE")
+        indices = phase_indices if phase_indices is not None else (phase_index,)
+        if (not indices or any(type(i) is not int or not 0 <= i < len(action.value['actionPhases']) for i in indices)
+                or indices != tuple(range(indices[0], indices[-1] + 1))
+                or phase_index not in (0, indices[0])):
+            raise ValueError('UNIT_PHASE_SELECTION_INVALID')
+        phase_index = indices[0]
+        if len(indices) > 1 and spoken_range is not None:
+            raise ValueError('UNIT_SPOKEN_RANGE_REQUIRES_SINGLE_PHASE')
+        phases = [object_at(action.value['actionPhases'][i]) for i in indices]
         phase = object_at(action.value["actionPhases"][phase_index])
         from drama_plugin.generation.unit_scope import phase_labels, labels, PLACES, AGES, make_context
         places, ages = phase_labels(phase)
-        if not isinstance(phase.get("beatId"), str) or not isinstance(phase.get("spokenIds"), list):
+        if any(not isinstance(p.get("beatId"), str) or not isinstance(p.get("spokenIds"), list) for p in phases):
             raise ValueError("NATIVE_OPERATION_UNIT_CONTRACT_MISSING")
-        phase_spoken_ids = TypeAdapter(tuple[str, ...]).validate_python(phase["spokenIds"])
+        beat_ids = tuple(dict.fromkeys(p['beatId'] for p in phases))
+        phase_spoken_ids = TypeAdapter(tuple[str, ...]).validate_python(phase['spokenIds'] if len(phases) == 1 else list(dict.fromkeys(s for p in phases for s in p['spokenIds'])))
         slice_record = None
         if spoken_range is not None:
             begin,end=spoken_range
@@ -535,7 +564,9 @@ class OperationResolver:
         base = action.selection.reference
         def leaf(ref: SourceReference, *path: str) -> SourceReference:
             return SourceReference.model_validate({**ref.model_dump(), "path": (*ref.path, *path)})
-        start, end, action_ref = (leaf(base, "actionPhases", str(phase_index), name) for name in ("entryState", "observable", "action"))
+        start = leaf(base, 'actionPhases', str(indices[0]), 'entryState')
+        end = leaf(base, 'actionPhases', str(indices[-1]), 'observable')
+        action_refs = tuple(leaf(base, 'actionPhases', str(i), 'action') for i in indices)
         facts: list[DomainReference] = []
         values = {}
         # Finite approved executable leaves. DPD, provenance and entire JSON are never Prompt prose.
@@ -552,13 +583,13 @@ class OperationResolver:
                 facts.append(DomainReference(domain=domain, reference=ref))
                 values[ref] = value
             elif isinstance(value, dict):
-                if 'phaseIndex' in value and value['phaseIndex'] != phase_index:
+                if 'phaseIndex' in value and value['phaseIndex'] not in indices:
                     return
                 if domain == 'SUBJECTS' and 'id' in value and 'role' in value:
                     p, a = labels(str(value['role']), PLACES), labels(str(value['role']), AGES)
                     if p and places and p.isdisjoint(places) or a and ages and a.isdisjoint(ages):
                         return
-                if isinstance(value.get("beatId"), str) and value["beatId"] != phase["beatId"]:
+                if isinstance(value.get("beatId"), str) and value["beatId"] not in beat_ids:
                     return
                 # A professional event can be narrower than an Action beat
                 # (e.g. two narration slices on opposite sides of a cut).
@@ -566,14 +597,14 @@ class OperationResolver:
                 # current utterances; the applicability inventory is not prose.
                 if isinstance(value.get("spokenIds"), list) and value["spokenIds"] and not set(value["spokenIds"]) & set(phase_spoken_ids):
                     return
-                if isinstance(value.get("id"), str) and domain == "PERFORMANCE" and value["id"] != phase["beatId"]:
+                if isinstance(value.get("id"), str) and domain == "PERFORMANCE" and value["id"] not in beat_ids:
                     return
                 for name, child in value.items():
                     if name not in {"id", "beatId", "phaseIndex", "spokenIds", "actor", "target", "note", "objective", "obstacle", "tactic", "direction", "transitionTrigger"}:
                         walk(child, leaf(ref, name), domain)
             elif isinstance(value, list):
                 for index, child in enumerate(value):
-                    if domain == "ACTION" and "actionPhases" in ref.path and index != phase_index:
+                    if domain == "ACTION" and "actionPhases" in ref.path and index not in indices:
                         continue
                     walk(child, leaf(ref, str(index)), domain)
         dispositions = []
@@ -597,8 +628,8 @@ class OperationResolver:
             if item.selection.domain == "REFERENCE" and isinstance(item.value, dict):
                 for raw in item.value.get("references", []):
                     row = object_at(raw)
-                    beat_ids = row.get("beatIds")
-                    applies = not isinstance(beat_ids, list) or phase["beatId"] in beat_ids
+                    reference_beats = row.get("beatIds")
+                    applies = not isinstance(reference_beats, list) or any(p['beatId'] in reference_beats for p in phases)
                     # Uncertain/relevant duty is one explicit risk choice, never silently erased.
                     dispositions.append((str(row["id"]), "TECHNICAL_RISK_ACCEPTED" if applies and row["priority"] == "REQUIRED" else "OPTIONAL_OMITTED" if applies else "OUT_OF_UNIT"))
             if item.selection.domain not in fields or not isinstance(item.value, dict):
@@ -612,6 +643,9 @@ class OperationResolver:
                 if key in item.value:
                     walk(TypeAdapter(JsonValue).validate_python(item.value[key]), leaf(item.selection.reference, key), item.selection.domain)
         shot = object_at(await reader.resolver.resolve(package.scope.shot))['content']
+        from drama_plugin.generation.unit_scope import phase_boundary
+        if len(indices) > 1 and any(phase_boundary(action.value['actionPhases'], i, shot) != 'CONTINUE' for i in indices[1:]):
+            raise ValueError('UNIT_GROUP_CROSSES_AUTHORED_CUT')
         voice_ref = next((leaf(item.selection.reference, 'dialogueAndLegibility') for item in selected
             if item.selection.domain == 'SOUND' and isinstance(item.value, dict)
             and any(word in str(item.value.get('dialogueAndLegibility','')).lower() for word in ('voiceover','voice-over','画外','旁白'))), None)
@@ -632,9 +666,15 @@ class OperationResolver:
             voice_ref = None
         current, context = make_context(phase=phase, phases=action.value['actionPhases'], index=phase_index,
             shot=shot, shot_ref=package.scope.shot, action_ref=base, facts=facts, values=values, voice_ref=voice_ref,
-            originals=selected, legacy_scope=legacy_unit_scope)
-        return OperationSelection.model_validate(dict(beat_ids=(phase["beatId"],), action_refs=(action_ref,), spoken_ids=phase_spoken_ids,
-            start_ref=start, end_ref=end, fact_refs=tuple(sorted(set(current), key=lambda f: (f.domain.value, f.reference.path))),
+            originals=selected, legacy_scope=legacy_unit_scope, final_index=indices[-1])
+        def fact_order(f):
+            # Preserve old frozen ordering; grouped analysis must remain numeric
+            # when an authored plan contains ten or more rows.
+            path = f.reference.path if len(indices) == 1 else tuple(
+                (1, int(part)) if part.isdigit() else (0, part) for part in f.reference.path)
+            return f.domain.value, path
+        return OperationSelection.model_validate(dict(beat_ids=tuple(dict.fromkeys(p['beatId'] for p in phases)), action_refs=action_refs, spoken_ids=phase_spoken_ids,
+            start_ref=start, end_ref=end, fact_refs=tuple(sorted(set(current), key=fact_order)),
             reference_disposition=tuple(dispositions), execution_context=context, spoken_range=slice_record))
 
     async def selected(self, package: ProductionPackage, task: GenerationTask, reader: PackageReader, *, admission_required: bool = True,
@@ -647,9 +687,11 @@ class OperationResolver:
         if unit.execution_context:
             from drama_plugin.generation.unit_scope import canonical_context
             fresh = await self.select_unit(package, reader, phase_index=int(unit.action_refs[0].path[-2]),
+                phase_indices=tuple(int(r.path[-2]) for r in unit.action_refs),
                 spoken_range=unit.spoken_range[:2] if unit.spoken_range else None, legacy_unit_scope=legacy_unit_scope)
             if (canonical_context(fresh.execution_context) != canonical_context(unit.execution_context) or fresh.fact_refs != unit.fact_refs
-                    or fresh.action_refs != unit.action_refs or fresh.beat_ids != unit.beat_ids or fresh.spoken_ids != unit.spoken_ids):
+                    or fresh.action_refs != unit.action_refs or fresh.beat_ids != unit.beat_ids or fresh.spoken_ids != unit.spoken_ids
+                    or fresh.start_ref != unit.start_ref or fresh.end_ref != unit.end_ref):
                 raise ValueError('UNIT_SCOPED_PROJECTION_DRIFT')
         full = await reader.selections(package)
         permitted = {item.selection.reference for item in full}
@@ -663,21 +705,22 @@ class OperationResolver:
         if task.continuation:
             action = unit.action_refs[0]
             phase_ref = SourceReference.model_validate({**action.model_dump(), 'path':action.path[:-1]})
-            phase = object_at(await reader.resolver.resolve(phase_ref))
-            authored_ids=tuple(phase['spokenIds'])
+            phase_refs = tuple(r.model_copy(update={'path': r.path[:-1]}) for r in unit.action_refs)
+            phases = [object_at(await reader.resolver.resolve(r)) for r in phase_refs]
+            authored_ids=tuple(dict.fromkeys(s for p in phases for s in p['spokenIds']))
             if unit.spoken_range:
                 begin,end,total=unit.spoken_range
                 if total != len(authored_ids): raise ValueError('CONTINUATION_AUTHORED_CONTENT_DRIFT')
                 authored_ids=authored_ids[begin:end]
-            if unit.spoken_ids != authored_ids or unit.beat_ids != (phase['beatId'],):
+            if unit.spoken_ids != authored_ids or unit.beat_ids != tuple(dict.fromkeys(p['beatId'] for p in phases)):
                 raise ValueError('CONTINUATION_AUTHORED_CONTENT_DRIFT')
             if (unit.start_ref.path != (*phase_ref.path,'entryState')
-                    or unit.end_ref.path != (*phase_ref.path,'observable')
+                    or unit.end_ref.path != (*phase_refs[-1].path,'observable')
                     or any((ref.artifact_ref,ref.fingerprint) != (phase_ref.artifact_ref,phase_ref.fingerprint)
                         for ref in (unit.start_ref,unit.end_ref))):
                 raise ValueError('CONTINUATION_ENDPOINT_PROGRESS_DRIFT')
             for fact in unit.fact_refs:
-                if fact.domain == 'ACTION' and 'actionPhases' in fact.reference.path and fact.reference.path[:-1] != phase_ref.path:
+                if fact.domain == 'ACTION' and 'actionPhases' in fact.reference.path and fact.reference.path[:-1] not in {r.path for r in phase_refs}:
                     raise ValueError('CONTINUATION_ACTION_OVERLAP')
                 if fact.reference.owner == 'scene' and object_at(await reader.resolver.resolve(fact.reference))['id'] not in unit.spoken_ids:
                     raise ValueError('CONTINUATION_SPEECH_OVERLAP')

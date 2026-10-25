@@ -77,6 +77,28 @@ they serve the approved meaning; seamlessness is not the goal of every cut.
 
 Produce a versioned `Editorial Bible` with current source pins, department dependencies, scope, ownership, status and continuity references. Keep known decisions separate from unresolved requirements.
 
+Action Phase is an analysis scope, not a clip length or cut. Multiple rows may
+share one native execution selection; retain scoped `protectedEvents` for every
+selected row without turning each completion into a hold. For a technical split,
+name the continuing viewing task and avoid restarting it at the file boundary.
+
+When viewing actual footage, distinguish the film Shot, its generation files and
+the portions the audience will see. Compare retaining a file, using part of it or
+omitting it by performance, causality, speech and musical development, not by its
+length. A technically joined take may remain one film view; an authored cut inside
+a historical Shot owner is still a cut. Neither changes the source records.
+
+For each proposed exit, name what is visibly completed, deliberately omitted or
+still unresolved, then compare the actual next entry. If a handoff or case closure
+is removed, do not claim it has been shown; choose a supported ellipsis, a different
+range or report missing coverage. Keep reactions that change a relationship even
+after physical action stops. Finishing records this reasoning and timed evidence
+in PictureEditPlan's existing cutReason, reactionHold, matchAction and audioCarry.
+The official provider tail remains a technical endpoint; a film exit or another
+observed frame can inform a neighbor without impersonating that endpoint or a
+new approved visual design. Changes to a candidate edit do not rewrite generation
+history, automatically relink references or authorize another generation.
+
 For native execution, `temporalStructure` explains the whole Shot. Put current
 end/hold requirements in existing `protectedEvents` records scoped by `phaseIndex`,
 with `spokenSelections` for narrower applicability within one Action; the system

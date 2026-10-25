@@ -13,12 +13,18 @@ predecessor shot and judge camera relation, inherited visible state, target stat
 and a concrete reason. This is Host preparation, not another user approval.
 
 Use CONTINUE only for a genuine same-take endpoint continuation through the existing
-first-frame path. With a changed lens/viewpoint, prefer FRAME_REFERENCE: retain the
-reviewed predecessor's official tail via `retain_source_film_last_frame`, bind it
-as `REFERENCE` with `pictureFrameRef` and a narrowly authored continuity duty.
-The target camera owns the new framing; identity portraits retain identity duties.
-INDEPENDENT requires an explicit reason why prior picture is not useful, such as
-an unrelated place/time; do not mechanically require an image for every cut.
+first-frame path. With a changed lens/viewpoint, first choose which actual evidence
+the target needs. Use FRAME_REFERENCE when the reviewed official tail proves that
+duty: retain it via `retain_source_film_last_frame` and bind it as `REFERENCE` with
+`pictureFrameRef`. An empty, occluded or defective tail need not be selected.
+INDEPENDENT records why the target does not use that endpoint, including a same-room
+cut with a better earlier observation. It may still use explicitly selected stable
+assets or an eligible original video through ordinary REFERENCE bindings; it does
+not invent state or mean that all references are forbidden. Keep non-tail samples
+as source/time-pinned observations unless the existing delivery route supports
+them; never relabel them as official endpoints. The target camera owns framing.
+Follow Reference Strategy's separation of design, observed state, technical endpoint,
+observation frames and editorial range; do not mechanically require a tail per cut.
 
 If a predecessor is being replaced, use PENDING_PREDECESSOR. Prepare target designs
 locally but do not freeze a submittable request against the superseded result.

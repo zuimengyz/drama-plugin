@@ -205,6 +205,7 @@ def production_progress(p, run_id):
         selected = task.unit
         _, authored_phases = phases_for(p,unit)
         phase_index = int(selected.action_refs[0].path[-2])
+        phase_indices = tuple(int(ref.path[-2]) for ref in selected.action_refs)
         scene_name = next(s.scene.scene_text for s in canon.scenes if s.scene_id == unit.scene_id)
         item = {'runId':child_id,'sceneId':unit.scene_id,'shotId':unit.shot_id,
             'sceneName':scene_name,'content':authored_phases[phase_index]['action'],
@@ -215,6 +216,9 @@ def production_progress(p, run_id):
             'soundVerification':'UNVERIFIED' if selected.spoken_ids else 'NOT_APPLICABLE',
             'inputMode':task.input_mode,'boundary':task.boundary.kind if task.boundary else 'CONTINUE' if task.continuation else 'START',
             'referenceRefs':[r.model_dump(mode='json',by_alias=True) for r in (task.execution_reference_refs or ())]}
+        if len(phase_indices) > 1:
+            item.update(phaseIndices=list(phase_indices),
+                content=' '.join(authored_phases[i]['action'] for i in phase_indices))
         if done:
             op, check, media, _ = done
             ref = check.progress.video_ref; refs.append(ref)
@@ -246,9 +250,9 @@ def production_progress(p, run_id):
             assigned_spoken.update(s for phase in phases for s in phase['spokenIds'])
             media = [r for r in records if r['shotId'] == unit.shot_id]
             covered_lines = {s for r in media if r['adoption']=='USER_SELECTED' for s in r['spokenIds']}
-            accepted = {i for i,phase in enumerate(phases) if any(r['phaseIndex']==i and r['adoption']=='USER_SELECTED' and r['generationState']=='SUCCEEDED' for r in media) and set(phase['spokenIds'])<=covered_lines}
+            accepted = {i for i,phase in enumerate(phases) if any(i in r.get('phaseIndices',[r['phaseIndex']]) and r['adoption']=='USER_SELECTED' and r['generationState']=='SUCCEEDED' for r in media) and set(phase['spokenIds'])<=covered_lines}
             production_lines={s for r in media if r.get('productionSelection') in ('USER_SELECTED','HOST_WORKING_INPUT') for s in r['spokenIds']}
-            produced={i for i,phase in enumerate(phases) if any(r['phaseIndex']==i and r.get('productionSelection') in ('USER_SELECTED','HOST_WORKING_INPUT') and r['generationState']=='SUCCEEDED' for r in media) and set(phase['spokenIds'])<=production_lines}
+            produced={i for i,phase in enumerate(phases) if any(i in r.get('phaseIndices',[r['phaseIndex']]) and r.get('productionSelection') in ('USER_SELECTED','HOST_WORKING_INPUT') and r['generationState']=='SUCCEEDED' for r in media) and set(phase['spokenIds'])<=production_lines}
             remaining = [{'phaseIndex':i,'beatId':phase['beatId'],'spokenIds':phase['spokenIds'],
                 'content':phase['action'],'entryState':phase['entryState']} for i,phase in enumerate(phases)
                 if i not in accepted or not set(phase['spokenIds']) <= covered_lines]
@@ -271,6 +275,15 @@ def production_progress(p, run_id):
                         'character':'Authored target identity use; current age face/voice proof remains independently checked.',
                         'space':'Target location design/state; related adopted place sources selected by location, not recency.',
                         'selectionEntry':'select_source_film_references; exact references pin at prepare, never rediscover on recovery.'}}
+                # Project the Host-selected Clip Plan; remaining analysis rows
+                # alone are never a request schedule. Old records have no groups.
+                editorial = [p.creative_versions.resolve(ref) for ref in unit.refs
+                    if p.creative_versions.resolve(ref).kind == Kind.PROFESSIONAL
+                    and p.creative_versions.resolve(ref).body.domain == 'EDITORIAL']
+                groups = [g for owner in editorial for g in owner.body.facts.get('generationGroups', [])
+                    if next(iter(g.get('phaseIndices', [])), None) == row['phaseIndex']]
+                if len(groups) == 1:
+                    next_unit['phaseIndices'] = groups[0]['phaseIndices']
         unassigned = sorted({line.id for line in scene.scene.dialogue} - assigned_spoken)
         scenes.append({'sceneId':scene.scene_id,'name':scene.scene.scene_text,'writtenContentCovered':bool(shots) and not unassigned and all(s['writtenContentCovered'] for s in shots),
             'productionContentCovered':bool(shots) and not unassigned and all(s['productionContentCovered'] for s in shots),

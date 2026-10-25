@@ -150,11 +150,33 @@ Track time of day, lighting direction, weather, elapsed time, and ongoing action
 
 For every Shot, state `Narrative Input State`, `Required Transition`, and `Narrative Output State`, plus concise visual entry/exit state. Not every Shot needs a major story change, but adjacent output/input states must match and the group must represent every indispensable Scene transition. Do not jump from order to distant consequence when mobilization, travel, arrival, or confrontation is narratively required.
 
-## 11. Apply generation feasibility and complexity gates
+## 11. Co-design time and feasible realization
 
-Ensure character count, actions, spatial relations, camera movement, prop interaction, stable references, environment, and entry/exit states can be described and executed coherently. A Shot overloaded with multiple complex actions, rapid spatial changes, elaborate movement, many characters, and prop interactions should be split, simplified, or covered differently.
+During provisional coverage, obtain the current route's verified duration/input
+limits and relevant observed failures from production/model selection. Keep
+provider controls downstream; feasibility feedback is available before freeze.
+Compare natural event time through required precedence and permitted overlap,
+not by adding every actor's actions or every analysis row. Preserve intelligible
+speech and receiving, without allocating a fresh pause to every reaction.
 
-Remain provider-agnostic. Supply enough formal information for downstream production to judge a still image, start/end frame pair, or continuous video without choosing a provider or model parameter here.
+State the viewing task and the condition that ends useful viewing. Distinguish
+this estimated editorial use from technical output/handles; final measured
+sourceIn/sourceOut belongs to Finishing. Do not extend acting to finish a checklist
+or cut a meaningful hold merely because nothing moves.
+
+For an uncertain plan compare one generation, motivated coverage/ellipsis, and
+technical continuation. A new cinematic view needs a viewing reason; a second
+technical request needs a recoverable state and an explicit cost in resampling
+identity, contact, camera, light and audio. Inspect contact/support, hidden paths
+and new-view geometry now with Blocking/Action/Camera and available evidence.
+Do not leave an impossible handoff to prompt wording or assume a tail frame
+contains hidden prop identity. Resolve through action, view or coverage choices
+selected by Host. Missing geometry remains uncertain, not a measured fact.
+
+Action analysis Phase, cinematic Shot, technical unit and editorial interval
+are different: preserve each in its existing owner. Multiple analysis rows may
+share a generation; concurrent work needs explicit owner prose. A technical
+split never silently creates a film cut or expands the Shot's useful duration.
 
 ## 12. Complete the coverage draft contract
 

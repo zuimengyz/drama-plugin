@@ -19,6 +19,12 @@ Qualify a production route against approved creative requirements. Fitness, veri
 
 Read the professional DirectorPackage, Asset Manifest, Reference Plan, Generation Clip Plan and current department/continuity refs. For actual execution consume the frozen CinematicShotSpec and existing approval/budget gates.
 
+During provisional Shot design, provide read-only capability evidence and
+observed task-specific uncertainty when requested. This informs Director's
+realization alternatives before freeze; it does not select a model, change
+creative originals or authorize production. Formal route binding still consumes
+the frozen cinematic direction below.
+
 ## Outputs
 
 Return a Video Route Policy or source-pinned qualified route with explicit unresolved capabilities. A planning contract does not assert an implemented provider adapter.

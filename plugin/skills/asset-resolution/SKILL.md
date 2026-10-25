@@ -164,6 +164,18 @@ never POST again on resume.
 
 ## Baseline and supplemental appearance references
 
+Resolve stable identity/construction from its approved design and selected asset
+revision, independently of the current Shot's observed state. Adoption of a film
+interval does not approve every depicted property as a new asset. Keep a changed
+grip, closed lid, sweat or displaced garment as a source-bound scene delta; keep
+a duplicated object, unexplained material change or erroneous illumination as a
+finding, not a new baseline. Only an explicit design revision changes the stable
+identity. Missing views remain missing; do not silently infer invisible details.
+
+At handoff, give Reference Strategy the exact baseline pins and the existing
+observations relevant to this consumer. Preserve their distinct source, time and
+scope; do not assemble a new asset record from a sequence of drifting tail frames.
+
 Image adoption and identity selection are distinct. A closer styling, material,
 lighting or contextual proof that supplements an accepted person must be authored
 with `AssetChoice.reference_role=SUPPLEMENT` and its accepted parent plus

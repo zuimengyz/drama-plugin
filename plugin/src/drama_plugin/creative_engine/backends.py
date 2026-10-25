@@ -45,7 +45,7 @@ PROFESSIONAL_CRAFT = {
     D.ACTION: ("blocking/SKILL.md", "action-choreography/SKILL.md"),
     D.CAMERA: ("cinematography/SKILL.md",), D.LIGHTING: ("lighting-design/SKILL.md",),
     D.COLOR: ("color-design/SKILL.md",), D.SOUND: ("voice-direction/SKILL.md", "sound-design/SKILL.md"),
-    D.EDITORIAL: ("editorial-design/SKILL.md",), D.REFERENCE: ("reference-strategy/SKILL.md",),
+    D.EDITORIAL: ("editorial-design/SKILL.md", "clip-decomposition/SKILL.md"), D.REFERENCE: ("reference-strategy/SKILL.md",),
 }
 BOUNDARY = """You are a domain author, not a workflow owner. Produce only the requested
 JSON domain result, without Markdown, tool calls, next-step directives, approvals,
@@ -155,7 +155,9 @@ def professional_fact_schemas(definitions: dict[str, JsonValue]) -> dict[D, dict
         D.LIGHTING: object_schema({"sources": {"anyOf": [text, {"type": "array", "minItems": 1,
             "items": {"$ref": "#/$defs/JsonValue"}}]}, "directionAndQuality": text}, ("sources", "directionAndQuality")),
         D.COLOR: object_schema({"scenePalette": {"anyOf": [text, strings]}}, ("scenePalette",)),
-        D.EDITORIAL: object_schema({"temporalStructure": text}, ("temporalStructure",)),
+        D.EDITORIAL: object_schema({"temporalStructure": text,
+            "generationGroups": rows({"phaseIndices": {"type": "array", "minItems": 1,
+                "items": {"type": "integer", "minimum": 0}}, "reason": text}, ("phaseIndices", "reason"))}, ("temporalStructure",)),
         D.REFERENCE: object_schema({"references": refs}, ("references",)),
     }
 
@@ -181,7 +183,7 @@ def professional_validation_schema() -> dict[str, JsonValue]:
     # These are the existing executable Professional paths, not creative answers.
     # The author chooses facts; the projection can only consume their typed leaves.
     descriptions = {
-        "ACTION": "actionPhases: executable units with beatId, action, entryState, observable and spokenIds (exact Canon IDs, possibly empty). A PERFORMANCE beat per actor does not require a separate unit: retain concurrent contact, listening and ongoing speech in the same action row. Physical substeps stay within that row unless an authored boundary needs separate execution. Also physicalStateConstraints when needed.",
+        "ACTION": "actionPhases: source-bound action analysis with beatId, action, entryState, observable and spokenIds (exact Canon IDs, possibly empty). Rows do not determine requests or duration. State required precedence and permitted overlap explicitly; a Host-selected execution unit can bind several consecutive rows. Keep concurrent contact, listening and speech together; do not create a psychological Beat for each mechanical substep. Also physicalStateConstraints when needed.",
         "CAMERA": "movement: object with policy; cameraPosition, height, pointOfView, lensIntention, axisAndScreenDirection as applicable.",
         "WORLD": "setting; weather, time, physicalWorldRules as applicable.",
         "SUBJECTS": "presentSubjects: rows with id, role, inSceneBehaviour; identityConstraints and absences as applicable.",
@@ -189,7 +191,7 @@ def professional_validation_schema() -> dict[str, JsonValue]:
         "SOUND": "ambience: authored rows with design; orderingRules; optional audio_events bind current Voice delivery per exact spoken line, using delivery_mode and optional performance/space/attention/continuity, never new words or estimated timing. Optional speechRelations rows eventId/targetEventId (exact Canon spoken IDs), relation from existing TemporalRelation enum, no estimated timing or Source refs; silence/acousticSpace/contactTiedSound/dialogueAndLegibility as applicable. Authored silence is valid.",
         "LIGHTING": "sources; directionAndQuality; intensityRatios, constraints, nightContinuity as applicable.",
         "COLOR": "scenePalette; arc, constraints as applicable.",
-        "EDITORIAL": "temporalStructure; compression, protectedEvents, spatialOrientation as applicable.",
+        "EDITORIAL": "temporalStructure; compression, protectedEvents, spatialOrientation as applicable. Optional Host-selected generationGroups rows contain phaseIndices (consecutive Action row ordinals) and reason. These are Clip Plan selections, not cinematic Shot boundaries or provider durations; omitted historical plans retain single-row execution.",
         "REFERENCE": "references: rows with id, priority REQUIRED|PREFERRED, beatIds explicit applicability, designPurpose and inputDuty (Professional reference duty, never Shot purpose). An explicit empty list is allowed only when no reference is required; required duties never disappear because binding is absent.",
     }
     facts["description"] = (

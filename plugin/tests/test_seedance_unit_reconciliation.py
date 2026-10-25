@@ -49,13 +49,15 @@ def test_native_inventory_names_reference_and_coverage_survive_execution_layout(
     result = SeedanceTargetAdapter().generate(ir, plan, policy=ModelPolicyCatalog().policy('seedance-2-fast'),
         input_mode='reference', references=(reference,))
     prompt = result['prompt']
-    assert prompt.startswith('<主体4>仅参考 @视频1 的身份。')
+    assert '<主体4>仅参考 @视频1 的身份。' in prompt
+    assert prompt.index('【参考用途】') < prompt.index('【人物】')
     for name, label in [('朋友乙', 1), ('朋友甲', 2), ('工程师', 3), ('主人公', 4)]:
         assert f'{name}（<主体{label}>）' in prompt
     assert '<主体1>动作：继续听取桌边的问题。' in prompt
     assert prompt.count('四人已在房间内。') == 1
     assert '事件2' not in prompt and '终态：杯仍在乙手中。' in prompt
-    assert prompt.index('十一月三日傍晚') < prompt.index('全镜恰好四名') < prompt.index('事件1')
+    assert prompt.index('【人物】') < prompt.index('【空间】') < prompt.index('【动作与表演】')
+    assert '十一月三日傍晚' in prompt
     assert {result['target_mapping'][r['obligation_id']] for r in result['coverage']} == {f.fact_id for f in facts}
     assert result['statistics']['uncovered_required'] == 0
     assert result['input_slots'][0]['content_hash'] == media.content_hash
@@ -86,7 +88,7 @@ async def test_camera_background_stays_retained_without_replaying_future_or_prio
     package_ref = ArtifactReference(owner='production-package',artifact_ref='package',version=1)
     package = SimpleNamespace(scope=SimpleNamespace(work=SimpleNamespace(artifact_ref='film'),
         scene=SimpleNamespace(artifact_ref='room'),shot=SimpleNamespace(artifact_ref='group-shot')),
-        artifact_reference=lambda:package_ref)
+        artifact_reference=lambda:package_ref, obligations=())
     unit = SimpleNamespace(execution_context=None,start_ref=start,end_ref=end,action_refs=(action,),reference_disposition=(),fact_refs=facts)
     task = SimpleNamespace(unit=unit,profile=SimpleNamespace(native_audio=False,requested_duration_ms=14000),camera_direction_ref=None,
         return_last_frame=False,continuation=None)

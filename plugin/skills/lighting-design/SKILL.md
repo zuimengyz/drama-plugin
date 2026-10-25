@@ -76,6 +76,20 @@ Read [mapping and evidence profile](../../docs/still-professional-mapping.md) wh
 
 ## Restoring a baseline from a different viewpoint
 
+Keep the approved scene source design distinct from an observed frame that
+demonstrates it and from a later frame that deviates. In a new view, retain source
+positions and relationships in the room, then derive their effect on the actor's
+turned face, working hands, reflective objects and visible background. Screen-left
+illumination need not remain screen-left after a camera reversal. Preserve the
+Director's encounter-specific visibility and the accepted soft/hard transitions;
+do not freeze one face exposure or suppress a justified dramatic change.
+
+A scoped LOOK input does not physically remove the illumination in other image
+inputs. If a current-state reference competes with the scene baseline, weigh its
+necessary state proof against that conflict with Reference Strategy. Record the
+choice and the actual output question; successful Prompt transmission is not
+proof that the model separated light from identity, material or pose.
+
 Compare the selected accepted baseline's face/material illumination and background
 separation, not merely its visible lamp colors. Map the motivated source to the
 new view's face side, working hands and background; name the allowed window/door

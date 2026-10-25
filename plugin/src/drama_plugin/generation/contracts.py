@@ -174,7 +174,7 @@ class MediaBoundary(RuntimeContract):
 
 
 class CrossShotContinuity(RuntimeContract):
-    """Host judgment for a new shot, separate from same-take continuation."""
+    """Host boundary judgment, including authored cuts within an existing Shot owner."""
     strategy: Literal['OPENING', 'FRAME_REFERENCE', 'CONTINUE', 'INDEPENDENT', 'PENDING_PREDECESSOR']
     reason: Text
     camera_relation: Text

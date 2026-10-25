@@ -41,6 +41,11 @@ refs under current Scene dramaturgy. Use the [planning method](references/planni
 to reconcile narrative scale, adjacent-view continuity and within-shot event rhythm;
 do not treat a provider segment as a new cinematic shot.
 
+Before freezing coverage, apply the time/feasibility comparison in
+[planning](references/planning.md#11-co-design-time-and-feasible-realization).
+Consult verified route capabilities as evidence; final model binding remains
+with production. Analysis Phase counts do not set shots, requests or duration.
+
 ## Outputs
 
 Shot Bible and thin ShotAssembly; generation clip refs stay distinct from canonical Shot identity.
@@ -127,7 +132,7 @@ Organize persistence as **Stable Envelope + Domain Content**. Keep the parent Sc
 
 ## Visual authority and editorial rhythm
 
-Before coverage, read the [peak/editorial contract](../../docs/dramatic-peak-editorial-contract.md). Consume production-design's stable visual authority and the Scene's FirstAppearanceContract: frame the silhouette, costume/blocking/light hierarchy, first action and others' reactions so a caption does not carry all identity weight. Consume Editorial Design’s EditorialRhythmPlan when planning a Scene group, binding its VisualInformationBeat, CutMotivation and ReactionChain to actual coverage. Judge SingleTakeFeasibility for10s+ multi-focus passages, with staging or an alternative; never derive duration from model capacity. Set pieces need setup/escalation/reaction/payoff/aftermath functions, not a fixed shot count. Include a hero function only when approved dramatic intent calls for it; a civilian or political set piece need not heroicize anyone. Give HeroShot an earned reason and every hold a purpose; compare scale/movement/light/space/subject/silence contrasts. Check missing reactions/details/navigation, overloaded takes, pointless cuts and prolonged visual sameness. Keep alternative re-splits offline until the requested revision scope permits formal changes.
+Before coverage, read the [peak/editorial contract](../../docs/dramatic-peak-editorial-contract.md). Consume production-design's stable visual authority and the Scene's FirstAppearanceContract: frame the silhouette, costume/blocking/light hierarchy, first action and others' reactions so a caption does not carry all identity weight. Consume Editorial Design’s EditorialRhythmPlan when planning a Scene group, binding its VisualInformationBeat, CutMotivation and ReactionChain to actual coverage. Judge SingleTakeFeasibility for multi-focus passages whose action, contact or attention makes execution uncertain, with staging or an alternative; never derive duration from model capacity. Set pieces need setup/escalation/reaction/payoff/aftermath functions, not a fixed shot count. Include a hero function only when approved dramatic intent calls for it; a civilian or political set piece need not heroicize anyone. Give HeroShot an earned reason and every hold a purpose; compare scale/movement/light/space/subject/silence contrasts. Check missing reactions/details/navigation, overloaded takes, pointless cuts and prolonged visual sameness. Keep alternative re-splits offline until the requested revision scope permits formal changes.
 
 ## Sequence production handoff
 

@@ -8,6 +8,7 @@ from tempfile import mkdtemp
 from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from drama_plugin.production.contracts import SourceReference
     from drama_plugin.production.store import ProductionPackageStore
     from drama_plugin.governance.store import GateFindingStore
     from drama_plugin.generation.store import GenerationArtifactStore
@@ -787,7 +788,7 @@ class DramaPlugin:
 
     def select_source_film_references(self, run_id: str, *, task, register: bool = False):
         from drama_plugin.film.media_references import select_references
-        return select_references(self,run_id,self.source_film_unit_for_task(run_id,task),task.unit,register=register)
+        return select_references(self,run_id,self.source_film_unit_for_task(run_id,task),task.unit,register=register,reference_refs=task.execution_reference_refs)
 
     async def prepare_shot_preview(self, package_ref, task, *, previsualization=None, _compiler=None):
         """Current request plus optional external Blender handoff/adoption.
@@ -808,9 +809,11 @@ class DramaPlugin:
         return discover(self, value)
 
     async def preview_source_film_next_unit(self, run_id: str, *, duration_ms: int | None = None,
-                                          spoken_range: tuple[int,int] | None = None) -> dict:
+                                          spoken_range: tuple[int,int] | None = None,
+                                          phase_indices: tuple[int, ...] | None = None,
+                                          reference_refs: tuple[SourceReference, ...] | None = None) -> dict:
         from drama_plugin.film.preview import next_unit_preview
-        return await next_unit_preview(self,run_id,duration_ms=duration_ms,spoken_range=spoken_range)
+        return await next_unit_preview(self,run_id,duration_ms=duration_ms,spoken_range=spoken_range,phase_indices=phase_indices,reference_refs=reference_refs)
 
     def validate_source_film_boundary(self, run_id: str, *, task, previous_id: str) -> None:
         from drama_plugin.film.media_units import completion, boundary_for

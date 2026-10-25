@@ -163,7 +163,7 @@ leaves; their presence in a whole-Scene library is not a current-unit selection.
     return tuple(result)
 
 
-def select_references(p, run_id, unit, selection, *, register=False, asset_use_refs=()):
+def select_references(p, run_id, unit, selection, *, register=False, asset_use_refs=(), reference_refs=None):
     progress = production_progress(p,run_id)
     package = p.production_packages.get(unit.package_ref)
     scope = RuntimeScope(work_id=package.scope.work.artifact_ref,scene_id=unit.scene_id,shot_id=unit.shot_id)
@@ -183,7 +183,26 @@ def select_references(p, run_id, unit, selection, *, register=False, asset_use_r
         currentTime=project_scoped_value(selection.execution_context,world_source.reference('content','time'),world.body.facts.get('time')),
         currentWeather=project_scoped_value(selection.execution_context,world_source.reference('content','weather'),world.body.facts.get('weather')))
     chosen, bindings, candidates, narrative_sources, excluded_sources, seen = [], [], [], [], [], set()
-    for binding in asset_reference_candidates(p, unit, selection, asset_use_refs=asset_use_refs):
+    if reference_refs is not None:
+        # An explicit Host selection is already frozen. Discovery must not add
+        # accepted-but-unwanted assets or a later image with different duties.
+        # Full authority/media/delivery checks remain in the existing compiler.
+        for ref in reference_refs:
+            binding = ReferenceExecutionBinding.model_validate(p.execution_references.resolve(ref))
+            if binding.source().reference() != ref or binding.scope != scope:
+                raise ValueError('REFERENCE_BINDING_SCOPE_MISMATCH')
+            if binding.state_ref is not None and binding.state_ref != selection.start_ref:
+                raise ValueError('REFERENCE_USE_OUTSIDE_CURRENT_UNIT')
+            candidates.append(binding)
+            bindings.append(ref)
+            chosen.append({'mediaId':binding.media.media_id,'contentHash':binding.media.content_hash,
+                'purposes':[d.role for d in binding.duties],'inputRole':binding.role,
+                'source':'EXPLICIT_EXECUTION_SELECTION','bindingRef':ref.model_dump(mode='json',by_alias=True),
+                'sourceScope':binding.origin_scope.model_dump(mode='json',by_alias=True),
+                'endpointFrameRef':binding.endpoint_frame_ref.model_dump(mode='json',by_alias=True) if binding.endpoint_frame_ref else None,
+                'pictureFrameRef':binding.picture_frame_ref.model_dump(mode='json',by_alias=True) if binding.picture_frame_ref else None})
+    for binding in (asset_reference_candidates(p, unit, selection, asset_use_refs=asset_use_refs)
+                    if reference_refs is None else ()):
         candidates.append(binding)
         if register:
             bindings.append(p.execution_references.register(binding))
@@ -197,12 +216,13 @@ def select_references(p, run_id, unit, selection, *, register=False, asset_use_r
         value=source.body
         for key in ref.path:value=value[int(key)] if isinstance(value,list) else value[key]
         return labels(str(value),AGES)
-    target_ages=entry_ages(selection.start_ref)
+    target_ages=entry_ages(selection.start_ref) if reference_refs is None else set()
     if not target_ages:
         target_ages=observed_identity_ages(subjects.body.facts)
     # Qualified current-Scene evidence precedes older same-person imagery;
     # location matching below still selects the relevant historical place.
-    for record in sorted(progress['mediaIndex'], key=lambda r:r['sceneId'] != unit.scene_id):
+    for record in (sorted(progress['mediaIndex'], key=lambda r:r['sceneId'] != unit.scene_id)
+                   if reference_refs is None else ()):
         if record.get('productionSelection') not in ('USER_SELECTED','HOST_WORKING_INPUT'): continue
         source_unit = next(u for u in p.film.store.checkpoint(run_id).units if u.shot_id == record['shotId'])
         op, check, media, source_task = completion(p,record['runId'])
@@ -302,7 +322,8 @@ def select_references(p, run_id, unit, selection, *, register=False, asset_use_r
         character_packages.append({k:resolved[k] for k in ('characterId','characterPackageRef','characterPackageVersion','checksum','status')})
     scene = next(p.creative_versions.resolve(r) for r in unit.refs if p.creative_versions.resolve(r).kind == Kind.SCENE)
     speakers = {line.speaker for line in scene.body.dialogue if line.id in selection.spoken_ids}
-    return {'bindings':tuple(bindings),'candidates':tuple(candidates),'selected':chosen,'narrativeIdentitySources':narrative_sources,'excludedSources':excluded_sources,'location':target_location,'characterPackages':character_packages,
+    return {'selectionAuthority':'EXPLICIT_EXECUTION_SELECTION' if reference_refs is not None else 'DISCOVERY',
+        'bindings':tuple(bindings),'candidates':tuple(candidates),'selected':chosen,'narrativeIdentitySources':narrative_sources,'excludedSources':excluded_sources,'location':target_location,'characterPackages':character_packages,
         'voice':{'speakerIds':sorted(speakers),'visibleSubjectIds':sorted(subject_ids),
             'visibleStateRef':selection.start_ref.model_dump(mode='json',by_alias=True),
             'delivery':'VOICE_OVER' if selection.execution_context and selection.execution_context.voice_over_ref else 'AUTHORED_SPEECH',

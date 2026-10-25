@@ -213,16 +213,18 @@ async def test_registered_capability_invokes_formal_backend(monkeypatch,tmp_path
         calls.append(req)
         if remote_absent:
             return httpx.Response(401,json={'error':'offline-contract-key'})
-        system = json.loads(req.content)['messages'][0]['content']
+        envelope = json.loads(req.content)
+        system = envelope['messages'][0]['content']
+        payload = json.loads(envelope['messages'][1]['content'])
         if role == 'canon':
             if 'whole autonomous film screenplay in text' in system:
                 return response({'text': canon().script.screenplay})
-            if 'same Host author' in system:
+            if 'preservedV1' in payload:
                 return response({'choice': 'KEEP_ALL', 'reason': 'Keep the whole film fixture.', 'text': None})
         if role == 'direction':
             if 'Write the whole independent scene' in system:
                 return response({'text': 'The traveler calls once, listens, and keeps waiting.'})
-            if 'same Host author' in system:
+            if 'preservedV1' in payload:
                 return response({'choice': 'KEEP_ALL', 'reason': 'The full encounter already lives.', 'text': None})
         return response(model_output(role))
     p.creative.canon_author.client.transport=httpx.MockTransport(handler)

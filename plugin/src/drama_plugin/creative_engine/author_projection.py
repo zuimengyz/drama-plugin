@@ -603,7 +603,8 @@ def current_design_view(request: AuthorRequest, *, upstream: bool | None = None,
 
 
 def screenplay_view(context: dict[str, JsonValue]) -> dict[str, JsonValue]:
-    value = {k: v for k, v in context.items() if k not in {'professionalDesignRefs', 'filmLook'}}
+    value = {k: v for k, v in context.items()
+        if k not in {'professionalDesignRefs', 'filmLook', 'sceneDirectionRefs'}}
     if isinstance(value.get('sceneDirection'), dict):
         # Exact selected Canon/Direction pins stay in the immutable child input.
         # Authors see the ordered semantic decisions, never infrastructure refs.

@@ -17,6 +17,12 @@ Director Vision; historical boundary; current Character Art, Costume, Look, Envi
 
 ## Professional decisions
 
+Participate in [shared scene collaboration](../director/references/scene-collaboration.md)
+before proofs and coverage freeze. Compare what the proposed body/clothing/place
+relationships permit people to do, and what the camera can discover; coherence is
+more than period/style matching. Name a consequential mismatch and its owner,
+including a deliberate contrast worth retaining. Do not redesign their originals.
+
 Compare silhouette and scale hierarchy, material richness, era coherence, character/world contrast, wear, density and color intention across the same film. Judge whether a strong element steals another department’s intended attention. Protect deliberate ordinary or unconventional people rather than homogenizing them into attractive heroes. Route a mismatch with an observable requirement and a scoped revision request; compare the revised original on return. Preserve unresolved work rather than completing it yourself.
 
 ## Outputs

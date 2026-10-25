@@ -621,6 +621,19 @@ class SpecializedAssetSequence:
                     'filmLook': (request.professional_context or {}).get('filmLook', []), 'locationCandidates': []}
                 handoff = (self.objects.read_ref(SourcePin.model_validate(scene_screenplays[scene.scene_id]))
                     if scene.scene_id in scene_screenplays else request.screenplay_context if scene.scene_id == request.scope.scene_id else None)
+                # Retain the scene screenplay AND the exact selected direction.
+                # Film children pin all scenes so out-of-order preparation uses
+                # the earlier scene's intent, never the later Shot's expression.
+                direction_refs = (request.screenplay_context or {}).get('sceneDirectionRefs', {})
+                if raw_direction := direction_refs.get(scene.scene_id):
+                    original = self.objects.read_ref(SourcePin.model_validate(raw_direction))
+                    if (original['workId'], original['sceneId']) != (request.scope.work_id, scene.scene_id):
+                        raise ValueError('ASSET_SCENE_DIRECTION_SCOPE_MISMATCH')
+                    handoff = {**(handoff or {}), 'sceneDirection': original['sceneDirection']}
+                elif scene.scene_id == request.scope.scene_id and (request.screenplay_context or {}).get('sceneDirection'):
+                    # Historical/local single-scene input has no collection.
+                    handoff = {**(handoff or {}), 'sceneDirection': {k: v for k, v in
+                        request.screenplay_context['sceneDirection'].items() if k != 'currentShotSelection'}}
                 if handoff:
                     from drama_plugin.creative_engine.screenplay import ScreenplayWorkshop
                     selected_context = ScreenplayWorkshop(self.objects).professional_context(handoff,

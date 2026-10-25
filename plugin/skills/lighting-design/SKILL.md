@@ -19,6 +19,12 @@ Environment Art; Camera; scene time/weather; Director visibility priorities; Pro
 
 ## Professional decisions
 
+In [shared scene collaboration](../director/references/scene-collaboration.md),
+distinguish continuity of the room's sources from constancy of their effect on
+people. Coordinate their changing place, camera viewpoint and visibility priority;
+do not reset every later encounter to an admired earlier frame. Equally, emotional
+change alone does not authorize relighting a source or inventing a new time.
+
 Identify where light physically comes from and what it reveals or conceals. Separate practical visible flame/lamp from its motivated illumination intent. Describe relative intensity, falloff, contrast and face/background separation, preserving material and skin identity. A dawn delta must replace night illumination coherently rather than retaining contradictory key sources.
 
 Use dusk, night and dawn as changing relations between available sources and

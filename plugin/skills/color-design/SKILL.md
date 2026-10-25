@@ -19,6 +19,12 @@ Director Vision; Character/Environment Art; Costume; Lighting.
 
 ## Professional decisions
 
+Use [shared scene collaboration](../director/references/scene-collaboration.md)
+to develop the spectator's changing relation across scenes and within a scene.
+Carry the selected arc in Color Script, and only its current observable consequence
+in scenePalette. A scene-wide mood label must not erase different encounters or
+force a warm/cold switch at each turn. Preserve a motivated counterpoint.
+
 Track hue, value, saturation and warm/cool relationships over dramatic phases. Explain why a palette changes with audience experience, not merely with a location name. Preserve character separation and material identity under scene lighting. Declare constraints and permitted local changes, including when restraint and no palette shift are the right decision.
 
 Begin with the work's central contradiction and the audience's changing relation

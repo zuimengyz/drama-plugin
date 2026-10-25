@@ -6,11 +6,42 @@ audience discovers or continues waiting for. Develop a whole-scene proposition
 before choosing individual views. A proposition can sustain a ritual or unresolved
 relationship; it need not manufacture a turn in every shot.
 
-Host selects the proposition and its meaningful alternatives. Blocking explores
-the encounter in one shared space; Camera explores how views disclose or withhold
-it; Editorial participates now, proposing where changing view changes experience.
-Provisional coverage is enough for this exchange. Do not wait for frozen Shots
-before asking Editorial, or concatenate independent department answers.
+Host selects the proposition and its meaningful alternatives. Before freezing
+coverage or asset proofs, bring in the owners whose choices could change this
+encounter. This is one creative exchange through existing support and decision
+records, not a compulsory round of every department. Ask for a realization and
+its cost, not independent essays on the same mood.
+
+Performance discovers what people are occupied with, whom they attend to and
+what a partner interrupts or leaves unfinished. Character Embodiment contributes
+sourced bodily tendencies and their range; a present tactic does not become a
+permanent posture, expression or face. Being alive need not mean gesturing: skilled
+absorption, held readiness, listening and an uncompleted task can sustain a body.
+Do not substitute dishevelment, pores or exaggerated emotion for this relation.
+
+Blocking explores these people in shared space. Camera proposes where the viewer
+stands in relation to them and what remains unavailable. Editorial participates
+now, asking when continuing or changing view changes experience. Production Design
+compares how authored bodies, clothing, objects and inhabited space permit that
+encounter, routing a concrete conflict to its owner. Asset Design chooses durable
+forms that can live across its situations, not one dramatic pose as identity.
+Lighting and Color propose how sources, surfaces and selective visibility develop
+or counterpoint the encounter. Their task is not to make every face and prop
+equally presentable. Readability serves the chosen relationship, not an inventory.
+
+Compare the ensemble as an experience: who has a task beyond being looked at;
+what their physical engagement allows the camera to discover; what the environment
+continues doing without them. A composed image may serve the film, but clearing
+space, light and attention around each person by default turns people into exhibits.
+Choose what can remain obscured, offscreen or unresolved as deliberately as what
+must be seen. A wide still view or a direct portrait can be the selected answer.
+
+Across scenes or phases, articulate what changes in the spectator's relation to
+the same people and what persists in the world. Light and color can change through
+where an encounter happens, who occupies a lit area, framing, depth and exposure
+priorities; a new filter, new costume color or invented time of day is not required.
+They can also remain indifferent to an emotional change. Host chooses the proposed
+relation and tradeoff; do not require all departments to echo one emotional label.
 
 Use the same selected scene and coverage revision for all contributions. Follow
 the action through the space before following it through the cameras. At useful
@@ -39,12 +70,24 @@ Do not silently repair an incompatible neighbor inside a single-shot design.
 Host must reconcile the relevant originals and prepare a new version. Existing
 children retain their old pins for reproducible recovery.
 
-Project the selected meaning into existing owners: Shot entry/exit and editing
-relation; Action phases and physical states; Camera position, height, movement
-and end view; Editorial protected events and spatial orientation. Reference duties
+Project the selected meaning into existing owners: Shot purpose, cameraIntent,
+performanceDirection, entry/exit and editing relation; Performance tasks and current
+physicalExpression; Action phases and physical states; Camera position, hierarchy,
+movement and end view; Lighting source relationships; Color's current scenePalette;
+Editorial protected events and spatial orientation. Keep the shared artistic reason
+in the selected Work/Scene originals and continuityInterpretation. Each owner writes
+only its consequential execution decisions; avoid restating an action or a viewing
+paragraph in several domains. Reference duties
 say what a prior image can actually establish, especially when unseen geometry
 remains unknown. Keep theory, other shots' actions and adoption history outside
 the Provider prompt. A concise prompt cannot recover a decision never made.
+
+Native children also pin sceneDirectionRefs for asset preparation in narrative
+order. Each asset author receives that scene's whole selected coverage without a
+current-Shot instruction, even if production starts in a later scene. The retained
+reference-author context carries the same selection. Historical packets without
+these pins remain historical; an existing prepared/adopted asset is not silently
+re-authored when direction changes. Use the existing scoped reassessment path.
 
 An authored `FilmShot.transition` describes the relation between shots. Action
 phase `START` describes the first unit of an individual shot; it does not by itself

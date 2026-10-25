@@ -460,6 +460,27 @@ def compile_frame(spec: FrameSpec, template: Template | None = None, *,
     return {**material, "fingerprint": sha256_canonical(material)}
 
 
+def _retained_budget_matches(compiled: dict[str, Any], expected: dict[str, Any] | None) -> bool:
+    """Replay the removed, redundant FIT counter without rewriting old evidence."""
+    if expected is None:
+        return False
+    from copy import deepcopy
+    ir = expected.get('prompt_ir_compilation', {})
+    budget = ir.get('prompt_budget', {})
+    old = compiled.get('prompt_ir_compilation', {}).get('prompt_budget', {})
+    count = old.get('compressedCharacters')
+    if (type(count) is not int or budget.get('status') != 'FIT'
+            or budget.get('rule') != 'unchanged'
+            or count != budget.get('originalCharacters')
+            or count != budget.get('finalCharacters')
+            or count != len(ir.get('prompt', ''))):
+        return False
+    retained = deepcopy(expected)
+    retained['prompt_ir_compilation']['prompt_budget']['compressedCharacters'] = count
+    retained['fingerprint'] = sha256_canonical({k: v for k, v in retained.items() if k != 'fingerprint'})
+    return compiled == retained
+
+
 def verify_compiled(compiled: dict[str, Any]) -> None:
     try:
         expected = compile_frame(FrameSpec.model_validate(compiled["spec"]), Template.model_validate(compiled["template"]))
@@ -467,7 +488,7 @@ def verify_compiled(compiled: dict[str, Any]) -> None:
         if compiled.get('prompt_ir_compilation') is None:
             raise
         expected = None
-    if compiled == expected:
+    if compiled == expected or _retained_budget_matches(compiled, expected):
         return
     # Only an exact complete old compilation may replay. New preparation above
     # always uses the current constraint-preserving projection.
@@ -475,6 +496,6 @@ def verify_compiled(compiled: dict[str, Any]) -> None:
         historical = compile_frame(FrameSpec.model_validate(compiled["spec"]),
                                    Template.model_validate(compiled["template"]),
                                    _legacy_ir_replay=True)
-        if compiled == historical:
+        if compiled == historical or _retained_budget_matches(compiled, historical):
             return
     raise ValueError("STALE_OR_MODIFIED_FRAME_REQUEST")

@@ -364,11 +364,27 @@ class FilmCapabilities:
         scene = next((s for s in packet.get('selectedSceneScreenplays', ())
             if s['screenplay']['sceneId'] == scene_id), None)
         direction = self.store.author(cp.direction_ref, FilmDirection)
+        # Asset preparation may visit an earlier scene before the requested Shot.
+        # Pin every scene's selected direction now; do not recover a mutable head
+        # later or let the triggering Shot become an asset's permanent pose.
+        scene_directions = {}
+        for sid in dict.fromkeys(s.scene_id for s in direction.shots):
+            original = {'workId': work_id, 'sceneId': sid, 'sceneDirection': {
+                'sourceRefs': [ref.model_dump(mode='json', by_alias=True)
+                    for ref in (cp.canon_ref, cp.direction_ref)],
+                'shots': [{'selection': i, 'transition': s.transition,
+                    'shot': s.shot.model_dump(mode='json', by_alias=True, exclude={'spoken_ids'})}
+                    for i, s in enumerate(s for s in direction.shots if s.scene_id == sid)],
+                'use': 'Selected whole-scene direction. Interpret durable asset needs across '
+                       'these situations; poses, attention and illumination are scene realizations, '
+                       'not permanent identity. Neighbor actions are not one still image.'}}
+            pin = self.plugin.screenplays.objects.put('film-selected-scene-direction:' + sid, original)
+            scene_directions[sid] = pin.model_dump(mode='json', by_alias=True)
         ordered = [s for s in direction.shots if s.scene_id == scene_id]
         current = next(i for i, s in enumerate(ordered) if s.shot_id == shot_id)
         context = scene or {'schemaVersion': 'native-screenplay-context-v1',
             'workId': work_id, 'sceneId': scene_id}
-        context = {**context, 'sceneDirection': {
+        context = {**context, 'sceneDirectionRefs': scene_directions, 'sceneDirection': {
             'sourceRefs': [ref.model_dump(mode='json', by_alias=True)
                 for ref in (cp.canon_ref, cp.direction_ref)],
             'currentShotSelection': current,

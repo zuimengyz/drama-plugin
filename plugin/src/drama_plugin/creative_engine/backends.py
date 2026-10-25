@@ -33,9 +33,10 @@ from drama_plugin.creative_engine.author_projection import (author_payload, film
     direction_projection, professional_projection)
 
 T = TypeVar("T")
+SCENE_COLLABORATION = 'director/references/scene-collaboration.md'
 DIRECTION_CRAFT = ("shot-design/references/planning.md", "shot-design/references/shot-transitions.md",
                    "director/references/work-aesthetic-design.md",
-                   "director/references/scene-collaboration.md")
+                   SCENE_COLLABORATION)
 # Internal knowledge selection only, never a department execution DAG.
 PROFESSIONAL_CRAFT = {
     D.SUBJECTS: ("specialized-asset-design/SKILL.md",),
@@ -888,7 +889,7 @@ proof remains pending when spending is unavailable; do not downgrade it to a tex
 Different places may share period materials without reusing physical layout. Request only necessary
 references through referenceRequired. Templates and candidates are not adopted identities. No media,
 adoption, machine identities, source refs, versions, workflow or provider instructions in the result.
-''' + self.knowledge(('specialized-asset-design/SKILL.md',
+''' + self.knowledge((SCENE_COLLABORATION, 'specialized-asset-design/SKILL.md',
                       'specialized-asset-design/references/relational-aesthetics.md', 'prop-design/SKILL.md',
                       'asset-planning/SKILL.md', 'asset-resolution/SKILL.md')
                       + (('reference-strategy/SKILL.md',) if request.revision is not None else ()))
@@ -1123,7 +1124,7 @@ attention relationships in the existing camera facts as well: readable detail or
 ground is not a visual center. Retain compatible viewing refinements, but refer a real
 conflict with the selected proof back to its asset/reference author rather than supply
 contradictory instructions or ask the compiler to invent a compromise.
-''' + self.knowledge(('specialized-asset-design/SKILL.md',
+''' + self.knowledge((SCENE_COLLABORATION, 'specialized-asset-design/SKILL.md',
                       'specialized-asset-design/references/relational-aesthetics.md', 'reference-strategy/SKILL.md')
                       + (('prop-design/SKILL.md',) if requirement['assetType'] == 'PROP' else ()))
         frame = await self.client.complete('professional', system, request, TypeAdapter(FrameSpec),
@@ -1139,14 +1140,17 @@ contradictory instructions or ask the compiler to invent a compromise.
         if request.shot is None:
             raise CapabilityAbsent("PROFESSIONAL_SHOT_PREREQUISITE_ABSENT")
         domains = request.shot.professional_domains
-        paths = tuple(p for domain in domains for p in PROFESSIONAL_CRAFT[domain])
+        paths = tuple(dict.fromkeys((SCENE_COLLABORATION,
+            *(p for domain in domains for p in PROFESSIONAL_CRAFT[domain]))))
         # Method travels with actual professional calls; neighboring coverage is
         # already in author_payload's immutable screenplay context.
         shared_scene_instruction = (
             "\nWhen hostScreenplay.sceneDirection is supplied, read the ordered scene "
-            "before elaborating this Shot. Blocking, Camera and Editorial must realize "
-            "one selected encounter: preserve world placement, action-stage allocation "
-            "and the intended audience transition. Neighbor descriptions are context, "
+            "before elaborating this Shot. Requested owners realize the selected encounter "
+            "through the person's task and attention, spectator access, and the current "
+            "light/color relation as well as staging and cutting. Preserve deliberate "
+            "counterpoint; do not make every owner repeat one mood or one action. "
+            "Neighbor descriptions are context, "
             "not current executable actions. Return incompatible proposals to the Host; "
             "do not silently advance a later action or redesign another Shot. Put only "
             "current execution facts into existing domain fields, not whole scene prose.\n")

@@ -21,6 +21,12 @@ Ask how weight, readiness, attention and recovery express this person's choices;
 
 Separate stable tendencies from stage-specific changes. Social variations preserve one core. Action Signature retains personal action grammar; this layer explains its baseline human reason. Concrete mechanics remain with Action. Write artistic inference as inference, not historical fact.
 
+For [shared scene collaboration](../director/references/scene-collaboration.md),
+show how the same sourced person can remain recognizable across absorbed activity,
+interruption and waiting, where the selected scene supports those situations.
+Performance chooses the present task; Asset Design must leave that bodily range
+possible. Do not fossilize a scene's fatigue, gaze or defensive posture into identity.
+
 ## Test distinctiveness before handoff
 
 For important roles include one sourced same/adjacent-archetype contrast across authority, decisions, body logic, space, pressure and social interaction. Use only supported knowledge; abstract hypothetical comparators must be labeled. Copy no face, actor, costume or IP. Comparisons are reasoning-only and excluded from production projection.

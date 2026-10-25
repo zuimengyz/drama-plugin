@@ -91,8 +91,8 @@ def material(*, single=False, scoped_sound=True):
     return req,raw
 
 
-async def pipeline(tmp_path, monkeypatch, req, raw, duration=8000):
-    p = configured(monkeypatch,tmp_path)
+async def pipeline(tmp_path, monkeypatch, req, raw, duration=8000, *, plugin=None):
+    p = plugin if plugin is not None else configured(monkeypatch,tmp_path)
     before = deepcopy(raw)
     designs = tuple(DesignBody.model_validate(d) for d in professional_projection(raw,req))
     validate_professional_facts(designs,req)
@@ -102,11 +102,15 @@ async def pipeline(tmp_path, monkeypatch, req, raw, duration=8000):
             (Kind.SCRIPT,req.canon.script,Authority.CANON),(Kind.SCENE,req.canon.scene,Authority.CANON),
             (Kind.SHOT,req.shot,Authority.DIRECTION)):
         refs.append(p.creative_versions.write(writer=owner,kind=kind,scope=req.scope,body=body,
-            sources=tuple(refs),operation='scope-fixture:'+kind.value))
+            sources=tuple(refs),operation='scope-fixture:'+req.scope.shot_id+':'+kind.value))
     core=tuple(refs)
     for design in designs:
-        refs.append(p.creative_versions.write(writer=Authority.PROFESSIONAL,kind=Kind.PROFESSIONAL,
-            scope=req.scope,body=design,sources=core,operation='scope-fixture:'+design.domain.value))
+        if plugin is not None:
+            refs.append(p.professional_design.persist(p.creative_versions,req.model_copy(update={'source_refs':core}),
+                design,operation='scope-fixture:'+req.scope.shot_id+':'+design.domain.value))
+        else:
+            refs.append(p.creative_versions.write(writer=Authority.PROFESSIONAL,kind=Kind.PROFESSIONAL,
+                scope=req.scope,body=design,sources=core,operation='scope-fixture:'+req.scope.shot_id+':'+design.domain.value))
     native=NativeCreativeSources(p.creative_versions,tuple(refs))
     assembly=await ShotAssembler(native,ProfessionalDesignResolver(native)).assemble(req.scope,
         mode=RunMode.EXPERIMENT,policy_ref=ArtifactReference(owner='policy',artifact_ref='offline-fixture'))

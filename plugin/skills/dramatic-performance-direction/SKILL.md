@@ -15,6 +15,13 @@ Performance direction: retain DPD psychological truth and author physical expres
 
 Scene/Character/Dialogue, Director Performance Intent, Blocking and causal action constraints.
 
+In [shared scene collaboration](../director/references/scene-collaboration.md),
+offer the person's occupied task, attention and unfinished relation before coverage
+is fixed. Use sourced Embodiment as range, not a compulsory pose. Let Camera and
+Lighting respond to the playable situation; do not increase gesture merely to
+make every feeling visible. Deliver the selected current behavior through existing
+Beat physicalExpression/Action owners; keep its psychological reason in DPD.
+
 ## Outputs
 
 Performance Bible with DPD refs and the observable behavior needed by the current task; gesture, listening, breath or stillness are available choices, not a checklist.

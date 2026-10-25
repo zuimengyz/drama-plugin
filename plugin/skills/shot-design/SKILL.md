@@ -15,6 +15,11 @@ no micro-action quota. Changes to words or key relationships return to the Host.
 Candidate precision remains design-only. Formal Shot persistence still uses the
 existing adopted Scene/dialogue and current department originals below.
 
+Carry the selected [scene encounter](../director/references/scene-collaboration.md)
+into purpose, performanceDirection, cameraIntent and entry/exit relations before
+technical segmentation. Thin assembly must preserve the chosen spectator access
+and human task, not merely the inventory of visible subjects and completed actions.
+
 
 ## Creative Source applicability
 

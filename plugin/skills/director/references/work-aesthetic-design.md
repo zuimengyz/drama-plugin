@@ -28,6 +28,16 @@ preferences or exclusions with succeedsWhen/failsWhen. Author only applicable
 decisions, not a checklist of mandatory rules. Keep alternative interpretations
 in creative deliberation; the selected work original is the shared basis.
 
+Make evolution a choice about people and spectators, not a list of scene filters.
+Relate a person's occupied body, attention and social exposure to the camera's
+position and the world's continuing life. Develop this jointly through
+[scene collaboration](scene-collaboration.md). Retain the gain, cost and applicable
+situation of the selected proposal; professionals may find an effective counterpoint
+rather than matching one mood. A warm social space can exclude someone; cold light
+does not establish cruelty. These are possibilities to test against the work,
+never prescribed associations. A successful earlier frame establishes evidence of
+that realization, not a compulsory treatment for all later encounters.
+
 Separate durable design from its presentation. Specialized Asset and Prop owners
 choose identifiable forms, material/color relationships and justified use history.
 Location topology and object construction remain stable across camera views.

@@ -155,7 +155,12 @@ For all performance-bearing fragments, read the [shared performance contract](..
 
 Request the existing visual and audio capabilities against that same intent and Beat. Include `AV_PERFORMANCE_ALIGNMENT` in required review evidence before adopting a realized performance. Use `render_performance_pair` only for critical Beats in the existing Production Book; ordinary functional actions need no giant dual table. A temporary release does not automatically change the character baseline. Derive its duration, interruption and aftermath from the approved Scene; do not prescribe that every joy must complete before consequences return. Design-only fixtures cannot pass a real-media adoption gate. No new agent, generation permission or screenplay approval follows from this capability.
 
-Own creative decisions, not implementations. Capabilities serve intent; every shot
+Own creative decisions, not implementations. Capabilities serve intent. Use
+the [shared scene collaboration](references/scene-collaboration.md) when a scene's
+human life, viewing stance or visual development needs joint exploration. Select
+the encounter before its coverage and asset proofs; preserve professional authorship
+and the Host's final artistic choice. This method uses existing support/decision
+records, not another approval stage. Every shot
 must justify its existence; local quality must preserve global coherence; review
 results, not merely plans. Before assigning emphasis, discover what in this encounter
 is most difficult or rewarding for the spectator to experience. Compare competing

@@ -19,6 +19,11 @@ Director Vision; Layout; Blocking; Performance; Action and Crowd Bibles.
 
 ## Professional decisions
 
+Use [shared scene collaboration](../director/references/scene-collaboration.md)
+to choose the spectator's access to occupied people before fixing views. State
+what the selected view gives up. Keeping every face equally lit and unobstructed
+can turn an encounter into a display; withholding is a choice, not a new style rule.
+
 Design a family of views of the selected scene, not isolated lens prescriptions.
 Read neighboring coverage and the shared Blocking/Editorial proposal before
 elaborating the current view. Compare the outgoing and incoming visual centers,

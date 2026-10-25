@@ -277,7 +277,7 @@ async def test_film_binding_direction_and_scene_inheritance_are_real_and_story_i
         if 'Write the whole independent scene' in system:
             assert 'filmLook' not in json.dumps(payload) and 'professionalDesignRefs' not in json.dumps(payload)
             return wire_response({'text':canon().scene.scene_text})
-        if 'You are the same Host author' in system:
+        if 'preservedV1' in payload:
             assert 'filmLook' not in json.dumps(payload) and 'professionalDesignRefs' not in json.dumps(payload)
             return wire_response({'choice':'KEEP_ALL','reason':'Retain the entire scene','text':None})
         assert '# Work aesthetic design' in system

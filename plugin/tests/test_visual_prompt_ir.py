@@ -188,6 +188,33 @@ def test_frame_integration_and_submission_gate(tmp_path):
         compile_frame(spec.model_copy(update={'prompt_ir': ir}), template)
 
 
+def test_retained_frame_budget_counter_replays_without_restoring_compression(tmp_path):
+    from test_route_image_inputs import image_input
+    from drama_plugin.visual.frame_request import compile_frame, verify_compiled
+    spec, template = image_input(tmp_path)
+    ir = visual_ir()
+    ir['source_fingerprint'] = fp(spec.model_dump(mode='json', exclude={'prompt_ir'}))
+    ir['subjects'] = [{**deepcopy(ir['subjects'][0]), 'id': a.entity_key} for a in spec.actors]
+    current = compile_frame(spec.model_copy(update={'prompt_ir': ir}), template)
+    assert 'compressedCharacters' not in current['prompt_ir_compilation']['prompt_budget']
+    retained = deepcopy(current)
+    retained['prompt_ir_compilation']['prompt_budget']['compressedCharacters'] = len(retained['prompt_ir_compilation']['prompt'])
+    retained['fingerprint'] = fp({k: v for k, v in retained.items() if k != 'fingerprint'})
+    before = deepcopy(retained)
+    verify_compiled(retained)
+    assert retained == before
+    for mutation in ('counter', 'bool', 'prompt', 'request', 'seal'):
+        changed = deepcopy(retained)
+        if mutation == 'counter': changed['prompt_ir_compilation']['prompt_budget']['compressedCharacters'] += 1
+        if mutation == 'bool': changed['prompt_ir_compilation']['prompt_budget']['compressedCharacters'] = True
+        if mutation == 'prompt': changed['prompt_ir_compilation']['prompt'] += ' added'
+        if mutation == 'request': changed['request']['workflow'][template.prompt_node]['inputs']['prompt'] += ' added'
+        if mutation == 'seal': changed['fingerprint'] = '0' * 64
+        if mutation != 'seal': changed['fingerprint'] = fp({k: v for k, v in changed.items() if k != 'fingerprint'})
+        with pytest.raises(ValueError, match='STALE_OR_MODIFIED_FRAME_REQUEST'):
+            verify_compiled(changed)
+
+
 def test_http_rejects_legacy_before_network():
     import asyncio
     from test_official_video_providers import request

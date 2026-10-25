@@ -33,6 +33,15 @@ pose, crop, lighting and environment. State which attributes each actual referen
 supplies and which the current proof decides. Learning examples are knowledge,
 not uploaded image references, unless explicitly selected for that purpose.
 
+Read the selected whole-scene direction through
+[scene collaboration](../../director/references/scene-collaboration.md), not only
+the first requested Shot. Let sourced embodiment and performance needs inform
+garment fit, body/hand support and the plausible range of the chosen person; do not
+turn one expression into their permanent identity. Choose a proof that tests the
+needed property. A neutral identity view may be useful without being the intended
+film's camera, lighting or acting baseline. Joint situation proofs test interaction
+through the existing reference route only when that uncertainty warrants them.
+
 Use existing design leaves and typed image facts. Put view/crop/attention in
 camera, light in lighting, appearance in subject/environment, and only necessary
 cross-object relationships in preserve. Do not broadcast a paragraph across

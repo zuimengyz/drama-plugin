@@ -5,6 +5,12 @@ description: Translate approved literary adaptation decisions into shootable exp
 
 # Literature to Cinema
 
+When comparing expressions of subtext, memory or time, the Host may consult
+[film practice by narrative problem](../director/references/film-practice.md).
+Transfer a way of posing the dramatic problem, not another film's scene or its
+interpretation. Keep case evidence in author context and the current work's
+selected expression in existing cinema decisions.
+
 Own CinemaTranslation in `contracts/creative_source.py`. Consume reviewed source analysis, philosophical constraints and adaptation/compression decisions. Realize each retained destination through observable choice, action, consequence, reaction, performance, gaze, blocking, timing, environment, spatial relation, object/motif, composition, sound/offscreen sound, silence, montage, transition or dialogue.
 
 Begin from the retained literary tension and how the source makes a reader encounter

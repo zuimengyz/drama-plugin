@@ -61,6 +61,11 @@ current authorization while retaining valid technical work.
 
 ## Film-opening authorship
 
+For optional, source-checked comparisons of expressive paths, use
+[film practice by narrative problem](references/film-practice.md). The library
+supports the Host's choice; it neither selects a scene formula nor enters final
+generation text as reference prose.
+
 When the user asks to design or reconstruct the film opening, work at screenplay
 and sequence scope before revising existing shots. Read the whole current script,
 its ending, source opening and relevant character arcs. Do not substitute a local

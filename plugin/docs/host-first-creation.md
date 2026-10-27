@@ -52,8 +52,12 @@ score or production advance in this facet.
 
 `FormalCanonAuthor` supplies the autonomous creation instruction and preserves the
 explicit authorContext through native film and scene calls. `film_treatment` on the
-existing FormalDirectionAuthor writes a complete director treatment before formal
-Shot projection; proposed screenplay changes return as feedback for reconciliation.
+existing FormalDirectionAuthor is an available complete-treatment author method;
+its existence does not mean a native run invokes it before `direct_film`.
+`direct_film` projects structured FilmDirection, not a free director treatment.
+The Host can retain its own treatment and chosen professional support through the
+existing screenplay workshop, then explicitly bind that handoff. Proposed
+screenplay changes remain candidates pending existing reconciliation/adoption.
 For a new work, the single-scene and complete-film capabilities first request a
 free whole-film body, retain it verbatim, and request the same writer's revision decision in a
 separate call. Only afterwards does the existing Canon author derive the structured
@@ -85,6 +89,21 @@ Custom injected author ports remain compatibility ports and do not impersonate t
 formal autonomous author. Old persisted runs without a screenplay ref remain
 readable; new runs capture the creative context in their existing input record.
 No provider, compiler, paid execution, recovery or Runtime-core behavior changes.
+
+Record film and local author ports separately: injecting `direction_author` alone
+does not demonstrate replacement of `film_direction_author`. Likewise,
+`screenplay.support_packet` prepares exact source context; it neither loads a Skill
+nor invokes its author. The caller reads the selected current Skills and retains
+the actual contribution and authorship. Registry entries are discovery, not proof
+of use. Record resolved Skill paths/version hashes for an experiment. A fresh
+workspace process does not reload an installed Plugin cache or prove the running
+desktop service changed. Report unreachable routes without inventing a switch.
+
+Optional external craft lookup uses the separate
+[film-practice library](../knowledge/film-craft/README.md). Keep retrieval evidence
+in existing author context/support originals, and only selected current decisions
+in production. The formal direction knowledge list includes the short lookup
+method, not the complete case library or automatic network research.
 
 ## Long-arc memory
 

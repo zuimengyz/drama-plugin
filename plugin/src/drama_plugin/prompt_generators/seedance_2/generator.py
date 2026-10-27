@@ -75,7 +75,7 @@ def valid_coverage_path(path: str, duty: str, subject: str | None) -> bool:
 
 class Seedance2PromptGenerator:
     family = 'seedance_2'
-    version = '2'
+    version = '3'
     supported_modes: tuple[str, ...] = MODES
 
     def generate(self, ir: VisualPromptIR, rows: list[dict[str, Any]], *,
@@ -181,7 +181,10 @@ class Seedance2PromptGenerator:
                 if a.kind in ('DIALOGUE','VOICE_OVER','OFF_SCREEN'):
                     if a.speaker not in subjects or not a.language: raise ValueError('UNRESOLVED:dialogue-design:SPEAKER_LANGUAGE_REQUIRED')
                     if a.kind == 'VOICE_OVER':
-                        return (a.timing + ' ' if a.timing else '') + f'画外自白（叙述者身份：{subjects[a.speaker]}，独立于画面人物的当前年龄；本句不作画内发声或对口型），用{a.language}' + '{' + atom.text + '}'
+                        # VOICE_OVER selects delivery, not a second age or time.
+                        # Present thought and retrospective narration keep their
+                        # temporal relation in the authored Sound/Director facts.
+                        return (a.timing + ' ' if a.timing else '') + f'画外自白（发声者：{subjects[a.speaker]}；本句不作画内发声或对口型），用{a.language}' + '{' + atom.text + '}'
                     if a.kind == 'OFF_SCREEN':
                         return (a.timing + ' ' if a.timing else '') + f'画外声音（{subjects[a.speaker]}），用{a.language}' + '{' + atom.text + '}'
                     return (a.timing + ' ' if a.timing else '') + f'{subjects[a.speaker]} 用{a.language}说道' + '{' + atom.text + '}'

@@ -36,6 +36,7 @@ T = TypeVar("T")
 SCENE_COLLABORATION = 'director/references/scene-collaboration.md'
 DIRECTION_CRAFT = ("shot-design/references/planning.md", "shot-design/references/shot-transitions.md",
                    "director/references/work-aesthetic-design.md",
+                   "director/references/film-practice.md",
                    SCENE_COLLABORATION)
 # Internal knowledge selection only, never a department execution DAG.
 PROFESSIONAL_CRAFT = {

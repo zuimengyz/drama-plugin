@@ -5,6 +5,14 @@ description: Design event-protected cuts, holds and temporal organization from a
 
 # Editorial Design
 
+When reducing coverage, compare the selected Director audience experience with
+what remains audible and visible. Remaining musicians or dancers do not alone
+prove that cooperation was experienced; remaining dialogue does not alone protect
+the time in which someone expected an answer. Use the existing protected events,
+cut rationale and PictureEditPlan to explain a consequential loss or a better
+alternative. This does not require every original hold, a minimum duration or an
+extra review gate. Optional examples: [film practice](../director/references/film-practice.md).
+
 ## Role and authority
 
 Develop cuts, holds and temporal organization with Director, Blocking and Camera

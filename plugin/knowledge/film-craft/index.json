@@ -1,0 +1,268 @@
+{
+  "schema": "film-craft-cases-v1",
+  "verifiedOn": "2026-10-26",
+  "mode": "ADVISORY_NOT_TEMPLATES",
+  "cases": [
+    {
+      "id": "fanny-alexander",
+      "film": "芬妮与亚历山大",
+      "originalTitle": "Fanny and Alexander",
+      "year": "1982影院版／1983电视版",
+      "director": "Ingmar Bergman",
+      "problem": "先使一个生活世界值得留恋，后来失去它才不只是剧情通知。",
+      "tags": [
+        "opening",
+        "public-life",
+        "dramatic-contrast"
+      ],
+      "path": "cases/fanny-alexander.md",
+      "sources": [
+        {
+          "title": "Fanny and Alexander — Television",
+          "author": "Ingmar Bergman Foundation",
+          "url": "https://www.ingmarbergman.se/en/production/fanny-and-alexander-0",
+          "locator": "About the film；Sources of inspiration",
+          "checkedOn": "2026-10-26",
+          "verification": "READ_PUBLISHED_TEXT; not a fresh film viewing"
+        }
+      ]
+    },
+    {
+      "id": "leopard",
+      "film": "豹",
+      "originalTitle": "The Leopard",
+      "year": "1963",
+      "director": "Luchino Visconti",
+      "problem": "社会仍在欢庆时，一个人如何感到自己所属时代正在离去？",
+      "tags": [
+        "public-life",
+        "transition",
+        "sound-bridge",
+        "literary-subtext"
+      ],
+      "path": "cases/leopard.md",
+      "sources": [
+        {
+          "title": "Remembrance of Things Past: The Leopard",
+          "author": "Michael Wood / Criterion",
+          "url": "https://www.criterion.com/current/posts/326-remembrance-of-things-past-the-leopard",
+          "locator": "亲王舞蹈段；Chevelley离去到舞会段",
+          "checkedOn": "2026-10-26",
+          "verification": "READ_PUBLISHED_TEXT; not a fresh film viewing"
+        }
+      ]
+    },
+    {
+      "id": "rules-game",
+      "film": "游戏规则",
+      "originalTitle": "The Rules of the Game",
+      "year": "1939",
+      "director": "Jean Renoir",
+      "problem": "如何使多人各有理由，同时让社会关系超出任何一个人的自我解释？",
+      "tags": [
+        "public-life",
+        "blocking",
+        "montage",
+        "scale-change"
+      ],
+      "path": "cases/rules-game.md",
+      "sources": [
+        {
+          "title": "The Rules of the Game: Everyone Has Their Reasons",
+          "author": "Alexander Sesonske / Criterion",
+          "url": "https://www.criterion.com/current/posts/308-the-rules-of-the-game-everyone-has-their-reasons",
+          "locator": "群体中心；庄园调度；狩猎段",
+          "checkedOn": "2026-10-26",
+          "verification": "READ_PUBLISHED_TEXT; not a fresh film viewing"
+        }
+      ]
+    },
+    {
+      "id": "playtime",
+      "film": "玩乐时间",
+      "originalTitle": "Playtime",
+      "year": "1967",
+      "director": "Jacques Tati",
+      "problem": "怎样让环境与群众自己产生戏剧，而非充当主人公背景？",
+      "tags": [
+        "public-life",
+        "environment",
+        "blocking",
+        "attention"
+      ],
+      "path": "cases/playtime.md",
+      "sources": [
+        {
+          "title": "Playtime: Things Fall Apart, Beautifully",
+          "author": "David Cairns / Criterion",
+          "url": "https://www.criterion.com/current/posts/1680-playtime-things-fall-apart-beautifully",
+          "locator": "Royal Garden段；从挫败到游戏的变化",
+          "checkedOn": "2026-10-26",
+          "verification": "READ_PUBLISHED_TEXT; not a fresh film viewing"
+        }
+      ]
+    },
+    {
+      "id": "tokyo-story",
+      "film": "东京物语",
+      "originalTitle": "Tokyo Story",
+      "year": "1953",
+      "director": "Yasujiro Ozu",
+      "problem": "死亡之后，如何让生活继续与人的孤独同时成立？",
+      "tags": [
+        "absence",
+        "motif",
+        "transition",
+        "listening"
+      ],
+      "path": "cases/tokyo-story.md",
+      "sources": [
+        {
+          "title": "Tokyo Story: Compassionate Detachment",
+          "author": "David Bordwell / Criterion",
+          "url": "https://www.criterion.com/current/posts/301-tokyo-story",
+          "locator": "对白观看；最后两段",
+          "checkedOn": "2026-10-26",
+          "verification": "READ_PUBLISHED_TEXT; not a fresh film viewing"
+        }
+      ]
+    },
+    {
+      "id": "ugetsu",
+      "film": "雨月物语",
+      "originalTitle": "Ugetsu",
+      "year": "1953",
+      "director": "Kenji Mizoguchi",
+      "problem": "现实行动如何进入不确定的经验，而不靠解释性对白宣布？",
+      "tags": [
+        "transition",
+        "offscreen",
+        "environment",
+        "memory"
+      ],
+      "path": "cases/ugetsu.md",
+      "sources": [
+        {
+          "title": "Ugetsu",
+          "author": "Keiko McDonald / Criterion",
+          "url": "https://www.criterion.com/current/posts/966-ugetsu",
+          "locator": "湖面声画段",
+          "checkedOn": "2026-10-26",
+          "verification": "READ_PUBLISHED_TEXT; not a fresh film viewing"
+        },
+        {
+          "title": "Ugetsu: From the Other Shore",
+          "author": "Phillip Lopate / Criterion",
+          "url": "https://www.criterion.com/current/posts/401-ugetsu-from-the-other-shore",
+          "locator": "Lake Biwa episode"
+        }
+      ]
+    },
+    {
+      "id": "wild-strawberries",
+      "film": "野草莓",
+      "originalTitle": "Wild Strawberries",
+      "year": "1957",
+      "director": "Ingmar Bergman",
+      "problem": "现在的老人与过去的自己如何相遇，而不把回忆当客观档案？",
+      "tags": [
+        "memory",
+        "subjectivity",
+        "scale-change",
+        "performance"
+      ],
+      "path": "cases/wild-strawberries.md",
+      "sources": [
+        {
+          "title": "Wild Strawberries: Where Is the Friend I Seek?",
+          "author": "Mark Le Fanu / Criterion",
+          "url": "https://www.criterion.com/current/posts/2795-wild-strawberries-where-is-the-friend-i-seek",
+          "locator": "开场梦境；第二次夏屋回忆段",
+          "checkedOn": "2026-10-26",
+          "verification": "READ_PUBLISHED_TEXT; not a fresh film viewing"
+        }
+      ]
+    },
+    {
+      "id": "mirror",
+      "film": "镜子",
+      "originalTitle": "Mirror",
+      "year": "1975",
+      "director": "Andrei Tarkovsky",
+      "problem": "如何让私人记忆与较大的历史时间并存，而非按年表解释？",
+      "tags": [
+        "memory",
+        "montage",
+        "environment",
+        "time"
+      ],
+      "path": "cases/mirror.md",
+      "sources": [
+        {
+          "title": "Mirror: All Is Immortal",
+          "author": "Carmen Gray / Criterion",
+          "url": "https://www.criterion.com/current/posts/7453-mirror-all-is-immortal",
+          "locator": "环境活动；记忆时间与新闻影像段",
+          "checkedOn": "2026-10-26",
+          "verification": "READ_PUBLISHED_TEXT; not a fresh film viewing"
+        }
+      ]
+    },
+    {
+      "id": "brief-encounter",
+      "film": "相见恨晚",
+      "originalTitle": "Brief Encounter",
+      "year": "1945",
+      "director": "David Lean",
+      "problem": "同一场日常谈话，如何在后来变成观众终于懂得的失去？",
+      "tags": [
+        "opening",
+        "literary-subtext",
+        "listening",
+        "time"
+      ],
+      "path": "cases/brief-encounter.md",
+      "sources": [
+        {
+          "title": "Brief Encounter — Idle Gossip / Romance, I Think",
+          "author": "Turner Classic Movies",
+          "url": "https://www.tcm.com/watchtcm/titles/69696",
+          "locator": "Related Videos条目说明",
+          "checkedOn": "2026-10-26",
+          "verification": "READ_PUBLISHED_TEXT; not a fresh film viewing"
+        },
+        {
+          "title": "Flickers of Passion: Celia Johnson in Brief Encounter",
+          "author": "Dan Callahan / Criterion",
+          "url": "https://www.criterion.com/current/posts/4872-flickers-of-passion-celia-johnson-in-brief-encounter",
+          "locator": "Laura face, voice and imagined confession"
+        }
+      ]
+    },
+    {
+      "id": "in-mood",
+      "film": "花样年华",
+      "originalTitle": "In the Mood for Love",
+      "year": "2000",
+      "director": "Wong Kar Wai",
+      "problem": "人物借别人的话演练时，怎样让自己的关系同时变化？",
+      "tags": [
+        "literary-subtext",
+        "offscreen",
+        "motif",
+        "performance"
+      ],
+      "path": "cases/in-mood.md",
+      "sources": [
+        {
+          "title": "In the Mood for Love",
+          "author": "Li Cheuk-to / Criterion",
+          "url": "https://www.criterion.com/current/posts/197-in-the-mood-for-love",
+          "locator": "受限视野；画外配偶与角色扮演段",
+          "checkedOn": "2026-10-26",
+          "verification": "READ_PUBLISHED_TEXT; not a fresh film viewing"
+        }
+      ]
+    }
+  ]
+}

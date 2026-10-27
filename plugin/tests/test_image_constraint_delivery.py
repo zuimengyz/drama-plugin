@@ -120,7 +120,10 @@ def test_reference_edit_preserves_limit_and_operations_in_ark_body(tmp_path, mon
     ir['negative_constraints'] = [dict(constraint=fact(LIMIT), positive_target=fact(UNRELATED))]
     compiled, prompt = ark_json(frame.model_copy(update={'prompt_ir': ir}))
     assert LIMIT in prompt and UNRELATED in prompt
-    assert 'MUST CHANGE' in prompt and 'Replace costume:' in prompt and 'PRESERVE' in prompt
+    # REFERENCE_EDIT is reference-conditioned realization, not IMAGE_EDIT's
+    # pixel repair layout. Verify the selected operation and preservation fact.
+    assert 'REFERENCE CHANGES' in prompt and 'Replace costume: Approved worn wool clothing variation' in prompt
+    assert 'The selected person identity and proportions' in prompt
     assert compiled['request']['body']['image'].startswith('data:image/png;base64,')
     assert not any(r['path'] == 'constraint[0]' for r in compiled['prompt_ir_compilation']['omitted'])
 

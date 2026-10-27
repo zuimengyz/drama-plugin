@@ -110,6 +110,27 @@ secondary_details; include only what this proof must render, without the work's
 literary rationale, style-name suffix or a second copy in every field. Finishing
 owns optional grain and final grading. Learning examples are not referenceInputs.
 
+Choose the proof by its asset duty. A character identity baseline uses a neutral,
+low-distraction background; show the selected face, body proportions and clothing
+without tying them to a particular room, scene action or another principal. Preserve
+life in posture and attention without staging a story event. Select additional
+angles only for identity features the main view cannot prove, with the same identity
+and wardrobe; do not invent a new person per view or force every view into one image.
+A location baseline preferentially shows the unoccupied space, its navigable layout,
+architecture, materials and physical light-source positions. Keep recognizable
+principals out of that proof. Separate fixed windows/practicals from this proof's
+exposure and the film scene's time-dependent illumination. A prop proof isolates
+the named object and necessary construction/state, without implying a new holder
+or room. Scale/contact demonstrations are scoped supplementary proofs.
+
+Author the selected background, occupancy and view in the existing design `proof`
+and applicable environment leaves, then use `inherit_design` and
+`verify_design_delivery`. With no actors, put drawable occupancy and object state
+in environment/preserve facts; an actor-only action branch must not discard them.
+Remove conflicting scene action and generic people/skin language from an empty
+space or object proof. Cinematic storyboard art has a different duty: it may combine
+all departments, but its pose, background and light do not redefine an asset.
+
 For the formal reference handoff, executable world, continuity and preserve facts
 describe the current drawable image. Put reference applicability, department ownership
 and source uncertainty in the existing FrameSpec `omitted` notes; they are internal

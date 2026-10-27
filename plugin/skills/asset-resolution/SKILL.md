@@ -5,6 +5,20 @@ description: Resolve stable reusable visual assets for a Work, Script, Episode, 
 
 # Asset Resolution
 
+Resolve within the selected creative version as well as Work. A fresh narrative
+baseline excludes earlier-version assets even when names or Work IDs match; use
+the existing narrativeRef/freshBaseline mechanism and never recover an excluded
+version through global search or a missing-reference fallback.
+
+Keep reference purpose separate from artistic acceptance. A selected storyboard
+or Animatic frame proves a proposed cinematic moment, not adoption of its depicted
+face, room or prop as a stable asset. Do not automatically register, discover or
+promote it as CHARACTER/LOCATION/PROP. A deliberate later asset use needs its own
+source-bound design and the existing exact-media asset adoption path. Character
+identity, location structure and object construction should normally come from
+their scoped proofs; retain composition/performance studies as such. A successful
+render or a film's adopted interval cannot grant these other duties.
+
 Resolve continuity-critical props from the screenplay-derived Asset Manifest and
 Prop Design original as stable PROP identities. Search within the current Work
 before creation; record the first narrative appearance and exact later consumers.

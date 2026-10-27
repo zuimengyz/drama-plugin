@@ -70,6 +70,44 @@ def test_implicit_i2i_and_missing_explicit_input_are_rejected(tmp_path,monkeypat
         AssetChoice(asset_type='PROP',name='Prop',design={'wood':'worn'},reference_selections=(0,))
 
 
+@pytest.mark.parametrize('task',['FIRST_FRAME','KEY_FRAME'])
+def test_typed_storyboard_keeps_ordered_reference_duties_and_old_seals(tmp_path,monkeypatch,task):
+    from copy import deepcopy
+    from drama_plugin.visual.prompt_ir import verify_compilation, require_submission_ir
+    data,ref=symbolic_input(tmp_path,monkeypatch)
+    ref=ref.model_copy(update={'facts':'Face and body identity only; target shot owns pose, room and light.'})
+    room=ref.model_copy(update={'entity_key':'room','kind':'SCENE','asset_id':'accepted-room',
+        'media_id':'room-media','facts':'Layout and window positions only; no people or reference exposure.',
+        'state':'Unoccupied daylight proof; target is an occupied evening scene.'})
+    room_bytes=data+b'room';room_hash=hashlib.sha256(room_bytes).hexdigest()
+    room_path=tmp_path/'symbolic-room';read=Path.read_bytes
+    monkeypatch.setattr(Path,'read_bytes',lambda p:room_bytes if p==room_path else read(p))
+    room_receipt=tmp_path/'room-receipt.json'
+    room_receipt.write_text(json.dumps({'name':'inline:'+room_hash,'content_hash':room_hash}))
+    room=room.model_copy(update={'local_path':str(room_path),'content_hash':room_hash,
+        'upload_name':'inline:'+room_hash,'uploaded_hash':room_hash,'upload_receipt':str(room_receipt)})
+    base=reference_spec(ref)
+    spec=base.model_copy(update={'references':(room,ref),'reference_lock':{
+        f'{r.asset_id}/{r.media_id}/{r.version}':r.content_hash for r in (room,ref)}})
+    ir=deepcopy(spec.prompt_ir);ir['task'].update(task_type=task)
+    ir['edit_delta']=[];ir['source_fingerprint']=fp(spec.model_dump(mode='json',exclude={'prompt_ir'}))
+    spec=spec.model_copy(update={'prompt_ir':ir})
+    old=compile_frame(spec,_legacy_reference_replay=True)
+    assert room.facts not in old['request']['body']['prompt']  # reproduces the omission
+    compiled=compile_frame(spec);verify_compiled(compiled);verify_compiled(old)
+    require_submission_ir(compiled,compiled['request'])
+    body=compiled['request']['body'];prompt=body['prompt']
+    assert 'Image 1 binds ONLY room (SCENE)' in prompt
+    assert 'Image 2 binds ONLY selected-person (CHARACTER)' in prompt
+    assert room.facts in prompt and ref.facts in prompt and room.state in prompt
+    assert len(body['image'])==2
+    assert [base64.b64decode(v.split(',',1)[1]) for v in body['image']]==[room_bytes,data]
+    verify_compilation(compiled['prompt_ir_compilation'],prompt)
+    forged=deepcopy(compiled);forged['request']['body']['prompt']=prompt.replace(room.facts,'Different duty')
+    with pytest.raises(ValueError):verify_compiled(forged)
+    assert old==compile_frame(spec,_legacy_reference_replay=True)
+
+
 def test_wire_uses_ordered_images_and_bounded_four_actor_extension(tmp_path,monkeypatch):
     data,_=symbolic_input(tmp_path,monkeypatch)
     from drama_plugin.config.production_routes import selected
@@ -159,7 +197,9 @@ async def test_inherited_reference_reaches_formal_artist_and_exact_projection(tm
             semantic['prompt_ir']['subjects'][0].pop('id')
             semantic['prompt_ir'].pop('source_fingerprint')
             for k in ('task_type','input_mode','provider_family'):semantic['prompt_ir']['task'].pop(k)
-            return kwargs['project'](semantic)
+            # Match FormalTextClient.complete: projection returns JSON, then
+            # the supplied TypeAdapter validates the actual author contract.
+            return args[3].validate_python(kwargs['project'](semantic))
     artist=FormalProfessionalAuthor(Client(),Path(__file__).parents[1]/'skills')
     frame=FrameSpec.model_validate(await artist.design_asset_reference(request,item,
         reference_inputs=(ref,) if mode=='image_to_image' else ()))

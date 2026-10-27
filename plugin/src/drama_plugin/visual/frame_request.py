@@ -243,7 +243,8 @@ def _verify_graph(spec: FrameSpec, template: Template) -> None:
 
 
 def compile_frame(spec: FrameSpec, template: Template | None = None, *,
-                  _legacy_ir_replay: bool = False) -> dict[str, Any]:
+                  _legacy_ir_replay: bool = False,
+                  _legacy_reference_replay: bool = False) -> dict[str, Any]:
     # Revalidate even model_copy/update callers; Pydantic does not validate updates.
     spec = FrameSpec.model_validate(spec.model_dump())
     if template is None:
@@ -372,6 +373,15 @@ def compile_frame(spec: FrameSpec, template: Template | None = None, *,
                 f"Image {i}: {r.kind.lower()} reference. {r.facts}"
                 for i, r in enumerate(spec.references, 1)
             ]}
+        elif (not _legacy_reference_replay and spec.references
+              and spec.prompt_ir['task']['task_type'] in {'FIRST_FRAME', 'KEY_FRAME'}):
+            # Bind the actual ordered inputs, not an independently authored image
+            # number. Facts remain the Reference Strategy owner's narrow duty.
+            reference_context = {'reference_duties': [
+                f"Image {i} binds ONLY {', '.join(spec.reference_members.get(r.entity_key, (r.entity_key,)))} "
+                f"({r.kind}); {r.facts}. Reference state: {r.state}."
+                for i, r in enumerate(spec.references, 1)
+            ]}
         ir_compilation = compile_ir(spec.prompt_ir, provider_family=template.model,
                                     generator_context=reference_context,
                                     legacy_replay=_legacy_ir_replay)
@@ -490,12 +500,24 @@ def verify_compiled(compiled: dict[str, Any]) -> None:
         expected = None
     if compiled == expected or _retained_budget_matches(compiled, expected):
         return
+    # Exact old typed first/key-frame seals omitted reference duties. Keep them
+    # readable without rewriting historical requests or using that omission in
+    # newly compiled work.
+    if compiled.get('prompt_ir_compilation') is not None:
+        try:
+            prior = compile_frame(FrameSpec.model_validate(compiled['spec']),
+                                  Template.model_validate(compiled['template']),
+                                  _legacy_reference_replay=True)
+        except ValueError:
+            prior = None
+        if compiled == prior or _retained_budget_matches(compiled, prior):
+            return
     # Only an exact complete old compilation may replay. New preparation above
     # always uses the current constraint-preserving projection.
     if compiled.get('prompt_ir_compilation') is not None:
         historical = compile_frame(FrameSpec.model_validate(compiled["spec"]),
                                    Template.model_validate(compiled["template"]),
-                                   _legacy_ir_replay=True)
+                                   _legacy_ir_replay=True, _legacy_reference_replay=True)
         if compiled == historical or _retained_budget_matches(compiled, historical):
             return
     raise ValueError("STALE_OR_MODIFIED_FRAME_REQUEST")

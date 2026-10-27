@@ -5,6 +5,22 @@ description: Plan what visual and audio proofs production needs and why. Use for
 
 # Reference Strategy
 
+Keep each selected image's authority narrow in the existing Reference facts/duties:
+character proof carries the named identity (and only selected clothing), scene
+proof carries layout/materials/physical light-source positions, and prop proof
+carries object construction and explicitly observed state. Current performance,
+framing and illumination come from the Shot's owners. A storyboard can carry a
+selected composition or current-state proposal without becoming any of those
+stable assets or an eligible official video endpoint.
+
+Inspect the actual ordered reference slots and serialized text for every still
+task, including FIRST_FRAME/KEY_FRAME, not just REFERENCE_EDIT. Bind each image
+to its intended entity and transferable facts; remove competing background or
+people cues at proof design/selection time. Text exclusions and provider roles
+do not mathematically mask image regions or isolate lighting. If a proof contains
+conflicting visual evidence, disclose that limitation rather than claiming the
+Prompt guarantees isolation. Never invent adoption or provenance to test a binding.
+
 ## Role and authority
 
 Plan what visual and audio proofs production needs and why.

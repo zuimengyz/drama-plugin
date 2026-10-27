@@ -131,3 +131,20 @@ Return absent coverage to Shot Design and contradictions to Director; actual-med
 ## Source reads
 
 Use supplied current originals first. For missing scoped context, read `work.get_work`, `scene.get_scene`, `script.get_script`, `episode.get_episode`, `shot.get_shot`, `asset.get_asset`, `context.build_context`. These reads do not authorize source writes or production.
+
+
+## Whole-film storyboard and rehearsal viewing
+
+When requested, use the [existing sequence-to-animatic handoff](../../docs/director-storyboard-animatic.md)
+to connect selected coverage, cinematic keyframe attachments and DRAFT PictureEditPlan.
+Retain each department's authority and source lineage. Host can revise or reject
+the study; preview pictures/timing never automatically become firstframes,
+generation requests, adopted ranges or observed performance evidence.
+
+### Cinematic preview material
+
+Use the [cinematic storyboard and listening handoff](../../docs/director-storyboard-animatic.md).
+Cinematic pictures and available temporary sound serve artistic review; geometric
+people / Blender are optional technical studies only. Missing approved images,
+audio or current cost authority remain explicit preparation gaps. Never relabel
+a silent rough study as a completed Cinematic Animatic.

@@ -404,3 +404,20 @@ Read [screenplay playability and exact dialogue](../../docs/screenplay-playabili
 ## Local original and decision operations
 
 Use `screenplay.retain_context` and `screenplay.retain_thread` for exact source originals and classified long-arc notes; `screenplay.begin` returns the autonomous author packet. Preserve the complete original with `screenplay.retain_v1` before requesting `screenplay.support_packet`; retain real advisory text with `screenplay.retain_support`. The Host selects with `screenplay.decide`, then supplies a complete scene through `screenplay.shot_handoff`. These local candidate operations grant no formal adoption or production permission.
+
+
+## Whole-film storyboard and rehearsal viewing
+
+When requested, use the [existing sequence-to-animatic handoff](../../docs/director-storyboard-animatic.md)
+to connect selected coverage, cinematic keyframe attachments and DRAFT PictureEditPlan.
+Retain each department's authority and source lineage. Host can revise or reject
+the study; preview pictures/timing never automatically become firstframes,
+generation requests, adopted ranges or observed performance evidence.
+
+### Cinematic preview material
+
+Use the [cinematic storyboard and listening handoff](../../docs/director-storyboard-animatic.md).
+Cinematic pictures and available temporary sound serve artistic review; geometric
+people / Blender are optional technical studies only. Missing approved images,
+audio or current cost authority remain explicit preparation gaps. Never relabel
+a silent rough study as a completed Cinematic Animatic.

@@ -1,0 +1,100 @@
+{
+  "styles": {
+    "classical-narrative": "古典叙事",
+    "observational-realism": "观察性现实主义",
+    "poetic-cinema": "诗性电影",
+    "expressionism": "表现主义倾向",
+    "noir-and-suspense": "黑色电影与悬疑",
+    "epic-and-adventure": "史诗与冒险",
+    "experimental-cinema": "实验电影"
+  },
+  "goals": {
+    "waiting": [
+      "等待",
+      "wait"
+    ],
+    "distance": [
+      "疏离",
+      "距离",
+      "detachment"
+    ],
+    "intimacy": [
+      "亲密",
+      "intimacy"
+    ],
+    "pressure": [
+      "压迫",
+      "pressure"
+    ],
+    "misrecognition": [
+      "误认",
+      "误解",
+      "misrecognition"
+    ],
+    "reveal": [
+      "逐渐发现",
+      "门外",
+      "窗外",
+      "空间揭示",
+      "显露",
+      "reveal"
+    ],
+    "coexistence": [
+      "共同存在",
+      "公共生活",
+      "同时",
+      "public life",
+      "coexist"
+    ],
+    "duration": [
+      "延宕",
+      "重复",
+      "时间体验",
+      "duration"
+    ],
+    "listening": [
+      "倾听",
+      "听者",
+      "listening"
+    ],
+    "memory": [
+      "记忆",
+      "memory"
+    ],
+    "immersion": [
+      "置身",
+      "穿越",
+      "沉浸",
+      "immersion"
+    ]
+  },
+  "means": {
+    "fixed-wide": "固定宽景",
+    "depth": "纵深构图",
+    "occlusion": "遮挡调度",
+    "lateral": "侧向移动",
+    "tracking": "跟随",
+    "focus": "焦点转移",
+    "source-light": "动机光源",
+    "negative-fill": "负补光",
+    "sound-lead": "声音先入",
+    "montage": "蒙太奇",
+    "long-take": "长镜头",
+    "reverse": "对话反打",
+    "crane": "升降",
+    "handheld": "手持",
+    "color": "冷暖与明暗"
+  },
+  "disciplines": {
+    "DIRECTOR": "DIRECTOR",
+    "CAMERA": "CAMERA",
+    "ACTION": "ACTION",
+    "PERFORMANCE": "PERFORMANCE",
+    "WORLD": "WORLD",
+    "LIGHTING": "LIGHTING",
+    "COLOR": "COLOR",
+    "EDITORIAL": "EDITORIAL",
+    "SOUND": "SOUND",
+    "STORYBOARD": "STORYBOARD"
+  }
+}

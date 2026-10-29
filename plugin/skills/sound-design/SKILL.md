@@ -82,3 +82,8 @@ Return vocal performance to diegetic-vocal/Voice and score to Music. Asset choic
 ## Source reads
 
 Use supplied current originals first. For missing scoped context, read `work.get_work`, `scene.get_scene`, `script.get_script`, `episode.get_episode`, `shot.get_shot`, `asset.get_asset`, `context.build_context`. These reads do not authorize source writes or production.
+
+
+## Optional film-craft application
+
+Use [expression-led case reading](../director/references/film-practice.md) when it expands the current creative question. Use source location, offscreen persistence and listening to organize attention; do not make every camera change a sound reset. Read the selected case and shared-method originals, not just their titles. Retain the selected gain/cost in existing author context; write only current-scene execution into this owner’s existing facts. No lookup quota or automatic adoption.

@@ -27,3 +27,11 @@ AI实现假设：选择一个主关系和独立持续的背景活动；其他群
 ## 来源
 
 - [Playtime: Things Fall Apart, Beautifully](https://www.criterion.com/current/posts/1680-playtime-things-fall-apart-beautifully) — David Cairns / Criterion；定位：Royal Garden段；从挫败到游戏的变化。核验：2026-10-26。
+
+## 2026-10-28 专业转化补充
+
+摄影：Jean Badal / Andréas Winding。
+
+具体使用补充：除Royal Garden外，Cairns文章开头定位机场的误认：相似的制服与活动先造成医院印象，随后交通空间线索改变理解。方法分析：先安排观众确实可见的部分，再让背景事件或人物用途重新解释空间；可以固定宽景完成，不必运镜。多人调度须各有目的、路线和遮挡时间，不把所有人排成等候主角的背景。当前场面的灯光可通过背景与人物反差协助可见性，但原片机场具体灯位、灯数未核实。
+
+- [Criterion / PlayTime credits](https://www.criterion.com/films/651-playtime)；定位：Credits: Jean Badal / Andréas Winding。

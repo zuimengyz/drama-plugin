@@ -1,6 +1,6 @@
 {
-  "schema": "film-craft-cases-v1",
-  "verifiedOn": "2026-10-26",
+  "schema": "film-craft-cases-v2",
+  "verifiedOn": "2026-10-28",
   "mode": "ADVISORY_NOT_TEMPLATES",
   "cases": [
     {
@@ -25,7 +25,29 @@
           "checkedOn": "2026-10-26",
           "verification": "READ_PUBLISHED_TEXT; not a fresh film viewing"
         }
-      ]
+      ],
+      "styles": [
+        "classical-narrative",
+        "poetic-cinema"
+      ],
+      "goals": [
+        "coexistence",
+        "intimacy"
+      ],
+      "means": [
+        "depth",
+        "source-light"
+      ],
+      "techniques": [
+        "blocking-and-staging"
+      ],
+      "disciplines": [
+        "DIRECTOR",
+        "WORLD",
+        "ACTION",
+        "PERFORMANCE"
+      ],
+      "navigationUpdatedOn": "2026-10-28"
     },
     {
       "id": "leopard",
@@ -50,7 +72,29 @@
           "checkedOn": "2026-10-26",
           "verification": "READ_PUBLISHED_TEXT; not a fresh film viewing"
         }
-      ]
+      ],
+      "styles": [
+        "epic-and-adventure",
+        "classical-narrative"
+      ],
+      "goals": [
+        "duration",
+        "distance"
+      ],
+      "means": [
+        "montage",
+        "sound-lead"
+      ],
+      "techniques": [
+        "editing-and-sound"
+      ],
+      "disciplines": [
+        "DIRECTOR",
+        "PERFORMANCE",
+        "EDITORIAL",
+        "SOUND"
+      ],
+      "navigationUpdatedOn": "2026-10-28"
     },
     {
       "id": "rules-game",
@@ -75,7 +119,30 @@
           "checkedOn": "2026-10-26",
           "verification": "READ_PUBLISHED_TEXT; not a fresh film viewing"
         }
-      ]
+      ],
+      "styles": [
+        "classical-narrative",
+        "observational-realism"
+      ],
+      "goals": [
+        "coexistence",
+        "misrecognition"
+      ],
+      "means": [
+        "depth",
+        "tracking"
+      ],
+      "techniques": [
+        "blocking-and-staging"
+      ],
+      "disciplines": [
+        "DIRECTOR",
+        "CAMERA",
+        "ACTION",
+        "PERFORMANCE",
+        "WORLD"
+      ],
+      "navigationUpdatedOn": "2026-10-28"
     },
     {
       "id": "playtime",
@@ -99,8 +166,43 @@
           "locator": "Royal Garden段；从挫败到游戏的变化",
           "checkedOn": "2026-10-26",
           "verification": "READ_PUBLISHED_TEXT; not a fresh film viewing"
+        },
+        {
+          "title": "Criterion / PlayTime credits",
+          "url": "https://www.criterion.com/films/651-playtime",
+          "locator": "Credits: Jean Badal / Andréas Winding",
+          "checkedOn": "2026-10-28",
+          "verification": "READ_PUBLISHED_SOURCE; no fresh full-film screening"
         }
-      ]
+      ],
+      "styles": [
+        "observational-realism",
+        "experimental-cinema"
+      ],
+      "goals": [
+        "reveal",
+        "coexistence",
+        "misrecognition"
+      ],
+      "means": [
+        "fixed-wide",
+        "depth",
+        "occlusion",
+        "sound-lead"
+      ],
+      "techniques": [
+        "blocking-and-staging",
+        "composition-and-optics"
+      ],
+      "disciplines": [
+        "DIRECTOR",
+        "CAMERA",
+        "ACTION",
+        "WORLD",
+        "STORYBOARD"
+      ],
+      "cinematography": "Jean Badal / Andréas Winding",
+      "navigationUpdatedOn": "2026-10-28"
     },
     {
       "id": "tokyo-story",
@@ -124,8 +226,43 @@
           "locator": "对白观看；最后两段",
           "checkedOn": "2026-10-26",
           "verification": "READ_PUBLISHED_TEXT; not a fresh film viewing"
+        },
+        {
+          "title": "BFI / Tokyo Story programme",
+          "url": "https://bfidatadigipres.github.io/japan%202021%3Cbr%3E%20100%20years%20of%20japanese%20cinema/2021/10/18/tokyo-story/",
+          "locator": "低机位、视觉对应与摄影厚田雄春",
+          "checkedOn": "2026-10-28",
+          "verification": "READ_PUBLISHED_SOURCE; no fresh full-film screening"
         }
-      ]
+      ],
+      "styles": [
+        "observational-realism",
+        "poetic-cinema"
+      ],
+      "goals": [
+        "waiting",
+        "duration",
+        "listening",
+        "distance"
+      ],
+      "means": [
+        "fixed-wide",
+        "reverse",
+        "montage"
+      ],
+      "techniques": [
+        "camera-placement",
+        "editing-and-sound"
+      ],
+      "disciplines": [
+        "DIRECTOR",
+        "CAMERA",
+        "PERFORMANCE",
+        "EDITORIAL",
+        "SOUND"
+      ],
+      "cinematography": "Yuharu Atsuta",
+      "navigationUpdatedOn": "2026-10-28"
     },
     {
       "id": "ugetsu",
@@ -156,7 +293,28 @@
           "url": "https://www.criterion.com/current/posts/401-ugetsu-from-the-other-shore",
           "locator": "Lake Biwa episode"
         }
-      ]
+      ],
+      "styles": [
+        "poetic-cinema"
+      ],
+      "goals": [
+        "memory",
+        "reveal"
+      ],
+      "means": [
+        "sound-lead",
+        "tracking"
+      ],
+      "techniques": [
+        "editing-and-sound"
+      ],
+      "disciplines": [
+        "DIRECTOR",
+        "CAMERA",
+        "EDITORIAL",
+        "SOUND"
+      ],
+      "navigationUpdatedOn": "2026-10-28"
     },
     {
       "id": "wild-strawberries",
@@ -181,7 +339,27 @@
           "checkedOn": "2026-10-26",
           "verification": "READ_PUBLISHED_TEXT; not a fresh film viewing"
         }
-      ]
+      ],
+      "styles": [
+        "poetic-cinema"
+      ],
+      "goals": [
+        "memory",
+        "distance"
+      ],
+      "means": [
+        "montage",
+        "depth"
+      ],
+      "techniques": [
+        "composition-and-optics"
+      ],
+      "disciplines": [
+        "DIRECTOR",
+        "EDITORIAL",
+        "SOUND"
+      ],
+      "navigationUpdatedOn": "2026-10-28"
     },
     {
       "id": "mirror",
@@ -206,7 +384,29 @@
           "checkedOn": "2026-10-26",
           "verification": "READ_PUBLISHED_TEXT; not a fresh film viewing"
         }
-      ]
+      ],
+      "styles": [
+        "poetic-cinema",
+        "experimental-cinema"
+      ],
+      "goals": [
+        "memory",
+        "duration"
+      ],
+      "means": [
+        "montage",
+        "source-light"
+      ],
+      "techniques": [
+        "lighting-and-color",
+        "editing-and-sound"
+      ],
+      "disciplines": [
+        "DIRECTOR",
+        "EDITORIAL",
+        "SOUND"
+      ],
+      "navigationUpdatedOn": "2026-10-28"
     },
     {
       "id": "brief-encounter",
@@ -237,7 +437,28 @@
           "url": "https://www.criterion.com/current/posts/4872-flickers-of-passion-celia-johnson-in-brief-encounter",
           "locator": "Laura face, voice and imagined confession"
         }
-      ]
+      ],
+      "styles": [
+        "classical-narrative"
+      ],
+      "goals": [
+        "listening",
+        "misrecognition",
+        "intimacy"
+      ],
+      "means": [
+        "reverse",
+        "sound-lead"
+      ],
+      "techniques": [
+        "editing-and-sound"
+      ],
+      "disciplines": [
+        "DIRECTOR",
+        "EDITORIAL",
+        "SOUND"
+      ],
+      "navigationUpdatedOn": "2026-10-28"
     },
     {
       "id": "in-mood",
@@ -261,8 +482,393 @@
           "locator": "受限视野；画外配偶与角色扮演段",
           "checkedOn": "2026-10-26",
           "verification": "READ_PUBLISHED_TEXT; not a fresh film viewing"
+        },
+        {
+          "title": "Criterion / In the Mood for Love",
+          "url": "https://www.criterion.com/films/198-in-the-mood-for-love",
+          "locator": "Christopher Doyle / Mark Lee Ping Bing",
+          "checkedOn": "2026-10-28",
+          "verification": "READ_PUBLISHED_SOURCE; no fresh full-film screening"
+        },
+        {
+          "title": "BFI / Wong Kar-Wai on In the Mood for Love",
+          "url": "https://bfidatadigipres.github.io/world%20of%20wong%20kar%20wai/2021/07/14/in-the-name-of-love/",
+          "locator": "王家卫谈最终段落与时代结束",
+          "checkedOn": "2026-10-28",
+          "verification": "READ_PUBLISHED_SOURCE; no fresh full-film screening"
         }
-      ]
+      ],
+      "styles": [
+        "poetic-cinema"
+      ],
+      "goals": [
+        "intimacy",
+        "distance",
+        "reveal"
+      ],
+      "means": [
+        "occlusion",
+        "lateral",
+        "source-light",
+        "color"
+      ],
+      "techniques": [
+        "camera-placement",
+        "lighting-and-color"
+      ],
+      "disciplines": [
+        "DIRECTOR",
+        "CAMERA",
+        "LIGHTING",
+        "COLOR",
+        "PERFORMANCE",
+        "EDITORIAL"
+      ],
+      "cinematography": "Christopher Doyle / Mark Lee Ping Bing",
+      "navigationUpdatedOn": "2026-10-28"
+    },
+    {
+      "id": "citizen-kane",
+      "film": "公民凯恩",
+      "originalTitle": "Citizen Kane",
+      "year": "1941",
+      "director": "Orson Welles",
+      "cinematography": "Gregg Toland",
+      "problem": "场面定位：报社人物关系与室内纵深场面。",
+      "tags": [
+        "coexistence",
+        "pressure",
+        "reveal"
+      ],
+      "styles": [
+        "classical-narrative",
+        "expressionism"
+      ],
+      "goals": [
+        "coexistence",
+        "pressure",
+        "reveal"
+      ],
+      "means": [
+        "depth",
+        "fixed-wide",
+        "source-light"
+      ],
+      "disciplines": [
+        "DIRECTOR",
+        "CAMERA",
+        "ACTION",
+        "LIGHTING",
+        "STORYBOARD"
+      ],
+      "techniques": [
+        "camera-placement",
+        "composition-and-optics",
+        "lighting-placement"
+      ],
+      "path": "cases/citizen-kane.md",
+      "sources": [
+        {
+          "title": "ASC / Gregg Toland, ASC — An Enduring Legacy",
+          "url": "https://theasc.com/article/gregg-toland-asc-an-enduring-legacy/",
+          "locator": "Citizen Kane；pan-focus；Toland 1941引文",
+          "checkedOn": "2026-10-28",
+          "verification": "READ_PUBLISHED_SOURCE; no fresh full-film screening"
+        },
+        {
+          "title": "ASC / A Century of Inspiration",
+          "url": "https://theasc.com/article/a-century-of-inspiration/",
+          "locator": "Citizen Kane条目；摄影、调度与深焦",
+          "checkedOn": "2026-10-28",
+          "verification": "READ_PUBLISHED_SOURCE; no fresh full-film screening"
+        }
+      ],
+      "navigationUpdatedOn": "2026-10-28"
+    },
+    {
+      "id": "touch-of-evil",
+      "film": "历劫佳人",
+      "originalTitle": "Touch of Evil",
+      "year": "1958",
+      "director": "Orson Welles",
+      "cinematography": "Russell Metty",
+      "problem": "场面定位：开场炸弹进入汽车，车辆穿行边境街道。",
+      "tags": [
+        "reveal",
+        "pressure",
+        "coexistence"
+      ],
+      "styles": [
+        "noir-and-suspense",
+        "expressionism"
+      ],
+      "goals": [
+        "reveal",
+        "pressure",
+        "coexistence"
+      ],
+      "means": [
+        "tracking",
+        "crane",
+        "long-take",
+        "sound-lead"
+      ],
+      "disciplines": [
+        "DIRECTOR",
+        "CAMERA",
+        "ACTION",
+        "EDITORIAL",
+        "SOUND",
+        "STORYBOARD"
+      ],
+      "techniques": [
+        "camera-movement",
+        "long-take",
+        "editing-and-sound"
+      ],
+      "path": "cases/touch-of-evil.md",
+      "sources": [
+        {
+          "title": "BFI / Touch of Evil programme",
+          "url": "https://bfidatadigipres.github.io/big%20screen%20classics/2021/05/18/touch-of-evil/",
+          "locator": "开场追踪、1998版说明与摄影署名",
+          "checkedOn": "2026-10-28",
+          "verification": "READ_PUBLISHED_SOURCE; no fresh full-film screening"
+        }
+      ],
+      "navigationUpdatedOn": "2026-10-28"
+    },
+    {
+      "id": "children-of-men",
+      "film": "人类之子",
+      "originalTitle": "Children of Men",
+      "year": "2006",
+      "director": "Alfonso Cuarón",
+      "cinematography": "Emmanuel Lubezki",
+      "problem": "场面定位：车内同行与袭击，以及下车后的警察死亡。",
+      "tags": [
+        "immersion",
+        "reveal",
+        "coexistence",
+        "distance"
+      ],
+      "styles": [
+        "observational-realism",
+        "epic-and-adventure"
+      ],
+      "goals": [
+        "immersion",
+        "reveal",
+        "coexistence",
+        "distance"
+      ],
+      "means": [
+        "handheld",
+        "tracking",
+        "long-take",
+        "source-light"
+      ],
+      "disciplines": [
+        "DIRECTOR",
+        "CAMERA",
+        "ACTION",
+        "LIGHTING",
+        "EDITORIAL",
+        "STORYBOARD"
+      ],
+      "techniques": [
+        "camera-movement",
+        "blocking-and-staging",
+        "long-take",
+        "lighting-and-color"
+      ],
+      "path": "cases/children-of-men.md",
+      "sources": [
+        {
+          "title": "ASC / Children of Men: Humanity’s Last Hope",
+          "url": "https://theasc.com/article/children-of-men-humanitys-last-hope/",
+          "locator": "车内段、警察倒地后的摄影独立性、接缝说明",
+          "checkedOn": "2026-10-28",
+          "verification": "READ_PUBLISHED_SOURCE; no fresh full-film screening"
+        }
+      ],
+      "navigationUpdatedOn": "2026-10-28"
+    },
+    {
+      "id": "1917",
+      "film": "1917",
+      "originalTitle": "1917",
+      "year": "2019",
+      "director": "Sam Mendes",
+      "cinematography": "Roger Deakins",
+      "problem": "场面定位：战壕到奔跑的设备交接，以及Écoust夜城。",
+      "tags": [
+        "immersion",
+        "pressure",
+        "reveal"
+      ],
+      "styles": [
+        "epic-and-adventure",
+        "expressionism"
+      ],
+      "goals": [
+        "immersion",
+        "pressure",
+        "reveal"
+      ],
+      "means": [
+        "tracking",
+        "crane",
+        "long-take",
+        "source-light",
+        "color"
+      ],
+      "disciplines": [
+        "DIRECTOR",
+        "CAMERA",
+        "ACTION",
+        "LIGHTING",
+        "WORLD",
+        "EDITORIAL",
+        "STORYBOARD"
+      ],
+      "techniques": [
+        "long-take",
+        "camera-movement",
+        "lighting-placement",
+        "lighting-and-color"
+      ],
+      "path": "cases/1917.md",
+      "sources": [
+        {
+          "title": "ASC / Lives Under Siege: The Goldfinch and 1917",
+          "url": "https://theasc.com/article/lives-under-siege-the-goldfinch-and-1917/",
+          "locator": "1917段；实地排练和摄影设备交接",
+          "checkedOn": "2026-10-28",
+          "verification": "READ_PUBLISHED_SOURCE; no fresh full-film screening"
+        },
+        {
+          "title": "British Cinematographer / Roger Deakins interview",
+          "url": "https://britishcinematographer.co.uk/exclusive-interview-roger-deakins-cbe-bsc-asc-on-1917-bc97-100-editions/",
+          "locator": "Écoust-Saint-Mein布光；模型、照明弹、燃烧教堂",
+          "checkedOn": "2026-10-28",
+          "verification": "READ_PUBLISHED_SOURCE; no fresh full-film screening"
+        }
+      ],
+      "navigationUpdatedOn": "2026-10-28"
+    },
+    {
+      "id": "jeanne-dielman",
+      "film": "让娜·迪尔曼",
+      "originalTitle": "Jeanne Dielman, 23 quai du Commerce, 1080 Bruxelles",
+      "year": "1975",
+      "director": "Chantal Akerman",
+      "cinematography": "Babette Mangolte",
+      "problem": "场面定位：家务的重复过程与被省略的卧室时段。",
+      "tags": [
+        "duration",
+        "waiting",
+        "distance",
+        "coexistence"
+      ],
+      "styles": [
+        "observational-realism",
+        "experimental-cinema"
+      ],
+      "goals": [
+        "duration",
+        "waiting",
+        "distance",
+        "coexistence"
+      ],
+      "means": [
+        "fixed-wide",
+        "long-take",
+        "montage"
+      ],
+      "disciplines": [
+        "DIRECTOR",
+        "CAMERA",
+        "ACTION",
+        "PERFORMANCE",
+        "EDITORIAL"
+      ],
+      "techniques": [
+        "camera-placement",
+        "blocking-and-staging",
+        "long-take",
+        "editing-and-sound"
+      ],
+      "path": "cases/jeanne-dielman.md",
+      "sources": [
+        {
+          "title": "BFI / Keeping a distance: Chantal Akerman’s Jeanne Dielman",
+          "url": "https://www.bfi.org.uk/sight-and-sound/features/keeping-distance-chantal-akermans-jeanne-dielman",
+          "locator": "正面构图、日常手势；转引Akerman访谈，区别评论者解释",
+          "checkedOn": "2026-10-28",
+          "verification": "READ_PUBLISHED_SOURCE; no fresh full-film screening"
+        },
+        {
+          "title": "BFI / Jeanne Dielman programme",
+          "url": "https://bfidatadigipres.github.io/pdf/2023-03-01-jeanne-dielman.pdf",
+          "locator": "影片资料与摄影署名",
+          "checkedOn": "2026-10-28",
+          "verification": "READ_PUBLISHED_SOURCE; no fresh full-film screening"
+        }
+      ],
+      "navigationUpdatedOn": "2026-10-28"
+    },
+    {
+      "id": "barry-lyndon",
+      "film": "巴里·林登",
+      "originalTitle": "Barry Lyndon",
+      "year": "1975",
+      "director": "Stanley Kubrick",
+      "cinematography": "John Alcott",
+      "problem": "场面定位：儿子在餐桌问马的室内场面、赌桌烛光场面。",
+      "tags": [
+        "distance",
+        "intimacy",
+        "coexistence"
+      ],
+      "styles": [
+        "poetic-cinema",
+        "classical-narrative"
+      ],
+      "goals": [
+        "distance",
+        "intimacy",
+        "coexistence"
+      ],
+      "means": [
+        "source-light",
+        "depth",
+        "color",
+        "fixed-wide"
+      ],
+      "disciplines": [
+        "DIRECTOR",
+        "CAMERA",
+        "LIGHTING",
+        "COLOR",
+        "WORLD"
+      ],
+      "techniques": [
+        "lighting-placement",
+        "lighting-and-color",
+        "composition-and-optics"
+      ],
+      "path": "cases/barry-lyndon.md",
+      "sources": [
+        {
+          "title": "ASC / Photographing Stanley Kubrick’s Barry Lyndon",
+          "url": "https://theasc.com/article/flashback-barry-lyndon/",
+          "locator": "Alcott访谈；餐桌窗光、烛光、焦点与反射",
+          "checkedOn": "2026-10-28",
+          "verification": "READ_PUBLISHED_SOURCE; no fresh full-film screening"
+        }
+      ],
+      "navigationUpdatedOn": "2026-10-28"
     }
   ]
 }

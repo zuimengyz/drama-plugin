@@ -1,0 +1,93 @@
+{
+  "techniques": [
+    {
+      "id": "camera-placement",
+      "title": "机位、距离与观看权",
+      "disciplines": [
+        "CAMERA",
+        "DIRECTOR",
+        "STORYBOARD"
+      ],
+      "path": "shared-techniques/camera-placement.md"
+    },
+    {
+      "id": "camera-movement",
+      "title": "摄影路径与注意变化",
+      "disciplines": [
+        "CAMERA",
+        "ACTION",
+        "DIRECTOR",
+        "STORYBOARD"
+      ],
+      "path": "shared-techniques/camera-movement.md"
+    },
+    {
+      "id": "composition-and-optics",
+      "title": "纵深、遮挡与光学选择",
+      "disciplines": [
+        "CAMERA",
+        "LIGHTING",
+        "STORYBOARD"
+      ],
+      "path": "shared-techniques/composition-and-optics.md"
+    },
+    {
+      "id": "blocking-and-staging",
+      "title": "共同时间里的身体与空间",
+      "disciplines": [
+        "ACTION",
+        "PERFORMANCE",
+        "WORLD",
+        "CAMERA",
+        "STORYBOARD"
+      ],
+      "path": "shared-techniques/blocking-and-staging.md"
+    },
+    {
+      "id": "long-take",
+      "title": "固定长镜头、运动长镜头与技术分段",
+      "disciplines": [
+        "DIRECTOR",
+        "CAMERA",
+        "ACTION",
+        "EDITORIAL",
+        "STORYBOARD"
+      ],
+      "path": "shared-techniques/long-take.md"
+    },
+    {
+      "id": "lighting-placement",
+      "title": "机位—人物—光源联合布局",
+      "disciplines": [
+        "LIGHTING",
+        "CAMERA",
+        "WORLD",
+        "STORYBOARD"
+      ],
+      "path": "shared-techniques/lighting-placement.md"
+    },
+    {
+      "id": "lighting-and-color",
+      "title": "明暗层次、材质与运动连续性",
+      "disciplines": [
+        "LIGHTING",
+        "COLOR",
+        "CAMERA",
+        "WORLD"
+      ],
+      "path": "shared-techniques/lighting-and-color.md"
+    },
+    {
+      "id": "editing-and-sound",
+      "title": "声音、切点与观看时间",
+      "disciplines": [
+        "EDITORIAL",
+        "SOUND",
+        "DIRECTOR",
+        "CAMERA",
+        "PERFORMANCE"
+      ],
+      "path": "shared-techniques/editing-and-sound.md"
+    }
+  ]
+}

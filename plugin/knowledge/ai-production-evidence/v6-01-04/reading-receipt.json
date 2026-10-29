@@ -1,0 +1,67 @@
+{
+  "selection": {
+    "query": "希望观众逐渐发现门外发生的事情，公共生活独立于雅科夫的目光",
+    "caseIds": [
+      "playtime",
+      "children-of-men",
+      "barry-lyndon"
+    ],
+    "techniqueIds": [
+      "camera-placement",
+      "camera-movement",
+      "blocking-and-staging",
+      "lighting-placement",
+      "long-take",
+      "editing-and-sound"
+    ],
+    "limit": 12
+  },
+  "readings": [
+    {
+      "id": "playtime",
+      "path": "film-craft/cases/playtime.md",
+      "sha256": "dfcd280a9baa1798743e7979c64845562570f59f5ff77424054bef31bc52fa11"
+    },
+    {
+      "id": "children-of-men",
+      "path": "film-craft/cases/children-of-men.md",
+      "sha256": "d0b47477606397369f301229e5e2b31dcbaef850653a4edfa504d62f21c39c7c"
+    },
+    {
+      "id": "barry-lyndon",
+      "path": "film-craft/cases/barry-lyndon.md",
+      "sha256": "6770d2405f427fa393a8f89d0d746ae28b075cfad4fd0d9e19af180791ad7164"
+    },
+    {
+      "id": "camera-placement",
+      "path": "shared-techniques/camera-placement.md",
+      "sha256": "efab80ce4578dd1908f5a05e0df6d8a5f0dc430e58423d3b1bf6fe729776cace"
+    },
+    {
+      "id": "camera-movement",
+      "path": "shared-techniques/camera-movement.md",
+      "sha256": "1d0f1f67b9834eed3caca0fe854f53c58407a6f2b39599c61bada15cff57e619"
+    },
+    {
+      "id": "blocking-and-staging",
+      "path": "shared-techniques/blocking-and-staging.md",
+      "sha256": "8511151450e40917fb182ce259aed245450963e9ca3d6b08c78ced324407b876"
+    },
+    {
+      "id": "long-take",
+      "path": "shared-techniques/long-take.md",
+      "sha256": "ac23c69802825111c0c18ae8c13ca0eb6e18efb7c74976e1afb3e8f3aa148936"
+    },
+    {
+      "id": "lighting-placement",
+      "path": "shared-techniques/lighting-placement.md",
+      "sha256": "4376577154fe11f1488d967f085fc1873c685fdf3881cb81409ca3edd0a9ddad"
+    },
+    {
+      "id": "editing-and-sound",
+      "path": "shared-techniques/editing-and-sound.md",
+      "sha256": "b296a083df6ed6a35b9363825e714c4d8e2d780faa9a7b26dcd0abffaf2a1c21"
+    }
+  ],
+  "status": "READ_BY_CURRENT_ASSISTANT_FOR_HOST_REVIEWABLE_CANDIDATES"
+}

@@ -101,3 +101,8 @@ Reference exclusions and complete field projection do not remove those cues. Wit
 Reference Strategy, justify whether scoped baseline evidence or a different input
 is needed; do not automatically add images. Keep transmission, executable source
 relations and actual light matching as separate review conclusions.
+
+
+## Optional film-craft application
+
+Use [expression-led case reading](../director/references/film-practice.md) when it expands the current creative question. Translate light into world-space source positions, height, extent, softness, reflection and control; test changing camera/actor relations. Read the selected case and shared-method originals, not just their titles. Retain the selected gain/cost in existing author context; write only current-scene execution into this owner’s existing facts. No lookup quota or automatic adoption.

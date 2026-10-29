@@ -32,3 +32,9 @@ listening and everyday aftermath (Tokyo Story), spatial uncertainty (Ugetsu),
 memory/time (Wild Strawberries, Mirror), subjective account and interruption
 (Brief Encounter), offscreen relations, repetition and literary subtext (In the
 Mood for Love). AI realization notes are hypotheses, not claims of tested output.
+
+## Style and professional application (2026-10-28)
+
+The canonical case bodies remain here. [Style navigation](../cinema-styles/README.md), expression-goal and professional-means facets share this index; [shared techniques](../shared-techniques/index.json) hold reusable methods once. The original `--problem`/`--query` behavior remains available. New `--expression` and `--read` support discovery and actual reading through the same reader used by native Director/Professional calls. See the [application evidence](../ai-production-evidence/v6-01-04/README.md).
+
+本轮用户材料的[访问与吸收说明](teaching-materials-20261028.md)包含采样边界、ZIP去重及方法落点；不保存受版权保护的电影片段。新增案例的[公开来源清单](research-sources-20261028.json)区分制作采访与分析文章。

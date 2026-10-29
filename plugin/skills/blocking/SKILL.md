@@ -87,3 +87,8 @@ Read [mapping and evidence profile](../../docs/still-professional-mapping.md) wh
 ## Actor-playable screenplay handoff (Screenplay R2)
 
 Read [screenplay playability and exact dialogue](../../docs/screenplay-playability.md). Translate the approved actor task into spatial behavior without inventing a new objective. Missing source action or target returns to Scene/Performance; do not rewrite dialogue.
+
+
+## Optional film-craft application
+
+Use [expression-led case reading](../director/references/film-practice.md) when it expands the current creative question. Translate a method into concurrent tasks, routes, gaze targets and occlusion time; never move people just to rescue a camera recipe. Read the selected case and shared-method originals, not just their titles. Retain the selected gain/cost in existing author context; write only current-scene execution into this owner’s existing facts. No lookup quota or automatic adoption.

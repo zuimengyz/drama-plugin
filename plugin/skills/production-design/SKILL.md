@@ -76,3 +76,8 @@ costume-design and environment views forward there and remain replayable origina
 Character Dramaturgy owns identity, arc stage, behavior and social constraints;
 Character External Driver keeps narrative package authority. Proposed look never
 revises character meaning. Director owns intent and arbitration, not asset authorship.
+
+
+## Optional film-craft application
+
+Use [expression-led case reading](../director/references/film-practice.md) when it expands the current creative question. Reconcile current space, material and light proposals; do not duplicate Camera/Lighting originals or copy a case set. Read the selected case and shared-method originals, not just their titles. Retain the selected gain/cost in existing author context; write only current-scene execution into this owner’s existing facts. No lookup quota or automatic adoption.

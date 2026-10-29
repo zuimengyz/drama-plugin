@@ -1,0 +1,126 @@
+{
+  "status": "UNADOPTED_OFFLINE_CANDIDATE",
+  "durationMs": 10000,
+  "craftKnowledge": {
+    "query": "希望观众逐渐发现门外发生的事情，公共生活独立于雅科夫的目光",
+    "caseIds": [
+      "playtime",
+      "children-of-men",
+      "barry-lyndon"
+    ],
+    "techniqueIds": [
+      "camera-placement",
+      "camera-movement",
+      "blocking-and-staging",
+      "lighting-placement",
+      "long-take",
+      "editing-and-sound"
+    ],
+    "limit": 12
+  },
+  "professionalDesigns": [
+    {
+      "domain": "WORLD",
+      "facts": {
+        "setting": "上午，棺匠家门内斜望窄街对面开窗；既有工作台在雅科夫手边，床与炉仍在屋内。",
+        "physicalWorldRules": "保持门、街、对面窗口及墙面的相对方位，镜头不得重建或镜像街巷。"
+      }
+    },
+    {
+      "domain": "SUBJECTS",
+      "facts": {
+        "presentSubjects": [
+          {
+            "id": "yakov",
+            "role": "雅科夫，七十岁的棺匠",
+            "inSceneBehaviour": "仍在手边工作，随后短暂看向街对面。"
+          },
+          {
+            "id": "youth",
+            "role": "街上的新靴青年",
+            "inSceneBehaviour": "折回对面窗口接帽子。"
+          },
+          {
+            "id": "woman",
+            "role": "对面窗内的女人",
+            "inSceneBehaviour": "在原窗口把帽子交给青年。"
+          }
+        ]
+      }
+    },
+    {
+      "domain": "ACTION",
+      "facts": {
+        "actionPhases": [
+          {
+            "beatId": "window-event",
+            "spokenIds": [],
+            "entryState": "青年刚开始折回对面窗口，帽子仍在女人手里；雅科夫在室内工作。",
+            "action": "青年走回窗口接过帽子，随后吻女人伸出的手；雅科夫在吻手发生后看一眼，随后回到手边工作。",
+            "observable": "帽子已在青年手里；女人仍在同一窗口；雅科夫已把注意转回工作。"
+          }
+        ],
+        "physicalStateConstraints": "帽子一次交接，吻手有真实接触与分离；人物不为镜头移位，不重复折返。"
+      }
+    },
+    {
+      "domain": "PERFORMANCE",
+      "facts": {
+        "physicalExpression": "青年注意窗内女人，接帽与吻手连贯而不展示给镜头；雅科夫的一瞥短于观众对街上关系的观看，不添加惊讶、微笑或受伤表情。"
+      }
+    },
+    {
+      "domain": "SOUND",
+      "facts": {
+        "ambience": [
+          {
+            "design": "车轮声继续向街尽头远去，屋内工作声与街声保持内外距离。"
+          }
+        ],
+        "orderingRules": [
+          "窗口原有呼喊属于折返前的既有动作，可在前镜末保留；本局部不新增可懂台词。",
+          "吻手后公共街声继续，不随雅科夫收回目光而静音。"
+        ],
+        "silence": "不加抒情配乐或强调吻手的提示音。"
+      }
+    },
+    {
+      "domain": "EDITORIAL",
+      "facts": {
+        "protectedEvents": [
+          {
+            "phaseIndex": 0,
+            "design": "连续容纳接帽、吻手、雅科夫短暂看与回到工作；不切反应特写抢走街上关系。"
+          }
+        ]
+      }
+    },
+    {
+      "domain": "LIGHTING",
+      "facts": {
+        "sources": [
+          "上午天空位于街巷上方，是门口和对面开窗共同的宽大软光源；不增加室内灯具。",
+          "门洞固定在雅科夫面向街道的一侧；对面窗口固定在女人与街道青年之间，既有浅色窗台只作弱反射。"
+        ],
+        "directionAndQuality": "天空经门口从雅科夫朝街的一侧及上方照入，背向门的脸侧保留暗部中间调；女人伸出的手与青年受同一天空侧上方软光，窗内身体较暗。",
+        "intensityRatios": "街面与手部可辨，雅科夫处于较暗前景；不把室外曝成白片，也不为看清前景而均匀填平室内。",
+        "constraints": "摄影换位不移动天空、门洞、窗台或阴影方向；既有深色内墙吸光，不另造窗口或轮廓灯。",
+        "continuityInterpretation": "借鉴Barry Lyndon的来源关系保持，不复制其灯数、焦距或古画调色。来源与论证留在内部。"
+      }
+    },
+    {
+      "domain": "CAMERA",
+      "facts": {
+        "cameraPosition": "C0在室内门口斜后侧、雅科夫朝街方向的右后方，保持他在画面左缘、对面窗口与青年在右侧纵深；不跨门槛。",
+        "height": "镜头中心略低于雅科夫肩部，水平观看对面窗口及伸出的手，不仰拍屋顶。",
+        "pointOfView": "独立观察位置：观众能比雅科夫停留更久地看街对面，不用他的眼睛作为切点。",
+        "lensIntention": "固定焦距的关系宽景，优先清楚呈现窗口双人的手与面部；前景雅科夫可稍软但轮廓和转头仍可辨，不靠拉焦宣布主题。",
+        "axisAndScreenDirection": "青年折返方向与已有街景相接，窗口、门框和雅科夫维持同侧关系；不镜像人物。",
+        "movement": {
+          "policy": "全程固定在C0，不摇移、不变焦；青年进入与伸手改变画内关系，雅科夫只短暂转头。"
+        },
+        "continuityInterpretation": "Playtime的多主体可见与自主发现用于观众先注意街上关系；不是复制喜剧或强制深焦。"
+      }
+    }
+  ]
+}

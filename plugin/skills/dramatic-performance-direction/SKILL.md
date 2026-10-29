@@ -177,3 +177,8 @@ the current Action or speech event; keep only truly shared expression in reused
 Beat fields. Inspect final execution text against the actual ordered exchange.
 Do not invent a fixed emotion-to-face template, extra gestures or pauses to fill
 each stage; retain meaningful listening and stillness where already sufficient.
+
+
+## Optional film-craft application
+
+Use [expression-led case reading](../director/references/film-practice.md) when it expands the current creative question. Read the acting/attention implications; preserve playable listening or non-response without forced micro-actions. Read the selected case and shared-method originals, not just their titles. Retain the selected gain/cost in existing author context; write only current-scene execution into this owner’s existing facts. No lookup quota or automatic adoption.

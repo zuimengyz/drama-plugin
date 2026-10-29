@@ -1,0 +1,86 @@
+{
+  "kane": {
+    "title": "ASC / Gregg Toland, ASC — An Enduring Legacy",
+    "url": "https://theasc.com/article/gregg-toland-asc-an-enduring-legacy/",
+    "locator": "Citizen Kane；pan-focus；Toland 1941引文",
+    "checkedOn": "2026-10-28"
+  },
+  "kane2": {
+    "title": "ASC / A Century of Inspiration",
+    "url": "https://theasc.com/article/a-century-of-inspiration/",
+    "locator": "Citizen Kane条目；摄影、调度与深焦",
+    "checkedOn": "2026-10-28"
+  },
+  "children": {
+    "title": "ASC / Children of Men: Humanity’s Last Hope",
+    "url": "https://theasc.com/article/children-of-men-humanitys-last-hope/",
+    "locator": "车内段、警察倒地后的摄影独立性、接缝说明",
+    "checkedOn": "2026-10-28"
+  },
+  "1917": {
+    "title": "ASC / Lives Under Siege: The Goldfinch and 1917",
+    "url": "https://theasc.com/article/lives-under-siege-the-goldfinch-and-1917/",
+    "locator": "1917段；实地排练和摄影设备交接",
+    "checkedOn": "2026-10-28"
+  },
+  "1917light": {
+    "title": "British Cinematographer / Roger Deakins interview",
+    "url": "https://britishcinematographer.co.uk/exclusive-interview-roger-deakins-cbe-bsc-asc-on-1917-bc97-100-editions/",
+    "locator": "Écoust-Saint-Mein布光；模型、照明弹、燃烧教堂",
+    "checkedOn": "2026-10-28"
+  },
+  "barry": {
+    "title": "ASC / Photographing Stanley Kubrick’s Barry Lyndon",
+    "url": "https://theasc.com/article/flashback-barry-lyndon/",
+    "locator": "Alcott访谈；餐桌窗光、烛光、焦点与反射",
+    "checkedOn": "2026-10-28"
+  },
+  "jeanne": {
+    "title": "BFI / Keeping a distance: Chantal Akerman’s Jeanne Dielman",
+    "url": "https://www.bfi.org.uk/sight-and-sound/features/keeping-distance-chantal-akermans-jeanne-dielman",
+    "locator": "正面构图、日常手势；转引Akerman访谈，区别评论者解释",
+    "checkedOn": "2026-10-28"
+  },
+  "jeannecredits": {
+    "title": "BFI / Jeanne Dielman programme",
+    "url": "https://bfidatadigipres.github.io/pdf/2023-03-01-jeanne-dielman.pdf",
+    "locator": "影片资料与摄影署名",
+    "checkedOn": "2026-10-28"
+  },
+  "touch": {
+    "title": "BFI / Touch of Evil programme",
+    "url": "https://bfidatadigipres.github.io/big%20screen%20classics/2021/05/18/touch-of-evil/",
+    "locator": "开场追踪、1998版说明与摄影署名",
+    "checkedOn": "2026-10-28"
+  },
+  "arri": {
+    "title": "ARRI Lighting Handbook 中文版",
+    "url": "https://www.arri.com/resource/blob/83990/9d652bdf4480124850df62b824f2d47e/arri-lighting-handbook-chinese-data.pdf",
+    "locator": "PDF第5页光源面积；12–15页四种光源；16–18页表面与阴影",
+    "checkedOn": "2026-10-28"
+  },
+  "playcredits": {
+    "title": "Criterion / PlayTime credits",
+    "url": "https://www.criterion.com/films/651-playtime",
+    "locator": "Credits: Jean Badal / Andréas Winding",
+    "checkedOn": "2026-10-28"
+  },
+  "moodcredits": {
+    "title": "Criterion / In the Mood for Love",
+    "url": "https://www.criterion.com/films/198-in-the-mood-for-love",
+    "locator": "Christopher Doyle / Mark Lee Ping Bing",
+    "checkedOn": "2026-10-28"
+  },
+  "moodinterview": {
+    "title": "BFI / Wong Kar-Wai on In the Mood for Love",
+    "url": "https://bfidatadigipres.github.io/world%20of%20wong%20kar%20wai/2021/07/14/in-the-name-of-love/",
+    "locator": "王家卫谈最终段落与时代结束",
+    "checkedOn": "2026-10-28"
+  },
+  "ozucredits": {
+    "title": "BFI / Tokyo Story programme",
+    "url": "https://bfidatadigipres.github.io/japan%202021%3Cbr%3E%20100%20years%20of%20japanese%20cinema/2021/10/18/tokyo-story/",
+    "locator": "低机位、视觉对应与摄影厚田雄春",
+    "checkedOn": "2026-10-28"
+  }
+}

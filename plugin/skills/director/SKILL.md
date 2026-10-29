@@ -421,3 +421,8 @@ Cinematic pictures and available temporary sound serve artistic review; geometri
 people / Blender are optional technical studies only. Missing approved images,
 audio or current cost authority remain explicit preparation gaps. Never relabel
 a silent rough study as a completed Cinematic Animatic.
+
+
+## Optional film-craft application
+
+Use [expression-led case reading](references/film-practice.md) when it expands the current creative question. Select spectator experience and meaningful gain/loss; do not choose a technique solely because a case uses it. Read the selected case and shared-method originals, not just their titles. Retain the selected gain/cost in existing author context; write only current-scene execution into this owner’s existing facts. No lookup quota or automatic adoption.

@@ -83,3 +83,8 @@ Use supplied current originals first. For missing scoped context, read `work.get
 For STILL/LIVE_ACTION, author source-bound scene/sequence palette and character/environment relations under the existing keys. Separate actual hue/value/saturation obligations from mood labels. Required targets map to critical preservation; only explicitly optional decoration may be secondary. Preserve approved complexion and costume/material identity under light. Story era never determines capture era. No preset filter, provider parameters or unapproved whitening.
 
 Read [mapping and evidence profile](../../docs/still-professional-mapping.md) when preparing these still records. Knowledge remains LOCAL_EXPERIMENTAL until scoped A5 media evidence.
+
+
+## Optional film-craft application
+
+Use [expression-led case reading](../director/references/film-practice.md) when it expands the current creative question. Develop source and surface color relationships in this scene; a style label is not a compulsory palette. Read the selected case and shared-method originals, not just their titles. Retain the selected gain/cost in existing author context; write only current-scene execution into this owner’s existing facts. No lookup quota or automatic adoption.

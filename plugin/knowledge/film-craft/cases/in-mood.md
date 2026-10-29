@@ -27,3 +27,12 @@ AI实现假设：生成请求写清当前谁在场、谁说原句，历史对象
 ## 来源
 
 - [In the Mood for Love](https://www.criterion.com/current/posts/197-in-the-mood-for-love) — Li Cheuk-to / Criterion；定位：受限视野；画外配偶与角色扮演段。核验：2026-10-26。
+
+## 2026-10-28 专业转化补充
+
+摄影：Christopher Doyle / Mark Lee Ping Bing。
+
+具体使用补充：狭窄住处、走廊相遇与画外配偶的受限接近。既有Li Cheuk-to条目保留其文学与记忆解释，摄影署名由发行方核实。方法分析而非制作记录：可将摄影机留在门外或障碍后，使人物只能部分进入视野；横移减少遮挡会增加接近，也可能破坏距离。当前场面可用既有走廊灯／窗口定义明暗区，让人穿越光而不是随镜头换光。“红绿配色”本身不能证明压抑或亲密；本条未知具体场面的灯具、功率及精确轨迹，不虚构原片灯图。
+
+- [Criterion / In the Mood for Love](https://www.criterion.com/films/198-in-the-mood-for-love)；定位：Christopher Doyle / Mark Lee Ping Bing。
+- [BFI / Wong Kar-Wai on In the Mood for Love](https://bfidatadigipres.github.io/world%20of%20wong%20kar%20wai/2021/07/14/in-the-name-of-love/)；定位：王家卫谈最终段落与时代结束。

@@ -644,6 +644,10 @@ class SkillAuthor:
         except OSError:
             raise CapabilityAbsent("FORMAL_AUTHOR_SKILL_ABSENT") from None
 
+    def craft_reading(self, request=None, packet=None) -> str:
+        from drama_plugin.creative_engine.craft_knowledge import author_reading
+        return author_reading(self.skills_root, request, packet)
+
 
 class HostSceneOriginal(ContractModel):
     text: str = Field(min_length=1)
@@ -767,7 +771,7 @@ class FormalDirectionAuthor(SkillAuthor):
             "label estimates as untested until an actual read or playback exists. "
             "Return only the requested JSON object with the complete prose in its text field. "
             "Do not put Markdown outside that JSON object.")
-        return await self.client.complete('direction', self.knowledge(DIRECTION_CRAFT) + system + creation_scope,
+        return await self.client.complete('direction', self.knowledge(DIRECTION_CRAFT) + system + creation_scope + self.craft_reading(request, packet),
             request, TypeAdapter(HostSceneOriginal), model_payload=packet,
             author_identity='film.director-treatment:v1')
 
@@ -791,7 +795,7 @@ class FormalDirectionAuthor(SkillAuthor):
         request = AuthorRequest.model_validate(request.model_dump())
         if request.canon is None:
             raise CapabilityAbsent("DIRECTION_CANON_PREREQUISITE_ABSENT")
-        shot = await self.client.complete("direction", self.system_contract(), request, TypeAdapter(ShotBody),
+        shot = await self.client.complete("direction", self.system_contract() + self.craft_reading(request), request, TypeAdapter(ShotBody),
             model_schema=direction_model_schema(), author_identity="creative.direction:v1:FormalDirectionAuthor",
             model_payload=author_payload(request, direction=True), project=lambda v: direction_projection(v, request))
         if not set(shot.spoken_ids) <= {line.id for line in request.canon.scene.dialogue}:
@@ -803,7 +807,7 @@ class FormalDirectionAuthor(SkillAuthor):
         request = FilmAuthorRequest.model_validate(request.model_dump())
         if request.canon is None:
             raise CapabilityAbsent("DIRECTION_CANON_PREREQUISITE_ABSENT")
-        direction = await self.client.complete("direction", self.film_system_contract(), request, TypeAdapter(FilmDirection),
+        direction = await self.client.complete("direction", self.film_system_contract() + self.craft_reading(request), request, TypeAdapter(FilmDirection),
             model_schema=direction_model_schema(film=True), author_identity="film.direction:v1:FormalDirectionAuthor",
             model_payload=author_payload(request), project=lambda v: direction_projection(v, request, film=True))
         dialogue = {scene.scene_id: {line.id for line in scene.scene.dialogue} for scene in request.canon.scenes}
@@ -1165,7 +1169,7 @@ contradictory instructions or ask the compiler to invent a compromise.
         system += "Resolve the supplied Shot purpose and requiredTransition through the requested owners: express each currently necessary visible or audible consequence in existing Action, Camera, Performance, Sound or Editorial facts. A purpose or future transition is not itself current action. Do not copy the entire Shot into executable prose.\n"
         system += "PERFORMANCE LineDPD alone is internal direction, not video delivery. Realize necessary current listening, gaze, waiting and release consequences in existing Beat physicalExpression when shared, current Action when changing, or exact SOUND audio_events performance/attention/continuity when heard. Preserve the source meaning; do not enact psychology, future reactions, or a voice-over narrator's remembered action in the pictured subject. If another requested domain owns the consequence, coordinate that owner's existing facts rather than adding a second performance track.\n"
         system += "EDITORIAL temporalStructure explains whole-Shot organization, not a timeline to replay in each segment. Put current holds and end conditions in existing protectedEvents scoped by phaseIndex (and spokenSelections where needed), Action observable or the exact Sound delivery. A condition present only in whole-Shot reasoning has not been delivered to a current request.\n"
-        return system + shared_scene_instruction + self.knowledge(paths)
+        return system + shared_scene_instruction + self.knowledge(paths) + self.craft_reading(request)
 
     def execution_fingerprint(self, request: AuthorRequest) -> str:
         return self.client.execution_fingerprint("professional", self.implementation_identity,

@@ -157,3 +157,8 @@ motivated focus transfer in existing lens/movement leaves; keep the final subjec
 readable after the foreground disappears. Do not require a focus pull or numeric
 lens recipe for every shot. A proxy tests spatial feasibility, not future optical
 compliance or measured set geometry.
+
+
+## Optional film-craft application
+
+Use [expression-led case reading](../director/references/film-practice.md) when it expands the current creative question. Translate the chosen method into camera/world relations and the whole path, including a fixed-view alternative when useful. Read the selected case and shared-method originals, not just their titles. Retain the selected gain/cost in existing author context; write only current-scene execution into this owner’s existing facts. No lookup quota or automatic adoption.

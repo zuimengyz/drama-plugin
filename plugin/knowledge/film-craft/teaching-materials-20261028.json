@@ -1,0 +1,381 @@
+{
+  "sourceDirectory": "/Users/zy/Documents/摄影技巧/261028",
+  "inspection": "CONTACT_SHEETS_AND_SAMPLED_VIDEO_FRAMES; no full audio listening or frame-by-frame verification",
+  "files": [
+    {
+      "name": "9ba7457d412ad881640e533df7d4ed04.mp4",
+      "bytes": 2815179,
+      "sha256": "ee2d4b6c64c6603162c3e5162e0eeba0c5f8c9c7b6500e013e3b486d530f9866",
+      "durationSeconds": 38.101678,
+      "dimensions": [
+        720,
+        960
+      ],
+      "sampledSeconds": [
+        0,
+        3,
+        6,
+        9,
+        12,
+        15,
+        18,
+        21,
+        24,
+        27,
+        30,
+        33,
+        36
+      ],
+      "audioPresent": true
+    },
+    {
+      "name": "a752c066969e5716addc95f8c4c4286b.mp4",
+      "bytes": 34437930,
+      "sha256": "54afa5fc841d2614870bc65232e02cdc8930600adf668f37256709feb92885e9",
+      "durationSeconds": 497.833333,
+      "dimensions": [
+        448,
+        960
+      ],
+      "sampledSeconds": [
+        0,
+        20,
+        40,
+        60,
+        80,
+        100,
+        120,
+        140,
+        160,
+        180,
+        200,
+        220,
+        240,
+        260,
+        280,
+        300,
+        320,
+        340,
+        360,
+        380,
+        400,
+        420,
+        440,
+        460,
+        480
+      ],
+      "audioPresent": true
+    },
+    {
+      "name": "f9df9c60a11b7d898b31ef7e3fe7c8b7.mp4",
+      "bytes": 5676671,
+      "sha256": "ac429826b3069752af6f7a9aeef174763da7ed9f236c2145c3b6ae5e69735fca",
+      "durationSeconds": 64.2,
+      "dimensions": [
+        592,
+        1280
+      ],
+      "sampledSeconds": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        20,
+        24,
+        28,
+        32,
+        36,
+        40,
+        44,
+        48,
+        52,
+        56,
+        60
+      ],
+      "audioPresent": true
+    },
+    {
+      "name": "微信图片_20261028135408_104_12.jpg",
+      "bytes": 493512,
+      "sha256": "d51196efca75d506069a7464205be7652fc0221bda3fbf8a89ecbc49de70882b"
+    },
+    {
+      "name": "微信图片_20261028135409_105_12.jpg",
+      "bytes": 497456,
+      "sha256": "41855a55c643a4b5838bbb1845ce1a8d6c10101ca5bf23ef974b0f00298cf025"
+    },
+    {
+      "name": "微信图片_20261028135410_106_12.jpg",
+      "bytes": 492252,
+      "sha256": "7deb2a2a018df4320456f1e7e967ab7c1d4422dd6476de76a5a560df48bbc700"
+    },
+    {
+      "name": "微信图片_20261028135411_108_12.jpg",
+      "bytes": 486212,
+      "sha256": "a9dc122c38ec4cfe7e54645c75492f83e238e4d5bc711b26cdef2e40e8c4c620"
+    },
+    {
+      "name": "微信图片_20261028135413_109_12.jpg",
+      "bytes": 321563,
+      "sha256": "c2cd0d0b979c50beddc37623ffc2c006144a849db65b2f14abcfe5e497169300"
+    },
+    {
+      "name": "微信图片_20261028135414_110_12.jpg",
+      "bytes": 496479,
+      "sha256": "2db3af66aabdb62384fd7c899c82b0777b741bae476eef78b70b65fe96f0098c"
+    },
+    {
+      "name": "微信图片_20261028135415_111_12.jpg",
+      "bytes": 321583,
+      "sha256": "c8c510eaefde9a063f82d531e7770c84ace2b379c597490855ea1489237e6eac"
+    },
+    {
+      "name": "微信图片_20261028135416_112_12.jpg",
+      "bytes": 447912,
+      "sha256": "1cc14a8af2da15cba41526db0397449eeb194cda216472e065618be6bfa7c173"
+    },
+    {
+      "name": "微信图片_20261028135417_113_12.jpg",
+      "bytes": 275618,
+      "sha256": "abc8635929335824fd8884cf8e95d4916b26b56471707b4804e92edbea9e8b66"
+    },
+    {
+      "name": "微信图片_20261028135418_114_12.jpg",
+      "bytes": 276725,
+      "sha256": "0d2de8adb3f2734845b77cf64583667e6325ac85db86bc6b81ad24e14efecadd"
+    },
+    {
+      "name": "微信图片_20261028135420_115_12.jpg",
+      "bytes": 296367,
+      "sha256": "8117a19ba553fc82fa336d75dd0e9f9aea5024ed9210b7452ddf1d70808602b5"
+    },
+    {
+      "name": "微信图片_20261028135422_116_12.jpg",
+      "bytes": 296412,
+      "sha256": "469c6c9e200b63dfc34eb7394ed5d5acc9df8f5bd4a5869f2f994edd2f488785"
+    },
+    {
+      "name": "微信图片_20261028135423_117_12.jpg",
+      "bytes": 460021,
+      "sha256": "c4d73cfa11dc12e71b61f586f6fe0678cbed97ce7352213d554d830c5bba3d05"
+    },
+    {
+      "name": "微信图片_20261028135424_118_12.jpg",
+      "bytes": 352600,
+      "sha256": "406c3129707fbfc8d56cacf2ebde13f87ded6557f524b6b9421e6171888f1cc3"
+    },
+    {
+      "name": "微信图片_20261028135426_119_12.jpg",
+      "bytes": 272582,
+      "sha256": "602ebcf3d1fd9524cb10104c0ac5bdf612d01fffcaa3c19e3b0edd06e7a5035f"
+    },
+    {
+      "name": "微信图片_20261028135427_120_12.jpg",
+      "bytes": 294968,
+      "sha256": "3fdb5a1854af5c313c1cedd74922690ee3fad99ef63d1e6313f9a37f04109e45"
+    },
+    {
+      "name": "微信图片_20261028135428_121_12.jpg",
+      "bytes": 452091,
+      "sha256": "1775bfea70fc35ee82ec6cee69080bed107f0ff77f72e61339d2abbccecb3271"
+    },
+    {
+      "name": "微信图片_20261028135430_122_12.jpg",
+      "bytes": 450877,
+      "sha256": "6e62b232d03bb57402c4e8a32b0073a5fe1a730b3f8fd414707a545189a08395"
+    },
+    {
+      "name": "微信图片_20261028135433_123_12.jpg",
+      "bytes": 403367,
+      "sha256": "9506d0c610c7f1e4413c25649f1ac20484e6b0ac852931cb2e2ca0f8b7d8a7dc"
+    },
+    {
+      "name": "技巧.zip",
+      "bytes": 9529169,
+      "sha256": "32af7e33a95d1284bd91ba4c6092cf600f3016130fb5def3c40ad591e4c0532b"
+    }
+  ],
+  "zipMembers": [
+    {
+      "archive": "技巧.zip",
+      "entry": "σ╛«Σ┐íσ¢╛τëç_20261028135416_112_12.jpg",
+      "bytes": 447912,
+      "sha256": "1cc14a8af2da15cba41526db0397449eeb194cda216472e065618be6bfa7c173",
+      "duplicateOf": [
+        "微信图片_20261028135416_112_12.jpg"
+      ]
+    },
+    {
+      "archive": "技巧.zip",
+      "entry": "9ba7457d412ad881640e533df7d4ed04.mp4",
+      "bytes": 2815179,
+      "sha256": "ee2d4b6c64c6603162c3e5162e0eeba0c5f8c9c7b6500e013e3b486d530f9866",
+      "duplicateOf": [
+        "9ba7457d412ad881640e533df7d4ed04.mp4"
+      ]
+    },
+    {
+      "archive": "技巧.zip",
+      "entry": "σ╛«Σ┐íσ¢╛τëç_20261028135408_104_12.jpg",
+      "bytes": 493512,
+      "sha256": "d51196efca75d506069a7464205be7652fc0221bda3fbf8a89ecbc49de70882b",
+      "duplicateOf": [
+        "微信图片_20261028135408_104_12.jpg"
+      ]
+    },
+    {
+      "archive": "技巧.zip",
+      "entry": "σ╛«Σ┐íσ¢╛τëç_20261028135409_105_12.jpg",
+      "bytes": 497456,
+      "sha256": "41855a55c643a4b5838bbb1845ce1a8d6c10101ca5bf23ef974b0f00298cf025",
+      "duplicateOf": [
+        "微信图片_20261028135409_105_12.jpg"
+      ]
+    },
+    {
+      "archive": "技巧.zip",
+      "entry": "σ╛«Σ┐íσ¢╛τëç_20261028135410_106_12.jpg",
+      "bytes": 492252,
+      "sha256": "7deb2a2a018df4320456f1e7e967ab7c1d4422dd6476de76a5a560df48bbc700",
+      "duplicateOf": [
+        "微信图片_20261028135410_106_12.jpg"
+      ]
+    },
+    {
+      "archive": "技巧.zip",
+      "entry": "σ╛«Σ┐íσ¢╛τëç_20261028135411_108_12.jpg",
+      "bytes": 486212,
+      "sha256": "a9dc122c38ec4cfe7e54645c75492f83e238e4d5bc711b26cdef2e40e8c4c620",
+      "duplicateOf": [
+        "微信图片_20261028135411_108_12.jpg"
+      ]
+    },
+    {
+      "archive": "技巧.zip",
+      "entry": "σ╛«Σ┐íσ¢╛τëç_20261028135413_109_12.jpg",
+      "bytes": 321563,
+      "sha256": "c2cd0d0b979c50beddc37623ffc2c006144a849db65b2f14abcfe5e497169300",
+      "duplicateOf": [
+        "微信图片_20261028135413_109_12.jpg"
+      ]
+    },
+    {
+      "archive": "技巧.zip",
+      "entry": "σ╛«Σ┐íσ¢╛τëç_20261028135414_110_12.jpg",
+      "bytes": 496479,
+      "sha256": "2db3af66aabdb62384fd7c899c82b0777b741bae476eef78b70b65fe96f0098c",
+      "duplicateOf": [
+        "微信图片_20261028135414_110_12.jpg"
+      ]
+    },
+    {
+      "archive": "技巧.zip",
+      "entry": "σ╛«Σ┐íσ¢╛τëç_20261028135415_111_12.jpg",
+      "bytes": 321583,
+      "sha256": "c8c510eaefde9a063f82d531e7770c84ace2b379c597490855ea1489237e6eac",
+      "duplicateOf": [
+        "微信图片_20261028135415_111_12.jpg"
+      ]
+    },
+    {
+      "archive": "技巧.zip",
+      "entry": "σ╛«Σ┐íσ¢╛τëç_20261028135417_113_12.jpg",
+      "bytes": 275618,
+      "sha256": "abc8635929335824fd8884cf8e95d4916b26b56471707b4804e92edbea9e8b66",
+      "duplicateOf": [
+        "微信图片_20261028135417_113_12.jpg"
+      ]
+    },
+    {
+      "archive": "技巧.zip",
+      "entry": "σ╛«Σ┐íσ¢╛τëç_20261028135418_114_12.jpg",
+      "bytes": 276725,
+      "sha256": "0d2de8adb3f2734845b77cf64583667e6325ac85db86bc6b81ad24e14efecadd",
+      "duplicateOf": [
+        "微信图片_20261028135418_114_12.jpg"
+      ]
+    },
+    {
+      "archive": "技巧.zip",
+      "entry": "σ╛«Σ┐íσ¢╛τëç_20261028135420_115_12.jpg",
+      "bytes": 296367,
+      "sha256": "8117a19ba553fc82fa336d75dd0e9f9aea5024ed9210b7452ddf1d70808602b5",
+      "duplicateOf": [
+        "微信图片_20261028135420_115_12.jpg"
+      ]
+    },
+    {
+      "archive": "技巧.zip",
+      "entry": "σ╛«Σ┐íσ¢╛τëç_20261028135422_116_12.jpg",
+      "bytes": 296412,
+      "sha256": "469c6c9e200b63dfc34eb7394ed5d5acc9df8f5bd4a5869f2f994edd2f488785",
+      "duplicateOf": [
+        "微信图片_20261028135422_116_12.jpg"
+      ]
+    },
+    {
+      "archive": "技巧.zip",
+      "entry": "σ╛«Σ┐íσ¢╛τëç_20261028135423_117_12.jpg",
+      "bytes": 460021,
+      "sha256": "c4d73cfa11dc12e71b61f586f6fe0678cbed97ce7352213d554d830c5bba3d05",
+      "duplicateOf": [
+        "微信图片_20261028135423_117_12.jpg"
+      ]
+    },
+    {
+      "archive": "技巧.zip",
+      "entry": "σ╛«Σ┐íσ¢╛τëç_20261028135424_118_12.jpg",
+      "bytes": 352600,
+      "sha256": "406c3129707fbfc8d56cacf2ebde13f87ded6557f524b6b9421e6171888f1cc3",
+      "duplicateOf": [
+        "微信图片_20261028135424_118_12.jpg"
+      ]
+    },
+    {
+      "archive": "技巧.zip",
+      "entry": "σ╛«Σ┐íσ¢╛τëç_20261028135426_119_12.jpg",
+      "bytes": 272582,
+      "sha256": "602ebcf3d1fd9524cb10104c0ac5bdf612d01fffcaa3c19e3b0edd06e7a5035f",
+      "duplicateOf": [
+        "微信图片_20261028135426_119_12.jpg"
+      ]
+    },
+    {
+      "archive": "技巧.zip",
+      "entry": "σ╛«Σ┐íσ¢╛τëç_20261028135427_120_12.jpg",
+      "bytes": 294968,
+      "sha256": "3fdb5a1854af5c313c1cedd74922690ee3fad99ef63d1e6313f9a37f04109e45",
+      "duplicateOf": [
+        "微信图片_20261028135427_120_12.jpg"
+      ]
+    },
+    {
+      "archive": "技巧.zip",
+      "entry": "σ╛«Σ┐íσ¢╛τëç_20261028135428_121_12.jpg",
+      "bytes": 452091,
+      "sha256": "1775bfea70fc35ee82ec6cee69080bed107f0ff77f72e61339d2abbccecb3271",
+      "duplicateOf": [
+        "微信图片_20261028135428_121_12.jpg"
+      ]
+    },
+    {
+      "archive": "技巧.zip",
+      "entry": "σ╛«Σ┐íσ¢╛τëç_20261028135430_122_12.jpg",
+      "bytes": 450877,
+      "sha256": "6e62b232d03bb57402c4e8a32b0073a5fe1a730b3f8fd414707a545189a08395",
+      "duplicateOf": [
+        "微信图片_20261028135430_122_12.jpg"
+      ]
+    },
+    {
+      "archive": "技巧.zip",
+      "entry": "σ╛«Σ┐íσ¢╛τëç_20261028135433_123_12.jpg",
+      "bytes": 403367,
+      "sha256": "9506d0c610c7f1e4413c25649f1ac20484e6b0ac852931cb2e2ca0f8b7d8a7dc",
+      "duplicateOf": [
+        "微信图片_20261028135433_123_12.jpg"
+      ]
+    }
+  ]
+}

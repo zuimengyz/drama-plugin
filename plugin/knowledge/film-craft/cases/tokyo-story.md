@@ -27,3 +27,11 @@ AI实现假设：稳定房间地标与人物状态分别绑定，少量视点即
 ## 来源
 
 - [Tokyo Story: Compassionate Detachment](https://www.criterion.com/current/posts/301-tokyo-story) — David Bordwell / Criterion；定位：对白观看；最后两段。核验：2026-10-26。
+
+## 2026-10-28 专业转化补充
+
+摄影：Yuharu Atsuta。
+
+具体使用补充：影片家庭谈话及丧妻后的末段。既有Bordwell文章支持低机位、几乎不运动、通过相交空间连接画面及不急于切离说话者。可迁移的是听完一个人的权利与空间的持续，不是规定所有家务都用“榻榻米高度”。当前场面可让固定机位保留听者的位置，由进出画和声音改变注意；真正需要靠近时也可以剪切。灯位、光圈与逐镜高度未核实，不能从“均匀”推导出一个固定布光公式。
+
+- [BFI / Tokyo Story programme](https://bfidatadigipres.github.io/japan%202021%3Cbr%3E%20100%20years%20of%20japanese%20cinema/2021/10/18/tokyo-story/)；定位：低机位、视觉对应与摄影厚田雄春。

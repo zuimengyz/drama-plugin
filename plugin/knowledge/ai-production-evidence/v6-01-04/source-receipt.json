@@ -1,0 +1,31 @@
+{
+  "root": "/Users/zy/historical-plugin/creation/rothschild-violin-v6-20261027",
+  "use": "READ_ONLY; image is state evidence, not geometry measurement or a selected new input",
+  "files": [
+    {
+      "path": "author/scenes/V6-01.md",
+      "sha256": "bd61ba1ef649438025cf24c0b886d700be7c90d3086446abea16bfad6a3001b7",
+      "unchangedAtCompletion": true
+    },
+    {
+      "path": "author/全片导演与美学方向.md",
+      "sha256": "7e5953604aa94f975a91454df2961116172bd9db52691b5ffa2a71eaa7463af9",
+      "unchangedAtCompletion": true
+    },
+    {
+      "path": "experiments/scene01-storyboard-results/V6-01-04-a/6edf5b44c5d30c040b2880217e67d0018985a172901a2799a26ee7eac0ef4054.png",
+      "sha256": "08c4fb7b0e5bcd7bf855d0adf614bb95b816f0607e6fc194a7846ed22ef92604",
+      "unchangedAtCompletion": true
+    },
+    {
+      "path": "storyboard/全片分镜.md",
+      "sha256": "840d862fb5a606c971474b66bd7f59e7c04336e032fb39b0859d1e433c98e603",
+      "unchangedAtCompletion": true
+    },
+    {
+      "path": "experiments/host-still-originals.json",
+      "sha256": "3a4c19256a1b3e11ba20e98cb27893cecdf9a7b9c2468aab931293895971a412",
+      "unchangedAtCompletion": true
+    }
+  ]
+}

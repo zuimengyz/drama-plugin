@@ -36,6 +36,15 @@ Own actual shot purpose, subjects, coverage and entry/exit relation.
 
 ## Inputs and dependencies
 
+During candidate creation, actively propose expressive coverage with Director and
+Camera using [expressive storyboard design](../../knowledge/shared-techniques/expressive-storyboarding.md).
+Special positions, strong framing and complex movement deserve an artistic
+argument before technical risk is assessed. The responsible departments develop
+the selected design; final thin Shot assembly still inherits their originals.
+For one continuous Shot, retain its identity and total duration across a/b/c
+storyboard nodes. Neither panel count nor a panel transition creates a film cut,
+production clip or generation request.
+
 Camera, Blocking, Performance, Action, Lighting, Sound, Editorial and continuity
 refs under current Scene dramaturgy. Use the [planning method](references/planning.md)
 to reconcile narrative scale, adjacent-view continuity and within-shot event rhythm;

@@ -19,6 +19,14 @@ Director Vision; Layout; Blocking; Performance; Action and Crowd Bibles.
 
 ## Professional decisions
 
+Consult [expressive storyboard design](../../knowledge/shared-techniques/expressive-storyboarding.md)
+for near-object scale, extreme cropping, oblique or low viewpoints and purposeful
+countermovement. Treat them as creative possibilities, not exceptional permissions.
+Resolve what the audience gains, what becomes hidden, and the physical path.
+For a continuous move, a/b/c mark changing framing, contact or attention within
+one Shot; they are not cuts unless Editorial actually chooses a cut. Keep execution
+risk explicit rather than silently replacing the design with a safer convention.
+
 Use [shared scene collaboration](../director/references/scene-collaboration.md)
 to choose the spectator's access to occupied people before fixing views. State
 what the selected view gives up. Keeping every face equally lit and unobstructed

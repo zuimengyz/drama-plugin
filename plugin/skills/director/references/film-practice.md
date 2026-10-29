@@ -29,6 +29,13 @@ score, duration rule or automatic author call is introduced.
 
 ## Optional expression-led reading in actual author calls
 
+For expressive framing, contact mechanics or continuous-camera nodes, select
+`expressive-storyboarding` in the existing `craftKnowledge.techniqueIds` when useful.
+The [shared method](../../../knowledge/shared-techniques/expressive-storyboarding.md)
+is loaded as full text with a hash by the same reader; a Markdown link alone does
+not load its body. Translate it into the current design rather than merely citing
+ClipShot. This is a production-design method, not a new film case or parallel Skill.
+
 Use the existing local reader, not a parallel research service:
 `python plugin/knowledge/film-craft/find_cases.py --expression "希望观众逐渐发现门外的事情" --limit 6`.
 Use `--style`, `--goal`, `--means`, `--discipline` to narrow a question and `--case ID --read` to read selected originals. See [style/goal navigation](../../../knowledge/cinema-styles/README.md). Known expression aliases expand to goals, not to a prescribed camera move; unknown phrases may have no match.

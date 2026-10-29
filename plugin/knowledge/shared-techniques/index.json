@@ -1,6 +1,12 @@
 {
   "techniques": [
     {
+      "id": "expressive-storyboarding",
+      "title": "表现性分镜、接触机制与连续镜头节点",
+      "disciplines": ["DIRECTOR", "CAMERA", "ACTION", "PERFORMANCE", "LIGHTING", "EDITORIAL", "STORYBOARD"],
+      "path": "shared-techniques/expressive-storyboarding.md"
+    },
+    {
       "id": "camera-placement",
       "title": "机位、距离与观看权",
       "disciplines": [

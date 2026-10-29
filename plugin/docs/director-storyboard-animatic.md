@@ -6,6 +6,13 @@ entity is required. Host retains the choice to keep, revise or reject a study.
 
 ## Artistic preview and technical rehearsal
 
+When a production-board study is explicitly wanted, use the shared
+[expressive storyboard method](../knowledge/shared-techniques/expressive-storyboarding.md)
+to make framing, contact, camera/actor/gaze/light relations and continuous nodes
+readable. Choose the useful medium and layout; no nine-cell grid, line-art-only
+rule or redraw-until-pass loop follows. Such a labeled diagram is a design study,
+not a substitute for a cinematic preview or a finished production keyframe.
+
 For cinematic review, default to cinematic storyboard pictures from the project's
 approved image route and current selected visual designs. In the current Literary
 Cinema baseline this is Seedream 5.0 Pro; video remains Seedance 2.0. This is a
@@ -45,7 +52,9 @@ No mandatory atlas, asset rebuild or new approval chain is introduced.
 Without current spending authority or usable assets, deliver keyframe choices,
 source-linked design, native compiled text where possible, unresolved bindings,
 planned costs and audio needs. Mark incomplete request bodies as unbound. Do not
-submit, generate geometric substitutes, or call that preparation a Cinematic Animatic.
+submit, generate geometric substitutes for that cinematic deliverable, or call that
+preparation a Cinematic Animatic. An explicitly requested technical diagram study
+remains possible under its own limited purpose described above.
 
 ## Picture and listening timeline
 

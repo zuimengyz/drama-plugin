@@ -38,3 +38,10 @@ Mood for Love). AI realization notes are hypotheses, not claims of tested output
 The canonical case bodies remain here. [Style navigation](../cinema-styles/README.md), expression-goal and professional-means facets share this index; [shared techniques](../shared-techniques/index.json) hold reusable methods once. The original `--problem`/`--query` behavior remains available. New `--expression` and `--read` support discovery and actual reading through the same reader used by native Director/Professional calls. See the [application evidence](../ai-production-evidence/v6-01-04/README.md).
 
 本轮用户材料的[访问与吸收说明](teaching-materials-20261028.md)包含采样边界、ZIP去重及方法落点；不保存受版权保护的电影片段。新增案例的[公开来源清单](research-sources-20261028.json)区分制作采访与分析文章。
+
+需要把观看关系画清楚时，可用[表现性分镜](../shared-techniques/expressive-storyboarding.md)：
+从特殊构图、身体接触到连续镜头a/b/c节点及图形表达。通过现有
+`craftKnowledge.techniqueIds: ["expressive-storyboarding"]` 读取全文与哈希；
+由Director／专业作者选择后写入当前场面的设计，不自动追加到每次检索。
+该方法按多个风格共享，不替导演确定风格。[ClipShot来源与MIT许可](sources/clipshot/NOTICE.md)
+单独保留，它是专业制作方法来源，不混入真实电影案例索引。

@@ -19,6 +19,12 @@ Approved action outcome; Blocking; Performance intent; Prop and Animal interacti
 
 ## Professional decisions
 
+Use [expressive storyboard design](../../knowledge/shared-techniques/expressive-storyboarding.md)
+when entry and completion images conceal how an action happens. An intermediate
+node can show who supports a load, where contact changes, and when a hand becomes
+free. This is a causal design aid, not a required phase count, shot allocation,
+redraw loop or new production gate.
+
 Start from the character's current task, its target and resistance, the approved
 result, and what the audience needs to read. Choose an action scale and rhythm
 that fit ability, urgency, load and relationship. Literary restraint does not set

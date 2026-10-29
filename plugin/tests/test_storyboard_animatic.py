@@ -46,6 +46,28 @@ def test_changed_owner_and_wrong_coverage_do_not_render(tmp_path):
         storyboard_attachment_plan(p, boards, current_fingerprints=pins)
 
 
+def test_three_nodes_stay_in_one_shot_and_do_not_multiply_movie_time(tmp_path):
+    p, boards, pins = study(tmp_path)
+    frozen = p.model_dump_json()
+    x, y = boards['x'][0]['path'], boards['y'][0]['path']
+    duration = p.editorial.coverage[0].duration
+    # Synthetic attachments test identity/timing, not cinematic movement or acting.
+    boards['x'] = [{'path': x, 'duration': duration / 4},
+                   {'path': y, 'duration': duration / 2},
+                   {'path': x, 'duration': duration / 4}]
+    result = storyboard_attachment_plan(p, boards, current_fingerprints=pins)
+    assert [r['shot'] for r in result['shots']] == ['x', 'y']
+    assert len(result['shots'][0]['panels']) == 3
+    assert result['shots'][0]['duration'] == duration
+    assert sum(r['duration'] for r in result['shots']) == sum(c.duration for c in p.editorial.coverage)
+    assert result['generationRequests'] == [] and not result['automaticFirstFrame']
+    assert not result['productionAuthorized'] and result['adoption'] == 'UNCHANGED'
+    assert p.model_dump_json() == frozen
+    boards['x'][1]['duration'] = duration  # treating each node as a full shot must fail
+    with pytest.raises(ValueError, match='editorial estimate'):
+        storyboard_attachment_plan(p, boards, current_fingerprints=pins)
+
+
 def test_actual_draft_order_ranges_and_unknown_audio(tmp_path):
     p, boards, pins = study(tmp_path)
     before = {key: _hash(Path(value[0]['path'])) for key, value in boards.items()}

@@ -19,6 +19,12 @@ Scene Layout; Scene Beat and Dialogue Bibles; Performance objectives; Prop/Anima
 
 ## Professional decisions
 
+Use [expressive storyboard design](../../knowledge/shared-techniques/expressive-storyboarding.md)
+to expose intermediate support, yielding, occupied paths and the listener revealed
+by movement. Distinguish actor paths, gaze and camera paths in a useful diagram.
+Action owns contact and force mechanics; a schematic is not measured physical
+proof. Ordinary life need not be exaggerated to make its changing relations visible.
+
 Work through the complete encounter before allocating action to views. Use the
 shared selected scene and ordered coverage supplied by Director/Host. Establish
 the relevant landmarks, occupied space, approach paths, facing and real attention

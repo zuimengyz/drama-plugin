@@ -1,0 +1,65 @@
+{
+  "repository": "https://github.com/TanShilongMario/clipshot",
+  "commit": "095ab36e8184ce8b182711ebc8c63cf682e70942",
+  "readDate": "2026-10-29",
+  "license": "MIT",
+  "copyright": "Copyright (c) 2026 TanShilongMario",
+  "filesReadCompletely": [
+    {
+      "path": "SKILL.md",
+      "sha256": "216a928bd8bbec482c7aaf5d56aacc66ce405748482434b6c011ab5d300a9786",
+      "bytes": 18710,
+      "lines": 196
+    },
+    {
+      "path": "references/action-cinematography.md",
+      "sha256": "247f492aed5617a1b4bf2917b4d10875bc49ac7cc21d4b6435cef39d903c0686",
+      "bytes": 7978,
+      "lines": 77
+    },
+    {
+      "path": "references/cinematic-language.md",
+      "sha256": "9a32e6f7ece5eafa40497165a9ef0026a9d2bdbd98ae0599efe50f881660700c",
+      "bytes": 7197,
+      "lines": 94
+    },
+    {
+      "path": "references/deliverable-schema.md",
+      "sha256": "9ca51f392498ac626af630033995b6176622b1a0e1cd9d5d84c9b4dc0d7a2989",
+      "bytes": 5101,
+      "lines": 68
+    },
+    {
+      "path": "references/keyframe-production.md",
+      "sha256": "f89d6ce4552b7b127139d3f6046c48b6c4a18bcee1b0de720a83716127c3efd5",
+      "bytes": 5629,
+      "lines": 77
+    },
+    {
+      "path": "references/visual-production.md",
+      "sha256": "168ac5a161f802afb38399d28b5b5f5df34490583e5ce85a19c7f95f63802d4b",
+      "bytes": 17723,
+      "lines": 206
+    },
+    {
+      "path": "examples/market-chase/edit-prompt.txt",
+      "sha256": "fad1aa4674e277e87d135f1b6650b08e00a64ac4ad80552f3260059e5fe03b7d",
+      "bytes": 461,
+      "lines": 1
+    },
+    {
+      "path": "examples/market-chase/prompt.txt",
+      "sha256": "c00f9f27f803fc24c1e47d7fef7b441043f3166da3cb70159092e118a2b332ad",
+      "bytes": 6215,
+      "lines": 16
+    },
+    {
+      "path": "examples/market-chase/timeline.md",
+      "sha256": "0d61bea81949c45549c107bb8011d9b35c7d38380c5eb288647d3bc733ea54b1",
+      "bytes": 6522,
+      "lines": 30
+    }
+  ],
+  "exampleImagesPresent": false,
+  "evidenceLimit": "market-chase contains only timeline and two prompts; upstream claims about final picture not independently observed."
+}

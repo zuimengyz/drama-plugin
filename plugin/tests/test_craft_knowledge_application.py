@@ -52,6 +52,25 @@ def test_catalog_metadata_and_shared_methods_have_no_dangling_facets():
         assert loaded['readings'] and all(r['text'].strip() for r in loaded['readings'])
 
 
+def test_expressive_storyboard_method_reaches_existing_author_contexts():
+    # A method can be selected without treating an open-source workflow as a film case.
+    selection = {'query': 'clipshot-method-only-no-film-match',
+                 'techniqueIds': ['expressive-storyboarding']}
+    loaded = reading(KNOWLEDGE, selection)
+    assert loaded['cases'] == []
+    assert [r['id'] for r in loaded['readings']] == ['expressive-storyboarding']
+    method = loaded['readings'][0]
+    delivered = [
+        author_reading(ROOT/'skills', packet={'authorContext': {'craftKnowledge': selection}}),
+        author_reading(ROOT/'skills', SimpleNamespace(
+            professional_context={'authorContext': {'craftKnowledge': selection}})),
+    ]
+    for context in delivered:
+        assert json.dumps(method['text'], ensure_ascii=False) in context
+        assert method['sha256'] in context
+    assert author_reading(ROOT/'skills', packet={'authorContext': {}}) == ''
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize('name', ['fixed','moving'])
 async def test_retained_application_reaches_actual_author_port_and_native_prompt(name, monkeypatch):

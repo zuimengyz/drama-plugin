@@ -425,6 +425,14 @@ a silent rough study as a completed Cinematic Animatic.
 
 ## Optional film-craft application
 
+Use [expressive storyboard design](../../knowledge/shared-techniques/expressive-storyboarding.md)
+when the viewing experience needs stronger articulation. Actively propose authored
+positions, crops, depth, stillness or ambitious movement; anticipated model risk
+must not choose conventional coverage before the artistic choice is considered.
+Choose the expressive gain and loss with Shot Design and Camera, distinguishing
+designed possibilities from verified execution. Production diagrams can clarify
+that choice without replacing cinematic preview or creating another approval gate.
+
 Use [expression-led case reading](references/film-practice.md) when it expands the current creative question. Select spectator experience and meaningful gain/loss; do not choose a technique solely because a case uses it. Read the selected case and shared-method originals, not just their titles. Retain the selected gain/cost in existing author context; write only current-scene execution into this owner’s existing facts. No lookup quota or automatic adoption.
 
 ## Selected narrative originals

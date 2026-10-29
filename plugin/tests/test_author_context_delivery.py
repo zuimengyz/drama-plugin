@@ -24,9 +24,9 @@ async def test_director_treatment_receives_full_body_and_project_context():
     class Client:
         async def complete(self, role, system, request, result, **kwargs):
             assert role == 'direction'
-            assert 'propose script changes' in system
+            assert 'proposed screenplay changes' in system.lower() or 'proposed writer changes' in system.lower()
             assert kwargs['model_payload'] == packet
-            assert kwargs['author_identity'] == 'film.director-treatment:v1'
+            assert kwargs['author_identity'] == 'film.director-treatment:v2'
             return HostSceneOriginal(text='Full treatment with proposed feedback')
     packet = {'screenplay': 'Scene 1 ... Scene 9 ending', 'authorContext': {'userFeedback': 'New structure allowed'}}
     author = FormalDirectionAuthor(Client(), Path(__file__).resolve().parents[1] / 'skills')

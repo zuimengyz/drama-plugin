@@ -22,6 +22,7 @@ from drama_plugin.runtime.contracts import ArtifactReference, CapabilityInput, R
 SKILLS = Path(__file__).resolve().parents[1] / 'skills'
 REF = ArtifactReference(owner='source-owner', artifact_ref='offline-r3-language-authority', version=1)
 ENV = {
+    'DRAMA_PLUGIN_TEXT_AUTHORSHIP': 'MODEL',
     'DRAMA_PLUGIN_TEXT_COMPOSITION_PROVIDER': 'offline-compatible-text-service',
     'DRAMA_PLUGIN_TEXT_COMPOSITION_BASE_URL': 'https://text.invalid/v1',
     'DRAMA_PLUGIN_TEXT_COMPOSITION_API_KEY': 'offline-contract-key',
@@ -73,7 +74,7 @@ def test_env_precedence_and_independent_roles(tmp_path):
     assert cfg.text_composition.base_url=='https://env.invalid/v1'
     assert 'offline-file-key' not in repr(cfg.text_composition)
 
-@pytest.mark.parametrize('missing', list(ENV))
+@pytest.mark.parametrize('missing', [k for k in ENV if k != 'DRAMA_PLUGIN_TEXT_AUTHORSHIP'])
 def test_missing_config_no_audio_or_test_fallback(missing):
     env={k:v for k,v in ENV.items() if k!=missing}
     env.update({'DRAMA_PLUGIN_PROVIDER_QWEN_OMNI_API_KEY':'offline-audio-key', 'DRAMA_PLUGIN_PROVIDER_QWEN_OMNI_MODEL':'offline-audio-model'})
@@ -222,6 +223,10 @@ async def test_registered_capability_invokes_formal_backend(monkeypatch,tmp_path
             if 'preservedV1' in payload:
                 return response({'choice': 'KEEP_ALL', 'reason': 'Keep the whole film fixture.', 'text': None})
         if role == 'direction':
+            if 'selectedFilmDirection' in payload:
+                return response({'text': 'Hear the appeal, remain with the waiting person.'})
+            if 'designatedSource' in payload:
+                return response({'text': 'Keep the spectator beside the traveler, without answering for the other side.'})
             if 'Write the whole independent scene' in system:
                 return response({'text': 'The traveler calls once, listens, and keeps waiting.'})
             if 'preservedV1' in payload:
@@ -240,7 +245,7 @@ async def test_registered_capability_invokes_formal_backend(monkeypatch,tmp_path
     inputs=CapabilityInput(run_id=run.run_id,scope=run.scope,operation_id=run.run_id+':single-contract-smoke')
     result=await p.runtime.executor.execute('creative.'+role+':v1',inputs)
     assert result.status==(ResultStatus.FAILED if remote_absent else ResultStatus.SUCCEEDED)
-    assert len(calls)==((4 if role == 'direction' else 3 if role == 'canon' else 1) if not remote_absent else 1)
+    assert len(calls)==((6 if role == 'direction' else 3 if role == 'canon' else 1) if not remote_absent else 1)
     if role == 'direction' and not remote_absent:
         payload = json.loads(json.loads(calls[-1].content)['messages'][1]['content'])
         assert payload['hostScreenplay']['screenplay']['text'] == 'The traveler calls once, listens, and keeps waiting.'
@@ -250,6 +255,7 @@ async def test_registered_capability_invokes_formal_backend(monkeypatch,tmp_path
 @pytest.mark.asyncio
 async def test_empty_formal_composition_waits_without_http(monkeypatch,tmp_path):
     for k in ENV: monkeypatch.delenv(k,raising=False)
+    monkeypatch.setenv('DRAMA_PLUGIN_TEXT_AUTHORSHIP', 'MODEL')
     p=DramaPlugin.load(ledger_path=tmp_path/'empty.sqlite3')
     assert p.creative.canon_author is None and p.creative.direction_author is None and p.professional_design.author is None
     r=p.create_film_run(work_id='offline-unconfigured',mode=RunMode.PRODUCTION,source=source())
@@ -292,6 +298,6 @@ async def test_missing_language_or_model_does_not_call_transport():
     backend=TextCompositionBackend(cfg,transport=httpx.MockTransport(lambda r:calls.append(r) or response({})))
     no_language=request().model_copy(update={'source':SourceBody(goal='No metadata',text='Text',spoken_language='en')})
     with pytest.raises(CapabilityAbsent,match='LANGUAGE'): await backend.complete('canon','system',no_language,TypeAdapter(CanonDraft))
-    backend.config=TextCompositionConfig()
+    backend.config=TextCompositionConfig(authorship='MODEL')
     with pytest.raises(CapabilityAbsent,match='CONFIGURATION'): await backend.complete('canon','system',request(),TypeAdapter(CanonDraft))
     assert calls==[]

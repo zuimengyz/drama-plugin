@@ -1,4 +1,4 @@
-"""Text Composition owns credentials; each author owns an explicit model choice."""
+"""Text authorship defaults to Host; external composition requires explicit choice."""
 from urllib.parse import urlsplit
 from typing import Literal, Self
 
@@ -10,6 +10,8 @@ AuthorRole = Literal["canon", "direction", "professional"]
 
 class TextCompositionConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
+    # Current creative phase is Host-authored. MODEL requires explicit opt-in.
+    authorship: Literal["HOST", "MODEL"] = "HOST"
     provider: str = ""
     base_url: str = ""
     canon_model: str = ""
@@ -41,4 +43,4 @@ class TextCompositionConfig(BaseModel):
                 "professional": self.professional_model}[role]
 
     def available(self, role: AuthorRole) -> bool:
-        return self.configured and bool(self.model_for(role).strip())
+        return self.authorship == "HOST" or self.configured and bool(self.model_for(role).strip())

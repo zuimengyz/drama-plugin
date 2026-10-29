@@ -368,6 +368,15 @@ class CreativeEngineCapabilities:
                 cp = CreativeCheckpoint.model_validate({**self.state.checkpoint(inputs.run_id).model_dump(),
                     'screenplay_ref': self.screenplays.objects.put('native-scene-handoff:' + inputs.run_id, request.screenplay_context)})
                 self.state.save(inputs.run_id, inputs.scope, cp)
+            from drama_plugin.creative_engine.backends import FormalDirectionAuthor
+            if isinstance(self.direction_author, FormalDirectionAuthor) and request.canon is not None:
+                from drama_plugin.creative_engine.direction_narrative import native_director_narrative
+                context = await native_director_narrative(self.screenplays, self.direction_author,
+                    request, operation=inputs.operation_id)
+                request = request.model_copy(update={'screenplay_context': context})
+                cp = CreativeCheckpoint.model_validate({**self.state.checkpoint(inputs.run_id).model_dump(),
+                    'screenplay_ref': self.screenplays.objects.put('native-director-handoff:' + inputs.run_id, context)})
+                self.state.save(inputs.run_id, inputs.scope, cp)
             try:
                 shot = ShotBody.model_validate((await self.direction_author.author(request)).model_dump())
             except ValidationError as error:

@@ -190,3 +190,5 @@ Read [screenplay playability and exact dialogue](../../docs/screenplay-playabili
 ## Local original and decision operations
 
 Use `screenplay.retain_context` and `screenplay.retain_thread` for exact source originals and classified long-arc notes; `screenplay.begin` returns the autonomous author packet. Preserve the complete original with `screenplay.retain_v1` before requesting `screenplay.support_packet`; retain real advisory text with `screenplay.retain_support`. The Host selects with `screenplay.decide`, then supplies a complete scene through `screenplay.shot_handoff`. These local candidate operations grant no formal adoption or production permission.
+
+The selected scene screenplay remains the writer original. Director subsequently develops a separate scene audiovisual original from it and the selected film narrative; this does not rename or replace scene-development, and is not the existing ordered `sceneDirection` Shot context.

@@ -199,8 +199,14 @@ class DramaPlugin:
             self.production_packages, self.gate_governor, self.gate_findings,
             canon_author, direction_author, self.professional_design)
         self.screenplays = self.creative.screenplays
+        # Existing formal author ports consume exact Host selections locally;
+        # no parallel author implementation and no model fallback.
+        from drama_plugin.creative_engine.backends import SkillAuthor
+        for text_author in (canon_author, direction_author, professional_author, film_canon_author, film_direction_author):
+            if isinstance(text_author, SkillAuthor):
+                text_author.client.host_original_reader = self.screenplays.host_author_original
         from drama_plugin.creative_engine.screenplay import register_screenplay_tools
-        register_screenplay_tools(self.tools, self.screenplays)
+        register_screenplay_tools(self.tools, self.screenplays, continue_host=self._continue_host_text)
         creative_flow, dependency_flow = creative_workflow(), dependency_workflow()
         from drama_plugin.film.store import FilmStore
         from drama_plugin.film.capability import FilmCapabilities
@@ -378,6 +384,23 @@ class DramaPlugin:
                 run.scope, run.mode, run.workflow_id, run.workflow_fingerprint):
             raise ValueError("Film entry identity conflict")
         return existing
+
+    async def _continue_host_text(self, run_id: str, work_id: str, fingerprint: str,
+                                  original_ref: SourcePin | None) -> None:
+        """A selected Host original resolves the existing wait; no production adoption."""
+        from drama_plugin.runtime.contracts import RuntimeState, ArtifactReference
+        run = self.runtime.store.load(run_id)
+        pending = run.last_result.external_ref if run.last_result else None
+        if (run.state != RuntimeState.WAITING_USER or run.scope.work_id != work_id or pending is None
+                or pending.owner != 'host-author-request' or pending.artifact_ref != fingerprint):
+            raise ValueError('Run does not await this exact Host original')
+        if original_ref is not None:
+            original = self.screenplays.objects.read_ref(original_ref)
+            if original.get('actualAuthor') != 'HOST' or original.get('inputFingerprint') != fingerprint:
+                raise ValueError('Host original does not resolve this request')
+            await self.runtime.decide(run_id, decision_id=self.runtime.decision_id(run_id), accepted=True,
+                decision_ref=ArtifactReference(owner='host-author-original',
+                    artifact_ref=original_ref.key + ':' + original_ref.fingerprint, version=1), resume_same_step=True)
 
     async def resume_source_film_run(self, run_id: str) -> RuntimeRun:
         """One parent action reconciles child waits; callers never select internal tools."""

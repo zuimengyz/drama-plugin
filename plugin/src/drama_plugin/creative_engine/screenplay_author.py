@@ -12,6 +12,7 @@ from drama_plugin.creative_engine.backends import FormalCanonAuthor
 from drama_plugin.creative_engine.contracts import AuthorRequest
 from drama_plugin.film.contracts import FilmAuthorRequest
 from drama_plugin.creative_engine.screenplay import ContextOriginal, ScreenplayWorkshop
+from drama_plugin.creative_engine.host_text import without_host_originals
 
 
 async def native_film_decision(workshop: ScreenplayWorkshop, author: FormalCanonAuthor,
@@ -21,7 +22,7 @@ async def native_film_decision(workshop: ScreenplayWorkshop, author: FormalCanon
     incoming = request.screenplay_context or {}
     if incoming.get('schemaVersion') == 'scene-screenplay-shot-handoff-v1':
         return incoming
-    identity = 'native-film:' + sha256_canonical([operation, screenplay, incoming])
+    identity = 'native-film:' + sha256_canonical([operation, screenplay, without_host_originals(incoming)])
     if not workshop._path(identity).exists():
         source = workshop.retain_context(ContextOriginal(work_id=request.scope.work_id,
             label=identity + ':source', status='DESIGNATED_SOURCE',
@@ -51,7 +52,7 @@ async def native_film_original(workshop: ScreenplayWorkshop, author: FormalCanon
     incoming = request.screenplay_context or {}
     if incoming.get('schemaVersion') == 'scene-screenplay-shot-handoff-v1':
         return incoming
-    identity = 'native-first-film:' + sha256_canonical([operation, request.source.model_dump(mode='json'), incoming])
+    identity = 'native-first-film:' + sha256_canonical([operation, request.source.model_dump(mode='json'), without_host_originals(incoming)])
     if not workshop._path(identity).exists():
         source = workshop.retain_context(ContextOriginal(work_id=request.scope.work_id,
             label=identity + ':source', status='DESIGNATED_SOURCE',
@@ -99,8 +100,8 @@ async def native_scene_screenplay(workshop: ScreenplayWorkshop, author: FormalCa
         if isinstance(selected_text, str):
             framework = selected_text
     # A later visual design selection must not replace a preserved scene V1.
-    story_context = {k: v for k, v in incoming.items() if k != 'professionalDesignRefs'}
-    identity = 'native-scene-context-v2:' + sha256_canonical([operation, scene_id, framework, story_context])
+    story_context = {k: v for k, v in incoming.items() if k not in {'professionalDesignRefs', 'directorNarrative', 'filmLook'}}
+    identity = 'native-scene-context-v2:' + sha256_canonical([operation, scene_id, framework, without_host_originals(story_context)])
     path = workshop._path(identity)
     if not path.exists():
         # Forward only the explicitly supplied legal context originals, with
@@ -172,4 +173,8 @@ async def native_scene_screenplay(workshop: ScreenplayWorkshop, author: FormalCa
         # The existing resolver verifies Work ownership and source fingerprints.
         selected = workshop.professional_context(incoming, work_id=work_id, scene_id=None)
         handoff['professionalDesignRefs'] = [row['ref'] for row in selected['filmLook']]
+    from drama_plugin.creative_engine.direction_narrative import selected_view
+    narrative = selected_view(incoming, scene_id)
+    if narrative:
+        handoff['directorNarrative'] = narrative
     return json.validate_python(handoff)

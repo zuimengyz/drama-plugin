@@ -51,13 +51,28 @@ score or production advance in this facet.
 ## Existing automated native author paths
 
 `FormalCanonAuthor` supplies the autonomous creation instruction and preserves the
-explicit authorContext through native film and scene calls. `film_treatment` on the
-existing FormalDirectionAuthor is an available complete-treatment author method;
-its existence does not mean a native run invokes it before `direct_film`.
-`direct_film` projects structured FilmDirection, not a free director treatment.
-The Host can retain its own treatment and chosen professional support through the
-existing screenplay workshop, then explicitly bind that handoff. Proposed
-screenplay changes remain candidates pending existing reconciliation/adoption.
+explicit authorContext through native film and scene calls. On uncached new coverage,
+FormalDirectionAuthor now writes/selects `film_treatment` (full-film audiovisual
+narrative) and `scene_treatment` (current-scene experience) before `direct_film` or
+local Shot `author`. Current text authorship defaults to HOST: these existing
+adapters consume explicitly selected Host originals rather than contact a model.
+Host authorship/selection is recorded separately from formal production adoption.
+Only an explicitly configured MODEL path labels Director outputs
+DIRECTOR_AUTHOR_CANDIDATE. Existing cached/frozen coverage bypasses these calls.
+
+`screenplay.bind_director_narrative` binds Host-selected film prose and optional
+current-scene prose to an exact selected screenplay handoff. It returns a new
+handoff reference; pass that explicitly to the existing creative entry. For a
+film handoff that already contains selectedSceneScreenplays, optional scene_texts
+selects Director prose by those exact scene IDs; unknown scene IDs are rejected. It never
+mutates the input handoff or Canon. Each selected text retains scope, version,
+source references, screenplay basis hash, selector and reason. A scene also pins
+its selected film narrative fingerprint. Only these selected originals enter
+`directorNarrative`; `sceneDirection` remains the old ordered coverage context.
+Retained support opinions are not automatically selected. A changed basis returns
+to the owner, rather than silently revising a selected original. Model inputs
+receive exact prose and selection semantics without infrastructure references.
+
 For a new work, the single-scene and complete-film capabilities first request a
 free whole-film body, retain it verbatim, and request the same writer's revision decision in a
 separate call. Only afterwards does the existing Canon author derive the structured
@@ -151,3 +166,46 @@ Reconcile the selected encounter through Blocking, Camera and early Editorial
 proposals before locking coverage. Native film children now pin the same-scene
 coverage alongside their selected screenplay; existing children retain their old
 inputs. This adds contextual delivery, not independent author calls or adoption.
+
+## Current Host text author and continuation
+
+`TextCompositionConfig.authorship` defaults to `HOST` (environment override:
+`DRAMA_PLUGIN_TEXT_AUTHORSHIP`). Existing model credentials do not enable a fallback.
+`MODEL` is an explicit alternative for authorized independent authors and model
+protocol tests; its fixtures are not Host or real independent creative evidence.
+Provider, Runtime and media scheduling remain unchanged.
+
+The same FormalCanonAuthor / FormalDirectionAuthor / FormalProfessionalAuthor ports
+serve both selections. In HOST mode the backend never enters HTTP completion.
+Missing text raises `HOST_AUTHOR_ORIGINAL_REQUIRED`. The registered default
+capability returns the existing user-wait contract; it does not burn retry attempts
+calling an absent author. This is a request for an original, not another art review.
+
+1. Read `screenplay.host_author_request(work_id)`. It returns the most recent pending
+   task, exact input fingerprint, selected source/context, loaded Skill/Knowledge
+   instructions and output schema. A previously read packet remains usable by its
+   exact task/hash even if another task becomes the most recent request.
+2. Host writes the text or the requested existing semantic DTO. Select it with
+   `screenplay.bind_host_author_original(handoff_ref, work_id, scene_id, task,
+   input_fingerprint, content, reason, run_id=...)`. Use the returned request scope;
+   a full-film author task can carry scene context while its scope remains film-wide.
+   `handoff_ref=None` supports the first writer request before any screenplay exists.
+   A supplied handoff creates a new derivative and never overwrites its input.
+3. With `run_id`, the tool first verifies that the Run awaits this exact request;
+   selection resolves its existing wait back to the **same** capability, without
+   skipping authorship/projection or adopting production. Continue through the
+   existing run resume entry. Without `run_id`, selection is usable by a direct
+   capability retry on its unchanged inputs.
+
+The immutable selected object retains actualAuthor=HOST, selectedBy=HOST, version,
+request sourceRef, task/input fingerprint, reason and formalAdoption=false. Only the
+exact selected object is read. History and Host response records are stripped from
+subsequent artistic payloads and fingerprint inputs; the resulting selected writer,
+Director and professional texts follow the normal context chain. Selection indexes
+are local to the existing original store, not a new author engine or production loop.
+The latest-request pointer is a convenience reader, not an all-task queue.
+
+For temporary literary demonstrations use the same author interfaces with an
+in-memory `authorContext.hostAuthoring` selection. Do not instantiate Plugin/stores
+or register Work/Run identities. No MockTransport is necessary or allowed as proof
+of Host authorship; a test of model wire parsing must identify itself separately.

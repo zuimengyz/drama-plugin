@@ -314,6 +314,64 @@ class ScreenplayWorkshop:
         self.objects.read_ref(SourcePin.model_validate(packet['screenplayRef']))
         return packet
 
+    def host_author_original(self, packet: dict[str, Any]) -> dict[str, Any] | None:
+        """Resolve one exact selected original; retain a readable missing-text request."""
+        work = packet['scope']['workId']
+        identity = [work, packet['task'], packet['inputFingerprint']]
+        path = self.objects._path('host-author-selections', identity)
+        if path.exists():
+            ref = SourcePin.model_validate(self.objects._read(path))
+            return {'ref': dump_contract(ref), 'original': self.objects.read_ref(ref)}
+        ref = self.objects.put('host-author-request:' + work, packet)
+        with self.objects._writer():
+            self.objects._write(self.objects._path('host-author-requests', work), dump_contract(ref))
+            self.objects._write(self.objects._path('host-author-request-inputs', identity), dump_contract(ref))
+        return None
+
+    def host_author_request(self, work_id: str) -> dict[str, Any]:
+        path = self.objects._path('host-author-requests', work_id)
+        if not path.exists():
+            raise ValueError('No missing Host text request for this Work')
+        return self.objects.read_ref(SourcePin.model_validate(self.objects._read(path)))
+
+    def bind_host_author_original(self, handoff_ref: SourcePin | None, *, work_id: str,
+                                  scene_id: str | None, task: str, input_fingerprint: str,
+                                  content: Any, reason: str) -> SourcePin:
+        """Select Host text/DTO in the existing original store; no author or adoption."""
+        from copy import deepcopy
+        import re
+        if not task.strip() or not reason.strip() or not re.fullmatch(r'[a-f0-9]{64}', input_fingerprint):
+            raise ValueError('Host original needs exact task/input fingerprint and selection reason')
+        request_path = self.objects._path('host-author-request-inputs', [work_id, task, input_fingerprint])
+        if not request_path.exists():
+            raise ValueError('Host original requires an exact pending author request')
+        request_ref = SourcePin.model_validate(self.objects._read(request_path))
+        pending = self.objects.read_ref(request_ref)
+        if pending['scope']['sceneId'] != scene_id:
+            raise ValueError('Host original request scope mismatch')
+        packet = deepcopy(self.bound_packet(handoff_ref, work_id=work_id, scene_id=scene_id)) if handoff_ref else None
+        original = {'schemaVersion': 'host-author-original-v1', 'version': 1,
+            'workId': work_id, 'sceneId': scene_id, 'task': task, 'inputFingerprint': input_fingerprint,
+            'content': content, 'actualAuthor': 'HOST', 'selectedBy': 'HOST',
+            'selectionReason': reason, 'formalAdoption': False, 'sourceRef': dump_contract(request_ref)}
+        ref = self.objects.put('host-author-original:' + task, original)
+        with self.objects._writer():
+            self.objects._write(self.objects._path('host-author-selections', [work_id, task, input_fingerprint]), dump_contract(ref))
+        if packet is None:
+            return ref
+        container = packet if 'authorContext' in packet or 'context' not in packet else packet['context']
+        context = container.setdefault('authorContext', {})
+        context.setdefault('hostAuthoring', {})[task + ':' + input_fingerprint] = {
+            'ref': dump_contract(ref), 'original': original}
+        return self.objects.put('host-author-handoff:' + (scene_id or work_id), packet)
+
+    def bind_director_narrative(self, handoff_ref: SourcePin, *, work_id: str,
+                               scene_id: str | None, film_text: str, reason: str,
+                               scene_text: str | None = None, scene_texts: dict[str, str] | None = None) -> SourcePin:
+        from drama_plugin.creative_engine.direction_narrative import bind_host_narrative
+        return bind_host_narrative(self, handoff_ref, work_id=work_id, scene_id=scene_id,
+            film_text=film_text, scene_text=scene_text, reason=reason, scene_texts=scene_texts)
+
     def bind_professional_context(self, handoff_ref: SourcePin, *, work_id: str,
                                   scene_id: str | None, design_refs: tuple[SourcePin, ...]) -> SourcePin:
         """Bind selected designs after the Host film or scene decision.
@@ -372,11 +430,32 @@ class ScreenplayWorkshop:
         return ref
 
 
-def register_screenplay_tools(registry: 'ToolRegistry', workshop: ScreenplayWorkshop) -> None:
+def register_screenplay_tools(registry: 'ToolRegistry', workshop: ScreenplayWorkshop, *, continue_host: Any = None) -> None:
     """The real Plugin registry exposes the same local facet to any Host transport."""
     from drama_plugin.tools.catalog import _domain_tool
     async def retain_context(original: ContextOriginal) -> SourcePin:
         return workshop.retain_context(ContextOriginal.model_validate(original))
+    async def host_author_request(work_id: str) -> dict[str, Any]:
+        return workshop.host_author_request(work_id)
+    async def bind_host_author_original(handoff_ref: SourcePin | None, work_id: str, scene_id: str | None,
+                                        task: str, input_fingerprint: str, content: Any, reason: str, run_id: str | None = None) -> SourcePin:
+        if run_id is not None and continue_host is None:
+            raise ValueError('Host continuation is unavailable')
+        if run_id is not None:
+            await continue_host(run_id, work_id, input_fingerprint, None)
+        ref = workshop.bind_host_author_original(SourcePin.model_validate(handoff_ref) if handoff_ref else None, work_id=work_id,
+            scene_id=scene_id, task=task, input_fingerprint=input_fingerprint, content=content, reason=reason)
+        if run_id is not None:
+            selected = workshop.host_author_original({'scope': {'workId': work_id},
+                'task': task, 'inputFingerprint': input_fingerprint})
+            assert selected is not None
+            await continue_host(run_id, work_id, input_fingerprint, SourcePin.model_validate(selected['ref']))
+        return ref
+    async def bind_director_narrative(handoff_ref: SourcePin, work_id: str, scene_id: str | None,
+                                      film_text: str, reason: str, scene_text: str | None = None,
+                                      scene_texts: dict[str, str] | None = None) -> SourcePin:
+        return workshop.bind_director_narrative(SourcePin.model_validate(handoff_ref),
+            work_id=work_id, scene_id=scene_id, film_text=film_text, scene_text=scene_text, reason=reason, scene_texts=scene_texts)
     async def bind_professional_context(handoff_ref: SourcePin, work_id: str, scene_id: str | None,
                                        design_refs: tuple[SourcePin, ...]) -> SourcePin:
         return workshop.bind_professional_context(SourcePin.model_validate(handoff_ref), work_id=work_id,
@@ -404,6 +483,13 @@ def register_screenplay_tools(registry: 'ToolRegistry', workshop: ScreenplayWork
         return workshop.decide(session_id, choice=choice, reason=reason, expected_revision=expected_revision, text=text)
     async def shot_handoff(session_id: str) -> dict[str, Any]: return workshop.shot_handoff(session_id)
     specs: list[tuple[str, ToolHandler, Any, dict[str, Any], dict[str, Any]]] = [
+        ('host_author_request', host_author_request, dict, {'work_id': str}, {}),
+        ('bind_host_author_original', bind_host_author_original, SourcePin,
+            {'handoff_ref': SourcePin | None, 'work_id': str, 'scene_id': str | None, 'task': str,
+             'input_fingerprint': str, 'content': Any, 'reason': str}, {'run_id': str | None}),
+        ('bind_director_narrative', bind_director_narrative, SourcePin,
+            {'handoff_ref': SourcePin, 'work_id': str, 'scene_id': str | None, 'film_text': str, 'reason': str},
+            {'scene_text': str | None, 'scene_texts': dict[str, str] | None}),
         ('bind_professional_context', bind_professional_context, SourcePin,
             {'handoff_ref': SourcePin, 'work_id': str, 'scene_id': str | None, 'design_refs': tuple[SourcePin, ...]}, {}),
         ('retain_context', retain_context, SourcePin, {'original': ContextOriginal}, {}),

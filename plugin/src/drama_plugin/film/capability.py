@@ -229,6 +229,14 @@ class FilmCapabilities:
                 # no new Film DTO, store or Canon/V1 aesthetic injection.
                 request = request.model_copy(update={'screenplay_context': {
                     **context, 'filmLook': selected['filmLook']}})
+                from drama_plugin.creative_engine.backends import FormalDirectionAuthor
+                if isinstance(self.direction_author, FormalDirectionAuthor) and request.canon is not None:
+                    from drama_plugin.creative_engine.direction_narrative import native_director_narrative
+                    context = await native_director_narrative(self.plugin.screenplays, self.direction_author,
+                        request, operation=inputs.operation_id)
+                    request = request.model_copy(update={'screenplay_context': context})
+                    cp = self.save(inputs, screenplay_ref=self.plugin.screenplays.objects.put(
+                        'native-director-handoff:' + inputs.run_id, context))
                 direction = FilmDirection.model_validate((await self.direction_author.direct_film(request)).model_dump())
         else:
             direction = self.store.author(fixed,FilmDirection)
@@ -384,6 +392,10 @@ class FilmCapabilities:
         current = next(i for i, s in enumerate(ordered) if s.shot_id == shot_id)
         context = scene or {'schemaVersion': 'native-screenplay-context-v1',
             'workId': work_id, 'sceneId': scene_id}
+        from drama_plugin.creative_engine.direction_narrative import selected_view
+        narrative = selected_view(packet, scene_id)
+        if narrative:
+            context = {**context, 'directorNarrative': narrative}
         context = {**context, 'sceneDirectionRefs': scene_directions, 'sceneDirection': {
             'sourceRefs': [ref.model_dump(mode='json', by_alias=True)
                 for ref in (cp.canon_ref, cp.direction_ref)],

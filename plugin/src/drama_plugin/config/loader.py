@@ -26,6 +26,7 @@ _SERVICE_NAMES = ("memory", "asset", "research", "production", "media", "context
 def _environment_overrides(environment: Mapping[str, str]) -> dict[str, Any]:
     overrides: dict[str, Any] = {}
     author_values = {field: environment[key].strip() for field, key in {
+        "authorship": "DRAMA_PLUGIN_TEXT_AUTHORSHIP",
         "provider": "DRAMA_PLUGIN_TEXT_COMPOSITION_PROVIDER",
         "base_url": "DRAMA_PLUGIN_TEXT_COMPOSITION_BASE_URL",
         "api_key": "DRAMA_PLUGIN_TEXT_COMPOSITION_API_KEY",

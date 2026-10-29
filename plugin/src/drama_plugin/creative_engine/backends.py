@@ -1,6 +1,6 @@
 """Formal skill-backed authors. Return existing domain contracts only.
 
-No store/Runtime/Host/tools/media imports: neither the model nor these adapters
+No production store/Runtime/tools/media imports: neither selected Host text nor the model
 can select a next capability, persist Canon, adopt, or produce media. One bounded
 text completion per call; invalid results are rejected without repair/fallback.
 """
@@ -34,7 +34,7 @@ from drama_plugin.creative_engine.author_projection import (author_payload, film
 
 T = TypeVar("T")
 SCENE_COLLABORATION = 'director/references/scene-collaboration.md'
-DIRECTION_CRAFT = ("shot-design/references/planning.md", "shot-design/references/shot-transitions.md",
+DIRECTION_CRAFT = ("director/references/narrative-handoff.md", "shot-design/references/planning.md", "shot-design/references/shot-transitions.md",
                    "director/references/work-aesthetic-design.md",
                    "director/references/film-practice.md",
                    SCENE_COLLABORATION)
@@ -458,13 +458,16 @@ def validate_professional_facts(designs: tuple[DesignBody, ...], request: Author
         raise AuthorResultFailure(aggregate_failures(tuple(findings)))
 
 class TextCompositionBackend:
-    """Chat-completion wire primitive; no provider operation/reservation workflow."""
+    """Existing text boundary: exact Host selection or explicitly configured model IO."""
     def __init__(self, config: TextCompositionConfig, *, transport: httpx.AsyncBaseTransport | None = None) -> None:
         self.config, self.transport = config, transport
+        self.host_original_reader: Callable[[dict[str, Any]], dict[str, Any] | None] | None = None
 
     def execution_fingerprint(self, role: AuthorRole, author_identity: str,
                               system_content: str) -> str:
         """Same wire projection primitives, excluding user bytes and credential."""
+        if self.config.authorship == "HOST":
+            return sha256_canonical({"author": "HOST", "task": author_identity, "role": role, "system": system_content})
         return sha256_canonical({"author": author_identity, "role": role,
             "provider": self.config.provider, "endpoint": self.config.base_url.rstrip("/") + "/chat/completions",
             "model": self.config.model_for(role), "system_content": system_content,
@@ -481,11 +484,20 @@ class TextCompositionBackend:
         fingerprint = self.execution_fingerprint(role, author_identity or role + ":formal-author",
             system + "\nOutput JSON schema:\n" + canonical_json(schema))
         response_context.set(AuthorDiagnostic(role=role, failure_stage="RESPONSE",
-            code="AUTHOR_REQUEST_STARTED", model=safe_identity(self.config.model_for(role)),
-            provider=safe_identity(self.config.provider), execution_fingerprint=fingerprint,
+            code="AUTHOR_REQUEST_STARTED", model="HOST" if self.config.authorship == "HOST" else safe_identity(self.config.model_for(role)),
+            provider="HOST" if self.config.authorship == "HOST" else safe_identity(self.config.provider), execution_fingerprint=fingerprint,
             attempt=context.attempt if context else None,
             execution_revision=context.execution_revision if context else fingerprint))
         try:
+            if self.config.authorship == 'HOST':
+                from drama_plugin.creative_engine.host_text import request_packet, selected_content
+                packet = request_packet(author_identity or role + ':formal-author', request,
+                    model_payload if model_payload is not None else request.model_dump(mode='json', by_alias=True), schema, system)
+                content = selected_content(request, packet, self.host_original_reader)
+                try:
+                    return result.validate_python(project(content) if project is not None else content)
+                except ValidationError as error:
+                    raise AuthorResultFailure(validation_failure(error, role=role, output_schema=schema)) from None
             return await self._complete(role, system, request, result, model_schema=model_schema, model_payload=model_payload, project=project)
         except (AuthorResultFailure, CapabilityAbsent):
             raise
@@ -713,8 +725,8 @@ class FormalCanonAuthor(SkillAuthor):
 
     def system_contract(self, *, film: bool = False) -> str:
         from drama_plugin.creative_engine.screenplay import HOST_AUTONOMOUS
-        authority = ("Write the complete film director screenplay in Script.screenplay first, then derive Work interpretation and ordered Scene records from that completed original. Each sceneText is a complete continuous scene, not an excerpt, outline or shot list."
-            if film else "For the supplied scene write a complete continuous director screenplay in sceneText, using the complete film framework when supplied; preserve Script.screenplay as the full-film framework. For a new work first write the complete Script screenplay, then derive interpretation and scene records.")
+        authority = ("Write the complete film writer screenplay in Script.screenplay first, then derive Work interpretation and ordered Scene records from that completed original. Each sceneText is a complete continuous scene, not an excerpt, outline or shot list."
+            if film else "For the supplied scene write a complete continuous writer screenplay in sceneText, using the complete film framework when supplied; preserve Script.screenplay as the full-film framework. For a new work first write the complete Script screenplay, then derive interpretation and scene records.")
         # Original creation reads no Skill craft files. JSON ownership constrains
         # persistence, not the author's cinematic imagination within prose.
         return BOUNDARY + "\n" + HOST_AUTONOMOUS + "\n" + authority + "\nIf hostScreenplay supplies an exact selected full body, its first authorship and Host decision are already complete. Only derive semantic records: preserve that selected film Script.screenplay or scene sceneText byte-for-byte. An objection returns to the Host; do not create a replacement. Otherwise use your own cinematic knowledge in the screenplay body. Do not emit separate formal Shot or professional records. Select dialogue speakers by ordinal from the authored roster; system assigns exact identities."
@@ -752,28 +764,36 @@ class FormalDirectionAuthor(SkillAuthor):
 
         Proposals to change screenplay are feedback, never silent Canon writes.
         """
-        system = ("You are the film director-design author. Read the complete screenplay, "
-            "project authorContext and designated source. Write a complete scene-by-scene "
-            "director screenplay: spectator position, performance tasks, staging, concrete "
-            "coverage, sound, editing, transitions and content-derived estimated durations. "
-            "Cover every scene, not an opening sample or outline. You may propose script "
-            "changes with reasons in a separate feedback section; only the Host-selected "
-            "reconciled version is later projected into production. Do not silently change "
-            "dialogue or facts. Advisory methods support your own substantive artistic choices. "
-            "Do not infer creative restrictions from existing assets or previous renders.\n")
-        creation_scope = (
-            "\nThis call is full-film creative development, not formal Shot projection. "
-            "The reference documents' adopted-source and department-write restrictions "
-            "apply to later formal records, not to proposing substantive screenplay changes. "
-            "Use the project's actual adaptation authority. Explain the scope and dramatic "
-            "reason for formal choices; do not turn examples or past repair advice into "
-            "universal bans. Estimate time from playable actions and natural speech, and "
-            "label estimates as untested until an actual read or playback exists. "
-            "Return only the requested JSON object with the complete prose in its text field. "
-            "Do not put Markdown outside that JSON object.")
-        return await self.client.complete('direction', self.knowledge(DIRECTION_CRAFT) + system + creation_scope + self.craft_reading(request, packet),
+        return await self.client.complete('direction', self.narrative_system('FILM') + self.craft_reading(request, packet),
             request, TypeAdapter(HostSceneOriginal), model_payload=packet,
-            author_identity='film.director-treatment:v1')
+            author_identity='film.director-treatment:v2')
+
+    def narrative_system(self, scope: str) -> str:
+        task = ("Create the full-film audiovisual narrative original from the complete writer screenplay. "
+            "Choose narrative voice, camera standpoint, spectator knowledge, disclosure/withholding, "
+            "time and space, opening/ending relations and the film's image/sound/edit organization. "
+            "This is not mandatory scene-by-scene shot coverage or a lens/duration inventory."
+            if scope == 'FILM' else
+            "Create the complete current scene's audiovisual experience from its writer screenplay, "
+            "selectedFilmDirection and neighboringScreenplays. Develop entry, first perception, "
+            "attention changes, acting/listening/waiting, inhabited space, sound and silence, "
+            "experienced time, exit and transition. Neighbor events remain context. "
+            "This is a scene Director original, neither a new writer screenplay nor a shot list.")
+        return self.knowledge(DIRECTION_CRAFT) + "\n" + task + (
+            "\nDistinguish who narrates, where the camera stands, and what the audience knows. "
+            "First-person voice does not require POV photography; third-person prose does not require VO. "
+            "No style, movement, silence, conflict or duration quota. Make artistic choices and their "
+            "gains/costs intelligible. Knowledge supplies possibilities, never mandatory imitation. "
+            "Preserve the selected screenplay facts and exact dialogue. Put proposed screenplay changes "
+            "in separate feedback for the Host; do not enact them as selected direction. "
+            "Do not infer artistic restrictions from existing assets. Return the complete readable prose "
+            "in the requested JSON text field. No formal Shot or professional records.")
+
+    async def scene_treatment(self, request: AuthorRequest | FilmAuthorRequest,
+                              packet: dict[str, JsonValue]) -> HostSceneOriginal:
+        return await self.client.complete('direction', self.narrative_system('SCENE') + self.craft_reading(request, packet),
+            request, TypeAdapter(HostSceneOriginal), model_payload=packet,
+            author_identity='scene.director-treatment:v1')
 
     def system_contract(self) -> str:
         system = BOUNDARY + "\nOwn Shot intent, coverage, blocking/camera intention, editing relation and Shot performance direction. Do not change Canon/dialogue or author detailed professional designs. spokenSelections must choose only supplied Canon spoken candidates. System assigns exact spoken IDs; never output internal IDs.\n"
@@ -782,14 +802,21 @@ class FormalDirectionAuthor(SkillAuthor):
             "Use only the schema's professional domain values, once each, sorted lexicographically by domain value.\n")
         system += "If selected upstream currentDesigns accompany an existing Shot, review that retained Shot against their new meaning. Consciously preserve valid existing choices or locally revise them; do not replace detailed department originals.\n"
         system += "Treat the complete scene as one encounter before selecting coverage. In shared sceneDirection context, neighboring actions and transitions are context, not extra actions for the current Shot. Propose contradictions to the Host; do not silently reconcile by changing another Shot.\n"
+        system += "Read hostScreenplay.directorNarrative when supplied: film is the selected audiovisual narrative; scenes contains the selected scene prose. Realize their spectator access, attention, sound/image and time choices in coverage and current Shot intention. They are distinct from sceneDirection, which is existing ordered coverage. Preserve writer/Canon facts; proposed upstream changes remain feedback, not executable events.\n"
         return system + self.knowledge(DIRECTION_CRAFT)
 
     def film_system_contract(self) -> str:
         return self.system_contract() + "\nDirect the supplied complete Film Canon. Cover every supplied Scene in Canon order, using sceneSelection from supplied Canon sceneCandidates. System assigns Shot identities. Each Shot selects spoken candidates from its chosen Scene only. requiresSelections can only select preceding authored Shot rows. Select creative planned Shot durations, not provider operation durations. Preserve Canon/dialogue; do not author new professional facts. When request.productionGoal is MEDIA_REVIEW, every Shot must declare the existing ACTION, CAMERA, PERFORMANCE, SOUND, SUBJECTS and WORLD Professional design owners needed for an executable operation; additional domains remain a creative need. This declares required design inputs, not professional content or a film scheme.\n"
 
     def execution_fingerprint(self, *, film: bool = False) -> str:
-        return self.client.execution_fingerprint("direction", ("film" if film else "creative") + ".direction:v1:FormalDirectionAuthor",
-            (self.film_system_contract() if film else self.system_contract()) + "\nOutput JSON schema:\n" + canonical_json(direction_model_schema(film=film)))
+        coverage = self.client.execution_fingerprint("direction",
+            ("film" if film else "creative") + ".direction:v1:FormalDirectionAuthor",
+            (self.film_system_contract() if film else self.system_contract()) +
+            "\nOutput JSON schema:\n" + canonical_json(direction_model_schema(film=film)))
+        prose = [self.client.execution_fingerprint('direction', identity, self.narrative_system(scope) +
+            "\nOutput JSON schema:\n" + canonical_json(TypeAdapter(HostSceneOriginal).json_schema(by_alias=True)))
+            for scope, identity in [('FILM', 'film.director-treatment:v2'), ('SCENE', 'scene.director-treatment:v1')]]
+        return sha256_canonical([coverage, *prose])
 
     async def author(self, request: AuthorRequest) -> ShotBody:
         request = AuthorRequest.model_validate(request.model_dump())
@@ -1166,6 +1193,7 @@ contradictory instructions or ask the compiler to invent a compromise.
         system += "Consume visualContinuity.assets: these are already adopted assets prepared in narrative order. Preserve inherited physical identities and references. Author only this Shot's state/behaviour/layout; do not recreate faces, replace identities or invent asset bindings. System binds the exact assets after authoring.\n"
         system += "In currentDesigns, scope WORK or SCENE labels mark selected upstream professional authority, not this Shot's revisable candidates. Preserve their meaning while authoring only current Shot realization. Unlabelled currentDesigns and revision-task candidates belong to this Shot; only those candidates are being revised.\n"
         system += "At this post-selection stage, consume visualContinuity and the supplied screenplay evidence. Film Look is a work-owned basis, not a universal palette. OBSERVED_RESULT remains observed evidence, never Canon. CAMERA, LIGHTING and COLOR elaborate this Scene's inheritance or an intentional departure with its dramatic reason in continuityInterpretation. Motivate local light without silently replacing film-wide relationships. Production Design coherence is reconciliation among these owners, not a second author. WORLD selects locationSelection when a relevant locationCandidate is supplied, preserves its physical identity/layout, and describes current state; common materials/furniture types may be shared between different places. Character references prove identity only, not their background's location. Keep full reasoning in continuityInterpretation; executable finite fields express only this unit's concise, nonduplicated decisions. Shot intent/acting/action stay with their existing owners.\n"
+        system += "Read selected directorNarrative film/scene prose as the upstream viewing and listening intent, distinct from sceneDirection coverage. Realize each relevant choice in this Shot's existing owner facts: camera/actor/light relations, observable listening, sound placement or cut/hold conditions. A case name or repeated abstract intention is not execution. Preserve deliberate alternatives and the selected writer text.\n"
         system += "Resolve the supplied Shot purpose and requiredTransition through the requested owners: express each currently necessary visible or audible consequence in existing Action, Camera, Performance, Sound or Editorial facts. A purpose or future transition is not itself current action. Do not copy the entire Shot into executable prose.\n"
         system += "PERFORMANCE LineDPD alone is internal direction, not video delivery. Realize necessary current listening, gaze, waiting and release consequences in existing Beat physicalExpression when shared, current Action when changing, or exact SOUND audio_events performance/attention/continuity when heard. Preserve the source meaning; do not enact psychology, future reactions, or a voice-over narrator's remembered action in the pictured subject. If another requested domain owns the consequence, coordinate that owner's existing facts rather than adding a second performance track.\n"
         system += "EDITORIAL temporalStructure explains whole-Shot organization, not a timeline to replay in each segment. Put current holds and end conditions in existing protectedEvents scoped by phaseIndex (and spokenSelections where needed), Action observable or the exact Sound delivery. A condition present only in whole-Shot reasoning has not been delivered to a current request.\n"
@@ -1196,7 +1224,7 @@ contradictory instructions or ask the compiler to invent a compromise.
 def compose_authors(config: TextCompositionConfig, skills_root: Path, *,
                     transport: httpx.AsyncBaseTransport | None = None
                     ) -> tuple[FormalCanonAuthor | None, FormalDirectionAuthor | None, FormalProfessionalAuthor | None]:
-    if not config.configured:
+    if config.authorship != "HOST" and not config.configured:
         return None, None, None
     client = TextCompositionBackend(config, transport=transport)
     return (FormalCanonAuthor(client, skills_root) if config.available("canon") else None,

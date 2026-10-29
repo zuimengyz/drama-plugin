@@ -426,3 +426,7 @@ a silent rough study as a completed Cinematic Animatic.
 ## Optional film-craft application
 
 Use [expression-led case reading](references/film-practice.md) when it expands the current creative question. Select spectator experience and meaningful gain/loss; do not choose a technique solely because a case uses it. Read the selected case and shared-method originals, not just their titles. Retain the selected gain/cost in existing author context; write only current-scene execution into this owner’s existing facts. No lookup quota or automatic adoption.
+
+## Selected narrative originals
+
+Before new final coverage, use [narrative handoff](references/narrative-handoff.md) to distinguish full-film audiovisual narrative, current-scene viewing experience and ordered Shot coverage. Preserve writer originals; existing frozen Shots do not require retrospective rewriting.

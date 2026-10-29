@@ -603,8 +603,19 @@ def current_design_view(request: AuthorRequest, *, upstream: bool | None = None,
 
 
 def screenplay_view(context: dict[str, JsonValue]) -> dict[str, JsonValue]:
+    from drama_plugin.creative_engine.host_text import without_host_originals
+    context = JSON.validate_python(without_host_originals(context))
     value = {k: v for k, v in context.items()
         if k not in {'professionalDesignRefs', 'filmLook', 'sceneDirectionRefs'}}
+    if isinstance(value.get('directorNarrative'), dict):
+        def prose(original: dict[str, JsonValue]) -> dict[str, JsonValue]:
+            return {k: v for k, v in original.items()
+                    if k not in {'ref', 'sourceRefs', 'workId', 'sceneId', 'basis', 'schemaVersion'}}
+        narrative = object_value(value['directorNarrative'])
+        value['directorNarrative'] = {
+            'film': prose(object_value(narrative['film'])),
+            'scenes': {sid: prose(object_value(row))
+                       for sid, row in object_value(narrative.get('scenes', {})).items()}}
     if isinstance(value.get('sceneDirection'), dict):
         # Exact selected Canon/Direction pins stay in the immutable child input.
         # Authors see the ordered semantic decisions, never infrastructure refs.

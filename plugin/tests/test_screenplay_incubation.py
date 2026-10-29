@@ -33,7 +33,18 @@ def ledger() -> dict[str, Any]:
 def test_real_registry_discovers_incubation_without_changing_tool_surface() -> None:
     plugin = DramaPlugin.load(ROOT)
     skill = plugin.skills.get("cinematic-screenplay-incubation")
-    assert len(plugin.tools.list()) == 52
+    registered = plugin.tools.list()
+    assert len({tool.code for tool in registered}) == len(registered)
+    for tool in registered:
+        assert plugin.tools.get(tool.code) is tool
+        assert tool.code == f'{tool.domain}.{tool.name}'
+        assert callable(tool.handler) and tool.output_schema
+        assert tool.input_schema['type'] == 'object'
+        assert set(tool.input_schema['required']) <= set(tool.input_schema.get('properties', {}))
+    for code in {*skill.tools.preferred, *skill.tools.allowed}:
+        assert plugin.tools.exists(code), code
+    for code in ('screenplay.begin', 'screenplay.retain_v1', 'screenplay.decide', 'screenplay.shot_handoff'):
+        assert plugin.tools.exists(code), code
     assert skill.context.refresh_after == []
     assert not any("create" in code or "save" in code or "generate" in code for code in [*skill.tools.preferred, *skill.tools.allowed])
     assert {"work-creation", "script-adaptation", "scene-development"} <= {item.code for item in plugin.skills.list()}
@@ -115,9 +126,23 @@ def test_payoff_cannot_precede_setup_or_claim_nonexistent_payoff() -> None:
 
 def test_skill_reference_links_resolve() -> None:
     import re
+    from urllib.parse import urldefrag, unquote
     for path in [SKILL / "SKILL.md", *SKILL.glob("references/*.md")]:
         for target in re.findall(r"\]\(([^)]+)\)", path.read_text()):
             # This test resolves local resource links; source citations are URLs.
             if target.startswith(("https://", "http://")):
                 continue
-            assert (path.parent / target).exists(), (path, target)
+            resource, fragment = urldefrag(target)
+            resolved = path.parent / unquote(resource) if resource else path
+            assert resolved.is_file(), (path, target)
+            if fragment:
+                text = resolved.read_text()
+                # GitHub-style heading IDs, including duplicate-heading suffixes.
+                anchors, counts = set(), {}
+                for heading in re.findall(r'^#{1,6}\s+(.+?)\s*#*$', text, re.MULTILINE):
+                    slug = re.sub(r'[^\w\- ]', '', heading.lower()).replace(' ', '-')
+                    n = counts.get(slug, 0)
+                    counts[slug] = n + 1
+                    anchors.add(slug if n == 0 else f'{slug}-{n}')
+                anchors.update(re.findall(r'(?:id|name)=["\']([^"\']+)["\']', text))
+                assert unquote(fragment) in anchors, (path, target)

@@ -16,7 +16,7 @@ from drama_plugin.execution.transport import CapabilityAbsent
 from drama_plugin.director import DirectorError
 from drama_plugin.contracts.base import sha256_canonical
 from drama_plugin.runtime.contracts import (ArtifactReference, CapabilityInput, CapabilityResult,
-    RecoveryClass, ResultStatus, RuntimeRun, Identifier)
+    RecoveryClass, ResultStatus, RuntimeRun, Identifier, UserDecisionRequest, DecisionCategory)
 from drama_plugin.creative_engine.contracts import VersionRef
 from drama_plugin.production.contracts import SourceDomain
 from drama_plugin.runtime.policy import AUTHOR_CONTENT_ATTEMPT_LIMIT
@@ -206,6 +206,15 @@ async def run_author_capability(handler: Callable[[CapabilityInput], Awaitable[C
         structural_feedback.set(previous_diagnostic(versions, inputs, run))
         return await handler(inputs)
     except Exception as error:
+        from drama_plugin.creative_engine.host_text import HostOriginalRequired
+        if isinstance(error, HostOriginalRequired):
+            # Existing user wait is for missing authored text, not production adoption.
+            ref = ArtifactReference(owner='host-author-request',
+                artifact_ref=error.request_packet['inputFingerprint'], version=1)
+            return CapabilityResult(status=ResultStatus.WAITING_EXTERNAL, external_ref=ref,
+                artifact_refs=(ref,), recovery_class=RecoveryClass.USER_DECISION,
+                user_decision=UserDecisionRequest(category=DecisionCategory.ART_APPROVAL,
+                    question='HOST_AUTHOR_ORIGINAL_REQUIRED: select Host original for ' + error.request_packet['task']))
         if isinstance(error, (AuthorResultFailure, AuthorUnavailable)):
             diagnostic = error.diagnostic
         elif isinstance(error, CapabilityAbsent):

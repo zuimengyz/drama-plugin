@@ -88,3 +88,9 @@ Read [mapping and evidence profile](../../docs/still-professional-mapping.md) wh
 ## Optional film-craft application
 
 Use [expression-led case reading](../director/references/film-practice.md) when it expands the current creative question. Develop source and surface color relationships in this scene; a style label is not a compulsory palette. Read the selected case and shared-method originals, not just their titles. Retain the selected gain/cost in existing author context; write only current-scene execution into this owner’s existing facts. No lookup quota or automatic adoption.
+
+
+## Selected film world and visual identity
+
+Read selected Film Look and scene state as one versioned basis. Carry the color proposition across changing daylight and seasons while preserving authored local exceptions and material identity.
+Use the [existing original and inheritance path](../director/references/world-visual-inheritance.md).

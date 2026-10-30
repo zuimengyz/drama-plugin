@@ -100,7 +100,7 @@ async def native_scene_screenplay(workshop: ScreenplayWorkshop, author: FormalCa
         if isinstance(selected_text, str):
             framework = selected_text
     # A later visual design selection must not replace a preserved scene V1.
-    story_context = {k: v for k, v in incoming.items() if k not in {'professionalDesignRefs', 'directorNarrative', 'filmLook'}}
+    story_context = {k: v for k, v in incoming.items() if k not in {'professionalDesignRefs', 'directorNarrative', 'filmLook', 'filmIdentity', 'filmIdentityChanges'}}
     identity = 'native-scene-context-v2:' + sha256_canonical([operation, scene_id, framework, without_host_originals(story_context)])
     path = workshop._path(identity)
     if not path.exists():
@@ -168,6 +168,9 @@ async def native_scene_screenplay(workshop: ScreenplayWorkshop, author: FormalCa
         workshop.decide(identity, choice=decision.choice, reason=decision.reason,
             text=decision.text, expected_revision=session.revision)
     handoff = workshop.shot_handoff(identity)
+    if incoming.get('filmIdentity'):
+        from drama_plugin.creative_engine.film_identity import resolve_identity
+        handoff['filmIdentity'] = resolve_identity(workshop, incoming, work_id=work_id, scene_id=scene_id)
     if incoming.get('professionalDesignRefs'):
         # Inherit the explicitly bound Work design only after scene selection.
         # The existing resolver verifies Work ownership and source fingerprints.

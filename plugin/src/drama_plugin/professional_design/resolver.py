@@ -87,6 +87,16 @@ class ProfessionalDesignResolver:
                                 versions.objects.read_ref(SourcePin.model_validate(row['ref'])) != row.get('design')):
                             raise ValueError('PROFESSIONAL_CONTINUITY_ORIGINAL_MISMATCH')
                 refs.extend(row['ref'] for row in rows if isinstance(row, dict) and 'ref' in row)
+        identity = (request.screenplay_context or {}).get('filmIdentity')
+        if identity:
+            if versions is not None:
+                from drama_plugin.contracts.source_pin import SourcePin
+                original = versions.objects.read_ref(SourcePin.model_validate(identity['ref']))
+                if (original != {k: v for k, v in identity.items() if k != 'ref'}
+                        or original.get('workId') != request.scope.work_id
+                        or original.get('sceneId') not in (None, request.scope.scene_id)):
+                    raise ValueError('PROFESSIONAL_CONTINUITY_ORIGINAL_MISMATCH')
+            refs.append(identity['ref'])
         rows = context.get('currentDesigns', [])
         if isinstance(rows, list):
             for row in rows:
@@ -110,7 +120,7 @@ class ProfessionalDesignResolver:
         """Refresh retained author output when actual selected design text changes."""
         from drama_plugin.contracts.base import sha256_canonical
         context = request.professional_context or {}
-        inputs = {key: context[key] for key in ('currentDesigns', 'filmLook', 'locationCandidates', 'assetSequence')
+        inputs = {key: context[key] for key in ('currentDesigns', 'filmLook', 'locationCandidates', 'assetSequence', 'filmIdentity')
             if context.get(key)}
         return sha256_canonical(inputs) if inputs else None
 

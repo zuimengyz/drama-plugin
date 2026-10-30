@@ -81,3 +81,9 @@ revises character meaning. Director owns intent and arbitration, not asset autho
 ## Optional film-craft application
 
 Use [expression-led case reading](../director/references/film-practice.md) when it expands the current creative question. Reconcile current space, material and light proposals; do not duplicate Camera/Lighting originals or copy a case set. Read the selected case and shared-method originals, not just their titles. Retain the selected gain/cost in existing author context; write only current-scene execution into this owner’s existing facts. No lookup quota or automatic adoption.
+
+
+## Selected film world and visual identity
+
+Compare selected world/look and current scene state against peer department originals. Identify conflicting era, place, material or source assumptions and return them to their owners; do not fill unknown history by decorating it.
+Use the [existing original and inheritance path](../director/references/world-visual-inheritance.md).

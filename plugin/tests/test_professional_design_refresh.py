@@ -74,7 +74,7 @@ async def final_wire(p, req, refs):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize('upstream,change,shot_dependency', [
-    *[(source, change, False) for source in ('work', 'scene', 'filmLook', 'locationCandidates') for change in ('replace', 'remove')],
+    *[(source, change, False) for source in ('work', 'scene', 'filmLook', 'locationCandidates', 'filmIdentity') for change in ('replace', 'remove')],
     ('scene', 'replace', True),
 ])
 async def test_changed_selected_design_reauthors_finite_facts_and_changes_final_wire(monkeypatch, tmp_path, upstream, change, shot_dependency):
@@ -133,6 +133,9 @@ async def test_changed_selected_design_reauthors_finite_facts_and_changes_final_
         elif upstream == 'filmLook':
             rows = context['filmLook']
             text = rows[0]['grammarRules'][0]['execution'] if rows else 'Current Shot daylight without the removed upstream style.'
+        elif upstream == 'filmIdentity':
+            text = payload['hostScreenplay'].get('filmIdentity', {}).get('look', {}).get('text',
+                'Current Shot daylight without the removed upstream style.')
         else:
             rows = context['locationCandidates']
             text = rows[0]['design']['lightingBehavior'] if rows else 'Current Shot daylight without the removed upstream style.'
@@ -166,7 +169,7 @@ async def test_changed_selected_design_reauthors_finite_facts_and_changes_final_
                     scope=req.scope, body=req.shot, sources=(*core[:-1], parent), operation='shot-consumed-upstream')
                 core[-1] = dependent_shot
                 selected_refs = [*core[:-1], parent, dependent_shot]
-        else:
+        elif upstream != 'filmIdentity':
             if upstream == 'filmLook':
                 from test_professional_continuity import look
                 design = dump_contract(look(req.scope.work_id))
@@ -179,6 +182,12 @@ async def test_changed_selected_design_reauthors_finite_facts_and_changes_final_
             context_refs = (ref,)
         selected_handoff = await p.tools.invoke('screenplay.bind_professional_context', handoff_ref=handoff,
             work_id=req.scope.work_id, scene_id=req.scope.scene_id, design_refs=context_refs)
+        if upstream == 'filmIdentity' and not (index and change == 'remove'):
+            look_ref=workshop.retain_context(ContextOriginal(work_id=req.scope.work_id,label='selected-look',
+                status='AUTHOR_CONCEPT',text=text))
+            selected_handoff=await p.tools.invoke('screenplay.bind_professional_context',handoff_ref=selected_handoff,
+                work_id=req.scope.work_id,scene_id=req.scope.scene_id,design_refs=(),look_ref=look_ref,
+                reason='Explicit generic fixture look selection')
         # An unfinished preparation can retain cached output under this operation
         # ID; changing its selected design must not replay that old author body.
         if index:

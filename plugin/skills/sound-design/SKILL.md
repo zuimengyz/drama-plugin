@@ -87,3 +87,9 @@ Use supplied current originals first. For missing scoped context, read `work.get
 ## Optional film-craft application
 
 Use [expression-led case reading](../director/references/film-practice.md) when it expands the current creative question. Use source location, offscreen persistence and listening to organize attention; do not make every camera change a sound reset. Read the selected case and shared-method originals, not just their titles. Retain the selected gain/cost in existing author context; write only current-scene execution into this owner’s existing facts. No lookup quota or automatic adoption.
+
+
+## Selected film world and visual identity
+
+Read selected world and current scene state for inhabited activity, time and acoustic space. Darkness, dawn or a season change does not automatically add a stock ambience or musical mood.
+Use the [existing original and inheritance path](../director/references/world-visual-inheritance.md).

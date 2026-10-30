@@ -396,6 +396,12 @@ class FilmCapabilities:
         narrative = selected_view(packet, scene_id)
         if narrative:
             context = {**context, 'directorNarrative': narrative}
+        if packet.get('filmIdentity'):
+            # Selected world/look originals travel with the immutable child input.
+            # No current-head lookup and no change to already frozen coverage.
+            from drama_plugin.creative_engine.film_identity import resolve_identity
+            context = {**context, 'filmIdentity': resolve_identity(self.plugin.screenplays, packet,
+                work_id=work_id, scene_id=scene_id)}
         context = {**context, 'sceneDirectionRefs': scene_directions, 'sceneDirection': {
             'sourceRefs': [ref.model_dump(mode='json', by_alias=True)
                 for ref in (cp.canon_ref, cp.direction_ref)],

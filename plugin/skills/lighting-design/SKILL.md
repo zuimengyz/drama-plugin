@@ -106,3 +106,9 @@ relations and actual light matching as separate review conclusions.
 ## Optional film-craft application
 
 Use [expression-led case reading](../director/references/film-practice.md) when it expands the current creative question. Translate light into world-space source positions, height, extent, softness, reflection and control; test changing camera/actor relations. Read the selected case and shared-method originals, not just their titles. Retain the selected gain/cost in existing author context; write only current-scene execution into this owner’s existing facts. No lookup quota or automatic adoption.
+
+
+## Selected film world and visual identity
+
+Read selected world/look and current scene time separately: era is not time of day, and a season jump is not a relight within one shot. Derive source positions and visible layers from that state; preserve explicit stylized exceptions.
+Use the [existing original and inheritance path](../director/references/world-visual-inheritance.md).

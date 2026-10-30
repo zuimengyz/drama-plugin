@@ -8,6 +8,15 @@ that selected film original, the scene screenplay and necessary neighbors.
 Neither task requires a lens list, fixed duration, extra conflict or multiple proposals.
 Narrating voice, camera subjectivity and spectator knowledge are independent choices.
 
+Read selected `filmIdentity` world/look/source-analysis prose and current scene
+state, plus selected structured `filmLook` when used. Establish the film's world
+and positive visual proposition before coverage; unknown era/place details remain
+open choices, never random completions. Scene prose begins with a compact readable
+place/time/environment/look/source heading. Distinguish era, season, time of day,
+elapsed time and changing light; authored exceptions need not be naturalistic.
+Use [world and visual inheritance](world-visual-inheritance.md) for the existing
+original binding and owner handoff. No baseline is a production adoption.
+
 `directorNarrative.film` and `.scenes` carry selected prose and selection evidence.
 The old `sceneDirection` means ordered Shot coverage; never use its existence as
 proof that the scene narrative task happened. Preserve meaningful waiting,

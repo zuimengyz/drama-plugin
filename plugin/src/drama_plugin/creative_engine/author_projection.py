@@ -602,11 +602,14 @@ def current_design_view(request: AuthorRequest, *, upstream: bool | None = None,
     return result
 
 
-def screenplay_view(context: dict[str, JsonValue]) -> dict[str, JsonValue]:
+def screenplay_view(context: dict[str, JsonValue], scene_id: str | None = None) -> dict[str, JsonValue]:
     from drama_plugin.creative_engine.host_text import without_host_originals
     context = JSON.validate_python(without_host_originals(context))
     value = {k: v for k, v in context.items()
-        if k not in {'professionalDesignRefs', 'filmLook', 'sceneDirectionRefs'}}
+        if k not in {'professionalDesignRefs', 'filmLook', 'sceneDirectionRefs', 'filmIdentityChanges'}}
+    if context.get('filmIdentity'):
+        from drama_plugin.creative_engine.film_identity import identity_view
+        value['filmIdentity'] = identity_view(context, scene_id)
     if isinstance(value.get('directorNarrative'), dict):
         def prose(original: dict[str, JsonValue]) -> dict[str, JsonValue]:
             return {k: v for k, v in original.items()
@@ -615,15 +618,18 @@ def screenplay_view(context: dict[str, JsonValue]) -> dict[str, JsonValue]:
         value['directorNarrative'] = {
             'film': prose(object_value(narrative['film'])),
             'scenes': {sid: prose(object_value(row))
-                       for sid, row in object_value(narrative.get('scenes', {})).items()}}
+                       for sid, row in object_value(narrative.get('scenes', {})).items()
+                       if scene_id is None or sid == scene_id}}
     if isinstance(value.get('sceneDirection'), dict):
         # Exact selected Canon/Direction pins stay in the immutable child input.
         # Authors see the ordered semantic decisions, never infrastructure refs.
         value['sceneDirection'] = {k: v for k, v in object_value(value['sceneDirection']).items()
             if k != 'sourceRefs'}
     if isinstance(value.get('selectedSceneScreenplays'), list):
-        value['selectedSceneScreenplays'] = [screenplay_view(object_value(row))
-            for row in sequence(value['selectedSceneScreenplays'])]
+        value['selectedSceneScreenplays'] = [screenplay_view(object_value(row),
+            object_value(object_value(row).get('screenplay', {})).get('sceneId'))
+            for row in sequence(value['selectedSceneScreenplays'])
+            if scene_id is None or object_value(object_value(row).get('screenplay', {})).get('sceneId') == scene_id]
     return value
 
 
@@ -632,7 +638,7 @@ def author_payload(request: AuthorRequest | FilmAuthorRequest, *, direction: boo
     source={k:v for k,v in source.items() if k not in {'originalOwnerRef','languageMetadataRef'}}
     result: dict[str,JsonValue]={'source':JSON.validate_python(source)}
     if request.screenplay_context is not None:
-        result['hostScreenplay'] = JSON.validate_python(screenplay_view(request.screenplay_context))
+        result['hostScreenplay'] = JSON.validate_python(screenplay_view(request.screenplay_context, request.scope.scene_id))
     if isinstance(request, AuthorRequest) and request.revision:
         # Findings are explicit scoped instructions, not provenance or invented IDs.
         result['revisionInstruction'] = request.revision.instruction

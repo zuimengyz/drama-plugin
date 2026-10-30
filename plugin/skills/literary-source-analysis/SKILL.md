@@ -11,6 +11,12 @@ SOURCE_FACT requires direct source support. INTERPRETATION requires source-fact 
 
 Record a source-bound specialist StageReview. This validates an authored analysis, not literary truth by schema. Return missing text or contradictory anchors to the source owner. Do not author screenplay, compression or film decisions.
 
+For the Director's Film World basis, distinguish historical era, location evidence,
+story season/daylight and elapsed time from publication date. Preserve unknown
+years or place names explicitly; an adaptation candidate remains the Director's
+choice rather than a new SOURCE_FACT. Existing readable analysis originals can be
+explicitly selected through the [world/look handoff](../director/references/world-visual-inheritance.md).
+
 Use [Creative Source boundary](../../docs/creative-source.md) for review hashes, routing, persistence and source-map consumers. `source.prepare_screenplay` validates the complete reviewed package; it does not author missing specialist outputs.
 
 For missing retained context read `work.get_work`, `script.get_script`, or `context.build_context`.

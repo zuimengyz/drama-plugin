@@ -769,6 +769,7 @@ class FormalDirectionAuthor(SkillAuthor):
             author_identity='film.director-treatment:v2')
 
     def narrative_system(self, scope: str) -> str:
+        from drama_plugin.creative_engine.film_identity import AUTHOR_GUIDANCE
         task = ("Create the full-film audiovisual narrative original from the complete writer screenplay. "
             "Choose narrative voice, camera standpoint, spectator knowledge, disclosure/withholding, "
             "time and space, opening/ending relations and the film's image/sound/edit organization. "
@@ -779,7 +780,14 @@ class FormalDirectionAuthor(SkillAuthor):
             "attention changes, acting/listening/waiting, inhabited space, sound and silence, "
             "experienced time, exit and transition. Neighbor events remain context. "
             "This is a scene Director original, neither a new writer screenplay nor a shot list.")
-        return self.knowledge(DIRECTION_CRAFT) + "\n" + task + (
+        task += (" Give a readable film world and visual identity account based on selected originals, "
+                 "including unresolved choices; do not merely add shot terminology. If no baseline is "
+                 "selected, propose world/look in this Director candidate, not as adopted history."
+                 if scope == 'FILM' else
+                 " Begin with a brief readable scene heading locating place, era/season, time window, "
+                 "environment, inherited look and current light sources, then continuous scene prose. "
+                 "Use selected scene state and flag unsupported precision; do not guess a new era or location.")
+        return self.knowledge(DIRECTION_CRAFT) + "\n" + AUTHOR_GUIDANCE + task + (
             "\nDistinguish who narrates, where the camera stands, and what the audience knows. "
             "First-person voice does not require POV photography; third-person prose does not require VO. "
             "No style, movement, silence, conflict or duration quota. Make artistic choices and their "
@@ -796,6 +804,7 @@ class FormalDirectionAuthor(SkillAuthor):
             author_identity='scene.director-treatment:v1')
 
     def system_contract(self) -> str:
+        from drama_plugin.creative_engine.film_identity import AUTHOR_GUIDANCE
         system = BOUNDARY + "\nOwn Shot intent, coverage, blocking/camera intention, editing relation and Shot performance direction. Do not change Canon/dialogue or author detailed professional designs. spokenSelections must choose only supplied Canon spoken candidates. System assigns exact spoken IDs; never output internal IDs.\n"
         system += ("professionalDomains only declares which downstream Professional Author designs the Shot needs. "
             "It does not describe Canon or Direction ownership. CANON and DIRECTION must never appear in professionalDomains. "
@@ -803,7 +812,7 @@ class FormalDirectionAuthor(SkillAuthor):
         system += "If selected upstream currentDesigns accompany an existing Shot, review that retained Shot against their new meaning. Consciously preserve valid existing choices or locally revise them; do not replace detailed department originals.\n"
         system += "Treat the complete scene as one encounter before selecting coverage. In shared sceneDirection context, neighboring actions and transitions are context, not extra actions for the current Shot. Propose contradictions to the Host; do not silently reconcile by changing another Shot.\n"
         system += "Read hostScreenplay.directorNarrative when supplied: film is the selected audiovisual narrative; scenes contains the selected scene prose. Realize their spectator access, attention, sound/image and time choices in coverage and current Shot intention. They are distinct from sceneDirection, which is existing ordered coverage. Preserve writer/Canon facts; proposed upstream changes remain feedback, not executable events.\n"
-        return system + self.knowledge(DIRECTION_CRAFT)
+        return system + AUTHOR_GUIDANCE + self.knowledge(DIRECTION_CRAFT)
 
     def film_system_contract(self) -> str:
         return self.system_contract() + "\nDirect the supplied complete Film Canon. Cover every supplied Scene in Canon order, using sceneSelection from supplied Canon sceneCandidates. System assigns Shot identities. Each Shot selects spoken candidates from its chosen Scene only. requiresSelections can only select preceding authored Shot rows. Select creative planned Shot durations, not provider operation durations. Preserve Canon/dialogue; do not author new professional facts. When request.productionGoal is MEDIA_REVIEW, every Shot must declare the existing ACTION, CAMERA, PERFORMANCE, SOUND, SUBJECTS and WORLD Professional design owners needed for an executable operation; additional domains remain a creative need. This declares required design inputs, not professional content or a film scheme.\n"
@@ -1194,6 +1203,8 @@ contradictory instructions or ask the compiler to invent a compromise.
         system += "In currentDesigns, scope WORK or SCENE labels mark selected upstream professional authority, not this Shot's revisable candidates. Preserve their meaning while authoring only current Shot realization. Unlabelled currentDesigns and revision-task candidates belong to this Shot; only those candidates are being revised.\n"
         system += "At this post-selection stage, consume visualContinuity and the supplied screenplay evidence. Film Look is a work-owned basis, not a universal palette. OBSERVED_RESULT remains observed evidence, never Canon. CAMERA, LIGHTING and COLOR elaborate this Scene's inheritance or an intentional departure with its dramatic reason in continuityInterpretation. Motivate local light without silently replacing film-wide relationships. Production Design coherence is reconciliation among these owners, not a second author. WORLD selects locationSelection when a relevant locationCandidate is supplied, preserves its physical identity/layout, and describes current state; common materials/furniture types may be shared between different places. Character references prove identity only, not their background's location. Keep full reasoning in continuityInterpretation; executable finite fields express only this unit's concise, nonduplicated decisions. Shot intent/acting/action stay with their existing owners.\n"
         system += "Read selected directorNarrative film/scene prose as the upstream viewing and listening intent, distinct from sceneDirection coverage. Realize each relevant choice in this Shot's existing owner facts: camera/actor/light relations, observable listening, sound placement or cut/hold conditions. A case name or repeated abstract intention is not execution. Preserve deliberate alternatives and the selected writer text.\n"
+        from drama_plugin.creative_engine.film_identity import AUTHOR_GUIDANCE
+        system += AUTHOR_GUIDANCE
         system += "Resolve the supplied Shot purpose and requiredTransition through the requested owners: express each currently necessary visible or audible consequence in existing Action, Camera, Performance, Sound or Editorial facts. A purpose or future transition is not itself current action. Do not copy the entire Shot into executable prose.\n"
         system += "PERFORMANCE LineDPD alone is internal direction, not video delivery. Realize necessary current listening, gaze, waiting and release consequences in existing Beat physicalExpression when shared, current Action when changing, or exact SOUND audio_events performance/attention/continuity when heard. Preserve the source meaning; do not enact psychology, future reactions, or a voice-over narrator's remembered action in the pictured subject. If another requested domain owns the consequence, coordinate that owner's existing facts rather than adding a second performance track.\n"
         system += "EDITORIAL temporalStructure explains whole-Shot organization, not a timeline to replay in each segment. Put current holds and end conditions in existing protectedEvents scoped by phaseIndex (and spokenSelections where needed), Action observable or the exact Sound delivery. A condition present only in whole-Shot reasoning has not been delivered to a current request.\n"

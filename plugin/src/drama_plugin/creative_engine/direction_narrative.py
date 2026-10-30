@@ -22,14 +22,20 @@ from drama_plugin.contracts.source_pin import SourcePin
 SCHEMA = 'director-narrative-original-v1'
 
 
-def film_packet(screenplay: str, *, source: str, author_context: dict[str, Any] | None = None) -> dict[str, Any]:
+def film_packet(screenplay: str, *, source: str, author_context: dict[str, Any] | None = None,
+                film_identity: dict[str, Any] | None = None, film_look: list | None = None) -> dict[str, Any]:
     return {'screenplay': screenplay, 'designatedSource': source,
+            **({'filmIdentity': film_identity} if film_identity else {}),
+            **({'filmLook': film_look} if film_look else {}),
             'authorContext': author_context or {}, 'use': 'DIRECTOR_CANDIDATE_NOT_CANON'}
 
 
 def scene_packet(screenplay: str, *, film_screenplay: str, film_direction: str,
-                 neighbors: list[dict[str, Any]] | tuple[()] = (), author_context: dict[str, Any] | None = None) -> dict[str, Any]:
+                 neighbors: list[dict[str, Any]] | tuple[()] = (), author_context: dict[str, Any] | None = None,
+                 film_identity: dict[str, Any] | None = None, film_look: list | None = None) -> dict[str, Any]:
     return {'screenplay': screenplay, 'filmScreenplay': film_screenplay,
+            **({'filmIdentity': film_identity} if film_identity else {}),
+            **({'filmLook': film_look} if film_look else {}),
             'selectedFilmDirection': film_direction, 'neighboringScreenplays': list(neighbors),
             'authorContext': author_context or {}, 'use': 'CURRENT_SCENE_DIRECTION_NOT_SHOT_LIST'}
 
@@ -130,9 +136,19 @@ async def native_director_narrative(workshop: ScreenplayWorkshop, author: Formal
                 objects._write(path, selected)
         return verify_selection(objects, objects._read(path), work_id=work, scene_id=scene_id, basis=basis)
 
-    film_basis = {'screenplayHash': sha256_canonical(film)}
+    from drama_plugin.creative_engine.film_identity import narrative_inputs, identity_view
+    identity, looks, identity_basis = narrative_inputs(workshop, context, work_id=work,
+                                                      scene_id=request.scope.scene_id)
+    if looks or 'filmLook' in context:
+        context['filmLook'] = workshop.professional_context(context, work_id=work,
+            scene_id=request.scope.scene_id)['filmLook']
+        source_refs.extend(row['ref'] for row in context['filmLook'])
+    if context.get('filmIdentity'):
+        source_refs.append(context['filmIdentity']['ref'])
+    film_basis = {'screenplayHash': sha256_canonical(film), **identity_basis}
     selected_film = await choose(None, film_basis,
-        film_packet(film, source=source, author_context=author_context), incoming.get('film'))
+        film_packet(film, source=source, author_context=author_context,
+                    film_identity=identity, film_look=looks), incoming.get('film'))
     selected_scenes = {}
     scene_sources = {row['screenplay']['sceneId']: row['screenplayRef']
                      for row in context.get('selectedSceneScreenplays', ())}
@@ -143,7 +159,8 @@ async def native_director_narrative(workshop: ScreenplayWorkshop, author: Formal
                  'filmNarrativeFingerprint': selected_film['ref']['fingerprint']}
         selected_scenes[sid] = await choose(sid, basis,
             scene_packet(text, film_screenplay=film, film_direction=selected_film['text'],
-                         neighbors=neighbors, author_context=author_context),
+                         neighbors=neighbors, author_context=author_context,
+                         film_identity=identity_view(context, sid), film_look=looks),
             incoming.get('scenes', {}).get(sid),
             [selected_film['ref'], *([scene_sources[sid]] if sid in scene_sources else [])])
     context['directorNarrative'] = {'film': selected_film, 'scenes': selected_scenes}
@@ -176,16 +193,19 @@ def bind_host_narrative(workshop: ScreenplayWorkshop, handoff_ref: SourcePin, *,
         session = workshop.load(context['sessionId'])
         assert session.full_film_ref is not None
         film = workshop.objects.read_ref(session.full_film_ref)['text']
+    from drama_plugin.creative_engine.film_identity import narrative_inputs
+    _, _, identity_basis = narrative_inputs(workshop, context, work_id=work_id, scene_id=scene_id)
+    film_basis = {'screenplayHash': sha256_canonical(film), **identity_basis}
     original = retain_selection(workshop.objects, work_id=work_id, scene_id=None,
-        text=film_text, basis={'screenplayHash': sha256_canonical(film)},
+        text=film_text, basis=film_basis,
         selected_by='HOST', reason=reason, source_refs=[dump_contract(handoff_ref)])
     # Reuse an exact previously selected film when binding a scene, so its
     # fingerprint remains the same across the whole film and child originals.
     previous = selected_view(context).get('film')
     if (previous and previous['text'] == film_text and previous['selectedBy'] == 'HOST'
-            and previous['selectionReason'] == reason):
+            and previous['selectionReason'] == reason and previous.get('basis') == film_basis):
         original = verify_selection(workshop.objects, previous, work_id=work_id, scene_id=None,
-                                    basis={'screenplayHash': sha256_canonical(film)})
+                                    basis=film_basis)
     selected: dict[str, Any] = {'film': original, 'scenes': {}}
     if scene_text is not None:
         selected['scenes'][scene_id] = retain_selection(workshop.objects, work_id=work_id,

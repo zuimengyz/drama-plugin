@@ -373,7 +373,11 @@ class ScreenplayWorkshop:
             film_text=film_text, scene_text=scene_text, reason=reason, scene_texts=scene_texts)
 
     def bind_professional_context(self, handoff_ref: SourcePin, *, work_id: str,
-                                  scene_id: str | None, design_refs: tuple[SourcePin, ...]) -> SourcePin:
+                                  scene_id: str | None, design_refs: tuple[SourcePin, ...],
+                                  world_ref: SourcePin | None = None, look_ref: SourcePin | None = None,
+                                  analysis_ref: SourcePin | None = None,
+                                  scene_state_refs: dict[str, SourcePin] | None = None,
+                                  reason: str = '') -> SourcePin:
         """Bind selected designs after the Host film or scene decision.
 
         Preserve screenplay and evidence. No history scan, Canon adoption,
@@ -382,8 +386,19 @@ class ScreenplayWorkshop:
         packet = self.bound_packet(handoff_ref, work_id=work_id, scene_id=scene_id)
         if packet is None or packet.get('schemaVersion') != 'scene-screenplay-shot-handoff-v1':
             raise ValueError('Professional designs require a selected complete screenplay')
-        updated = {**packet, 'professionalDesignRefs': [dump_contract(r) for r in design_refs]}
-        self.professional_context(updated, work_id=work_id, scene_id=scene_id)
+        updated = {**{k: v for k, v in packet.items() if k not in {'filmLook', 'filmIdentityChanges'}},
+                   'professionalDesignRefs': [dump_contract(r) for r in design_refs]}
+        if any((world_ref, look_ref, analysis_ref, scene_state_refs is not None)):
+            from drama_plugin.creative_engine.film_identity import bind_identity, resolve_identity, selection_changes
+            resolve_identity(self, packet, work_id=work_id, scene_id=scene_id)
+            updated['filmIdentity'] = bind_identity(self, work_id=work_id, scene_id=scene_id,
+                world_ref=world_ref, look_ref=look_ref, analysis_ref=analysis_ref,
+                scene_state_refs=scene_state_refs, reason=reason)
+            updated['filmIdentityChanges'] = selection_changes(packet, updated)
+        selected = self.professional_context(updated, work_id=work_id, scene_id=scene_id)
+        if len(selected['filmLook']) > 1 or (selected['filmLook'] and
+                'look' in updated.get('filmIdentity', {}).get('originals', {})):
+            raise ValueError('Select one Film Look baseline; keep alternatives unselected')
         return self.objects.put('scene-professional-handoff:' + (scene_id or work_id), updated)
 
     def professional_context(self, packet: dict[str, Any] | None, *, work_id: str,
@@ -392,6 +407,9 @@ class ScreenplayWorkshop:
         from drama_plugin.contracts.location_design import LocationDesign
         result: dict[str, Any] = {'workId': work_id, 'sceneId': scene_id,
                                  'filmLook': [], 'locationCandidates': []}
+        from drama_plugin.creative_engine.film_identity import resolve_identity, identity_view
+        if resolve_identity(self, packet, work_id=work_id, scene_id=scene_id):
+            result['filmIdentity'] = identity_view(packet, scene_id)
         for raw in (packet or {}).get('professionalDesignRefs', []):
             ref = SourcePin.model_validate(raw)
             body = self.objects.read_ref(ref)
@@ -457,9 +475,22 @@ def register_screenplay_tools(registry: 'ToolRegistry', workshop: ScreenplayWork
         return workshop.bind_director_narrative(SourcePin.model_validate(handoff_ref),
             work_id=work_id, scene_id=scene_id, film_text=film_text, scene_text=scene_text, reason=reason, scene_texts=scene_texts)
     async def bind_professional_context(handoff_ref: SourcePin, work_id: str, scene_id: str | None,
-                                       design_refs: tuple[SourcePin, ...]) -> SourcePin:
-        return workshop.bind_professional_context(SourcePin.model_validate(handoff_ref), work_id=work_id,
-            scene_id=scene_id, design_refs=tuple(SourcePin.model_validate(r) for r in design_refs))
+                                       design_refs: tuple[SourcePin, ...], world_ref: SourcePin | None = None,
+                                       look_ref: SourcePin | None = None, analysis_ref: SourcePin | None = None,
+                                       scene_state_refs: dict[str, SourcePin] | None = None, reason: str = '',
+                                       include_selection_changes: bool = False) -> SourcePin | dict[str, Any]:
+        ref = workshop.bind_professional_context(SourcePin.model_validate(handoff_ref), work_id=work_id,
+            scene_id=scene_id, design_refs=tuple(SourcePin.model_validate(r) for r in design_refs),
+            world_ref=SourcePin.model_validate(world_ref) if world_ref else None,
+            look_ref=SourcePin.model_validate(look_ref) if look_ref else None,
+            analysis_ref=SourcePin.model_validate(analysis_ref) if analysis_ref else None,
+            scene_state_refs={sid: SourcePin.model_validate(r) for sid, r in scene_state_refs.items()}
+                if scene_state_refs is not None else None, reason=reason)
+        if include_selection_changes:
+            body = workshop.objects.read_ref(ref)
+            return {'handoffRef': dump_contract(ref),
+                    'filmIdentityChanges': body.get('filmIdentityChanges')}
+        return ref
     async def retain_thread(thread: NarrativeThread) -> SourcePin:
         return workshop.retain_thread(NarrativeThread.model_validate(thread))
     async def begin(session_id: str, work_id: str, scope: Literal['FILM', 'SCENE'], goal: str,
@@ -490,8 +521,10 @@ def register_screenplay_tools(registry: 'ToolRegistry', workshop: ScreenplayWork
         ('bind_director_narrative', bind_director_narrative, SourcePin,
             {'handoff_ref': SourcePin, 'work_id': str, 'scene_id': str | None, 'film_text': str, 'reason': str},
             {'scene_text': str | None, 'scene_texts': dict[str, str] | None}),
-        ('bind_professional_context', bind_professional_context, SourcePin,
-            {'handoff_ref': SourcePin, 'work_id': str, 'scene_id': str | None, 'design_refs': tuple[SourcePin, ...]}, {}),
+        ('bind_professional_context', bind_professional_context, SourcePin | dict[str, Any],
+            {'handoff_ref': SourcePin, 'work_id': str, 'scene_id': str | None, 'design_refs': tuple[SourcePin, ...]},
+            {'world_ref': SourcePin | None, 'look_ref': SourcePin | None, 'analysis_ref': SourcePin | None,
+             'scene_state_refs': dict[str, SourcePin] | None, 'reason': str, 'include_selection_changes': bool}),
         ('retain_context', retain_context, SourcePin, {'original': ContextOriginal}, {}),
         ('retain_thread', retain_thread, SourcePin, {'thread': NarrativeThread}, {}),
         ('begin', begin, dict, {'session_id': str, 'work_id': str, 'scope': Literal['FILM', 'SCENE'], 'goal': str, 'source_refs': tuple[SourcePin, ...]},

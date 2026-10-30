@@ -21,7 +21,10 @@ named director, palette, focal length, grain or fixed exposure as an aesthetic.
 Still examples establish visible relations only, not a character's motive,
 offscreen history, motion, camera settings or verified film provenance.
 
-Use the existing WorkDirectingAuthority: grammarRules expresses domain, narrative
+Use readable selected Film Look prose through the existing ContextOriginal binding
+or the existing WorkDirectingAuthority, not competing selected versions. See
+[world and visual inheritance](world-visual-inheritance.md). In the structured
+form, grammarRules expresses domain, narrative
 reason, appliesWhen, execution, exception and exitCondition; evolution binds
 perceptual ownership and change to the relevant scope; aestheticRules states
 preferences or exclusions with succeedsWhen/failsWhen. Author only applicable

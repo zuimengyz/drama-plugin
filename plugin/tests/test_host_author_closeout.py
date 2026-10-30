@@ -85,10 +85,19 @@ async def test_host_film_original_without_prior_screenplay_and_exact_input_selec
     await p.aclose()
 
 
-async def test_default_film_host_chain_preserves_writer_and_frozen_coverage(monkeypatch,tmp_path):
+@pytest.mark.parametrize('with_identity', [False, True])
+async def test_default_film_host_chain_preserves_writer_and_frozen_coverage(monkeypatch,tmp_path,with_identity):
     p=host_plugin(monkeypatch,tmp_path)
     assert p.config.text_composition.authorship=='HOST'
     pin=selected_writer(p.screenplays,work='host-fixture')
+    if with_identity:
+        from drama_plugin.creative_engine.screenplay import ContextOriginal
+        world=p.screenplays.retain_context(ContextOriginal(work_id='host-fixture',label='world',status='AUTHOR_CONCEPT',
+            text='Historical period unresolved; autumn night at a street-facing room.'))
+        look=p.screenplays.retain_context(ContextOriginal(work_id='host-fixture',label='look',status='AUTHOR_CONCEPT',
+            text='Pale walls with warm practicals; dawn increases visibility, not saturation.'))
+        pin=await p.tools.invoke('screenplay.bind_professional_context',handoff_ref=pin,work_id='host-fixture',scene_id=None,
+            design_refs=(),world_ref=world,look_ref=look,reason='Host selects one basis; no production adoption.')
     writer_original=deepcopy(p.screenplays.objects.read_ref(pin))
     run=p.create_source_film_run(work_id='host-fixture',run_id='host-fixture',source=source(),
         languages=LanguageMetadata(source_document_language='en',original_work_language='ru',spoken_language='ru',authority_ref=REF),
@@ -123,6 +132,8 @@ async def test_default_film_host_chain_preserves_writer_and_frozen_coverage(monk
                 assert task in originals
                 if task in ('film.director-treatment:v2','scene.director-treatment:v1'):
                     assert 'FILM_CRAFT_READING' in packet['instructions']
+                    if with_identity:
+                        assert packet['input']['filmIdentity']['look']['text'].startswith('Pale walls')
                 if task=='scene.director-treatment:v1':
                     assert packet['input']['selectedFilmDirection']==film_text
                 if task in ('film.direction:v1:FormalDirectionAuthor',FormalProfessionalAuthor.implementation_identity):
@@ -130,6 +141,8 @@ async def test_default_film_host_chain_preserves_writer_and_frozen_coverage(monk
                     assert narrative['film']['text']==film_text
                     assert next(iter(narrative['scenes'].values()))['text']==scene_text
                     assert narrative['film']['selectedBy']=='HOST'
+                    if with_identity:
+                        assert packet['input']['hostScreenplay']['filmIdentity']['world']['text'].startswith('Historical period unresolved')
                 await select_missing(p,error,originals[task]); seen.append(task)
         pytest.fail('Host continuation did not finish')
     base=CapabilityInput(run_id=run.run_id,operation_id='host-fixture:canon',scope=run.scope)

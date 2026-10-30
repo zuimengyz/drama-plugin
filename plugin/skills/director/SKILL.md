@@ -438,3 +438,9 @@ Use [expression-led case reading](references/film-practice.md) when it expands t
 ## Selected narrative originals
 
 Before new final coverage, use [narrative handoff](references/narrative-handoff.md) to distinguish full-film audiovisual narrative, current-scene viewing experience and ordered Shot coverage. Preserve writer originals; existing frozen Shots do not require retrospective rewriting.
+
+
+## Selected film world and visual identity
+
+Read selected world, look and scene-state originals before treatment and coverage; establish a readable film world and positive aesthetic proposition, then a short scene heading and continuous audiovisual experience.
+Use the [existing original and inheritance path](../director/references/world-visual-inheritance.md).

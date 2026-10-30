@@ -50,13 +50,14 @@ def selected_view(context: dict[str, Any], scene_id: str | None = None) -> dict[
 
 def retain_selection(objects: DirectorArtifactStore, *, work_id: str, scene_id: str | None,
                      text: str, basis: dict[str, Any], selected_by: str, reason: str,
-                     source_refs: list[dict[str, Any]] | tuple[()] = ()) -> dict[str, Any]:
+                     source_refs: list[dict[str, Any]] | tuple[()] = (),
+                     authorship: dict[str, Any] | None = None) -> dict[str, Any]:
     if not text.strip() or not reason.strip() or selected_by not in {'HOST', 'DIRECTOR_AUTHOR_CANDIDATE'}:
         raise ValueError('Director selection needs text, reason and explicit authority')
     original = {'schemaVersion': SCHEMA, 'workId': work_id, 'sceneId': scene_id,
         'role': 'SCENE_DIRECTION' if scene_id else 'FILM_NARRATIVE', 'version': 1,
         'text': text, 'basis': basis, 'selectedBy': selected_by, 'selectionReason': reason,
-        'formalAdoption': False, 'sourceRefs': list(source_refs)}
+        'formalAdoption': False, 'sourceRefs': list(source_refs), **(authorship or {})}
     ref = objects.put('director-narrative:' + (scene_id or work_id), original)
     return {'ref': dump_contract(ref), **original}
 
@@ -125,12 +126,15 @@ async def native_director_narrative(workshop: ScreenplayWorkshop, author: Formal
             return verify_selection(objects, objects._read(path), work_id=work, scene_id=scene_id, basis=basis)
         method = author.scene_treatment if scene_id else author.film_treatment
         original = await method(request, packet)
-        host_authored = getattr(getattr(getattr(author, 'client', None), 'config', None), 'authorship', None) == 'HOST'
+        config = getattr(getattr(author, 'client', None), 'config', None)
+        host_authored = config is not None and config.authorship_for('direction') == 'HOST'
         selected = retain_selection(objects, work_id=work, scene_id=scene_id, text=original.text,
             basis=basis, selected_by='HOST' if host_authored else 'DIRECTOR_AUTHOR_CANDIDATE',
             reason='Use the selected Host original; production adoption remains pending.' if host_authored else
                    'Use the Director-authored candidate for coverage; Host adoption remains pending.',
-            source_refs=[*source_refs, *additional_sources])
+            source_refs=[*source_refs, *additional_sources],
+            authorship={'actualAuthor': 'HOST' if host_authored else 'MODEL',
+                        'model': config.model_for('direction') if config and not host_authored else None})
         with objects._writer():
             if not path.exists():
                 objects._write(path, selected)
@@ -139,6 +143,13 @@ async def native_director_narrative(workshop: ScreenplayWorkshop, author: Formal
     from drama_plugin.creative_engine.film_identity import narrative_inputs, identity_view
     identity, looks, identity_basis = narrative_inputs(workshop, context, work_id=work,
                                                       scene_id=request.scope.scene_id)
+    config = getattr(getattr(author, 'client', None), 'config', None)
+    if (config is not None and config.direction_authorship == 'MODEL'
+            and not incoming.get('film') and not identity and not looks):
+        context = await select_cold_model_film(workshop, author, request, context,
+            film_packet(film, source=source, author_context=author_context), operation, source_refs)
+        return await native_director_narrative(workshop, author,
+            request.model_copy(update={'screenplay_context': context}), operation=operation)
     if looks or 'filmLook' in context:
         context['filmLook'] = workshop.professional_context(context, work_id=work,
             scene_id=request.scope.scene_id)['filmLook']
@@ -219,3 +230,62 @@ def bind_host_narrative(workshop: ScreenplayWorkshop, handoff_ref: SourcePin, *,
             source_refs=[scene_bodies[sid]['screenplayRef'], original['ref']])
     return workshop.objects.put('selected-director-handoff:' + (scene_id or work_id),
                                 {**context, 'directorNarrative': selected})
+
+
+async def select_cold_model_film(workshop, author, request, context, packet, operation, source_refs):
+    """Reuse pending Host selection/binding; the model owns all three originals.
+
+    Explicit per-role MODEL opts into this cold-start path. Historical global
+    MODEL/selected prose retains its old shape; no frozen output is reauthored.
+    """
+    from drama_plugin.creative_engine.host_text import request_packet, selected_content
+    from drama_plugin.creative_engine.screenplay import ContextOriginal
+    from drama_plugin.creative_engine.diagnostics import response_context
+    from drama_plugin.creative_engine.film_identity import bind_identity
+    work = request.scope.work_id; objects = workshop.objects
+    path = objects._path('director-film-candidates', [operation, work, packet, author.execution_fingerprint()])
+    if path.exists():
+        candidate_ref = SourcePin.model_validate(objects._read(path))
+        candidate = objects.read_ref(candidate_ref)
+    else:
+        original = await author.film_treatment(request, packet)
+        diagnostic = response_context.get()
+        candidate = {'schemaVersion': 'director-film-candidate-v1', 'workId': work,
+            'actualAuthor': 'MODEL', 'requestedModel': author.client.config.direction_model,
+            'model': diagnostic.model if diagnostic else author.client.config.direction_model,
+            'formalAdoption': False, 'sourceRefs': source_refs,
+            'original': original.model_dump(),
+            'responseEvidence': diagnostic.model_dump() if diagnostic else None}
+        candidate_ref = objects.put('director-film-candidate:' + work, candidate)
+        with objects._writer():
+            objects._write(path, dump_contract(candidate_ref))
+    selection_packet = request_packet('film.director-candidate-selection:v1', request,
+        {'candidateRef': dump_contract(candidate_ref), 'candidate': candidate},
+        {'type': 'object', 'properties': {'candidateFingerprint': {'const': candidate_ref.fingerprint},
+            'reason': {'type': 'string', 'minLength': 1}}, 'required': ['candidateFingerprint', 'reason'],
+            'additionalProperties': False},
+        'Read and select this model-authored candidate as the experimental basis, or leave it unselected. '
+        'Host authors only the choice/reason, not replacement world/look/director prose. Not formal adoption.')
+    choice = selected_content(request, selection_packet, workshop.host_author_original)
+    if (not isinstance(choice, dict) or set(choice) != {'candidateFingerprint', 'reason'}
+            or choice['candidateFingerprint'] != candidate_ref.fingerprint
+            or not isinstance(choice['reason'], str) or not choice['reason'].strip()):
+        raise ValueError('Director candidate selection must reference exact model original')
+    refs = {}
+    for name in ('world', 'look'):
+        refs[name] = workshop.retain_context(ContextOriginal(work_id=work, label='Director ' + name,
+            status='AUTHOR_CONCEPT', text=candidate['original'][name],
+            authority_ref='director-film-candidate:' + candidate_ref.fingerprint))
+    selected = deepcopy(context)
+    selected['filmIdentity'] = bind_identity(workshop, work_id=work, scene_id=request.scope.scene_id,
+        world_ref=refs['world'], look_ref=refs['look'], analysis_ref=None, scene_state_refs=None,
+        reason=choice['reason'])
+    basis = {'screenplayHash': sha256_canonical(packet['screenplay']),
+             'filmIdentityFingerprint': selected['filmIdentity']['ref']['fingerprint']}
+    film = retain_selection(objects, work_id=work, scene_id=None, text=candidate['original']['text'],
+        basis=basis, selected_by='HOST', reason=choice['reason'],
+        source_refs=[*source_refs, dump_contract(candidate_ref), selected['filmIdentity']['ref']],
+        authorship={'actualAuthor': 'MODEL', 'model': candidate['model'],
+                    'candidateRef': dump_contract(candidate_ref)})
+    selected['directorNarrative'] = {'film': film, 'scenes': {}}
+    return selected

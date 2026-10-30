@@ -27,6 +27,11 @@ def _environment_overrides(environment: Mapping[str, str]) -> dict[str, Any]:
     overrides: dict[str, Any] = {}
     author_values = {field: environment[key].strip() for field, key in {
         "authorship": "DRAMA_PLUGIN_TEXT_AUTHORSHIP",
+        "canon_authorship": "DRAMA_PLUGIN_CANON_AUTHORSHIP",
+        "direction_authorship": "DRAMA_PLUGIN_DIRECTION_AUTHORSHIP",
+        "professional_authorship": "DRAMA_PLUGIN_PROFESSIONAL_AUTHORSHIP",
+        "stream": "DRAMA_PLUGIN_TEXT_COMPOSITION_STREAM",
+        "timeout_seconds": "DRAMA_PLUGIN_TEXT_COMPOSITION_TIMEOUT_SECONDS",
         "provider": "DRAMA_PLUGIN_TEXT_COMPOSITION_PROVIDER",
         "base_url": "DRAMA_PLUGIN_TEXT_COMPOSITION_BASE_URL",
         "api_key": "DRAMA_PLUGIN_TEXT_COMPOSITION_API_KEY",

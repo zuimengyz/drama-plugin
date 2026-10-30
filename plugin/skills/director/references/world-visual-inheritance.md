@@ -75,3 +75,21 @@ PromptIR. World/look prose, case names, source citations and reasoning remain
 upstream. A chosen color exception can be projected; schema acceptance does not
 prove historical accuracy, visual consistency or artistic quality. Frozen Shots
 and old tasks do not acquire a new creative backfill or approval loop.
+
+## Independently configured Director author
+
+With explicit `direction_authorship=MODEL`, a cold film treatment returns the
+Director's separate readable `world`, `look` and `text` originals. The default
+native path retains these exact candidate bytes and uses the existing Host
+request/binding mechanism for `film.director-candidate-selection:v1`. Host binds
+only the exact candidate fingerprint and a selection reason. It does not supply
+replacement prose. The retained model candidate, returned model and response
+fingerprint remain the author evidence; `selectedBy=HOST` is a distinct choice,
+not a claim that Host wrote the film. Formal adoption remains false.
+
+After selection, existing Film Identity originals reference that candidate and
+scene treatment reads its selected World/Look and film text. Missing artistic
+content stays the Director's revision responsibility. Unselected alternatives
+are not merged. Existing selected/Host originals and legacy global-MODEL tasks
+remain compatible; they do not automatically acquire a new model call. This is
+an author/selection handoff, not a new production stage or review quota.

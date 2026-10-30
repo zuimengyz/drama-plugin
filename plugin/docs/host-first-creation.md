@@ -209,3 +209,23 @@ For temporary literary demonstrations use the same author interfaces with an
 in-memory `authorContext.hostAuthoring` selection. Do not instantiate Plugin/stores
 or register Work/Run identities. No MockTransport is necessary or allowed as proof
 of Host authorship; a test of model wire parsing must identify itself separately.
+
+## Per-role external text authors
+
+`DRAMA_PLUGIN_CANON_AUTHORSHIP`, `DRAMA_PLUGIN_DIRECTION_AUTHORSHIP` and
+`DRAMA_PLUGIN_PROFESSIONAL_AUTHORSHIP` optionally select HOST or MODEL for one
+role. Each defaults to the existing `DRAMA_PLUGIN_TEXT_AUTHORSHIP` (HOST by
+default); a model name alone does not opt in. Explicit Direction MODEL enables
+independent cold-film world/look/treatment candidates and the existing Host
+selection handoff. It does not switch Canon or Professional. Missing MODEL
+configuration is unavailable, never a fallback to another author.
+
+The existing compatible text HTTP backend supports optional
+`DRAMA_PLUGIN_TEXT_COMPOSITION_STREAM=true` and
+`DRAMA_PLUGIN_TEXT_COMPOSITION_TIMEOUT_SECONDS` (up to 1800). No media provider is
+involved. Reasoning is validated for the configured provider/model: the supported
+xAI grok-4.7/4.6 values are low/medium/high/xhigh, grok-4.5 low/medium/high; unknown
+combinations fail explicitly instead of dropping or downgrading the request.
+See https://docs.x.ai/developers/model-capabilities/text/reasoning (2026-10-30).
+Usage includes returned reasoning/cache counts and cost ticks when supplied.
+Streaming requires a finish event and DONE; truncation is not a complete original.

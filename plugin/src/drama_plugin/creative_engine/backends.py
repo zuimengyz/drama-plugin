@@ -466,12 +466,12 @@ class TextCompositionBackend:
     def execution_fingerprint(self, role: AuthorRole, author_identity: str,
                               system_content: str) -> str:
         """Same wire projection primitives, excluding user bytes and credential."""
-        if self.config.authorship == "HOST":
+        if self.config.authorship_for(role) == "HOST":
             return sha256_canonical({"author": "HOST", "task": author_identity, "role": role, "system": system_content})
         return sha256_canonical({"author": author_identity, "role": role,
             "provider": self.config.provider, "endpoint": self.config.base_url.rstrip("/") + "/chat/completions",
             "model": self.config.model_for(role), "system_content": system_content,
-            "stream": False, "max_tokens": self.config.max_output_tokens,
+            "stream": self.config.stream, "max_tokens": self.config.max_output_tokens,
             "reasoning_effort": self.config.reasoning_effort})
 
     async def complete(self, role: AuthorRole, system: str, request: AuthorRequest | FilmAuthorRequest, result: TypeAdapter[T], *,
@@ -484,12 +484,12 @@ class TextCompositionBackend:
         fingerprint = self.execution_fingerprint(role, author_identity or role + ":formal-author",
             system + "\nOutput JSON schema:\n" + canonical_json(schema))
         response_context.set(AuthorDiagnostic(role=role, failure_stage="RESPONSE",
-            code="AUTHOR_REQUEST_STARTED", model="HOST" if self.config.authorship == "HOST" else safe_identity(self.config.model_for(role)),
-            provider="HOST" if self.config.authorship == "HOST" else safe_identity(self.config.provider), execution_fingerprint=fingerprint,
+            code="AUTHOR_REQUEST_STARTED", model="HOST" if self.config.authorship_for(role) == "HOST" else safe_identity(self.config.model_for(role)),
+            provider="HOST" if self.config.authorship_for(role) == "HOST" else safe_identity(self.config.provider), execution_fingerprint=fingerprint,
             attempt=context.attempt if context else None,
             execution_revision=context.execution_revision if context else fingerprint))
         try:
-            if self.config.authorship == 'HOST':
+            if self.config.authorship_for(role) == 'HOST':
                 from drama_plugin.creative_engine.host_text import request_packet, selected_content
                 packet = request_packet(author_identity or role + ':formal-author', request,
                     model_payload if model_payload is not None else request.model_dump(mode='json', by_alias=True), schema, system)
@@ -511,10 +511,8 @@ class TextCompositionBackend:
                         project: Callable[[JsonValue], JsonValue] | None = None) -> T:
         if not self.config.available(role):
             raise CapabilityAbsent("FORMAL_AUTHOR_CONFIGURATION_ABSENT")
-        if self.config.reasoning_effort is not None and self.config.provider.strip().lower() != "deepseek":
-            # Only a qualified provider's documented policy may be projected.
-            # Never silently drop a requested reasoning policy on another wire.
-            raise CapabilityAbsent("FORMAL_AUTHOR_REASONING_POLICY_UNSUPPORTED")
+        from drama_plugin.creative_engine.text_wire import validate_reasoning
+        validate_reasoning(self.config, role)
         if (not request.source.source_document_language or not request.source.original_work_language
                 or request.source.language_metadata_ref is None):
             raise CapabilityAbsent("SOURCE_LANGUAGE_AUTHORITY_ABSENT")
@@ -569,11 +567,13 @@ class TextCompositionBackend:
             messages.append({'role': 'user', 'content':
                 'Revise this candidate against the preceding Source, Canon, Shot and inherited assets; its execution choices are not approved authority.\n'
                 + canonical_json(revision_task)})
-        payload = {"model": self.config.model_for(role), "stream": False,
+        payload = {"model": self.config.model_for(role), "stream": self.config.stream,
             "max_tokens": self.config.max_output_tokens,
             "messages": messages}
         if self.config.reasoning_effort is not None:
             payload["reasoning_effort"] = self.config.reasoning_effort
+        if self.config.stream:
+            payload["stream_options"] = {"include_usage": True}
         assert self.config.api_key is not None
         async with httpx.AsyncClient(transport=self.transport, timeout=self.config.timeout_seconds,
                                      follow_redirects=False) as client:
@@ -597,14 +597,15 @@ class TextCompositionBackend:
         if len(response.content) > 2_000_000:
             raise AuthorResultFailure(failure("PROVIDER_PROTOCOL", "AUTHOR_RESULT_BOUND_EXCEEDED", role=role))
         try:
-            wire = TypeAdapter(dict[str, JsonValue]).validate_json(response.content)
+            from drama_plugin.creative_engine.text_wire import decode_completion
+            wire = decode_completion(response.content, streamed=self.config.stream)
         except ValidationError:
             raise AuthorResultFailure(failure("PROVIDER_PROTOCOL", "AUTHOR_WIRE_RESULT_INVALID",
                 role=role, exception_type="ValidationError")) from None
         usage: dict[str, int] = {}
         raw_usage = wire.get("usage")
         if isinstance(raw_usage, dict):
-            for key in ("prompt_tokens", "completion_tokens", "total_tokens", "prompt_cache_hit_tokens", "prompt_cache_miss_tokens"):
+            for key in ("prompt_tokens", "completion_tokens", "total_tokens", "prompt_cache_hit_tokens", "prompt_cache_miss_tokens", "cost_in_usd_ticks"):
                 value = raw_usage.get(key)
                 if isinstance(value, int) and not isinstance(value, bool) and 0 <= value < 2**63:
                     usage[key] = value
@@ -612,9 +613,14 @@ class TextCompositionBackend:
             value = details.get("reasoning_tokens") if isinstance(details, dict) else None
             if isinstance(value, int) and not isinstance(value, bool) and 0 <= value < 2**63:
                 usage["reasoning_tokens"] = value
+        prompt_details = raw_usage.get("prompt_tokens_details") if isinstance(raw_usage, dict) else None
+        if isinstance(prompt_details, dict) and type(prompt_details.get("cached_tokens")) is int:
+            usage["cached_tokens"] = prompt_details["cached_tokens"]
         context = response_context.get()
         assert context is not None
-        response_context.set(AuthorDiagnostic.model_validate({**context.model_dump(), "usage": usage}))
+        returned_model = wire.get("model")
+        response_context.set(AuthorDiagnostic.model_validate({**context.model_dump(), "usage": usage,
+            "model": safe_identity(returned_model) if isinstance(returned_model, str) else context.model}))
         choices = wire.get("choices")
         if not isinstance(choices, list) or len(choices) != 1 or not isinstance(choices[0], dict):
             raise AuthorResultFailure(failure("PROVIDER_PROTOCOL", "AUTHOR_RESULT_MISSING", role=role))
@@ -663,6 +669,11 @@ class SkillAuthor:
 
 class HostSceneOriginal(ContractModel):
     text: str = Field(min_length=1)
+
+
+class FilmDirectorCandidate(HostSceneOriginal):
+    world: str = Field(min_length=1)
+    look: str = Field(min_length=1)
 
 
 class HostScreenplayDecision(ContractModel):
@@ -764,9 +775,21 @@ class FormalDirectionAuthor(SkillAuthor):
 
         Proposals to change screenplay are feedback, never silent Canon writes.
         """
-        return await self.client.complete('direction', self.narrative_system('FILM') + self.craft_reading(request, packet),
-            request, TypeAdapter(HostSceneOriginal), model_payload=packet,
-            author_identity='film.director-treatment:v2')
+        independent = (self.client.config.direction_authorship == 'MODEL'
+                       and not packet.get('filmIdentity') and not packet.get('filmLook'))
+        system = self.narrative_system('FILM') + self.craft_reading(request, packet)
+        if independent:
+            system += ('\nCold-start independent Director creation: return three readable original strings: '
+                'world (era, region and social/spatial life, seasonal/daytime chronology; distinguish source facts, '
+                'reasoned adaptation choices and unknowns), look (an authored image/sound/color/light/space/time '
+                'proposition with development across scenes), text (literary understanding, adaptation stance and '
+                'full-film audiovisual narrative). Make coherent positive artistic decisions, not generic adjectives '
+                'or an error-avoidance review. Expressive angles, movement, montage and non-naturalistic light/color '
+                'are available when they serve your interpretation; execution risk must not pre-empt ambition. '
+                'These are unselected candidates, not historical or production authority. Do not write shot coverage yet.')
+        return await self.client.complete('direction', system,
+            request, TypeAdapter(FilmDirectorCandidate if independent else HostSceneOriginal), model_payload=packet,
+            author_identity='film.director-treatment:v3' if independent else 'film.director-treatment:v2')
 
     def narrative_system(self, scope: str) -> str:
         from drama_plugin.creative_engine.film_identity import AUTHOR_GUIDANCE
@@ -825,6 +848,9 @@ class FormalDirectionAuthor(SkillAuthor):
         prose = [self.client.execution_fingerprint('direction', identity, self.narrative_system(scope) +
             "\nOutput JSON schema:\n" + canonical_json(TypeAdapter(HostSceneOriginal).json_schema(by_alias=True)))
             for scope, identity in [('FILM', 'film.director-treatment:v2'), ('SCENE', 'scene.director-treatment:v1')]]
+        if self.client.config.direction_authorship == 'MODEL':
+            prose.append(self.client.execution_fingerprint('direction', 'film.director-treatment:v3',
+                canonical_json(TypeAdapter(FilmDirectorCandidate).json_schema(by_alias=True))))
         return sha256_canonical([coverage, *prose])
 
     async def author(self, request: AuthorRequest) -> ShotBody:
@@ -1235,8 +1261,6 @@ contradictory instructions or ask the compiler to invent a compromise.
 def compose_authors(config: TextCompositionConfig, skills_root: Path, *,
                     transport: httpx.AsyncBaseTransport | None = None
                     ) -> tuple[FormalCanonAuthor | None, FormalDirectionAuthor | None, FormalProfessionalAuthor | None]:
-    if config.authorship != "HOST" and not config.configured:
-        return None, None, None
     client = TextCompositionBackend(config, transport=transport)
     return (FormalCanonAuthor(client, skills_root) if config.available("canon") else None,
             FormalDirectionAuthor(client, skills_root) if config.available("direction") else None,

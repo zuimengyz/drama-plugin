@@ -203,3 +203,14 @@ Use [expression-led case reading](../director/references/film-practice.md) when 
 
 Read the selected world/look and current scene state before coverage. Preserve era, inhabited place and time; express current viewing consequences in existing Shot intentions without replacing professional owners.
 Use the [existing original and inheritance path](../director/references/world-visual-inheritance.md).
+
+## Native storyboard and animatic handoff
+
+Use the [Native scene storyboard selection](../../docs/director-storyboard-animatic.md#native-scene-storyboard-selection-p0)
+for reusable scene previews instead of writing a work-specific generation/gallery
+script. Keep stable panel keys under their film Shot; select node times and states
+once. The same selection derives overview, exact asset-use display and Animatic.
+Use `storyboard.design_frame` for authored Frame compilation and the existing
+Target reference workflow for separately authorized images. Reviewed results are
+collected into a new preview selection, never automatically adopted as assets or
+Seedance inputs. Intentional ellipses remain Director choices in the Sequence.

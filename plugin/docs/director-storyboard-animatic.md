@@ -96,3 +96,62 @@ Prompt compilation. Image replacement alone cannot rewrite a professional choice
 Film Shot != action Phase != generation unit != adopted source interval.
 Host may change the design after watching; neither diagrams, case-library examples,
 fixed durations, frame counts nor a new scoring or approval gate decide the art.
+
+## Native scene storyboard selection (P0)
+
+Use `storyboard.source(run_id, scene_id)` to read the current Native Film coverage
+as a Sequence candidate. It preserves the selected Director and Canon pins; it
+never invents panels or timing alternatives. Supply useful panel nodes under the
+existing film Shot keys; one panel is sufficient when it expresses the intent.
+Choose meaningful stable panel keys, a current-state description and `at` (seconds
+from the Shot start). `at` marks the displayed node, not measured acting time.
+The next node/Shot end determines its hold. Do not provide a second timeline.
+Director may explicitly select ellipsis/parallel bridges and their reasons in the
+existing Sequence; no new artistic gate or continuity score is introduced.
+
+`storyboard.select(selection, current_fingerprints, directory, run_id=...)` retains
+one immutable `SceneStoryboard` in the existing creative original store, validates
+the Native Film source binding, and derives a scene overview. Complete selected
+images also produce the picture-only Animatic automatically. An omitted `run_id`
+is an isolated design study; it cannot start production. Formal adoption is never
+changed. Old Sequence and three-input CLI records remain readable.
+
+A panel references a native compiled Frame file by path/hash. Its existing Frame
+references own exact character/location/prop/costume versions, scope and usage;
+the scene view only projects these fields. For new art use
+`storyboard.design_frame(selection_ref, panel_key, frame, directory)` to invoke the
+existing visual compiler and retain that exact request. It clears an old image
+when the underlying frame changes. This is design compilation, not paid generation.
+A missing image is shown as pending; never synthesize one to make the timeline pass.
+
+`storyboard.prepare_frame(selection_ref, panel_key, child_id)` fixes a selected
+panel into the existing `specialized-asset-reference:v1` Target workflow. Continue
+with the existing `specialized_assets.quote_reference`, cost decision,
+`resume_reference` and `review_reference` capabilities. Existing reservation,
+unknown-result recovery, formal Work/media delivery and review remain unchanged.
+This target uses `STORYBOARD_REFERENCE` Media purpose; asset adoption/registration
+steps have no asset effect. It is not a new asset identity or production loop.
+No request is made by source/select/design_frame/prepare_frame/render.
+
+After choosing a reviewed result, `storyboard.collect(selection_ref, panel_key,
+child_id, directory, reason)` binds its exact output and production original into
+a new selection. Results from the same design batch can be collected successively;
+an intervening design/time/source change cannot silently accept old results.
+The same operation refreshes the overview and, once all images exist, the Animatic.
+`storyboard.render(selection_ref, directory)` reopens that exact selection. Frozen
+history is retained, never rewritten from a later head. Paid dispatch checks the
+current Native Film direction, even if an older selection can still be reviewed.
+
+For no-Work local regression, use `DramaPlugin.render_scene_storyboard` or:
+
+```sh
+PYTHONPATH=plugin/src python plugin/skills/shot-design/scripts/render_animatic.py \
+  --selection /absolute/input.json --output /absolute/output
+```
+
+The single input contains `selection` and `currentFingerprints`. Outputs include
+`selection.json`, `view.json`, an HTML overview and a playable DRAFT MP4. Node IDs,
+film-cut markers, reference duties, continuity bridges and times come from that
+one selection. Artwork is copied byte-for-byte for display. Audio remains labeled
+placeholder silence; sound finishing and observed video-to-node comparison remain
+separate existing-owner work, not claims of P0 dynamic performance validation.

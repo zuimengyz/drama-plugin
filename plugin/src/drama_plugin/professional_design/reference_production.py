@@ -136,6 +136,9 @@ class TargetReferenceProduction:
         return value
 
     def item(self, value: ReferenceProductionRecord) -> dict[str, Any]:
+        from drama_plugin.film.storyboard import production_item
+        if (item := production_item(self, value)) is not None:
+            return item
         packet = self.sequence.objects.read_ref(value.preparation_ref)
         if (packet.get('schemaVersion') != 'specialized-asset-preparation-v1'
                 or (packet['workId'], packet['sceneId']) != (value.scope.work_id, value.scope.scene_id)):
@@ -181,6 +184,9 @@ class TargetReferenceProduction:
         return origin
 
     def record_authority(self, value: ReferenceProductionRecord, *, production: bool = False) -> None:
+        from drama_plugin.film.storyboard import production_item
+        if production_item(self, value) is not None:
+            return
         if self.reuse_origin(value) is not None:
             # The new entry fixes a complete Frame from this real selected or
             # parent-bound candidate. It does not select/adopt the candidate.
@@ -643,6 +649,9 @@ class TargetReferenceProduction:
             DesignCompletionRequired, inherit_design, verify_design_delivery)
         if value.frame is None:
             return value
+        from drama_plugin.film.storyboard import production_item
+        if production_item(self, value) is not None:
+            return value
         item = await self.artwork_item(value)
         try:
             verify_design_delivery(value.frame, item)
@@ -743,6 +752,8 @@ class TargetReferenceProduction:
                 raise  # An unavailable read is not evidence of an absent Work.
             if isinstance(error,RemoteServiceError) and error.error_code != 'NOT_FOUND' and error.status_code != 404:
                 raise
+            if self.item(value)['assetType'] == 'STORYBOARD':
+                return False  # Never create a Work to admit a storyboard experiment.
             request = AuthorRequest.model_validate(self.sequence.objects.read_ref(value.author_context_ref))
             if not request.source_refs or not self.plugin.native_task_persistence.enabled:
                 return False
@@ -753,7 +764,7 @@ class TargetReferenceProduction:
     async def reserve(self, inputs: CapabilityInput) -> CapabilityResult:
         async with self.lock(inputs.run_id):
             value = self.get(inputs.run_id)
-            if self.sequence.candidate_parent(value.preparation_ref) is not None and self.reuse_origin(value) is None:
+            if self.item(value)['assetType'] != 'STORYBOARD' and self.sequence.candidate_parent(value.preparation_ref) is not None and self.reuse_origin(value) is None:
                 return self.wait(value, 'REFERENCE_PREPARATION_NOT_SELECTED')
             self.record_authority(value, production=True)
             if not self.item(value)['referenceRequired']:
@@ -884,6 +895,9 @@ class TargetReferenceProduction:
     async def adopt(self, inputs: CapabilityInput) -> CapabilityResult:
         async with self.lock(inputs.run_id):
             value = self.get(inputs.run_id)
+            if self.item(value)['assetType'] == 'STORYBOARD':
+                # A reviewed storyboard result stays a candidate, never an Asset.
+                return self.success(value)
             if value.adoption_ref:
                 return self.success(value)
             if not await self.formal_scope(value):
@@ -895,6 +909,9 @@ class TargetReferenceProduction:
     async def register(self, inputs: CapabilityInput) -> CapabilityResult:
         async with self.lock(inputs.run_id):
             value = self.get(inputs.run_id)
+            if self.item(value)['assetType'] == 'STORYBOARD':
+                # A reviewed storyboard result stays a candidate, never an Asset.
+                return self.success(value)
             if value.asset_id:
                 asset = await self.sequence.assets.get_asset(value.asset_id)
                 if self.reuse_origin(value) is not None and (

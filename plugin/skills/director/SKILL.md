@@ -444,3 +444,12 @@ Before new final coverage, use [narrative handoff](references/narrative-handoff.
 
 Read selected world, look and scene-state originals before treatment and coverage; establish a readable film world and positive aesthetic proposition, then a short scene heading and continuous audiovisual experience.
 Use the [existing original and inheritance path](../director/references/world-visual-inheritance.md).
+
+For a selected Native Film scene, use the
+[Native storyboard entry](../../docs/director-storyboard-animatic.md#native-scene-storyboard-selection-p0):
+`storyboard.source` supplies the selected coverage; `storyboard.select` derives
+its scene overview and available Animatic from one selection. Choose viewing
+nodes for their expressive purpose, without a panel quota or automatic camera
+motion. Read their current states, exact references and cut/ellipsis relations
+alongside the pictures; recorded holds do not prove continuous movement. Host
+preview selection remains distinct from final artistic adoption.

@@ -222,6 +222,8 @@ class DramaPlugin:
         if self.reference_production:
             self.creative.reference_production = self.reference_production
         register_reference_tools(self.tools, self.reference_production)
+        from drama_plugin.film.storyboard import register_tools as register_storyboard_tools
+        register_storyboard_tools(self)
         self.runtime = RuntimeEngine(TargetCapabilityRouter({**package_capability.registrations(),
             **self.gate_governance.registrations(), **self.generation_capability.registrations(), **execution_native, **self.creative.registrations(), **film_native, **reference_native},
             LegacyCapabilityBridge.from_tools(tools) if legacy_reads else None, self.legacy_boundary), store=runs,
@@ -812,6 +814,14 @@ class DramaPlugin:
     def select_source_film_references(self, run_id: str, *, task, register: bool = False):
         from drama_plugin.film.media_references import select_references
         return select_references(self,run_id,self.source_film_unit_for_task(run_id,task),task.unit,register=register,reference_refs=task.execution_reference_refs)
+
+    @staticmethod
+    def render_scene_storyboard(selection, directory, *, current_fingerprints, animatic=True):
+        """Offline/native shared render entry; no Work, network or provider loading."""
+        from drama_plugin.film.storyboard import render
+        from drama_plugin.contracts.sequence import SceneStoryboard
+        return render(SceneStoryboard.model_validate(selection), directory,
+            current_fingerprints=current_fingerprints, animatic=animatic)
 
     async def prepare_shot_preview(self, package_ref, task, *, previsualization=None, _compiler=None):
         """Current request plus optional external Blender handoff/adoption.

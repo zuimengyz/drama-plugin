@@ -271,3 +271,47 @@ class FilmReview(ContractModel):
         if self.director and not set(self.director.finding_keys) <= {f.key for f in self.findings}:
             raise ValueError('Director finding reference is missing')
         return self
+
+
+class StoryboardFile(ContractModel):
+    """Exact local evidence, not a new Asset or Media identity."""
+    path: Text
+    content_hash: Hash
+
+
+class StoryboardPanel(ContractModel):
+    key: Text
+    shot_key: Text
+    at: float = Field(ge=0, allow_inf_nan=False)
+    state: Text
+    # A retained native compiled frame supplies the existing reference identities,
+    # versions and duties. Do not duplicate an asset registry here.
+    frame: StoryboardFile | None = None
+    image: StoryboardFile | None = None
+    production_ref: SourcePin | None = None
+    notes: tuple[Text, ...] = ()
+
+
+class SceneStoryboard(ContractModel):
+    """Host-selected preview recipe over Sequence; never Canon/asset adoption."""
+    schema_version: Literal['scene-storyboard-v1'] = 'scene-storyboard-v1'
+    sequence: SequencePackage
+    panels: tuple[StoryboardPanel, ...] = Field(min_length=1)
+    selection_reason: Text
+    selected_by: Literal['HOST'] = 'HOST'
+    formal_adoption: Literal[False] = False
+
+    @model_validator(mode='after')
+    def panel_identity_and_time(self) -> Self:
+        keys = [p.key for p in self.panels]
+        if len(keys) != len(set(keys)):
+            raise ValueError('STORYBOARD_DUPLICATE_PANEL')
+        order = [s.key for s in self.sequence.shots]
+        actual = list(dict.fromkeys(p.shot_key for p in self.panels))
+        if actual != order or [order.index(p.shot_key) for p in self.panels] != sorted(order.index(p.shot_key) for p in self.panels):
+            raise ValueError('STORYBOARD_SHOT_ORDER')
+        for timing in self.sequence.editorial.coverage:
+            nodes = [p.at for p in self.panels if p.shot_key == timing.key]
+            if nodes[0] != 0 or nodes != sorted(set(nodes)) or nodes[-1] >= timing.duration:
+                raise ValueError('STORYBOARD_NODE_TIME')
+        return self
